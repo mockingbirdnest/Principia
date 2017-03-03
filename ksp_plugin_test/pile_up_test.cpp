@@ -80,11 +80,11 @@ TEST_F(PileUpTest, Lifecycle) {
                                      Displacement<Barycentric>(
                                          {13.0 / 3.0 * Metre,
                                           4.0 * Metre,
-                                          11.0 / 3.0 * Metre}), 1),
+                                          11.0 / 3.0 * Metre}), 0),
                     AlmostEquals(Velocity<Barycentric>(
                                      {130.0 / 3.0 * Metre / Second,
                                       40.0 * Metre / Second,
-                                      110.0 / 3.0 * Metre / Second}), 1)));
+                                      110.0 / 3.0 * Metre / Second}), 0)));
 
   EXPECT_THAT(
       pile_up.actual_part_degrees_of_freedom_.at(&p1_),

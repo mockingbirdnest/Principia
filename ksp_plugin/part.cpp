@@ -124,9 +124,9 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     std::function<void()> deletion_callback) {
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
+                                 Mass::ReadFromMessage(message.mass()),
                                  DegreesOfFreedom<Barycentric>::ReadFromMessage(
                                      message.degrees_of_freedom()),
-                                 Mass::ReadFromMessage(message.mass()),
                                  std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
