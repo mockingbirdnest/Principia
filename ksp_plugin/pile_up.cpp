@@ -248,7 +248,8 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
 }
 
 PileUp::PileUp(std::list<not_null<Part*>>&& parts)
-    : parts_(std::move(parts)) {}
+    : parts_(std::move(parts)),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,
