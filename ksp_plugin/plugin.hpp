@@ -61,6 +61,7 @@ using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
+using quantities::Force;
 using quantities::Length;
 using quantities::Mass;
 using quantities::Time;
@@ -83,7 +84,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin();
+  virtual ~Plugin() = default;
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
@@ -143,44 +144,67 @@ class Plugin {
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
-  // |AdvanceTime|. The parent body for the vessel is set to the one with index
-  // |parent_index|. It must already have been inserted using
-  // |InsertCelestial|.
-  // Returns true if a new vessel was inserted. In that case,
-  // |SetVesselStateOffset| must be called with the same GUID before the
-  // next call to |AdvanceTime|, |VesselDisplacementFromParent| or
-  // |VesselParentRelativeVelocity|, so that the initial state of the new
-  // vessel is known. Must be called after initialization.
-  // For a KSP |Vessel| |v|, the arguments correspond to
-  // |v.id|, |v.orbit.referenceBody.flightGlobalsIndex|.
-  virtual bool InsertOrKeepVessel(GUID const& vessel_guid, Index parent_index);
+  // |FreeVesselsAndPartsAndCollectPileUps|. The parent body for the vessel is
+  // set to the one with index |parent_index|, which must have been inserted
+  // during initialization.
+  // Sets |inserted| to true if a new vessel was inserted, to false otherwise.
+  // If |InsertOrKeepVessel| is called with |loaded=false|, and returns
+  // |inserted=true|, |SetVesselStateOffset| must be called with the same GUID
+  // before the call to |AdvanceTime|, giving the vessel an initial state (with
+  // a dummy part) even though its parts are unknown.
+  // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
+  // |v.orbit.referenceBody.flightGlobalsIndex|, |v.loaded|.
+  virtual void InsertOrKeepVessel(GUID const& vessel_guid,
+                                  Index parent_index,
+                                  bool loaded,
+                                  bool& inserted);
 
-  // Set the position and velocity of the vessel with GUID |vessel_guid|
-  // relative to its parent at current time. |SetVesselStateOffset| must only
-  // be called once per vessel. Must be called after initialization.
-  // For a KSP |Vessel| |v|, the arguments correspond to
-  // |v.id.ToString()|,
-  // |{v.orbit.pos, v.orbit.vel}|.
+  // Inserts a new part with the given ID if it does not already exist, and
+  // flags the part with the given ID so it is kept when calling
+  // |FreeVesselsAndPartsAndCollectPileUps|.
+  // The part is created in the given |vessel|, or if it already existed in
+  // another vessel, is moved to that one.  If the part is created, its degrees
+  // of freedom are set to those given; otherwise the |degrees_of_freedom|
+  // parameter is ignored.
+  // TODO(egg): pass DegreesOfFreedom<World>, together with the DOF of World's
+  // origin, or have a separate function for that.
+  virtual void InsertOrKeepLoadedPart(
+      PartId part_id,
+      Mass const& mass,
+      not_null<Vessel*> vessel,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+
+  // Calls |increment_intrinsic_force| on the relevant part, which must be in a
+  // loaded vessel.
+  virtual void IncrementPartIntrinsicForce(PartId part_id,
+                                           Vector<Force, World> const& force);
+
+  // Calls |InitializeUnloaded| on the relevant vessel, and puts the resulting
+  // dummy part into a 1-part pile-up added to |pile_ups_|.
   virtual void SetVesselStateOffset(
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
-  // since the last call to |FreeVesselsAndCollectPileUps|, and updates the list
-  // of |pile_ups_| according to the reported collisions.
-  virtual void FreeVesselsAndCollectPileUps();
+  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
+  // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
+  // and updates the list of |pile_ups_| according to the reported collisions.
+  virtual void FreeVesselsAndPartsAndCollectPileUps();
 
-  virtual void AddPileUpToBubble(std::list<PileUp>::iterator pile_up);
+  // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
+  // relevant part.  This part must be in a loaded vessel.
+  virtual void SetPartApparentDegreesOfFreedom(
+      PartId part_id,
+      DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Simulates the system until instant |t|. All vessels that have not been
-  // refreshed by calling |InsertOrKeepVessel| since the last call to
-  // |AdvanceTime| will be removed.  Sets |current_time_| to |t|.
-  // Must be called after initialization.  |t| must be greater than
-  // |current_time_|.  |planetarium_rotation| is the value of KSP's
-  // |Planetarium.InverseRotAngle| at instant |t|, which provides the rotation
-  // between the |World| axes and the |Barycentric| axes (we don't use
-  // Planetarium.Rotation since it undergoes truncation to single-precision even
-  // though it's a double-precision value).  Note that KSP's
+  // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
+  // Must be called after initialization.
+  // Clears the intrinsic force on all loaded parts.
+  // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
+  // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
+  // the rotation between the |World| axes and the |Barycentric| axes (we don't
+  // use Planetarium.Rotation since it undergoes truncation to single-precision
+  // even though it's a double-precision value).  Note that KSP's
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
@@ -290,7 +314,7 @@ class Plugin {
 
   // Notifies |this| that the given vessels are touching, and should gravitate
   // as part of a single rigid body.
-  virtual void ReportCollision(GUID const& vessel1, GUID const& vessel2) const;
+  virtual void ReportCollision(PartId part1, PartId part2) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
@@ -303,9 +327,6 @@ class Plugin {
   virtual Vector<double, World> VesselBinormal(GUID const& vessel_guid) const;
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
-
-  // Calls |UpdateVesselsInPileUpIfUpdated| on all the pile-ups.
-  virtual void UpdateAllVesselsInPileUps();
 
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
@@ -379,9 +400,6 @@ class Plugin {
 
   // Utilities for |AdvanceTime|.
 
-  // Remove vessels not in |kept_vessels_|, and clears |kept_vessels_|.
-  void FreeVessels();
-
   Vector<double, World> FromVesselFrenetFrame(
       Vessel const& vessel,
       Vector<double, Frenet<Navigation>> const& vector) const;
@@ -403,7 +421,13 @@ class Plugin {
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
       MassiveBody const& body);
 
+  // Whether |loaded_vessels_| contains |vessel|.
+  bool is_loaded(not_null<Vessel*> vessel) const;
+
   GUIDToOwnedVessel vessels_;
+  // For each part, the vessel that this part belongs to. The part is guaranteed
+  // to be in the parts() map of the vessel, and owned by it.
+  std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
   // The vessels that will be kept during the next call to |AdvanceTime|.
@@ -460,7 +484,8 @@ class Plugin {
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
-  std::list<std::list<PileUp>::iterator> pile_ups_in_bubble_;
+  // The vessels that are currently loaded, i.e. in the physics bubble.
+  std::set<not_null<Vessel*>> loaded_vessels_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.

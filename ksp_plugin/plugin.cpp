@@ -27,7 +27,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "ksp_plugin/vessel_subsets.hpp"
+#include "ksp_plugin/part_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -72,6 +72,7 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Force;
 using quantities::Length;
+using quantities::si::Kilogram;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
@@ -105,13 +106,6 @@ Plugin::Plugin(Instant const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {}
-
-Plugin::~Plugin() {
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.clear_pile_up();
-  }
-}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
@@ -362,29 +356,75 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
-bool Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
-                                Index const parent_index) {
+void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
+                                Index const parent_index,
+                                bool const loaded,
+                                bool& inserted) {
   VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n' << NAMED(parent_index);
+          << NAMED(vessel_guid) << '\n'
+          << NAMED(parent_index) << '\n'
+          << NAMED(loaded) << '\n';
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto inserted =
+  GUIDToOwnedVessel::iterator it;
+  std::tie(it, inserted) =
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
-                                                    history_parameters_,
-                                                    prolongation_parameters_,
                                                     prediction_parameters_));
-  not_null<Vessel*> const vessel = inserted.first->second.get();
+  not_null<Vessel*> const vessel = it->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
-  Subset<Vessel>::MakeSingleton(*vessel, vessel);
-  LOG_IF(INFO, inserted.second) << "Inserted vessel with GUID " << vessel_guid
-                                << " at " << vessel;
-  VLOG(1) << "Parent of vessel with GUID " << vessel_guid <<" is at index "
+  if (loaded) {
+    loaded_vessels_.insert(vessel);
+  }
+  LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
+                         << " vessel with GUID " << vessel_guid << " at "
+                         << vessel;
+  VLOG(1) << "Parent of vessel with GUID " << vessel_guid << " is at index "
           << parent_index;
-  return inserted.second;
+}
+
+void Plugin::InsertOrKeepLoadedPart(
+    PartId const part_id,
+    Mass const& mass,
+    not_null<Vessel*> const vessel,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  auto it = part_id_to_vessel_.find(part_id);
+  bool const part_found = it != part_id_to_vessel_.end();
+  CHECK(is_loaded(vessel));
+  if (part_found) {
+    not_null<Vessel*>& associated_vessel = it->second;
+    not_null<Vessel*> const current_vessel = associated_vessel;
+    if (vessel == current_vessel) {
+      vessel->KeepPart(part_id);
+    } else {
+      associated_vessel = vessel;
+      vessel->AddPart(current_vessel->ExtractPart(part_id));
+    }
+  } else {
+    std::map<PartId, not_null<Vessel*>>::iterator it;
+    bool emplaced;
+    std::tie(it, emplaced) = part_id_to_vessel_.emplace(part_id, vessel);
+    CHECK(emplaced);
+    auto deletion_callback = [it, &map = part_id_to_vessel_] {
+      map.erase(it);
+    };
+    auto part = make_not_null_unique<Part>(
+        part_id, mass, degrees_of_freedom, std::move(deletion_callback));
+    vessel->AddPart(std::move(part));
+  }
+  not_null<Part*> part = vessel->part(part_id);
+  Subset<Part>::MakeSingleton(*part, part);
+}
+
+void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
+                                         Vector<Force, World> const& force) {
+  CHECK(!initializing_);
+  not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK(is_loaded(vessel));
+  vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
 }
 
 void Plugin::SetVesselStateOffset(
@@ -393,32 +433,72 @@ void Plugin::SetVesselStateOffset(
   VLOG(1) << __FUNCTION__ << '\n'
           << NAMED(vessel_guid) << '\n' << NAMED(from_parent);
   CHECK(!initializing_);
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(!vessel->is_initialized())
-      << "Vessel with GUID " << vessel_guid << " already has a trajectory";
+  not_null<Vessel*> const vessel =
+      find_vessel_by_guid_or_die(vessel_guid).get();
+  CHECK(!is_loaded(vessel));
   LOG(INFO) << "Initial |{orbit.pos, orbit.vel}| for vessel with GUID "
             << vessel_guid << ": " << from_parent;
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   LOG(INFO) << "In barycentric coordinates: " << relative;
   ephemeris_->Prolong(current_time_);
-  vessel->CreateHistoryAndForkProlongation(
-      current_time_,
+  not_null<Part*> dummy_part = vessel->InitializeUnloaded(
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
+  Subset<Part>::MakeSingleton(
+      *dummy_part,
+      dummy_part).mutable_properties().Collect(&pile_ups_, current_time_);
 }
 
-void Plugin::FreeVesselsAndCollectPileUps() {
+void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   CHECK(!initializing_);
-  FreeVessels();
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    Subset<Vessel>::Find(vessel).mutable_properties().Collect(&pile_ups_);
+
+  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
+    not_null<Vessel*> vessel = it->second.get();
+    if (kept_vessels_.erase(vessel)) {
+      ++it;
+    } else {
+      CHECK(!is_loaded(vessel));
+      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      it = vessels_.erase(it);
+    }
+  }
+  // Free old parts and bind vessels.
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->FreeParts();
+    vessel->ForSomePart([vessel](Part& first_part) {
+      vessel->ForAllParts([&first_part](Part& part) {
+        Subset<Part>::Unite(Subset<Part>::Find(first_part),
+                            Subset<Part>::Find(part));
+      });
+    });
+  }
+  // We only need to collect one part per vessel, since the other parts are in
+  // the same subset.
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->ForSomePart([this](Part& part) {
+      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
+                                                            current_time_);
+    });
   }
 }
 
-void Plugin::AddPileUpToBubble(std::list<PileUp>::iterator const pile_up) {
-  pile_ups_in_bubble_.push_back(pile_up);
+void Plugin::SetPartApparentDegreesOfFreedom(
+    PartId const part_id,
+    DegreesOfFreedom<World> const& degrees_of_freedom) {
+  RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
+      RigidTransformation<World, ApparentBubble>{
+          World::origin,
+          ApparentBubble::origin,
+          OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
+              WorldToBarycentric()},
+      AngularVelocity<World>{},
+      Velocity<World>{}};
+  not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
+  CHECK(is_loaded(vessel));
+  not_null<Part*> const part = vessel->part(part_id);
+  CHECK(part->is_piled_up());
+  part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
+      part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
@@ -426,28 +506,43 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
-  ephemeris_->Prolong(t);
 
-  if (pile_ups_in_bubble_.empty()) {
+  ephemeris_->Prolong(t);
+  for (PileUp& pile_up : pile_ups_) {
+    pile_up.DeformPileUpIfNeeded();
+    pile_up.AdvanceTime(*ephemeris_,
+                        t,
+                        DefaultHistoryParameters(),
+                        DefaultProlongationParameters());
+    // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
+    // anymore, it could be part of |PileUp::AdvanceTime|.
+    pile_up.NudgeParts();
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.AdvanceTime(t);
+  }
+  if (loaded_vessels_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
   } else {
-    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> bubble_barycentre;
-    for (auto const it : pile_ups_in_bubble_) {
-      for (not_null<Vessel*> const vessel : it->vessels()) {
-        bubble_barycentre.Add(
-            vessel->psychohistory().last().degrees_of_freedom(),
-            vessel->mass());
-      }
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass>
+        bubble_barycentre_calculator;
+    for (not_null<Vessel*> const vessel : loaded_vessels_) {
+      vessel->ForAllParts([&bubble_barycentre_calculator](Part& part) {
+        part.clear_intrinsic_force();
+        bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
+                                         part.mass());
+      });
     }
-    bubble_barycentre_ = bubble_barycentre.Get();
+    bubble_barycentre_ = bubble_barycentre_calculator.Get();
   }
-  pile_ups_in_bubble_.clear();
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  loaded_vessels_.clear();
 }
 
 DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
@@ -483,10 +578,8 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized()) << "Vessel with GUID " << vessel_guid
-                                  << " was not given an initial state";
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
-      vessel->prolongation().last().degrees_of_freedom() -
+      vessel->psychohistory().last().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
@@ -537,10 +630,9 @@ Plugin::RenderedVesselTrajectory(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  CHECK(vessel->is_initialized());
   VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
-  return RenderedTrajectoryFromIterators(vessel->history().Begin(),
-                                         vessel->history().End(),
+  return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
+                                         vessel->psychohistory().End(),
                                          sun_world_position);
 }
 
@@ -701,10 +793,10 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
-void Plugin::ReportCollision(GUID const& vessel1, GUID const& vessel2) const {
-  Vessel& v1 = *FindOrDie(vessels_, vessel1);
-  Vessel& v2 = *FindOrDie(vessels_, vessel2);
-  Subset<Vessel>::Unite(Subset<Vessel>::Find(v1), Subset<Vessel>::Find(v2));
+void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
+  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
+  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
+  Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
@@ -801,12 +893,6 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
           plotting_frame_degrees_of_freedom.velocity())));
 }
 
-void Plugin::UpdateAllVesselsInPileUps() {
-  for (auto& pile_up : pile_ups_) {
-    pile_up.UpdateVesselsInPileUpIfUpdated();
-  }
-}
-
 AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
     Position<World> const& sun_world_position) const {
   return AffineMap<Barycentric, World, Length, OrthogonalMap>(
@@ -879,7 +965,6 @@ void Plugin::WriteToMessage(
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_dirty(vessel->is_dirty());
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
@@ -932,10 +1017,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                                    vessel_message.vessel(),
                                                    ephemeris.get(),
                                                    parent);
-    if (vessel_message.dirty()) {
-      vessel->set_dirty();
-    }
-    Subset<Vessel>::MakeSingleton(*vessel, vessel.get());
     auto const inserted =
         vessels.emplace(vessel_message.guid(), std::move(vessel));
     CHECK(inserted.second);
@@ -1113,23 +1194,6 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   }
 }
 
-void Plugin::FreeVessels() {
-  VLOG(1) <<  __FUNCTION__;
-  // Remove the vessels which were not updated since last time.
-  for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    // While we're going over the vessels, check invariants.
-    not_null<Vessel*> const vessel = it->second.get();
-    // Now do the cleanup.
-    if (kept_vessels_.erase(vessel)) {
-      ++it;
-    } else {
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
-      vessel->clear_pile_up();
-      it = vessels_.erase(it);
-    }
-  }
-}
-
 Vector<double, World> Plugin::FromVesselFrenetFrame(
     Vessel const& vessel,
     Vector<double, Frenet<Navigation>> const& vector) const {
@@ -1196,6 +1260,10 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
   const std::string serialized = message.SerializeAsString();
   return Fingerprint2011(serialized.c_str(), serialized.size());
+}
+
+bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
+  return loaded_vessels_.count(vessel) != 0;
 }
 
 }  // namespace internal_plugin

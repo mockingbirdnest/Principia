@@ -84,7 +84,16 @@ class Vessel {
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
 
+  // Calls |action| on one (non-dummy) part.
+  virtual void ForSomePart(std::function<void(Part&)> action) const;
+  // Calls |action| on all non-dummy parts.
+  virtual void ForAllParts(std::function<void(Part&)> action) const;
+
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+
+  virtual void Vessel::set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters);
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;

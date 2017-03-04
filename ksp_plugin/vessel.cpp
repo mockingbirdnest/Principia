@@ -96,8 +96,25 @@ not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
 
+void Vessel::ForSomePart(std::function<void(Part&)> action) const {
+  CHECK(!parts_.empty());
+  action(*parts_.begin()->second);
+}
+
+void Vessel::ForAllParts(std::function<void(Part&)> action) const {
+  for (auto const& pair : parts_) {
+    action(*pair.second);
+  }
+}
+
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {
   return *prediction_;
+}
+
+void Vessel::set_prediction_adaptive_step_parameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prediction_adaptive_step_parameters) {
+  prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
 }
 
 FlightPlan& Vessel::flight_plan() const {
