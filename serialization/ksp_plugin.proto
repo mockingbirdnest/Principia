@@ -54,7 +54,7 @@ message Manoeuvre {
 }
 
 message Part {
-  required uint32 part_id = 4;
+  required fixed32 part_id = 4;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
@@ -68,7 +68,7 @@ message Part {
 }
 
 message PileUp {
-  repeated uint32 part_id = 1;
+  repeated fixed32 part_id = 1;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 3;
   required DiscreteTrajectory psychohistory = 4;
