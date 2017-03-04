@@ -61,6 +61,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
+using quantities::Force;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Time;
@@ -69,6 +70,7 @@ using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -395,6 +397,17 @@ bool principia__HasVessel(Plugin* const plugin,
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->HasVessel(vessel_guid));
+}
+
+void IncrementPartIntrinsicForce(Plugin* const plugin,
+                                 PartId const part_id,
+                                 XYZ const force_in_kilonewtons) {
+  journal::Method<journal::IncrementPartIntrinsicForce> m(
+      {plugin, part_id, force_in_kilonewtons});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
+      part_id,
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
+  return m.Return();
 }
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
