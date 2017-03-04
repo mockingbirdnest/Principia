@@ -313,6 +313,12 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       };
 }
 
+void JournalProtoProcessor::ProcessRequiredFixed32Field(
+    FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "uint";
+  field_cxx_type_[descriptor] = "uint32_t";
+}
+
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
@@ -534,6 +540,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_FIXED32:
+      ProcessRequiredFixed32Field(descriptor);
       break;
     case FieldDescriptor::TYPE_FIXED64:
       ProcessRequiredFixed64Field(descriptor);
