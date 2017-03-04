@@ -390,7 +390,9 @@ void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     Mass const& mass,
     not_null<Vessel*> const vessel,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+    Index const main_body_index,
+    DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
+    DegreesOfFreedom<World> const& part_degrees_of_freedom) {
   auto it = part_id_to_vessel_.find(part_id);
   bool const part_found = it != part_id_to_vessel_.end();
   CHECK(is_loaded(vessel));
@@ -411,8 +413,30 @@ void Plugin::InsertOrKeepLoadedPart(
     auto deletion_callback = [it, &map = part_id_to_vessel_] {
       map.erase(it);
     };
+
+    enum class LocalTag { tag };
+    using MainBodyCentred =
+        geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
+    BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
+        main_body_frame{ephemeris_.get(),
+                        FindOrDie(celestials_, main_body_index)->body()};
+    RigidMotion<World, MainBodyCentred> const world_to_main_body_centred{
+        RigidTransformation<World, MainBodyCentred>{
+            main_body_degrees_of_freedom.position(),
+            MainBodyCentred::origin,
+            main_body_frame.ToThisFrameAtTime(current_time_).orthogonal_map() *
+                WorldToBarycentric()},
+        AngularVelocity<World>(),
+        main_body_degrees_of_freedom.velocity()};
+    auto const world_to_barycentric =
+        main_body_frame.FromThisFrameAtTime(current_time_) *
+        world_to_main_body_centred;
+
     auto part = make_not_null_unique<Part>(
-        part_id, mass, degrees_of_freedom, std::move(deletion_callback));
+        part_id,
+        mass,
+        world_to_barycentric(part_degrees_of_freedom),
+        std::move(deletion_callback));
     vessel->AddPart(std::move(part));
   }
   not_null<Part*> part = vessel->part(part_id);

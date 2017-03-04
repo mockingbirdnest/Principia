@@ -94,7 +94,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5112.
+  extensions 5000 to 5999;  // Last used: 5113.
 }
 
 message AdvanceTime {
@@ -737,6 +737,19 @@ message InsertOrKeepVessel {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message InsertOrKeepLoadedPart {
+  extend Method {
+    optional InsertOrKeepLoadedPart extension = 5113;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required uint32 part_id = 2;
+    required double mass_in_tonnes = 3;
+    required fixed64 vessel = 4 [(pointer_to) = "Vessel"];
+    required QP degrees_of_freedom = 5;
+  }
 }
 
 message IsKspStockSystem {

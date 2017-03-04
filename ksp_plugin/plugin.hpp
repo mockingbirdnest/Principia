@@ -164,15 +164,15 @@ class Plugin {
   // |FreeVesselsAndPartsAndCollectPileUps|.
   // The part is created in the given |vessel|, or if it already existed in
   // another vessel, is moved to that one.  If the part is created, its degrees
-  // of freedom are set to those given; otherwise the |degrees_of_freedom|
-  // parameter is ignored.
-  // TODO(egg): pass DegreesOfFreedom<World>, together with the DOF of World's
-  // origin, or have a separate function for that.
+  // of freedom are set using those given and the |main_body_index|; otherwise
+  // these three parameters are ignored.
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
       Mass const& mass,
       not_null<Vessel*> vessel,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+      Index main_body_index,
+      DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
+      DegreesOfFreedom<World> const& part_degrees_of_freedom);
 
   // Calls |increment_intrinsic_force| on the relevant part, which must be in a
   // loaded vessel.
