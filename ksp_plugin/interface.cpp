@@ -522,6 +522,40 @@ void principia__InsertOrKeepVessel(Plugin* const plugin,
   return m.Return();
 }
 
+void principia__InsertOrKeepLoadedPart(
+    Plugin* const plugin,
+    std::uint32_t const part_id,
+    double const mass_in_tonnes,
+    char const* const vessel_guid,
+    int const main_body_index,
+    QP const main_body_world_degrees_of_freedom,
+    QP const part_world_degrees_of_freedom) {
+  journal::Method<journal::InsertOrKeepLoadedPart> m(
+      {plugin,
+       part_id,
+       mass_in_tonnes,
+       vessel_guid,
+       main_body_index,
+       main_body_world_degrees_of_freedom,
+       part_world_degrees_of_freedom});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertOrKeepLoadedPart(
+      part_id,
+      mass_in_tonnes * Tonne,
+      GetVessel(*plugin, vessel_guid),
+      main_body_index,
+      {World::origin +
+           Displacement<World>(FromXYZ(main_body_world_degrees_of_freedom.q) *
+                               Metre),
+       Velocity<World>(FromXYZ(main_body_world_degrees_of_freedom.p) *
+                       (Metre / Second))},
+      {World::origin + Displacement<World>(
+                           FromXYZ(part_world_degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(part_world_degrees_of_freedom.p) *
+                       (Metre / Second))});
+  return m.Return();
+}
+
 bool principia__IsKspStockSystem(Plugin* const plugin) {
   journal::Method<journal::IsKspStockSystem> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -835,7 +869,6 @@ QP principia__VesselFromParent(Plugin const* const plugin,
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
-
 
 }  // namespace interface
 }  // namespace principia

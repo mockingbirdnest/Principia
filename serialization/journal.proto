@@ -738,11 +738,12 @@ message InsertOrKeepLoadedPart {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
     required double mass_in_tonnes = 3;
-    required fixed64 vessel = 4 [(pointer_to) = "Vessel"];
+    required string vessel_guid = 4;
     required int32 main_body_index = 5;
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
   }
+  optional In in = 1;
 }
 
 message IsKspStockSystem {
