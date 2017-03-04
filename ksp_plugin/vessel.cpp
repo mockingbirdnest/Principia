@@ -96,8 +96,15 @@ not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
 
-std::map<PartId, not_null<std::unique_ptr<Part>>> const& Vessel::parts() const {
-  return parts_;
+void Vessel::ForSomePart(std::function<void(Part&)> action) const {
+  CHECK(!parts_.empty());
+  action(*parts_.begin()->second);
+}
+
+void Vessel::ForAllParts(std::function<void(Part&)> action) const {
+  for (auto const& pair : parts_) {
+    action(*pair.second);
+  }
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::prediction() const {

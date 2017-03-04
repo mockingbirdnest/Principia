@@ -367,13 +367,12 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  auto pair =
+  GUIDToOwnedVessel::iterator it;
+  std::tie(it, inserted) =
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(parent,
                                                     ephemeris_.get(),
                                                     prediction_parameters_));
-  auto const& it = pair.first;
-  inserted = pair.second;
   not_null<Vessel*> const vessel = it->second.get();
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
@@ -393,20 +392,21 @@ void Plugin::InsertOrKeepLoadedPart(
     not_null<Vessel*> const vessel,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   auto it = part_id_to_vessel_.find(part_id);
-  bool const found = it != part_id_to_vessel_.end();
+  bool const part_found = it != part_id_to_vessel_.end();
   CHECK(is_loaded(vessel));
-  if (found) {
-    not_null<Vessel*> current_vessel = it->second;
+  if (part_found) {
+    not_null<Vessel*>& associated_vessel = it->second;
+    not_null<Vessel*> const current_vessel = associated_vessel;
     if (vessel == current_vessel) {
       vessel->KeepPart(part_id);
     } else {
-      FindOrDie(part_id_to_vessel_, part_id) = vessel;
+      associated_vessel = vessel;
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
-    auto const pair = part_id_to_vessel_.emplace(part_id, vessel);
-    auto const& it = pair.first;
-    bool const emplaced = pair.second;
+    std::map<PartId, not_null<Vessel*>>::iterator it;
+    bool emplaced;
+    std::tie(it, emplaced) = part_id_to_vessel_.emplace(part_id, vessel);
     CHECK(emplaced);
     auto deletion_callback = [it, &map = part_id_to_vessel_] {
       map.erase(it);
@@ -462,22 +462,23 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       it = vessels_.erase(it);
     }
   }
-  // Free old parts, and bind vessels.
+  // Free old parts and bind vessels.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
-    Part& first_part = *vessel->parts().begin()->second;
-    for (auto const& pair : vessel->parts()) {
-      Part& part = *pair.second;
-      Subset<Part>::Unite(Subset<Part>::Find(first_part),
-                          Subset<Part>::Find(part));
-    }
+    vessel->ForSomePart([vessel](Part& first_part) {
+      vessel->ForAllParts([&first_part](Part& part) {
+        Subset<Part>::Unite(Subset<Part>::Find(first_part),
+                            Subset<Part>::Find(part));
+      });
+    });
   }
-  // We only need to collect one part per vessel, since the other parts are part
-  // of the same subset.
+  // We only need to collect one part per vessel, since the other parts are in
+  // the same subset.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    Part& first_part = *vessel->parts().begin()->second;
-    Subset<Part>::Find(first_part).mutable_properties().Collect(&pile_ups_,
-                                                                current_time_);
+    vessel->ForSomePart([this](Part& part) {
+      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
+                                                            current_time_);
+    });
   }
 }
 
@@ -513,7 +514,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
                         t,
                         DefaultHistoryParameters(),
                         DefaultProlongationParameters());
-    // NOTE(egg): now that |NudgeParts| doesn't need the bubble barycentre
+    // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
     // anymore, it could be part of |PileUp::AdvanceTime|.
     pile_up.NudgeParts();
   }
@@ -527,12 +528,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass>
         bubble_barycentre_calculator;
     for (not_null<Vessel*> const vessel : loaded_vessels_) {
-      for (auto& pair : vessel->parts()) {
-        Part& part = *pair.second;
+      vessel->ForAllParts([&bubble_barycentre_calculator](Part& part) {
         part.clear_intrinsic_force();
         bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
                                          part.mass());
-      }
+      });
     }
     bubble_barycentre_ = bubble_barycentre_calculator.Get();
   }
@@ -793,7 +793,7 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
-void Plugin::ReportCollision(PartId const& part1, PartId const& part2) const {
+void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
   Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
   Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));

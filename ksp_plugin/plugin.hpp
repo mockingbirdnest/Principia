@@ -159,7 +159,13 @@ class Plugin {
                                   bool loaded,
                                   bool& inserted);
 
-  // TODO(egg): comment. This will also clear the intrinsic force I think.
+  // Inserts a new part with the given ID if it does not already exist, and
+  // flags the part with the given ID so it is kept when calling
+  // |FreeVesselsAndPartsAndCollectPileUps|.
+  // The part is created in the given |vessel|, or if it already existed in
+  // another vessel, is moved to that one.  If the part is created, its degrees
+  // of freedom are set to those given; otherwise the |degrees_of_freedom|
+  // parameter is ignored.
   // TODO(egg): pass DegreesOfFreedom<World>, together with the DOF of World's
   // origin, or have a separate function for that.
   virtual void InsertOrKeepLoadedPart(
@@ -170,7 +176,7 @@ class Plugin {
 
   // Calls |increment_intrinsic_force| on the relevant part, which must be in a
   // loaded vessel.
-  virtual void IncrementPartIntrinsicForce(PartId const part_id,
+  virtual void IncrementPartIntrinsicForce(PartId part_id,
                                            Vector<Force, World> const& force);
 
   // Calls |InitializeUnloaded| on the relevant vessel, and puts the resulting
@@ -188,7 +194,7 @@ class Plugin {
   // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
   // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
-      PartId const part_id,
+      PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
@@ -308,7 +314,7 @@ class Plugin {
 
   // Notifies |this| that the given vessels are touching, and should gravitate
   // as part of a single rigid body.
-  virtual void ReportCollision(PartId const& part1, PartId const& part2) const;
+  virtual void ReportCollision(PartId part1, PartId part2) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
@@ -419,6 +425,8 @@ class Plugin {
   bool is_loaded(not_null<Vessel*> vessel) const;
 
   GUIDToOwnedVessel vessels_;
+  // For each part, the vessel that this part belongs to. The part is guaranteed
+  // to be part of the parts() map of the vessel, and owned by it.
   std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
@@ -476,6 +484,7 @@ class Plugin {
   // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
+  // The vessels that are currently loaded, i.e. in the physics bubble.
   std::set<not_null<Vessel*>> loaded_vessels_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 

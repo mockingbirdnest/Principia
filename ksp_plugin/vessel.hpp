@@ -83,8 +83,11 @@ class Vessel {
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
-  virtual std::map<PartId, not_null<std::unique_ptr<Part>>> const& parts()
-      const;
+
+  // Calls |action| on one (non-dummy) part.
+  virtual void ForSomePart(std::function<void(Part&)> action) const;
+  // Calls |action| on all non-dummy parts.
+  virtual void ForAllParts(std::function<void(Part&)> action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
