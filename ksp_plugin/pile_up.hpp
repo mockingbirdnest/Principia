@@ -102,7 +102,7 @@ class PileUp {
   // with nonzero intrinsic force), or a fixed step instance otherwise (with the
   // prolongation being computed by an instance local to the body of
   // |AdvanceTime|).
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> psychohistory_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
   // of freedom of the parts in the frame of that body can be set, however their

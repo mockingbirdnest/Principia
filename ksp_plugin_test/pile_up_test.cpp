@@ -74,7 +74,7 @@ class TestablePileUp : public PileUp {
   }
 
   DiscreteTrajectory<Barycentric> const& psychohistory() const {
-    return psychohistory_;
+    return *psychohistory_;
   }
 
   std::map<not_null<Part*>, DegreesOfFreedom<RigidPileUp>> const&
@@ -487,6 +487,39 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {261.8 / 9.0 * Metre / Second,
                                       430.6 / 3.0 * Metre / Second,
                                       890.6 / 9.0 * Metre / Second}), 1)));
+}
+
+TEST_F(PileUpTest, Serialization) {
+  p1_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
+  p2_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  TestablePileUp pile_up({&p1_, &p2_}, astronomy::J2000);
+
+  serialization::PileUp message;
+  pile_up.WriteToMessage(&message);
+
+  EXPECT_EQ(2, message.part_id_size());
+  EXPECT_EQ(part_id1_, message.part_id(1));
+  EXPECT_EQ(part_id2_, message.part_id(2));
+  EXPECT_EQ(1, message.psychohistory().timeline_size());
+  EXPECT_EQ(2, message.actual_part_degrees_of_freedom().size());
+  EXPECT_TRUE(message.apparent_part_degrees_of_freedom().empty());
+
+  auto const part_id_to_part = [this](PartId const part_id) {
+    if (part_id == part_id1_) {
+      return &p1_;
+    }
+    if (part_id == part_id2_) {
+      return &p2_;
+    }
+    LOG(FATAL) << "Unexpected part id " << part_id;
+  };
+  auto const p = PileUp::ReadFromMessage(message, part_id_to_part);
+
+  serialization::PileUp second_message;
+  p->WriteToMessage(&second_message);
+  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
 }
 
 }  // namespace internal_pile_up
