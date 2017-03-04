@@ -35,6 +35,7 @@ Vessel::Vessel(not_null<Celestial const*> const parent,
       prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       parent_(parent),
       ephemeris_(ephemeris),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 not_null<MasslessBody const*> Vessel::body() const {
@@ -195,13 +196,13 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::UpdatePrediction(Instant const& last_time) {
   prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  auto const last = psychohistory_.last();
+  auto const last = psychohistory_->last();
   prediction_->Append(last.time(), last.degrees_of_freedom());
   FlowPrediction(last_time);
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
-  return psychohistory_;
+  return *psychohistory_;
 }
 
 bool Vessel::psychohistory_is_authoritative() const {
@@ -217,21 +218,64 @@ void Vessel::WriteToMessage(
   if (dummy_part_ != nullptr) {
     dummy_part_->WriteToMessage(message->mutable_dummy_part());
   }
-  prediction_->Fork().time().WriteToMessage(
-      message->mutable_prediction_fork_time());
-  prediction_->last().time().WriteToMessage(
-      message->mutable_prediction_last_time());
+  for (auto const& pair : parts_) {
+    auto const& part = pair.second;
+    part->WriteToMessage(message->add_parts());
+  }
+  for (auto const& part : kept_parts_) {
+    message->add_kept_parts(part->part_id());
+  }
+  psychohistory_->WriteToMessage(message->mutable_psychohistory(),
+                                 /*forks=*/{});
+  message->set_psychohistory_is_authoritative(psychohistory_is_authoritative_);
+  prediction_->WriteToMessage(message->mutable_prediction(),
+                              /*forks=*/{});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
-  message->set_is_dirty(is_dirty_);}
+}
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     serialization::Vessel const& message,
+    not_null<Celestial const*> const parent,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
-    not_null<Celestial const*> const parent) {
-  // TODO(phl): Implement.
-  return std::unique_ptr<Vessel>{};
+    std::function<void(PartId)> const& deletion_callback) {
+  // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
+  // information.
+  auto vessel = make_not_null_unique<Vessel>(
+      parent,
+      ephemeris,
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+          message.prediction_adaptive_step_parameters()));
+  if (message.has_dummy_part()) {
+    vessel->dummy_part_ = Part::ReadFromMessage(message.dummy_part(),
+                                                /*deletion_callback=*/nullptr);
+  }
+  for (auto const& serialized_part : message.parts()) {
+    PartId const part_id = serialized_part.part_id();
+    auto part = Part::ReadFromMessage(
+        serialized_part,
+        [deletion_callback, part_id]() { deletion_callback(part_id); });
+    vessel->parts_.emplace(part_id, std::move(part));
+  }
+  for (PartId const part_id : message.kept_parts()) {
+    vessel->kept_parts_.insert(vessel->parts_.at(part_id).get());
+  }
+  vessel->psychohistory_ =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),
+                                                       /*forks=*/{});
+  vessel->psychohistory_is_authoritative_ =
+      message.psychohistory_is_authoritative();
+  vessel->prediction_ =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.prediction(),
+                                                       /*forks=*/{});
+  if (message.has_flight_plan()) {
+    // TODO(phl): Remove compatibility code.  The |root| is only needed
+    // pre-Буняковский.
+    vessel->flight_plan_ = FlightPlan::ReadFromMessage(
+        message.flight_plan(), /*root=*/nullptr, ephemeris);
+  }
+  return std::move(vessel);
 }
 
 Vessel::Vessel()
@@ -239,6 +283,7 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 void Vessel::AppendToPsychohistory(
@@ -246,9 +291,9 @@ void Vessel::AppendToPsychohistory(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     bool const authoritative) {
   if (!psychohistory_is_authoritative_) {
-    psychohistory_.ForgetAfter((--psychohistory_.last()).time());
+    psychohistory_->ForgetAfter((--psychohistory_->last()).time());
   }
-  psychohistory_.Append(time, degrees_of_freedom);
+  psychohistory_->Append(time, degrees_of_freedom);
   psychohistory_is_authoritative_ = authoritative;
 }
 
@@ -279,7 +324,7 @@ void Vessel::FlowPrediction(Instant const& time) {
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Vessel::last_authoritative() const {
-  auto it = psychohistory_.last();
+  auto it = psychohistory_->last();
   if (!psychohistory_is_authoritative_) {
     --it;
   }

@@ -17,7 +17,6 @@ namespace base {
 // |Subset<T>::Node::Get|, run |Subset<T>::MakeSingleton| on all elements
 // involved, and proceed with calls to |Subset<T>::Unite| and |Subset<T>::Find|.
 
-
 // A subset of |T|.
 template<typename T>
 class Subset final {
