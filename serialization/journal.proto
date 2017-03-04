@@ -72,15 +72,6 @@ message NavigationManoeuvre {
   required XYZ tangent = 12;
 }
 
-message KSPPart {
-  // TODO(egg): Y U NO USE QP?
-  required XYZ world_position = 1;
-  required XYZ world_velocity = 2;
-  required double mass_in_tonnes = 3;
-  required XYZ gravitational_acceleration_to_be_applied_by_ksp = 4;
-  required uint32 id = 5;
-}
-
 message QP {
   required XYZ q = 1;
   required XYZ p = 2;
@@ -745,10 +736,12 @@ message InsertOrKeepLoadedPart {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required uint32 part_id = 2;
+    required fixed32 part_id = 2;
     required double mass_in_tonnes = 3;
     required fixed64 vessel = 4 [(pointer_to) = "Vessel"];
-    required QP degrees_of_freedom = 5;
+    required int32 main_body_index = 5;
+    required QP main_body_world_degrees_of_freedom = 6;
+    required QP part_world_degrees_of_freedom = 7;
   }
 }
 
@@ -1021,8 +1014,8 @@ message ReportCollision {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required uint32 part1_id = 2;
-    required uint32 part2_id = 3;
+    required fixed32 part1_id = 2;
+    required fixed32 part2_id = 3;
   }
   optional In in = 1;
 }
