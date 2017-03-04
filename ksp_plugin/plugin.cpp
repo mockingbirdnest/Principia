@@ -440,6 +440,7 @@ void Plugin::InsertOrKeepLoadedPart(
     vessel->AddPart(std::move(part));
   }
   not_null<Part*> part = vessel->part(part_id);
+  part->set_mass(mass);
   Subset<Part>::MakeSingleton(*part, part);
 }
 
