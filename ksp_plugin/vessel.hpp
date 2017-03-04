@@ -94,6 +94,8 @@ class Vessel {
   virtual void Vessel::set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           prediction_adaptive_step_parameters);
+  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  prediction_adaptive_step_parameters() const;
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;

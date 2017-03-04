@@ -51,6 +51,7 @@ using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
+using ksp_plugin::PartId;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::FrameField;
@@ -324,10 +325,10 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__FreeVesselsAndCollectPileUps(Plugin* const plugin) {
-  journal::Method<journal::FreeVesselsAndCollectPileUps> m({plugin});
+void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
+  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->FreeVesselsAndCollectPileUps();
+  plugin->FreeVesselsAndPartsAndCollectPileUps();
   return m.Return();
 }
 
@@ -509,14 +510,16 @@ void principia__InsertCelestialJacobiKeplerian(
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-bool principia__InsertOrKeepVessel(Plugin* const plugin,
+void principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
-                                   int const parent_index) {
-  journal::Method<journal::InsertOrKeepVessel> m({plugin,
-                                                  vessel_guid,
-                                                  parent_index});
+                                   int const parent_index,
+                                   bool const loaded,
+                                   bool* inserted) {
+  journal::Method<journal::InsertOrKeepVessel> m(
+      {plugin, vessel_guid, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
+  plugin->InsertOrKeepVessel(vessel_guid, parent_index, loaded, *inserted);
+  return m.Return();
 }
 
 bool principia__IsKspStockSystem(Plugin* const plugin) {
@@ -597,14 +600,6 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
   return m.Return(result.release());
 }
 
-void principia__PluginUpdateAllVesselsInPileUps(
-    Plugin* const plugin) {
-  journal::Method<journal::PluginUpdateAllVesselsInPileUps> m(
-      {plugin});
-  CHECK_NOTNULL(plugin)->UpdateAllVesselsInPileUps();
-  return m.Return();
-}
-
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
                                         char const* const vessel_guid,
                                         XYZ const sun_world_position) {
@@ -672,12 +667,10 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
 }
 
 void principia__ReportCollision(Plugin const* const plugin,
-                                char const* const vessel1_guid,
-                                char const* const vessel2_guid) {
-  journal::Method<journal::ReportCollision> m({plugin,
-                                               vessel1_guid,
-                                               vessel2_guid});
-  CHECK_NOTNULL(plugin)->ReportCollision(vessel1_guid, vessel2_guid);
+                                PartId const part1_id,
+                                PartId const part2_id) {
+  journal::Method<journal::ReportCollision> m({plugin, part1_id, part2_id});
+  CHECK_NOTNULL(plugin)->ReportCollision(part1_id, part2_id);
   return m.Return();
 }
 

@@ -249,12 +249,6 @@ inline double ToGameTime(Plugin const& plugin,
   return (t - plugin.GameEpoch()) / Second;
 }
 
-inline PileUp& GetPileUp(Vessel const& vessel) {
-  auto const it = vessel.containing_pile_up();
-  CHECK(it);
-  return *it->iterator();
-}
-
 inline not_null<Vessel*> GetVessel(Plugin const& plugin,
                                    char const* const vessel_guid) {
   CHECK(plugin.HasVessel(vessel_guid)) << vessel_guid;

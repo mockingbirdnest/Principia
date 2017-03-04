@@ -567,9 +567,9 @@ message ForgetAllHistoriesBefore {
   optional In in = 1;
 }
 
-message FreeVesselsAndCollectPileUps {
+message FreeVesselsAndPartsAndCollectPileUps {
   extend Method {
-    optional FreeVesselsAndCollectPileUps extension = 5111;
+    optional FreeVesselsAndPartsAndCollectPileUps extension = 5111;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
@@ -730,12 +730,13 @@ message InsertOrKeepVessel {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
     required int32 parent_index = 3;
+    required bool loaded = 4;
   }
-  message Return {
-    required bool result = 1;
+  message Out {
+    required bool inserted = 1;
   }
   optional In in = 1;
-  optional Return return = 3;
+  optional Out out = 2;
 }
 
 message IsKspStockSystem {
@@ -944,17 +945,6 @@ message NewPlugin {
   optional Return return = 3;
 }
 
-message PluginUpdateAllVesselsInPileUps {
-  extend Method {
-    optional PluginUpdateAllVesselsInPileUps extension = 5110;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
-                                 (is_subject) = true];
-  }
-  optional In in = 1;
-}
-
 message RenderedPrediction {
   extend Method {
     optional RenderedPrediction extension = 5031;
@@ -1018,8 +1008,8 @@ message ReportCollision {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
-    required string vessel1_guid = 2;
-    required string vessel2_guid = 3;
+    required uint32 part1_id = 2;
+    required uint32 part2_id = 3;
   }
   optional In in = 1;
 }
@@ -1200,49 +1190,9 @@ message VesselBinormal {
   optional Return return = 3;
 }
 
-message VesselClearIntrinsicForce {
-  extend Method {
-    optional VesselClearIntrinsicForce extension = 5104;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  optional In in = 1;
-}
-
-message VesselClearMass {
-  extend Method {
-    optional VesselClearMass extension = 5105;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  optional In in = 1;
-}
-
 message VesselFromParent {
   extend Method {
     optional VesselFromParent extension = 5034;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required QP result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message VesselGetActualDegreesOfFreedom {
-  extend Method {
-    optional VesselGetActualDegreesOfFreedom extension = 5108;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1272,32 +1222,6 @@ message VesselGetPredictionAdaptiveStepParameters {
   optional Return return = 3;
 }
 
-message VesselIncrementIntrinsicForce {
-  extend Method {
-    optional VesselIncrementIntrinsicForce extension = 5106;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required XYZ intrinsic_force_in_kilonewtons = 3;
-  }
-  optional In in = 1;
-}
-
-message VesselIncrementMass {
-  extend Method {
-    optional VesselIncrementMass extension = 5107;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required double mass_in_tonnes = 3;
-  }
-  optional In in = 1;
-}
-
 message VesselNormal {
   extend Method {
     optional VesselNormal extension = 5056;
@@ -1312,19 +1236,6 @@ message VesselNormal {
   }
   optional In in = 1;
   optional Return return = 3;
-}
-
-message VesselSetApparentDegreesOfFreedom {
-  extend Method {
-    optional VesselSetApparentDegreesOfFreedom extension = 5109;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-    required QP qp = 3;
-  }
-  optional In in = 1;
 }
 
 message VesselSetPredictionAdaptiveStepParameters {
