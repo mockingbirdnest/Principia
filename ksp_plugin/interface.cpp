@@ -399,7 +399,7 @@ bool principia__HasVessel(Plugin* const plugin,
   return m.Return(plugin->HasVessel(vessel_guid));
 }
 
-void IncrementPartIntrinsicForce(Plugin* const plugin,
+void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
                                  PartId const part_id,
                                  XYZ const force_in_kilonewtons) {
   journal::Method<journal::IncrementPartIntrinsicForce> m(
@@ -785,6 +785,19 @@ void principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetMainBody(index);
+  return m.Return();
+}
+
+void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
+                                                PartId const part_id,
+                                                QP const degrees_of_freedom) {
+  journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
+      {plugin, part_id, degrees_of_freedom});
+  CHECK_NOTNULL(plugin)->SetPartApparentDegreesOfFreedom(
+      part_id,
+      {World::origin +
+           Displacement<World>(FromXYZ(degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(degrees_of_freedom.p) * (Metre / Second))});
   return m.Return();
 }
 
