@@ -211,7 +211,20 @@ bool Vessel::psychohistory_is_authoritative() const {
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   // TODO(phl): Implement.
-}
+  body_.WriteToMessage(message->mutable_body());
+  prediction_adaptive_step_parameters_.WriteToMessage(
+      message->mutable_prediction_adaptive_step_parameters());
+  if (dummy_part_ != nullptr) {
+    dummy_part_->WriteToMessage(message->mutable_dummy_part());
+  }
+  prediction_->Fork().time().WriteToMessage(
+      message->mutable_prediction_fork_time());
+  prediction_->last().time().WriteToMessage(
+      message->mutable_prediction_last_time());
+  if (flight_plan_ != nullptr) {
+    flight_plan_->WriteToMessage(message->mutable_flight_plan());
+  }
+  message->set_is_dirty(is_dirty_);}
 
 not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     serialization::Vessel const& message,
