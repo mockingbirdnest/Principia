@@ -136,8 +136,9 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_.last().time() < t) {
-      prolongation.Append(prolongation.last().time(),
-                          prolongation.last().degrees_of_freedom());
+      // TODO(phl): Consider using forks.
+      prolongation.Append(psychohistory_.last().time(),
+                          psychohistory_.last().degrees_of_freedom());
       CHECK(ephemeris.FlowWithAdaptiveStep(
                 &prolongation,
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,

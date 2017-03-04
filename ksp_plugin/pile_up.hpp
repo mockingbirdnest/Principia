@@ -6,7 +6,6 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
-#include "gtest/gtest_prod.h"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -34,7 +33,7 @@ using quantities::Mass;
 // A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and prolongation of its component
 // |Parts|, modeling them as a massless body at their centre of mass.
-class PileUp final {
+class PileUp {
  public:
   PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
 
@@ -110,8 +109,7 @@ class PileUp final {
   std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
       apparent_part_degrees_of_freedom_;
 
-  FRIEND_TEST(PileUpTest, Lifecycle);
-  friend class PileUpTest;
+  friend class TestablePileUp;
 };
 
 }  // namespace internal_pile_up
