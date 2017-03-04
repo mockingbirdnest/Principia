@@ -426,7 +426,7 @@ class Plugin {
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
-  // to be part of the parts() map of the vessel, and owned by it.
+  // to be in the parts() map of the vessel, and owned by it.
   std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
