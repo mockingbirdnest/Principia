@@ -120,14 +120,14 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
-    serialization::Part const& message) {
-  // TODO(phl): Serialize/Deserialize the deletion callback.
+    serialization::Part const& message,
+    std::function<void()> deletion_callback) {
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
                                  Mass::ReadFromMessage(message.mass()),
                                  DegreesOfFreedom<Barycentric>::ReadFromMessage(
                                      message.degrees_of_freedom()),
-                                 /*TODO=*/nullptr);
+                                 std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
   if (message.has_containing_pile_up()) {

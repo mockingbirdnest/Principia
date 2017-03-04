@@ -104,7 +104,8 @@ class Part final {
 
   void WriteToMessage(not_null<serialization::Part*> message) const;
   static not_null<std::unique_ptr<Part>> ReadFromMessage(
-      serialization::Part const& message);
+      serialization::Part const& message,
+      std::function<void()> deletion_callback);
 
  private:
   PartId const part_id_;

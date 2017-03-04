@@ -33,9 +33,10 @@ using quantities::Mass;
 // A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and prolongation of its component
 // |Parts|, modeling them as a massless body at their centre of mass.
-class PileUp final {
+class PileUp {
  public:
   PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
+  virtual ~PileUp() = default;
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
@@ -54,9 +55,8 @@ class PileUp final {
   // matches that computed by integration.
   // |SetPartApparentDegreesOfFreedom| must have been called for each part in
   // the pile-up, or for none.
-  // The degrees of freedom set by |NudgePartsInPileUpIfNeeded| are used by
-  // |AdvanceTime|.
-  // NOTE(egg): Eventually, this will also nudge their velocities and angular
+  // The degrees of freedom set by this method are used by |NudgeParts|.
+  // NOTE(egg): Eventually, this will also change their velocities and angular
   // velocities so that the angular momentum matches that which has been
   // computed for |this| |PileUp|.
   void DeformPileUpIfNeeded();
@@ -72,9 +72,10 @@ class PileUp final {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
 
-  // Adjusts the |Bubble| degrees of freedom of all parts in this pile up based
-  // on the origin of |Bubble| given in |Barycentric|, and on the |RigidPileUp|
-  // degrees of freedom of the parts (as set by |DeformPileUpIfNeeded|).
+  // Adjusts the degrees of freedom of all parts in this pile up based on the
+  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
+  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
  private:
@@ -109,6 +110,8 @@ class PileUp final {
       actual_part_degrees_of_freedom_;
   std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
       apparent_part_degrees_of_freedom_;
+
+  friend class TestablePileUp;
 };
 
 }  // namespace internal_pile_up

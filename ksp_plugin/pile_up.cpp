@@ -33,15 +33,16 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
   }
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
-  psychohistory_.Append(t, calculator.Get());
+  DegreesOfFreedom<Barycentric> const barycentre = calculator.Get();
+  psychohistory_.Append(t, barycentre);
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
-          calculator.Get().position(),
+          barycentre.position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()},
+          Identity<Barycentric, RigidPileUp>().Forget()},
       AngularVelocity<Barycentric>{},
-      calculator.Get().velocity()};
+      barycentre.velocity()};
   for (not_null<Part*> const part : parts_) {
     actual_part_degrees_of_freedom_.emplace(
         part,
@@ -135,27 +136,28 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_.last().time() < t) {
-      prolongation.Append(prolongation.last().time(),
-                          prolongation.last().degrees_of_freedom());
-      ephemeris.FlowWithAdaptiveStep(
-          &prolongation,
-          Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-          t,
-          adaptive_step_parameters,
-          Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-          /*last_point_only=*/true);
+      // TODO(phl): Consider using forks.
+      prolongation.Append(psychohistory_.last().time(),
+                          psychohistory_.last().degrees_of_freedom());
+      CHECK(ephemeris.FlowWithAdaptiveStep(
+                &prolongation,
+                Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                t,
+                adaptive_step_parameters,
+                Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+                /*last_point_only=*/true));
       CHECK_EQ(prolongation.Size(), 2);
     }
   } else {
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    ephemeris.FlowWithAdaptiveStep(
-        &psychohistory_,
-        intrinsic_acceleration,
-        t,
-        adaptive_step_parameters,
-        Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    CHECK(ephemeris.FlowWithAdaptiveStep(
+              &psychohistory_,
+              intrinsic_acceleration,
+              t,
+              adaptive_step_parameters,
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+              /*last_point_only=*/false));
   }
   auto it = psychohistory_.Begin();
   ++it;
@@ -192,18 +194,18 @@ void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,
     bool const authoritative) const {
   auto const& pile_up_dof = it.degrees_of_freedom();
-  RigidMotion<Barycentric, RigidPileUp> const from_barycentric(
+  RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, RigidPileUp>(
           pile_up_dof.position(),
           RigidPileUp::origin,
-          OrthogonalMap<Barycentric, RigidPileUp>::Identity()),
+          Identity<Barycentric, RigidPileUp>().Forget()),
       AngularVelocity<Barycentric>{},
       pile_up_dof.velocity());
-  auto const to_barycentric = from_barycentric.Inverse();
+  auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    part->tail().Append(
-        it.time(),
-        to_barycentric(FindOrDie(actual_part_degrees_of_freedom_, part)));
+    part->tail().Append(it.time(),
+                        pile_up_to_barycentric(
+                            FindOrDie(actual_part_degrees_of_freedom_, part)));
     part->set_tail_is_authoritative(authoritative);
   }
 }
