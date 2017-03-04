@@ -36,6 +36,7 @@ using quantities::Mass;
 class PileUp {
  public:
   PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
+  virtual ~PileUp() = default;
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
@@ -72,8 +73,9 @@ class PileUp {
           adaptive_step_parameters);
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
-  // position of the pile-up computed by |AdvanceTime| and on the |RigidPileUp|
-  // degrees of freedom of the parts, as set by |DeformPileUpIfNeeded|.
+  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
+  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
  private:

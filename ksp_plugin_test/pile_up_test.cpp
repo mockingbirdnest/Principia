@@ -96,7 +96,7 @@ class PileUpTest : public testing::Test {
       : p1_(part_id1_, mass1_, p1_dof_, /*deletion_callback=*/nullptr),
         p2_(part_id2_, mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
 
-  void CheckPreAdvanceTimeInvariants(TestablePileUp& pile_up) {
+  void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
 
     EXPECT_THAT(
@@ -179,9 +179,9 @@ class PileUpTest : public testing::Test {
                                        {20.0 * Metre / Second,
                                         0.0 * Metre / Second,
                                         -20.0 / 3.0 * Metre / Second}), 0)));
+  }
 
-    pile_up.DeformPileUpIfNeeded();
-
+  void CheckPreAdvanceTimeInvariants(TestablePileUp& pile_up) {
     EXPECT_THAT(
         pile_up.actual_part_degrees_of_freedom().at(&p1_),
         Componentwise(AlmostEquals(RigidPileUp::origin +
@@ -240,6 +240,10 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   EXPECT_THAT(pile_up.intrinsic_force(),
               AlmostEquals(Vector<Force, Barycentric>(
                   {12 * Newton, 23 * Newton, 34 * Newton}), 0));
+
+  CheckPreDeformPileUpInvariants(pile_up);
+
+  pile_up.DeformPileUpIfNeeded();
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
@@ -330,6 +334,10 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
   TestablePileUp pile_up({&p1_, &p2_}, astronomy::J2000);
   EXPECT_THAT(pile_up.intrinsic_force(),
               AlmostEquals(Vector<Force, Barycentric>(), 0));
+
+  CheckPreDeformPileUpInvariants(pile_up);
+
+  pile_up.DeformPileUpIfNeeded();
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
