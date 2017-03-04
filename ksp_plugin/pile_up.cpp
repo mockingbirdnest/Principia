@@ -13,6 +13,7 @@ namespace ksp_plugin {
 namespace internal_pile_up {
 
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Identity;
@@ -24,7 +25,8 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 
 PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
-    : parts_(std::move(parts)) {
+    : parts_(std::move(parts)),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -34,7 +36,7 @@ PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
   DegreesOfFreedom<Barycentric> const barycentre = calculator.Get();
-  psychohistory_.Append(t, barycentre);
+  psychohistory_->Append(t, barycentre);
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
@@ -125,20 +127,20 @@ void PileUp::AdvanceTime(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
-  CHECK_EQ(psychohistory_.Size(), 1);
+  CHECK_EQ(psychohistory_->Size(), 1);
 
   DiscreteTrajectory<Barycentric> prolongation;
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     ephemeris.FlowWithFixedStep(
-        {&psychohistory_},
+        {psychohistory_.get()},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         t,
         fixed_step_parameters);
-    if (psychohistory_.last().time() < t) {
+    if (psychohistory_->last().time() < t) {
       // TODO(phl): Consider using forks.
-      prolongation.Append(psychohistory_.last().time(),
-                          psychohistory_.last().degrees_of_freedom());
+      prolongation.Append(psychohistory_->last().time(),
+                          psychohistory_->last().degrees_of_freedom());
       CHECK(ephemeris.FlowWithAdaptiveStep(
                 &prolongation,
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -152,16 +154,16 @@ void PileUp::AdvanceTime(
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
     CHECK(ephemeris.FlowWithAdaptiveStep(
-              &psychohistory_,
+              psychohistory_.get(),
               intrinsic_acceleration,
               t,
               adaptive_step_parameters,
               Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
               /*last_point_only=*/false));
   }
-  auto it = psychohistory_.Begin();
+  auto it = psychohistory_->Begin();
   ++it;
-  for (; it != psychohistory_.End(); ++it) {
+  for (; it != psychohistory_->End(); ++it) {
     AppendToPartTails(it, /*authoritative=*/true);
   }
   // TODO(phl): you have reinvented the map.  Now I want an empty :-p
@@ -169,12 +171,12 @@ void PileUp::AdvanceTime(
     CHECK_EQ(prolongation.Size(), 2);
     AppendToPartTails(prolongation.last(), /*authoritative=*/false);
   }
-  psychohistory_.ForgetBefore(psychohistory_.last().time());
+  psychohistory_->ForgetBefore(psychohistory_->last().time());
 }
 
 void PileUp::NudgeParts() const {
   auto const actual_centre_of_mass =
-      psychohistory_.last().degrees_of_freedom();
+      psychohistory_->last().degrees_of_freedom();
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
@@ -189,6 +191,65 @@ void PileUp::NudgeParts() const {
         FindOrDie(actual_part_degrees_of_freedom_, part)));
   }
 }
+
+void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
+  for (auto const part : parts_) {
+    message->add_part_id(part->part_id());
+  }
+  mass_.WriteToMessage(message->mutable_mass());
+  intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
+  psychohistory_->WriteToMessage(message->mutable_psychohistory(),
+                                 /*forks=*/{});
+  for (auto const& pair : actual_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& degrees_of_freedom = pair.second;
+    degrees_of_freedom.WriteToMessage(&(
+        (*message->mutable_actual_part_degrees_of_freedom())[part->part_id()]));
+  }
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& degrees_of_freedom = pair.second;
+    degrees_of_freedom.WriteToMessage(&(
+        (*message
+              ->mutable_apparent_part_degrees_of_freedom())[part->part_id()]));
+  }
+}
+
+not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
+    serialization::PileUp const& message,
+    std::function<not_null<Part*>(PartId)> const& part_id_to_part) {
+  std::list<not_null<Part*>> parts;
+  for (auto const part_id : message.part_id()) {
+    parts.push_back(part_id_to_part(part_id));
+  }
+  not_null<std::unique_ptr<PileUp>> pile_up =
+      std::unique_ptr<PileUp>(new PileUp(std::move(parts)));
+  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
+  pile_up->intrinsic_force_ =
+      Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
+  pile_up->psychohistory_ =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),
+                                                       /*forks=*/{});
+  for (auto const& pair : message.actual_part_degrees_of_freedom()) {
+    std::uint32_t const part_id = pair.first;
+    serialization::Pair const& degrees_of_freedom = pair.second;
+    pile_up->actual_part_degrees_of_freedom_.emplace(
+        part_id_to_part(part_id),
+        DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
+  }
+  for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
+    std::uint32_t const part_id = pair.first;
+    serialization::Pair const& degrees_of_freedom = pair.second;
+    pile_up->apparent_part_degrees_of_freedom_.emplace(
+        part_id_to_part(part_id),
+        DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
+  }
+  return pile_up;
+}
+
+PileUp::PileUp(std::list<not_null<Part*>>&& parts)
+    : parts_(std::move(parts)),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,

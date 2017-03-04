@@ -3,7 +3,6 @@
 
 #include <experimental/optional>
 #include <functional>
-#include <limits>
 #include <list>
 #include <map>
 #include <memory>
@@ -11,6 +10,7 @@
 #include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "geometry/grassmann.hpp"
@@ -34,13 +34,6 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using quantities::Force;
 using quantities::Mass;
-
-// Corresponds to KSP's |Part.flightID|, *not* to |Part.uid|.  C#'s |uint|
-// corresponds to |uint32_t|.
-using PartId = std::uint32_t;
-// An ID given to dummy parts used by vessels that appear unloaded.  Note that
-// nothing prevents an actual part from having this ID.
-constexpr PartId DummyPartId = std::numeric_limits<PartId>::max();
 
 // Represents a KSP part.
 class Part final {
@@ -137,10 +130,8 @@ using IdAndOwnedPart = PartIdToOwnedPart::value_type;
 
 }  // namespace internal_part
 
-using internal_part::DummyPartId;
 using internal_part::IdAndOwnedPart;
 using internal_part::Part;
-using internal_part::PartId;
 using internal_part::PartIdToOwnedPart;
 
 }  // namespace ksp_plugin
