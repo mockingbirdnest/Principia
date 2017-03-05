@@ -19,36 +19,6 @@ message CelestialJacobiKeplerian {
   required MassiveBody body = 4;
 }
 
-// Pre-Буняковский.
-message HistoryAndProlongation {
-  required DiscreteTrajectory history = 1;
-  required DiscreteTrajectory.Pointer prolongation = 2;
-}
-
-message Part {
-  required uint32 part_id = 4;
-  required Quantity mass = 2;
-  required Multivector intrinsic_force = 5;
-  optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
-  optional Pair degrees_of_freedom = 1;
-  required DiscreteTrajectory tail = 7;
-  required bool tail_is_authoritative = 8;
-
-  // Pre-Cardano.
-  reserved 3;
-  reserved "gravitational_acceleration_to_be_applied_by_ksp";
-}
-
-message Manoeuvre {
-  required Quantity thrust = 1;
-  required Quantity initial_mass = 2;
-  required Quantity specific_impulse = 3;
-  required Multivector direction = 4;
-  required Quantity duration = 5;
-  required Point initial_time = 6;
-  required DynamicFrame frame = 7;
-}
-
 message FlightPlan {
   required Quantity initial_mass = 1;
   required Point initial_time = 2;
@@ -65,6 +35,45 @@ message FlightPlan {
   repeated DiscreteTrajectory.Pointer segment = 7;
   reserved 9, 10;
   reserved "anomalous_segments", "max_steps";
+}
+
+// Pre-Буняковский.
+message HistoryAndProlongation {
+  required DiscreteTrajectory history = 1;
+  required DiscreteTrajectory.Pointer prolongation = 2;
+}
+
+message Manoeuvre {
+  required Quantity thrust = 1;
+  required Quantity initial_mass = 2;
+  required Quantity specific_impulse = 3;
+  required Multivector direction = 4;
+  required Quantity duration = 5;
+  required Point initial_time = 6;
+  required DynamicFrame frame = 7;
+}
+
+message Part {
+  required fixed32 part_id = 4;
+  required Quantity mass = 2;
+  required Multivector intrinsic_force = 5;
+  optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
+  optional Pair degrees_of_freedom = 1;
+  required DiscreteTrajectory tail = 7;
+  required bool tail_is_authoritative = 8;
+
+  // Pre-Cardano.
+  reserved 3;
+  reserved "gravitational_acceleration_to_be_applied_by_ksp";
+}
+
+message PileUp {
+  repeated fixed32 part_id = 1;
+  required Quantity mass = 2;
+  required Multivector intrinsic_force = 3;
+  required DiscreteTrajectory psychohistory = 4;
+  map<uint32, Pair> actual_part_degrees_of_freedom = 5;
+  map<uint32, Pair> apparent_part_degrees_of_freedom = 6;
 }
 
 message Plugin {

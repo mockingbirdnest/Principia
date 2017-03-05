@@ -56,6 +56,9 @@
     <ClInclude Include="part_subsets.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="identification.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">

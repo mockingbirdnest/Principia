@@ -10,6 +10,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -78,7 +79,15 @@ class PileUp {
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
+  void WriteToMessage(not_null<serialization::PileUp*> message) const;
+  static not_null<std::unique_ptr<PileUp>> ReadFromMessage(
+      serialization::PileUp const& message,
+      std::function<not_null<Part*>(PartId)> const& part_id_to_part);
+
  private:
+  // For deserialization.
+  explicit PileUp::PileUp(std::list<not_null<Part*>>&& parts);
+
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
                          bool authoritative) const;
 
@@ -93,7 +102,7 @@ class PileUp {
   // with nonzero intrinsic force), or a fixed step instance otherwise (with the
   // prolongation being computed by an instance local to the body of
   // |AdvanceTime|).
-  DiscreteTrajectory<Barycentric> psychohistory_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
   // of freedom of the parts in the frame of that body can be set, however their
