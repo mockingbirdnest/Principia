@@ -487,6 +487,14 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   }
   // We only need to collect one part per vessel, since the other parts are in
   // the same subset.
+  // TODO(egg): this is incorrect: if two vessels are piled up together and
+  // one leaves the bubble, its parts are not piled up after this operation.
+  // Further, since pile ups that leave the bubble are not collected, they may
+  // retain intrinsic acceleration from their last frame inside the bubble.
+  // This could be fixed by either iterating over all parts, or just iterating
+  // over all parts in vessels that were in the bubble in the preceding frame;
+  // the latter set would be useful for invariant-checking in
+  // |GetPartActualDegreesOfFreedom| anyway.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ForSomePart([this](Part& part) {
       Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,

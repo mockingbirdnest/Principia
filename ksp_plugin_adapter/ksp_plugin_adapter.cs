@@ -772,6 +772,7 @@ public partial class PrincipiaPluginAdapter
          }
          plugin_.SetPartApparentDegreesOfFreedom(
              part.flightID,
+             // TODO(egg): use the centre of mass.
              new QP{q = (XYZ)(Vector3d)part.rb.position,
                     p = (XYZ)(Vector3d)part.rb.velocity});
        }
@@ -798,6 +799,8 @@ public partial class PrincipiaPluginAdapter
          }
          QP part_actual_degrees_of_freedom =
              plugin_.GetPartActualDegreesOfFreedom(part.flightID);
+         // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
+         // transform nonsense must probably be done.
          part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
        }
@@ -866,6 +869,7 @@ public partial class PrincipiaPluginAdapter
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
                 main_body_degrees_of_freedom,
+                // TODO(egg): use the centre of mass.
                 new QP{q = (XYZ)(Vector3d)part.rb.position,
                        p = (XYZ)(Vector3d)part.rb.velocity});
             plugin_.IncrementPartIntrinsicForce(part.flightID, (XYZ)part.force);
