@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5115.
+  extensions 5000 to 5999;  // Last used: 5116.
 }
 
 message AdvanceTime {
@@ -586,6 +586,17 @@ message GetBufferedLogging {
     required int32 result = 1;
   }
   optional Return return = 3;
+}
+
+message GetPartActualDegreesOfFreedom {
+  extend Method {
+    optional GetPartActualDegreesOfFreedom extension = 5116;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+    required fixed32 part_id = 2;
+  }
+  optional In in = 1;
 }
 
 message GetPlottingFrame {
