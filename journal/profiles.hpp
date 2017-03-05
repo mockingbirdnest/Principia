@@ -20,7 +20,6 @@ using interface::BodyParameters;
 using interface::Burn;
 using interface::KeplerianElements;
 using interface::Iterator;
-using interface::KSPPart;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
 using interface::QP;
@@ -28,6 +27,7 @@ using interface::WXYZ;
 using interface::XYZ;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::Plugin;
+using ksp_plugin::Vessel;
 
 namespace journal {
 

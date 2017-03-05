@@ -51,6 +51,7 @@ using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
+using ksp_plugin::PartId;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::FrameField;
@@ -60,6 +61,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
+using quantities::Force;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Time;
@@ -68,6 +70,7 @@ using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -324,10 +327,10 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__FreeVesselsAndCollectPileUps(Plugin* const plugin) {
-  journal::Method<journal::FreeVesselsAndCollectPileUps> m({plugin});
+void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
+  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->FreeVesselsAndCollectPileUps();
+  plugin->FreeVesselsAndPartsAndCollectPileUps();
   return m.Return();
 }
 
@@ -394,6 +397,17 @@ bool principia__HasVessel(Plugin* const plugin,
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->HasVessel(vessel_guid));
+}
+
+void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
+                                            PartId const part_id,
+                                            XYZ const force_in_kilonewtons) {
+  journal::Method<journal::IncrementPartIntrinsicForce> m(
+      {plugin, part_id, force_in_kilonewtons});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
+      part_id,
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
+  return m.Return();
 }
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
@@ -509,14 +523,50 @@ void principia__InsertCelestialJacobiKeplerian(
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-bool principia__InsertOrKeepVessel(Plugin* const plugin,
+void principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
-                                   int const parent_index) {
-  journal::Method<journal::InsertOrKeepVessel> m({plugin,
-                                                  vessel_guid,
-                                                  parent_index});
+                                   int const parent_index,
+                                   bool const loaded,
+                                   bool* inserted) {
+  journal::Method<journal::InsertOrKeepVessel> m(
+      {plugin, vessel_guid, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
+  plugin->InsertOrKeepVessel(vessel_guid, parent_index, loaded, *inserted);
+  return m.Return();
+}
+
+void principia__InsertOrKeepLoadedPart(
+    Plugin* const plugin,
+    std::uint32_t const part_id,
+    double const mass_in_tonnes,
+    char const* const vessel_guid,
+    int const main_body_index,
+    QP const main_body_world_degrees_of_freedom,
+    QP const part_world_degrees_of_freedom) {
+  journal::Method<journal::InsertOrKeepLoadedPart> m(
+      {plugin,
+       part_id,
+       mass_in_tonnes,
+       vessel_guid,
+       main_body_index,
+       main_body_world_degrees_of_freedom,
+       part_world_degrees_of_freedom});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertOrKeepLoadedPart(
+      part_id,
+      mass_in_tonnes * Tonne,
+      GetVessel(*plugin, vessel_guid),
+      main_body_index,
+      {World::origin +
+           Displacement<World>(FromXYZ(main_body_world_degrees_of_freedom.q) *
+                               Metre),
+       Velocity<World>(FromXYZ(main_body_world_degrees_of_freedom.p) *
+                       (Metre / Second))},
+      {World::origin + Displacement<World>(
+                           FromXYZ(part_world_degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(part_world_degrees_of_freedom.p) *
+                       (Metre / Second))});
+  return m.Return();
 }
 
 bool principia__IsKspStockSystem(Plugin* const plugin) {
@@ -597,14 +647,6 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
   return m.Return(result.release());
 }
 
-void principia__PluginUpdateAllVesselsInPileUps(
-    Plugin* const plugin) {
-  journal::Method<journal::PluginUpdateAllVesselsInPileUps> m(
-      {plugin});
-  CHECK_NOTNULL(plugin)->UpdateAllVesselsInPileUps();
-  return m.Return();
-}
-
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
                                         char const* const vessel_guid,
                                         XYZ const sun_world_position) {
@@ -672,12 +714,10 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
 }
 
 void principia__ReportCollision(Plugin const* const plugin,
-                                char const* const vessel1_guid,
-                                char const* const vessel2_guid) {
-  journal::Method<journal::ReportCollision> m({plugin,
-                                               vessel1_guid,
-                                               vessel2_guid});
-  CHECK_NOTNULL(plugin)->ReportCollision(vessel1_guid, vessel2_guid);
+                                PartId const part1_id,
+                                PartId const part2_id) {
+  journal::Method<journal::ReportCollision> m({plugin, part1_id, part2_id});
+  CHECK_NOTNULL(plugin)->ReportCollision(part1_id, part2_id);
   return m.Return();
 }
 
@@ -745,6 +785,19 @@ void principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetMainBody(index);
+  return m.Return();
+}
+
+void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
+                                                PartId const part_id,
+                                                QP const degrees_of_freedom) {
+  journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
+      {plugin, part_id, degrees_of_freedom});
+  CHECK_NOTNULL(plugin)->SetPartApparentDegreesOfFreedom(
+      part_id,
+      {World::origin +
+           Displacement<World>(FromXYZ(degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(degrees_of_freedom.p) * (Metre / Second))});
   return m.Return();
 }
 
@@ -842,7 +895,6 @@ QP principia__VesselFromParent(Plugin const* const plugin,
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
-
 
 }  // namespace interface
 }  // namespace principia

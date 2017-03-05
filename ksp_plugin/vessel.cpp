@@ -117,6 +117,11 @@ void Vessel::set_prediction_adaptive_step_parameters(
   prediction_adaptive_step_parameters_ = prediction_adaptive_step_parameters;
 }
 
+Ephemeris<Barycentric>::AdaptiveStepParameters const&
+Vessel::prediction_adaptive_step_parameters() const {
+  return prediction_adaptive_step_parameters_;
+}
+
 FlightPlan& Vessel::flight_plan() const {
   CHECK(has_flight_plan());
   return *flight_plan_;
