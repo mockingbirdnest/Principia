@@ -127,8 +127,9 @@ class Vessel {
   virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
+      not_null<Celestial const*> parent,
       not_null<Ephemeris<Barycentric>*> ephemeris,
-      not_null<Celestial const*> parent);
+      std::function<void(PartId)> const& deletion_callback);
 
  protected:
   // For mocking.
@@ -157,7 +158,7 @@ class Vessel {
   std::set<not_null<Part const*>> kept_parts_;
 
   // The new implementation of history, also encompasses the prolongation.
-  DiscreteTrajectory<Barycentric> psychohistory_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
   bool psychohistory_is_authoritative_;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;

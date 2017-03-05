@@ -117,22 +117,25 @@ message Plugin {
 
 message Vessel {
   required MasslessBody body = 1;
+  required Ephemeris.AdaptiveStepParameters 
+      prediction_adaptive_step_parameters = 10;
+  optional Part dummy_part = 13;
+  repeated Part parts = 14;
+  repeated uint32 kept_parts = 15;
+  required DiscreteTrajectory psychohistory = 16;
+  required bool psychohistory_is_authoritative = 17;
+  required DiscreteTrajectory prediction = 18;
   optional FlightPlan flight_plan = 4;
-  optional DiscreteTrajectory history = 6;  // required
-  optional Ephemeris.AdaptiveStepParameters
-      prolongation_adaptive_step_parameters = 7;  // required
-  optional Ephemeris.FixedStepParameters
-      history_fixed_step_parameters = 8;  // required
-  optional Point prediction_fork_time = 12;  // required
-  optional Point prediction_last_time = 9;  // required
-  optional Ephemeris.AdaptiveStepParameters
-      prediction_adaptive_step_parameters = 10;  // required
-  optional bool is_dirty = 11 [default = false];  // required
 
   // Pre-Буняковский.
-  optional DiscreteTrajectory.Pointer prediction = 5;
-  oneof trajectory_bundle {
-    HistoryAndProlongation history_and_prolongation = 2;
-    DiscreteTrajectory owned_prolongation = 3;
-  }
+  reserved 2, 3, 5;
+  reserved "/*prediction*/", "history_and_prolongation", "owned_prolongation";
+  // Pre-Cardano.
+  reserved 6, 7, 8, 9, 11, 12;
+  reserved "history",
+           "prolongation_adaptive_step_parameters",
+           "history_fixed_step_parameters",
+           "prediction_last_time",
+           "is_dirty",
+           "prediction_fork_time";
 }
