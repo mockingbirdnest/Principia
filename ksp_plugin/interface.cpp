@@ -400,8 +400,8 @@ bool principia__HasVessel(Plugin* const plugin,
 }
 
 void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
-                                 PartId const part_id,
-                                 XYZ const force_in_kilonewtons) {
+                                            PartId const part_id,
+                                            XYZ const force_in_kilonewtons) {
   journal::Method<journal::IncrementPartIntrinsicForce> m(
       {plugin, part_id, force_in_kilonewtons});
   CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
