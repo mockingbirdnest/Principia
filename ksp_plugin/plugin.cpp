@@ -402,6 +402,8 @@ void Plugin::InsertUnloadedPart(
       part_id,
       1 * Kilogram,
       vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
+  not_null<Part*> part = vessel->part(part_id);
+  Subset<Part>::MakeSingleton(*part, part);
 }
 
 void Plugin::InsertOrKeepLoadedPart(
