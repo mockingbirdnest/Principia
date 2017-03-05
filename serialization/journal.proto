@@ -593,7 +593,8 @@ message GetPartActualDegreesOfFreedom {
     optional GetPartActualDegreesOfFreedom extension = 5116;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
     required fixed32 part_id = 2;
   }
   message Return {
