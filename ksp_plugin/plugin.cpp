@@ -570,6 +570,18 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   loaded_vessels_.clear();
 }
 
+DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
+    PartId part_id) const {
+  CHECK(bubble_barycentre_);
+  RigidMotion<Barycentric, World> barycentric_to_world{
+      RigidTransformation<Barycentric, World>{
+          bubble_barycentre_->position(), World::origin, BarycentricToWorld()},
+      AngularVelocity<Barycentric>{},
+      bubble_barycentre_->velocity()};
+  return barycentric_to_world(
+      FindOrDie(part_id_to_vessel_, part_id)->part()->degrees_of_freedom());
+}
+
 DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
   CHECK(bubble_barycentre_);
   return *bubble_barycentre_;

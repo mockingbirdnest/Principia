@@ -208,6 +208,12 @@ class Plugin {
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
+  // Returns the degrees of freedom of the given part in |World|, assuming that
+  // the origin of |World| is fixed at |bubble_barycentre_|.  The part must be
+  // in a loaded vessel.
+  virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
+      PartId part_id) const;
+
   virtual DegreesOfFreedom<Barycentric> GetBubbleBarycentre() const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
