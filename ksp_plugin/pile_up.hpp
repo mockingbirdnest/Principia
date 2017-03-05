@@ -11,6 +11,7 @@
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
