@@ -344,6 +344,17 @@ int principia__GetBufferedLogging() {
   return m.Return(FLAGS_logbuflevel);
 }
 
+QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
+                                            PartId const part_id) {
+  journal::Method<journal::GetPartActualDegreesOfFreedom> m({plugin, part_id});
+  DegreesOfFreedom<World> const degrees_of_freedom =
+      CHECK_NOTNULL(plugin)->GetPartActualDegreesOfFreedom(part_id);
+  return m.Return(QP{
+      ToXYZ((degrees_of_freedom.position() - World::origin).coordinates() /
+            Metre),
+      ToXYZ(degrees_of_freedom.velocity().coordinates() / (Metre / Second))});
+}
+
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
 // ownership.  The returned pointer is never null.
 NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
