@@ -57,13 +57,6 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  // Adds a dummy part with the given degrees of freedom.  This part cannot be
-  // kept or extracted, and will be removed by the next call to |FreeParts|.
-  // A pointer to that part is returned.
-  // |parts_| must be empty; |InitializeUnloaded| may be called only once.
-  virtual not_null<Part*> InitializeUnloaded(
-      DegreesOfFreedom<Barycentric> const& initial_state);
-
   // Adds the given part to this vessel.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);
   // Removes and returns the part with the given ID.  This may empty |parts_|,
@@ -74,10 +67,9 @@ class Vessel {
   // |FreeParts|.
   virtual void KeepPart(PartId id);
   // Removes any part for which |AddPart| or |KeepPart| has not been called
-  // since the last call to |FreePart|, and removes the dummy part added by
-  // |InitializeUnloaded| if the latter has been called.  Checks that there are
-  // still parts left after the removals; thus a call to |AddParts| must occur
-  // before |FreeParts| is first called.
+  // since the last call to |FreePart|.  Checks that there are still parts left
+  // after the removals; thus a call to |AddParts| must occur before |FreeParts|
+  // is first called.
   virtual void FreeParts();
 
   // Returns the part with the given ID.  Such a part must have been added using

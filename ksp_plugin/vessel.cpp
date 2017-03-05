@@ -49,17 +49,6 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
   parent_ = parent;
 }
 
-not_null<Part*> Vessel::InitializeUnloaded(
-    DegreesOfFreedom<Barycentric> const& initial_state) {
-  CHECK(parts_.empty());
-  CHECK(dummy_part_ == nullptr);
-  dummy_part_ = std::make_unique<Part>(DummyPartId,
-                                       1 * Kilogram,
-                                       initial_state,
-                                       /*deletion_callback=*/nullptr);
-  return dummy_part_.get();
-}
-
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
   parts_.emplace(id, std::move(part));
