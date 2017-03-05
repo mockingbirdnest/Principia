@@ -1060,6 +1060,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
         FindOrDie(celestials, vessel_message.parent_index()).get();
+#if 0
     not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
                                                    vessel_message.vessel(),
                                                    ephemeris.get(),
@@ -1067,6 +1068,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     auto const inserted =
         vessels.emplace(vessel_message.guid(), std::move(vessel));
     CHECK(inserted.second);
+#endif
   }
 
   Instant const current_time = Instant::ReadFromMessage(message.current_time());
