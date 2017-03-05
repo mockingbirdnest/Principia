@@ -571,7 +571,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
-    PartId part_id) const {
+    PartId const part_id) const {
   CHECK(bubble_barycentre_);
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
