@@ -578,8 +578,9 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
           bubble_barycentre_->position(), World::origin, BarycentricToWorld()},
       AngularVelocity<Barycentric>{},
       bubble_barycentre_->velocity()};
-  return barycentric_to_world(
-      FindOrDie(part_id_to_vessel_, part_id)->part()->degrees_of_freedom());
+  return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)
+                                  ->part(part_id)
+                                  ->degrees_of_freedom());
 }
 
 DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
