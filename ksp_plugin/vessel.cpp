@@ -53,8 +53,8 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
   LOG(INFO) << "Adding part " << id << " to vessel at " << this;
-  parts_.emplace(id, std::move(part));
   kept_parts_.insert(part.get());
+  parts_.emplace(id, std::move(part));
 }
 
 not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
@@ -67,12 +67,10 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
 }
 
 void Vessel::KeepPart(PartId const id) {
-  LOG(ERROR)<<"Keeping part " << id << " in vessel at " << this;
   kept_parts_.insert(FindOrDie(parts_, id).get());
 }
 
 void Vessel::FreeParts() {
-  LOG(ERROR)<<"FreeParts on vessel at " << this;
   dummy_part_.reset();
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part const*> part = it->second.get();
