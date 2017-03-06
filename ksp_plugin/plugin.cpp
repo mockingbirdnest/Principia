@@ -705,7 +705,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  return RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
+  return RenderedTrajectoryFromIterators(vessel.prediction().Begin(),
                                          vessel.prediction().End(),
                                          sun_world_position);
 }

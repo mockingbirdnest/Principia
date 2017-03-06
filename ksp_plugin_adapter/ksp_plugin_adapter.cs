@@ -766,9 +766,6 @@ public partial class PrincipiaPluginAdapter
 
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
-     var apparent_world_positions = new Dictionary<Vessel, Vector3d>();
-     var apparent_world_velocities = new Dictionary<Vessel, Vector3d>();
-
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
@@ -818,6 +815,7 @@ public partial class PrincipiaPluginAdapter
          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
        }
      }
+     /*
      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.loaded) {
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
@@ -841,7 +839,7 @@ public partial class PrincipiaPluginAdapter
        // bodies their positions at the next instant, wherease KSP still expects
        // them at the previous instant, and will propagate them at the beginning
        // of the next frame...
-     }
+     }*/
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {
@@ -870,11 +868,14 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
+        // WTF? or should I use !packed?
+        bool actually_loaded_with_real_parts =
+            vessel.loaded && !vessel.parts.TrueForAll(part => part.rb == null);
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                    vessel.mainBody.flightGlobalsIndex,
-                                   vessel.loaded,
+                                   actually_loaded_with_real_parts,
                                    out inserted);
-        if (vessel.loaded) {
+        if (actually_loaded_with_real_parts) {
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
                      p = (XYZ)(-krakensbane.FrameVel)};
