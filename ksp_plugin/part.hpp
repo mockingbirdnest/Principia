@@ -36,7 +36,7 @@ using quantities::Force;
 using quantities::Mass;
 
 // Represents a KSP part.
-class Part {
+class Part final {
  public:
   Part(PartId part_id,
        Mass const& mass,
@@ -45,55 +45,55 @@ class Part {
 
   // Calls the deletion callback passed at construction, if any.  Calls
   // |clear_pile_up|.
-  virtual ~Part();
+  ~Part();
 
-  virtual PartId part_id() const;
+  PartId part_id() const;
 
   // Sets or returns the mass.  Event though a part is massless in the sense
   // that it doesn't exert gravity, it has a mass used to determine its
   // intrinsic acceleration.
-  virtual void set_mass(Mass const& mass);
-  virtual Mass const& mass() const;
+  void set_mass(Mass const& mass);
+  Mass const& mass() const;
 
   // Clears, increments or returns the intrinsic force exerted on the part by
   // its engines (or a tractor beam).
   // TODO(phl): Keep track of the point where the force is applied.
-  virtual void clear_intrinsic_force();
-  virtual void increment_intrinsic_force(
+  void clear_intrinsic_force();
+  void increment_intrinsic_force(
       Vector<Force, Barycentric> const& intrinsic_force);
-  virtual Vector<Force, Barycentric> const& intrinsic_force() const;
+  Vector<Force, Barycentric> const& intrinsic_force() const;
 
   // Sets or returns the degrees of freedom of the part.
-  virtual void set_degrees_of_freedom(
+  void set_degrees_of_freedom(
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-  virtual DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
+  DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
   // by |Vessel::AdvanceTime| for the containing |Vessel|.
-  virtual DiscreteTrajectory<Barycentric>& tail();
-  virtual DiscreteTrajectory<Barycentric> const& tail() const;
+  DiscreteTrajectory<Barycentric>& tail();
+  DiscreteTrajectory<Barycentric> const& tail() const;
 
   // True if and only if the last point of the tail is authoritative, i.e.,
   // corresponds to a point in the psychohistory of the enclosing vessel.
-  virtual bool tail_is_authoritative() const;
-  virtual void set_tail_is_authoritative(bool tail_is_authoritative);
+  bool tail_is_authoritative() const;
+  void set_tail_is_authoritative(bool tail_is_authoritative);
 
   // Requires |!is_piled_up()|.
-  virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 
   // An iterator to the containing |PileUp|, if any.  Do not |Erase| this
   // iterator, use |clear_pile_up| instead, which will take care of letting all
   // parts know that their |PileUp| is gone.
-  virtual std::experimental::optional<IteratorOn<std::list<PileUp>>>
+  std::experimental::optional<IteratorOn<std::list<PileUp>>>
   containing_pile_up() const;
 
   // Whether this part is in a |PileUp|.  Equivalent to |containing_pile_up()|.
-  virtual bool is_piled_up() const;
+  bool is_piled_up() const;
 
   // If this part is in a |PileUp|, erases that |PileUp|.  After this call, all
   // parts in that |PileUp| are no longer piled up.
-  virtual void clear_pile_up();
+  void clear_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message) const;
   static not_null<std::unique_ptr<Part>> ReadFromMessage(
