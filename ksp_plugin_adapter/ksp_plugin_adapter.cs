@@ -232,21 +232,6 @@ public partial class PrincipiaPluginAdapter
                                       universal_time);
   }
 
-  private void InsertOrKeepVessel(Vessel vessel) {
-    bool inserted;
-    plugin_.InsertOrKeepVessel(vessel.id.ToString(),
-                               vessel.orbit.referenceBody.flightGlobalsIndex,
-                               vessel.loaded,
-                               out inserted);
-    // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
-    if (inserted && !vessel.loaded) {
-      plugin_.SetVesselStateOffset(
-          vessel_guid : vessel.id.ToString(),
-          from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                               p = (XYZ)vessel.orbit.vel});
-    }
-   }
-
   private void UpdateVessel(Vessel vessel, double universal_time) {
     QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
     vessel.orbit.UpdateFromStateVectors(
@@ -787,6 +772,7 @@ public partial class PrincipiaPluginAdapter
          }
          plugin_.SetPartApparentDegreesOfFreedom(
              part.flightID,
+             // TODO(egg): use the centre of mass.
              new QP{q = (XYZ)(Vector3d)part.rb.position,
                     p = (XYZ)(Vector3d)part.rb.velocity});
        }
@@ -813,6 +799,8 @@ public partial class PrincipiaPluginAdapter
          }
          QP part_actual_degrees_of_freedom =
              plugin_.GetPartActualDegreesOfFreedom(part.flightID);
+         // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
+         // transform nonsense must probably be done.
          part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
        }
@@ -865,7 +853,11 @@ public partial class PrincipiaPluginAdapter
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
-        InsertOrKeepVessel(vessel);
+        bool inserted;
+        plugin_.InsertOrKeepVessel(vessel.id.ToString(),
+                                   vessel.mainBody.flightGlobalsIndex,
+                                   vessel.loaded,
+                                   out inserted);
         if (vessel.loaded) {
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
@@ -877,6 +869,7 @@ public partial class PrincipiaPluginAdapter
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
                 main_body_degrees_of_freedom,
+                // TODO(egg): use the centre of mass.
                 new QP{q = (XYZ)(Vector3d)part.rb.position,
                        p = (XYZ)(Vector3d)part.rb.velocity});
             plugin_.IncrementPartIntrinsicForce(part.flightID, (XYZ)part.force);
@@ -884,6 +877,14 @@ public partial class PrincipiaPluginAdapter
               plugin_.IncrementPartIntrinsicForce(part.flightID,
                                                   (XYZ)force.force);
             }
+          }
+        } else if (inserted) {
+          foreach (ProtoPartSnapshot part in
+                   vessel.protoVessel.protoPartSnapshots) {
+            plugin_.InsertUnloadedPart(
+                part.flightID,
+                vessel.id.ToString(),
+                new QP{q = (XYZ)vessel.orbit.pos, p = (XYZ)vessel.orbit.vel});
           }
         }
       }

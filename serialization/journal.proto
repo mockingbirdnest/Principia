@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5116.
+  extensions 5000 to 5999;  // Last used: 5117.
 }
 
 message AdvanceTime {
@@ -774,6 +774,19 @@ message InsertOrKeepLoadedPart {
   optional In in = 1;
 }
 
+message InsertUnloadedPart {
+  extend Method {
+    optional InsertUnloadedPart extension = 5117;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required fixed32 part_id = 2;
+    required string vessel_guid = 3;
+    required QP from_parent = 4;
+  }
+  optional In in = 1;
+}
+
 message IsKspStockSystem {
   extend Method {
     optional IsKspStockSystem extension = 5096;
@@ -1180,18 +1193,6 @@ message SetVerboseLogging {
   }
   message In {
     required int32 level = 1;
-  }
-  optional In in = 1;
-}
-
-message SetVesselStateOffset {
-  extend Method {
-    optional SetVesselStateOffset extension = 5024;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required string vessel_guid = 2;
-    required QP from_parent = 3;
   }
   optional In in = 1;
 }
