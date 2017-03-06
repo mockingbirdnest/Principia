@@ -22,6 +22,7 @@ using geometry::Velocity;
 using physics::MassiveBody;
 using physics::MockEphemeris;
 using quantities::si::Kilogram;
+using ::testing::ElementsAre;
 
 class VesselTest : public testing::Test {
  protected:
@@ -30,13 +31,13 @@ class VesselTest : public testing::Test {
         celestial_(&body_),
         vessel_(&celestial_, &ephemeris_, DefaultPredictionParameters()) {
     auto p1 = make_not_null_unique<Part>(part_id1_,
-                                       mass1_,
-                                       p1_dof_,
-                                       /*deletion_callback=*/nullptr);
+                                         mass1_,
+                                         p1_dof_,
+                                         /*deletion_callback=*/nullptr);
     auto p2 = make_not_null_unique<Part>(part_id2_,
-                                       mass2_,
-                                       p2_dof_,
-                                       /*deletion_callback=*/nullptr);
+                                         mass2_,
+                                         p2_dof_,
+                                         /*deletion_callback=*/nullptr);
     p1_ = p1.get();
     p2_ = p2.get();
     vessel_.AddPart(std::move(p1));
@@ -87,6 +88,17 @@ TEST_F(VesselTest, Parent) {
   EXPECT_EQ(celestial_, vessel_.parent());
   vessel_.set_parent(&other_celestial);
   EXPECT_EQ(&other_celestial, vessel_.parent());
+}
+
+TEST_F(VesselTest, KeepAndFreeParts) {
+  vessel_.KeepPart(part_id2_);
+  vessel_.FreeParts();
+  std::set<PartId> remaining_part_ids;
+  vessel_.ForAllParts([&remaining_part_ids](Part const& part) {
+    remaining_part_ids.insert(part.part_id());
+  });
+  EXPECT_THAT(remaining_part_ids, ElementsAre(part_id1_));
+  EXPECT_EQ(part_id1_, vessel_.part(part_id1_));
 }
 
 TEST_F(VesselTest, AdvanceTimeInBubble) {
