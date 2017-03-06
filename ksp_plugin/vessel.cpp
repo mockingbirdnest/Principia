@@ -163,6 +163,8 @@ void Vessel::AdvanceTime(Instant const& time) {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
+  // TODO(egg): do something about the psychohistory. I think bad things happen
+  // if it becomes empty though.
   prediction_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });

@@ -233,12 +233,13 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
-    QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
-    vessel.orbit.UpdateFromStateVectors(
-        pos     : (Vector3d)from_parent.q,
-        vel     : (Vector3d)from_parent.p,
-        refBody : vessel.orbit.referenceBody,
-        UT      : universal_time);
+     if (plugin_.HasVessel(vessel.id.ToString())) {
+       QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
+       vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
+                                           vel : (Vector3d)from_parent.p,
+                                           refBody : vessel.orbit.referenceBody,
+                                           UT : universal_time);
+     }
   }
 
   private bool is_in_space(Vessel vessel) {

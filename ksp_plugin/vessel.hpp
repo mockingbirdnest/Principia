@@ -151,7 +151,9 @@ class Vessel {
 
   // The new implementation of history, also encompasses the prolongation.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
-  bool psychohistory_is_authoritative_;
+  // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
+  // can that be authoritative?  This class needs saner invariants.
+  bool psychohistory_is_authoritative_ = true;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 
