@@ -76,9 +76,9 @@ class Vessel {
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
 
-  // Calls |action| on one (non-dummy) part.
+  // Calls |action| on one part.
   virtual void ForSomePart(std::function<void(Part&)> action) const;
-  // Calls |action| on all non-dummy parts.
+  // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
@@ -145,13 +145,14 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  std::unique_ptr<Part> dummy_part_;
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
   // The new implementation of history, also encompasses the prolongation.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
-  bool psychohistory_is_authoritative_;
+  // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
+  // can that be authoritative?  This class needs saner invariants.
+  bool psychohistory_is_authoritative_ = true;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 

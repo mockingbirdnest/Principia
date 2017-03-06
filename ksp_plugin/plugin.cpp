@@ -141,6 +141,21 @@ void Plugin::InsertCelestialAbsoluteCartesian(
                                                   initial_state);
 }
 
+Plugin::~Plugin() {
+  // If we simply let the destructor of |Part| deal with removing itself from
+  // pile-ups, by calling |clear_pile_up|, it will try to access the other
+  // parts, which may have been already destroyed...
+  for (auto const& pair : vessels_) {
+    pair.second->ForAllParts([](Part& part) {
+      part.clear_pile_up();
+    });
+  }
+  // We must manually destroy the vessels, triggering the destruction of the
+  // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
+  // which must therefore still exist.
+  vessels_.clear();
+}
+
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
@@ -472,6 +487,8 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel with GUID " << it->first;
+      // See the destructor.
+      vessel->ForAllParts([](Part& part) { part.clear_pile_up(); });
       it = vessels_.erase(it);
     }
   }
@@ -688,7 +705,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
     Position<World> const& sun_world_position) const {
   CHECK(!initializing_);
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  return RenderedTrajectoryFromIterators(vessel.prediction().Fork(),
+  return RenderedTrajectoryFromIterators(vessel.prediction().Begin(),
                                          vessel.prediction().End(),
                                          sun_world_position);
 }

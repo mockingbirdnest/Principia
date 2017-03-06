@@ -52,11 +52,13 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
-  parts_.emplace(id, std::move(part));
+  LOG(INFO) << "Adding part " << id << " to vessel at " << this;
   kept_parts_.insert(part.get());
+  parts_.emplace(id, std::move(part));
 }
 
 not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
+  LOG(INFO) << "Extracting part " << id << " from vessel at " << this;
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
@@ -69,7 +71,6 @@ void Vessel::KeepPart(PartId const id) {
 }
 
 void Vessel::FreeParts() {
-  dummy_part_.reset();
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part const*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
@@ -163,6 +164,8 @@ void Vessel::AdvanceTime(Instant const& time) {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
+  // TODO(egg): do something about the psychohistory. I think bad things happen
+  // if it becomes empty though.
   prediction_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
@@ -209,9 +212,6 @@ void Vessel::WriteToMessage(
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
-  if (dummy_part_ != nullptr) {
-    dummy_part_->WriteToMessage(message->mutable_dummy_part());
-  }
   for (auto const& pair : parts_) {
     auto const& part = pair.second;
     part->WriteToMessage(message->add_parts());
@@ -241,10 +241,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.prediction_adaptive_step_parameters()));
-  if (message.has_dummy_part()) {
-    vessel->dummy_part_ = Part::ReadFromMessage(message.dummy_part(),
-                                                /*deletion_callback=*/nullptr);
-  }
   for (auto const& serialized_part : message.parts()) {
     PartId const part_id = serialized_part.part_id();
     auto part = Part::ReadFromMessage(
