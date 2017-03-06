@@ -84,7 +84,7 @@ class Plugin {
   Plugin(Plugin&&) = delete;
   Plugin& operator=(Plugin const&) = delete;
   Plugin& operator=(Plugin&&) = delete;
-  virtual ~Plugin() = default;
+  virtual ~Plugin();
 
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
@@ -149,15 +149,23 @@ class Plugin {
   // during initialization.
   // Sets |inserted| to true if a new vessel was inserted, to false otherwise.
   // If |InsertOrKeepVessel| is called with |loaded=false|, and returns
-  // |inserted=true|, |SetVesselStateOffset| must be called with the same GUID
-  // before the call to |AdvanceTime|, giving the vessel an initial state (with
-  // a dummy part) even though its parts are unknown.
+  // |inserted=true|, |InsertUnloadedPart| must be called for its parts
+  // before the call to |AdvanceTime|, giving the vessel an initial state.
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
   // |v.orbit.referenceBody.flightGlobalsIndex|, |v.loaded|.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
                                   Index parent_index,
                                   bool loaded,
                                   bool& inserted);
+
+  // Adds a part with the given |part_id| to the vessel with the given |GUID|,
+  // which must be unloaded, putting the part at the given offset from the
+  // parent body of the vessel.  The part is given unit mass; this does not
+  // matter, since the |PileUp| will be deformed when it first loads anyway.
+  virtual void InsertUnloadedPart(
+      PartId part_id,
+      GUID const& vessel_guid,
+      RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Inserts a new part with the given ID if it does not already exist, and
   // flags the part with the given ID so it is kept when calling
@@ -178,12 +186,6 @@ class Plugin {
   // loaded vessel.
   virtual void IncrementPartIntrinsicForce(PartId part_id,
                                            Vector<Force, World> const& force);
-
-  // Calls |InitializeUnloaded| on the relevant vessel, and puts the resulting
-  // dummy part into a 1-part pile-up added to |pile_ups_|.
-  virtual void SetVesselStateOffset(
-      GUID const& vessel_guid,
-      RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
   // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
@@ -427,8 +429,17 @@ class Plugin {
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
       MassiveBody const& body);
 
+  // Adds a part to a vessel, recording it in the appropriate map and setting up
+  // a deletion callback.
+  void AddPart(not_null<Vessel*> vessel,
+               PartId part_id,
+               Mass mass,
+               DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;
+  // Whether |new_unloaded_vessels_| contains |vessel|.
+  bool is_new_unloaded(not_null<Vessel*> vessel) const;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
@@ -492,6 +503,9 @@ class Plugin {
 
   // The vessels that are currently loaded, i.e. in the physics bubble.
   std::set<not_null<Vessel*>> loaded_vessels_;
+  // The vessels that were inserted unloaded and have yet to be collected into a
+  // pile-up.
+  std::set<not_null<Vessel*>> new_unloaded_vessels_;
   std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.

@@ -43,8 +43,8 @@ class Part final {
        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
 
-  // Calls the deletion callback passed at construction, if any.  Calls
-  // |clear_pile_up|.
+  // Calls the deletion callback passed at construction, if any.  This part must
+  // not be piled up.
   ~Part();
 
   PartId part_id() const;

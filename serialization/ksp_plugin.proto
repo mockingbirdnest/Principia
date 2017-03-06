@@ -119,7 +119,6 @@ message Vessel {
   required MasslessBody body = 1;
   required Ephemeris.AdaptiveStepParameters 
       prediction_adaptive_step_parameters = 10;
-  optional Part dummy_part = 13;
   repeated Part parts = 14;
   repeated uint32 kept_parts = 15;
   required DiscreteTrajectory psychohistory = 16;

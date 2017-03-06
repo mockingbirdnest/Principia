@@ -580,6 +580,24 @@ void principia__InsertOrKeepLoadedPart(
   return m.Return();
 }
 
+// Calls |plugin->SetVesselStateOffset| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
+void principia__InsertUnloadedPart(Plugin* const plugin,
+                                   PartId const part_id,
+                                   char const* const vessel_guid,
+                                   QP const from_parent) {
+  journal::Method<journal::InsertUnloadedPart> m(
+      {plugin, part_id, vessel_guid, from_parent});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertUnloadedPart(
+      part_id,
+      vessel_guid,
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
+          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
+  return m.Return();
+}
+
 bool principia__IsKspStockSystem(Plugin* const plugin) {
   journal::Method<journal::IsKspStockSystem> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -690,7 +708,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Fork(),
+                                  prediction.Begin(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,
@@ -854,23 +872,6 @@ void principia__SetSuppressedLogging(int const min_severity) {
 void principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
-  return m.Return();
-}
-
-// Calls |plugin->SetVesselStateOffset| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-void principia__SetVesselStateOffset(Plugin* const plugin,
-                                     char const* const vessel_guid,
-                                     QP const from_parent) {
-  journal::Method<journal::SetVesselStateOffset> m({plugin,
-                                                    vessel_guid,
-                                                    from_parent});
-  CHECK_NOTNULL(plugin);
-  plugin->SetVesselStateOffset(
-      vessel_guid,
-      RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
-          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
   return m.Return();
 }
 

@@ -57,13 +57,6 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  // Adds a dummy part with the given degrees of freedom.  This part cannot be
-  // kept or extracted, and will be removed by the next call to |FreeParts|.
-  // A pointer to that part is returned.
-  // |parts_| must be empty; |InitializeUnloaded| may be called only once.
-  virtual not_null<Part*> InitializeUnloaded(
-      DegreesOfFreedom<Barycentric> const& initial_state);
-
   // Adds the given part to this vessel.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);
   // Removes and returns the part with the given ID.  This may empty |parts_|,
@@ -74,19 +67,18 @@ class Vessel {
   // |FreeParts|.
   virtual void KeepPart(PartId id);
   // Removes any part for which |AddPart| or |KeepPart| has not been called
-  // since the last call to |FreePart|, and removes the dummy part added by
-  // |InitializeUnloaded| if the latter has been called.  Checks that there are
-  // still parts left after the removals; thus a call to |AddParts| must occur
-  // before |FreeParts| is first called.
+  // since the last call to |FreePart|.  Checks that there are still parts left
+  // after the removals; thus a call to |AddPart| must occur before |FreeParts|
+  // is first called.
   virtual void FreeParts();
 
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
 
-  // Calls |action| on one (non-dummy) part.
+  // Calls |action| on one part.
   virtual void ForSomePart(std::function<void(Part&)> action) const;
-  // Calls |action| on all non-dummy parts.
+  // Calls |action| on all parts.
   virtual void ForAllParts(std::function<void(Part&)> action) const;
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
@@ -153,12 +145,13 @@ class Vessel {
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  std::unique_ptr<Part> dummy_part_;
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
   // If the psychohistory is not authoritative it contains at least one point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
+  // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
+  // can that be authoritative?  This class needs saner invariants.
   bool psychohistory_is_authoritative_ = true;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
