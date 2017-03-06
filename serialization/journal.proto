@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5116.
+  extensions 5000 to 5999;  // Last used: 5117.
 }
 
 message AdvanceTime {
@@ -776,7 +776,7 @@ message InsertOrKeepLoadedPart {
 
 message InsertUnloadedPart {
   extend Method {
-    optional InsertUnloadedPart extension = 5024;
+    optional InsertUnloadedPart extension = 5117;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];

@@ -158,10 +158,10 @@ class Plugin {
                                   bool loaded,
                                   bool& inserted);
 
-  // Adds a part with the given part_id to the vessel with the given ID, which
-  // must be unloaded, putting the part at the given offset from the parent body
-  // of the vessel.  The part is given unit mass; this does not matter, since
-  // the |PileUp| will be deformed when it first loads anyway.
+  // Adds a part with the given |part_id| to the vessel with the given |GUID|,
+  // which must be unloaded, putting the part at the given offset from the
+  // parent body of the vessel.  The part is given unit mass; this does not
+  // matter, since the |PileUp| will be deformed when it first loads anyway.
   virtual void InsertUnloadedPart(
       PartId part_id,
       GUID const& vessel_guid,
@@ -429,6 +429,8 @@ class Plugin {
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
       MassiveBody const& body);
 
+  // Adds a part to a vessel, recording it in the appropriate map and setting up
+  // a deletion callback.
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
                Mass mass,

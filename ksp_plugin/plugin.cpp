@@ -392,17 +392,17 @@ void Plugin::InsertUnloadedPart(
     PartId part_id,
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
-  not_null<Vessel*> vessel = find_vessel_by_guid_or_die(vessel_guid).get();
+  not_null<Vessel*> const vessel = find_vessel_by_guid_or_die(vessel_guid).get();
   CHECK(is_new_unloaded(vessel));
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
-  AddPart(
-      vessel,
-      part_id,
-      1 * Kilogram,
-      vessel->parent()->current_degrees_of_freedom(current_time_) + relative);
-  not_null<Part*> part = vessel->part(part_id);
+  AddPart(vessel,
+          part_id,
+          1 * Kilogram,
+          vessel->parent()->current_degrees_of_freedom(current_time_) +
+              relative);
+  not_null<Part*> const part = vessel->part(part_id);
   Subset<Part>::MakeSingleton(*part, part);
 }
 
@@ -1318,15 +1318,14 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   std::map<PartId, not_null<Vessel*>>::iterator it;
   bool emplaced;
   std::tie(it, emplaced) = part_id_to_vessel_.emplace(part_id, vessel);
-  CHECK(emplaced);
-  auto deletion_callback = [ it, &map = part_id_to_vessel_ ] {
+  CHECK(emplaced) << NAMED(part_id);
+  auto deletion_callback = [it, &map = part_id_to_vessel_] {
     map.erase(it);
   };
-  auto part =
-      make_not_null_unique<Part>(part_id,
-                                 mass,
-                                 degrees_of_freedom,
-                                 std::move(deletion_callback));
+  auto part = make_not_null_unique<Part>(part_id,
+                                         mass,
+                                         degrees_of_freedom,
+                                         std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }
 

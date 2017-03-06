@@ -68,7 +68,7 @@ class Vessel {
   virtual void KeepPart(PartId id);
   // Removes any part for which |AddPart| or |KeepPart| has not been called
   // since the last call to |FreePart|.  Checks that there are still parts left
-  // after the removals; thus a call to |AddParts| must occur before |FreeParts|
+  // after the removals; thus a call to |AddPart| must occur before |FreeParts|
   // is first called.
   virtual void FreeParts();
 
