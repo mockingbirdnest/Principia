@@ -105,7 +105,9 @@ Plugin::Plugin(Instant const& game_epoch,
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
-      current_time_(solar_system_epoch) {}void Plugin::InsertCelestialAbsoluteCartesian(
+      current_time_(solar_system_epoch) {}
+
+void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
@@ -140,9 +142,9 @@ Plugin::Plugin(Instant const& game_epoch,
 }
 
 Plugin::~Plugin() {
-  // This is largely awful; If we simply let the destructor of |Part| deal with
-  // removing itself from pile-ups, by calling |clear_pile_up|, it will try to
-  // access the other parts, which may have been already destroyed...
+  // If we simply let the destructor of |Part| deal with removing itself from
+  // pile-ups, by calling |clear_pile_up|, it will try to access the other
+  // parts, which may have been already destroyed...
   for (auto const& pair : vessels_) {
     pair.second->ForAllParts([](Part& part) {
       part.clear_pile_up();
@@ -150,7 +152,7 @@ Plugin::~Plugin() {
   }
   // We must manually destroy the vessels, triggering the destruction of the
   // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.  This is horrifying.
+  // which must therefore still exist.
   vessels_.clear();
 }
 
@@ -485,7 +487,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel with GUID " << it->first;
-      // This is awful, see also the destructor.
+      // See the destructor.
       vessel->ForAllParts([](Part& part) { part.clear_pile_up(); });
       it = vessels_.erase(it);
     }

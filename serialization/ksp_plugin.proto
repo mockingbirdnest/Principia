@@ -126,9 +126,6 @@ message Vessel {
   required DiscreteTrajectory prediction = 18;
   optional FlightPlan flight_plan = 4;
 
-  reserved 13;
-  reserved "dummy_part";
-
   // Pre-Буняковский.
   reserved 2, 3, 5;
   reserved "/*prediction*/", "history_and_prolongation", "owned_prolongation";
