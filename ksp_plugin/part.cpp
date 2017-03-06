@@ -24,6 +24,7 @@ Part::Part(
       deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
+  LOG(INFO) << "Destroying part " << part_id_;
   CHECK(!is_piled_up());
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
