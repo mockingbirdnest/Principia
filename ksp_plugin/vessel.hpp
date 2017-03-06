@@ -157,7 +157,7 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
-  // The new implementation of history, also encompasses the prolongation.
+  // If the psychohistory is not authoritative it contains at least one point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
   bool psychohistory_is_authoritative_;
 

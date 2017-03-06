@@ -133,9 +133,11 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime(Instant const& time) {
+  CHECK(!parts_.empty());
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
   for (auto const& pair : parts_) {
     Part const& part = *pair.second;
+    CHECK(!part.tail().Empty());
     its.push_back(part.tail().Begin());
   }
   for (;;) {
@@ -175,6 +177,7 @@ void Vessel::AdvanceTime(Instant const& time) {
 
 void Vessel::ForgetBefore(Instant const& time) {
   prediction_->ForgetBefore(time);
+  psychohistory_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
@@ -201,6 +204,7 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::UpdatePrediction(Instant const& last_time) {
   prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  CHECK(!psychohistory_->Empty());
   auto const last = psychohistory_->last();
   prediction_->Append(last.time(), last.degrees_of_freedom());
   FlowPrediction(last_time);
@@ -296,6 +300,7 @@ void Vessel::AppendToPsychohistory(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     bool const authoritative) {
   if (!psychohistory_is_authoritative_) {
+    CHECK(!psychohistory_->Empty());
     psychohistory_->ForgetAfter((--psychohistory_->last()).time());
   }
   psychohistory_->Append(time, degrees_of_freedom);

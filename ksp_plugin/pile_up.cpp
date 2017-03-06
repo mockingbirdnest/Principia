@@ -166,8 +166,7 @@ void PileUp::AdvanceTime(
   for (; it != psychohistory_->End(); ++it) {
     AppendToPartTails(it, /*authoritative=*/true);
   }
-  // TODO(phl): you have reinvented the map.  Now I want an empty :-p
-  if (prolongation.Size() != 0) {
+  if (!prolongation.Empty()) {
     CHECK_EQ(prolongation.Size(), 2);
     AppendToPartTails(prolongation.last(), /*authoritative=*/false);
   }
