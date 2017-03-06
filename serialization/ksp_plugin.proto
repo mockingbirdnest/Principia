@@ -119,13 +119,15 @@ message Vessel {
   required MasslessBody body = 1;
   required Ephemeris.AdaptiveStepParameters 
       prediction_adaptive_step_parameters = 10;
-  optional Part dummy_part = 13;
   repeated Part parts = 14;
   repeated uint32 kept_parts = 15;
   required DiscreteTrajectory psychohistory = 16;
   required bool psychohistory_is_authoritative = 17;
   required DiscreteTrajectory prediction = 18;
   optional FlightPlan flight_plan = 4;
+
+  reserved 13;
+  reserved "dummy_part";
 
   // Pre-Буняковский.
   reserved 2, 3, 5;

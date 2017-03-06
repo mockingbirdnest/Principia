@@ -71,7 +71,6 @@ void Vessel::KeepPart(PartId const id) {
 }
 
 void Vessel::FreeParts() {
-  dummy_part_.reset();
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part const*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
@@ -213,9 +212,6 @@ void Vessel::WriteToMessage(
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
-  if (dummy_part_ != nullptr) {
-    dummy_part_->WriteToMessage(message->mutable_dummy_part());
-  }
   for (auto const& pair : parts_) {
     auto const& part = pair.second;
     part->WriteToMessage(message->add_parts());
@@ -245,10 +241,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.prediction_adaptive_step_parameters()));
-  if (message.has_dummy_part()) {
-    vessel->dummy_part_ = Part::ReadFromMessage(message.dummy_part(),
-                                                /*deletion_callback=*/nullptr);
-  }
   for (auto const& serialized_part : message.parts()) {
     PartId const part_id = serialized_part.part_id();
     auto part = Part::ReadFromMessage(
