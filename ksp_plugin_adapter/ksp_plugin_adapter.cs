@@ -815,7 +815,6 @@ public partial class PrincipiaPluginAdapter
          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
        }
      }
-     /*
      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.loaded) {
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
@@ -839,7 +838,7 @@ public partial class PrincipiaPluginAdapter
        // bodies their positions at the next instant, wherease KSP still expects
        // them at the previous instant, and will propagate them at the beginning
        // of the next frame...
-     }*/
+     }
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {

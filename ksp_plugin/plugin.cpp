@@ -144,9 +144,7 @@ Plugin::~Plugin() {
   // removing itself from pile-ups, by calling |clear_pile_up|, it will try to
   // access the other parts, which may have been already destroyed...
   for (auto const& pair : vessels_) {
-    LOG(ERROR)<< "Clearing pileup on parts of " << pair.first;
     pair.second->ForAllParts([](Part& part) {
-      LOG(ERROR)<< "Clearing pileup on part " << part.part_id();
       part.clear_pile_up();
     });
   }

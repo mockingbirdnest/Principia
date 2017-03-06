@@ -99,16 +99,12 @@ bool Part::is_piled_up() const {
 
 void Part::clear_pile_up() {
   if (is_piled_up()) {
-    LOG(ERROR)<< "Part is piled up.";
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Part*> const part : pile_up.iterator()->parts()) {
-      LOG(ERROR)<< "Nulling pileup of part " << part->part_id();
       part->containing_pile_up_ = std::experimental::nullopt;
     }
     CHECK(!is_piled_up());
-    LOG(ERROR)<< "Erasing pile up...";
     pile_up.Erase();
-    LOG(ERROR)<< "Done.";
   }
 }
 
