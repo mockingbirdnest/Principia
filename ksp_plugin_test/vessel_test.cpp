@@ -3,6 +3,7 @@
 
 #include <limits>
 
+#include "base/not_null.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
@@ -14,6 +15,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::make_not_null_unique;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
@@ -26,11 +28,44 @@ class VesselTest : public testing::Test {
   VesselTest()
       : body_(MassiveBody::Parameters(1 * Kilogram)),
         celestial_(&body_),
-        vessel_(&celestial_, &ephemeris_, DefaultPredictionParameters()) {}
+        vessel_(&celestial_, &ephemeris_, DefaultPredictionParameters()) {
+    auto p1 = make_not_null_unique<Part>(part_id1_,
+                                       mass1_,
+                                       p1_dof_,
+                                       /*deletion_callback=*/nullptr);
+    auto p2 = make_not_null_unique<Part>(part_id2_,
+                                       mass2_,
+                                       p2_dof_,
+                                       /*deletion_callback=*/nullptr);
+    p1_ = p1.get();
+    p2_ = p2.get();
+    vessel_.AddPart(std::move(p1));
+    vessel_.AddPart(std::move(p2));
+  }
 
   MockEphemeris<Barycentric> ephemeris_;
   MassiveBody const body_;
   Celestial const celestial_;
+  PartId const part_id1_ = 111;
+  PartId const part_id2_ = 222;
+  Mass const mass1_ = 1 * Kilogram;
+  Mass const mass2_ = 2 * Kilogram;
+
+  // Centre of mass of |p1_| and |p2_| in |Barycentric|, in SI units:
+  //   {13 / 3, 4, 11 / 3} {130 / 3, 40, 110 / 3}
+  DegreesOfFreedom<Barycentric> const p1_dof_ = DegreesOfFreedom<Barycentric>(
+      Barycentric::origin +
+          Displacement<Barycentric>({1 * Metre, 2 * Metre, 3 * Metre}),
+      Velocity<Barycentric>(
+          {10 * Metre / Second, 20 * Metre / Second, 30 * Metre / Second}));
+  DegreesOfFreedom<Barycentric> const p2_dof_ = DegreesOfFreedom<Barycentric>(
+      Barycentric::origin +
+          Displacement<Barycentric>({6 * Metre, 5 * Metre, 4 * Metre}),
+      Velocity<Barycentric>(
+          {60 * Metre / Second, 50 * Metre / Second, 40 * Metre / Second}));
+
+  not_null<Part*> p1_;
+  not_null<Part*> p2_;
   Vessel vessel_;
 };
 
@@ -48,10 +83,10 @@ TEST_F(VesselTest, Initialization) {
 }
 
 TEST_F(VesselTest, Parent) {
-  Celestial celestial(earth_->body());
-  EXPECT_EQ(earth_.get(), vessel_.parent());
-  vessel_.set_parent(&celestial);
-  EXPECT_EQ(&celestial, vessel_.parent());
+  Celestial other_celestial(&body_);
+  EXPECT_EQ(celestial_, vessel_.parent());
+  vessel_.set_parent(&other_celestial);
+  EXPECT_EQ(&other_celestial, vessel_.parent());
 }
 
 TEST_F(VesselTest, AdvanceTimeInBubble) {
