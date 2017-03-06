@@ -159,7 +159,7 @@ class Vessel {
 
   // If the psychohistory is not authoritative it contains at least one point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
-  bool psychohistory_is_authoritative_;
+  bool psychohistory_is_authoritative_ = true;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 

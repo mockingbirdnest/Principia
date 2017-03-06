@@ -36,7 +36,7 @@ using quantities::Force;
 using quantities::Mass;
 
 // Represents a KSP part.
-class Part final {
+class Part {
  public:
   Part(PartId part_id,
        Mass const& mass,
@@ -45,7 +45,7 @@ class Part final {
 
   // Calls the deletion callback passed at construction, if any.  Calls
   // |clear_pile_up|.
-  ~Part();
+  virtual ~Part();
 
   virtual PartId part_id() const;
 
