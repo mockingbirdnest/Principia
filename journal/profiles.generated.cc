@@ -27,13 +27,13 @@ BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& bo
   return {body_parameters.name().c_str(),
           body_parameters.gravitational_parameter().c_str(),
           body_parameters.reference_instant(),
-          body_parameters.mean_radius().c_str(),
-          body_parameters.axis_right_ascension().c_str(),
-          body_parameters.axis_declination().c_str(),
-          body_parameters.reference_angle().c_str(),
-          body_parameters.angular_frequency().c_str(),
-          body_parameters.j2().c_str(),
-          body_parameters.reference_radius().c_str()};
+          body_parameters.has_mean_radius() ? body_parameters.mean_radius().c_str() : nullptr,
+          body_parameters.has_axis_right_ascension() ? body_parameters.axis_right_ascension().c_str() : nullptr,
+          body_parameters.has_axis_declination() ? body_parameters.axis_declination().c_str() : nullptr,
+          body_parameters.has_reference_angle() ? body_parameters.reference_angle().c_str() : nullptr,
+          body_parameters.has_angular_frequency() ? body_parameters.angular_frequency().c_str() : nullptr,
+          body_parameters.has_j2() ? body_parameters.j2().c_str() : nullptr,
+          body_parameters.has_reference_radius() ? body_parameters.reference_radius().c_str() : nullptr};
 }
 
 Burn DeserializeBurn(serialization::Burn const& burn) {
