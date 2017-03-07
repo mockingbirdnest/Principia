@@ -114,19 +114,19 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << "Last successful method out/return: \n"
                << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
     serialization::Method method_in;
     auto* extension = method_in.MutableExtension(
-        serialization::ReportCollision::extension);
+        serialization::AdvanceTime::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(355375312);
-    in->set_vessel1_guid("14b05bd3-9707-4d49-a6be-a7de481f3e0a");
-    in->set_vessel2_guid("3e6fcb7e-4761-48ed-829f-0adb035f457e");
+    in->set_plugin(243473024);
+    in->set_t(18661.962470088278);
+    in->set_planetarium_rotation(181.46199553766934);
     serialization::Method method_out_return;
     method_out_return.MutableExtension(
-        serialization::ReportCollision::extension);
+        serialization::AdvanceTime::extension);
     LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-    CHECK(RunIfAppropriate<ReportCollision>(method_in,
+    CHECK(RunIfAppropriate<AdvanceTime>(method_in,
                                             method_out_return,
                                             player));
 #endif

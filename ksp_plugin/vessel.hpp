@@ -72,6 +72,13 @@ class Vessel {
   // is first called.
   virtual void FreeParts();
 
+  // If the psychohistory is empty, appends a single authoritative point to it,
+  // computed as the barycentre of all parts.  |parts_| must not be empty.
+  // After this call, |psychohistory_| is never empty again.
+  // TODO(egg): ... except ForgetBefore.  This will break things, so
+  // ForgetBefore should not clear the psychohistory altogether.
+  virtual void PreparePsychohistory(Instant const& t);
+
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;

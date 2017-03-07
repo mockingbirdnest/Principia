@@ -494,6 +494,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   }
   // Free old parts and bind vessels.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->PreparePsychohistory(current_time_);
     vessel->FreeParts();
     vessel->ForSomePart([vessel](Part& first_part) {
       vessel->ForAllParts([&first_part](Part& part) {

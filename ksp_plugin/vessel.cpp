@@ -83,6 +83,18 @@ void Vessel::FreeParts() {
   kept_parts_.clear();
 }
 
+void Vessel::PreparePsychohistory(Instant const& t) {
+  CHECK(!parts_.empty());
+  if (psychohistory_->Size() == 0) {
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
+    ForAllParts([&calculator](Part& part) {
+      calculator.Add(part.degrees_of_freedom(), part.mass());
+    });
+    psychohistory_->Append(t, calculator.Get());
+    psychohistory_is_authoritative_ = true;
+  }
+}
+
 not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
