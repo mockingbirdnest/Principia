@@ -827,12 +827,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     std::string const& field_descriptor_name = field_descriptor->name();
     ProcessField(field_descriptor);
 
+    std::string const deserialize_field_checker =
+        parameter_name + ".has_" + field_descriptor_name + "()";
     std::string const deserialize_field_getter =
         parameter_name + "." + field_descriptor_name + "()";
     std::string const serialize_member_name =
         parameter_name + "." + field_descriptor_name;
     deserialized_expressions.push_back(
-        field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
+        field_cxx_optional_pointer_fn_[field_descriptor](
+            deserialize_field_checker,
+            field_cxx_deserializer_fn_[field_descriptor](
+                deserialize_field_getter)));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_optional_assignment_fn_[field_descriptor](
             serialize_member_name,
