@@ -93,14 +93,14 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 0
+#if 1
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
     // An example of how journalling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(C:\Users\robin\Projects\KSP_win64\glog\Principia\JOURNAL.20161226-193328)";
+        R"(C:\Users\robin\Projects\Kerbal Space Program\KSP_win64 1.2.2\glog\Principia\JOURNAL.20170307-163451)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
