@@ -106,7 +106,7 @@ class Part final {
 
  private:
   PartId const part_id_;
-  std::string const& name_;
+  std::string const name_;
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
