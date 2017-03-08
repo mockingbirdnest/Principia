@@ -34,31 +34,6 @@ using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
 
-namespace {
-
-// TODO(phl): Move to a common library.
-ACTION_P(AppendToDiscreteTrajectories, degrees_of_freedom) {
-  for (auto const& trajectory : arg0) {
-    trajectory->Append(arg2, degrees_of_freedom);
-  }
-}
-
-ACTION_P2(AppendToDiscreteTrajectories, time, degrees_of_freedom) {
-  for (auto const& trajectory : arg0) {
-    trajectory->Append(time, degrees_of_freedom);
-  }
-}
-
-ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
-  arg0->Append(arg2, degrees_of_freedom);
-}
-
-ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
-  arg0->Append(time, degrees_of_freedom);
-}
-
-}  // namespace
-
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:

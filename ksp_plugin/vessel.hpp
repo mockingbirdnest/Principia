@@ -102,7 +102,9 @@ class Vessel {
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
-  virtual void AdvanceTime(Instant const& time);
+  // Extends the psychohistory of this vessel by computing the centre of mass of
+  // its parts at every point in their tail.  Clears the tails.
+  virtual void AdvanceTime();
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
   // the flight plan.

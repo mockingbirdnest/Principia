@@ -85,7 +85,7 @@ void Vessel::FreeParts() {
 
 void Vessel::PreparePsychohistory(Instant const& t) {
   CHECK(!parts_.empty());
-  if (psychohistory_->Size() == 0) {
+  if (psychohistory_->Empty()) {
     LOG(INFO) << "Preparing psychohistory of vessel at " << this;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
@@ -135,7 +135,7 @@ bool Vessel::has_flight_plan() const {
   return flight_plan_ != nullptr;
 }
 
-void Vessel::AdvanceTime(Instant const& time) {
+void Vessel::AdvanceTime() {
   CHECK(!parts_.empty());
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
   for (auto const& pair : parts_) {
@@ -145,7 +145,7 @@ void Vessel::AdvanceTime(Instant const& time) {
   }
   for (;;) {
     Part const& first_part = *parts_.begin()->second;
-    Instant const time = its[0].time();
+    Instant const first_time = its[0].time();
     bool const at_end_of_tail = its[0] == first_part.tail().last();
     bool const tail_is_authoritative = first_part.tail_is_authoritative();
 
@@ -155,7 +155,7 @@ void Vessel::AdvanceTime(Instant const& time) {
       Part& part = *pair.second;
       auto& it = its[i];
       calculator.Add(it.degrees_of_freedom(), part.mass());
-      CHECK_EQ(time, it.time());
+      CHECK_EQ(first_time, it.time());
       CHECK_EQ(at_end_of_tail, it == part.tail().last());
       CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
@@ -168,7 +168,7 @@ void Vessel::AdvanceTime(Instant const& time) {
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     AppendToPsychohistory(
-        time,
+        first_time,
         vessel_degrees_of_freedom,
         /*authoritative=*/!at_end_of_tail || tail_is_authoritative);
 
