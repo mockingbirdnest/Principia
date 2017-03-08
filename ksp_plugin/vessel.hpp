@@ -134,6 +134,9 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void(PartId)> const& deletion_callback);
 
+  // Returns "vessel name (GUID)".
+  std::string DebugID() const;
+
  protected:
   // For mocking.
   Vessel();
