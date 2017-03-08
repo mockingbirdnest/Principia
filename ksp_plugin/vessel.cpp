@@ -53,7 +53,6 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
   PartId const id = part->part_id();
   LOG(INFO) << "Adding part " << id << " to vessel at " << this;
-  kept_parts_.insert(part.get());
   parts_.emplace(id, std::move(part));
 }
 
@@ -72,8 +71,9 @@ void Vessel::KeepPart(PartId const id) {
 
 void Vessel::FreeParts() {
   for (auto it = parts_.begin(); it != parts_.end();) {
-    not_null<Part const*> part = it->second.get();
+    not_null<Part*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
+      part->clear_pile_up();
       it = parts_.erase(it);
     } else {
       ++it;
@@ -81,6 +81,19 @@ void Vessel::FreeParts() {
   }
   CHECK(!parts_.empty());
   kept_parts_.clear();
+}
+
+void Vessel::PreparePsychohistory(Instant const& t) {
+  CHECK(!parts_.empty());
+  if (psychohistory_->Size() == 0) {
+    LOG(INFO) << "Preparing psychohistory of vessel at " << this;
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
+    ForAllParts([&calculator](Part& part) {
+      calculator.Add(part.degrees_of_freedom(), part.mass());
+    });
+    psychohistory_->Append(t, calculator.Get());
+    psychohistory_is_authoritative_ = true;
+  }
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {

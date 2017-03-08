@@ -417,6 +417,8 @@ void Plugin::InsertUnloadedPart(
           1 * Kilogram,
           vessel->parent()->current_degrees_of_freedom(current_time_) +
               relative);
+  // NOTE(egg): we do not keep the part; it may disappear just as we load, if
+  // it happens to be a part with no physical significance (rb == null).
   not_null<Part*> const part = vessel->part(part_id);
   Subset<Part>::MakeSingleton(*part, part);
 }
@@ -435,7 +437,6 @@ void Plugin::InsertOrKeepLoadedPart(
     not_null<Vessel*>& associated_vessel = it->second;
     not_null<Vessel*> const current_vessel = associated_vessel;
     if (vessel == current_vessel) {
-      vessel->KeepPart(part_id);
     } else {
       associated_vessel = vessel;
       vessel->AddPart(current_vessel->ExtractPart(part_id));
@@ -464,6 +465,7 @@ void Plugin::InsertOrKeepLoadedPart(
             mass,
             world_to_barycentric(part_degrees_of_freedom));
   }
+  vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
   part->set_mass(mass);
   Subset<Part>::MakeSingleton(*part, part);
@@ -483,6 +485,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> vessel = it->second.get();
     if (kept_vessels_.erase(vessel)) {
+      vessel->PreparePsychohistory(current_time_);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));

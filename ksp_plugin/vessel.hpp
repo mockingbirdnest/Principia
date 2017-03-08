@@ -57,7 +57,9 @@ class Vessel {
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  // Adds the given part to this vessel.
+  // Adds the given part to this vessel.  Note that this does not add the part
+  // to the set of kept parts, and that unless |KeepPart| is called, the part
+  // will be removed by the next call to |FreeParts|.
   virtual void AddPart(not_null<std::unique_ptr<Part>> part);
   // Removes and returns the part with the given ID.  This may empty |parts_|,
   // as happens when a vessel ceases to exist while loaded.  Note that in that
@@ -66,11 +68,18 @@ class Vessel {
   // Prevents the part with the given ID from being removed in the next call to
   // |FreeParts|.
   virtual void KeepPart(PartId id);
-  // Removes any part for which |AddPart| or |KeepPart| has not been called
-  // since the last call to |FreePart|.  Checks that there are still parts left
-  // after the removals; thus a call to |AddPart| must occur before |FreeParts|
-  // is first called.
+  // Removes any part for which |KeepPart| has not been called since the last
+  // call to |FreePart|.  Checks that there are still parts left after the
+  // removals; thus a call to |AddPart| must occur before |FreeParts| is first
+  // called.
   virtual void FreeParts();
+
+  // If the psychohistory is empty, appends a single authoritative point to it,
+  // computed as the barycentre of all parts.  |parts_| must not be empty.
+  // After this call, |psychohistory_| is never empty again.
+  // TODO(egg): ... except ForgetBefore.  This will break things, so
+  // ForgetBefore should not clear the psychohistory altogether.
+  virtual void PreparePsychohistory(Instant const& t);
 
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
