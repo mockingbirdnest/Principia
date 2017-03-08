@@ -162,6 +162,7 @@ class Plugin {
   // matter, since the |PileUp| will be deformed when it first loads anyway.
   virtual void InsertUnloadedPart(
       PartId part_id,
+      std::string const& name,
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
@@ -174,6 +175,7 @@ class Plugin {
   // these three parameters are ignored.
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
+      std::string const& name,
       Mass const& mass,
       not_null<Vessel*> vessel,
       Index main_body_index,
@@ -431,6 +433,7 @@ class Plugin {
   // a deletion callback.
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
+               std::string const& name,
                Mass mass,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 

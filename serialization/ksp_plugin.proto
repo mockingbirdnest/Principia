@@ -55,6 +55,7 @@ message Manoeuvre {
 
 message Part {
   required fixed32 part_id = 4;
+  required string name = 9;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.

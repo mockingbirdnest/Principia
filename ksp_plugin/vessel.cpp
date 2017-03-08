@@ -55,16 +55,16 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
-  PartId const id = part->part_id();
-  LOG(INFO) << "Adding part " << id << " to vessel " << DebugID();
-  parts_.emplace(id, std::move(part));
+  LOG(INFO) << "Adding part " << part->DebugID() << " to vessel " << DebugID();
+  parts_.emplace(part->part_id(), std::move(part));
 }
 
 not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
-  LOG(INFO) << "Extracting part " << id << " from vessel " << DebugID();
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
+  LOG(INFO) << "Extracting part " << result->DebugID() << " from vessel "
+            << DebugID();
   parts_.erase(it);
   return result;
 }
@@ -226,8 +226,8 @@ bool Vessel::psychohistory_is_authoritative() const {
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   // TODO(phl): Implement.
-  *message->mutable_guid() = guid_;
-  *message->mutable_name() = name_;
+  message->set_guid(guid_);
+  message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());

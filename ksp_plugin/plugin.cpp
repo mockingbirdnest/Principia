@@ -407,6 +407,7 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
 
 void Plugin::InsertUnloadedPart(
     PartId part_id,
+    std::string const& name,
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   not_null<Vessel*> const vessel = find_vessel_by_guid_or_die(vessel_guid).get();
@@ -416,6 +417,7 @@ void Plugin::InsertUnloadedPart(
   ephemeris_->Prolong(current_time_);
   AddPart(vessel,
           part_id,
+          name,
           1 * Kilogram,
           vessel->parent()->current_degrees_of_freedom(current_time_) +
               relative);
@@ -427,6 +429,7 @@ void Plugin::InsertUnloadedPart(
 
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
+    std::string const& name,
     Mass const& mass,
     not_null<Vessel*> const vessel,
     Index const main_body_index,
@@ -464,6 +467,7 @@ void Plugin::InsertOrKeepLoadedPart(
 
     AddPart(vessel,
             part_id,
+            name,
             mass,
             world_to_barycentric(part_degrees_of_freedom));
   }
@@ -1335,6 +1339,7 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
+                     std::string const& name,
                      Mass const mass,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   std::map<PartId, not_null<Vessel*>>::iterator it;
@@ -1345,6 +1350,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
     map.erase(it);
   };
   auto part = make_not_null_unique<Part>(part_id,
+                                         name,
                                          mass,
                                          degrees_of_freedom,
                                          std::move(deletion_callback));

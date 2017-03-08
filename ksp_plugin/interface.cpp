@@ -554,6 +554,7 @@ void principia__InsertOrKeepVessel(Plugin* const plugin,
 void principia__InsertOrKeepLoadedPart(
     Plugin* const plugin,
     std::uint32_t const part_id,
+    char const* const name,
     double const mass_in_tonnes,
     char const* const vessel_guid,
     int const main_body_index,
@@ -562,6 +563,7 @@ void principia__InsertOrKeepLoadedPart(
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
        part_id,
+       name,
        mass_in_tonnes,
        vessel_guid,
        main_body_index,
@@ -570,6 +572,7 @@ void principia__InsertOrKeepLoadedPart(
   CHECK_NOTNULL(plugin);
   plugin->InsertOrKeepLoadedPart(
       part_id,
+      name,
       mass_in_tonnes * Tonne,
       GetVessel(*plugin, vessel_guid),
       main_body_index,
@@ -589,13 +592,15 @@ void principia__InsertOrKeepLoadedPart(
 // |plugin| must not be null.  No transfer of ownership.
 void principia__InsertUnloadedPart(Plugin* const plugin,
                                    PartId const part_id,
+                                   char const* const name,
                                    char const* const vessel_guid,
                                    QP const from_parent) {
   journal::Method<journal::InsertUnloadedPart> m(
-      {plugin, part_id, vessel_guid, from_parent});
+      {plugin, part_id, name, vessel_guid, from_parent});
   CHECK_NOTNULL(plugin);
   plugin->InsertUnloadedPart(
       part_id,
+      name,
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(
           Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
