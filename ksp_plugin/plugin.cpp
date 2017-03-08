@@ -372,6 +372,7 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
+                                std::string const& vessel_name,
                                 Index const parent_index,
                                 bool const loaded,
                                 bool& inserted) {
@@ -385,7 +386,9 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   GUIDToOwnedVessel::iterator it;
   std::tie(it, inserted) =
       vessels_.emplace(vessel_guid,
-                       make_not_null_unique<Vessel>(parent,
+                       make_not_null_unique<Vessel>(vessel_guid,
+                                                    vessel_name,
+                                                    parent,
                                                     ephemeris_.get(),
                                                     prediction_parameters_));
   not_null<Vessel*> const vessel = it->second.get();

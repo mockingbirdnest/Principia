@@ -748,8 +748,9 @@ message InsertOrKeepVessel {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
-    required int32 parent_index = 3;
-    required bool loaded = 4;
+    required string vessel_name = 3;
+    required int32 parent_index = 4;
+    required bool loaded = 5;
   }
   message Out {
     required bool inserted = 1;

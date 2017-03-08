@@ -116,6 +116,8 @@ message Plugin {
 }
 
 message Vessel {
+  required string guid = 13;
+  required string name = 19;
   required MasslessBody body = 1;
   required Ephemeris.AdaptiveStepParameters 
       prediction_adaptive_step_parameters = 10;

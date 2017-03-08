@@ -70,9 +70,6 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
 
-// The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
-// key in an |std::map|.
-using GUID = std::string;
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
@@ -154,6 +151,7 @@ class Plugin {
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
   // |v.orbit.referenceBody.flightGlobalsIndex|, |v.loaded|.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
+                                  std::string const& vessel_name,
                                   Index parent_index,
                                   bool loaded,
                                   bool& inserted);
@@ -517,7 +515,6 @@ class Plugin {
 
 }  // namespace internal_plugin
 
-using internal_plugin::GUID;
 using internal_plugin::Index;
 using internal_plugin::Plugin;
 

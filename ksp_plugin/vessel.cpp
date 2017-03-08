@@ -27,11 +27,15 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
 
-Vessel::Vessel(not_null<Celestial const*> const parent,
+Vessel::Vessel(GUID const& guid,
+               std::string const& name,
+               not_null<Celestial const*> const parent,
                not_null<Ephemeris<Barycentric>*> const ephemeris,
                Ephemeris<Barycentric>::AdaptiveStepParameters const&
                    prediction_adaptive_step_parameters)
-    : body_(),
+    : guid_(guid),
+      name_(name),
+      body_(),
       prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       parent_(parent),
       ephemeris_(ephemeris),
@@ -222,6 +226,8 @@ bool Vessel::psychohistory_is_authoritative() const {
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   // TODO(phl): Implement.
+  *message->mutable_guid() = guid_;
+  *message->mutable_name() = name_;
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
@@ -250,6 +256,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   auto vessel = make_not_null_unique<Vessel>(
+      message.guid(),
+      message.name(),
       parent,
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(

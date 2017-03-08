@@ -536,13 +536,18 @@ void principia__InsertCelestialJacobiKeplerian(
 // |plugin| must not be null.  No transfer of ownership.
 void principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
+                                   char const* const vessel_name,
                                    int const parent_index,
                                    bool const loaded,
                                    bool* inserted) {
   journal::Method<journal::InsertOrKeepVessel> m(
-      {plugin, vessel_guid, parent_index, loaded}, {inserted});
+      {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
-  plugin->InsertOrKeepVessel(vessel_guid, parent_index, loaded, *inserted);
+  plugin->InsertOrKeepVessel(vessel_guid,
+                             vessel_name,
+                             parent_index,
+                             loaded,
+                             *inserted);
   return m.Return();
 }
 
