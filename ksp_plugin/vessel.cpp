@@ -73,8 +73,9 @@ void Vessel::KeepPart(PartId const id) {
 void Vessel::FreeParts() {
   LOG(ERROR)<<"Freeing " << parts_.size() - kept_parts_.size() << " parts";
   for (auto it = parts_.begin(); it != parts_.end();) {
-    not_null<Part const*> part = it->second.get();
+    not_null<Part*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
+      part->clear_pile_up();
       it = parts_.erase(it);
     } else {
       ++it;
