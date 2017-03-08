@@ -100,7 +100,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journalling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(C:\Users\robin\Projects\Kerbal Space Program\KSP_win64 1.2.2\glog\Principia\JOURNAL.20170308-104513)";
+        R"(C:\Users\robin\Projects\Kerbal Space Program\KSP_win64 1.2.2\glog\Principia\JOURNAL.20170308-130328)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -119,9 +119,9 @@ TEST_F(PlayerTest, Debug) {
     auto* extension = method_in.MutableExtension(
         serialization::AdvanceTime::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(270951808);
-    in->set_t(18669.282470088438);
-    in->set_planetarium_rotation(181.7999646681634);
+    in->set_plugin(248545200);
+    in->set_t(18676.142470088587);
+    in->set_planetarium_rotation(181.90587932624157);
     serialization::Method method_out_return;
     method_out_return.MutableExtension(
         serialization::AdvanceTime::extension);
@@ -130,6 +130,7 @@ TEST_F(PlayerTest, Debug) {
                                             method_out_return,
                                             player));
 
+    std::cout << "Done.";
     char moo;
     std::cin >> moo;
 #endif
