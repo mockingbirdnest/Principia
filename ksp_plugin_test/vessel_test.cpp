@@ -82,7 +82,7 @@ class VesselTest : public testing::Test {
 
 TEST_F(VesselTest, Parent) {
   Celestial other_celestial(&body_);
-  EXPECT_EQ(celestial_, vessel_.parent());
+  EXPECT_EQ(&celestial_, vessel_.parent());
   vessel_.set_parent(&other_celestial);
   EXPECT_EQ(&other_celestial, vessel_.parent());
 }
@@ -93,8 +93,8 @@ TEST_F(VesselTest, KeepAndFreeParts) {
     remaining_part_ids.insert(part.part_id());
   });
   EXPECT_THAT(remaining_part_ids, ElementsAre(part_id1_, part_id2_));
-  EXPECT_EQ(part_id1_, vessel_.part(part_id1_));
-  EXPECT_EQ(part_id2_, vessel_.part(part_id2_));
+  EXPECT_EQ(part_id1_, vessel_.part(part_id1_)->part_id());
+  EXPECT_EQ(part_id2_, vessel_.part(part_id2_)->part_id());
 
   vessel_.KeepPart(part_id2_);
   vessel_.FreeParts();
@@ -102,7 +102,7 @@ TEST_F(VesselTest, KeepAndFreeParts) {
     remaining_part_ids.insert(part.part_id());
   });
   EXPECT_THAT(remaining_part_ids, ElementsAre(part_id1_));
-  EXPECT_EQ(part_id1_, vessel_.part(part_id1_));
+  EXPECT_EQ(part_id1_, vessel_.part(part_id1_)->part_id());
 }
 
 TEST_F(VesselTest, PreparePsychohistory) {
@@ -238,11 +238,69 @@ TEST_F(VesselTest, Prediction) {
                                        40.0 * Metre / Second}), 0)));
 }
 
+TEST_F(VesselTest, PredictBeyondTheInfinite) {
+  vessel_.PreparePsychohistory(astronomy::J2000);
+
+  EXPECT_CALL(ephemeris_, t_max())
+      .WillOnce(Return(astronomy::J2000 + 0.5 * Second));
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 0.5 * Second, _, _, _))
+      .WillOnce(
+          DoAll(AppendToDiscreteTrajectory(
+                    astronomy::J2000 + 0.5 * Second,
+                    DegreesOfFreedom<Barycentric>(
+                        Barycentric::origin +
+                            Displacement<Barycentric>({14.0 / 3.0 * Metre,
+                                                       5.0 * Metre,
+                                                       4.0 * Metre}),
+                        Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
+                                               50.0 * Metre / Second,
+                                               40.0 * Metre / Second}))),
+                Return(true)));
+  EXPECT_CALL(
+      ephemeris_,
+      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 1.0 * Second, _, _, _))
+      .WillOnce(
+          DoAll(AppendToDiscreteTrajectory(
+                    astronomy::J2000 + 1.0 * Second,
+                    DegreesOfFreedom<Barycentric>(
+                        Barycentric::origin +
+                            Displacement<Barycentric>({5.0 * Metre,
+                                                       6.0 * Metre,
+                                                       5.0 * Metre}),
+                        Velocity<Barycentric>({50.0 * Metre / Second,
+                                               60.0 * Metre / Second,
+                                               50.0 * Metre / Second}))),
+                Return(true)));
+  vessel_.UpdatePrediction(astronomy::J2000 + 1.0 * Second);
+
+  EXPECT_EQ(3, vessel_.prediction().Size());
+  auto it = vessel_.prediction().Begin();
+  ++it;
+  EXPECT_EQ(astronomy::J2000 + 0.5 * Second, it.time());
+  ++it;
+  EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
+  EXPECT_THAT(
+      it.degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                      Displacement<Barycentric>(
+                                          {5.0 * Metre,
+                                           6.0 * Metre,
+                                           5.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                      {50.0 * Metre / Second,
+                                       60.0 * Metre / Second,
+                                       50.0 * Metre / Second}), 0)));
+}
+
 TEST_F(VesselTest, FlightPlan) {
-  vessel_.CreateHistoryAndForkProlongation(t1_, d1_);
-  vessel_.AdvanceTimeNotInBubble(t2_);
+  vessel_.PreparePsychohistory(astronomy::J2000);
+
   EXPECT_FALSE(vessel_.has_flight_plan());
-  vessel_.CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
+  vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
+                           10 * Kilogram,
+                           DefaultPredictionParameters());
   EXPECT_TRUE(vessel_.has_flight_plan());
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
@@ -250,70 +308,25 @@ TEST_F(VesselTest, FlightPlan) {
   EXPECT_FALSE(vessel_.has_flight_plan());
 }
 
-TEST_F(VesselDeathTest, SerializationError) {
-  EXPECT_DEATH({
-    serialization::Vessel message;
-    vessel_.WriteToMessage(&message);
-  }, "is_initialized");
-  EXPECT_DEATH({
-    serialization::Vessel message;
-    Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
-  }, "message.has_history");
-}
-
 TEST_F(VesselTest, SerializationSuccess) {
+  vessel_.PreparePsychohistory(astronomy::J2000);
+
   serialization::Vessel message;
-  vessel_.CreateHistoryAndForkProlongation(t2_, d2_);
-  vessel_.AdvanceTimeNotInBubble(t2_);
-  vessel_.UpdatePrediction(t3_);
-  vessel_.CreateFlightPlan(t3_, 10 * Kilogram, adaptive_parameters_);
+  vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
+                           10 * Kilogram,
+                           DefaultPredictionParameters());
 
   vessel_.WriteToMessage(&message);
-  EXPECT_TRUE(message.has_history());
-  EXPECT_TRUE(message.has_prediction_fork_time());
-  EXPECT_TRUE(message.has_prediction_last_time());
+  EXPECT_TRUE(message.has_psychohistory());
   EXPECT_TRUE(message.has_flight_plan());
-  vessel_ = Vessel::ReadFromMessage(message, ephemeris_.get(), earth_.get());
-  EXPECT_TRUE(vessel_.is_initialized());
-  EXPECT_TRUE(vessel_.has_flight_plan());
-}
 
-TEST_F(VesselTest, PredictBeyondTheInfinite) {
-  vessel_.CreateHistoryAndForkProlongation(t1_, d1_);
-  vessel_.AdvanceTimeNotInBubble(t2_);
-  vessel_.set_prediction_adaptive_step_parameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-          /*max_steps=*/5,
-          /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second));
-  Instant previous_t_max = ephemeris_->t_max();
-  for (int i = 0; i < 10; ++i) {
-    vessel_.UpdatePrediction(astronomy::InfiniteFuture);
-  }
-  // We stop prolonging when the ephemeris gets long enough (in this case, a
-  // single prolongation suffices).
-  EXPECT_THAT(ephemeris_->t_max() - previous_t_max,
-              Le(FlightPlan::max_ephemeris_steps_per_frame *
-                 ephemeris_fixed_parameters_.step()));
-  EXPECT_THAT(vessel_.prediction().last().time(), Lt(ephemeris_->t_max()));
+  auto const v = Vessel::ReadFromMessage(
+      message, &celestial_, &ephemeris_, /*deletion_callback=*/nullptr);
+  EXPECT_TRUE(v->has_flight_plan());
 
-  vessel_.set_prediction_adaptive_step_parameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-          /*max_steps=*/1000,
-          /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second));
-  previous_t_max = ephemeris_->t_max();
-  for (int i = 0; i < 10; ++i) {
-    vessel_.UpdatePrediction(astronomy::InfiniteFuture);
-  }
-  // Here the ephemeris isn't long enough yet; we have prolonged every time.
-  EXPECT_THAT((ephemeris_->t_max() - previous_t_max) /
-                  (FlightPlan::max_ephemeris_steps_per_frame *
-                   ephemeris_fixed_parameters_.step()),
-              AllOf(Gt(9), Le(10)));
-  EXPECT_THAT(vessel_.prediction().last().time(), Eq(ephemeris_->t_max()));
+  serialization::Vessel second_message;
+  v->WriteToMessage(&second_message);
+  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
 }
 
 }  // namespace internal_vessel
