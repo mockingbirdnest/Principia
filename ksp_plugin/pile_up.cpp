@@ -176,7 +176,7 @@ void PileUp::AdvanceTime(
 
 void PileUp::NudgeParts() const {
   // TODO(egg): this is wrong! when we have computed a prolongation, we must use
-  // it there...
+  // it here...
   auto const actual_centre_of_mass =
       psychohistory_->last().degrees_of_freedom();
 
