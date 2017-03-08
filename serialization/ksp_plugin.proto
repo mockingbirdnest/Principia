@@ -55,6 +55,7 @@ message Manoeuvre {
 
 message Part {
   required fixed32 part_id = 4;
+  required string name = 9;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
@@ -116,6 +117,8 @@ message Plugin {
 }
 
 message Vessel {
+  required string guid = 13;
+  required string name = 19;
   required MasslessBody body = 1;
   required Ephemeris.AdaptiveStepParameters 
       prediction_adaptive_step_parameters = 10;

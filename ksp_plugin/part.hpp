@@ -39,6 +39,7 @@ using quantities::Mass;
 class Part final {
  public:
   Part(PartId part_id,
+       std::string const& name,
        Mass const& mass,
        DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
        std::function<void()> deletion_callback);
@@ -100,8 +101,12 @@ class Part final {
       serialization::Part const& message,
       std::function<void()> deletion_callback);
 
+  // Returns "part name (part ID)".
+  std::string ShortDebugString() const;
+
  private:
   PartId const part_id_;
+  std::string const name_;
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 

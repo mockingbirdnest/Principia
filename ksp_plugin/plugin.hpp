@@ -70,9 +70,6 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
 
-// The GUID of a vessel, obtained by |v.id.ToString()| in C#. We use this as a
-// key in an |std::map|.
-using GUID = std::string;
 // The index of a body in |FlightGlobals.Bodies|, obtained by
 // |b.flightGlobalsIndex| in C#. We use this as a key in an |std::map|.
 using Index = int;
@@ -154,6 +151,7 @@ class Plugin {
   // For a KSP |Vessel| |v|, the arguments correspond to |v.id|,
   // |v.orbit.referenceBody.flightGlobalsIndex|, |v.loaded|.
   virtual void InsertOrKeepVessel(GUID const& vessel_guid,
+                                  std::string const& vessel_name,
                                   Index parent_index,
                                   bool loaded,
                                   bool& inserted);
@@ -164,6 +162,7 @@ class Plugin {
   // matter, since the |PileUp| will be deformed when it first loads anyway.
   virtual void InsertUnloadedPart(
       PartId part_id,
+      std::string const& name,
       GUID const& vessel_guid,
       RelativeDegreesOfFreedom<AliceSun> const& from_parent);
 
@@ -176,6 +175,7 @@ class Plugin {
   // these three parameters are ignored.
   virtual void InsertOrKeepLoadedPart(
       PartId part_id,
+      std::string const& name,
       Mass const& mass,
       not_null<Vessel*> vessel,
       Index main_body_index,
@@ -433,6 +433,7 @@ class Plugin {
   // a deletion callback.
   void AddPart(not_null<Vessel*> vessel,
                PartId part_id,
+               std::string const& name,
                Mass mass,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
@@ -517,7 +518,6 @@ class Plugin {
 
 }  // namespace internal_plugin
 
-using internal_plugin::GUID;
 using internal_plugin::Index;
 using internal_plugin::Plugin;
 

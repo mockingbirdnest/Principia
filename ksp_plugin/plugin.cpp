@@ -372,6 +372,7 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
 }
 
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
+                                std::string const& vessel_name,
                                 Index const parent_index,
                                 bool const loaded,
                                 bool& inserted) {
@@ -385,7 +386,9 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   GUIDToOwnedVessel::iterator it;
   std::tie(it, inserted) =
       vessels_.emplace(vessel_guid,
-                       make_not_null_unique<Vessel>(parent,
+                       make_not_null_unique<Vessel>(vessel_guid,
+                                                    vessel_name,
+                                                    parent,
                                                     ephemeris_.get(),
                                                     prediction_parameters_));
   not_null<Vessel*> const vessel = it->second.get();
@@ -397,14 +400,14 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
     new_unloaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
-                         << " vessel with GUID " << vessel_guid << " at "
-                         << vessel;
-  VLOG(1) << "Parent of vessel with GUID " << vessel_guid << " is at index "
+                         << " vessel " << vessel->ShortDebugString();
+  VLOG(1) << "Parent of vessel " << vessel->ShortDebugString() << " is at index "
           << parent_index;
 }
 
 void Plugin::InsertUnloadedPart(
     PartId part_id,
+    std::string const& name,
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   not_null<Vessel*> const vessel = find_vessel_by_guid_or_die(vessel_guid).get();
@@ -414,6 +417,7 @@ void Plugin::InsertUnloadedPart(
   ephemeris_->Prolong(current_time_);
   AddPart(vessel,
           part_id,
+          name,
           1 * Kilogram,
           vessel->parent()->current_degrees_of_freedom(current_time_) +
               relative);
@@ -425,6 +429,7 @@ void Plugin::InsertUnloadedPart(
 
 void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
+    std::string const& name,
     Mass const& mass,
     not_null<Vessel*> const vessel,
     Index const main_body_index,
@@ -462,6 +467,7 @@ void Plugin::InsertOrKeepLoadedPart(
 
     AddPart(vessel,
             part_id,
+            name,
             mass,
             world_to_barycentric(part_degrees_of_freedom));
   }
@@ -650,7 +656,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
-  VLOG(1) << "Vessel with GUID " << vessel_guid
+  VLOG(1) << "Vessel " << vessel->ShortDebugString()
           << " is at parent degrees of freedom + " << barycentric_result
           << " Barycentre (" << result << " AliceSun)";
   return result;
@@ -697,7 +703,8 @@ Plugin::RenderedVesselTrajectory(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  VLOG(1) << "Rendering a trajectory for the vessel with GUID " << vessel_guid;
+  VLOG(1) << "Rendering a trajectory for the vessel "
+          << vessel->ShortDebugString();
   return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
                                          vessel->psychohistory().End(),
                                          sun_world_position);
@@ -1333,6 +1340,7 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
+                     std::string const& name,
                      Mass const mass,
                      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   std::map<PartId, not_null<Vessel*>>::iterator it;
@@ -1343,6 +1351,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
     map.erase(it);
   };
   auto part = make_not_null_unique<Part>(part_id,
+                                         name,
                                          mass,
                                          degrees_of_freedom,
                                          std::move(deletion_callback));

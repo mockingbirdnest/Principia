@@ -869,6 +869,7 @@ public partial class PrincipiaPluginAdapter
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
+                                   vessel.vesselName,
                                    vessel.mainBody.flightGlobalsIndex,
                                    !vessel.packed,
                                    out inserted);
@@ -879,6 +880,7 @@ public partial class PrincipiaPluginAdapter
           foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
             plugin_.InsertOrKeepLoadedPart(
                 part.flightID,
+                part.partName,
                 part.mass,
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
@@ -897,6 +899,7 @@ public partial class PrincipiaPluginAdapter
                    vessel.protoVessel.protoPartSnapshots) {
             plugin_.InsertUnloadedPart(
                 part.flightID,
+                part.partName,
                 vessel.id.ToString(),
                 new QP{q = (XYZ)vessel.orbit.pos, p = (XYZ)vessel.orbit.vel});
           }
