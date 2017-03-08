@@ -260,9 +260,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           message.prediction_adaptive_step_parameters()));
   for (auto const& serialized_part : message.parts()) {
     PartId const part_id = serialized_part.part_id();
-    auto part = Part::ReadFromMessage(
-        serialized_part,
-        [deletion_callback, part_id]() { deletion_callback(part_id); });
+    auto part =
+        Part::ReadFromMessage(serialized_part, [deletion_callback, part_id]() {
+          if (deletion_callback != nullptr) {
+            deletion_callback(part_id);
+          }
+        });
     vessel->parts_.emplace(part_id, std::move(part));
   }
   for (PartId const part_id : message.kept_parts()) {
@@ -277,10 +280,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       DiscreteTrajectory<Barycentric>::ReadFromMessage(message.prediction(),
                                                        /*forks=*/{});
   if (message.has_flight_plan()) {
-    // TODO(phl): Remove compatibility code.  The |root| is only needed
-    // pre-Буняковский.
-    vessel->flight_plan_ = FlightPlan::ReadFromMessage(
-        message.flight_plan(), /*root=*/nullptr, ephemeris);
+    vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
+                                                       ephemeris);
   }
   return std::move(vessel);
 }

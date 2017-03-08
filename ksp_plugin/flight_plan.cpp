@@ -223,42 +223,20 @@ void FlightPlan::WriteToMessage(
 
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
-    not_null<DiscreteTrajectory<Barycentric>*> const root,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
-  bool const is_pre_буняковский = message.segment_size() > 0;
-
   std::unique_ptr<Ephemeris<Barycentric>::AdaptiveStepParameters>
       adaptive_step_parameters;
   Instant initial_time = Instant::ReadFromMessage(message.initial_time());
   std::unique_ptr<DegreesOfFreedom<Barycentric>> initial_degrees_of_freedom;
-  if (is_pre_буняковский) {
-    adaptive_step_parameters =
-        std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
-            AdaptiveStepSizeIntegrator<
-                Ephemeris<Barycentric>::NewtonianMotionEquation>::
-                    ReadFromMessage(message.integrator()),
-            /*max_steps=*/1000,
-            Length::ReadFromMessage(message.length_integration_tolerance()),
-            Speed::ReadFromMessage(message.speed_integration_tolerance()));
-    auto it = root->LowerBound(initial_time);
-    if (it.time() != initial_time) {
-      --it;
-      initial_time = it.time();
-    }
-    initial_degrees_of_freedom =
-        std::make_unique<DegreesOfFreedom<Barycentric>>(
-            it.degrees_of_freedom());
-  } else {
-    CHECK(message.has_adaptive_step_parameters());
-    adaptive_step_parameters =
-        std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
-            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-                message.adaptive_step_parameters()));
-    initial_degrees_of_freedom =
-        std::make_unique<DegreesOfFreedom<Barycentric>>(
-            DegreesOfFreedom<Barycentric>::ReadFromMessage(
-                message.initial_degrees_of_freedom()));
-  }
+  CHECK(message.has_adaptive_step_parameters());
+  adaptive_step_parameters =
+      std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.adaptive_step_parameters()));
+  initial_degrees_of_freedom =
+      std::make_unique<DegreesOfFreedom<Barycentric>>(
+          DegreesOfFreedom<Barycentric>::ReadFromMessage(
+              message.initial_degrees_of_freedom()));
 
   auto flight_plan = std::make_unique<FlightPlan>(
       Mass::ReadFromMessage(message.initial_mass()),
@@ -268,38 +246,15 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       ephemeris,
       *adaptive_step_parameters);
 
-  if (is_pre_буняковский) {
-    // The constructor has forked a segment.  Remove it.
-    flight_plan->PopLastSegment();
-    for (auto const& segment : message.segment()) {
-      flight_plan->segments_.emplace_back(
-          DiscreteTrajectory<Barycentric>::ReadPointerFromMessage(
-              segment, root));
-    }
-    for (int i = 0; i < message.manoeuvre_size(); ++i) {
-      auto const& manoeuvre = message.manoeuvre(i);
-      flight_plan->manœuvres_.push_back(
-          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
-      flight_plan->manœuvres_[i].set_coasting_trajectory(
-          flight_plan->segments_[2 * i]);
-    }
-
-    // We may end up here with a flight plan that has too many anomalous
-    // segments because of past bugs.  The best we can do is to ignore it.
-    if (!flight_plan->RecomputeSegments()) {
-      flight_plan.reset();
-    }
-  } else {
-    for (int i = 0; i < message.manoeuvre_size(); ++i) {
-      auto const& manoeuvre = message.manoeuvre(i);
-      flight_plan->manœuvres_.push_back(
-          NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
-    }
-    // We need to forcefully prolong, otherwise we might exceed the ephemeris
-    // step limit while recomputing the segments and fail the check.
-    flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
-    CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
+  for (int i = 0; i < message.manoeuvre_size(); ++i) {
+    auto const& manoeuvre = message.manoeuvre(i);
+    flight_plan->manœuvres_.push_back(
+        NavigationManœuvre::ReadFromMessage(manoeuvre, ephemeris));
   }
+  // We need to forcefully prolong, otherwise we might exceed the ephemeris
+  // step limit while recomputing the segments and fail the check.
+  flight_plan->ephemeris_->Prolong(flight_plan->desired_final_time_);
+  CHECK(flight_plan->RecomputeSegments()) << message.DebugString();
 
   return flight_plan;
 }

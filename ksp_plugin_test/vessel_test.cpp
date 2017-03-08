@@ -95,14 +95,15 @@ TEST_F(VesselTest, KeepAndFreeParts) {
   EXPECT_THAT(remaining_part_ids, ElementsAre(part_id1_, part_id2_));
   EXPECT_EQ(part_id1_, vessel_.part(part_id1_)->part_id());
   EXPECT_EQ(part_id2_, vessel_.part(part_id2_)->part_id());
+  remaining_part_ids.clear();
 
   vessel_.KeepPart(part_id2_);
   vessel_.FreeParts();
   vessel_.ForAllParts([&remaining_part_ids](Part const& part) {
     remaining_part_ids.insert(part.part_id());
   });
-  EXPECT_THAT(remaining_part_ids, ElementsAre(part_id1_));
-  EXPECT_EQ(part_id1_, vessel_.part(part_id1_)->part_id());
+  EXPECT_THAT(remaining_part_ids, ElementsAre(part_id2_));
+  EXPECT_EQ(part_id2_, vessel_.part(part_id2_)->part_id());
 }
 
 TEST_F(VesselTest, PreparePsychohistory) {
@@ -110,7 +111,7 @@ TEST_F(VesselTest, PreparePsychohistory) {
   vessel_.PreparePsychohistory(astronomy::J2000 + 1 * Second);
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
-            vessel_.psychohistory().End().time());
+            vessel_.psychohistory().last().time());
   EXPECT_THAT(
       vessel_.psychohistory().last().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
@@ -171,11 +172,11 @@ TEST_F(VesselTest, AdvanceTime) {
                                       Displacement<Barycentric>(
                                           {13.3 / 3.0 * Metre,
                                           4.1 * Metre,
-                                          11.3 / 3.0 * Metre}), 0),
+                                          11.3 / 3.0 * Metre}), 2),
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.3 / 3.0 * Metre / Second,
                                       40.1 * Metre / Second,
-                                      110.3 / 3.0 * Metre / Second}), 0)));
+                                      110.3 / 3.0 * Metre / Second}), 1)));
   ++it;
   EXPECT_EQ(astronomy::J2000 + 1.0 * Second, it.time());
   EXPECT_THAT(it.degrees_of_freedom(),
@@ -183,7 +184,7 @@ TEST_F(VesselTest, AdvanceTime) {
                                       Displacement<Barycentric>(
                                           {13.6 / 3.0 * Metre,
                                           4.2 * Metre,
-                                          11.6 / 3.0 * Metre}), 0),
+                                          11.6 / 3.0 * Metre}), 1),
                     AlmostEquals(Velocity<Barycentric>(
                                       {130.6 / 3.0 * Metre / Second,
                                       40.2 * Metre / Second,
@@ -210,7 +211,6 @@ TEST_F(VesselTest, Prediction) {
 
   EXPECT_EQ(2, vessel_.prediction().Size());
   auto it = vessel_.prediction().Begin();
-  ++it;
   EXPECT_EQ(astronomy::J2000, it.time());
   EXPECT_THAT(
       it.degrees_of_freedom(),
@@ -260,7 +260,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                 Return(true)));
   EXPECT_CALL(
       ephemeris_,
-      FlowWithAdaptiveStep(_, _, astronomy::J2000 + 1.0 * Second, _, _, _))
+      FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
       .WillOnce(
           DoAll(AppendToDiscreteTrajectory(
                     astronomy::J2000 + 1.0 * Second,
@@ -273,7 +273,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
                 Return(true)));
-  vessel_.UpdatePrediction(astronomy::J2000 + 1.0 * Second);
+  vessel_.UpdatePrediction(astronomy::InfiniteFuture);
 
   EXPECT_EQ(3, vessel_.prediction().Size());
   auto it = vessel_.prediction().Begin();
@@ -298,6 +298,8 @@ TEST_F(VesselTest, FlightPlan) {
   vessel_.PreparePsychohistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
+  EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillOnce(Return(true));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters());
@@ -312,6 +314,8 @@ TEST_F(VesselTest, SerializationSuccess) {
   vessel_.PreparePsychohistory(astronomy::J2000);
 
   serialization::Vessel message;
+  EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillRepeatedly(Return(true));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters());

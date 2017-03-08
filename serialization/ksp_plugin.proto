@@ -28,11 +28,13 @@ message FlightPlan {
   optional Ephemeris.AdaptiveStepParameters
       adaptive_step_parameters = 11;  // required
 
+  // Pre-Cardano.
+  reserved 4, 5, 6, 7;
+  reserved "integrator",
+           "length_integration_tolerance",
+           "segment",
+           "speed_integration_tolerance";
   // Pre-Буняковский.
-  optional Quantity length_integration_tolerance = 4;
-  optional Quantity speed_integration_tolerance = 5;
-  optional AdaptiveStepSizeIntegrator integrator = 6;
-  repeated DiscreteTrajectory.Pointer segment = 7;
   reserved 9, 10;
   reserved "anomalous_segments", "max_steps";
 }

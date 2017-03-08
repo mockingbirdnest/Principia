@@ -139,8 +139,6 @@ XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 Instant FromGameTime(Plugin const& plugin, double t);
 double ToGameTime(Plugin const& plugin, Instant const& t);
 
-PileUp& GetPileUp(Vessel const& vessel);
-
 // TODO(phl): Return a reference.
 not_null<Vessel*> GetVessel(Plugin const& plugin, char const* vessel_guid);
 

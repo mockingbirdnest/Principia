@@ -574,7 +574,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.AdvanceTime(t);
+    vessel.AdvanceTime();
   }
   if (loaded_vessels_.empty()) {
     bubble_barycentre_ = std::experimental::nullopt;
