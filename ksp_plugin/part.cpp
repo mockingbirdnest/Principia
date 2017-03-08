@@ -91,7 +91,7 @@ void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
   CHECK(!is_piled_up());
-  LOG(INFO) << "Adding part " << part_id_ << " to the pile up at "
+  LOG(INFO) << "Adding part " << DebugID() << " to the pile up at "
             << &*pile_up.iterator();
   containing_pile_up_ = pile_up;
 }
