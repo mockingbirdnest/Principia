@@ -66,12 +66,10 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
 }
 
 void Vessel::KeepPart(PartId const id) {
-  LOG(ERROR)<<"Keeping part " << id << " in vessel at " << this;
   kept_parts_.insert(FindOrDie(parts_, id).get());
 }
 
 void Vessel::FreeParts() {
-  LOG(ERROR)<<"Freeing " << parts_.size() - kept_parts_.size() << " parts";
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part*> part = it->second.get();
     if (kept_parts_.count(part) == 0) {
