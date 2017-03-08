@@ -101,8 +101,8 @@ class Part final {
       serialization::Part const& message,
       std::function<void()> deletion_callback);
 
-  // returns "part name (part ID)".
-  std::string DebugID() const;
+  // Returns "part name (part ID)".
+  std::string ShortDebugString() const;
 
  private:
   PartId const part_id_;

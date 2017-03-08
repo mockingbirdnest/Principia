@@ -400,8 +400,8 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
     new_unloaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
-                         << " vessel " << vessel->DebugID();
-  VLOG(1) << "Parent of vessel " << vessel->DebugID() << " is at index "
+                         << " vessel " << vessel->ShortDebugString();
+  VLOG(1) << "Parent of vessel " << vessel->ShortDebugString() << " is at index "
           << parent_index;
 }
 
@@ -656,7 +656,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
-  VLOG(1) << "Vessel " << vessel->DebugID()
+  VLOG(1) << "Vessel " << vessel->ShortDebugString()
           << " is at parent degrees of freedom + " << barycentric_result
           << " Barycentre (" << result << " AliceSun)";
   return result;
@@ -703,7 +703,8 @@ Plugin::RenderedVesselTrajectory(
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
-  VLOG(1) << "Rendering a trajectory for the vessel " << vessel->DebugID();
+  VLOG(1) << "Rendering a trajectory for the vessel "
+          << vessel->ShortDebugString();
   return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
                                          vessel->psychohistory().End(),
                                          sun_world_position);

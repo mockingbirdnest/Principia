@@ -135,7 +135,7 @@ class Vessel {
       std::function<void(PartId)> const& deletion_callback);
 
   // Returns "vessel name (GUID)".
-  std::string DebugID() const;
+  std::string ShortDebugString() const;
 
  protected:
   // For mocking.

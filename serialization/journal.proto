@@ -748,9 +748,9 @@ message InsertOrKeepVessel {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required string vessel_guid = 2;
-    required string vessel_name = 3;
-    required int32 parent_index = 4;
-    required bool loaded = 5;
+    required string vessel_name = 5;
+    required int32 parent_index = 3;
+    required bool loaded = 4;
   }
   message Out {
     required bool inserted = 1;
@@ -766,12 +766,12 @@ message InsertOrKeepLoadedPart {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
-    required string name = 3;
-    required double mass_in_tonnes = 4;
-    required string vessel_guid = 5;
-    required int32 main_body_index = 6;
-    required QP main_body_world_degrees_of_freedom = 7;
-    required QP part_world_degrees_of_freedom = 8;
+    required string name = 8;
+    required double mass_in_tonnes = 3;
+    required string vessel_guid = 4;
+    required int32 main_body_index = 5;
+    required QP main_body_world_degrees_of_freedom = 6;
+    required QP part_world_degrees_of_freedom = 7;
   }
   optional In in = 1;
 }
@@ -783,9 +783,9 @@ message InsertUnloadedPart {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
-    required string name = 3;
-    required string vessel_guid = 4;
-    required QP from_parent = 5;
+    required string name = 5;
+    required string vessel_guid = 3;
+    required QP from_parent = 4;
   }
   optional In in = 1;
 }

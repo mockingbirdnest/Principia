@@ -55,7 +55,8 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
-  LOG(INFO) << "Adding part " << part->DebugID() << " to vessel " << DebugID();
+  LOG(INFO) << "Adding part " << part->ShortDebugString() << " to vessel "
+            << ShortDebugString();
   parts_.emplace(part->part_id(), std::move(part));
 }
 
@@ -63,8 +64,8 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
-  LOG(INFO) << "Extracting part " << result->DebugID() << " from vessel "
-            << DebugID();
+  LOG(INFO) << "Extracting part " << result->ShortDebugString() << " from vessel "
+            << ShortDebugString();
   parts_.erase(it);
   return result;
 }
@@ -90,7 +91,7 @@ void Vessel::FreeParts() {
 void Vessel::PreparePsychohistory(Instant const& t) {
   CHECK(!parts_.empty());
   if (psychohistory_->Size() == 0) {
-    LOG(INFO) << "Preparing psychohistory of vessel " << DebugID();
+    LOG(INFO) << "Preparing psychohistory of vessel " << ShortDebugString();
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
@@ -289,7 +290,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   return std::move(vessel);
 }
 
-std::string Vessel::DebugID() const {
+std::string Vessel::ShortDebugString() const {
   return name_ + " (" + guid_ + ")";
 }
 

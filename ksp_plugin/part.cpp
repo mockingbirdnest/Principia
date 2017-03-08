@@ -31,7 +31,7 @@ Part::Part(
       deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
-  LOG(INFO) << "Destroying part " << DebugID();
+  LOG(INFO) << "Destroying part " << ShortDebugString();
   CHECK(!is_piled_up());
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
@@ -91,7 +91,7 @@ void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
   CHECK(!is_piled_up());
-  LOG(INFO) << "Adding part " << DebugID() << " to the pile up at "
+  LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
             << &*pile_up.iterator();
   containing_pile_up_ = pile_up;
 }
@@ -110,7 +110,7 @@ void Part::clear_pile_up() {
   if (is_piled_up()) {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Part*> const part : pile_up.iterator()->parts()) {
-      LOG(INFO) << "Removing part " << part->DebugID()
+      LOG(INFO) << "Removing part " << part->ShortDebugString()
                 << " from its pile up at " << &*pile_up.iterator();
       part->containing_pile_up_ = std::experimental::nullopt;
     }
@@ -153,7 +153,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
   return part;
 }
 
-std::string Part::DebugID() const {
+std::string Part::ShortDebugString() const {
   UniqueBytes hex_id(sizeof(part_id_) * 2 + 1);
   Array<std::uint8_t const> id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
