@@ -483,6 +483,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> vessel = it->second.get();
     if (kept_vessels_.erase(vessel)) {
+      vessel->PreparePsychohistory(current_time_);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
@@ -494,7 +495,6 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   }
   // Free old parts and bind vessels.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    vessel->PreparePsychohistory(current_time_);
     vessel->FreeParts();
     vessel->ForSomePart([vessel](Part& first_part) {
       vessel->ForAllParts([&first_part](Part& part) {
