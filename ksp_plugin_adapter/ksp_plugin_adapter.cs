@@ -728,10 +728,11 @@ public partial class PrincipiaPluginAdapter
      // physics simulation, which is why we report them before calling
      // |AdvanceTime|.
      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-       if (plugin_.HasVessel(vessel1.id.ToString())) {
+       if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
            var vessel2 = vessel1.evaController.LadderPart.vessel;
-           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
+               !vessel2.packed) {
              plugin_.ReportCollision(vessel1.rootPart.flightID,
                                      vessel1.evaController.LadderPart.flightID);
            }
@@ -794,7 +795,7 @@ public partial class PrincipiaPluginAdapter
        // TODO(egg): if I understand anything, there should probably be a
        // special treatment for loaded packed vessels.  I don't understand
        // anything though.
-       if (!vessel.loaded || !plugin_.HasVessel(vessel.id.ToString())) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
        }
        foreach (Part part in vessel.parts) {
@@ -815,7 +816,7 @@ public partial class PrincipiaPluginAdapter
          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
        }
      }
-     if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.loaded) {
+     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
        Log.Error("change in framevel: " +
@@ -867,14 +868,11 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
-        // WTF? or should I use !packed?
-        bool actually_loaded_with_real_parts =
-            vessel.loaded && !vessel.parts.TrueForAll(part => part.rb == null);
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                    vessel.mainBody.flightGlobalsIndex,
-                                   actually_loaded_with_real_parts,
+                                   !vessel.packed,
                                    out inserted);
-        if (actually_loaded_with_real_parts) {
+        if (!vessel.packed) {
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
                      p = (XYZ)(-krakensbane.FrameVel)};
