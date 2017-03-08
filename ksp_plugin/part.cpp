@@ -84,6 +84,8 @@ void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
   CHECK(!is_piled_up());
+  LOG(INFO) << "Adding part " << part_id_ << " to the pile up at "
+            << &*pile_up.iterator();
   containing_pile_up_ = pile_up;
 }
 
@@ -101,6 +103,8 @@ void Part::clear_pile_up() {
   if (is_piled_up()) {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Part*> const part : pile_up.iterator()->parts()) {
+      LOG(INFO) << "removing part " << part->part_id()
+                << " from its pile up at " << &*pile_up.iterator();
       part->containing_pile_up_ = std::experimental::nullopt;
     }
     CHECK(!is_piled_up());
