@@ -7,11 +7,6 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
-message Celestial {
-  required MassiveBody body = 1;
-  required HistoryAndProlongation history_and_prolongation = 2;
-}
-
 message CelestialJacobiKeplerian {
   required int32 celestial_index = 1;
   optional int32 parent_index = 2;
@@ -37,12 +32,6 @@ message FlightPlan {
   // Pre-Буняковский.
   reserved 9, 10;
   reserved "anomalous_segments", "max_steps";
-}
-
-// Pre-Буняковский.
-message HistoryAndProlongation {
-  required DiscreteTrajectory history = 1;
-  required DiscreteTrajectory.Pointer prolongation = 2;
 }
 
 message Manoeuvre {
@@ -86,17 +75,11 @@ message Plugin {
     required int32 parent_index = 3;
     required bool dirty = 4;
   }
-  message CelestialAndProperties {
-    required int32 index = 1;
-    required Celestial celestial = 2;
-    optional int32 parent_index = 3;
-  }
   message CelestialParenthood {
     required int32 index = 1;
     optional int32 parent_index = 2;
   }
   repeated VesselAndProperties vessel = 1;
-  repeated CelestialAndProperties pre_bourbaki_celestial = 2;
   repeated CelestialParenthood celestial = 10;
   optional Ephemeris ephemeris = 7;  // required
   required Quantity planetarium_rotation = 4;
@@ -110,12 +93,15 @@ message Plugin {
   optional Ephemeris.AdaptiveStepParameters
       prediction_parameters = 14;  // required
 
-  // Pre-Буняковский.
-  reserved 8, 9;
-  reserved "prolongation_integrator", "prediction_integrator";
   // Pre-Cardano.
   reserved 3;
   reserved "bubble";
+  // Pre-Буняковский.
+  reserved 8, 9;
+  reserved "prolongation_integrator", "prediction_integrator";
+  // Pre-Bourbaki.
+  reserved 2;
+  reserved "/*celestial*/";
 }
 
 message Vessel {

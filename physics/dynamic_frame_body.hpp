@@ -102,7 +102,7 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
 }
 
 template<typename InertialFrame, typename ThisFrame>
-std::unique_ptr<DynamicFrame<InertialFrame, ThisFrame>>
+not_null<std::unique_ptr<DynamicFrame<InertialFrame, ThisFrame>>>
 DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
     not_null<Ephemeris<InertialFrame> const*> const ephemeris,
     serialization::DynamicFrame const& message) {
@@ -152,10 +152,8 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                 message.GetExtension(
                     serialization::BodySurfaceDynamicFrame::extension)));
   }
-  CHECK_LE(extensions_found, 1) << message.DebugString();
-  // For pre-Brouwer compatibility, return a null pointer if no extension is
-  // found.
-  return result;
+  CHECK_EQ(extensions_found, 1) << message.DebugString();
+  base::noreturn()
 }
 
 }  // namespace internal_dynamic_frame

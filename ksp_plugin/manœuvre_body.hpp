@@ -210,8 +210,8 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
       Mass::ReadFromMessage(message.initial_mass()),
       SpecificImpulse::ReadFromMessage(message.specific_impulse()),
       Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction()),
-      check_not_null(DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
-          ephemeris, message.frame())));
+      DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
+          ephemeris, message.frame()));
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;
