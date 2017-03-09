@@ -268,8 +268,12 @@ class PluginTest : public testing::Test {
   // Keeps the vessel with the given |guid| during the next call to
   // |AdvanceTime|.  The vessel must be present.
   void KeepVessel(GUID const& guid) {
-    bool const inserted = plugin_->InsertOrKeepVessel(
-                              guid, SolarSystemFactory::Earth);
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/true,
+                                inserted);
     EXPECT_FALSE(inserted) << guid;
   }
 
@@ -280,8 +284,12 @@ class PluginTest : public testing::Test {
   void InsertVessel(GUID const& guid,
                     std::size_t& number_of_new_vessels,
                     Instant const& time) {
-    bool const inserted = plugin_->InsertOrKeepVessel(
-                              guid, SolarSystemFactory::Earth);
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/true,
+                                inserted);
     EXPECT_TRUE(inserted) << guid;
     EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(time)).RetiresOnSaturation();
     plugin_->SetVesselStateOffset(guid,
@@ -568,14 +576,24 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
   GUID const guid = "Syrio Forel";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Sun);
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                SolarSystemFactory::Sun,
+                                /*loaded=*/true,
+                                inserted);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
-    plugin_->InsertOrKeepVessel(guid, not_a_body);
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                not_a_body,
+                                /*loaded=*/true,
+                                inserted);
   }, "Map key not found");
 }
 
@@ -758,7 +776,12 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
     EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
-    plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Sun);
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                SolarSystemFactory::Sun,
+                                /*loaded=*/true,
+                                inserted);
     plugin_->VesselFromParent(guid);
   }, "not given an initial state");
 }
@@ -790,8 +813,12 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
   EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
-  bool const inserted = plugin_->InsertOrKeepVessel(guid,
-                                                    SolarSystemFactory::Earth);
+  bool inserted;
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/true,
+                              inserted);
   EXPECT_TRUE(inserted);
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_))
       .Times(AnyNumber());
@@ -907,7 +934,12 @@ TEST_F(PluginTest, Frenet) {
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   GUID const satellite = "satellite";
-  plugin.InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+  bool inserted;
+  plugin_->InsertOrKeepVessel(satellite,
+                              "v" + satellite,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/true,
+                              inserted);
   plugin.SetVesselStateOffset(satellite,
                               RelativeDegreesOfFreedom<AliceSun>(
                                   satellite_initial_displacement_,
