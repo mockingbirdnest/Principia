@@ -197,7 +197,7 @@ class Plugin {
   // union-find for pile up construction.  This must be called after the calls
   // to |IncrementPartIntrinsicForce|, and before the calls to
   // |ReportCollision|.
-  virtual void BeginReportingCollisions();
+  virtual void PrepareToReportCollisions();
 
   // Notifies |this| that the given vessels are touching, and should gravitate
   // as part of a single rigid body.
