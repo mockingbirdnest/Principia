@@ -92,6 +92,9 @@ class PileUp {
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
                          bool authoritative) const;
 
+  // Returns the last authoritative point of the psychohistory.
+  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
+
   std::list<not_null<Part*>> parts_;
   // An optimization: the sum of the masses and intrinsic forces of the
   // |parts_|, computed by the union-find.
@@ -103,6 +106,8 @@ class PileUp {
   // with nonzero intrinsic force), or a fixed step instance otherwise (with the
   // prolongation being computed by an instance local to the body of
   // |AdvanceTime|).
+  // |psychohistory_.Size()| is either 1 or 2.  The first point is
+  // authoritative, and the second point, if any, is not.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees

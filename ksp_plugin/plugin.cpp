@@ -474,6 +474,13 @@ void Plugin::InsertOrKeepLoadedPart(
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
   part->set_mass(mass);
+  // NOTE(egg): we do not call |MakeSingleton| here, as that copies the current
+  // intrinsic force of the part, so we must wait for
+  // |IncrementPartIntrinsicForce| to be called.
+  // TODO(egg): we need a new function called after all calls to
+  // |IncrementPartIntrinsicForce| and before the calls to |ReportCollision| to
+  // make the singletons.  For now we make the singletons here and the forces
+  // get ignored.
   Subset<Part>::MakeSingleton(*part, part);
 }
 

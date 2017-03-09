@@ -127,10 +127,14 @@ void PileUp::AdvanceTime(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
+  CHECK_GE(psychohistory_->Size(), 1);
+  CHECK_LE(psychohistory_->Size(), 2);
+
+  // Remove the non-authoritative point.
+  psychohistory_->ForgetAfter(last_authoritative().time());
+  bool last_point_is_authoritative = true;
+
   CHECK_EQ(psychohistory_->Size(), 1);
-
-  DiscreteTrajectory<Barycentric> prolongation;
-
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     ephemeris.FlowWithFixedStep(
         {psychohistory_.get()},
@@ -138,17 +142,14 @@ void PileUp::AdvanceTime(
         t,
         fixed_step_parameters);
     if (psychohistory_->last().time() < t) {
-      // TODO(phl): Consider using forks.
-      prolongation.Append(psychohistory_->last().time(),
-                          psychohistory_->last().degrees_of_freedom());
       CHECK(ephemeris.FlowWithAdaptiveStep(
-                &prolongation,
+                psychohistory_.get(),
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                 t,
                 adaptive_step_parameters,
                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
                 /*last_point_only=*/true));
-      CHECK_EQ(prolongation.Size(), 2);
+      last_point_is_authoritative = false;
     }
   } else {
     auto const a = intrinsic_force_ / mass_;
@@ -164,13 +165,15 @@ void PileUp::AdvanceTime(
   auto it = psychohistory_->Begin();
   ++it;
   for (; it != psychohistory_->End(); ++it) {
-    AppendToPartTails(it, /*authoritative=*/true);
+    AppendToPartTails(it,
+                      /*authoritative=*/it != psychohistory_->last() ||
+                                        last_point_is_authoritative);
   }
-  if (!prolongation.Empty()) {
-    CHECK_EQ(prolongation.Size(), 2);
-    AppendToPartTails(prolongation.last(), /*authoritative=*/false);
-  }
-  psychohistory_->ForgetBefore(psychohistory_->last().time());
+  psychohistory_->ForgetBefore(last_authoritative().time());
+  CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
+                                    : psychohistory_->Size() == 2)
+      << NAMED(last_point_is_authoritative) << ", "
+      << NAMED(psychohistory_->Size());
 }
 
 void PileUp::NudgeParts() const {
@@ -270,6 +273,11 @@ void PileUp::AppendToPartTails(
                             FindOrDie(actual_part_degrees_of_freedom_, part)));
     part->set_tail_is_authoritative(authoritative);
   }
+}
+
+DiscreteTrajectory<Barycentric>::Iterator PileUp::last_authoritative() const {
+  return (psychohistory_->Size() == 1) ? psychohistory_->last()
+                                       : --psychohistory_->last();
 }
 
 }  // namespace internal_pile_up
