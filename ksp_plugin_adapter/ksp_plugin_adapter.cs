@@ -722,7 +722,7 @@ public partial class PrincipiaPluginAdapter
      // step, the Planetarium hasn't run yet, and still has its old time.
      universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
-     plugin_.BeginReportingCollisions();
+     plugin_.PrepareToReportCollisions();
 
      // The collisions are reported and stored into |currentCollisions| in
      // OnCollisionEnter|Stay|Exit, which occurred while we yielded.

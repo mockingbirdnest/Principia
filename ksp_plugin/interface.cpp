@@ -169,9 +169,9 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__BeginReportingCollisions(Plugin* const plugin) {
-  journal::Method<journal::BeginReportingCollisions> m({plugin});
-  CHECK_NOTNULL(plugin)->BeginReportingCollisions();
+void principia__PrepareToReportCollisions(Plugin* const plugin) {
+  journal::Method<journal::PrepareToReportCollisions> m({plugin});
+  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
   return m.Return();
 }
 

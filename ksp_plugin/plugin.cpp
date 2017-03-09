@@ -487,8 +487,8 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
   vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
 }
 
-void Plugin::BeginReportingCollisions() {
-  for (not_null<Vessel*>vessel:loaded_vessels_) {
+void Plugin::PrepareToReportCollisions() {
+  for (not_null<Vessel*> vessel : loaded_vessels_) {
     // TODO(egg): we're taking the address of a parameter passed by reference
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
