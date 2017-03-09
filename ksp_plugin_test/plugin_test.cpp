@@ -113,16 +113,6 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
   return false;
 }
 
-ACTION(AppendToDiscreteTrajectories) {
-  for (auto const& trajectory : arg0) {
-    trajectory->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
-  }
-}
-
-ACTION(AppendToDiscreteTrajectory) {
-  arg0->Append(arg2, {Barycentric::origin, Velocity<Barycentric>()});
-}
-
 }  // namespace
 
 class TestablePlugin : public Plugin {

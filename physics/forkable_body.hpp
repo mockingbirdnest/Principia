@@ -249,6 +249,11 @@ int Forkable<Tr4jectory, It3rator>::Size() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
+bool Forkable<Tr4jectory, It3rator>::Empty() const {
+  return Begin() == End();
+}
+
+template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
     serialization::DiscreteTrajectory::Pointer const& message,
     not_null<Tr4jectory*> const trajectory) {

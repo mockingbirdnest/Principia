@@ -90,7 +90,7 @@ void Vessel::FreeParts() {
 
 void Vessel::PreparePsychohistory(Instant const& t) {
   CHECK(!parts_.empty());
-  if (psychohistory_->Size() == 0) {
+  if (psychohistory_->Empty()) {
     LOG(INFO) << "Preparing psychohistory of vessel " << ShortDebugString();
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
@@ -140,15 +140,17 @@ bool Vessel::has_flight_plan() const {
   return flight_plan_ != nullptr;
 }
 
-void Vessel::AdvanceTime(Instant const& time) {
+void Vessel::AdvanceTime() {
+  CHECK(!parts_.empty());
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
   for (auto const& pair : parts_) {
     Part const& part = *pair.second;
+    CHECK(!part.tail().Empty());
     its.push_back(part.tail().Begin());
   }
   for (;;) {
     Part const& first_part = *parts_.begin()->second;
-    Instant const time = its[0].time();
+    Instant const first_time = its[0].time();
     bool const at_end_of_tail = its[0] == first_part.tail().last();
     bool const tail_is_authoritative = first_part.tail_is_authoritative();
 
@@ -158,7 +160,7 @@ void Vessel::AdvanceTime(Instant const& time) {
       Part& part = *pair.second;
       auto& it = its[i];
       calculator.Add(it.degrees_of_freedom(), part.mass());
-      CHECK_EQ(time, it.time());
+      CHECK_EQ(first_time, it.time());
       CHECK_EQ(at_end_of_tail, it == part.tail().last());
       CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
@@ -171,7 +173,7 @@ void Vessel::AdvanceTime(Instant const& time) {
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     AppendToPsychohistory(
-        time,
+        first_time,
         vessel_degrees_of_freedom,
         /*authoritative=*/!at_end_of_tail || tail_is_authoritative);
 
@@ -185,6 +187,7 @@ void Vessel::ForgetBefore(Instant const& time) {
   // TODO(egg): do something about the psychohistory. I think bad things happen
   // if it becomes empty though.
   prediction_->ForgetBefore(time);
+  psychohistory_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
@@ -211,6 +214,7 @@ void Vessel::DeleteFlightPlan() {
 
 void Vessel::UpdatePrediction(Instant const& last_time) {
   prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  CHECK(!psychohistory_->Empty());
   auto const last = psychohistory_->last();
   prediction_->Append(last.time(), last.degrees_of_freedom());
   FlowPrediction(last_time);
@@ -265,9 +269,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
           message.prediction_adaptive_step_parameters()));
   for (auto const& serialized_part : message.parts()) {
     PartId const part_id = serialized_part.part_id();
-    auto part = Part::ReadFromMessage(
-        serialized_part,
-        [deletion_callback, part_id]() { deletion_callback(part_id); });
+    auto part =
+        Part::ReadFromMessage(serialized_part, [deletion_callback, part_id]() {
+          if (deletion_callback != nullptr) {
+            deletion_callback(part_id);
+          }
+        });
     vessel->parts_.emplace(part_id, std::move(part));
   }
   for (PartId const part_id : message.kept_parts()) {
@@ -282,10 +289,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       DiscreteTrajectory<Barycentric>::ReadFromMessage(message.prediction(),
                                                        /*forks=*/{});
   if (message.has_flight_plan()) {
-    // TODO(phl): Remove compatibility code.  The |root| is only needed
-    // pre-Буняковский.
-    vessel->flight_plan_ = FlightPlan::ReadFromMessage(
-        message.flight_plan(), /*root=*/nullptr, ephemeris);
+    vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
+                                                       ephemeris);
   }
   return std::move(vessel);
 }
@@ -307,6 +312,7 @@ void Vessel::AppendToPsychohistory(
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     bool const authoritative) {
   if (!psychohistory_is_authoritative_) {
+    CHECK(!psychohistory_->Empty());
     psychohistory_->ForgetAfter((--psychohistory_->last()).time());
   }
   psychohistory_->Append(time, degrees_of_freedom);

@@ -146,6 +146,9 @@ class Forkable {
   // |depth|).
   int Size() const;
 
+  // Returns true if this object is empty.
+  bool Empty() const;
+
   // |trajectory| must be a root.
   static not_null<Tr4jectory*> ReadPointerFromMessage(
       serialization::DiscreteTrajectory::Pointer const& message,

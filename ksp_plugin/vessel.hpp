@@ -104,7 +104,9 @@ class Vessel {
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
-  virtual void AdvanceTime(Instant const& time);
+  // Extends the psychohistory of this vessel by computing the centre of mass of
+  // its parts at every point in their tail.  Clears the tails.
+  virtual void AdvanceTime();
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
   // the flight plan.
@@ -165,7 +167,7 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
-  // The new implementation of history, also encompasses the prolongation.
+  // If the psychohistory is not authoritative it contains at least one point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
   // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
   // can that be authoritative?  This class needs saner invariants.
