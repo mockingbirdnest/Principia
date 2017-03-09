@@ -130,10 +130,8 @@ void PileUp::AdvanceTime(
   CHECK_GE(psychohistory_->Size(), 1);
   CHECK_LE(psychohistory_->Size(), 2);
 
-  if (psychohistory_->Size() == 2) {
-    // Remove the non-authoritative point.
-    psychohistory_->ForgetAfter(psychohistory_->Begin().time());
-  }
+  // Remove the non-authoritative point.
+  psychohistory_->ForgetAfter(last_authoritative().time());
   bool last_point_is_authoritative = true;
 
   CHECK_EQ(psychohistory_->Size(), 1);
@@ -171,13 +169,11 @@ void PileUp::AdvanceTime(
                       /*authoritative=*/it != psychohistory_->last() ||
                                         last_point_is_authoritative);
   }
-  if (last_point_is_authoritative) {
-    psychohistory_->ForgetBefore(psychohistory_->last().time());
-    CHECK_EQ(psychohistory_->Size(), 1);
-  } else {
-    psychohistory_->ForgetBefore((--psychohistory_->last()).time());
-    CHECK_EQ(psychohistory_->Size(), 2);
-  }
+  psychohistory_->ForgetBefore(last_authoritative().time());
+  CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
+                                    : psychohistory_->Size() == 2)
+      << NAMED(last_point_is_authoritative) << ", "
+      << NAMED(psychohistory_->Size());
 }
 
 void PileUp::NudgeParts() const {
@@ -277,6 +273,11 @@ void PileUp::AppendToPartTails(
                             FindOrDie(actual_part_degrees_of_freedom_, part)));
     part->set_tail_is_authoritative(authoritative);
   }
+}
+
+DiscreteTrajectory<Barycentric>::Iterator PileUp::last_authoritative() const {
+  return (psychohistory_->Size() == 1) ? psychohistory_->last()
+                                       : --psychohistory_->last();
 }
 
 }  // namespace internal_pile_up
