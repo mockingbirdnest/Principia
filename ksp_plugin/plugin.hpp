@@ -187,6 +187,16 @@ class Plugin {
   virtual void IncrementPartIntrinsicForce(PartId part_id,
                                            Vector<Force, World> const& force);
 
+  // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
+  // union-find for pile up construction.  This must be called after the calls
+  // to |IncrementPartIntrinsicForce|, and before the calls to
+  // |ReportCollision|.
+  virtual void BeginReportingCollisions();
+
+  // Notifies |this| that the given vessels are touching, and should gravitate
+  // as part of a single rigid body.
+  virtual void ReportCollision(PartId part1, PartId part2) const;
+
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
   // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
   // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
@@ -319,10 +329,6 @@ class Plugin {
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
-
-  // Notifies |this| that the given vessels are touching, and should gravitate
-  // as part of a single rigid body.
-  virtual void ReportCollision(PartId part1, PartId part2) const;
 
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
