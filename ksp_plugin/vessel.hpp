@@ -39,7 +39,9 @@ class Vessel {
 
   // Constructs a vessel whose parent is initially |*parent|.  No transfer of
   // ownership.
-  Vessel(not_null<Celestial const*> parent,
+  Vessel(GUID const& guid,
+         std::string const& name,
+         not_null<Celestial const*> parent,
          not_null<Ephemeris<Barycentric>*> ephemeris,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_adaptive_step_parameters);
@@ -134,6 +136,9 @@ class Vessel {
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void(PartId)> const& deletion_callback);
 
+  // Returns "vessel name (GUID)".
+  std::string ShortDebugString() const;
+
  protected:
   // For mocking.
   Vessel();
@@ -148,6 +153,9 @@ class Vessel {
 
   // Returns the last authoritative point of the psychohistory.
   DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
+
+  GUID const guid_;
+  std::string const name_;
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters

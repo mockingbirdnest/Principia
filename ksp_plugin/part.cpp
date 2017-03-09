@@ -3,20 +3,27 @@
 
 #include "ksp_plugin/part.hpp"
 
+#include "base/array.hpp"
+#include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
+using base::Array;
+using base::HexadecimalEncode;
 using base::make_not_null_unique;
+using base::UniqueBytes;
 
 Part::Part(
     PartId const part_id,
+    std::string const& name,
     Mass const& mass,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
     std::function<void()> deletion_callback)
     : part_id_(part_id),
+      name_(name),
       mass_(mass),
       degrees_of_freedom_(degrees_of_freedom),
       tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
@@ -24,7 +31,7 @@ Part::Part(
       deletion_callback_(std::move(deletion_callback)) {}
 
 Part::~Part() {
-  LOG(INFO) << "Destroying part " << part_id_;
+  LOG(INFO) << "Destroying part " << ShortDebugString();
   CHECK(!is_piled_up());
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
@@ -84,7 +91,7 @@ void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
   CHECK(!is_piled_up());
-  LOG(INFO) << "Adding part " << part_id_ << " to the pile up at "
+  LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
             << &*pile_up.iterator();
   containing_pile_up_ = pile_up;
 }
@@ -103,7 +110,7 @@ void Part::clear_pile_up() {
   if (is_piled_up()) {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
     for (not_null<Part*> const part : pile_up.iterator()->parts()) {
-      LOG(INFO) << "Removing part " << part->part_id()
+      LOG(INFO) << "Removing part " << part->ShortDebugString()
                 << " from its pile up at " << &*pile_up.iterator();
       part->containing_pile_up_ = std::experimental::nullopt;
     }
@@ -114,6 +121,7 @@ void Part::clear_pile_up() {
 
 void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
   message->set_part_id(part_id_);
+  message->set_name(name_);
   mass_.WriteToMessage(message->mutable_mass());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
@@ -129,6 +137,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     std::function<void()> deletion_callback) {
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
+                                 message.name(),
                                  Mass::ReadFromMessage(message.mass()),
                                  DegreesOfFreedom<Barycentric>::ReadFromMessage(
                                      message.degrees_of_freedom()),
@@ -142,6 +151,15 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
                                                                  /*forks=*/{});
   part->set_tail_is_authoritative(message.tail_is_authoritative());
   return part;
+}
+
+std::string Part::ShortDebugString() const {
+  UniqueBytes hex_id(sizeof(part_id_) * 2 + 1);
+  Array<std::uint8_t const> id_bytes(
+      reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
+  HexadecimalEncode(id_bytes, hex_id.get());
+  hex_id.data[sizeof(part_id_) * 2] = '\0';
+  return name_ + " (" + reinterpret_cast<char const*>(hex_id.data.get()) + ")";
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {

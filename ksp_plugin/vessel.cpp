@@ -27,11 +27,15 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
 
-Vessel::Vessel(not_null<Celestial const*> const parent,
+Vessel::Vessel(GUID const& guid,
+               std::string const& name,
+               not_null<Celestial const*> const parent,
                not_null<Ephemeris<Barycentric>*> const ephemeris,
                Ephemeris<Barycentric>::AdaptiveStepParameters const&
                    prediction_adaptive_step_parameters)
-    : body_(),
+    : guid_(guid),
+      name_(name),
+      body_(),
       prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       parent_(parent),
       ephemeris_(ephemeris),
@@ -51,16 +55,17 @@ void Vessel::set_parent(not_null<Celestial const*> const parent) {
 }
 
 void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
-  PartId const id = part->part_id();
-  LOG(INFO) << "Adding part " << id << " to vessel at " << this;
-  parts_.emplace(id, std::move(part));
+  LOG(INFO) << "Adding part " << part->ShortDebugString() << " to vessel "
+            << ShortDebugString();
+  parts_.emplace(part->part_id(), std::move(part));
 }
 
 not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
-  LOG(INFO) << "Extracting part " << id << " from vessel at " << this;
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
+  LOG(INFO) << "Extracting part " << result->ShortDebugString() << " from vessel "
+            << ShortDebugString();
   parts_.erase(it);
   return result;
 }
@@ -86,7 +91,7 @@ void Vessel::FreeParts() {
 void Vessel::PreparePsychohistory(Instant const& t) {
   CHECK(!parts_.empty());
   if (psychohistory_->Empty()) {
-    LOG(INFO) << "Preparing psychohistory of vessel at " << this;
+    LOG(INFO) << "Preparing psychohistory of vessel " << ShortDebugString();
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
@@ -226,6 +231,8 @@ bool Vessel::psychohistory_is_authoritative() const {
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
   // TODO(phl): Implement.
+  message->set_guid(guid_);
+  message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
   prediction_adaptive_step_parameters_.WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
@@ -254,6 +261,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   auto vessel = make_not_null_unique<Vessel>(
+      message.guid(),
+      message.name(),
       parent,
       ephemeris,
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
@@ -284,6 +293,10 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                        ephemeris);
   }
   return std::move(vessel);
+}
+
+std::string Vessel::ShortDebugString() const {
+  return name_ + " (" + guid_ + ")";
 }
 
 Vessel::Vessel()
