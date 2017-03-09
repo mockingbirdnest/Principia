@@ -169,7 +169,9 @@ void PileUp::AdvanceTime(
                       /*authoritative=*/it != psychohistory_->last() ||
                                         last_point_is_authoritative);
   }
-  psychohistory_->ForgetBefore(last_authoritative().time());
+  psychohistory_->ForgetBefore(last_point_is_authoritative
+                                   ? psychohistory_->last().time()
+                                   : (--psychohistory_->last()).time());
   CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
                                     : psychohistory_->Size() == 2)
       << NAMED(last_point_is_authoritative) << ", "

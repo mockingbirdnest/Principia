@@ -477,11 +477,6 @@ void Plugin::InsertOrKeepLoadedPart(
   // NOTE(egg): we do not call |MakeSingleton| here, as that copies the current
   // intrinsic force of the part, so we must wait for
   // |IncrementPartIntrinsicForce| to be called.
-  // TODO(egg): we need a new function called after all calls to
-  // |IncrementPartIntrinsicForce| and before the calls to |ReportCollision| to
-  // make the singletons.  For now we make the singletons here and the forces
-  // get ignored.
-  Subset<Part>::MakeSingleton(*part, part);
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -490,6 +485,22 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
   vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
+}
+
+void Plugin::PrepareToReportCollisions() {
+  for (not_null<Vessel*> vessel : loaded_vessels_) {
+    // TODO(egg): we're taking the address of a parameter passed by reference
+    // here; but then I don't think I want to pass this by pointer, it's quite
+    // convenient everywhere else...
+    vessel->ForAllParts(
+        [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
+  }
+}
+
+void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
+  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
+  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
+  Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
 void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
@@ -872,12 +883,6 @@ void Plugin::SetPlottingFrame(
 
 not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
-}
-
-void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
-  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
-  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
-  Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(

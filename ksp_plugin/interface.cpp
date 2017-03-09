@@ -169,6 +169,12 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
+void principia__PrepareToReportCollisions(Plugin* const plugin) {
+  journal::Method<journal::PrepareToReportCollisions> m({plugin});
+  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
+  return m.Return();
+}
+
 // Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP principia__CelestialFromParent(Plugin const* const plugin,
