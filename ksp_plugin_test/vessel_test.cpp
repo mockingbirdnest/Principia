@@ -39,12 +39,18 @@ class VesselTest : public testing::Test {
   VesselTest()
       : body_(MassiveBody::Parameters(1 * Kilogram)),
         celestial_(&body_),
-        vessel_(&celestial_, &ephemeris_, DefaultPredictionParameters()) {
+        vessel_("123",
+                "vessel",
+                &celestial_,
+                &ephemeris_,
+                DefaultPredictionParameters()) {
     auto p1 = make_not_null_unique<Part>(part_id1_,
+                                         "p1",
                                          mass1_,
                                          p1_dof_,
                                          /*deletion_callback=*/nullptr);
     auto p2 = make_not_null_unique<Part>(part_id2_,
+                                         "p2",
                                          mass2_,
                                          p2_dof_,
                                          /*deletion_callback=*/nullptr);

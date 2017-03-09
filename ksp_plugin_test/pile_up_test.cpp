@@ -68,8 +68,8 @@ class PileUpTest : public testing::Test {
   using RigidPileUp = TestablePileUp::RigidPileUp;
 
   PileUpTest()
-      : p1_(part_id1_, mass1_, p1_dof_, /*deletion_callback=*/nullptr),
-        p2_(part_id2_, mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
+      : p1_(part_id1_, "p1", mass1_, p1_dof_, /*deletion_callback=*/nullptr),
+        p2_(part_id2_, "p2", mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
