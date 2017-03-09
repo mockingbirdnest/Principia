@@ -850,7 +850,13 @@ public partial class PrincipiaPluginAdapter
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
     // body frames for our weird tilt, and run VesselPrecalculate again.  Sob.
     foreach (var vessel in FlightGlobals.Vessels) {
-      vessel.precalc.FixedUpdate();
+      if (vessel.graviticAcceleration == Vector3d.zero) {
+        plugin_.GeometricAccelerationInBodyCentredNonRotatingFrame(
+            FlightGlobals.currentMainBody.flightGlobalsIndex,
+            vessel.CoMD - FlightGlobals.currentMainBody.position);
+        vessel.precalc.FixedUpdate();
+        vessel.graviticAcceleration = Vector3d.zero;
+      }
       // TODO(egg): either set the following from accelerations known to the
       // plugin combined with measurements for accelerations due to interactions
       // inside a PileUp, or set vessel.graviticAcceleration around the call

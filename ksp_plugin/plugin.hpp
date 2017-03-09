@@ -60,6 +60,7 @@ using physics::HierarchicalSystem;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
+using quantities::Acceleration;
 using quantities::Angle;
 using quantities::Force;
 using quantities::Length;
@@ -138,6 +139,11 @@ class Plugin {
 
   virtual Angle CelestialInitialRotation(Index celestial_index) const;
   virtual Time CelestialRotationPeriod(Index celestial_index) const;
+
+  virtual Vector<Acceleration, World>
+  GeometricAccelerationInBodyCentredNonRotatingFrame(
+      Index celestial_index,
+      Displacement<World> const& displacement_from_body) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
