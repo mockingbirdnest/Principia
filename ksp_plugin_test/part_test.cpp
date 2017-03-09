@@ -18,7 +18,12 @@ using quantities::si::Second;
 
 class PartTest : public testing::Test {
  protected:
-  PartTest() : part_(part_id_, mass_, degrees_of_freedom_, /*deletion_callback=*/nullptr) {
+  PartTest()
+      : part_(part_id_,
+              "part",
+              mass_,
+              degrees_of_freedom_,
+              /*deletion_callback=*/nullptr) {
     part_.increment_intrinsic_force(intrinsic_force_);
     part_.tail().Append(
         astronomy::J2000,
