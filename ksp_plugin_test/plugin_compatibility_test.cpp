@@ -1,4 +1,6 @@
 ﻿
+#if WE_CARED_ABOUT_PRE_CARDANO_COMPATIBILITY
+
 #include <experimental/filesystem>
 #include <fstream>
 #include <map>
@@ -222,3 +224,5 @@ TEST_F(PluginCompatibilityTest, PreБуняковский) {
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#endif

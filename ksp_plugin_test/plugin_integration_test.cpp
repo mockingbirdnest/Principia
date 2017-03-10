@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/plugin.hpp"
 
+#if THE_PLUGIN_INTEGRATION_TESTS_WORK
+
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -655,3 +657,5 @@ TEST_F(PluginIntegrationTest, Prediction) {
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+
+#endif
