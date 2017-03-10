@@ -340,21 +340,6 @@ void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
   return m.Return();
 }
 
-XYZ principia__GeometricAccelerationInBodyCentredNonRotatingFrame(
-    Plugin const* const plugin,
-    int const celestial_index,
-    XYZ const displacement_from_body) {
-  journal::Method<journal::GeometricAccelerationInBodyCentredNonRotatingFrame>
-      m({plugin, celestial_index, displacement_from_body});
-  CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(
-      plugin->GeometricAccelerationInBodyCentredNonRotatingFrame(
-          celestial_index,
-          Displacement<World>(
-              FromXYZ(displacement_from_body) * Metre)).coordinates() /
-                  (Metre / Pow<2>(Second))));
-}
-
 int principia__GetBufferDuration() {
   journal::Method<journal::GetBufferDuration> m;
   return m.Return(FLAGS_logbufsecs);

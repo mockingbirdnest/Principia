@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5119.
+  extensions 5000 to 5999;  // Last used: 5118.
 }
 
 message AdvanceTime {
@@ -576,24 +576,6 @@ message FreeVesselsAndPartsAndCollectPileUps {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   optional In in = 1;
-}
-
-message GeometricAccelerationInBodyCentredNonRotatingFrame {
-  extend Method {
-    optional GeometricAccelerationInBodyCentredNonRotatingFrame extension =
-        5119;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required int32 celestial_index = 2;
-    required XYZ displacement_from_body = 3;
-  }
-  message Return {
-    required XYZ result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message GetBufferDuration {

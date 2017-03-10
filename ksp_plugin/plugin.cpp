@@ -371,29 +371,6 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
-Vector<Acceleration, World>
-Plugin::GeometricAccelerationInBodyCentredNonRotatingFrame(
-    Index celestial_index,
-    Displacement<World> const& displacement_from_body) const {
-  enum class LocalTag { tag };
-  using BodyCentred =
-      geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
-  Celestial& celestial = *FindOrDie(celestials_, celestial_index);
-  BodyCentredNonRotatingDynamicFrame<Barycentric, BodyCentred> frame{
-      ephemeris_.get(),
-      celestial.body()};
-  auto const barycentric_to_body_centred =
-      frame.ToThisFrameAtTime(current_time_).rigid_transformation();
-  auto const body_centred_to_world =
-      BarycentricToWorld() * barycentric_to_body_centred.linear_map().Inverse();
-  return body_centred_to_world(frame.GeometricAcceleration(
-      current_time_,
-      {barycentric_to_body_centred(
-           celestial.current_position(current_time_) +
-           WorldToBarycentric()(displacement_from_body)),
-       Velocity<BodyCentred>{}}));
-}
-
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 std::string const& vessel_name,
                                 Index const parent_index,
