@@ -845,27 +845,38 @@ public partial class PrincipiaPluginAdapter
    }
 
   private void SetBodyFramesAndPrecalculateVessels() {
-    SetBodyFrames();
-    // Unfortunately there is no way to get scheduled between Planetarium and
-    // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
-    // body frames for our weird tilt, and run VesselPrecalculate again.  Sob.
-    foreach (var vessel in FlightGlobals.Vessels) {
-      if (vessel.graviticAcceleration == Vector3d.zero) {
-        plugin_.GeometricAccelerationInBodyCentredNonRotatingFrame(
-            FlightGlobals.currentMainBody.flightGlobalsIndex,
-            vessel.CoMD - FlightGlobals.currentMainBody.position);
-        vessel.precalc.FixedUpdate();
-        vessel.graviticAcceleration = Vector3d.zero;
-      }
-      // TODO(egg): either set the following from accelerations known to the
-      // plugin combined with measurements for accelerations due to interactions
-      // inside a PileUp, or set vessel.graviticAcceleration around the call
-      // to precalc.FixedUpdate above so that vessel.UpdateAcceleration sets
-      // them to the right thing.
-      // vessel.acceleration = ???;
-      // vessel.acceleration_immediate = ???;
-      // vessel.geeForce = ???;
-      // vessel.geeForce_immediate = ???;
+     if (PluginRunning()) {
+       SetBodyFrames();
+       // Unfortunately there is no way to get scheduled between Planetarium and
+       // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set
+       // the body frames for our weird tilt, and run VesselPrecalculate again.
+       // Sob.
+       foreach (var vessel in FlightGlobals.Vessels) {
+         if (is_in_space(vessel) && plugin_.HasVessel(vessel.id.ToString())) {
+           vessel.graviticAcceleration =
+               (Vector3d)
+                   plugin_.GeometricAccelerationInBodyCentredNonRotatingFrame(
+                       FlightGlobals.currentMainBody.flightGlobalsIndex,
+                       (XYZ)(vessel.CoMD -
+                             FlightGlobals.currentMainBody.position));
+           Log.Error("geometric acceleration "+vessel.graviticAcceleration);
+           Log.Error(
+               "principia's velocity " +
+               (Vector3d)plugin_.VesselFromParent(vessel.id.ToString()).p);
+           Log.Error("vessel.obt_velocity" + vessel.obt_velocity);
+           Log.Error("vessel.immediate_acceleration" +
+                     vessel.acceleration_immediate);
+           vessel.precalc.calculateGravity = false;
+           // That does too many things...
+ //          vessel.precalc.FixedUpdate();
+           vessel.precalc.calculateGravity = true;
+           Log.Error("vessel.obt_velocity" + vessel.obt_velocity);
+           Log.Error("vessel.immediate_acceleration" +
+                     vessel.acceleration_immediate);
+           Log.Error("vessel.acceleration "+vessel.acceleration);
+           Log.Error("vessel.geeForce "+vessel.geeForce.ToString("R"));
+         }
+       }
     }
   }
 
@@ -874,6 +885,15 @@ public partial class PrincipiaPluginAdapter
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
+      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.packed) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
+          Log.Info("Killing stock gravity");
+          PhysicsGlobals.GraviticForceMultiplier = 0;
+        }
+      } else {
+        Log.Info("Reinstating stock gravity");
+        PhysicsGlobals.GraviticForceMultiplier = 1;
+      }
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
