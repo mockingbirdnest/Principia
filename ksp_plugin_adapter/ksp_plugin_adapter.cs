@@ -344,6 +344,9 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    // Timing0, -8008 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
+                                 DisableVesselPrecalculate);
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
                                  SetBodyFramesAndPrecalculateVessels);
@@ -705,6 +708,8 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
+                                    DisableVesselPrecalculate);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
                                     SetBodyFramesAndPrecalculateVessels);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
@@ -844,22 +849,21 @@ public partial class PrincipiaPluginAdapter
      }
    }
 
+  private void DisableVesselPrecalculate() {
+    foreach (var vessel in FlightGlobals.Vessels) {
+      vessel.precalc.enabled = false;
+    }
+  }
+
   private void SetBodyFramesAndPrecalculateVessels() {
     SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
-    // body frames for our weird tilt, and run VesselPrecalculate again.  Sob.
+    // body frames for our weird tilt, and run VesselPrecalculate manually.
+    // Sob.
     foreach (var vessel in FlightGlobals.Vessels) {
+      vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
-      // TODO(egg): either set the following from accelerations known to the
-      // plugin combined with measurements for accelerations due to interactions
-      // inside a PileUp, or set vessel.graviticAcceleration around the call
-      // to precalc.FixedUpdate above so that vessel.UpdateAcceleration sets
-      // them to the right thing.
-      // vessel.acceleration = ???;
-      // vessel.acceleration_immediate = ???;
-      // vessel.geeForce = ???;
-      // vessel.geeForce_immediate = ???;
     }
   }
 
@@ -868,6 +872,15 @@ public partial class PrincipiaPluginAdapter
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
+      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.packed) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
+          Log.Info("Killing stock gravity");
+          PhysicsGlobals.GraviticForceMultiplier = 0;
+        }
+      } else {
+        Log.Info("Reinstating stock gravity");
+        PhysicsGlobals.GraviticForceMultiplier = 1;
+      }
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),

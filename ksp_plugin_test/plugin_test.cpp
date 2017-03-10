@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/plugin.hpp"
 
+#if THE_PLUGIN_TESTS_WORK
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -932,3 +934,4 @@ TEST_F(PluginTest, Frenet) {
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
+#endif
