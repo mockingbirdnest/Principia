@@ -856,16 +856,14 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
-    if (PluginRunning()) {
-      SetBodyFrames();
-      // Unfortunately there is no way to get scheduled between Planetarium and
-      // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set
-      // the body frames for our weird tilt, and VesselPrecalculate manually.
-      // Sob.
-      foreach (var vessel in FlightGlobals.Vessels) {
-        vessel.precalc.enabled = true;
-        vessel.precalc.FixedUpdate();
-      }
+    SetBodyFrames();
+    // Unfortunately there is no way to get scheduled between Planetarium and
+    // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
+    // body frames for our weird tilt, and VesselPrecalculate manually.
+    // Sob.
+    foreach (var vessel in FlightGlobals.Vessels) {
+      vessel.precalc.enabled = true;
+      vessel.precalc.FixedUpdate();
     }
   }
 
