@@ -823,20 +823,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   auto const fitting_tolerance =
       Length::ReadFromMessage(message.fitting_tolerance());
 
-  std::unique_ptr<FixedStepParameters> parameters;
-  bool const is_pre_буняковский = message.has_planetary_integrator();
-  if (is_pre_буняковский) {
-    auto const& planetary_integrator =
-        FixedStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-            message.planetary_integrator());
-    CHECK(message.has_step());
-    auto const step = Time::ReadFromMessage(message.step());
-    parameters =
-        std::make_unique<FixedStepParameters>(planetary_integrator, step);
-  } else {
-    parameters.reset(new FixedStepParameters(
-        FixedStepParameters::ReadFromMessage(message.fixed_step_parameters())));
-  }
+  FixedStepParameters const parameters =
+      FixedStepParameters::ReadFromMessage(message.fixed_step_parameters());
 
   // Dummy initial state and time.  We'll overwrite them later.
   std::vector<DegreesOfFreedom<Frame>> const initial_state(
@@ -848,35 +836,19 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        initial_state,
                        initial_time,
                        fitting_tolerance,
-                       *parameters);
+                       parameters);
 
-  bool const is_pre_cardano = !message.has_instance();
   NewtonianMotionEquation equation;
   equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
                 ephemeris.get(), _1, _2, _3);
-  if (is_pre_cardano) {
-    auto const last_state =
-        NewtonianMotionEquation::SystemState::ReadFromMessage(
-            message.last_state());
-    IntegrationProblem<NewtonianMotionEquation> problem;
-    problem.equation = equation;
-    problem.initial_state = &last_state;
-
-    ephemeris->instance_ = parameters->integrator_->NewInstance(
-        problem,
-        /*append_state=*/std::bind(
-            &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1),
-        parameters->step_);
-  } else {
-    ephemeris->instance_ =
-        FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
-        ReadFromMessage(
-            message.instance(),
-            equation,
-            /*append_state=*/std::bind(
-                &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
-  }
+  ephemeris->instance_ =
+      FixedStepSizeIntegrator<NewtonianMotionEquation>::Instance::
+      ReadFromMessage(
+          message.instance(),
+          equation,
+          /*append_state=*/std::bind(
+              &Ephemeris::AppendMassiveBodiesState, ephemeris.get(), _1));
 
   int index = 0;
   ephemeris->bodies_to_trajectories_.clear();
