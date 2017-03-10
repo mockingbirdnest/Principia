@@ -68,8 +68,8 @@ class PileUpTest : public testing::Test {
   using RigidPileUp = TestablePileUp::RigidPileUp;
 
   PileUpTest()
-      : p1_(part_id1_, mass1_, p1_dof_, /*deletion_callback=*/nullptr),
-        p2_(part_id2_, mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
+      : p1_(part_id1_, "p1", mass1_, p1_dof_, /*deletion_callback=*/nullptr),
+        p2_(part_id2_, "p2", mass2_, p2_dof_, /*deletion_callback=*/nullptr) {}
 
   void CheckPreDeformPileUpInvariants(TestablePileUp& pile_up) {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
@@ -425,9 +425,9 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
                                       890.0 / 9.0 * Metre / Second}), 0)));
-  EXPECT_EQ(1, pile_up.psychohistory().Size());
+  EXPECT_EQ(2, pile_up.psychohistory().Size());
   EXPECT_THAT(
-      pile_up.psychohistory().last().degrees_of_freedom(),
+      pile_up.psychohistory().Begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.2 * Metre,
@@ -437,6 +437,17 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {10.2 * Metre / Second,
                                       140.2 * Metre / Second,
                                       310.2 / 3.0 * Metre / Second}), 0)));
+  EXPECT_THAT(
+      pile_up.psychohistory().last().degrees_of_freedom(),
+      Componentwise(AlmostEquals(Barycentric::origin +
+                                     Displacement<Barycentric>(
+                                         {1.0 * Metre,
+                                          14.0 * Metre,
+                                          31.0 / 3.0 * Metre}), 0),
+                    AlmostEquals(Velocity<Barycentric>(
+                                     {10.0 * Metre / Second,
+                                      140.0 * Metre / Second,
+                                      310.0 / 3.0 * Metre / Second}), 0)));
 
   pile_up.NudgeParts();
 
@@ -444,24 +455,24 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
       p1_.degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
-                                         {-23.2 / 9.0 * Metre,
-                                          40.6 / 3.0 * Metre,
-                                          101.6 / 9.0 * Metre}), 1),
+                                         {-25.0 / 9.0 * Metre,
+                                          40.0 / 3.0 * Metre,
+                                          101.0 / 9.0 * Metre}), 1),
                     AlmostEquals(Velocity<Barycentric>(
-                                     {-248.2 / 9.0 * Metre / Second,
-                                      400.6 / 3.0 * Metre / Second,
-                                      1010.6 / 9.0 * Metre / Second}), 1)));
+                                     {-250.0 / 9.0 * Metre / Second,
+                                      400.0 / 3.0 * Metre / Second,
+                                      1010.0 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
       p2_.degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
-                                         {27.8 / 9.0 * Metre,
-                                          43.6 / 3.0 * Metre,
-                                          89.6 / 9.0 * Metre}), 1),
+                                         {26.0 / 9.0 * Metre,
+                                          43.0 / 3.0 * Metre,
+                                          89.0 / 9.0 * Metre}), 0),
                     AlmostEquals(Velocity<Barycentric>(
-                                     {261.8 / 9.0 * Metre / Second,
-                                      430.6 / 3.0 * Metre / Second,
-                                      890.6 / 9.0 * Metre / Second}), 1)));
+                                     {260.0 / 9.0 * Metre / Second,
+                                      430.0 / 3.0 * Metre / Second,
+                                      890.0 / 9.0 * Metre / Second}), 0)));
 }
 
 TEST_F(PileUpTest, Serialization) {
