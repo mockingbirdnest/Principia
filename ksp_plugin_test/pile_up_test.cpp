@@ -1,5 +1,7 @@
 #include "ksp_plugin/pile_up.hpp"
 
+#include <limits>
+
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"  // For the Default...Parameters.
 #include "geometry/named_quantities.hpp"
@@ -15,20 +17,29 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::make_not_null_unique;
 using geometry::Displacement;
+using geometry::Position;
 using geometry::R3Element;
+using geometry::Vector;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
+using physics::MassiveBody;
 using physics::MockEphemeris;
+using quantities::Acceleration;
 using quantities::Length;
+using quantities::Pow;
 using quantities::Speed;
+using quantities::Time;
 using quantities::si::Kilogram;
+using quantities::si::Micro;
 using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using ::testing::DoAll;
+using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -473,6 +484,61 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
                                       890.0 / 9.0 * Metre / Second}), 0)));
+}
+
+TEST_F(PileUpTest, MidStepIntrinsicForce) {
+  // An empty ephemeris; the parameters don't matter, since there are no bodies
+  // to integrate.
+  // TODO(egg): ... except we have to put a body because |Ephemeris| doesn't
+  // want to be empty.  We put a tiny one very far.
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  bodies.emplace_back(make_not_null_unique<MassiveBody>(1 * Kilogram));
+  std::vector<DegreesOfFreedom<Barycentric>> initial_state{
+      DegreesOfFreedom<Barycentric>{
+          Barycentric::origin +
+              Displacement<Barycentric>(
+                  {std::pow(2, 100) * Metre, 0 * Metre, 0 * Metre}),
+          Velocity<Barycentric>{}}};
+  Ephemeris<Barycentric> ephemeris{
+      std::move(bodies),
+      initial_state,
+      /*initial_time=*/astronomy::J2000,
+      /*fitting_tolerance=*/1 * Metre,
+      Ephemeris<Barycentric>::FixedStepParameters{
+          integrators::BlanesMoan2002SRKN6B<Position<Barycentric>>(),
+          1 * Second}};
+
+  Time const fixed_step = 10 * Second;
+  Ephemeris<Barycentric>::FixedStepParameters fixed_parameters{
+      integrators::BlanesMoan2002SRKN6B<Position<Barycentric>>(), fixed_step};
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
+      integrators::DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+      /*length_integration_tolerance*/ 1 * Micro(Metre),
+      /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};
+
+  TestablePileUp pile_up({&p1_}, astronomy::J2000);
+  Velocity<Barycentric> const old_velocity =
+      p1_.degrees_of_freedom().velocity();
+
+  pile_up.AdvanceTime(ephemeris,
+                      astronomy::J2000 + 1.5 * fixed_step,
+                      fixed_parameters,
+                      adaptive_parameters);
+  pile_up.NudgeParts();
+  EXPECT_THAT(p1_.degrees_of_freedom().velocity(), Eq(old_velocity));
+
+  Vector<Acceleration, Barycentric> const a{{1729 * Metre / Pow<2>(Second),
+                                             -168 * Metre / Pow<2>(Second),
+                                             504 * Metre / Pow<2>(Second)}};
+  pile_up.set_intrinsic_force(p1_.mass() * a);
+  pile_up.AdvanceTime(ephemeris,
+                      astronomy::J2000 + 2 * fixed_step,
+                      fixed_parameters,
+                      adaptive_parameters);
+  pile_up.NudgeParts();
+  EXPECT_THAT(p1_.degrees_of_freedom().velocity(),
+              AlmostEquals(old_velocity + 0.5 * fixed_step * a, 1));
 }
 
 TEST_F(PileUpTest, Serialization) {
