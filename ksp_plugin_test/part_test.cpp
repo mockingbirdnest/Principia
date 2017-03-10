@@ -52,14 +52,10 @@ TEST_F(PartTest, Serialization) {
   EXPECT_TRUE(message.has_mass());
   EXPECT_EQ(7, message.mass().magnitude());
   EXPECT_TRUE(message.has_intrinsic_force());
-  EXPECT_TRUE(message.intrinsic_force().
-                  has_vector());
-  EXPECT_EQ(8, message.intrinsic_force().
-                   vector().x().quantity().magnitude());
-  EXPECT_EQ(9, message.intrinsic_force().
-                   vector().y().quantity().magnitude());
-  EXPECT_EQ(10, message.intrinsic_force().
-                    vector().z().quantity().magnitude());
+  EXPECT_TRUE(message.intrinsic_force().has_vector());
+  EXPECT_EQ(8, message.intrinsic_force().vector().x().quantity().magnitude());
+  EXPECT_EQ(9, message.intrinsic_force().vector().y().quantity().magnitude());
+  EXPECT_EQ(10, message.intrinsic_force().vector().z().quantity().magnitude());
   EXPECT_TRUE(message.has_degrees_of_freedom());
   EXPECT_TRUE(message.degrees_of_freedom().t1().has_point());
   EXPECT_TRUE(message.degrees_of_freedom().t1().point().has_multivector());
