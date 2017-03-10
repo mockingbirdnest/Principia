@@ -344,6 +344,9 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    // Timing0, -8008 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
+                                 DisableVesselPrecalculate);
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
                                  SetBodyFramesAndPrecalculateVessels);
@@ -705,6 +708,8 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
+                                    DisableVesselPrecalculate);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
                                     SetBodyFramesAndPrecalculateVessels);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
@@ -844,39 +849,23 @@ public partial class PrincipiaPluginAdapter
      }
    }
 
+  private void DisableVesselPrecalculate() {
+    foreach (var vessel in FlightGlobals.Vessels) {
+      vessel.precalc.enabled = false;
+    }
+  }
+
   private void SetBodyFramesAndPrecalculateVessels() {
-     if (PluginRunning()) {
-       SetBodyFrames();
-       // Unfortunately there is no way to get scheduled between Planetarium and
-       // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set
-       // the body frames for our weird tilt, and run VesselPrecalculate again.
-       // Sob.
-       foreach (var vessel in FlightGlobals.Vessels) {
-         if (is_in_space(vessel) && plugin_.HasVessel(vessel.id.ToString())) {
-           vessel.graviticAcceleration =
-               (Vector3d)
-                   plugin_.GeometricAccelerationInBodyCentredNonRotatingFrame(
-                       FlightGlobals.currentMainBody.flightGlobalsIndex,
-                       (XYZ)(vessel.CoMD -
-                             FlightGlobals.currentMainBody.position));
-           Log.Error("geometric acceleration "+vessel.graviticAcceleration);
-           Log.Error(
-               "principia's velocity " +
-               (Vector3d)plugin_.VesselFromParent(vessel.id.ToString()).p);
-           Log.Error("vessel.obt_velocity" + vessel.obt_velocity);
-           Log.Error("vessel.immediate_acceleration" +
-                     vessel.acceleration_immediate);
-           vessel.precalc.calculateGravity = false;
-           // That does too many things...
- //          vessel.precalc.FixedUpdate();
-           vessel.precalc.calculateGravity = true;
-           Log.Error("vessel.obt_velocity" + vessel.obt_velocity);
-           Log.Error("vessel.immediate_acceleration" +
-                     vessel.acceleration_immediate);
-           Log.Error("vessel.acceleration "+vessel.acceleration);
-           Log.Error("vessel.geeForce "+vessel.geeForce.ToString("R"));
-         }
-       }
+    if (PluginRunning()) {
+      SetBodyFrames();
+      // Unfortunately there is no way to get scheduled between Planetarium and
+      // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set
+      // the body frames for our weird tilt, and VesselPrecalculate manually.
+      // Sob.
+      foreach (var vessel in FlightGlobals.Vessels) {
+        vessel.precalc.enabled = true;
+        vessel.precalc.FixedUpdate();
+      }
     }
   }
 
