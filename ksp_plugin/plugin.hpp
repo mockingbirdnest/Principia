@@ -417,7 +417,7 @@ class Plugin {
       Vector<double, Frenet<Navigation>> const& vector) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
-  // |celestial_messages| (which may be pre- or post-Bourbaki).
+  // |celestial_messages|.
   template<typename T>
   static void ReadCelestialsFromMessages(
       Ephemeris<Barycentric> const& ephemeris,

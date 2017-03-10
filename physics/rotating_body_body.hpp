@@ -140,6 +140,8 @@ void RotatingBody<Frame>::WriteToMessage(
   not_null<serialization::RotatingBody*> const rotating_body =
       message->MutableExtension(serialization::RotatingBody::extension);
   Frame::WriteToMessage(rotating_body->mutable_frame());
+  parameters_.mean_radius_.WriteToMessage(
+      rotating_body->mutable_mean_radius());
   parameters_.reference_angle_.WriteToMessage(
       rotating_body->mutable_reference_angle());
   parameters_.reference_instant_.WriteToMessage(

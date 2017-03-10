@@ -153,7 +153,7 @@ DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
                     serialization::BodySurfaceDynamicFrame::extension)));
   }
   CHECK_EQ(extensions_found, 1) << message.DebugString();
-  base::noreturn();
+  return std::move(result);
 }
 
 }  // namespace internal_dynamic_frame

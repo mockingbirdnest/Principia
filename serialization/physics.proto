@@ -136,7 +136,7 @@ message RotatingBody {
   }
   extensions 4000 to 4999;  // Last used: 4000.
   required Frame frame = 1;
-  optional Quantity mean_radius = 5;
+  required Quantity mean_radius = 5;
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
   optional Quantity angular_frequency = 6;  // required
