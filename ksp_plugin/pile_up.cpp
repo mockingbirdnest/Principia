@@ -130,12 +130,12 @@ void PileUp::AdvanceTime(
   CHECK_GE(psychohistory_->Size(), 1);
   CHECK_LE(psychohistory_->Size(), 2);
 
-  // Remove the non-authoritative point.
-  psychohistory_->ForgetAfter(last_authoritative().time());
   bool last_point_is_authoritative = true;
 
-  CHECK_EQ(psychohistory_->Size(), 1);
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
+    // Remove the non-authoritative point.
+    psychohistory_->ForgetAfter(last_authoritative().time());
+    CHECK_EQ(psychohistory_->Size(), 1);
     ephemeris.FlowWithFixedStep(
         {psychohistory_.get()},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
@@ -152,6 +152,10 @@ void PileUp::AdvanceTime(
       last_point_is_authoritative = false;
     }
   } else {
+    // We make the existing last point authoritative, i.e. we do not remove it.
+    // If it was already authoritative nothing happen, if it was not, we
+    // integrate on top of it, and it gets appended authoritatively to the part
+    // tails.
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
     CHECK(ephemeris.FlowWithAdaptiveStep(
