@@ -153,7 +153,7 @@ void PileUp::AdvanceTime(
     }
   } else {
     // We make the existing last point authoritative, i.e. we do not remove it.
-    // If it was already authoritative nothing happen, if it was not, we
+    // If it was already authoritative nothing happens, if it was not, we
     // integrate on top of it, and it gets appended authoritatively to the part
     // tails.
     auto const a = intrinsic_force_ / mass_;

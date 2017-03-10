@@ -32,8 +32,8 @@ using quantities::Pow;
 using quantities::Speed;
 using quantities::Time;
 using quantities::si::Kilogram;
-using quantities::si::Micro;
 using quantities::si::Metre;
+using quantities::si::Micro;
 using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -489,7 +489,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 TEST_F(PileUpTest, MidStepIntrinsicForce) {
   // An empty ephemeris; the parameters don't matter, since there are no bodies
   // to integrate.
-  // TODO(egg): ... except we have to put a body because |Ephemeris| doesn't
+  // NOTE(egg): ... except we have to put a body because |Ephemeris| doesn't
   // want to be empty.  We put a tiny one very far.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   bodies.emplace_back(make_not_null_unique<MassiveBody>(1 * Kilogram));
