@@ -92,9 +92,9 @@ message Ephemeris {
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
   required Quantity fitting_tolerance = 5;
-  optional FixedStepParameters fixed_step_parameters = 7;  // required.
+  required FixedStepParameters fixed_step_parameters = 7;
   optional Point t_max = 8;
-  optional IntegratorInstance instance = 9;  // required.
+  required IntegratorInstance instance = 9;
 
   // Pre-Cardano.
   reserved 6;
@@ -118,7 +118,7 @@ message KeplerianElements {
 message MassiveBody {
   extensions 2000 to 2999;  // Last used: 2002.
   required Quantity gravitational_parameter = 1;
-  optional string name = 2;  // required.
+  required string name = 2;
 }
 
 message MasslessBody {}
@@ -139,9 +139,9 @@ message RotatingBody {
   required Quantity mean_radius = 5;
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
-  optional Quantity angular_frequency = 6;  // required
-  optional Quantity right_ascension_of_pole = 7;  // required
-  optional Quantity declination_of_pole = 8;  // required
+  required Quantity angular_frequency = 6;
+  required Quantity right_ascension_of_pole = 7;
+  required Quantity declination_of_pole = 8;
 
   // Pre-Cardano.
   reserved 4;
