@@ -814,8 +814,9 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
                                 SolarSystemFactory::Sun,
                                 /*loaded=*/false,
                                 inserted);
+    plugin_->FreeVesselsAndPartsAndCollectPileUps();
     plugin_->VesselFromParent(guid);
-  }, "not given an initial state");
+  }, "!parts_\\.empty\\(\\)");
 }
 
 TEST_F(PluginDeathTest, CelestialFromParentError) {
