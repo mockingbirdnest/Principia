@@ -243,10 +243,11 @@ class PluginTest : public testing::Test {
         valid_ephemeris_message_.mutable_fixed_step_parameters());
     using ODE = Ephemeris<Barycentric>::NewtonianMotionEquation;
     ODE::SystemState initial_state;
-    McLachlanAtela1992Order5Optimal<Position<Barycentric>>().NewInstance(
-      IntegrationProblem<ODE>{ODE{}, &initial_state},
-        [](typename ODE::SystemState const&) {},
-        1.0 * Second)->WriteToMessage(valid_ephemeris_message_.mutable_instance());
+    McLachlanAtela1992Order5Optimal<Position<Barycentric>>().
+        NewInstance(IntegrationProblem<ODE>{ODE{}, &initial_state},
+                     [](typename ODE::SystemState const&) {},
+                     1.0 * Second)->WriteToMessage(
+            valid_ephemeris_message_.mutable_instance());
   }
 
   void InsertAllSolarSystemBodies() {
@@ -309,6 +310,43 @@ class PluginTest : public testing::Test {
         RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                            satellite_initial_velocity_));
     ++number_of_new_vessels;
+  }
+
+  void PrintSerializedPlugin(const Plugin& plugin) {
+    serialization::Plugin message;
+    plugin.WriteToMessage(&message);
+    std::string const serialized = message.SerializeAsString();
+    int index = 0;
+    for (unsigned char c : serialized) {
+      if (index == 0) {
+        printf("    \"");
+      }
+      printf("\\x%x", c);
+      ++index;
+      if (index == 18) {
+        printf("\"\n");
+        index = 0;
+      }
+    }
+    if (index != 0) {
+      printf("\"\n");
+    }
+    printf("\n");
+    index = 0;
+    for (unsigned char c : serialized) {
+      if (index == 0) {
+        printf("    \"");
+      }
+      printf("%02X", c);
+      ++index;
+      if (index == 37) {
+        printf("\"\n");
+        index = 0;
+      }
+    }
+    if (index != 0) {
+      printf("\"\n");
+    }
   }
 
   RotatingBody<Barycentric>::Parameters body_rotation_;
@@ -408,6 +446,12 @@ TEST_F(PluginTest, Serialization) {
   Time const shift = 1 * Second;
   Instant const time = initial_time_ + shift;
   plugin->AdvanceTime(time, Angle());
+
+#if 0
+  // Uncomment this block to print out a serialized "boring" plugin for
+  // interface_test.cpp.
+  PrintSerializedPlugin(*plugin);
+#endif
 
   // Add a handful of points to the history and then forget some of them.  This
   // is the most convenient way to check that forgetting works as expected.
