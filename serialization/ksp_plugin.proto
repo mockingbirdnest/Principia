@@ -95,7 +95,6 @@ message Plugin {
   required int32 sun_index = 6;
   required DynamicFrame plotting_frame = 11;
   repeated PileUp pile_up = 17;
-  optional Pair bubble_barycentre = 18;
 
   // Pre-Cardano.
   reserved 3;
