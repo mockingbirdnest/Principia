@@ -1136,7 +1136,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     PartId const part_id = pair.first;
     GUID const guid = pair.second;
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
-    plugin->part_id_to_vessel_[part_id] = vessel.get();
+    plugin->part_id_to_vessel_.emplace(part_id, vessel.get());
   }
 
   plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
@@ -1159,7 +1159,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
         pile_up_message,
         [&part_id_to_vessel = plugin->part_id_to_vessel_](
             PartId const part_id) {
-          not_null<Vessel*> const vessel = part_id_to_vessel[part_id];
+          not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
           not_null<Part*> const part = vessel->part(part_id);
           return part;
         }));

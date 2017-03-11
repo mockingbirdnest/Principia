@@ -223,32 +223,31 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
 }
 
-not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
+PileUp PileUp::ReadFromMessage(
     serialization::PileUp const& message,
     std::function<not_null<Part*>(PartId)> const& part_id_to_part) {
   std::list<not_null<Part*>> parts;
   for (auto const part_id : message.part_id()) {
     parts.push_back(part_id_to_part(part_id));
   }
-  not_null<std::unique_ptr<PileUp>> pile_up =
-      std::unique_ptr<PileUp>(new PileUp(std::move(parts)));
-  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
-  pile_up->intrinsic_force_ =
+  PileUp pile_up(std::move(parts));
+  pile_up.mass_ = Mass::ReadFromMessage(message.mass());
+  pile_up.intrinsic_force_ =
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
-  pile_up->psychohistory_ =
+  pile_up.psychohistory_ =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),
                                                        /*forks=*/{});
   for (auto const& pair : message.actual_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up->actual_part_degrees_of_freedom_.emplace(
+    pile_up.actual_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
   }
   for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up->apparent_part_degrees_of_freedom_.emplace(
+    pile_up.apparent_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }

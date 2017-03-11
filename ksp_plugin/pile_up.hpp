@@ -40,6 +40,10 @@ class PileUp {
   PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
   virtual ~PileUp() = default;
 
+  // This class is moveable.
+  PileUp(PileUp&& pile_up) = default;
+  PileUp& operator=(PileUp&& pile_up) = default;
+
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
@@ -81,7 +85,7 @@ class PileUp {
   void NudgeParts() const;
 
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
-  static not_null<std::unique_ptr<PileUp>> ReadFromMessage(
+  static PileUp ReadFromMessage(
       serialization::PileUp const& message,
       std::function<not_null<Part*>(PartId)> const& part_id_to_part);
 
