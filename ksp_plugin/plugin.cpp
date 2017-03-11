@@ -1147,6 +1147,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                                        message.plotting_frame()); 
   plugin->SetPlottingFrame(std::move(plotting_frame));
 
+  // Note that for proper deserialization of parts this list must be
+  // reconstructed in its original order.
   for (auto const& pile_up_message : message.pile_up()) {
     plugin->pile_ups_.push_back(PileUp::ReadFromMessage(
         pile_up_message,
@@ -1156,6 +1158,14 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
           not_null<Part*> const part = vessel->part(part_id);
           return part;
         }));
+  }
+
+  // Now fill the containing pile-up of all the parts.
+  for (auto const& vessel_message : message.vessel()) {
+    GUID const guid = vessel_message.guid();
+    auto const& vessel = FindOrDie(plugin->vessels_, guid);
+    vessel->FillContainingPileUpsFromMessage(vessel_message.vessel(),
+                                             &plugin->pile_ups_);
   }
 
   plugin->initializing_.Flop();

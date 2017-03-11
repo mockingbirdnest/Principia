@@ -230,7 +230,6 @@ bool Vessel::psychohistory_is_authoritative() const {
 
 void Vessel::WriteToMessage(
     not_null<serialization::Vessel*> const message) const {
-  // TODO(phl): Implement.
   message->set_guid(guid_);
   message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
@@ -293,6 +292,15 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
                                                        ephemeris);
   }
   return std::move(vessel);
+}
+
+void Vessel::FillContainingPileUpsFromMessage(
+    serialization::Vessel const& message,
+    not_null<std::list<PileUp>*> const pile_ups) {
+  for (auto const& part_message : message.parts()) {
+    auto const& part = FindOrDie(parts_, part_message.part_id());
+    part->FillContainingPileUpFromMessage(part_message, pile_ups);
+  }
 }
 
 std::string Vessel::ShortDebugString() const {

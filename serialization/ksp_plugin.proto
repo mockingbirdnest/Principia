@@ -47,7 +47,7 @@ message Part {
   required string name = 9;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 5;
-  optional int32 containing_pile_up = 6;  // TODO(phl): Do the right thing.
+  optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;
   required DiscreteTrajectory tail = 7;
   required bool tail_is_authoritative = 8;
