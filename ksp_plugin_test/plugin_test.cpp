@@ -1,8 +1,6 @@
 ﻿
 #include "ksp_plugin/plugin.hpp"
 
-#if THE_PLUGIN_TESTS_WORK
-
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -238,8 +236,6 @@ class PluginTest : public testing::Test {
     // Fill required fields.
     Length{}.WriteToMessage(
         valid_ephemeris_message_.mutable_fitting_tolerance());
-    numerics::DoublePrecision<Instant>{}.WriteToMessage(
-        valid_ephemeris_message_.mutable_last_state()->mutable_time());
   }
 
   void InsertAllSolarSystemBodies() {
@@ -958,17 +954,18 @@ TEST_F(PluginTest, Frenet) {
   GUID const satellite = "satellite";
   PartId const part_id = 42;
   bool inserted;
-  plugin_->InsertOrKeepVessel(satellite,
-                              "v" + satellite,
-                              SolarSystemFactory::Earth,
-                              /*loaded=*/false,
-                              inserted);
-  plugin_->InsertUnloadedPart(
+  plugin.InsertOrKeepVessel(satellite,
+                            "v" + satellite,
+                            SolarSystemFactory::Earth,
+                            /*loaded=*/false,
+                            inserted);
+  plugin.InsertUnloadedPart(
       part_id,
       "part",
       satellite,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin.FreeVesselsAndPartsAndCollectPileUps();
   Vector<double, World> t = alice_sun_to_world(
                                 Normalize(satellite_initial_velocity_));
   Vector<double, World> n = alice_sun_to_world(
@@ -989,4 +986,3 @@ TEST_F(PluginTest, Frenet) {
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
-#endif
