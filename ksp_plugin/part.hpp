@@ -100,6 +100,9 @@ class Part final {
   static not_null<std::unique_ptr<Part>> ReadFromMessage(
       serialization::Part const& message,
       std::function<void()> deletion_callback);
+  void FillContainingPileUpFromMessage(
+      serialization::Part const& message,
+      not_null<std::list<PileUp>*> const pile_ups);
 
   // Returns "part name (part ID)".
   std::string ShortDebugString() const;

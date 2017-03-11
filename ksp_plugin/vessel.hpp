@@ -135,6 +135,9 @@ class Vessel {
       not_null<Celestial const*> parent,
       not_null<Ephemeris<Barycentric>*> ephemeris,
       std::function<void(PartId)> const& deletion_callback);
+  void FillContainingPileUpsFromMessage(
+      serialization::Vessel const& message,
+      not_null<std::list<PileUp>*> const pile_ups);
 
   // Returns "vessel name (GUID)".
   std::string ShortDebugString() const;

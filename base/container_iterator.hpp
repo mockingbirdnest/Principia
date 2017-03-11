@@ -21,6 +21,8 @@ class IteratorOn final {
 
   Iterator const& iterator() const;
 
+  std::int64_t distance_from_begin() const;
+
  private:
   not_null<Container*> container_;
   Iterator iterator_;

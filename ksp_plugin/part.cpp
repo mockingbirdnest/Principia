@@ -125,7 +125,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
   mass_.WriteToMessage(message->mutable_mass());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
-    // TODO(phl): Implement.
+    message->set_containing_pile_up(containing_pile_up_->distance_from_begin());
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
@@ -144,13 +144,20 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
                                  std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
-  if (message.has_containing_pile_up()) {
-    // TODO(phl): Implement.
-  }
   part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
                                                                  /*forks=*/{});
   part->set_tail_is_authoritative(message.tail_is_authoritative());
   return part;
+}
+
+void Part::FillContainingPileUpFromMessage(
+    serialization::Part const& message,
+    not_null<std::list<PileUp>*> const pile_ups) {
+  if (message.has_containing_pile_up()) {
+    auto it = pile_ups->begin();
+    std::advance(it, message.containing_pile_up());
+    containing_pile_up_ = IteratorOn<std::list<PileUp>>(pile_ups, it);
+  }
 }
 
 std::string Part::ShortDebugString() const {
