@@ -615,34 +615,34 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
     PartId const part_id,
     PartId const part_at_origin) const {
-  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)
-                                ->part(part_at_origin)
-                                ->degrees_of_freedom();
+  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)->
+                                part(part_at_origin)->
+                                degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
           world_origin.position(), World::origin, BarycentricToWorld()},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
-  return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)
-                                  ->part(part_id)
-                                  ->degrees_of_freedom());
+  return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)->
+                                  part(part_id)->
+                                  degrees_of_freedom());
 }
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
     PartId const part_at_origin) const {
-  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)
-                                ->part(part_at_origin)
-                                ->degrees_of_freedom();
+  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)->
+                                part(part_at_origin)->
+                                degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
           world_origin.position(), World::origin, BarycentricToWorld()},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
   return barycentric_to_world(
-      FindOrDie(celestials_, index)
-          ->trajectory()
-          .EvaluateDegreesOfFreedom(current_time_, /*hint=*/nullptr));
+      FindOrDie(celestials_, index)->
+          trajectory().EvaluateDegreesOfFreedom(current_time_,
+                                                /*hint=*/nullptr));
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
