@@ -855,6 +855,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
       guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin_->FreeVesselsAndPartsAndCollectPileUps();
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
                   AlmostEquals(satellite_initial_displacement_, 13556),
