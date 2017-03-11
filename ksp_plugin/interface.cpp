@@ -580,7 +580,7 @@ void principia__InsertOrKeepLoadedPart(
       part_id,
       name,
       mass_in_tonnes * Tonne,
-      GetVessel(*plugin, vessel_guid),
+      vessel_guid,
       main_body_index,
       {World::origin +
            Displacement<World>(FromXYZ(main_body_world_degrees_of_freedom.q) *

@@ -177,7 +177,7 @@ class Plugin {
       PartId part_id,
       std::string const& name,
       Mass const& mass,
-      not_null<Vessel*> vessel,
+      GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
       DegreesOfFreedom<World> const& part_degrees_of_freedom);

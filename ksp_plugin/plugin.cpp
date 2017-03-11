@@ -401,8 +401,8 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
                          << " vessel " << vessel->ShortDebugString();
-  VLOG(1) << "Parent of vessel " << vessel->ShortDebugString() << " is at index "
-          << parent_index;
+  VLOG(1) << "Parent of vessel " << vessel->ShortDebugString()
+          << " is at index " << parent_index;
 }
 
 void Plugin::InsertUnloadedPart(
@@ -410,7 +410,8 @@ void Plugin::InsertUnloadedPart(
     std::string const& name,
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
-  not_null<Vessel*> const vessel = find_vessel_by_guid_or_die(vessel_guid).get();
+  not_null<Vessel*> const vessel =
+      find_vessel_by_guid_or_die(vessel_guid).get();
   CHECK(is_new_unloaded(vessel));
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
@@ -431,13 +432,16 @@ void Plugin::InsertOrKeepLoadedPart(
     PartId const part_id,
     std::string const& name,
     Mass const& mass,
-    not_null<Vessel*> const vessel,
+    GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     DegreesOfFreedom<World> const& part_degrees_of_freedom) {
+  not_null<Vessel*> const vessel =
+      find_vessel_by_guid_or_die(vessel_guid).get();
+  CHECK(is_loaded(vessel));
+
   auto it = part_id_to_vessel_.find(part_id);
   bool const part_found = it != part_id_to_vessel_.end();
-  CHECK(is_loaded(vessel));
   if (part_found) {
     not_null<Vessel*>& associated_vessel = it->second;
     not_null<Vessel*> const current_vessel = associated_vessel;
