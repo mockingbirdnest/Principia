@@ -37,6 +37,7 @@
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />
     <ClCompile Include="..\ksp_plugin\part.cpp" />
+    <ClCompile Include="..\ksp_plugin\part_subsets.cpp" />
     <ClCompile Include="..\ksp_plugin\pile_up.cpp" />
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
@@ -57,10 +58,6 @@
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="borel.proto.hex" />
-    <None Include="brouwer.proto.hex" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_flight_plan.hpp" />

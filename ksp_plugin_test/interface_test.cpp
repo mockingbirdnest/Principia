@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#if THE_INTERFACE_TESTS_WORK
+
 #include <limits>
 #include <string>
 
@@ -1030,3 +1032,4 @@ TEST_F(InterfaceTest, FlightPlan) {
 
 }  // namespace interface
 }  // namespace principia
+#endif

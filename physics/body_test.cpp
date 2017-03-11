@@ -252,60 +252,6 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_EQ(oblate_body_.polar_axis(), cast_oblate_body->polar_axis());
 }
 
-TEST_F(BodyTest, PreBrouwerOblateDeserializationSuccess) {
-  EXPECT_FALSE(oblate_body_.is_massless());
-  EXPECT_TRUE(oblate_body_.is_oblate());
-
-  // Serialize post-Brouwer.
-  serialization::Body post_brouwer_body;
-  oblate_body_.WriteToMessage(&post_brouwer_body);
-  serialization::MassiveBody const& post_brouwer_massive_body =
-     post_brouwer_body.massive_body();
-  serialization::RotatingBody const& post_brouwer_rotating_body =
-     post_brouwer_massive_body.GetExtension(
-        serialization::RotatingBody::extension);
-  serialization::OblateBody const& post_brouwer_oblate_body =
-     post_brouwer_rotating_body.GetExtension(
-        serialization::OblateBody::extension);
-
-  // Construct explicitly an equivalent pre-Brouwer message.
-  serialization::Body pre_brouwer_body;
-  serialization::MassiveBody* pre_brouwer_massive_body =
-      pre_brouwer_body.mutable_massive_body();
-  pre_brouwer_massive_body->mutable_gravitational_parameter()->CopyFrom(
-      post_brouwer_massive_body.gravitational_parameter());
-  serialization::PreBrouwerOblateBody* pre_brouwer_oblate_body =
-      pre_brouwer_massive_body->MutableExtension(
-          serialization::PreBrouwerOblateBody::extension);
-  pre_brouwer_oblate_body->mutable_frame()->CopyFrom(
-      post_brouwer_rotating_body.frame());
-  pre_brouwer_oblate_body->mutable_j2()->CopyFrom(
-      post_brouwer_oblate_body.j2());
-  pre_brouwer_oblate_body->mutable_axis()->mutable_frame()->CopyFrom(
-      post_brouwer_rotating_body.frame());
-  auto const axis_coordinates = RadiusLatitudeLongitude(
-                                    1.0,
-                                    declination_of_pole_,
-                                    right_ascension_of_pole_).ToCartesian();
-  auto* const pre_brouwer_axis_r3_element =
-    pre_brouwer_oblate_body->mutable_axis()->mutable_vector();
-  pre_brouwer_axis_r3_element->mutable_x()->set_double_(axis_coordinates.x);
-  pre_brouwer_axis_r3_element->mutable_y()->set_double_(axis_coordinates.y);
-  pre_brouwer_axis_r3_element->mutable_z()->set_double_(axis_coordinates.z);
-
-  // Deserialize both.
-  auto const post_brouwer = Body::ReadFromMessage(post_brouwer_body);
-  auto const pre_brouwer = Body::ReadFromMessage(pre_brouwer_body);
-  auto const* const cast_post_brouwer =
-      dynamic_cast_not_null<OblateBody<World> const*>(post_brouwer.get());
-  auto const* const cast_pre_brouwer =
-      dynamic_cast_not_null<OblateBody<World> const*>(pre_brouwer.get());
-  EXPECT_EQ(cast_post_brouwer->mass(), cast_pre_brouwer->mass());
-  EXPECT_THAT(cast_post_brouwer->polar_axis(),
-              AlmostEquals(cast_pre_brouwer->polar_axis(), 2));
-  EXPECT_EQ(cast_post_brouwer->j2(), cast_pre_brouwer->j2());
-}
-
 TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::ALICE_SUN>();
@@ -313,8 +259,6 @@ TEST_F(BodyTest, AllFrames) {
                    serialization::Frame::ALICE_WORLD>();
   TestRotatingBody<serialization::Frame::PluginTag,
                   serialization::Frame::BARYCENTRIC>();
-  TestRotatingBody<serialization::Frame::PluginTag,
-                   serialization::Frame::PRE_BOREL_BARYCENTRIC>();
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::NAVIGATION>();
   TestRotatingBody<serialization::Frame::PluginTag,

@@ -99,26 +99,6 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
                                              parameters);
 }
 
-template<typename Frame>
-not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
-    serialization::PreBrouwerOblateBody const& message,
-    MassiveBody::Parameters const& massive_body_parameters) {
-  auto const axis = Vector<double, Frame>::ReadFromMessage(message.axis());
-  auto const axis_spherical_coordinates = axis.coordinates().ToSpherical();
-  typename RotatingBody<Frame>::Parameters
-      rotating_body_parameters(Length(),
-                               Angle(),
-                               J2000,
-                               1 * Radian / Second,
-                               axis_spherical_coordinates.longitude,
-                               axis_spherical_coordinates.latitude);
-  Parameters parameters(Order2ZonalCoefficient::ReadFromMessage(message.j2()));
-
-  return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
-                                             rotating_body_parameters,
-                                             parameters);
-}
-
 }  // namespace internal_oblate_body
 }  // namespace physics
 }  // namespace principia

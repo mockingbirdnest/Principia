@@ -73,10 +73,6 @@ class OblateBody : public RotatingBody<Frame> {
       MassiveBody::Parameters const& massive_body_parameters,
       typename RotatingBody<Frame>::Parameters const& rotating_body_parameters);
 
-  static not_null<std::unique_ptr<OblateBody<Frame>>> ReadFromMessage(
-      serialization::PreBrouwerOblateBody const& message,
-      MassiveBody::Parameters const& massive_body_parameters);
-
  private:
   Parameters parameters_;
 };

@@ -16,44 +16,6 @@ namespace internal_grassmann {
 using base::not_constructible;
 using quantities::ArcTan;
 
-// This struct helps in reading coordinates in compatilibity mode.  We used to
-// use a left-handed OLD_BARYCENTRIC frame, and switched to use a right-handed
-// BARYCENTRIC frame in Borel.  As a consequence, reading old serialized data
-// results in a frame tag mismatch and must flip the multivectors.
-template<typename Multivector,
-         typename Frame,
-         typename Tag = typename Frame::Tag>
-struct CompatibilityHelper : not_constructible {
-  static bool MustFlip(serialization::Frame const& frame);
-};
-
-template<typename Multivector, typename Frame>
-struct CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>
-    : not_constructible {
-  CompatibilityHelper() = delete;
-
-  static bool MustFlip(serialization::Frame const& frame);
-};
-
-template<typename Multivector, typename Frame, typename Tag>
-bool CompatibilityHelper<Multivector, Frame, Tag>::MustFlip(
-    serialization::Frame const& frame) {
-  Frame::ReadFromMessage(frame);
-  return false;
-}
-
-template<typename Multivector, typename Frame>
-bool CompatibilityHelper<Multivector, Frame, serialization::Frame::PluginTag>::
-    MustFlip(serialization::Frame const& frame) {
-  if (frame.tag() == serialization::Frame::PRE_BOREL_BARYCENTRIC &&
-      Frame::tag == serialization::Frame::BARYCENTRIC) {
-    return true;
-  } else {
-    Frame::ReadFromMessage(frame);
-    return false;
-  }
-}
-
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1>::Multivector() {}
 
@@ -149,39 +111,21 @@ template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 1> Multivector<Scalar, Frame, 1>::ReadFromMessage(
     serialization::Multivector const& message) {
   CHECK(message.has_vector());
-  auto multivector =
-      Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
-  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
-    multivector =
-        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
-  }
-  return multivector;
+  return Multivector(R3Element<Scalar>::ReadFromMessage(message.vector()));
 }
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 2> Multivector<Scalar, Frame, 2>::ReadFromMessage(
     serialization::Multivector const& message) {
   CHECK(message.has_bivector());
-  auto multivector =
-      Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
-  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
-    multivector =
-        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
-  }
-  return multivector;
+  return Multivector(R3Element<Scalar>::ReadFromMessage(message.bivector()));
 }
 
 template<typename Scalar, typename Frame>
 Multivector<Scalar, Frame, 3> Multivector<Scalar, Frame, 3>::ReadFromMessage(
     serialization::Multivector const& message) {
   CHECK(message.has_trivector());
-  auto multivector =
-      Multivector(Scalar::ReadFromMessage(message.trivector()));
-  if (CompatibilityHelper<Multivector, Frame>::MustFlip(message.frame())) {
-    multivector =
-        Permutation<Frame, Frame>(Permutation<Frame, Frame>::XZY)(multivector);
-  }
-  return multivector;
+  return Multivector(Scalar::ReadFromMessage(message.trivector()));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>

@@ -254,26 +254,6 @@ bool Forkable<Tr4jectory, It3rator>::Empty() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
-    serialization::DiscreteTrajectory::Pointer const& message,
-    not_null<Tr4jectory*> const trajectory) {
-  CHECK(trajectory->is_root());
-  not_null<Tr4jectory*> descendant = trajectory;
-  // Process a parent before its child.
-  for (int i = message.fork_size() - 1; i >= 0; --i) {
-    auto const& fork_message = message.fork(i);
-    int const children_distance = fork_message.children_distance();
-    int const timeline_distance = fork_message.timeline_distance();
-    auto children_it = descendant->children_.begin();
-    auto timeline_it = descendant->timeline_begin();
-    std::advance(children_it, children_distance);
-    std::advance(timeline_it, timeline_distance);
-    descendant = children_it->second.get();
-  }
-  return descendant;
-}
-
-template<typename Tr4jectory, typename It3rator>
 not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::NewFork(
     TimelineConstIterator const& timeline_it) {
   // First create a child in the multimap.

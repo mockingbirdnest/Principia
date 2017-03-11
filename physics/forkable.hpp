@@ -149,11 +149,6 @@ class Forkable {
   // Returns true if this object is empty.
   bool Empty() const;
 
-  // |trajectory| must be a root.
-  static not_null<Tr4jectory*> ReadPointerFromMessage(
-      serialization::DiscreteTrajectory::Pointer const& message,
-      not_null<Tr4jectory*> trajectory);
-
  protected:
   // The API that must be implemented by subclasses.
 

@@ -1015,10 +1015,6 @@ Instant Plugin::GameEpoch() const {
   return game_epoch_;
 }
 
-bool Plugin::MustRotateBodies() const {
-  return !is_pre_cardano_;
-}
-
 Instant Plugin::CurrentTime() const {
   return current_time_;
 }
@@ -1066,11 +1062,7 @@ void Plugin::WriteToMessage(
       message->mutable_prediction_parameters());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
-  if (!is_pre_cardano_) {
-    // A pre-Cardano save stays pre-Cardano; we cannot pull rotational
-    // properties out of thin air.
-    game_epoch_.WriteToMessage(message->mutable_game_epoch());
-  }
+  game_epoch_.WriteToMessage(message->mutable_game_epoch());
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
@@ -1082,22 +1074,11 @@ void Plugin::WriteToMessage(
 not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
-  bool const is_pre_bourbaki = message.pre_bourbaki_celestial_size() > 0;
-  std::unique_ptr<Ephemeris<Barycentric>> ephemeris;
-  IndexToOwnedCelestial celestials;
+  std::unique_ptr<Ephemeris<Barycentric>> ephemeris =
+      Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
 
-  if (is_pre_bourbaki) {
-    ephemeris = Ephemeris<Barycentric>::ReadFromPreBourbakiMessages(
-        message.pre_bourbaki_celestial(),
-        fitting_tolerance,
-        DefaultEphemerisParameters());
-    ReadCelestialsFromMessages(*ephemeris,
-                               message.pre_bourbaki_celestial(),
-                               celestials);
-  } else {
-    ephemeris = Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-    ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
-  }
+  IndexToOwnedCelestial celestials;
+  ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
 
   GUIDToOwnedVessel vessels;
   for (auto const& vessel_message : message.vessel()) {
@@ -1116,29 +1097,17 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   Instant const current_time = Instant::ReadFromMessage(message.current_time());
 
-  bool const is_pre_буняковский = !(message.has_history_parameters() &&
-                                    message.has_prolongation_parameters() &&
-                                    message.has_prediction_parameters());
   auto const history_parameters =
-    is_pre_буняковский
-        ? DefaultHistoryParameters()
-        : Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-              message.history_parameters());
+      Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+          message.history_parameters());
   auto const prolongation_parameters =
-    is_pre_буняковский
-        ? DefaultProlongationParameters()
-        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-              message.prolongation_parameters());
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+          message.prolongation_parameters());
   auto const prediction_parameters =
-    is_pre_буняковский
-        ? DefaultPredictionParameters()
-        : Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-              message.prediction_parameters());
+      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+          message.prediction_parameters());
 
-  bool const is_pre_cardano = !message.has_game_epoch();
-  Instant const game_epoch =
-      is_pre_cardano ? astronomy::J2000
-                     : Instant::ReadFromMessage(message.game_epoch());
+  Instant const game_epoch = Instant::ReadFromMessage(message.game_epoch());
 
   // Can't use |make_unique| here without implementation-dependent friendships.
   auto plugin = std::unique_ptr<Plugin>(
@@ -1151,19 +1120,11 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
                  Angle::ReadFromMessage(message.planetarium_rotation()),
                  game_epoch,
                  current_time,
-                 message.sun_index(),
-                 is_pre_cardano));
+                 message.sun_index()));
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
-                                       message.plotting_frame());
-  if (plotting_frame == nullptr) {
-    // In the pre-Brouwer compatibility case you get a plotting frame centred on
-    // the Sun.
-    plugin->SetPlottingFrame(
-        plugin->NewBodyCentredNonRotatingNavigationFrame(message.sun_index()));
-  } else {
-    plugin->SetPlottingFrame(std::move(plotting_frame));
-  }
+                                       message.plotting_frame()); 
+  plugin->SetPlottingFrame(std::move(plotting_frame));
   return std::move(plugin);
 }
 
@@ -1191,8 +1152,7 @@ Plugin::Plugin(
     Angle const& planetarium_rotation,
     Instant const& game_epoch,
     Instant const& current_time,
-    Index const sun_index,
-    bool const is_pre_cardano)
+    Index const sun_index)
     : vessels_(std::move(vessels)),
       celestials_(std::move(celestials)),
       ephemeris_(std::move(ephemeris)),
@@ -1202,16 +1162,13 @@ Plugin::Plugin(
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(current_time),
-      sun_(FindOrDie(celestials_, sun_index).get()),
-      is_pre_cardano_(is_pre_cardano) {
+      sun_(FindOrDie(celestials_, sun_index).get()) {
   for (auto const& pair : vessels_) {
     auto const& vessel = pair.second;
     kept_vessels_.emplace(vessel.get());
   }
-  if (!is_pre_cardano_) {
-    main_body_ = CHECK_NOTNULL(
-        dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
-  }
+  main_body_ = CHECK_NOTNULL(
+      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
   initializing_.Flop();
 }
 
@@ -1266,24 +1223,17 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
   // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
   struct PlanetariumFrame;
 
-  if (is_pre_cardano_) {
-    return Rotation<Barycentric, AliceSun>(
-        planetarium_rotation_,
-        Bivector<double, Barycentric>({0, 0, 1}),
-        DefinesFrame<AliceSun>{});
-  } else {
-    CHECK_NOTNULL(main_body_);
-    Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
-        π / 2 * Radian + main_body_->right_ascension_of_pole(),
-        π / 2 * Radian - main_body_->declination_of_pole(),
-        0 * Radian,
-        EulerAngles::ZXZ,
-        DefinesFrame<PlanetariumFrame>{});
-    return Rotation<PlanetariumFrame, AliceSun>(
-               planetarium_rotation_,
-               Bivector<double, PlanetariumFrame>({0, 0, 1}),
-               DefinesFrame<AliceSun>{}) * to_planetarium;
-  }
+  CHECK_NOTNULL(main_body_);
+  Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
+      π / 2 * Radian + main_body_->right_ascension_of_pole(),
+      π / 2 * Radian - main_body_->declination_of_pole(),
+      0 * Radian,
+      EulerAngles::ZXZ,
+      DefinesFrame<PlanetariumFrame>{});
+  return Rotation<PlanetariumFrame, AliceSun>(
+              planetarium_rotation_,
+              Bivector<double, PlanetariumFrame>({0, 0, 1}),
+              DefinesFrame<AliceSun>{}) * to_planetarium;
 }
 
 Vector<double, World> Plugin::FromVesselFrenetFrame(
