@@ -609,11 +609,17 @@ TEST_F(PluginDeathTest, InsertOrKeepVesselError) {
   }, "Map key not found");
 }
 
-TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
+TEST_F(PluginDeathTest, InsertUnloadedPartError) {
   GUID const guid = "Test Satellite";
   PartId const part_id = 666;
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
+    bool inserted;
+    plugin_->InsertOrKeepVessel(guid,
+                                "v" + guid,
+                                SolarSystemFactory::Sun,
+                                /*loaded=*/false,
+                                inserted);
     plugin_->InsertUnloadedPart(
         part_id,
         "part",
@@ -657,7 +663,7 @@ TEST_F(PluginDeathTest, SetVesselStateOffsetError) {
         guid,
         RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                            satellite_initial_velocity_));
-  }, "already has a trajectory");
+  }, "emplaced");
 }
 
 TEST_F(PluginDeathTest, AdvanceTimeError) {
