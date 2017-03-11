@@ -1051,6 +1051,13 @@ void Plugin::WriteToMessage(
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
+    vessel_message->set_loaded(loaded_vessels_.count(vessel) != 0);
+    vessel_message->set_new_unloaded(new_unloaded_vessels_.count(vessel) != 0);
+  }
+  for (auto const& pair : part_id_to_vessel_) {
+    PartId const part_id = pair.first;
+    not_null<Vessel*> const vessel = pair.second;
+    (*message->mutable_part_id_to_vessel())[part_id] = vessel_to_guid[vessel];
   }
 
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
@@ -1067,6 +1074,11 @@ void Plugin::WriteToMessage(
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
   plotting_frame_->WriteToMessage(message->mutable_plotting_frame());
+
+  for (auto const& pile_up : pile_ups_) {
+    pile_up.WriteToMessage(message->add_pile_up());
+  }
+
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -1074,28 +1086,6 @@ void Plugin::WriteToMessage(
 not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
     serialization::Plugin const& message) {
   LOG(INFO) << __FUNCTION__;
-  std::unique_ptr<Ephemeris<Barycentric>> ephemeris =
-      Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
-
-  IndexToOwnedCelestial celestials;
-  ReadCelestialsFromMessages(*ephemeris, message.celestial(), celestials);
-
-  GUIDToOwnedVessel vessels;
-  for (auto const& vessel_message : message.vessel()) {
-    not_null<Celestial const*> const parent =
-        FindOrDie(celestials, vessel_message.parent_index()).get();
-#if 0
-    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
-                                                   vessel_message.vessel(),
-                                                   ephemeris.get(),
-                                                   parent);
-    auto const inserted =
-        vessels.emplace(vessel_message.guid(), std::move(vessel));
-    CHECK(inserted.second);
-#endif
-  }
-
-  Instant const current_time = Instant::ReadFromMessage(message.current_time());
 
   auto const history_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
@@ -1106,25 +1096,81 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   auto const prediction_parameters =
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.prediction_parameters());
+  not_null<std::unique_ptr<Plugin>> plugin = 
+      std::unique_ptr<Plugin>(new Plugin(history_parameters,
+                                         prolongation_parameters,
+                                         prediction_parameters));
 
-  Instant const game_epoch = Instant::ReadFromMessage(message.game_epoch());
+  plugin->ephemeris_ =
+      Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
+  ReadCelestialsFromMessages(*plugin->ephemeris_,
+                             message.celestial(),
+                             plugin->celestials_);
 
-  // Can't use |make_unique| here without implementation-dependent friendships.
-  auto plugin = std::unique_ptr<Plugin>(
-      new Plugin(std::move(vessels),
-                 std::move(celestials),
-                 std::move(ephemeris),
-                 history_parameters,
-                 prolongation_parameters,
-                 prediction_parameters,
-                 Angle::ReadFromMessage(message.planetarium_rotation()),
-                 game_epoch,
-                 current_time,
-                 message.sun_index()));
+  for (auto const& vessel_message : message.vessel()) {
+    not_null<Celestial const*> const parent =
+        FindOrDie(plugin->celestials_, vessel_message.parent_index()).get();
+    not_null<std::unique_ptr<Vessel>> vessel = Vessel::ReadFromMessage(
+        vessel_message.vessel(),
+        parent,
+        plugin->ephemeris_.get(),
+        [&part_id_to_vessel = plugin->part_id_to_vessel_](
+            PartId const part_id) {
+          CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
+        });
+
+    // All vessels are kept.
+    plugin->kept_vessels_.emplace(vessel.get());
+    if (vessel_message.loaded()) {
+      plugin->loaded_vessels_.insert(vessel.get());
+    }
+    if (vessel_message.new_unloaded()) {
+      plugin->new_unloaded_vessels_.insert(vessel.get());
+    }
+    auto const inserted =
+        plugin->vessels_.emplace(vessel_message.guid(), std::move(vessel));
+    CHECK(inserted.second);
+  }
+
+  for (auto const& pair : message.part_id_to_vessel()) {
+    PartId const part_id = pair.first;
+    GUID const guid = pair.second;
+    auto const& vessel = FindOrDie(plugin->vessels_, guid);
+    plugin->part_id_to_vessel_[part_id] = vessel.get();
+  }
+
+  plugin->game_epoch_ = Instant::ReadFromMessage(message.game_epoch());
+  plugin->current_time_ = Instant::ReadFromMessage(message.current_time());
+  plugin->planetarium_rotation_ =
+      Angle::ReadFromMessage(message.planetarium_rotation());
+
+  plugin->sun_ = FindOrDie(plugin->celestials_, message.sun_index()).get();
+  plugin->main_body_ =
+      CHECK_NOTNULL(dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+          plugin->sun_->body()));
+
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
                                        message.plotting_frame()); 
   plugin->SetPlottingFrame(std::move(plotting_frame));
+
+  for (auto const& pile_up_message : message.pile_up()) {
+    plugin->pile_ups_.push_back(PileUp::ReadFromMessage(
+        pile_up_message,
+        [&part_id_to_vessel = plugin->part_id_to_vessel_](
+            PartId const part_id) {
+          not_null<Vessel*> const vessel = part_id_to_vessel[part_id];
+          not_null<Part*> const part = vessel->part(part_id);
+          return part;
+        }));
+  }
+
+  if (message.has_bubble_barycentre()) {
+    plugin->bubble_barycentre_ = DegreesOfFreedom<Barycentric>::ReadFromMessage(
+        message.bubble_barycentre());
+  }
+
+  plugin->initializing_.Flop();
   return std::move(plugin);
 }
 
@@ -1142,36 +1188,13 @@ std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
 }
 
 Plugin::Plugin(
-    GUIDToOwnedVessel vessels,
-    IndexToOwnedCelestial celestials,
-    std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
     Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         prolongation_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters,
-    Angle const& planetarium_rotation,
-    Instant const& game_epoch,
-    Instant const& current_time,
-    Index const sun_index)
-    : vessels_(std::move(vessels)),
-      celestials_(std::move(celestials)),
-      ephemeris_(std::move(ephemeris)),
-      history_parameters_(history_parameters),
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters)
+    : history_parameters_(history_parameters),
       prolongation_parameters_(prolongation_parameters),
-      prediction_parameters_(prediction_parameters),
-      planetarium_rotation_(planetarium_rotation),
-      game_epoch_(game_epoch),
-      current_time_(current_time),
-      sun_(FindOrDie(celestials_, sun_index).get()) {
-  for (auto const& pair : vessels_) {
-    auto const& vessel = pair.second;
-    kept_vessels_.emplace(vessel.get());
-  }
-  main_body_ = CHECK_NOTNULL(
-      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
-  initializing_.Flop();
-}
-
+      prediction_parameters_(prediction_parameters) {}
 
 void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
