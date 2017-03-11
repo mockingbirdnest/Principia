@@ -1053,6 +1053,7 @@ void Plugin::WriteToMessage(
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_loaded(loaded_vessels_.count(vessel) != 0);
     vessel_message->set_new_unloaded(new_unloaded_vessels_.count(vessel) != 0);
+    vessel_message->set_kept(kept_vessels_.count(vessel) != 0);
   }
   for (auto const& pair : part_id_to_vessel_) {
     PartId const part_id = pair.first;
@@ -1119,13 +1120,14 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
           CHECK_NE(part_id_to_vessel.erase(part_id), 0) << part_id;
         });
 
-    // All vessels are kept.
-    plugin->kept_vessels_.emplace(vessel.get());
     if (vessel_message.loaded()) {
       plugin->loaded_vessels_.insert(vessel.get());
     }
     if (vessel_message.new_unloaded()) {
       plugin->new_unloaded_vessels_.insert(vessel.get());
+    }
+    if (vessel_message.kept()) {
+      plugin->kept_vessels_.insert(vessel.get());
     }
     auto const inserted =
         plugin->vessels_.emplace(vessel_message.guid(), std::move(vessel));

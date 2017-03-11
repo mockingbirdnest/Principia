@@ -73,6 +73,7 @@ message Plugin {
     required int32 parent_index = 3;
     required bool loaded = 5;
     required bool new_unloaded = 6;
+    required bool kept = 7;
     // Pre-Cardano.
     reserved 4;
     reserved "dirty";
