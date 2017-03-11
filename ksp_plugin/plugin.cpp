@@ -600,20 +600,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     Vessel& vessel = *pair.second;
     vessel.AdvanceTime();
   }
-  if (loaded_vessels_.empty()) {
-    bubble_barycentre_ = std::experimental::nullopt;
-  } else {
-    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass>
-        bubble_barycentre_calculator;
-    for (not_null<Vessel*> const vessel : loaded_vessels_) {
-      vessel->ForAllParts([&bubble_barycentre_calculator](Part& part) {
-        part.clear_intrinsic_force();
-        bubble_barycentre_calculator.Add(part.degrees_of_freedom(),
-                                         part.mass());
-      });
-    }
-    bubble_barycentre_ = bubble_barycentre_calculator.Get();
-  }
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
@@ -624,34 +610,36 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
-    PartId const part_id) const {
-  CHECK(bubble_barycentre_);
+    PartId const part_id,
+    PartId const part_at_origin) const {
+  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)
+                                ->part(part_at_origin)
+                                ->degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
-          bubble_barycentre_->position(), World::origin, BarycentricToWorld()},
+          world_origin.position(), World::origin, BarycentricToWorld()},
       AngularVelocity<Barycentric>{},
-      bubble_barycentre_->velocity()};
+      world_origin.velocity()};
   return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)
                                   ->part(part_id)
                                   ->degrees_of_freedom());
 }
 
-DegreesOfFreedom<Barycentric> Plugin::GetBubbleBarycentre() const {
-  CHECK(bubble_barycentre_);
-  return *bubble_barycentre_;
-}
-
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
-    Index const index) const {
+    Index const index,
+    PartId const part_at_origin) const {
+  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)
+                                ->part(part_at_origin)
+                                ->degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
-      RigidTransformation<Barycentric, World>{GetBubbleBarycentre().position(),
-                                              World::origin,
-                                              BarycentricToWorld()},
+      RigidTransformation<Barycentric, World>{
+          world_origin.position(), World::origin, BarycentricToWorld()},
       AngularVelocity<Barycentric>{},
-      GetBubbleBarycentre().velocity()};
+      world_origin.velocity()};
   return barycentric_to_world(
-      FindOrDie(celestials_, index)->trajectory().EvaluateDegreesOfFreedom(
-          current_time_, /*hint=*/nullptr));
+      FindOrDie(celestials_, index)
+          ->trajectory()
+          .EvaluateDegreesOfFreedom(current_time_, /*hint=*/nullptr));
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {

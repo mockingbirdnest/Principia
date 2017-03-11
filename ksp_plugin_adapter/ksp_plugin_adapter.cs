@@ -799,9 +799,6 @@ public partial class PrincipiaPluginAdapter
      if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
        // TODO(egg): move this to the C++, this is just to check that I
        // understand the issue.
-       QP root_dof =
-           plugin_.GetPartActualDegreesOfFreedom(
-               FlightGlobals.ActiveVessel.rootPart.flightID);
        foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
          // TODO(egg): if I understand anything, there should probably be a
          // special treatment for loaded packed vessels.  I don't understand
@@ -814,26 +811,27 @@ public partial class PrincipiaPluginAdapter
              continue;
            }
            QP part_actual_degrees_of_freedom =
-               plugin_.GetPartActualDegreesOfFreedom(part.flightID);
+               plugin_.GetPartActualDegreesOfFreedom(part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
            // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
            // transform nonsense must probably be done.
            Log.Error(
                "q correction " +
-               ((Vector3d)part_actual_degrees_of_freedom.q - part.rb.position - (Vector3d)root_dof.q));
+               ((Vector3d)part_actual_degrees_of_freedom.q - part.rb.position));
            Log.Error(
                "v correction " +
                ((Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity));
-           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q - (Vector3d)root_dof.q;
+           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
            part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
          }
        }
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
-           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
+           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
+           FlightGlobals.ActiveVessel.rootPart.flightID);
        Log.Error("change in framevel: " +
                  (-(Vector3d)main_body_dof.p - krakensbane.FrameVel));
        krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
        Vector3d offset = (Vector3d)main_body_dof.q -
-                         FlightGlobals.ActiveVessel.mainBody.position - (Vector3d)root_dof.q;
+                         FlightGlobals.ActiveVessel.mainBody.position;
        Log.Error("shifting the world by " + offset);
        // We cannot use FloatingOrigin.SetOffset to move the world here, because
        // as far as I can tell, that does not move the bubble relative to the

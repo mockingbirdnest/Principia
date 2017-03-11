@@ -221,17 +221,17 @@ class Plugin {
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
-  // the origin of |World| is fixed at |bubble_barycentre_|.  The part must be
-  // in a loaded vessel.
+  // the origin of |World| is fixed at the centre of mass of the
+  // |part_at_origin|.
   virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
-      PartId part_id) const;
-
-  virtual DegreesOfFreedom<Barycentric> GetBubbleBarycentre() const;
+      PartId part_id,
+      PartId part_at_origin) const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
   // |Index|, identifying the origin of |World| with that of |Bubble|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
-      Index const index) const;
+      Index const index,
+      PartId part_at_origin) const;
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -513,7 +513,6 @@ class Plugin {
   // The vessels that were inserted unloaded and have yet to be collected into a
   // pile-up.
   std::set<not_null<Vessel*>> new_unloaded_vessels_;
-  std::experimental::optional<DegreesOfFreedom<Barycentric>> bubble_barycentre_;
 
   // Compatibility.
   bool is_pre_cardano_ = false;

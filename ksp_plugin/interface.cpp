@@ -217,10 +217,13 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 }
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
-                                             int const index) {
-  journal::Method<journal::CelestialWorldDegreesOfFreedom> m({plugin, index});
+                                             int const index,
+                                             PartId const part_at_origin) {
+  journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
+      {plugin, index, part_at_origin});
   CHECK_NOTNULL(plugin);
-  auto const result = plugin->CelestialWorldDegreesOfFreedom(index);
+  auto const result =
+      plugin->CelestialWorldDegreesOfFreedom(index, part_at_origin);
   return m.Return(
       {ToXYZ((result.position() - World::origin).coordinates() / Metre),
        ToXYZ(result.velocity().coordinates() / (Metre / Second))});
@@ -351,10 +354,13 @@ int principia__GetBufferedLogging() {
 }
 
 QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
-                                            PartId const part_id) {
-  journal::Method<journal::GetPartActualDegreesOfFreedom> m({plugin, part_id});
+                                            PartId const part_id,
+                                            PartId const part_at_origin) {
+  journal::Method<journal::GetPartActualDegreesOfFreedom> m(
+      {plugin, part_id, part_at_origin});
   DegreesOfFreedom<World> const degrees_of_freedom =
-      CHECK_NOTNULL(plugin)->GetPartActualDegreesOfFreedom(part_id);
+      CHECK_NOTNULL(plugin)->GetPartActualDegreesOfFreedom(part_id,
+                                                           part_at_origin);
   return m.Return(QP{
       ToXYZ((degrees_of_freedom.position() - World::origin).coordinates() /
             Metre),
