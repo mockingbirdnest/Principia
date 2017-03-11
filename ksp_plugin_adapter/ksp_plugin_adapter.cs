@@ -796,41 +796,44 @@ public partial class PrincipiaPluginAdapter
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
      // transforms of loaded vessels & their parts.
-     // TODO(egg): get vessel nudged positions and call Vessel.SetPosition.
-     // Hopefully that will be enough.
-     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       // TODO(egg): if I understand anything, there should probably be a
-       // special treatment for loaded packed vessels.  I don't understand
-       // anything though.
-       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
-         continue;
-       }
-       foreach (Part part in vessel.parts) {
-         if (part.rb == null) {
+     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
+       // TODO(egg): move this to the C++, this is just to check that I
+       // understand the issue.
+       QP root_dof =
+           plugin_.GetPartActualDegreesOfFreedom(
+               FlightGlobals.ActiveVessel.rootPart.flightID);
+       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+         // TODO(egg): if I understand anything, there should probably be a
+         // special treatment for loaded packed vessels.  I don't understand
+         // anything though.
+         if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
            continue;
          }
-         QP part_actual_degrees_of_freedom =
-             plugin_.GetPartActualDegreesOfFreedom(part.flightID);
-         // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
-         // transform nonsense must probably be done.
-         Log.Error(
-             "q correction " +
-             ((Vector3d)part_actual_degrees_of_freedom.q - part.rb.position));
-         Log.Error(
-             "v correction " +
-             ((Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity));
-         part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
-         part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+         foreach (Part part in vessel.parts) {
+           if (part.rb == null) {
+             continue;
+           }
+           QP part_actual_degrees_of_freedom =
+               plugin_.GetPartActualDegreesOfFreedom(part.flightID);
+           // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
+           // transform nonsense must probably be done.
+           Log.Error(
+               "q correction " +
+               ((Vector3d)part_actual_degrees_of_freedom.q - part.rb.position - (Vector3d)root_dof.q));
+           Log.Error(
+               "v correction " +
+               ((Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity));
+           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q - (Vector3d)root_dof.q;
+           part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+         }
        }
-     }
-     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
        Log.Error("change in framevel: " +
                  (-(Vector3d)main_body_dof.p - krakensbane.FrameVel));
        krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
        Vector3d offset = (Vector3d)main_body_dof.q -
-                         FlightGlobals.ActiveVessel.mainBody.position;
+                         FlightGlobals.ActiveVessel.mainBody.position - (Vector3d)root_dof.q;
        Log.Error("shifting the world by " + offset);
        // We cannot use FloatingOrigin.SetOffset to move the world here, because
        // as far as I can tell, that does not move the bubble relative to the
