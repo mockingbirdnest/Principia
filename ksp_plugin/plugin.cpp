@@ -600,6 +600,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     Vessel& vessel = *pair.second;
     vessel.AdvanceTime();
   }
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->ForAllParts([&bubble_barycentre_calculator](Part& part) {
+      part.clear_intrinsic_force();
+    });
+  }
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
