@@ -42,8 +42,10 @@ using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
 using geometry::Trivector;
+using integrators::IntegrationProblem;
 using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
+using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MockDynamicFrame;
@@ -61,6 +63,7 @@ using quantities::Length;
 using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
+using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -69,7 +72,7 @@ using quantities::si::Kilogram;
 using quantities::si::Minute;
 using quantities::si::Newton;
 using quantities::si::Radian;
-using quantities::si::AstronomicalUnit;
+using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -236,6 +239,14 @@ class PluginTest : public testing::Test {
     // Fill required fields.
     Length{}.WriteToMessage(
         valid_ephemeris_message_.mutable_fitting_tolerance());
+    DefaultHistoryParameters().WriteToMessage(
+        valid_ephemeris_message_.mutable_fixed_step_parameters());
+    using ODE = Ephemeris<Barycentric>::NewtonianMotionEquation;
+    ODE::SystemState initial_state;
+    McLachlanAtela1992Order5Optimal<Position<Barycentric>>().NewInstance(
+      IntegrationProblem<ODE>{ODE{}, &initial_state},
+        [](typename ODE::SystemState const&) {},
+        1.0 * Second)->WriteToMessage(valid_ephemeris_message_.mutable_instance());
   }
 
   void InsertAllSolarSystemBodies() {
