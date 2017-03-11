@@ -140,6 +140,8 @@ void RotatingBody<Frame>::WriteToMessage(
   not_null<serialization::RotatingBody*> const rotating_body =
       message->MutableExtension(serialization::RotatingBody::extension);
   Frame::WriteToMessage(rotating_body->mutable_frame());
+  parameters_.mean_radius_.WriteToMessage(
+      rotating_body->mutable_mean_radius());
   parameters_.reference_angle_.WriteToMessage(
       rotating_body->mutable_reference_angle());
   parameters_.reference_instant_.WriteToMessage(
@@ -157,45 +159,23 @@ not_null<std::unique_ptr<RotatingBody<Frame>>>
 RotatingBody<Frame>::ReadFromMessage(
     serialization::RotatingBody const& message,
     MassiveBody::Parameters const& massive_body_parameters) {
-  // For pre-Buffon compatibility, build a point mass.
-  bool const is_pre_buffon = !message.has_mean_radius();
-  Length const radius =
-      is_pre_buffon ? Length() : Length::ReadFromMessage(message.mean_radius());
-
-  bool const is_pre_cardano = message.has_angular_velocity();
-  std::unique_ptr<Parameters> parameters;
-  if (is_pre_cardano) {
-    AngularVelocity<Frame> angular_velocity =
-        AngularVelocity<Frame>::ReadFromMessage(message.angular_velocity());
-    SphericalCoordinates<AngularFrequency> spherical_angular_velocity =
-        angular_velocity.coordinates().ToSpherical();
-    parameters = std::make_unique<Parameters>(
-        radius,
-        Angle::ReadFromMessage(message.reference_angle()),
-        Instant::ReadFromMessage(message.reference_instant()),
-        SIUnit<AngularFrequency>(),
-        spherical_angular_velocity.longitude,
-        spherical_angular_velocity.latitude);
-  } else {
-    parameters = std::make_unique<Parameters>(
-        radius,
-        Angle::ReadFromMessage(message.reference_angle()),
-        Instant::ReadFromMessage(message.reference_instant()),
-        AngularFrequency::ReadFromMessage(message.angular_frequency()),
-        Angle::ReadFromMessage(message.right_ascension_of_pole()),
-        Angle::ReadFromMessage(message.declination_of_pole()));
-  }
+  Parameters const parameters(
+      Length::ReadFromMessage(message.mean_radius()),
+      Angle::ReadFromMessage(message.reference_angle()),
+      Instant::ReadFromMessage(message.reference_instant()),
+      AngularFrequency::ReadFromMessage(message.angular_frequency()),
+      Angle::ReadFromMessage(message.right_ascension_of_pole()),
+      Angle::ReadFromMessage(message.declination_of_pole()));
 
   if (message.HasExtension(serialization::OblateBody::extension)) {
     serialization::OblateBody const& extension =
         message.GetExtension(serialization::OblateBody::extension);
-
     return OblateBody<Frame>::ReadFromMessage(extension,
                                               massive_body_parameters,
-                                              *parameters);
+                                              parameters);
   } else {
     return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
-                                                 *parameters);
+                                                 parameters);
   }
 }
 

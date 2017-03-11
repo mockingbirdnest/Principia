@@ -60,10 +60,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="borel.proto.hex" />
-    <None Include="brouwer.proto.hex" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="mock_flight_plan.hpp" />
     <ClInclude Include="mock_manœuvre.hpp" />
     <ClInclude Include="mock_plugin.hpp" />

@@ -95,17 +95,10 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
 // This macro is a bit ugly, but trust me, it's better than the alternatives.
 #define ROTATING_BODY_TAG_VALUE_CASE(value)                                    \
   case serialization::Frame::value:                                            \
-    if (rotating_body_extension != nullptr) {                                  \
-      return RotatingBody<                                                     \
-                 Frame<Tag, serialization::Frame::value, true>>::              \
-                 ReadFromMessage(*rotating_body_extension, parameters);        \
-    } else {                                                                   \
-      CHECK_NOTNULL(pre_brouwer_oblate_body_extension);                        \
-      return OblateBody<                                                       \
-                 Frame<Tag, serialization::Frame::value, true>>::              \
-                 ReadFromMessage(                                              \
-                     *pre_brouwer_oblate_body_extension, parameters);          \
-    }
+    CHECK_NOTNULL(rotating_body_extension);                                    \
+    return RotatingBody<                                                       \
+                Frame<Tag, serialization::Frame::value, true>>::               \
+                ReadFromMessage(*rotating_body_extension, parameters)
 
 inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     serialization::MassiveBody const& message) {
@@ -114,12 +107,10 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
                                   message.gravitational_parameter()));
 
   // First see if we have an extension that has a frame and if so read the
-  // frame.  Need to take care of pre-Brouwer compatibility.
+  // frame.
   const google::protobuf::EnumValueDescriptor* enum_value_descriptor = nullptr;
   bool is_inertial = false;
   serialization::RotatingBody const* rotating_body_extension = nullptr;
-  serialization::PreBrouwerOblateBody const* pre_brouwer_oblate_body_extension =
-      nullptr;
   if (message.HasExtension(serialization::RotatingBody::extension)) {
     rotating_body_extension =
         &message.GetExtension(serialization::RotatingBody::extension);
@@ -128,17 +119,8 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
                          is_inertial);
     CHECK(is_inertial);
   }
-  if (message.HasExtension(serialization::PreBrouwerOblateBody::extension)) {
-    pre_brouwer_oblate_body_extension =
-        &message.GetExtension(serialization::PreBrouwerOblateBody::extension);
-    ReadFrameFromMessage(pre_brouwer_oblate_body_extension->frame(),
-                         enum_value_descriptor,
-                         is_inertial);
-    CHECK(is_inertial);
-  }
 
-  if (rotating_body_extension != nullptr ||
-      pre_brouwer_oblate_body_extension != nullptr) {
+  if (rotating_body_extension != nullptr) {
     const google::protobuf::EnumDescriptor* enum_descriptor =
         enum_value_descriptor->type();
     {
@@ -148,7 +130,6 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_SUN);
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_WORLD);
           ROTATING_BODY_TAG_VALUE_CASE(BARYCENTRIC);
-          ROTATING_BODY_TAG_VALUE_CASE(PRE_BOREL_BARYCENTRIC);
           ROTATING_BODY_TAG_VALUE_CASE(NAVIGATION);
           ROTATING_BODY_TAG_VALUE_CASE(WORLD);
           ROTATING_BODY_TAG_VALUE_CASE(WORLD_SUN);

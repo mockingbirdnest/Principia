@@ -65,13 +65,6 @@ message DiscreteTrajectory {
     required Point instant = 1;
     required Pair degrees_of_freedom = 2;
   }
-  message Pointer {  // Pre-Буняковский
-    message Fork {
-      required int32 children_distance = 1;
-      required int32 timeline_distance = 2;
-    }
-    repeated Fork fork = 1;
-  }
   message Litter {
     required Point fork_time = 1;
     repeated DiscreteTrajectory trajectories = 2;
@@ -99,14 +92,16 @@ message Ephemeris {
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
   required Quantity fitting_tolerance = 5;
-  optional SystemState last_state = 6;  // Pre-Cardano.
-  optional FixedStepParameters fixed_step_parameters = 7;  // required.
+  required FixedStepParameters fixed_step_parameters = 7;
   optional Point t_max = 8;
-  optional IntegratorInstance instance = 9;  // required.
+  required IntegratorInstance instance = 9;
 
+  // Pre-Cardano.
+  reserved 6;
+  reserved "last_state";
   // Pre-Буняковский.
-  optional FixedStepSizeIntegrator planetary_integrator = 3;
-  optional Quantity step = 4;
+  reserved 3, 4;
+  reserved "planetary_integrator", "step";
 }
 
 message KeplerianElements {
@@ -123,7 +118,7 @@ message KeplerianElements {
 message MassiveBody {
   extensions 2000 to 2999;  // Last used: 2002.
   required Quantity gravitational_parameter = 1;
-  optional string name = 2;  // required.
+  required string name = 2;
 }
 
 message MasslessBody {}
@@ -135,29 +130,20 @@ message OblateBody {
   required Quantity j2 = 1;
 }
 
-message PreBrouwerOblateBody {
-  extend MassiveBody {
-    optional PreBrouwerOblateBody extension = 2001;
-  }
-  required Frame frame = 3;
-  required Quantity j2 = 1;
-  required Multivector axis = 2;
-}
-
 message RotatingBody {
   extend MassiveBody {
     optional RotatingBody extension = 2002;
   }
   extensions 4000 to 4999;  // Last used: 4000.
   required Frame frame = 1;
-  optional Quantity mean_radius = 5;
+  required Quantity mean_radius = 5;
   required Quantity reference_angle = 2;
   required Point reference_instant = 3;
-  optional Quantity angular_frequency = 6;  // required
-  optional Quantity right_ascension_of_pole = 7;  // required
-  optional Quantity declination_of_pole = 8;  // required
+  required Quantity angular_frequency = 6;
+  required Quantity right_ascension_of_pole = 7;
+  required Quantity declination_of_pole = 8;
 
-  // Pre-Cardano: |angular_velocity| is deprecated, and does not contain the
-  // angular velocity in any released version; its norm is 1 rad/s.
-  optional Multivector angular_velocity = 4;
+  // Pre-Cardano.
+  reserved 4;
+  reserved "angular_velocity";
 }
