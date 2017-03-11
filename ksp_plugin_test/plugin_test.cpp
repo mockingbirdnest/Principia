@@ -816,7 +816,7 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
                                 inserted);
     plugin_->FreeVesselsAndPartsAndCollectPileUps();
     plugin_->VesselFromParent(guid);
-  }, "!parts_\\.empty\\(\\)");
+  }, R"regex(!parts_\.empty\(\))regex");
 }
 
 TEST_F(PluginDeathTest, CelestialFromParentError) {
