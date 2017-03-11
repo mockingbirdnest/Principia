@@ -382,20 +382,12 @@ class Plugin {
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
 
-  // This constructor should only be used during deserialization.  All vessels
-  // are added to |kept_vessels_|  The resulting plugin is not |initializing_|.
-  Plugin(GUIDToOwnedVessel vessels,
-         IndexToOwnedCelestial celestials,
-         std::unique_ptr<Ephemeris<Barycentric>> ephemeris,
-         Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
+  // This constructor should only be used during deserialization.
+  Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prolongation_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prediction_parameters,
-         Angle const& planetarium_rotation,
-         Instant const& game_epoch,
-         Instant const& current_time,
-         Index sun_index);
+             prediction_parameters);
 
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
@@ -487,7 +479,7 @@ class Plugin {
 
   Angle planetarium_rotation_;
   // The game epoch in real time.
-  Instant const game_epoch_;
+  Instant game_epoch_;
   // The current in-game universal time.
   Instant current_time_;
 

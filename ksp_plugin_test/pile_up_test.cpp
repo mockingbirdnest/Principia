@@ -571,7 +571,7 @@ TEST_F(PileUpTest, Serialization) {
   auto const p = PileUp::ReadFromMessage(message, part_id_to_part);
 
   serialization::PileUp second_message;
-  p->WriteToMessage(&second_message);
+  p.WriteToMessage(&second_message);
   EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
 }
 
