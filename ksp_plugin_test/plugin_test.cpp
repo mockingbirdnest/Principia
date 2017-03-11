@@ -673,9 +673,11 @@ TEST_F(PluginDeathTest, AdvanceTimeError) {
   }, "Check failed: !initializing");
 }
 
-#if 0
 TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   GUID const guid = "Test Satellite";
+  PartId const part_id = 666;
+  auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
+                                                 Velocity<Barycentric>());
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
@@ -684,9 +686,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
-      .WillRepeatedly(AppendToDiscreteTrajectories());
+      .WillRepeatedly(AppendToDiscreteTrajectories(dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
@@ -706,16 +708,28 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
-  plugin_->SetVesselStateOffset(guid,
-                                RelativeDegreesOfFreedom<AliceSun>(
-                                    satellite_initial_displacement_,
-                                    satellite_initial_velocity_));
+  bool inserted;
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
+  plugin_->InsertUnloadedPart(
+      part_id,
+      "part",
+      guid,
+      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
+                                         satellite_initial_velocity_));
+  plugin_->FreeVesselsAndPartsAndCollectPileUps();
   auto const satellite = plugin_->GetVessel(guid);
 
   Instant const& time = initial_time_ + 1 * Second;
   plugin_->AdvanceTime(time, Angle());
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
 
   auto const burn = [this, mock_dynamic_frame, time]() -> Burn {
@@ -732,21 +746,28 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
                             /*initial_mass=*/1 * Kilogram);
   satellite->flight_plan().Append(burn());
 
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 3));
   EXPECT_LE(HistoryTime(time, 3), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 3), satellite->history().Begin().time());
+  EXPECT_LE(HistoryTime(time, 3), satellite->psychohistory().Begin().time());
   EXPECT_EQ(1, satellite->flight_plan().number_of_manœuvres());
   EXPECT_EQ(1 * Newton, satellite->flight_plan().GetManœuvre(0).thrust());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   EXPECT_LE(HistoryTime(time, 5), satellite->flight_plan().initial_time());
-  EXPECT_LE(HistoryTime(time, 5), satellite->history().Begin().time());
+  EXPECT_LE(HistoryTime(time, 5), satellite->psychohistory().Begin().time());
   EXPECT_EQ(0, satellite->flight_plan().number_of_manœuvres());
 }
 
 TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   GUID const guid = "Test Satellite";
+  PartId const part_id = 666;
+  auto const dof = DegreesOfFreedom<Barycentric>(Barycentric::origin,
+                                                 Velocity<Barycentric>());
 
   InsertAllSolarSystemBodies();
   EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
@@ -760,35 +781,50 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(), Return(true)));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
-      .WillRepeatedly(AppendToDiscreteTrajectories());
+      .WillRepeatedly(AppendToDiscreteTrajectories(dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
 
   plugin_->SetPlottingFrame(plugin_->NewBodyCentredNonRotatingNavigationFrame(
       SolarSystemFactory::Sun));
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
-  plugin_->SetVesselStateOffset(guid,
-                                RelativeDegreesOfFreedom<AliceSun>(
-                                    satellite_initial_displacement_,
-                                    satellite_initial_velocity_));
+  bool inserted;
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
+  plugin_->InsertUnloadedPart(
+      part_id,
+      "part",
+      guid,
+      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
+                                         satellite_initial_velocity_));
+  plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
   Instant const& time = initial_time_ + 1 * Second;
   EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
       .Times(1);
   plugin_->AdvanceTime(time, Angle());
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin_->UpdatePrediction(guid);
-  plugin_->InsertOrKeepVessel(guid, SolarSystemFactory::Earth);
+  plugin_->InsertOrKeepVessel(guid,
+                              "v" + guid,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   auto const rendered_prediction =
       plugin_->RenderedPrediction(guid, World::origin);
 }
-#endif
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
