@@ -1,8 +1,6 @@
 ﻿
 #include "ksp_plugin/plugin.hpp"
 
-#if THE_PLUGIN_INTEGRATION_TESTS_WORK
-
 #include <algorithm>
 #include <limits>
 #include <vector>
@@ -56,6 +54,15 @@ using ::testing::Ge;
 using ::testing::Gt;
 using ::testing::Le;
 using ::testing::Lt;
+
+namespace {
+
+PartId const part_id = 789;
+GUID const vessel_guid = "123-456";
+std::string const part_name = "Picard's desk";
+std::string const vessel_name = "NCC-1701-D";
+
+}  // namespace
 
 class PluginIntegrationTest : public testing::Test {
  protected:
@@ -186,12 +193,21 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
 TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
-  GUID const satellite = "satellite";
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
-  plugin_->SetVesselStateOffset(satellite,
-                                RelativeDegreesOfFreedom<AliceSun>(
-                                    satellite_initial_displacement_,
-                                    satellite_initial_velocity_));
+
+  bool inserted;
+  plugin_->InsertOrKeepVessel(vessel_guid,
+                              vessel_name,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
+  plugin_->InsertUnloadedPart(
+      part_id,
+      part_name,
+      vessel_guid,
+      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
+                                         satellite_initial_velocity_));
+  plugin_->FreeVesselsAndPartsAndCollectPileUps();
+
   plugin_->SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth));
@@ -214,13 +230,21 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+    plugin_->InsertOrKeepVessel(vessel_guid,
+                                vessel_name,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/false,
+                                inserted);
   }
   for (; t < initial_time_ + 12 * Hour; t += δt_long) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+    plugin_->InsertOrKeepVessel(vessel_guid,
+                                vessel_name,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/false,
+                                inserted);
     // We give the sun an arbitrary nonzero velocity in |World|.
     Position<World> const sun_world_position =
         World::origin + Velocity<World>(
@@ -228,7 +252,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
              -1.0 * AstronomicalUnit / Hour,
               0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
     auto const rendered_trajectory =
-        plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
+        plugin_->RenderedVesselTrajectory(vessel_guid, sun_world_position);
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
@@ -244,12 +268,16 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   }
 }
 
-#if 0
 TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   InsertAllSolarSystemBodies();
   plugin_->EndInitialization();
-  GUID const satellite = "satellite";
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+
+  bool inserted;
+  plugin_->InsertOrKeepVessel(vessel_guid,
+                              vessel_name,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   // A vessel at the Lagrange point L₅.
   RelativeDegreesOfFreedom<AliceSun> const from_the_earth_to_the_moon =
       plugin_->CelestialFromParent(SolarSystemFactory::Moon);
@@ -263,8 +291,12 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
           Wedge(from_the_earth_to_the_moon.velocity(),
                 from_the_earth_to_the_moon.displacement()))(
               from_the_earth_to_the_moon.velocity());
-  plugin_->SetVesselStateOffset(satellite,
-                                {from_the_earth_to_l5, initial_velocity});
+  plugin_->InsertUnloadedPart(part_id,
+                              part_name,
+                              vessel_guid,
+                              {from_the_earth_to_l5, initial_velocity});
+  plugin_->FreeVesselsAndPartsAndCollectPileUps();
+
   plugin_->SetPlottingFrame(
       plugin_->NewBarycentricRotatingNavigationFrame(
           SolarSystemFactory::Earth,
@@ -286,17 +318,29 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+    plugin_->InsertOrKeepVessel(vessel_guid,
+                                vessel_name,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/false,
+                                inserted);
   }
   for (; t < initial_time_ + duration; t += δt_long) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-    plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+    plugin_->InsertOrKeepVessel(vessel_guid,
+                                vessel_name,
+                                SolarSystemFactory::Earth,
+                                /*loaded=*/false,
+                                inserted);
   }
   plugin_->AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
-  plugin_->InsertOrKeepVessel(satellite, SolarSystemFactory::Earth);
+  plugin_->InsertOrKeepVessel(vessel_guid,
+                              vessel_name,
+                              SolarSystemFactory::Earth,
+                              /*loaded=*/false,
+                              inserted);
   // We give the sun an arbitrary nonzero velocity in |World|.
   Position<World> const sun_world_position =
       World::origin + Velocity<World>(
@@ -304,7 +348,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
            -1.0 * AstronomicalUnit / Hour,
             0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
   auto const rendered_trajectory =
-      plugin_->RenderedVesselTrajectory(satellite, sun_world_position);
+      plugin_->RenderedVesselTrajectory(vessel_guid, sun_world_position);
   Position<World> const earth_world_position =
       sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                SolarSystemFactory::Earth).displacement());
@@ -350,6 +394,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   }
 }
 
+#if 0
 // The Enterprise D is a low orbit around a massive body with unit gravitational
 // parameter, enters the physics bubble, separates, the saucer section reverses
 // the direction of its orbit, the physics bubble ends, the two sections meet
@@ -389,7 +434,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   // Step 1: insert the Enterprise.
   t += δt;
   plugin.InsertOrKeepVessel(enterprise_d, celestial);
-  plugin.SetVesselStateOffset(
+  plugin.InsertUnloadedPart(
       enterprise_d,
       {Displacement<AliceSun>({a, 0 * a, 0 * a}),
        Velocity<AliceSun>({0 * v0, v0, 0 * v0})});
@@ -423,7 +468,7 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   plugin.InsertOrKeepVessel(enterprise_d_saucer, celestial);
   // The value of the offset here should be irrelevant, make sure we notice it
   // if it has an influence.
-  plugin.SetVesselStateOffset(
+  plugin.InsertUnloadedPart(
       enterprise_d_saucer,
       {Displacement<AliceSun>({std::numeric_limits<double>::quiet_NaN() * a,
                                std::numeric_limits<double>::quiet_NaN() * a,
@@ -591,12 +636,12 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
                             plugin.VesselFromParent(enterprise_d).velocity()),
               Lt(100 * ε));
 }
+#endif
 
 // Checks that we correctly predict a full circular orbit around a massive body
 // with unit gravitational parameter at unit distance.  Since predictions are
 // only computed on |AdvanceTime()|, we advance time by a small amount.
 TEST_F(PluginIntegrationTest, Prediction) {
-  GUID const satellite = "satellite";
   Index const celestial = 0;
   Plugin plugin(Instant(), Instant(), 0 * Radian);
   auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
@@ -614,14 +659,24 @@ TEST_F(PluginIntegrationTest, Prediction) {
       /*keplerian_elements=*/std::experimental::nullopt,
       std::move(sun_body));
   plugin.EndInitialization();
-  EXPECT_TRUE(plugin.InsertOrKeepVessel(satellite, celestial));
-  plugin.SetPlottingFrame(
-      plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
-  plugin.SetVesselStateOffset(
-      satellite,
+
+  bool inserted;
+  plugin.InsertOrKeepVessel(vessel_guid,
+                            vessel_name,
+                            celestial,
+                            /*loaded=*/false,
+                            inserted);
+  plugin.InsertUnloadedPart(
+      part_id,
+      part_name,
+      vessel_guid,
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.FreeVesselsAndPartsAndCollectPileUps();
+
+  plugin.SetPlottingFrame(
+      plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   plugin.SetPredictionLength(2 * π * Second);
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
@@ -630,10 +685,10 @@ TEST_F(PluginIntegrationTest, Prediction) {
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
-  plugin.UpdatePrediction(satellite);
+  plugin.UpdatePrediction(vessel_guid);
   auto rendered_prediction =
-      plugin.RenderedPrediction(satellite, World::origin);
-  EXPECT_EQ(16, rendered_prediction->Size());
+      plugin.RenderedPrediction(vessel_guid, World::origin);
+  EXPECT_EQ(15, rendered_prediction->Size());
   int index = 0;
   for (auto it = rendered_prediction->Begin();
        it != rendered_prediction->End();
@@ -652,10 +707,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
                         World::origin),
       AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
 }
-#endif
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia
-
-#endif
