@@ -454,14 +454,23 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  LOG_IF(FATAL,
+         options.HasExtension(journal::serialization::is_produced) ||
+             options.HasExtension(journal::serialization::is_produced_if))
+      << descriptor->full_name()
+      << " is a string field and cannot be produced. Use a fixed64 field that "
+      << "is pointer to char const instead.";
+
+  // Note that it is important to use an out marshmallow for return fields,
+  // hence the use of the |in_| set here.
   field_cs_marshal_[descriptor] =
-      Contains(out_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))"
-                                 : "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(InUTF8Marshaler))";
+      Contains(in_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(InUTF8Marshaler))"
+                                : "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(OutUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
-  FieldOptions const& options = descriptor->options();
   if (options.HasExtension(journal::serialization::size)) {
     size_member_name_[descriptor] =
         options.GetExtension(journal::serialization::size);
@@ -874,7 +883,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
     const std::string& nested_name = nested_descriptor->name();
     if (nested_name == in_message_name) {
       has_in = true;
-      ProcessInOut(nested_descriptor, &field_descriptors);
+      std::vector<FieldDescriptor const*> in_field_descriptors;
+      ProcessInOut(nested_descriptor, &in_field_descriptors);
+      in_.insert(in_field_descriptors.begin(), in_field_descriptors.end());
+      std::copy(in_field_descriptors.begin(),
+                in_field_descriptors.end(),
+                std::back_inserter(field_descriptors));
     } else if (nested_name == out_message_name) {
       has_out = true;
       std::vector<FieldDescriptor const*> out_field_descriptors;
@@ -895,8 +909,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   if (has_in && has_out) {
     std::sort(field_descriptors.begin(),
               field_descriptors.end(),
-              [](FieldDescriptor const* left,
-                  FieldDescriptor const* right) {
+              [](FieldDescriptor const* left, FieldDescriptor const* right) {
       return left->name() < right->name();
     });
     for (int i = 0; i < field_descriptors.size() - 1; ++i) {

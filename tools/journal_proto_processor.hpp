@@ -83,6 +83,10 @@ class JournalProtoProcessor final {
   // structure.
   // We use cxx to designate C++ code and cs to designate C# code.
 
+  // The fields that are in.  Note that the out fields present in |in_out_| are
+  // not in |in_|.
+  std::set<FieldDescriptor const*> in_;
+
   // The fields that are in-out, i.e. for which fields of the same name exist in
   // both the In and the Out messages.  Note that both fields are present in
   // this set.  Those fields are transmitted through the interface with an extra
