@@ -84,7 +84,7 @@ void PileUp::DeformPileUpIfNeeded() {
   // all the parts.
   CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
   for (not_null<Part*> const part : parts_) {
-    CHECK_GT(apparent_part_degrees_of_freedom_.count(part), 0);
+    CHECK(Contains(apparent_part_degrees_of_freedom_, part));
   }
 
   // Compute the apparent centre of mass of the parts.
