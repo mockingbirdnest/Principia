@@ -79,8 +79,11 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private int buffered_logging_ = 0;
 
+  // Whether a journal will be recorded when the plugin is next constructed.
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
+  // Whether a journal is currently being recorded.
+  private static bool journalling_;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
@@ -373,6 +376,7 @@ public partial class PrincipiaPluginAdapter
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
     if (must_record_journal_) {
+      journalling_ = true;
       Log.ActivateRecorder(true);
     }
     if (node.HasValue(principia_key)) {
@@ -1426,6 +1430,17 @@ public partial class PrincipiaPluginAdapter
       buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.TextArea("Journalling is " +
+                                   (journalling_ ? "ON" : "OFF"));
+    must_record_journal_ = UnityEngine.GUILayout.Toggle(
+        value   : must_record_journal_,
+        text    : "Record journal (starts on load)");
+    if (journalling_ && !must_record_journal_) {
+      // We can deactivate a recorder at any time, but in order for replaying to
+      // work, we should only activate one before creating a plugin.
+      journalling_ = false;
+      Interface.ActivateRecorder(false);
+    }
   }
 
   private void ResetButton() {
