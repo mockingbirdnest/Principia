@@ -77,11 +77,11 @@ void Vessel::KeepPart(PartId const id) {
 void Vessel::FreeParts() {
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part*> part = it->second.get();
-    if (kept_parts_.count(part) == 0) {
+    if (Contains(kept_parts_, part)) {
+      ++it;
+    } else {
       part->clear_pile_up();
       it = parts_.erase(it);
-    } else {
-      ++it;
     }
   }
   CHECK(!parts_.empty());

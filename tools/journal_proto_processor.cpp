@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 #include "serialization/journal.pb.h"
 
@@ -17,18 +18,14 @@ namespace principia {
 namespace tools {
 namespace internal_journal_proto_processor {
 
+using base::Contains;
+
 namespace {
 
 char const method_message_name[] = "Method";
 char const in_message_name[] = "In";
 char const return_message_name[] = "Return";
 char const out_message_name[] = "Out";
-
-template<typename Container>
-bool Contains(Container const& container,
-              typename Container::key_type const key) {
-  return container.find(key) != container.end();
-}
 
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;

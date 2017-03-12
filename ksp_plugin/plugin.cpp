@@ -809,7 +809,7 @@ void Plugin::SetPredictionAdaptiveStepParameters(
 }
 
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
-  return vessels_.find(vessel_guid) != vessels_.end();
+  return Contains(vessels_, vessel_guid);
 }
 
 not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
@@ -1042,9 +1042,9 @@ void Plugin::WriteToMessage(
     vessel->WriteToMessage(vessel_message->mutable_vessel());
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
-    vessel_message->set_loaded(loaded_vessels_.count(vessel) != 0);
-    vessel_message->set_new_unloaded(new_unloaded_vessels_.count(vessel) != 0);
-    vessel_message->set_kept(kept_vessels_.count(vessel) != 0);
+    vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
+    vessel_message->set_new_unloaded(Contains(new_unloaded_vessels_, vessel));
+    vessel_message->set_kept(Contains(kept_vessels_, vessel));
   }
   for (auto const& pair : part_id_to_vessel_) {
     PartId const part_id = pair.first;
@@ -1346,11 +1346,11 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 }
 
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
-  return loaded_vessels_.count(vessel) != 0;
+  return Contains(loaded_vessels_, vessel);
 }
 
 bool Plugin::is_new_unloaded(not_null<Vessel*> vessel) const {
-  return new_unloaded_vessels_.count(vessel) != 0;
+  return Contains(new_unloaded_vessels_, vessel);
 }
 
 }  // namespace internal_plugin
