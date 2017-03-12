@@ -590,7 +590,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__SayHello",
              CallingConvention = CallingConvention.Cdecl)]
-  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutUTF8Marshaler))]
   internal static extern String SayHello();
 
   [DllImport(dllName           : dll_path,
