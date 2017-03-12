@@ -67,6 +67,10 @@
   <ItemGroup>
     <ClInclude Include="mock_vessel.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="simple_plugin.proto.bin" />
+    <None Include="simple_plugin.proto.hex" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A942ADF0-62F4-435C-85B2-934D5B666DB8}</ProjectGuid>
     <RootNamespace>ksp_plugin_test</RootNamespace>

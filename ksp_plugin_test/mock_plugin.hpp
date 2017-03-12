@@ -41,11 +41,17 @@ class MockPlugin : public Plugin {
                      void(Index celestial_index,
                           Index parent_index));
 
-  MOCK_METHOD2(InsertOrKeepVessel,
-               bool(GUID const& vessel_guid, Index parent_index));
-
-  MOCK_METHOD2(SetVesselStateOffset,
+  MOCK_METHOD5(InsertOrKeepVessel,
                void(GUID const& vessel_guid,
+                    std::string const& vessel_name,
+                    Index parent_index,
+                    bool loaded,
+                    bool& inserted));
+
+  MOCK_METHOD4(InsertUnloadedPart,
+               void(PartId part_id,
+                    std::string const& name,
+                    GUID const& vessel_guid,
                     RelativeDegreesOfFreedom<AliceSun> const& from_parent));
 
   MOCK_METHOD2(AdvanceTime,
