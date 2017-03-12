@@ -517,7 +517,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       // See the destructor.
       vessel->ForAllParts([](Part& part) { part.clear_pile_up(); });
       it = vessels_.erase(it);
