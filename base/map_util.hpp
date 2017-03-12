@@ -47,7 +47,7 @@ namespace base {
 template <class Collection>
 bool Contains(Collection const& collection,
               typename Collection::key_type const key) {
-  return collection.count(key) > 0;
+  return collection.find(key) != collection.end();
 }
 
 template<class Collection>
