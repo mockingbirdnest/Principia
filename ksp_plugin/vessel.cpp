@@ -91,7 +91,8 @@ void Vessel::FreeParts() {
 void Vessel::PreparePsychohistory(Instant const& t) {
   CHECK(!parts_.empty());
   if (psychohistory_->Empty()) {
-    LOG(INFO) << "Preparing psychohistory of vessel " << ShortDebugString();
+    LOG(INFO) << "Preparing psychohistory of vessel " << ShortDebugString()
+              << " at " << t;
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
