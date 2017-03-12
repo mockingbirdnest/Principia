@@ -273,6 +273,7 @@ void Plugin::EndInitialization() {
   CHECK_NOTNULL(sun_);
   main_body_ = CHECK_NOTNULL(
       dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
+  UpdatePlanetariumRotation();
   initializing_.Flop();
 
   InitializeEphemerisAndSetCelestialTrajectories();
@@ -322,6 +323,7 @@ void Plugin::SetMainBody(Index const index) {
   main_body_ = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
       FindOrDie(celestials_, index)->body());
   LOG_IF(FATAL, main_body_ == nullptr) << index;
+  UpdatePlanetariumRotation();
 }
 
 Rotation<BodyWorld, World> Plugin::CelestialRotation(
@@ -517,7 +519,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
-      LOG(INFO) << "Removing vessel with GUID " << it->first;
+      LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       // See the destructor.
       vessel->ForAllParts([](Part& part) { part.clear_pile_up(); });
       it = vessels_.erase(it);
@@ -613,6 +615,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  UpdatePlanetariumRotation();
   loaded_vessels_.clear();
 }
 
@@ -1141,6 +1144,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->main_body_ =
       CHECK_NOTNULL(dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
           plugin->sun_->body()));
+  plugin->UpdatePlanetariumRotation();
 
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
@@ -1235,7 +1239,11 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
 
 // The map between the vector spaces of |Barycentric| and |AliceSun| at
 // |current_time_|.
-Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
+Rotation<Barycentric, AliceSun> const& Plugin::PlanetariumRotation() const {
+  return *cached_planetarium_rotation_;
+}
+
+void Plugin::UpdatePlanetariumRotation() {
   // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
   // axis is the origin of body rotation (the intersection between the
   // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
@@ -1251,10 +1259,12 @@ Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation() const {
       0 * Radian,
       EulerAngles::ZXZ,
       DefinesFrame<PlanetariumFrame>{});
-  return Rotation<PlanetariumFrame, AliceSun>(
-              planetarium_rotation_,
-              Bivector<double, PlanetariumFrame>({0, 0, 1}),
-              DefinesFrame<AliceSun>{}) * to_planetarium;
+  cached_planetarium_rotation_ =
+      Rotation<PlanetariumFrame, AliceSun>(
+          planetarium_rotation_,
+          Bivector<double, PlanetariumFrame>({0, 0, 1}),
+          DefinesFrame<AliceSun>{}) *
+      to_planetarium;
 }
 
 Vector<double, World> Plugin::FromVesselFrenetFrame(

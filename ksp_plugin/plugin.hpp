@@ -400,7 +400,10 @@ class Plugin {
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
-  Rotation<Barycentric, AliceSun> PlanetariumRotation() const;
+  Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
+  // Computes the value returned by |PlanetariumRotation|.  Must be called
+  // whenever |main_body_| or |planetarium_rotation_| changes.
+  void UpdatePlanetariumRotation();
 
   // Utilities for |AdvanceTime|.
 
@@ -478,6 +481,8 @@ class Plugin {
   base::Monostable initializing_;
 
   Angle planetarium_rotation_;
+  std::experimental::optional<Rotation<Barycentric, AliceSun>>
+      cached_planetarium_rotation_;
   // The game epoch in real time.
   Instant game_epoch_;
   // The current in-game universal time.
