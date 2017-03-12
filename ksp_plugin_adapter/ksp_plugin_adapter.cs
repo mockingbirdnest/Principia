@@ -886,7 +886,7 @@ public partial class PrincipiaPluginAdapter
             plugin_.InsertOrKeepLoadedPart(
                 part.flightID,
                 part.partName,
-                part.mass,
+                part.physicsMass,
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
                 main_body_degrees_of_freedom,
