@@ -71,8 +71,13 @@ std::unique_ptr<serialization::Method> Player::Read() {
   HexadecimalDecode({hexadecimal, hexadecimal_size},
                     {bytes.data.get(), bytes.size});
   auto method = std::make_unique<serialization::Method>();
-  CHECK(method->ParseFromArray(bytes.data.get(),
-                               static_cast<int>(bytes.size)));
+  //CHECK(method->ParseFromArray(bytes.data.get(),
+  //                             static_cast<int>(bytes.size))) << line;
+  bool success =
+      method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size));
+  if (!success) {
+    LOG(ERROR)<<method->DebugString();
+  }
 
   return method;
 }

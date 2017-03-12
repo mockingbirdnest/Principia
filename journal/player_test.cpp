@@ -100,7 +100,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journaling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170312-125704)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170312-135228)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
