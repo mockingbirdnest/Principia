@@ -1,4 +1,7 @@
-﻿using System;
+﻿
+//#define THE_SERIALIZATION_WORKS_AGAIN
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -1552,8 +1555,6 @@ public partial class PrincipiaPluginAdapter
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
-        plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
-                            Planetarium.InverseRotAngle);
       } catch (Exception e) {
         Log.Fatal("Exception while reading initial state: " + e.ToString());
       }
@@ -1623,6 +1624,8 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+    plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
+                        Planetarium.InverseRotAngle);
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
                                    plugin_,
