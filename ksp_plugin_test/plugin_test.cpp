@@ -316,37 +316,32 @@ class PluginTest : public testing::Test {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     std::string const serialized = message.SerializeAsString();
+
+    std::fstream file = std::fstream(
+        SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin",
+        std::ios::binary | std::ios::out);
+    CHECK(file.good());
+    file.write(serialized.c_str(), serialized.size());
+    file.close();
+
+    file = std::fstream(
+        SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex",
+        std::ios::out);
+    CHECK(file.good());
     int index = 0;
     for (unsigned char c : serialized) {
-      if (index == 0) {
-        printf("    \"");
-      }
-      printf("\\x%x", c);
+      file << std::hex << std::uppercase << std::setw(2) << std::setfill('0')
+           << static_cast<int>(c);
       ++index;
-      if (index == 18) {
-        printf("\"\n");
+      if (index == 40) {
+        file << '\n';
         index = 0;
       }
     }
     if (index != 0) {
-      printf("\"\n");
+      file << '\n';
     }
-    printf("\n");
-    index = 0;
-    for (unsigned char c : serialized) {
-      if (index == 0) {
-        printf("    \"");
-      }
-      printf("%02X", c);
-      ++index;
-      if (index == 37) {
-        printf("\"\n");
-        index = 0;
-      }
-    }
-    if (index != 0) {
-      printf("\"\n");
-    }
+    file.close();
   }
 
   RotatingBody<Barycentric>::Parameters body_rotation_;
@@ -448,7 +443,7 @@ TEST_F(PluginTest, Serialization) {
   plugin->AdvanceTime(time, Angle());
 
 #if 0
-  // Uncomment this block to print out a serialized "boring" plugin for
+  // Uncomment this block to print out a serialized "simple" plugin for
   // interface_test.cpp.
   PrintSerializedPlugin(*plugin);
 #endif
