@@ -256,7 +256,6 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // |**native_string|.
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
-  LOG(INFO) << __FUNCTION__;
   // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
   // cannot be aliased.
   auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
@@ -280,13 +279,13 @@ void principia__DeserializePlugin(char const* const serialization,
                                                  deserializer,
                                                  plugin},
                                                 {deserializer, plugin});
-  LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
+    LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
@@ -314,6 +313,7 @@ void principia__DeserializePlugin(char const* const serialization,
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
   if (byte_size == 0) {
+    LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
   }
   return m.Return();
@@ -786,12 +786,12 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
   journal::Method<journal::SerializePlugin> m({plugin, serializer},
                                               {serializer});
-  LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
+    LOG(INFO) << "Begin plugin seralization";
     *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
@@ -805,6 +805,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // If this is the end of the serialization, delete the serializer and return a
   // nullptr.
   if (bytes.size == 0) {
+    LOG(INFO) << "End plugin seralization";
     TakeOwnership(serializer);
     return m.Return(nullptr);
   }
