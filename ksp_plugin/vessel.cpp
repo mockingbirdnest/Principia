@@ -146,14 +146,15 @@ void Vessel::AdvanceTime() {
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
   for (auto const& pair : parts_) {
     Part const& part = *pair.second;
-    CHECK(!part.tail().Empty());
+    DCHECK(!part.tail().Empty());
     its.push_back(part.tail().Begin());
   }
+
+  Part const& first_part = *parts_.begin()->second;
+  bool const tail_is_authoritative = first_part.tail_is_authoritative();
   for (;;) {
-    Part const& first_part = *parts_.begin()->second;
     Instant const first_time = its[0].time();
     bool const at_end_of_tail = its[0] == first_part.tail().last();
-    bool const tail_is_authoritative = first_part.tail_is_authoritative();
 
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     int i = 0;
@@ -161,9 +162,9 @@ void Vessel::AdvanceTime() {
       Part& part = *pair.second;
       auto& it = its[i];
       calculator.Add(it.degrees_of_freedom(), part.mass());
-      CHECK_EQ(first_time, it.time());
-      CHECK_EQ(at_end_of_tail, it == part.tail().last());
-      CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
+      DCHECK_EQ(first_time, it.time());
+      DCHECK_EQ(at_end_of_tail, it == part.tail().last());
+      DCHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
         part.tail().ForgetBefore(astronomy::InfiniteFuture);
       } else {

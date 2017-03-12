@@ -24,8 +24,8 @@ bool ForkableIterator<Tr4jectory, It3rator>::operator!=(
 
 template<typename Tr4jectory, typename It3rator>
 It3rator& ForkableIterator<Tr4jectory, It3rator>::operator++() {
-  CHECK(!ancestry_.empty());
-  CHECK(current_ != ancestry_.front()->timeline_end());
+  DCHECK(!ancestry_.empty());
+  DCHECK(current_ != ancestry_.front()->timeline_end());
 
   // Check if there is a next child in the ancestry.
   auto ancestry_it = ancestry_.begin();
