@@ -1,6 +1,4 @@
 ﻿
-//#define THE_SERIALIZATION_WORKS_AGAIN
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -360,7 +358,6 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnSave(ConfigNode node) {
     base.OnSave(node);
-#if THE_SERIALIZATION_WORKS_AGAIN
     if (PluginRunning()) {
       String serialization;
       IntPtr serializer = IntPtr.Zero;
@@ -372,7 +369,6 @@ public partial class PrincipiaPluginAdapter
         node.AddValue(principia_key, serialization);
       }
     }
-#endif
   }
 
   public override void OnLoad(ConfigNode node) {
@@ -380,7 +376,6 @@ public partial class PrincipiaPluginAdapter
     if (must_record_journal_) {
       Log.ActivateRecorder(true);
     }
-#if THE_SERIALIZATION_WORKS_AGAIN
     if (node.HasValue(principia_key)) {
       Cleanup();
       SetRotatingFrameThresholds();
@@ -413,12 +408,9 @@ public partial class PrincipiaPluginAdapter
       plugin_construction_ = DateTime.Now;
       plugin_source_ = PluginSource.SAVED_STATE;
     } else {
-#endif
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
-#if THE_SERIALIZATION_WORKS_AGAIN
     }
-#endif
   }
 
   #endregion
