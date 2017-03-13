@@ -156,6 +156,9 @@ class Plugin {
                                   bool loaded,
                                   bool& inserted);
 
+  // Whether |loaded_vessels_| contains |vessel|.
+  bool is_loaded(not_null<Vessel*> vessel) const;
+
   // Adds a part with the given |part_id| to the vessel with the given |GUID|,
   // which must be unloaded, putting the part at the given offset from the
   // parent body of the vessel.  The part is given unit mass; this does not
@@ -436,8 +439,6 @@ class Plugin {
                Mass mass,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
-  // Whether |loaded_vessels_| contains |vessel|.
-  bool is_loaded(not_null<Vessel*> vessel) const;
   // Whether |new_unloaded_vessels_| contains |vessel|.
   bool is_new_unloaded(not_null<Vessel*> vessel) const;
 
