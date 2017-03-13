@@ -254,6 +254,11 @@ bool DiscreteTrajectory<Frame>::timeline_empty() const {
 }
 
 template<typename Frame>
+std::int64_t DiscreteTrajectory<Frame>::timeline_size() const {
+  return timeline_.size();
+}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*>& forks) const {

@@ -144,17 +144,25 @@ bool Vessel::has_flight_plan() const {
 void Vessel::AdvanceTime() {
   CHECK(!parts_.empty());
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
+  std::vector<DiscreteTrajectory<Barycentric>::Iterator> tails;
+  its.reserve(parts_.size());
+  tails.reserve(parts_.size());
   for (auto const& pair : parts_) {
     Part const& part = *pair.second;
     CHECK(!part.tail().Empty());
     its.push_back(part.tail().Begin());
+    tails.push_back(part.tail().last());
   }
-  for (;;) {
-    Part const& first_part = *parts_.begin()->second;
-    Instant const first_time = its[0].time();
-    bool const at_end_of_tail = its[0] == first_part.tail().last();
-    bool const tail_is_authoritative = first_part.tail_is_authoritative();
 
+  Part const& first_part = *parts_.begin()->second;
+  bool const tail_is_authoritative = first_part.tail_is_authoritative();
+
+  // Loop over the times of the tails.
+  for (;;) {
+    Instant const first_time = its[0].time();
+    bool const at_end_of_tail = its[0] == tails[0];
+
+    // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
     int i = 0;
     for (auto const& pair : parts_) {
@@ -162,7 +170,7 @@ void Vessel::AdvanceTime() {
       auto& it = its[i];
       calculator.Add(it.degrees_of_freedom(), part.mass());
       CHECK_EQ(first_time, it.time());
-      CHECK_EQ(at_end_of_tail, it == part.tail().last());
+      CHECK_EQ(at_end_of_tail, it == tails[i]);
       CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
         part.tail().ForgetBefore(astronomy::InfiniteFuture);

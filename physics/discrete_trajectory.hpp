@@ -152,6 +152,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   TimelineConstIterator timeline_lower_bound(
                             Instant const& time) const override;
   bool timeline_empty() const override;
+  std::int64_t timeline_size() const override;
 
  private:
   // This trajectory need not be a root.
