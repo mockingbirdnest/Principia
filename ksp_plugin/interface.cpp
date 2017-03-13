@@ -626,13 +626,6 @@ bool principia__IsKspStockSystem(Plugin* const plugin) {
   return m.Return(plugin->IsKspStockSystem());
 }
 
-bool principia__IsLoaded(Plugin const* const plugin,
-                         char const* const vessel_guid) {
-  journal::Method<journal::IsLoaded> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->is_loaded(GetVessel(*plugin, vessel_guid)));
-}
-
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the
