@@ -88,6 +88,10 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
 #endif
+  // Timing diagnostics.
+  private System.Diagnostics.Stopwatch stopwatch_ =
+      new System.Diagnostics.Stopwatch();
+  private double slowdown_;
 
   private bool time_is_advancing_;
 
@@ -637,9 +641,14 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
-    if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
-      Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
-      GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+     slowdown_ =
+         stopwatch_.ElapsedMilliseconds / (TimeWarp.fixedDeltaTime * 1000.0);
+     stopwatch_.Reset();
+     stopwatch_.Start();
+
+     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
+       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
+       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
@@ -1144,26 +1153,9 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "running";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-    // TODO(egg): remove this diagnosis when we have proper collision handling.
-    if (FlightGlobals.ActiveVessel != null) {
-      int collisions = 0;
-      int part_collisions = 0;
-      foreach (var part in FlightGlobals.ActiveVessel.parts) {
-         collisions += part.currentCollisions.Count;
-         foreach (var collider in part.currentCollisions) {
-           var collidee = collider.gameObject.GetComponentUpwards<Part>();
-           if (collidee != null &&
-               collidee.vessel != FlightGlobals.ActiveVessel) {
-             ++part_collisions;
-           }
-         }
-      }
-      UnityEngine.GUILayout.TextArea(
-          text
-          : "Active vessel is involved in " + collisions +
-                " collision(s) including " + part_collisions +
-                " with another vessel.");
-    }
+    UnityEngine.GUILayout.TextArea(
+        "Time runs slowed by " +
+        slowdown_);
     if (FlightGlobals.ActiveVessel != null) {
       UnityEngine.GUILayout.TextArea(FlightGlobals.ActiveVessel.geeForce +
                                      " g0");
