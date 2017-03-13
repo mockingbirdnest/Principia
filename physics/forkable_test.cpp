@@ -200,12 +200,23 @@ TEST_F(ForkableDeathTest, ForkError) {
 }
 
 TEST_F(ForkableTest, ForkSuccess) {
+  EXPECT_TRUE(trajectory_.Empty());
   trajectory_.push_back(t1_);
+  EXPECT_EQ(1, trajectory_.Size());
+  EXPECT_FALSE(trajectory_.Empty());
   trajectory_.push_back(t2_);
+  EXPECT_EQ(2, trajectory_.Size());
+  EXPECT_FALSE(trajectory_.Empty());
   trajectory_.push_back(t3_);
+  EXPECT_EQ(3, trajectory_.Size());
+  EXPECT_FALSE(trajectory_.Empty());
   not_null<FakeTrajectory*> const fork =
        trajectory_.NewFork(trajectory_.timeline_find(t2_));
+  EXPECT_EQ(2, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   fork->push_back(t4_);
+  EXPECT_EQ(3, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   auto times = Times(&trajectory_);
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t3_));
   times = Times(fork);
