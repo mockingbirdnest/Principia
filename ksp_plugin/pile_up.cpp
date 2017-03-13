@@ -127,15 +127,15 @@ void PileUp::AdvanceTime(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
-  DCHECK_GE(psychohistory_->Size(), 1);
-  DCHECK_LE(psychohistory_->Size(), 2);
+  CHECK_GE(psychohistory_->Size(), 1);
+  CHECK_LE(psychohistory_->Size(), 2);
 
   bool last_point_is_authoritative = true;
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the non-authoritative point.
     psychohistory_->ForgetAfter(last_authoritative().time());
-    DCHECK_EQ(psychohistory_->Size(), 1);
+    CHECK_EQ(psychohistory_->Size(), 1);
     ephemeris.FlowWithFixedStep(
         {psychohistory_.get()},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
@@ -176,8 +176,8 @@ void PileUp::AdvanceTime(
   psychohistory_->ForgetBefore(last_point_is_authoritative
                                    ? psychohistory_->last().time()
                                    : (--psychohistory_->last()).time());
-  DCHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
-                                     : psychohistory_->Size() == 2)
+  CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
+                                    : psychohistory_->Size() == 2)
       << NAMED(last_point_is_authoritative) << ", "
       << NAMED(psychohistory_->Size());
 }
