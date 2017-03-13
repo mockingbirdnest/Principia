@@ -91,6 +91,7 @@ public partial class PrincipiaPluginAdapter
   // Timing diagnostics.
   private System.Diagnostics.Stopwatch stopwatch_ =
       new System.Diagnostics.Stopwatch();
+  private double last_universal_time_;
   private double slowdown_;
 
   private bool time_is_advancing_;
@@ -357,6 +358,9 @@ public partial class PrincipiaPluginAdapter
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
                                  SetBodyFramesAndPrecalculateVessels);
+    // Timing1, -99 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
+                                 UpdateVesselOrbits);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  ReportVesselsAndParts);
@@ -641,17 +645,19 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
-     slowdown_ =
-         stopwatch_.ElapsedMilliseconds / (TimeWarp.fixedDeltaTime * 1000.0);
-     stopwatch_.Reset();
-     stopwatch_.Start();
-
-     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
-       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
-       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+    if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
+      Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
+      GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
+
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      slowdown_ = stopwatch_.ElapsedMilliseconds /
+                  ((universal_time - last_universal_time_) * 1000.0);
+      last_universal_time_ = universal_time;
+      stopwatch_.Reset();
+      stopwatch_.Start();
+
       plugin_.SetMainBody(
           FlightGlobals.currentMainBody.GetValueOrDefault(
               FlightGlobals.GetHomeBody()).flightGlobalsIndex);
@@ -682,17 +688,6 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.ForgetAllHistoriesBefore(universal_time -
                                        history_lengths_[history_length_index_]);
-      if (FlightGlobals.currentMainBody != null) {
-        FlightGlobals.currentMainBody.rotationPeriod =
-            plugin_.CelestialRotationPeriod(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
-        FlightGlobals.currentMainBody.initialRotation =
-            plugin_.CelestialInitialRotationInDegrees(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
-      }
-      ApplyToBodyTree(body => UpdateBody(body, universal_time));
-      SetBodyFrames();
-      ApplyToVesselsOnRails(vessel => UpdateVessel(vessel, universal_time));
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -719,6 +714,8 @@ public partial class PrincipiaPluginAdapter
                                     DisableVesselPrecalculate);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
                                     SetBodyFramesAndPrecalculateVessels);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
+                                    UpdateVesselOrbits);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     ReportVesselsAndParts);
   }
@@ -862,10 +859,17 @@ public partial class PrincipiaPluginAdapter
     // Sob.
     // NOTE(egg): we cannot use foreach here, and we must iterate downwards,
     // since vessel.precalc.FixedUpdate may remove its vessel.
-    for (int i = FlightGlobals.Vessels.Count; i >= 0; --i) {
+    for (int i = FlightGlobals.Vessels.Count - 1; i >= 0; --i) {
       var vessel = FlightGlobals.Vessels[i];
       vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
+    }
+  }
+
+  private void UpdateVesselOrbits() {
+    if (PluginRunning()) {
+      ApplyToVesselsOnRails(
+          vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }
   }
 
@@ -927,6 +931,15 @@ public partial class PrincipiaPluginAdapter
 
   private void SetBodyFrames() {
     if (PluginRunning()) {
+      if (FlightGlobals.currentMainBody != null) {
+        FlightGlobals.currentMainBody.rotationPeriod =
+            plugin_.CelestialRotationPeriod(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.initialRotation =
+            plugin_.CelestialInitialRotationInDegrees(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+      }
+      ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
       foreach (var body in FlightGlobals.Bodies) {
         // TODO(egg): I have no idea why this |swizzle| thing makes things work.
         // This probably really means something in terms of frames that should
