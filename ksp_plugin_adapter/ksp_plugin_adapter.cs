@@ -666,7 +666,7 @@ public partial class PrincipiaPluginAdapter
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
           plugin_.HasVessel(active_vessel.id.ToString());
-      
+
       if (ready_to_draw_active_vessel_trajectory) {
         // TODO(egg): make the speed tolerance independent.  Also max_steps.
         AdaptiveStepParameters adaptive_step_parameters =
