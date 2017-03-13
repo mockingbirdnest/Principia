@@ -96,9 +96,6 @@ class PileUp {
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
                          bool authoritative) const;
 
-  // Returns the last authoritative point of the psychohistory.
-  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
-
   std::list<not_null<Part*>> parts_;
   // An optimization: the sum of the masses and intrinsic forces of the
   // |parts_|, computed by the union-find.

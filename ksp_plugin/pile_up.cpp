@@ -134,7 +134,8 @@ void PileUp::AdvanceTime(
 
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the non-authoritative point.
-    psychohistory_->ForgetAfter(last_authoritative().time());
+    auto const last_authoritative = psychohistory_->Begin();
+    psychohistory_->ForgetAfter(last_authoritative.time());
     CHECK_EQ(psychohistory_->Size(), 1);
     ephemeris.FlowWithFixedStep(
         {psychohistory_.get()},
@@ -166,16 +167,19 @@ void PileUp::AdvanceTime(
               Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
               /*last_point_only=*/false));
   }
+
+  auto const psychohistory_end = psychohistory_->End();
+  auto psychohistory_last = psychohistory_->last();
   auto it = psychohistory_->Begin();
   ++it;
-  for (; it != psychohistory_->End(); ++it) {
+  for (; it != psychohistory_end; ++it) {
     AppendToPartTails(it,
-                      /*authoritative=*/it != psychohistory_->last() ||
+                      /*authoritative=*/it != psychohistory_last ||
                                         last_point_is_authoritative);
   }
   psychohistory_->ForgetBefore(last_point_is_authoritative
-                                   ? psychohistory_->last().time()
-                                   : (--psychohistory_->last()).time());
+                                   ? psychohistory_last.time()
+                                   : (--psychohistory_last).time());
   CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
                                     : psychohistory_->Size() == 2)
       << NAMED(last_point_is_authoritative) << ", "
@@ -276,11 +280,6 @@ void PileUp::AppendToPartTails(
                             FindOrDie(actual_part_degrees_of_freedom_, part)));
     part->set_tail_is_authoritative(authoritative);
   }
-}
-
-DiscreteTrajectory<Barycentric>::Iterator PileUp::last_authoritative() const {
-  return (psychohistory_->Size() == 1) ? psychohistory_->last()
-                                       : --psychohistory_->last();
 }
 
 }  // namespace internal_pile_up
