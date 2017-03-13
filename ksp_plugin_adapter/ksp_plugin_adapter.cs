@@ -509,7 +509,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LateUpdate() {
-    Log.Info("LateUpdate");
     if (map_renderer_ == null) {
       map_renderer_ =
           PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
@@ -646,7 +645,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
-    Log.Info("FixedUpdate");
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
@@ -794,7 +792,6 @@ public partial class PrincipiaPluginAdapter
        }
      }
 
-    Log.Info("AdvanceTime");
      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
 
@@ -849,14 +846,12 @@ public partial class PrincipiaPluginAdapter
    }
 
   private void DisableVesselPrecalculate() {
-    Log.Info("ObscenelyEarly");
     foreach (var vessel in FlightGlobals.Vessels) {
       vessel.precalc.enabled = false;
     }
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
-    Log.Info("Precalc");
     AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation();
     SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and
@@ -873,7 +868,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdateVesselOrbits() {
-    Log.Info("Early");
     if (PluginRunning()) {
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
@@ -1024,7 +1018,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void RenderTrajectories() {
-    Log.Info("RenderTrajectories");
     if (!PluginRunning()) {
       return;
     }
