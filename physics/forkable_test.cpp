@@ -61,6 +61,7 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   TimelineConstIterator timeline_lower_bound(
                             Instant const& time) const override;
   bool timeline_empty() const override;
+  std::int64_t timeline_size() const override;
 
  protected:
   not_null<FakeTrajectory*> that() override;
@@ -133,6 +134,10 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_lower_bound(
 
 bool FakeTrajectory::timeline_empty() const {
   return timeline_.empty();
+}
+
+std::int64_t FakeTrajectory::timeline_size() const {
+  return timeline_.size();
 }
 
 not_null<FakeTrajectory*> FakeTrajectory::that() {

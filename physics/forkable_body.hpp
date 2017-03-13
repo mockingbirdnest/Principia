@@ -240,17 +240,30 @@ It3rator Forkable<Tr4jectory, It3rator>::Fork() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-int Forkable<Tr4jectory, It3rator>::Size() const {
-  int result = 0;
-  for (auto it = Begin(); it != End(); ++it) {
-    ++result;
+std::int64_t Forkable<Tr4jectory, It3rator>::Size() const {
+  Tr4jectory const* ancestor = that();
+
+  // Get the size directly for the leaf trajectory, this is more efficient if
+  // there are no forks.
+  std::int64_t size = ancestor->timeline_size();
+
+  // Go up the ancestry chain adding the sizes.
+  Tr4jectory const* parent = ancestor->parent_;
+  while (parent != nullptr) {
+    size += std::distance(parent->timeline_begin(),
+                          *ancestor->position_in_parent_timeline_) + 1;
+    ancestor = parent;
+    parent = ancestor->parent_;
   }
-  return result;
+
+  return size;
 }
 
 template<typename Tr4jectory, typename It3rator>
 bool Forkable<Tr4jectory, It3rator>::Empty() const {
-  return Begin() == End();
+  // If this object has an ancestor surely it is hook off of a point in some
+  // timeline, so this object is not empty.
+  return timeline_empty() && parent_ == nullptr;
 }
 
 template<typename Tr4jectory, typename It3rator>
