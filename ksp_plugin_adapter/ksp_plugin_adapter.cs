@@ -860,7 +860,10 @@ public partial class PrincipiaPluginAdapter
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
     // body frames for our weird tilt, and run VesselPrecalculate manually.
     // Sob.
-    foreach (var vessel in FlightGlobals.Vessels) {
+    // NOTE(egg): we cannot use foreach here, and we must iterate downwards,
+    // since vessel.precalc.FixedUpdate may remove its vessel.
+    for (int i = FlightGlobals.Vessels.Count; i >= 0; --i) {
+      var vessel = FlightGlobals.Vessels[i];
       vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
     }
