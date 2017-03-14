@@ -82,6 +82,7 @@ public partial class PrincipiaPluginAdapter
   // Whether a journal will be recorded when the plugin is next constructed.
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
+
   // Whether a journal is currently being recorded.
   private static bool journaling_;
 #if CRASH_BUTTON
@@ -728,12 +729,6 @@ public partial class PrincipiaPluginAdapter
   AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
      yield return new UnityEngine.WaitForFixedUpdate();
 
-     if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
-       // If we are timewarping, the next FixedUpdate might not occur in
-       // TimeScale * fixedDeltaTime.
-       yield break;
-     }
-
      // Unity's physics has just finished doing its thing.  If we correct the
      // positions here, nobody will know that they're not the ones obtained by
      // Unity.  Careful however: while the positions here are those of the next
@@ -803,8 +798,13 @@ public partial class PrincipiaPluginAdapter
        }
      }
 
+     if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
+       // If we are timewarping, the next FixedUpdate might not occur in
+       // TimeScale * fixedDeltaTime.
+       yield break;
+     }
+
      plugin_.AdvanceParts(universal_time);
-     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
 
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
@@ -866,6 +866,7 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
+     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
     }
     SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and

@@ -641,6 +641,16 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
+  if (!vessels_.empty()) {
+    bool tails_are_empty;
+    vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
+      tails_are_empty = part.tail().Empty();
+    });
+    if (tails_are_empty) {
+      AdvanceParts(t);
+    }
+  }
+
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     vessel.AdvanceTime();
