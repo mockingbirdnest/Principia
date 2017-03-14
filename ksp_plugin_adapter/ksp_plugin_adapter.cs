@@ -721,42 +721,46 @@ public partial class PrincipiaPluginAdapter
   #endregion
 
   private void AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation() {
-     double universal_time = Planetarium.GetUniversalTime();
+    UnityEngine.Profiler.BeginSample(
+        "AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation");
+    double universal_time = Planetarium.GetUniversalTime();
 
-     plugin_.PrepareToReportCollisions();
+    UnityEngine.Profiler.BeginSample("PrepareToReportCollisions");
+    plugin_.PrepareToReportCollisions();
+    UnityEngine.Profiler.EndSample();
 
-     // The collisions are reported and stored into |currentCollisions| in
-     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
-     // Here, the |currentCollisions| are the collisions that occurred in the
-     // physics simulation, which is why we report them before calling
-     // |AdvanceTime|.
-     foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-       if (plugin_.HasVessel(vessel1.id.ToString()) &&
-           plugin_.VesselIsLoaded(vessel1.id.ToString()) &&
-           !vessel1.packed) {
-         if (vessel1.isEVA && vessel1.evaController.OnALadder) {
-           var vessel2 = vessel1.evaController.LadderPart.vessel;
-           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
-               !vessel2.packed) {
-             plugin_.ReportCollision(vessel1.rootPart.flightID,
-                                     vessel1.evaController.LadderPart.flightID);
-           }
-         }
-         foreach (Part part1 in vessel1.parts) {
-           foreach (var collider in part1.currentCollisions) {
-             var part2 =
-                 collider.gameObject.GetComponentUpwards<Part>();
-             var vessel2 = part2.vessel;
-             if (vessel2 != null &&
-                 plugin_.HasVessel(vessel2.id.ToString()) &&
-                 plugin_.VesselIsLoaded(vessel1.id.ToString())) {
-               plugin_.ReportCollision(part1.flightID, part2.flightID);
-             }
-           }
-         }
-       }
+    // The collisions are reported and stored into |currentCollisions| in
+    // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
+    // Here, the |currentCollisions| are the collisions that occurred in the
+    // physics simulation, which is why we report them before calling
+    // |AdvanceTime|.
+    UnityEngine.Profiler.BeginSample("ReportCollisions");
+    foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
+      if (plugin_.HasVessel(vessel1.id.ToString()) &&
+          plugin_.VesselIsLoaded(vessel1.id.ToString()) && !vessel1.packed) {
+        if (vessel1.isEVA && vessel1.evaController.OnALadder) {
+          var vessel2 = vessel1.evaController.LadderPart.vessel;
+          if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
+              !vessel2.packed) {
+            plugin_.ReportCollision(vessel1.rootPart.flightID,
+                                    vessel1.evaController.LadderPart.flightID);
+          }
+        }
+        foreach (Part part1 in vessel1.parts) {
+          foreach (var collider in part1.currentCollisions) {
+            var part2 = collider.gameObject.GetComponentUpwards<Part>();
+            var vessel2 = part2.vessel;
+            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
+                plugin_.VesselIsLoaded(vessel1.id.ToString())) {
+              plugin_.ReportCollision(part1.flightID, part2.flightID);
+            }
+          }
+        }
+      }
      }
+     UnityEngine.Profiler.EndSample();
 
+     UnityEngine.Profiler.BeginSample("CTC check");
      double plugin_time = plugin_.CurrentTime();
      if (plugin_time > universal_time) {
        // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
@@ -771,9 +775,13 @@ public partial class PrincipiaPluginAdapter
        return;
      }
      time_is_advancing_ = true;
+     UnityEngine.Profiler.EndSample();
 
+     UnityEngine.Profiler.BeginSample("FreeVesselsAndPartsAndCollectPileUps");
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
+     UnityEngine.Profiler.EndSample();
 
+     UnityEngine.Profiler.BeginSample("SetPartApparentDegreesOfFreedom");
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed ||
            !plugin_.HasVessel(vessel.id.ToString()) ||
@@ -791,16 +799,18 @@ public partial class PrincipiaPluginAdapter
                     p = (XYZ)(Vector3d)part.rb.velocity});
        }
      }
-
+     UnityEngine.Profiler.EndSample();
+     
+     UnityEngine.Profiler.BeginSample("AdvanceTime");
      plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+     UnityEngine.Profiler.EndSample();
+     UnityEngine.Profiler.BeginSample("HasEncounteredApocalypse");
      is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+     UnityEngine.Profiler.EndSample();
 
-     // We don't want to do too many things here, since all the KSP classes
-     // still think they're in the preceding step.  We only nudge the Unity
-     // transforms of loaded vessels & their parts.
+     UnityEngine.Profiler.BeginSample("if statement");
      if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
-       // TODO(egg): move this to the C++, this is just to check that I
-       // understand the issue.
+       UnityEngine.Profiler.BeginSample("GetPartActualDegreesOfFreedom");
        foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
          // TODO(egg): if I understand anything, there should probably be a
          // special treatment for loaded packed vessels.  I don't understand
@@ -822,27 +832,45 @@ public partial class PrincipiaPluginAdapter
            part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
          }
        }
+       UnityEngine.Profiler.EndSample();
+       UnityEngine.Profiler.BeginSample("CelestialWorldDegreesOfFreedom");
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
            FlightGlobals.ActiveVessel.rootPart.flightID);
+       UnityEngine.Profiler.EndSample();
+       UnityEngine.Profiler.BeginSample("krakensbane.FrameVel =" +
+                                        " -(Vector3d)main_body_dof.p;");
        krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
+       UnityEngine.Profiler.EndSample();
+       UnityEngine.Profiler.BeginSample(
+           "Vector3d offset = (Vector3d)main_body_dof.q -"+
+           " FlightGlobals.ActiveVessel.mainBody.position;");
        Vector3d offset = (Vector3d)main_body_dof.q -
                          FlightGlobals.ActiveVessel.mainBody.position;
+       UnityEngine.Profiler.EndSample();
+       UnityEngine.Profiler.BeginSample("loop: nudge celestials");
        // We cannot use FloatingOrigin.SetOffset to move the world here, because
        // as far as I can tell, that does not move the bubble relative to the
        // rest of the universe.
        foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+         UnityEngine.Profiler.BeginSample("celestial.position += offset;");
          celestial.position += offset;
+         UnityEngine.Profiler.EndSample();
        }
+       UnityEngine.Profiler.EndSample();
+       UnityEngine.Profiler.BeginSample("nudge vessels");
        foreach (
            Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
          vessel.SetPosition(vessel.transform.position + offset);
        }
+       UnityEngine.Profiler.EndSample();
        // NOTE(egg): this is almost certainly incorrect, since we give the
        // bodies their positions at the next instant, wherease KSP still expects
        // them at the previous instant, and will propagate them at the beginning
        // of the next frame...
      }
+     UnityEngine.Profiler.EndSample();
+     UnityEngine.Profiler.EndSample();
    }
 
   private void DisableVesselPrecalculate() {
@@ -852,8 +880,12 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
+    UnityEngine.Profiler.BeginSample("SetBodyFramesAndPrecalculateVessels");
     AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation();
+    UnityEngine.Profiler.BeginSample("CALL SetBodyFrames");
     SetBodyFrames();
+    UnityEngine.Profiler.EndSample();
+    UnityEngine.Profiler.BeginSample("vessel.precalc.FixedUpdate");
     // Unfortunately there is no way to get scheduled between Planetarium and
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
     // body frames for our weird tilt, and run VesselPrecalculate manually.
@@ -865,6 +897,8 @@ public partial class PrincipiaPluginAdapter
       vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
     }
+    UnityEngine.Profiler.EndSample();
+    UnityEngine.Profiler.EndSample();
   }
 
   private void UpdateVesselOrbits() {
@@ -890,16 +924,19 @@ public partial class PrincipiaPluginAdapter
       }
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
+        UnityEngine.Profiler.BeginSample("InsertOrKeepVessel");
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                    vessel.vesselName,
                                    vessel.mainBody.flightGlobalsIndex,
                                    !vessel.packed,
                                    out inserted);
+        UnityEngine.Profiler.EndSample();
         if (!vessel.packed) {
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
                      p = (XYZ)(-krakensbane.FrameVel)};
           foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+            UnityEngine.Profiler.BeginSample("InsertOrKeepLoadedPart");
             plugin_.InsertOrKeepLoadedPart(
                 part.flightID,
                 part.partName,
@@ -910,11 +947,14 @@ public partial class PrincipiaPluginAdapter
                 // TODO(egg): use the centre of mass.
                 new QP{q = (XYZ)(Vector3d)part.rb.position,
                        p = (XYZ)(Vector3d)part.rb.velocity});
+            UnityEngine.Profiler.EndSample();
+            UnityEngine.Profiler.BeginSample("IncrementPartIntrinsicForce");
             plugin_.IncrementPartIntrinsicForce(part.flightID, (XYZ)part.force);
             foreach (var force in part.forces) {
               plugin_.IncrementPartIntrinsicForce(part.flightID,
                                                   (XYZ)force.force);
             }
+            UnityEngine.Profiler.EndSample();
           }
         } else if (inserted) {
           foreach (ProtoPartSnapshot part in
