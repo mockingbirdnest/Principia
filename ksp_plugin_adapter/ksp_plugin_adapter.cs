@@ -732,7 +732,7 @@ public partial class PrincipiaPluginAdapter
      // |AdvanceTime|.
      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
        if (plugin_.HasVessel(vessel1.id.ToString()) &&
-           plugin_.IsLoaded(vessel1.id.ToString()) &&
+           plugin_.VesselIsLoaded(vessel1.id.ToString()) &&
            !vessel1.packed) {
          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
            var vessel2 = vessel1.evaController.LadderPart.vessel;
@@ -749,7 +749,7 @@ public partial class PrincipiaPluginAdapter
              var vessel2 = part2.vessel;
              if (vessel2 != null &&
                  plugin_.HasVessel(vessel2.id.ToString()) &&
-                 plugin_.IsLoaded(vessel1.id.ToString())) {
+                 plugin_.VesselIsLoaded(vessel1.id.ToString())) {
                plugin_.ReportCollision(part1.flightID, part2.flightID);
              }
            }
@@ -777,7 +777,7 @@ public partial class PrincipiaPluginAdapter
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed ||
            !plugin_.HasVessel(vessel.id.ToString()) ||
-           !plugin_.IsLoaded(vessel.id.ToString())) {
+           !plugin_.VesselIsLoaded(vessel.id.ToString())) {
          continue;
        }
        foreach (Part part in vessel.parts) {
@@ -807,7 +807,7 @@ public partial class PrincipiaPluginAdapter
          // anything though.
          if (vessel.packed ||
              !plugin_.HasVessel(vessel.id.ToString()) ||
-             !plugin_.IsLoaded(vessel.id.ToString())) {
+             !plugin_.VesselIsLoaded(vessel.id.ToString())) {
            continue;
          }
          foreach (Part part in vessel.parts) {

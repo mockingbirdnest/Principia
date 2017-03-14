@@ -44,6 +44,13 @@ AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
       GetVessel(*plugin, vessel_guid)->prediction_adaptive_step_parameters()));
 }
 
+bool principia__VesselIsLoaded(Plugin const* const plugin,
+                               char const* const vessel_guid) {
+  journal::Method<journal::VesselIsLoaded> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  return m.Return(plugin->is_loaded(GetVessel(*plugin, vessel_guid)));
+}
+
 XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
