@@ -133,8 +133,10 @@ public partial class PrincipiaPluginAdapter
   private Krakensbane krakensbane_;
   private Krakensbane krakensbane {
     get {
-     return krakensbane_.GetValueOrDefault(
-         krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane)));
+     if (krakensbane_ == null) {
+       krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+     }
+     return krakensbane_;
     }
   }
 
