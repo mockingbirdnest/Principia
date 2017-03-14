@@ -169,6 +169,13 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
+void principia__AdvanceParts(Plugin* const plugin, double const t) {
+  journal::Method<journal::AdvanceParts> m({plugin, t});
+  CHECK_NOTNULL(plugin);
+  plugin->AdvanceParts(FromGameTime(*plugin, t));
+  return m.Return();
+}
+
 void principia__PrepareToReportCollisions(Plugin* const plugin) {
   journal::Method<journal::PrepareToReportCollisions> m({plugin});
   CHECK_NOTNULL(plugin)->PrepareToReportCollisions();

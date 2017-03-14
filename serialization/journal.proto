@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5118.
+  extensions 5000 to 5999;  // Last used: 5120.
 }
 
 message AdvanceTime {
@@ -96,6 +96,17 @@ message AdvanceTime {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required double t = 2;
     required double planetarium_rotation = 3;
+  }
+  optional In in = 1;
+}
+
+message AdvanceParts {
+  extend Method {
+    optional AdvanceParts extension = 5120;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double t = 2;
   }
   optional In in = 1;
 }
@@ -1279,22 +1290,6 @@ message VesselGetPredictionAdaptiveStepParameters {
   }
   message Return {
     required AdaptiveStepParameters adaptive_step_parameters = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message VesselIsLoaded {
-  extend Method {
-    optional VesselIsLoaded extension = 5119;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
