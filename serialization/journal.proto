@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5119.
+  extensions 5000 to 5999;  // Last used: 5118.
 }
 
 message AdvanceTime {
