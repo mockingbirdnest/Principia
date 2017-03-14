@@ -800,7 +800,8 @@ public partial class PrincipiaPluginAdapter
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
      // transforms of loaded vessels & their parts.
-     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
+     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
+         plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
        // TODO(egg): move this to the C++, this is just to check that I
        // understand the issue.
        foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
@@ -1632,8 +1633,10 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
-    plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
-                        Planetarium.InverseRotAngle);
+    if (Planetarium.GetUniversalTime() > plugin_.CurrentTime()) {
+      plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
+                          Planetarium.InverseRotAngle);
+    }
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
                                    plugin_,
