@@ -863,9 +863,18 @@ public partial class PrincipiaPluginAdapter
 
   private void SetBodyFramesAndPrecalculateVessels() {
     if (PluginRunning()) {
-      plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
-                          Planetarium.InverseRotAngle);
-     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+      double plugin_time = plugin_.CurrentTime();
+      double universal_time = Planetarium.GetUniversalTime();
+      if (plugin_time > universal_time) {
+        Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
+                  universal_time +
+                  " plugin-universal=" + (plugin_time - universal_time));
+        time_is_advancing_ = false;
+      } else {
+        plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+        is_post_apocalyptic_ |=
+            plugin_.HasEncounteredApocalypse(out revelation_);
+      }
     }
     SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and
