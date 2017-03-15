@@ -64,6 +64,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
+using physics::BodySurfaceFrameField;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
@@ -71,7 +72,6 @@ using physics::KeplerianElements;
 using physics::RotatingBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
-using physics::BodySurfaceFrameField;
 using quantities::Force;
 using quantities::Length;
 using quantities::si::Kilogram;
@@ -906,6 +906,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
   struct RightHandedNavball;
 
+  // TODO(phl): Clean up this mess!
   class NavballFrameField : public FrameField<World, Navball> {
    public:
     NavballFrameField(
@@ -977,10 +978,16 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   };
 
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
-  auto plotting_frame_as_body_surface_dynamic_frame =
+  auto const plotting_frame_as_body_surface_dynamic_frame =
       dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation>*>(
           &*plotting_frame_);
-  if (plotting_frame_as_body_surface_dynamic_frame != nullptr) {
+  if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
+    return std::make_unique<NavballFrameField>(
+        this,
+        make_not_null_unique<
+            CoordinateFrameField<Navigation, RightHandedNavball>>(),
+        sun_world_position);
+  } else {
     return std::make_unique<NavballFrameField>(
         this,
         make_not_null_unique<
@@ -988,12 +995,6 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
             *ephemeris_,
             current_time_,
             plotting_frame_as_body_surface_dynamic_frame->centre()),
-        sun_world_position);
-  } else {
-    return std::make_unique<NavballFrameField>(
-        this,
-        make_not_null_unique<
-            CoordinateFrameField<Navigation, RightHandedNavball>>(),
         sun_world_position);
   }
 }
