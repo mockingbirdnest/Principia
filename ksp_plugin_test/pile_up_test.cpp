@@ -1,6 +1,8 @@
 #include "ksp_plugin/pile_up.hpp"
 
 #include <limits>
+#include <map>
+#include <vector>
 
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/vessel.hpp"  // For the Default...Parameters.

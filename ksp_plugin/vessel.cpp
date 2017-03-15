@@ -2,7 +2,9 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <algorithm>
+#include <limits>
 #include <list>
+#include <string>
 #include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -64,8 +66,8 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
-  LOG(INFO) << "Extracting part " << result->ShortDebugString() << " from vessel "
-            << ShortDebugString();
+  LOG(INFO) << "Extracting part " << result->ShortDebugString()
+            << " from vessel " << ShortDebugString();
   parts_.erase(it);
   return result;
 }

@@ -213,7 +213,7 @@ TEST_F(InterfaceDeathTest, Errors) {
                                   parent_index,
                                   /*loaded=*/false,
                                   &inserted);
-   }, "plugin.*non NULL");
+  }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__InsertUnloadedPart(plugin,
                                   part_id,

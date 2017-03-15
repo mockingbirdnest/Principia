@@ -2,7 +2,10 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
 #include "ksp_plugin/celestial.hpp"

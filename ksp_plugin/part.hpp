@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"

@@ -1141,7 +1141,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   auto const prediction_parameters =
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.prediction_parameters());
-  not_null<std::unique_ptr<Plugin>> plugin = 
+  not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
                                          prolongation_parameters,
                                          prediction_parameters));
@@ -1198,7 +1198,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   std::unique_ptr<NavigationFrame> plotting_frame =
       NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
-                                       message.plotting_frame()); 
+                                       message.plotting_frame());
   plugin->SetPlottingFrame(std::move(plotting_frame));
 
   // Note that for proper deserialization of parts this list must be

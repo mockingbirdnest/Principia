@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <string>
 
 namespace principia {
 namespace ksp_plugin {

@@ -2,6 +2,7 @@
 #include "ksp_plugin/vessel.hpp"
 
 #include <limits>
+#include <set>
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"

@@ -3,6 +3,9 @@
 
 #include "ksp_plugin/part.hpp"
 
+#include <list>
+#include <string>
+
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/not_null.hpp"
