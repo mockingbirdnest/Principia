@@ -184,7 +184,7 @@ class ReferenceFrameSelector : WindowRenderer {
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
-        // terminology of |BodyCentredBodyDirection|.
+        // terminology of |BodyCentredBodyDirection|).
         return new NavigationFrameParameters{
             extension = (int)frame_type,
             primary_index = selected_celestial_.flightGlobalsIndex,
