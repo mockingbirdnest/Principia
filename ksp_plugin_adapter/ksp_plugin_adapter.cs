@@ -253,6 +253,21 @@ public partial class PrincipiaPluginAdapter
      }
   }
 
+  private bool time_is_advancing(double universal_time) {
+    double plugin_time = plugin_.CurrentTime();
+    if (plugin_time > universal_time) {
+      // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
+      // and make it fatal again.
+      Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
+                universal_time +
+                " plugin-universal=" + (plugin_time - universal_time));
+      return false;
+    } else if (plugin_time == universal_time) {
+      return false;
+    }
+    return true;
+  }
+
   private bool is_in_space(Vessel vessel) {
     return vessel.state != Vessel.State.DEAD &&
            (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
@@ -735,6 +750,11 @@ public partial class PrincipiaPluginAdapter
      // step, the Planetarium hasn't run yet, and still has its old time.
      universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
+     time_is_advancing_ = time_is_advancing(universal_time);
+     if (!time_is_advancing_) {
+       yield break;
+     }
+
      plugin_.PrepareToReportCollisions();
 
      // The collisions are reported and stored into |currentCollisions| in
@@ -754,8 +774,7 @@ public partial class PrincipiaPluginAdapter
          }
          foreach (Part part1 in vessel1.parts) {
            foreach (var collider in part1.currentCollisions) {
-             var part2 =
-                 collider.gameObject.GetComponentUpwards<Part>();
+             var part2 = collider.gameObject.GetComponentUpwards<Part>();
              var vessel2 = part2.vessel;
              if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
                plugin_.ReportCollision(part1.flightID, part2.flightID);
@@ -764,21 +783,6 @@ public partial class PrincipiaPluginAdapter
          }
        }
      }
-
-     double plugin_time = plugin_.CurrentTime();
-     if (plugin_time > universal_time) {
-       // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
-       // and make it fatal again.
-       Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
-                 universal_time + " plugin-universal=" +
-                 (plugin_time - universal_time));
-       time_is_advancing_ = false;
-       yield break;
-     } else if (plugin_time == universal_time) {
-       time_is_advancing_ = false;
-       yield break;
-     }
-     time_is_advancing_ = true;
 
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
@@ -865,12 +869,8 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       double plugin_time = plugin_.CurrentTime();
       double universal_time = Planetarium.GetUniversalTime();
-      if (plugin_time > universal_time) {
-        Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
-                  universal_time +
-                  " plugin-universal=" + (plugin_time - universal_time));
-        time_is_advancing_ = false;
-      } else {
+      time_is_advancing_ = time_is_advancing(universal_time);
+      if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
         is_post_apocalyptic_ |=
             plugin_.HasEncounteredApocalypse(out revelation_);
@@ -1654,9 +1654,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
     if (Planetarium.GetUniversalTime() > plugin_.CurrentTime()) {
-      // There are no vessels, so no need to call AdvanceParts.  The point
-      // here is to make sure that the plugin has caught up with the game before
-      // existing vessels are added.
+      // Make sure that the plugin has caught up with the game before existing
+      // vessels are added.
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }
