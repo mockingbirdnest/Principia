@@ -83,8 +83,8 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Property;
 using ::testing::ExitedWithCode;
+using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::Pointee;
@@ -983,7 +983,11 @@ TEST_F(InterfaceTest, FlightPlan) {
       Velocity<Barycentric>());
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
+  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
+      .WillOnce(Invoke([](not_null<serialization::DynamicFrame*> message) {
+        message->MutableExtension(
+            serialization::BodyCentredNonRotatingDynamicFrame::extension);
+      }));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
