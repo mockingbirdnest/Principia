@@ -46,6 +46,12 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
 }
 
 template<typename InertialFrame, typename ThisFrame>
+not_null<RotatingBody<InertialFrame> const*>
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::centre() const {
+  return centre_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
 void BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::
 WriteToMessage(not_null<serialization::DynamicFrame*> const message) const {
   message->MutableExtension(
