@@ -83,6 +83,10 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
 
+  // Whether the plotting frame must be set to something convenient at the next
+  // opportunity.
+  private bool must_set_plotting_frame_ = false;
+
   // Whether a journal is currently being recorded.
   private static bool journaling_;
 #if CRASH_BUTTON
@@ -432,6 +436,7 @@ public partial class PrincipiaPluginAdapter
                                      plugin_,
                                      UpdateRenderingFrame,
                                      "Plotting frame"));
+      must_set_plotting_frame_ = true;
       flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
@@ -666,6 +671,11 @@ public partial class PrincipiaPluginAdapter
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
+    }
+    if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
+      must_set_plotting_frame_ = false;
+      plotting_frame_selector_.reset(new ReferenceFrameSelector(
+          this, plugin_, UpdateRenderingFrame, "Plotting frame"));
     }
 
     if (PluginRunning()) {
@@ -1664,6 +1674,7 @@ public partial class PrincipiaPluginAdapter
                                    plugin_,
                                    UpdateRenderingFrame,
                                    "Plotting frame"));
+    must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
   }
 
