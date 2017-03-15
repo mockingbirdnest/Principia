@@ -292,12 +292,12 @@ class FlightPlanner : WindowRenderer {
                   stock_velocity_at_node_time,
                   Vector3d.Cross(stock_velocity_at_node_time,
                                  stock_displacement_from_parent_at_node_time));
-          guidance_node_.OnGizmoUpdated(
+          guidance_node_.DeltaV =
               ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-                  (Vector3d)(UnityEngine.Quaternion.Inverse(
-                                 stock_frenet_frame_to_world) *
-                      (Vector3d)manoeuvre.inertial_direction),
-              manoeuvre.burn.initial_time);
+              (Vector3d)(
+                  UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
+                  (Vector3d)manoeuvre.inertial_direction);
+          guidance_node_.UT = manoeuvre.burn.initial_time;
           should_clear_guidance = false;
         }
         break;
