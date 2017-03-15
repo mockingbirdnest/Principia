@@ -77,23 +77,46 @@ Burn GetBurn(Plugin const& plugin,
 
   serialization::DynamicFrame message;
   manœuvre.frame()->WriteToMessage(&message);
+  int number_of_extensions = 0;
   if (message.HasExtension(
           serialization::BarycentricRotatingDynamicFrame::extension)) {
+    ++number_of_extensions;
     auto const& extension = message.GetExtension(
         serialization::BarycentricRotatingDynamicFrame::extension);
-    parameters.extension = serialization::BarycentricRotatingDynamicFrame::
-                               kExtensionFieldNumber;
+    parameters.extension =
+        serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
     parameters.primary_index = extension.primary();
     parameters.secondary_index = extension.secondary();
   }
   if (message.HasExtension(
           serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
+    ++number_of_extensions;
     auto const& extension = message.GetExtension(
         serialization::BodyCentredNonRotatingDynamicFrame::extension);
     parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-                               kExtensionFieldNumber;
+        kExtensionFieldNumber;
     parameters.centre_index = extension.centre();
   }
+  if (message.HasExtension(
+          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
+    ++number_of_extensions;
+    auto const& extension = message.GetExtension(
+        serialization::BodyCentredBodyDirectionDynamicFrame::extension);
+    parameters.extension = serialization::BodyCentredBodyDirectionDynamicFrame::
+        kExtensionFieldNumber;
+    parameters.primary_index = extension.primary();
+    parameters.secondary_index = extension.secondary();
+  }
+  if (message.HasExtension(serialization::BodySurfaceDynamicFrame::extension)) {
+    ++number_of_extensions;
+    auto const& extension =
+        message.GetExtension(serialization::BodySurfaceDynamicFrame::extension);
+    parameters.extension =
+        serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber;
+    parameters.centre_index = extension.centre();
+  }
+  CHECK_EQ(number_of_extensions, 1)
+      << "Could not construct frame parameters from " << message.DebugString();
 
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
