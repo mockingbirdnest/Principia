@@ -42,8 +42,6 @@ public partial class PrincipiaPluginAdapter
   private IntPtr plugin_ = IntPtr.Zero;
 
   private bool display_patched_conics_ = false;
-  [KSPField(isPersistant = true)]
-  private bool fix_navball_in_plotting_frame_ = true;
 
   private readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
@@ -118,6 +116,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
   private bool navball_changed_ = true;
+  private FlightGlobals.SpeedDisplayModes previous_display_mode_;
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -571,23 +570,36 @@ public partial class PrincipiaPluginAdapter
       Action<UnityEngine.Texture> set_navball_texture = (texture) =>
           navball_material.SetTexture("_MainTexture", texture);
 
-      if (navball_changed_) {
+      if (navball_changed_ ||
+          previous_display_mode_ != FlightGlobals.speedDisplayMode) {
         // Texture the ball.
         navball_changed_ = false;
+        previous_display_mode_ = FlightGlobals.speedDisplayMode;
         // TODO(egg): switch over all frame types and have more navball textures
         // when more frames are available.
-        if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
+        if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Orbit ||
+            !PluginRunning()) {
           set_navball_texture(compass_navball_texture_);
-        } else if (plotting_frame_selector_.get().frame_type ==
-                   ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
-          set_navball_texture(inertial_navball_texture_);
         } else {
-          set_navball_texture(barycentric_navball_texture_);
+          switch (plotting_frame_selector_.get().frame_type) {
+            case ReferenceFrameSelector.FrameType.BODY_SURFACE:
+              set_navball_texture(compass_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
+              set_navball_texture(inertial_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
+            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+              set_navball_texture(barycentric_navball_texture_);
+              break;
+          }
         }
       }
 
       // Orient the ball.
-      if (PluginRunning() && fix_navball_in_plotting_frame_) {
+      if (PluginRunning() && FlightGlobals.speedDisplayMode ==
+                                 FlightGlobals.SpeedDisplayModes.Orbit) {
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
             (UnityEngine.QuaternionD)plugin_.NavballOrientation(
@@ -1307,17 +1319,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ReferenceFrameSelection() {
     if (PluginRunning()) {
-      bool was_fixing_navball_in_plotting_frame =
-          fix_navball_in_plotting_frame_;
-      fix_navball_in_plotting_frame_ = 
-          UnityEngine.GUILayout.Toggle(
-              value : fix_navball_in_plotting_frame_,
-              text  : "Fix navball in plotting frame");
-      if (was_fixing_navball_in_plotting_frame !=
-          fix_navball_in_plotting_frame_) {
-        navball_changed_ = true;
-        reset_rsas_target_ = true;
-      }
       plotting_frame_selector_.get().RenderButton();
     }
   }
@@ -1506,10 +1507,8 @@ public partial class PrincipiaPluginAdapter
       NavigationFrameParameters frame_parameters) {
     IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
     plugin_.SetPlottingFrame(ref new_plotting_frame);
-    if (fix_navball_in_plotting_frame_) {
-     navball_changed_ = true;
-      reset_rsas_target_ = true;
-    }
+    navball_changed_ = true;
+    reset_rsas_target_ = true;
   }
 
   private void ResetPlugin() {
