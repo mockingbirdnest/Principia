@@ -137,7 +137,7 @@ class ReferenceFrameSelector : WindowRenderer {
                  selected.referenceBody.theName + ", and the line between them";
         }
       case FrameType.BODY_SURFACE:
-        return "Reference frame fixing " + selected.theName;
+        return "Reference frame fixing the surface of " + selected.theName;
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
