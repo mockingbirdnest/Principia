@@ -193,10 +193,11 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
-  // TODO(egg): do something about the psychohistory. I think bad things happen
-  // if it becomes empty though.
+  // Make sure that the psychohistory keep at least an authoritative point (and
+  // possibly a non-authoritative one).  We cannot use the parts because they
+  // may have been moved to the future already.
+  psychohistory_->ForgetBefore(std::min(time, last_authoritative().time()));
   prediction_->ForgetBefore(time);
-  psychohistory_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
