@@ -176,12 +176,6 @@ void principia__AdvanceParts(Plugin* const plugin, double const t) {
   return m.Return();
 }
 
-void principia__PrepareToReportCollisions(Plugin* const plugin) {
-  journal::Method<journal::PrepareToReportCollisions> m({plugin});
-  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
-  return m.Return();
-}
-
 // Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP principia__CelestialFromParent(Plugin const* const plugin,
@@ -703,6 +697,12 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
       planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());
+}
+
+void principia__PrepareToReportCollisions(Plugin* const plugin) {
+  journal::Method<journal::PrepareToReportCollisions> m({plugin});
+  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
+  return m.Return();
 }
 
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
