@@ -115,6 +115,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
+  private UnityEngine.Texture body_direction_navball_texture_;
+  private UnityEngine.Texture surface_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes previous_display_mode_;
 
@@ -353,6 +355,9 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out inertial_navball_texture_, "navball_inertial.png");
     LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
+    LoadTextureOrDie(out body_direction_navball_texture_,
+                     "navball_body_direction.png");
+    LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -575,8 +580,6 @@ public partial class PrincipiaPluginAdapter
         // Texture the ball.
         navball_changed_ = false;
         previous_display_mode_ = FlightGlobals.speedDisplayMode;
-        // TODO(egg): switch over all frame types and have more navball textures
-        // when more frames are available.
         if (FlightGlobals.speedDisplayMode !=
                 FlightGlobals.SpeedDisplayModes.Orbit ||
             !PluginRunning()) {
@@ -584,14 +587,16 @@ public partial class PrincipiaPluginAdapter
         } else {
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
-              set_navball_texture(compass_navball_texture_);
+              set_navball_texture(surface_navball_texture_);
               break;
             case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
               set_navball_texture(inertial_navball_texture_);
               break;
             case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
-            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
               set_navball_texture(barycentric_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+              set_navball_texture(body_direction_navball_texture_);
               break;
           }
         }
