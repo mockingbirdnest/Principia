@@ -43,6 +43,13 @@
 namespace principia {
 namespace base {
 
+// Returns true if and only if the given collection contains the given key.
+template <class Collection>
+bool Contains(Collection const& collection,
+              typename Collection::key_type const key) {
+  return collection.find(key) != collection.end();
+}
+
 template<class Collection>
 const typename Collection::value_type::second_type& FindOrDie(
     Collection const& collection,

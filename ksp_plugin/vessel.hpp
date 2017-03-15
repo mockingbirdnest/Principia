@@ -2,16 +2,16 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <memory>
+#include <set>
+#include <string>
 #include <vector>
 
-#include "base/container_iterator.hpp"
-#include "base/disjoint_sets.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
-#include "ksp_plugin/vessel_subsets.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -22,9 +22,8 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using base::not_null;
 using base::IteratorOn;
-using base::Subset;
+using base::not_null;
 using geometry::Instant;
 using geometry::Vector;
 using physics::DegreesOfFreedom;
@@ -38,77 +37,79 @@ using quantities::Mass;
 // Represents a KSP |Vessel|.
 class Vessel {
  public:
-  using Manœuvres =
-      std::vector<
-          not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
+  using Manœuvres = std::vector<
+      not_null<std::unique_ptr<Manœuvre<Barycentric, Navigation> const>>>;
+
+  // Constructs a vessel whose parent is initially |*parent|.  No transfer of
+  // ownership.
+  Vessel(GUID const& guid,
+         std::string const& name,
+         not_null<Celestial const*> parent,
+         not_null<Ephemeris<Barycentric>*> ephemeris,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             prediction_adaptive_step_parameters);
 
   Vessel(Vessel const&) = delete;
   Vessel(Vessel&&) = delete;
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
 
-  // |CHECK|s that |*this| is not piled up.
-  virtual ~Vessel();
-
-  // Constructs a vessel whose parent is initially |*parent|.  No transfer of
-  // ownership.
-  Vessel(not_null<Celestial const*> parent,
-         not_null<Ephemeris<Barycentric>*> ephemeris,
-         Ephemeris<Barycentric>::FixedStepParameters const&
-             history_fixed_step_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prolongation_adaptive_step_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prediction_adaptive_step_parameters);
+  virtual ~Vessel() = default;
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
-  // True if, and only if, |prolongation_| is not null, i.e., if either
-  // |CreateProlongation| or |CreateHistoryAndForkProlongation| was called at
-  // some point.
-  virtual bool is_initialized() const;
-
   virtual not_null<Celestial const*> parent() const;
   virtual void set_parent(not_null<Celestial const*> parent);
 
-  // These three functions require |is_initialized()|.
-  virtual DiscreteTrajectory<Barycentric> const& history() const;
-  virtual DiscreteTrajectory<Barycentric> const& prolongation() const;
+  // Adds the given part to this vessel.  Note that this does not add the part
+  // to the set of kept parts, and that unless |KeepPart| is called, the part
+  // will be removed by the next call to |FreeParts|.
+  virtual void AddPart(not_null<std::unique_ptr<Part>> part);
+  // Removes and returns the part with the given ID.  This may empty |parts_|,
+  // as happens when a vessel ceases to exist while loaded.  Note that in that
+  // case |FreeParts| must not be called.
+  virtual not_null<std::unique_ptr<Part>> ExtractPart(PartId id);
+  // Prevents the part with the given ID from being removed in the next call to
+  // |FreeParts|.
+  virtual void KeepPart(PartId id);
+  // Removes any part for which |KeepPart| has not been called since the last
+  // call to |FreePart|.  Checks that there are still parts left after the
+  // removals; thus a call to |AddPart| must occur before |FreeParts| is first
+  // called.
+  virtual void FreeParts();
+
+  // If the psychohistory is empty, appends a single authoritative point to it,
+  // computed as the barycentre of all parts.  |parts_| must not be empty.
+  // After this call, |psychohistory_| is never empty again.
+  // TODO(egg): ... except ForgetBefore.  This will break things, so
+  // ForgetBefore should not clear the psychohistory altogether.
+  virtual void PreparePsychohistory(Instant const& t);
+
+  // Returns the part with the given ID.  Such a part must have been added using
+  // |AddPart|.
+  virtual not_null<Part*> part(PartId id) const;
+
+  // Calls |action| on one part.
+  virtual void ForSomePart(std::function<void(Part&)> action) const;
+  // Calls |action| on all parts.
+  virtual void ForAllParts(std::function<void(Part&)> action) const;
+
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
+
+  virtual void Vessel::set_prediction_adaptive_step_parameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters);
+  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
+  prediction_adaptive_step_parameters() const;
 
   // Requires |has_flight_plan()|.
   virtual FlightPlan& flight_plan() const;
   virtual bool has_flight_plan() const;
 
-  // A vessel that was in the physics since the last time its history advanced
-  // (which with the time when its prolongation was reset).  For such a vessel,
-  // the prolongation, not the history, is authoritative.
-  virtual void set_dirty();
-  virtual bool is_dirty() const;
-
-  virtual void set_prediction_adaptive_step_parameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          prediction_adaptive_step_parameters);
-  virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
-      prediction_adaptive_step_parameters() const;
-
-  // Creates a |history_| for this vessel and appends a point with the
-  // given |time| and |degrees_of_freedom|, then forks a |prolongation_| at
-  // |time|.  Nulls |owned_prolongation_|.  The vessel must not satisfy
-  // |is_initialized()|.  The vessel |is_initialized()| after the call.
-  virtual void CreateHistoryAndForkProlongation(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
-
-  // Advances time for a vessel not in the physics bubble.  This may clean the
-  // vessel.
-  virtual void AdvanceTimeNotInBubble(Instant const& time);
-
-  // Advances time for a vessel in the physics bubble.  This dirties the vessel.
-  virtual void AdvanceTimeInBubble(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  // Extends the psychohistory of this vessel by computing the centre of mass of
+  // its parts at every point in their tail.  Clears the tails.
+  virtual void AdvanceTime();
 
   // Forgets the trajectories and flight plan before |time|.  This may delete
   // the flight plan.
@@ -127,40 +128,6 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // Clears, increments or returns the mass.  Event though a vessel is massless
-  // in the sense that it doesn't exert gravity, it has a mass used to determine
-  // its intrinsic acceleration.
-  virtual void clear_mass();
-  virtual void increment_mass(Mass const& mass);
-  virtual Mass const& mass() const;
-
-  // Clears, increments or returns the intrinsic force exerted on the vessel by
-  // its engines (or a tractor beam).
-  virtual void clear_intrinsic_force();
-  virtual void increment_intrinsic_force(
-      Vector<Force, Barycentric> const& intrinsic_force);
-  virtual Vector<Force, Barycentric> const& intrinsic_force() const;
-
-  // Requires |!is_piled_up()|.
-  virtual void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
-  // An iterator to the |PileUp| containing |this|, if any.  Do not |Erase| this
-  // iterator, use |clear_pile_up| instead, which will take care of letting all
-  // vessels know that their |PileUp| is gone.
-  virtual std::experimental::optional<IteratorOn<std::list<PileUp>>>
-  containing_pile_up() const;
-
-  // Whether |this| is in a |PileUp|.  Equivalent to |containing_pile_up()|.
-  virtual bool is_piled_up() const;
-
-  // If |*this| |is_piled_up()|, |erase|s the |containing_pile_up()|.
-  // After this call, all vessels in that |PileUp| are no longer piled up.
-  virtual void clear_pile_up();
-
-  virtual void AppendToPsychohistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-      bool authoritative);
-
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
   virtual bool psychohistory_is_authoritative() const;
 
@@ -168,60 +135,53 @@ class Vessel {
   virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
+      not_null<Celestial const*> parent,
       not_null<Ephemeris<Barycentric>*> ephemeris,
-      not_null<Celestial const*> parent);
+      std::function<void(PartId)> const& deletion_callback);
+  void FillContainingPileUpsFromMessage(
+      serialization::Vessel const& message,
+      not_null<std::list<PileUp>*> const pile_ups);
+
+  // Returns "vessel name (GUID)".
+  std::string ShortDebugString() const;
 
  protected:
   // For mocking.
   Vessel();
 
  private:
-  void AdvanceHistoryIfNeeded(Instant const& time);
-  void FlowHistory(Instant const& time);
-  void FlowProlongation(Instant const& time);
+  void AppendToPsychohistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
+      bool authoritative);
+
   void FlowPrediction(Instant const& time);
 
+  // Returns the last authoritative point of the psychohistory.
+  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
+
+  GUID const guid_;
+  std::string const name_;
+
   MasslessBody const body_;
-  Ephemeris<Barycentric>::FixedStepParameters const
-      history_fixed_step_parameters_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters const
-      prolongation_adaptive_step_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
       prediction_adaptive_step_parameters_;
   // The parent body for the 2-body approximation. Not owning.
   not_null<Celestial const*> parent_;
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
-  // The past and present trajectory of the body. It ends at |HistoryTime()|
-  // unless |*this| was created after |HistoryTime()|, in which case it ends
-  // at |current_time_|.  It is advanced with a constant time step.
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
+  std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
+  std::set<not_null<Part const*>> kept_parts_;
 
-  // The new implementation of history, also encompasses the prolongation.
-  DiscreteTrajectory<Barycentric> psychohistory_;
-  bool psychohistory_is_authoritative_;
+  // If the psychohistory is not authoritative it contains at least one point.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
+  // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
+  // can that be authoritative?  This class needs saner invariants.
+  bool psychohistory_is_authoritative_ = true;
 
-  // A child trajectory of |*history_|. It is forked at |history_->last_time()|
-  // and continues until |current_time_|. It is computed with a non-constant
-  // timestep, which breaks symplecticity.
-  DiscreteTrajectory<Barycentric>* prolongation_ = nullptr;
-
-  // Child trajectory of |*history_|.
-  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
-  bool is_dirty_ = false;
-
-  Mass mass_;
-  Vector<Force, Barycentric> intrinsic_force_;
-
-  // The |PileUp| containing |this|.
-  std::experimental::optional<IteratorOn<std::list<PileUp>>>
-      containing_pile_up_;
-
-  // We will use union-find algorithms on |Vessel|s.
-  not_null<std::unique_ptr<Subset<Vessel>::Node>> const subset_node_;
-  friend class Subset<Vessel>::Node;
 };
 
 // Factories for use by the clients and the compatibility code.
@@ -237,14 +197,4 @@ using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin
-
-namespace base {
-
-template<>
-inline not_null<Subset<ksp_plugin::Vessel>::Node*>
-Subset<ksp_plugin::Vessel>::Node::Get(ksp_plugin::Vessel& element) {
-  return element.subset_node_.get();
-}
-
-}  // namespace base
 }  // namespace principia

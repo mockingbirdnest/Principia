@@ -44,6 +44,8 @@ class BodySurfaceDynamicFrame
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
+  not_null<RotatingBody<InertialFrame> const*> centre() const;
+
   void WriteToMessage(
       not_null<serialization::DynamicFrame*> message) const override;
 

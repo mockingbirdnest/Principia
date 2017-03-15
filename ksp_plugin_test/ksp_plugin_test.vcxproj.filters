@@ -29,12 +29,6 @@
     <ClCompile Include="..\ksp_plugin\interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ksp_plugin\physics_bubble.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="physics_bubble_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="vessel_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
@@ -92,11 +86,14 @@
     <ClCompile Include="..\ksp_plugin\pile_up.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\ksp_plugin\vessel_subsets.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pile_up_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\part.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\part_subsets.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -116,10 +113,10 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="brouwer.proto.hex">
+    <None Include="simple_plugin.proto.bin">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="borel.proto.hex">
+    <None Include="simple_plugin.proto.hex">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

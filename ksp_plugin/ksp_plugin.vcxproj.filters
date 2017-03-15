@@ -32,12 +32,6 @@
     <ClInclude Include="part.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="part_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="physics_bubble.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="manœuvre.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -59,7 +53,10 @@
     <ClInclude Include="pile_up.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vessel_subsets.hpp">
+    <ClInclude Include="part_subsets.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="identification.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,9 +65,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="plugin.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="physics_bubble.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\journal\recorder.cpp">
@@ -100,10 +94,13 @@
     <ClCompile Include="pile_up.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vessel_subsets.cpp">
+    <ClCompile Include="vessel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="vessel.cpp">
+    <ClCompile Include="part.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="part_subsets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

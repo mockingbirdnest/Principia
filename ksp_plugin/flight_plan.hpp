@@ -106,7 +106,6 @@ class FlightPlan {
   // |message| is anomalous.
   static std::unique_ptr<FlightPlan> ReadFromMessage(
       serialization::FlightPlan const& message,
-      not_null<DiscreteTrajectory<Barycentric>*> root,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
   static std::int64_t constexpr max_ephemeris_steps_per_frame = 1000;

@@ -13,6 +13,7 @@
 #include "gtest/gtest.h"
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
@@ -49,6 +50,7 @@ using ksp_plugin::Navball;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Part;
+using ksp_plugin::PartId;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
 using physics::CoordinateFrameField;
@@ -81,8 +83,8 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Property;
 using ::testing::ExitedWithCode;
+using ::testing::Invoke;
 using ::testing::IsNull;
 using ::testing::NotNull;
 using ::testing::Pointee;
@@ -94,32 +96,15 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
 
-char const serialized_boring_plugin[] =
-    "\x12\xD2\x1\b\0\x12\xCD\x1\n\xF\n\r\b\x83\xF0\x1\x11\0\0\0\0\0\0\xF0?\x12"
-    "\xB9\x1\n\xAE\x1\n\x12\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\0\x12"
-    "\x97\x1\n\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0\0\0\x12\x84\x1\n>\x12<\n:\n-\n"
-    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x12\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\x1A"
-    "\r\x12\v\b\x1\x11\0\0\0\0\0\0\0\0\"\t\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12"
-    "B\n@\n3\n\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\x12\xF\x12\r\b\x81\xF8"
-    "\x1\x11\0\0\0\0\0\0\0\0\x1A\xF\x12\r\b\x81\xF8\x1\x11\0\0\0\0\0\0\0\0\"\t"
-    "\r\xAF\x1F\xB1y\x10\x3\x18\x1\x12\x6\n\x4\b\0\x10\0\x1A\x2\n\0\"\x10\b\x80"
-    "\x80\x80\x80\x80\x1\x11\0\0\0\0\0\0\0\0*\xE\x12\f\b\x80\b\x11\0\0\0\0\0\0"
-    "\0\0""0\0";
-
-char const hexadecimal_boring_plugin[] =
-    "12D201080012CD010A0F0A0D0883F00111000000000000F03F12B9010AAE010A120A0E120C"
-    "08800811000000000000000012001297010A0E120C0880081100000000000000001284010A"
-    "3E123C0A3A0A2D0A0D120B0801110000000000000000120D120B0801110000000000000000"
-    "1A0D120B080111000000000000000022090DAF1FB1791003180112420A400A330A0F120D08"
-    "81F801110000000000000000120F120D0881F8011100000000000000001A0F120D0881F801"
-    "11000000000000000022090DAF1FB1791003180112060A04080010001A020A002210088080"
-    "808080011100000000000000002A0E120C0880081100000000000000003000";
-
-char const vessel_guid[] = "NCC-1701-D";
+char const part_name[] = "Picard's chair";
+char const vessel_guid[] = "123-456";
+char const vessel_name[] = "NCC-1701-D";
 
 Index const celestial_index = 1;
 Index const parent_index = 2;
 Index const unused = 666;
+
+PartId const part_id = 42;
 
 double const planetarium_rotation = 10;
 double const time = 11;
@@ -157,9 +142,49 @@ class InterfaceTest : public testing::Test {
     journal::Recorder::Deactivate();
   }
 
-  InterfaceTest() : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+  InterfaceTest()
+      : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+        hexadecimal_simple_plugin_(
+            ReadFromHexadecimalFile("simple_plugin.proto.hex")),
+        serialized_simple_plugin_(
+            ReadFromBinaryFile("simple_plugin.proto.bin")) {}
+
+  static std::string ReadFromBinaryFile(std::string const& filename) {
+    std::fstream file =
+        std::fstream(SOLUTION_DIR / "ksp_plugin_test" / filename,
+                     std::ios::in | std::ios::binary);
+    CHECK(file.good());
+    std::string binary;
+    while (!file.eof()) {
+      char c;
+      file.get(c);
+      binary.append(1, c);
+    }
+    file.close();
+    return binary;
+  }
+
+  static std::string ReadFromHexadecimalFile(std::string const& filename) {
+    std::fstream file =
+        std::fstream(SOLUTION_DIR / "ksp_plugin_test" / filename);
+    CHECK(file.good());
+    std::string hex;
+    while (!file.eof()) {
+      std::string line;
+      std::getline(file, line);
+      for (auto const c : line) {
+        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+          hex.append(1, c);
+        }
+      }
+    }
+    file.close();
+    return hex;
+  }
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
+  std::string const hexadecimal_simple_plugin_;
+  std::string const serialized_simple_plugin_;
   Instant const t0_;
   static journal::Recorder* recorder_;
 };
@@ -181,12 +206,20 @@ TEST_F(InterfaceDeathTest, Errors) {
     principia__UpdateCelestialHierarchy(plugin, celestial_index, parent_index);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__InsertOrKeepVessel(plugin, vessel_guid, parent_index);
+    bool inserted;
+    principia__InsertOrKeepVessel(plugin,
+                                  vessel_guid,
+                                  vessel_name,
+                                  parent_index,
+                                  /*loaded=*/false,
+                                  &inserted);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__SetVesselStateOffset(plugin,
-                                    vessel_guid,
-                                    parent_relative_degrees_of_freedom);
+    principia__InsertUnloadedPart(plugin,
+                                  part_id,
+                                  part_name,
+                                  vessel_guid,
+                                  parent_relative_degrees_of_freedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__VesselFromParent(plugin, vessel_guid);
@@ -346,19 +379,31 @@ TEST_F(InterfaceTest, EndInitialization) {
 }
 
 TEST_F(InterfaceTest, InsertOrKeepVessel) {
+  bool inserted;
   EXPECT_CALL(*plugin_,
-              InsertOrKeepVessel(vessel_guid, parent_index));
+              InsertOrKeepVessel(vessel_guid,
+                                 vessel_name,
+                                 parent_index,
+                                 /*loaded=*/false,
+                                 Ref(inserted)));
   EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
   EXPECT_FALSE(plugin_->HasVessel(vessel_guid));
-  principia__InsertOrKeepVessel(plugin_.get(), vessel_guid, parent_index);
+  principia__InsertOrKeepVessel(plugin_.get(),
+                                vessel_guid,
+                                vessel_name,
+                                parent_index,
+                                /*loaded=*/false,
+                                &inserted);
   EXPECT_TRUE(plugin_->HasVessel(vessel_guid));
 }
 
-TEST_F(InterfaceTest, SetVesselStateOffset) {
+TEST_F(InterfaceTest, InsertUnloadedPart) {
   EXPECT_CALL(*plugin_,
-              SetVesselStateOffset(
+              InsertUnloadedPart(
+                  part_id,
+                  part_name,
                   vessel_guid,
                   RelativeDegreesOfFreedom<AliceSun>(
                       Displacement<AliceSun>(
@@ -369,9 +414,11 @@ TEST_F(InterfaceTest, SetVesselStateOffset) {
                           {parent_velocity.x * SIUnit<Speed>(),
                            parent_velocity.y * SIUnit<Speed>(),
                            parent_velocity.z * SIUnit<Speed>()}))));
-  principia__SetVesselStateOffset(plugin_.get(),
-                                  vessel_guid,
-                                  parent_relative_degrees_of_freedom);
+  principia__InsertUnloadedPart(plugin_.get(),
+                                part_id,
+                                part_name,
+                                vessel_guid,
+                                parent_relative_degrees_of_freedom);
 }
 
 TEST_F(InterfaceTest, AdvanceTime) {
@@ -624,51 +671,6 @@ TEST_F(InterfaceTest, PredictionGettersAndSetters) {
   principia__SetPredictionLength(plugin_.get(), 42);
 }
 
-TEST_F(InterfaceTest, PhysicsBubble) {
-  KSPPart parts[3] = {{{1, 2, 3}, {10, 20, 30}, 300.0, {0, 0, 0}, 1},
-                      {{4, 5, 6}, {40, 50, 60}, 600.0, {3, 3, 3}, 4},
-                      {{7, 8, 9}, {70, 80, 90}, 900.0, {6, 6, 6}, 7}};
-  EXPECT_CALL(*plugin_,
-              AddVesselToNextPhysicsBubbleConstRef(
-                  vessel_guid,
-                  ElementsAre(
-                      testing::Pair(1, Pointee(Property(&Part<World>::mass,
-                                                        300.0 * Tonne))),
-                      testing::Pair(4, Pointee(Property(&Part<World>::mass,
-                                                        600.0 * Tonne))),
-                      testing::Pair(7, Pointee(Property(&Part<World>::mass,
-                                                        900.0 * Tonne))))));
-  principia__AddVesselToNextPhysicsBubble(plugin_.get(),
-                                          vessel_guid,
-                                          &parts[0],
-                                          3);
-
-  EXPECT_CALL(*plugin_,
-              BubbleDisplacementCorrection(
-                  World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()})))
-      .WillOnce(Return(Displacement<World>({77 * SIUnit<Length>(),
-                                            88 * SIUnit<Length>(),
-                                            99 * SIUnit<Length>()})));
-  XYZ const displacement = principia__PhysicsBubbleDisplacementCorrection(
-      plugin_.get(), parent_position);
-  EXPECT_THAT(displacement, Eq(XYZ{77, 88, 99}));
-
-  EXPECT_CALL(*plugin_, BubbleVelocityCorrection(parent_index))
-      .WillOnce(Return(Velocity<World>({66 * SIUnit<Speed>(),
-                                        55 * SIUnit<Speed>(),
-                                        44 * SIUnit<Speed>()})));
-  XYZ const velocity =
-      principia__PhysicsBubbleVelocityCorrection(plugin_.get(), parent_index);
-  EXPECT_THAT(velocity, Eq(XYZ{66, 55, 44}));
-
-  EXPECT_CALL(*plugin_, PhysicsBubbleIsEmpty()).WillOnce(Return(true));
-  bool const empty = principia__PhysicsBubbleIsEmpty(plugin_.get());
-  EXPECT_TRUE(empty);
-}
-
 TEST_F(InterfaceTest, NavballOrientation) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
@@ -774,24 +776,6 @@ TEST_F(InterfaceTest, CurrentTime) {
   EXPECT_THAT(t0_ + current_time * Second, Eq(mjd0));
 }
 
-TEST_F(InterfaceTest, SerializePlugin) {
-  PullSerializer* serializer = nullptr;
-  std::string const message_bytes =
-      std::string(serialized_boring_plugin,
-                  (sizeof(serialized_boring_plugin) - 1) / sizeof(char));
-  principia::serialization::Plugin message;
-  message.ParseFromString(message_bytes);
-
-  EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
-  char const* serialization =
-      principia__SerializePlugin(plugin_.get(), &serializer);
-  EXPECT_STREQ(hexadecimal_boring_plugin, serialization);
-  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
-  principia__DeleteString(&serialization);
-  EXPECT_THAT(serialization, IsNull());
-}
-
-
 TEST_F(InterfaceTest, Apocalypse) {
   char const* details;
   EXPECT_CALL(*plugin_, HasEncounteredApocalypse(_)).WillOnce(Return(false));
@@ -806,20 +790,33 @@ TEST_F(InterfaceTest, Apocalypse) {
   EXPECT_THAT(details, IsNull());
 }
 
+TEST_F(InterfaceTest, SerializePlugin) {
+  PullSerializer* serializer = nullptr;
+  principia::serialization::Plugin message;
+  message.ParseFromString(serialized_simple_plugin_);
+
+  EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
+  char const* serialization =
+      principia__SerializePlugin(plugin_.get(), &serializer);
+  EXPECT_STREQ(hexadecimal_simple_plugin_.c_str(), serialization);
+  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
+  principia__DeleteString(&serialization);
+  EXPECT_THAT(serialization, IsNull());
+}
+
 TEST_F(InterfaceTest, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   principia__DeserializePlugin(
-          hexadecimal_boring_plugin,
-          (sizeof(hexadecimal_boring_plugin) - 1) / sizeof(char),
+          hexadecimal_simple_plugin_.c_str(),
+          hexadecimal_simple_plugin_.size(),
           &deserializer,
           &plugin);
-  principia__DeserializePlugin(hexadecimal_boring_plugin,
+  principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
                                0,
                                &deserializer,
                                &plugin);
   EXPECT_THAT(plugin, NotNull());
-  EXPECT_EQ(Instant(), plugin->CurrentTime());
   principia__DeletePlugin(&plugin);
 }
 
@@ -986,7 +983,11 @@ TEST_F(InterfaceTest, FlightPlan) {
       Velocity<Barycentric>());
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_));
+  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
+      .WillOnce(Invoke([](not_null<serialization::DynamicFrame*> message) {
+        message->MutableExtension(
+            serialization::BodyCentredNonRotatingDynamicFrame::extension);
+      }));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())

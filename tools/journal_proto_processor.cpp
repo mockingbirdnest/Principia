@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 #include "serialization/journal.pb.h"
 
@@ -17,18 +18,14 @@ namespace principia {
 namespace tools {
 namespace internal_journal_proto_processor {
 
+using base::Contains;
+
 namespace {
 
 char const method_message_name[] = "Method";
 char const in_message_name[] = "In";
 char const return_message_name[] = "Return";
 char const out_message_name[] = "Out";
-
-template<typename Container>
-bool Contains(Container const& container,
-              typename Container::key_type const key) {
-  return container.find(key) != container.end();
-}
 
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
@@ -313,6 +310,12 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       };
 }
 
+void JournalProtoProcessor::ProcessRequiredFixed32Field(
+    FieldDescriptor const* descriptor) {
+  field_cs_type_[descriptor] = "uint";
+  field_cxx_type_[descriptor] = "uint32_t";
+}
+
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
@@ -451,14 +454,23 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
 
 void JournalProtoProcessor::ProcessSingleStringField(
     FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  LOG_IF(FATAL,
+         options.HasExtension(journal::serialization::is_produced) ||
+             options.HasExtension(journal::serialization::is_produced_if))
+      << descriptor->full_name()
+      << " is a string field and cannot be produced. Use a fixed64 field that "
+      << "is a pointer to char const instead.";
+
+  // Note that it is important to use an out marshmallow for return fields,
+  // hence the use of the |in_| set here.
   field_cs_marshal_[descriptor] =
-      Contains(out_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(OutUTF8Marshaler))"
-                                 : "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                   "MarshalTypeRef = typeof(InUTF8Marshaler))";
+      Contains(in_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(InUTF8Marshaler))"
+                                : "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(OutUTF8Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char const*";
-  FieldOptions const& options = descriptor->options();
   if (options.HasExtension(journal::serialization::size)) {
     size_member_name_[descriptor] =
         options.GetExtension(journal::serialization::size);
@@ -534,6 +546,9 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_FIXED32:
+      ProcessRequiredFixed32Field(descriptor);
       break;
     case FieldDescriptor::TYPE_FIXED64:
       ProcessRequiredFixed64Field(descriptor);
@@ -818,12 +833,17 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     std::string const& field_descriptor_name = field_descriptor->name();
     ProcessField(field_descriptor);
 
+    std::string const deserialize_field_checker =
+        parameter_name + ".has_" + field_descriptor_name + "()";
     std::string const deserialize_field_getter =
         parameter_name + "." + field_descriptor_name + "()";
     std::string const serialize_member_name =
         parameter_name + "." + field_descriptor_name;
     deserialized_expressions.push_back(
-        field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter));
+        field_cxx_optional_pointer_fn_[field_descriptor](
+            deserialize_field_checker,
+            field_cxx_deserializer_fn_[field_descriptor](
+                deserialize_field_getter)));
     cxx_serialize_definition_[descriptor] +=
         field_cxx_optional_assignment_fn_[field_descriptor](
             serialize_member_name,
@@ -863,7 +883,12 @@ void JournalProtoProcessor::ProcessMethodExtension(
     const std::string& nested_name = nested_descriptor->name();
     if (nested_name == in_message_name) {
       has_in = true;
-      ProcessInOut(nested_descriptor, &field_descriptors);
+      std::vector<FieldDescriptor const*> in_field_descriptors;
+      ProcessInOut(nested_descriptor, &in_field_descriptors);
+      in_.insert(in_field_descriptors.begin(), in_field_descriptors.end());
+      std::copy(in_field_descriptors.begin(),
+                in_field_descriptors.end(),
+                std::back_inserter(field_descriptors));
     } else if (nested_name == out_message_name) {
       has_out = true;
       std::vector<FieldDescriptor const*> out_field_descriptors;
@@ -884,8 +909,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
   if (has_in && has_out) {
     std::sort(field_descriptors.begin(),
               field_descriptors.end(),
-              [](FieldDescriptor const* left,
-                  FieldDescriptor const* right) {
+              [](FieldDescriptor const* left, FieldDescriptor const* right) {
       return left->name() < right->name();
     });
     for (int i = 0; i < field_descriptors.size() - 1; ++i) {

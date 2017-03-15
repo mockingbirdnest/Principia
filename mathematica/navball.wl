@@ -353,10 +353,30 @@ barycentric=
    If[
     Mod[xy[[1]],\[Pi]]!=0||xy[[2]]!=0,
     longitude[xy,n,s,eq,markings]]],
-  {Purple,
-   equatorialDisk[0,"I",White],
-   equatorialDisk[-\[Pi],"II",White],
-   equatorialDisk[\[Pi],"II",White]}];
+  {Gray,EdgeForm[Directive[Thick,White]],
+   equatorialDisk[0,"II",White](*The x axis points to the secondary, not the primary*),
+   equatorialDisk[-\[Pi],"I",White],
+   equatorialDisk[\[Pi],"I",White]}];
+
+
+bodyDirection=
+ navballTexture[
+  Blend[{Lighter@Orange,Gray},0.2],
+  Blend[{Orange,Gray},0.2],
+  White,
+  Gray,
+  Red,
+  Darker@Green,
+  Function[
+   {xy,n,s,eq,markings},
+   If[
+    Mod[xy[[1]],\[Pi]]!=0||xy[[2]]!=0,
+    longitude[xy,n,s,eq,markings]]],
+  {Gray,EdgeForm[Directive[Thick,White]],
+   equatorialDisk[0,"I",Gray](*The x axis points to the secondary, i.e., the body that is not fixed*),
+   Orange,
+   equatorialDisk[-\[Pi],"II",Orange],
+   equatorialDisk[\[Pi],"II",Orange]}];
 
 
 inertial=
@@ -387,5 +407,7 @@ If[
   ParentDirectory[NotebookDirectory[]]<>
   "/ksp_plugin_adapter/assets"];
  Export["navball_barycentric.png",barycentric];
+ Export["navball_body_direction.png",bodyDirection];
  Export["navball_inertial.png",inertial];
- Export["navball_compass.png",compass]];
+ Export["navball_compass.png",compass];
+ Export["navball_surface.png",Rotate[compass,\[Pi]]]];

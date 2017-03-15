@@ -42,8 +42,6 @@ public partial class PrincipiaPluginAdapter
   private IntPtr plugin_ = IntPtr.Zero;
 
   private bool display_patched_conics_ = false;
-  [KSPField(isPersistant = true)]
-  private bool fix_navball_in_plotting_frame_ = true;
 
   private readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
@@ -79,12 +77,25 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private int buffered_logging_ = 0;
 
+  // Whether a journal will be recorded when the plugin is next constructed.
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
+
+  // Whether the plotting frame must be set to something convenient at the next
+  // opportunity.
+  private bool must_set_plotting_frame_ = false;
+
+  // Whether a journal is currently being recorded.
+  private static bool journaling_;
 #if CRASH_BUTTON
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
 #endif
+  // Timing diagnostics.
+  private System.Diagnostics.Stopwatch stopwatch_ =
+      new System.Diagnostics.Stopwatch();
+  private double last_universal_time_;
+  private double slowdown_;
 
   private bool time_is_advancing_;
 
@@ -104,7 +115,10 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
   private UnityEngine.Texture barycentric_navball_texture_;
+  private UnityEngine.Texture body_direction_navball_texture_;
+  private UnityEngine.Texture surface_navball_texture_;
   private bool navball_changed_ = true;
+  private FlightGlobals.SpeedDisplayModes previous_display_mode_;
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -125,8 +139,10 @@ public partial class PrincipiaPluginAdapter
   private Krakensbane krakensbane_;
   private Krakensbane krakensbane {
     get {
-     return krakensbane_.GetValueOrDefault(
-         krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane)));
+     if (krakensbane_ == null) {
+       krakensbane_ = (Krakensbane)FindObjectOfType(typeof(Krakensbane));
+     }
+     return krakensbane_;
     }
   }
 
@@ -232,26 +248,29 @@ public partial class PrincipiaPluginAdapter
                                       universal_time);
   }
 
-  private void InsertOrKeepVessel(Vessel vessel) {
-    bool inserted = plugin_.InsertOrKeepVessel(
-        vessel.id.ToString(),
-        vessel.orbit.referenceBody.flightGlobalsIndex);
-    // TODO(egg): I'm not sure whether those are the degrees of freedom we want.
-    if (inserted) {
-      plugin_.SetVesselStateOffset(
-          vessel_guid : vessel.id.ToString(),
-          from_parent : new QP{q = (XYZ)vessel.orbit.pos,
-                               p = (XYZ)vessel.orbit.vel});
-    }
-   }
-
   private void UpdateVessel(Vessel vessel, double universal_time) {
-    QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
-    vessel.orbit.UpdateFromStateVectors(
-        pos     : (Vector3d)from_parent.q,
-        vel     : (Vector3d)from_parent.p,
-        refBody : vessel.orbit.referenceBody,
-        UT      : universal_time);
+     if (plugin_.HasVessel(vessel.id.ToString())) {
+       QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
+       vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
+                                           vel : (Vector3d)from_parent.p,
+                                           refBody : vessel.orbit.referenceBody,
+                                           UT : universal_time);
+     }
+  }
+
+  private bool time_is_advancing(double universal_time) {
+    double plugin_time = plugin_.CurrentTime();
+    if (plugin_time > universal_time) {
+      // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
+      // and make it fatal again.
+      Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
+                universal_time +
+                " plugin-universal=" + (plugin_time - universal_time));
+      return false;
+    } else if (plugin_time == universal_time) {
+      return false;
+    }
+    return true;
   }
 
   private bool is_in_space(Vessel vessel) {
@@ -336,6 +355,9 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out inertial_navball_texture_, "navball_inertial.png");
     LoadTextureOrDie(out barycentric_navball_texture_,
                      "navball_barycentric.png");
+    LoadTextureOrDie(out body_direction_navball_texture_,
+                     "navball_body_direction.png");
+    LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -356,12 +378,18 @@ public partial class PrincipiaPluginAdapter
 
     GameEvents.onShowUI.Add(ShowGUI);
     GameEvents.onHideUI.Add(HideGUI);
+    // Timing0, -8008 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
+                                 DisableVesselPrecalculate);
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
                                  SetBodyFramesAndPrecalculateVessels);
+    // Timing1, -99 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
+                                 UpdateVesselOrbits);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
-                                 ReportNonConservativeForces);
+                                 ReportVesselsAndParts);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -382,6 +410,7 @@ public partial class PrincipiaPluginAdapter
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
     if (must_record_journal_) {
+      journaling_ = true;
       Log.ActivateRecorder(true);
     }
     if (node.HasValue(principia_key)) {
@@ -411,6 +440,7 @@ public partial class PrincipiaPluginAdapter
                                      plugin_,
                                      UpdateRenderingFrame,
                                      "Plotting frame"));
+      must_set_plotting_frame_ = true;
       flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
@@ -545,23 +575,36 @@ public partial class PrincipiaPluginAdapter
       Action<UnityEngine.Texture> set_navball_texture = (texture) =>
           navball_material.SetTexture("_MainTexture", texture);
 
-      if (navball_changed_) {
+      if (navball_changed_ ||
+          previous_display_mode_ != FlightGlobals.speedDisplayMode) {
         // Texture the ball.
         navball_changed_ = false;
-        // TODO(egg): switch over all frame types and have more navball textures
-        // when more frames are available.
-        if (!fix_navball_in_plotting_frame_ || !PluginRunning()) {
+        previous_display_mode_ = FlightGlobals.speedDisplayMode;
+        if (FlightGlobals.speedDisplayMode !=
+                FlightGlobals.SpeedDisplayModes.Orbit ||
+            !PluginRunning()) {
           set_navball_texture(compass_navball_texture_);
-        } else if (plotting_frame_selector_.get().frame_type ==
-                   ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING) {
-          set_navball_texture(inertial_navball_texture_);
         } else {
-          set_navball_texture(barycentric_navball_texture_);
+          switch (plotting_frame_selector_.get().frame_type) {
+            case ReferenceFrameSelector.FrameType.BODY_SURFACE:
+              set_navball_texture(surface_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING:
+              set_navball_texture(inertial_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING:
+              set_navball_texture(barycentric_navball_texture_);
+              break;
+            case ReferenceFrameSelector.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+              set_navball_texture(body_direction_navball_texture_);
+              break;
+          }
         }
       }
 
       // Orient the ball.
-      if (PluginRunning() && fix_navball_in_plotting_frame_) {
+      if (PluginRunning() && FlightGlobals.speedDisplayMode ==
+                                 FlightGlobals.SpeedDisplayModes.Orbit) {
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
             (UnityEngine.QuaternionD)plugin_.NavballOrientation(
@@ -646,8 +689,20 @@ public partial class PrincipiaPluginAdapter
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
     }
+    if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
+      must_set_plotting_frame_ = false;
+      plotting_frame_selector_.reset(new ReferenceFrameSelector(
+          this, plugin_, UpdateRenderingFrame, "Plotting frame"));
+    }
+
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
+      slowdown_ = stopwatch_.ElapsedMilliseconds /
+                  ((universal_time - last_universal_time_) * 1000.0);
+      last_universal_time_ = universal_time;
+      stopwatch_.Reset();
+      stopwatch_.Start();
+
       plugin_.SetMainBody(
           FlightGlobals.currentMainBody.GetValueOrDefault(
               FlightGlobals.GetHomeBody()).flightGlobalsIndex);
@@ -656,7 +711,7 @@ public partial class PrincipiaPluginAdapter
       bool ready_to_draw_active_vessel_trajectory =
           draw_active_vessel_trajectory() &&
           plugin_.HasVessel(active_vessel.id.ToString());
-      
+
       if (ready_to_draw_active_vessel_trajectory) {
         // TODO(egg): make the speed tolerance independent.  Also max_steps.
         AdaptiveStepParameters adaptive_step_parameters =
@@ -678,18 +733,6 @@ public partial class PrincipiaPluginAdapter
       }
       plugin_.ForgetAllHistoriesBefore(universal_time -
                                        history_lengths_[history_length_index_]);
-      if (FlightGlobals.currentMainBody != null) {
-        FlightGlobals.currentMainBody.rotationPeriod =
-            plugin_.CelestialRotationPeriod(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
-        FlightGlobals.currentMainBody.initialRotation =
-            plugin_.CelestialInitialRotationInDegrees(
-                FlightGlobals.currentMainBody.flightGlobalsIndex);
-      }
-      ApplyToBodyTree(body => UpdateBody(body, universal_time));
-      SetBodyFrames();
-      ApplyToVesselsInSpace(InsertOrKeepVessel);
-      ApplyToVesselsOnRails(vessel => UpdateVessel(vessel, universal_time));
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -698,7 +741,7 @@ public partial class PrincipiaPluginAdapter
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.
       StartCoroutine(
-          AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation(universal_time));
+          AdvanceAndNudgeVesselsAfterPhysicsSimulation(universal_time));
     }
   }
 
@@ -712,22 +755,34 @@ public partial class PrincipiaPluginAdapter
           toolbar_button_);
     }
     Cleanup();
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
+                                    DisableVesselPrecalculate);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
                                     SetBodyFramesAndPrecalculateVessels);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
+                                    UpdateVesselOrbits);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
-                                    ReportNonConservativeForces);
+                                    ReportVesselsAndParts);
   }
 
   #endregion
 
   private System.Collections.IEnumerator
-  AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
+  AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
      yield return new UnityEngine.WaitForFixedUpdate();
+
      // Unity's physics has just finished doing its thing.  If we correct the
      // positions here, nobody will know that they're not the ones obtained by
      // Unity.  Careful however: while the positions here are those of the next
      // step, the Planetarium hasn't run yet, and still has its old time.
      universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+
+     time_is_advancing_ = time_is_advancing(universal_time);
+     if (!time_is_advancing_) {
+       yield break;
+     }
+
+     plugin_.PrepareToReportCollisions();
 
      // The collisions are reported and stored into |currentCollisions| in
      // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
@@ -735,133 +790,83 @@ public partial class PrincipiaPluginAdapter
      // physics simulation, which is why we report them before calling
      // |AdvanceTime|.
      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-       if (plugin_.HasVessel(vessel1.id.ToString())) {
+       if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
            var vessel2 = vessel1.evaController.LadderPart.vessel;
-           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-             plugin_.ReportCollision(vessel1.id.ToString(),
-                                     vessel2.id.ToString());
+           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
+               !vessel2.packed) {
+             plugin_.ReportCollision(vessel1.rootPart.flightID,
+                                     vessel1.evaController.LadderPart.flightID);
            }
          }
-         foreach (Part part in vessel1.parts) {
-           foreach (var collider in part.currentCollisions) {
-             var vessel2 =
-                 collider.gameObject.GetComponentUpwards<Part>().vessel;
+         foreach (Part part1 in vessel1.parts) {
+           foreach (var collider in part1.currentCollisions) {
+             var part2 = collider.gameObject.GetComponentUpwards<Part>();
+             var vessel2 = part2.vessel;
              if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-               plugin_.ReportCollision(vessel1.id.ToString(),
-                                       vessel2.id.ToString());
+               plugin_.ReportCollision(part1.flightID, part2.flightID);
              }
            }
          }
        }
      }
 
-     double plugin_time = plugin_.CurrentTime();
-     if (plugin_time > universal_time) {
-       // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
-       // and make it fatal again.
-       Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
-                 universal_time + " plugin-universal=" +
-                 (plugin_time - universal_time));
-       time_is_advancing_ = false;
-       yield break;
-     } else if (plugin_time == universal_time) {
-       time_is_advancing_ = false;
-       yield break;
-     }
-     time_is_advancing_ = true;
-
-     plugin_.FreeVesselsAndCollectPileUps();
-
-     var apparent_world_positions = new Dictionary<Vessel, Vector3d>();
-     var apparent_world_velocities = new Dictionary<Vessel, Vector3d>();
+     plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
        }
-       // As far as I can tell, |Vessel| uses the centre of mass of the command
-       // pod as its position in SetPosition, and while it provides the position
-       // of the centre of mass, it doesn't provide its velocity.  We'll have to
-       // iterate over the parts (and make the C++ aware of them) when we start
-       // dealing with rotation anyway, so ¯\_(ツ)_/¯.
-       // We're accumulating in double-precision and the numbers we get from
-       // Unity are single-precision, so no need for compensated summation.
-       Vector3d vessel_world_position = Vector3d.zero;
-       Vector3d vessel_world_velocity = Vector3d.zero;
-       double vessel_mass = 0;
        foreach (Part part in vessel.parts) {
          if (part.rb == null) {
            continue;
          }
-         vessel_mass += part.rb.mass;
-         vessel_world_position += (Vector3d)part.rb.centerOfMass * part.rb.mass;
-         vessel_world_velocity += (Vector3d)part.rb.velocity * part.rb.mass;
+         plugin_.SetPartApparentDegreesOfFreedom(
+             part.flightID,
+             // TODO(egg): use the centre of mass.
+             new QP{q = (XYZ)(Vector3d)part.rb.position,
+                    p = (XYZ)(Vector3d)part.rb.velocity});
        }
-       vessel_world_position /= vessel_mass;
-       vessel_world_velocity /= vessel_mass;
-
-       apparent_world_positions.Add(vessel, vessel_world_position);
-       apparent_world_velocities.Add(vessel, vessel_world_velocity);
-
-       plugin_.VesselSetApparentDegreesOfFreedom(
-           vessel.id.ToString(),
-           new QP{q = (XYZ)vessel_world_position,
-                  p = (XYZ)vessel_world_velocity});
      }
 
-     plugin_.PluginUpdateAllVesselsInPileUps();
+     if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
+       // If we are timewarping, the next FixedUpdate might not occur in
+       // TimeScale * fixedDeltaTime.
+       yield break;
+     }
 
-     plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+     plugin_.AdvanceParts(universal_time);
 
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
      // transforms of loaded vessels & their parts.
-     // TODO(egg): get vessel nudged positions and call Vessel.SetPosition.
-     // Hopefully that will be enough.
-     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
-         continue;
+     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
+         plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+       // TODO(egg): move this to the C++, this is just to check that I
+       // understand the issue.
+       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+         // TODO(egg): if I understand anything, there should probably be a
+         // special treatment for loaded packed vessels.  I don't understand
+         // anything though.
+         if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+           continue;
+         }
+         foreach (Part part in vessel.parts) {
+           if (part.rb == null) {
+             continue;
+           }
+           QP part_actual_degrees_of_freedom =
+               plugin_.GetPartActualDegreesOfFreedom(part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+           // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
+           // transform nonsense must probably be done.
+           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
+           part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+         }
        }
-       // TODO(egg): Using the sun's position here is probably a *very bad
-       // idea*, it is still in its position from the previous frame.  This
-       // should all be done with respect to the centre of mass of the set of
-       // loaded unpacked vessels, which we can force to be the |World| origin,
-       // and then position properly by moving the universe.
-       QP vessel_actual_dof =
-           plugin_.VesselGetActualDegreesOfFreedom(vessel.id.ToString());
-       Vector3d vessel_actual_world_position = (Vector3d)vessel_actual_dof.q;
-       Vector3d vessel_actual_world_velocity = (Vector3d)vessel_actual_dof.p;
-
-       Log.Error("q apparent:" +
-                 apparent_world_positions[vessel].ToString("R"));
-       Log.Error("q actual:" + vessel_actual_world_position.ToString("R"));
-       Log.Error("q correction:" +
-                 (vessel_actual_world_position -
-                  apparent_world_positions[vessel]).ToString("R"));
-       Log.Error("v correction:" +
-                 (vessel_actual_world_velocity -
-                  apparent_world_velocities[vessel]).ToString("R"));
-
-       // SetPosition puts |vesselTransform.position| at its argument; on an
-       // unpacked vessel, it does so by computing the offset from
-       // |vesselTransform.position|, and nudging the parts accordingly; we want
-       // to set the centre of mass, hence the dance.
-       vessel.SetPosition(vessel.vesselTransform.position -
-                          apparent_world_positions[vessel] +
-                          vessel_actual_world_position);
-       // We cannot use |SetWorldVelocity|, as this simply sets the velocity of
-       // all parts.  |ChangeWorldVelocity| is an increment, so that works.
-       // Again when we start dealing with rotation we'll have to set the
-       // velocities of the parts individually.
-       vessel.ChangeWorldVelocity(vessel_actual_world_velocity -
-                                  apparent_world_velocities[vessel]);
-     }
-     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed) {
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
-           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex);
-       krakensbane.FrameVel = (Vector3d)main_body_dof.p;
+           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
+           FlightGlobals.ActiveVessel.rootPart.flightID);
+       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
        Vector3d offset = (Vector3d)main_body_dof.q -
                          FlightGlobals.ActiveVessel.mainBody.position;
        // We cannot use FloatingOrigin.SetOffset to move the world here, because
@@ -874,46 +879,101 @@ public partial class PrincipiaPluginAdapter
            Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
          vessel.SetPosition(vessel.transform.position + offset);
        }
+       // NOTE(egg): this is almost certainly incorrect, since we give the
+       // bodies their positions at the next instant, wherease KSP still expects
+       // them at the previous instant, and will propagate them at the beginning
+       // of the next frame...
      }
    }
 
-  private void SetBodyFramesAndPrecalculateVessels() {
-    SetBodyFrames();
-    // Unfortunately there is no way to get scheduled between Planetarium and
-    // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
-    // body frames for our weird tilt, and run VesselPrecalculate again.  Sob.
+  private void DisableVesselPrecalculate() {
     foreach (var vessel in FlightGlobals.Vessels) {
-      vessel.precalc.FixedUpdate();
-      // TODO(egg): either set the following from accelerations known to the
-      // plugin combined with measurements for accelerations due to interactions
-      // inside a PileUp, or set vessel.graviticAcceleration around the call
-      // to precalc.FixedUpdate above so that vessel.UpdateAcceleration sets
-      // them to the right thing.
-      // vessel.acceleration = ???;
-      // vessel.acceleration_immediate = ???;
-      // vessel.geeForce = ???;
-      // vessel.geeForce_immediate = ???;
+      vessel.precalc.enabled = false;
     }
   }
 
-  private void ReportNonConservativeForces() {
+  private void SetBodyFramesAndPrecalculateVessels() {
+    if (PluginRunning()) {
+      double plugin_time = plugin_.CurrentTime();
+      double universal_time = Planetarium.GetUniversalTime();
+      time_is_advancing_ = time_is_advancing(universal_time);
+      if (time_is_advancing_) {
+        plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+        is_post_apocalyptic_ |=
+            plugin_.HasEncounteredApocalypse(out revelation_);
+      }
+    }
+    SetBodyFrames();
+    // Unfortunately there is no way to get scheduled between Planetarium and
+    // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
+    // body frames for our weird tilt, and run VesselPrecalculate manually.
+    // Sob.
+    // NOTE(egg): we cannot use foreach here, and we must iterate downwards,
+    // since vessel.precalc.FixedUpdate may remove its vessel.
+    for (int i = FlightGlobals.Vessels.Count - 1; i >= 0; --i) {
+      var vessel = FlightGlobals.Vessels[i];
+      vessel.precalc.enabled = true;
+      vessel.precalc.FixedUpdate();
+    }
+  }
+
+  private void UpdateVesselOrbits() {
+    if (PluginRunning()) {
+      ApplyToVesselsOnRails(
+          vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
+    }
+  }
+
+  private void ReportVesselsAndParts() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
-      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-        String vessel_guid = vessel.id.ToString();
-        if (!plugin_.HasVessel(vessel_guid)) {
-          continue;
+      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.packed) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
+          Log.Info("Killing stock gravity");
+          PhysicsGlobals.GraviticForceMultiplier = 0;
         }
-        plugin_.VesselClearMass(vessel_guid);
-        plugin_.VesselClearIntrinsicForce(vessel_guid);
-        foreach (Part part in vessel.parts) {
-          plugin_.VesselIncrementMass(vessel_guid, part.mass);
-          plugin_.VesselIncrementIntrinsicForce(vessel_guid, (XYZ)part.force);
-          foreach(var force in part.forces) {
-            plugin_.VesselIncrementIntrinsicForce(vessel_guid,
+      } else if (PhysicsGlobals.GraviticForceMultiplier == 0) {
+        Log.Info("Reinstating stock gravity");
+        PhysicsGlobals.GraviticForceMultiplier = 1;
+      }
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+        bool inserted;
+        plugin_.InsertOrKeepVessel(vessel.id.ToString(),
+                                   vessel.vesselName,
+                                   vessel.mainBody.flightGlobalsIndex,
+                                   !vessel.packed,
+                                   out inserted);
+        if (!vessel.packed) {
+          QP main_body_degrees_of_freedom =
+              new QP{q = (XYZ)vessel.mainBody.position,
+                     p = (XYZ)(-krakensbane.FrameVel)};
+          foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+            plugin_.InsertOrKeepLoadedPart(
+                part.flightID,
+                part.partName,
+                part.physicsMass,
+                vessel.id.ToString(),
+                vessel.mainBody.flightGlobalsIndex,
+                main_body_degrees_of_freedom,
+                // TODO(egg): use the centre of mass.
+                new QP{q = (XYZ)(Vector3d)part.rb.position,
+                       p = (XYZ)(Vector3d)part.rb.velocity});
+            plugin_.IncrementPartIntrinsicForce(part.flightID, (XYZ)part.force);
+            foreach (var force in part.forces) {
+              plugin_.IncrementPartIntrinsicForce(part.flightID,
                                                   (XYZ)force.force);
+            }
+          }
+        } else if (inserted) {
+          foreach (ProtoPartSnapshot part in
+                   vessel.protoVessel.protoPartSnapshots) {
+            plugin_.InsertUnloadedPart(
+                part.flightID,
+                part.partName,
+                vessel.id.ToString(),
+                new QP{q = (XYZ)vessel.orbit.pos, p = (XYZ)vessel.orbit.vel});
           }
         }
       }
@@ -922,6 +982,15 @@ public partial class PrincipiaPluginAdapter
 
   private void SetBodyFrames() {
     if (PluginRunning()) {
+      if (FlightGlobals.currentMainBody != null) {
+        FlightGlobals.currentMainBody.rotationPeriod =
+            plugin_.CelestialRotationPeriod(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+        FlightGlobals.currentMainBody.initialRotation =
+            plugin_.CelestialInitialRotationInDegrees(
+                FlightGlobals.currentMainBody.flightGlobalsIndex);
+      }
+      ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
       foreach (var body in FlightGlobals.Bodies) {
         // TODO(egg): I have no idea why this |swizzle| thing makes things work.
         // This probably really means something in terms of frames that should
@@ -1151,26 +1220,9 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "running";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-    // TODO(egg): remove this diagnosis when we have proper collision handling.
-    if (FlightGlobals.ActiveVessel != null) {
-      int collisions = 0;
-      int part_collisions = 0;
-      foreach (var part in FlightGlobals.ActiveVessel.parts) {
-         collisions += part.currentCollisions.Count;
-         foreach (var collider in part.currentCollisions) {
-           var collidee = collider.gameObject.GetComponentUpwards<Part>();
-           if (collidee != null &&
-               collidee.vessel != FlightGlobals.ActiveVessel) {
-             ++part_collisions;
-           }
-         }
-      }
-      UnityEngine.GUILayout.TextArea(
-          text
-          : "Active vessel is involved in " + collisions +
-                " collision(s) including " + part_collisions +
-                " with another vessel.");
-    }
+    UnityEngine.GUILayout.TextArea(
+        "Time runs slowed by " +
+        slowdown_);
     if (FlightGlobals.ActiveVessel != null) {
       UnityEngine.GUILayout.TextArea(FlightGlobals.ActiveVessel.geeForce +
                                      " g0");
@@ -1272,17 +1324,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ReferenceFrameSelection() {
     if (PluginRunning()) {
-      bool was_fixing_navball_in_plotting_frame =
-          fix_navball_in_plotting_frame_;
-      fix_navball_in_plotting_frame_ = 
-          UnityEngine.GUILayout.Toggle(
-              value : fix_navball_in_plotting_frame_,
-              text  : "Fix navball in plotting frame");
-      if (was_fixing_navball_in_plotting_frame !=
-          fix_navball_in_plotting_frame_) {
-        navball_changed_ = true;
-        reset_rsas_target_ = true;
-      }
       plotting_frame_selector_.get().RenderButton();
     }
   }
@@ -1437,6 +1478,17 @@ public partial class PrincipiaPluginAdapter
       buffered_logging_ = Log.GetBufferedLogging();
     }
     UnityEngine.GUILayout.EndHorizontal();
+    UnityEngine.GUILayout.TextArea("Journalling is " +
+                                   (journaling_ ? "ON" : "OFF"));
+    must_record_journal_ = UnityEngine.GUILayout.Toggle(
+        value   : must_record_journal_,
+        text    : "Record journal (starts on load)");
+    if (journaling_ && !must_record_journal_) {
+      // We can deactivate a recorder at any time, but in order for replaying to
+      // work, we should only activate one before creating a plugin.
+      journaling_ = false;
+      Interface.ActivateRecorder(false);
+    }
   }
 
   private void ResetButton() {
@@ -1460,10 +1512,8 @@ public partial class PrincipiaPluginAdapter
       NavigationFrameParameters frame_parameters) {
     IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
     plugin_.SetPlottingFrame(ref new_plotting_frame);
-    if (fix_navball_in_plotting_frame_) {
-     navball_changed_ = true;
-      reset_rsas_target_ = true;
-    }
+    navball_changed_ = true;
+    reset_rsas_target_ = true;
   }
 
   private void ResetPlugin() {
@@ -1548,8 +1598,6 @@ public partial class PrincipiaPluginAdapter
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
         plugin_.EndInitialization();
-        plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
-                            Planetarium.InverseRotAngle);
       } catch (Exception e) {
         Log.Fatal("Exception while reading initial state: " + e.ToString());
       }
@@ -1619,26 +1667,19 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+    if (Planetarium.GetUniversalTime() > plugin_.CurrentTime()) {
+      // Make sure that the plugin has caught up with the game before existing
+      // vessels are added.
+      plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
+                          Planetarium.InverseRotAngle);
+    }
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
                                    plugin_,
                                    UpdateRenderingFrame,
                                    "Plotting frame"));
+    must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
-    VesselProcessor insert_vessel = vessel => {
-      Log.Info("Inserting " + vessel.name + "...");
-      bool inserted =
-          plugin_.InsertOrKeepVessel(
-              vessel.id.ToString(),
-              vessel.orbit.referenceBody.flightGlobalsIndex);
-      if (!inserted) {
-        Log.Fatal("Plugin initialization: vessel not inserted");
-      } else {
-        plugin_.SetVesselStateOffset(vessel.id.ToString(),
-                                     new QP{q = (XYZ)vessel.orbit.pos,
-                                            p = (XYZ)vessel.orbit.vel});
-      }
-    };
   }
 
   private void SetRotatingFrameThresholds() {

@@ -144,12 +144,10 @@ class Forkable {
 
   // Returns the number of points in this object.  Complexity is O(|length| +
   // |depth|).
-  int Size() const;
+  std::int64_t Size() const;
 
-  // |trajectory| must be a root.
-  static not_null<Tr4jectory*> ReadPointerFromMessage(
-      serialization::DiscreteTrajectory::Pointer const& message,
-      not_null<Tr4jectory*> trajectory);
+  // Returns true if this object is empty.  Complexity is O(1).
+  bool Empty() const;
 
  protected:
   // The API that must be implemented by subclasses.
@@ -165,6 +163,7 @@ class Forkable {
   virtual TimelineConstIterator timeline_lower_bound(
                                     Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
+  virtual std::int64_t timeline_size() const = 0;
 
  protected:
   // The API that subclasses may use to implement their public operations.

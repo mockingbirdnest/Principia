@@ -203,15 +203,13 @@ template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage(
     serialization::Manoeuvre const& message,
     not_null<Ephemeris<InertialFrame>*> const ephemeris) {
-  // |check_not_null| is fine below because we don't have to worry about pre-
-  // Brouwer compatibility for this class.
   Manœuvre manœuvre(
       Force::ReadFromMessage(message.thrust()),
       Mass::ReadFromMessage(message.initial_mass()),
       SpecificImpulse::ReadFromMessage(message.specific_impulse()),
       Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction()),
-      check_not_null(DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
-          ephemeris, message.frame())));
+      DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
+          ephemeris, message.frame()));
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;

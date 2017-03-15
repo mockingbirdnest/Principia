@@ -137,7 +137,7 @@ class ReferenceFrameSelector : WindowRenderer {
                  selected.referenceBody.theName + ", and the line between them";
         }
       case FrameType.BODY_SURFACE:
-        return "Reference frame fixing " + selected.theName;
+        return "Reference frame fixing the surface of " + selected.theName;
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
@@ -176,12 +176,20 @@ class ReferenceFrameSelector : WindowRenderer {
             extension = (int)frame_type,
             centre_index = selected_celestial_.flightGlobalsIndex};
       case FrameType.BARYCENTRIC_ROTATING:
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
             primary_index =
                 selected_celestial_.referenceBody.flightGlobalsIndex,
             secondary_index = selected_celestial_.flightGlobalsIndex};
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        // We put the primary body as secondary, because the one we want fixed
+        // is the secondary body (which means it has to be the primary in the
+        // terminology of |BodyCentredBodyDirection|).
+        return new NavigationFrameParameters{
+            extension = (int)frame_type,
+            primary_index = selected_celestial_.flightGlobalsIndex,
+            secondary_index =
+                selected_celestial_.referenceBody.flightGlobalsIndex};
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }

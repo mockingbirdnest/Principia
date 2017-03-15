@@ -51,6 +51,7 @@ using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
+using ksp_plugin::PartId;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::FrameField;
@@ -60,6 +61,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
+using quantities::Force;
 using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Time;
@@ -68,6 +70,7 @@ using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
+using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -157,45 +160,19 @@ void principia__ActivateRecorder(bool const activate) {
   }
 }
 
-void principia__AddVesselToNextPhysicsBubble(Plugin* const plugin,
-                                             char const* const vessel_guid,
-                                             KSPPart const* const parts,
-                                             int count) {
-  journal::Method<journal::AddVesselToNextPhysicsBubble> m({plugin,
-                                                            vessel_guid,
-                                                            parts,
-                                                            count});
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(count);
-  CHECK_NOTNULL(plugin);
-  std::vector<principia::ksp_plugin::IdAndOwnedPart> vessel_parts;
-  vessel_parts.reserve(count);
-  for (KSPPart const* part = parts; part < parts + count; ++part) {
-    vessel_parts.push_back(
-        std::make_pair(
-            part->id,
-            make_not_null_unique<Part<World>>(
-                DegreesOfFreedom<World>(
-                    World::origin +
-                        Displacement<World>(
-                            FromXYZ(part->world_position) * Metre),
-                    Velocity<World>(
-                        FromXYZ(part->world_velocity) * (Metre / Second))),
-                part->mass_in_tonnes * Tonne,
-                Vector<Acceleration, World>(
-                    FromXYZ(
-                        part->gravitational_acceleration_to_be_applied_by_ksp) *
-                    (Metre / Pow<2>(Second))))));
-  }
-  plugin->AddVesselToNextPhysicsBubble(vessel_guid, std::move(vessel_parts));
-  return m.Return();
-}
-
 void principia__AdvanceTime(Plugin* const plugin,
                             double const t,
                             double const planetarium_rotation) {
   journal::Method<journal::AdvanceTime> m({plugin, t, planetarium_rotation});
   CHECK_NOTNULL(plugin);
   plugin->AdvanceTime(FromGameTime(*plugin, t), planetarium_rotation * Degree);
+  return m.Return();
+}
+
+void principia__AdvanceParts(Plugin* const plugin, double const t) {
+  journal::Method<journal::AdvanceParts> m({plugin, t});
+  CHECK_NOTNULL(plugin);
+  plugin->AdvanceParts(FromGameTime(*plugin, t));
   return m.Return();
 }
 
@@ -241,10 +218,13 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 }
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
-                                             int const index) {
-  journal::Method<journal::CelestialWorldDegreesOfFreedom> m({plugin, index});
+                                             int const index,
+                                             PartId const part_at_origin) {
+  journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
+      {plugin, index, part_at_origin});
   CHECK_NOTNULL(plugin);
-  auto const result = plugin->CelestialWorldDegreesOfFreedom(index);
+  auto const result =
+      plugin->CelestialWorldDegreesOfFreedom(index, part_at_origin);
   return m.Return(
       {ToXYZ((result.position() - World::origin).coordinates() / Metre),
        ToXYZ(result.velocity().coordinates() / (Metre / Second))});
@@ -277,7 +257,6 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // |**native_string|.
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
-  LOG(INFO) << __FUNCTION__;
   // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
   // cannot be aliased.
   auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
@@ -301,13 +280,13 @@ void principia__DeserializePlugin(char const* const serialization,
                                                  deserializer,
                                                  plugin},
                                                 {deserializer, plugin});
-  LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
+    LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
@@ -335,6 +314,7 @@ void principia__DeserializePlugin(char const* const serialization,
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
   if (byte_size == 0) {
+    LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
   }
   return m.Return();
@@ -357,10 +337,10 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__FreeVesselsAndCollectPileUps(Plugin* const plugin) {
-  journal::Method<journal::FreeVesselsAndCollectPileUps> m({plugin});
+void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
+  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->FreeVesselsAndCollectPileUps();
+  plugin->FreeVesselsAndPartsAndCollectPileUps();
   return m.Return();
 }
 
@@ -372,6 +352,20 @@ int principia__GetBufferDuration() {
 int principia__GetBufferedLogging() {
   journal::Method<journal::GetBufferedLogging> m;
   return m.Return(FLAGS_logbuflevel);
+}
+
+QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
+                                            PartId const part_id,
+                                            PartId const part_at_origin) {
+  journal::Method<journal::GetPartActualDegreesOfFreedom> m(
+      {plugin, part_id, part_at_origin});
+  DegreesOfFreedom<World> const degrees_of_freedom =
+      CHECK_NOTNULL(plugin)->GetPartActualDegreesOfFreedom(part_id,
+                                                           part_at_origin);
+  return m.Return(QP{
+      ToXYZ((degrees_of_freedom.position() - World::origin).coordinates() /
+            Metre),
+      ToXYZ(degrees_of_freedom.velocity().coordinates() / (Metre / Second))});
 }
 
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
@@ -427,6 +421,17 @@ bool principia__HasVessel(Plugin* const plugin,
   journal::Method<journal::HasVessel> m({plugin,  vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(plugin->HasVessel(vessel_guid));
+}
+
+void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
+                                            PartId const part_id,
+                                            XYZ const force_in_kilonewtons) {
+  journal::Method<journal::IncrementPartIntrinsicForce> m(
+      {plugin, part_id, force_in_kilonewtons});
+  CHECK_NOTNULL(plugin)->IncrementPartIntrinsicForce(
+      part_id,
+      Vector<Force, World>(FromXYZ(force_in_kilonewtons) * Kilo(Newton)));
+  return m.Return();
 }
 
 // Sets stderr to log INFO, and redirects stderr, which Unity does not log, to
@@ -542,14 +547,78 @@ void principia__InsertCelestialJacobiKeplerian(
 
 // Calls |plugin->InsertOrKeepVessel| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
-bool principia__InsertOrKeepVessel(Plugin* const plugin,
+void principia__InsertOrKeepVessel(Plugin* const plugin,
                                    char const* const vessel_guid,
-                                   int const parent_index) {
-  journal::Method<journal::InsertOrKeepVessel> m({plugin,
-                                                  vessel_guid,
-                                                  parent_index});
+                                   char const* const vessel_name,
+                                   int const parent_index,
+                                   bool const loaded,
+                                   bool* inserted) {
+  journal::Method<journal::InsertOrKeepVessel> m(
+      {plugin, vessel_guid, vessel_name, parent_index, loaded}, {inserted});
   CHECK_NOTNULL(plugin);
-  return m.Return(plugin->InsertOrKeepVessel(vessel_guid, parent_index));
+  plugin->InsertOrKeepVessel(vessel_guid,
+                             vessel_name,
+                             parent_index,
+                             loaded,
+                             *inserted);
+  return m.Return();
+}
+
+void principia__InsertOrKeepLoadedPart(
+    Plugin* const plugin,
+    std::uint32_t const part_id,
+    char const* const name,
+    double const mass_in_tonnes,
+    char const* const vessel_guid,
+    int const main_body_index,
+    QP const main_body_world_degrees_of_freedom,
+    QP const part_world_degrees_of_freedom) {
+  journal::Method<journal::InsertOrKeepLoadedPart> m(
+      {plugin,
+       part_id,
+       name,
+       mass_in_tonnes,
+       vessel_guid,
+       main_body_index,
+       main_body_world_degrees_of_freedom,
+       part_world_degrees_of_freedom});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertOrKeepLoadedPart(
+      part_id,
+      name,
+      mass_in_tonnes * Tonne,
+      vessel_guid,
+      main_body_index,
+      {World::origin +
+           Displacement<World>(FromXYZ(main_body_world_degrees_of_freedom.q) *
+                               Metre),
+       Velocity<World>(FromXYZ(main_body_world_degrees_of_freedom.p) *
+                       (Metre / Second))},
+      {World::origin + Displacement<World>(
+                           FromXYZ(part_world_degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(part_world_degrees_of_freedom.p) *
+                       (Metre / Second))});
+  return m.Return();
+}
+
+// Calls |plugin->SetVesselStateOffset| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
+void principia__InsertUnloadedPart(Plugin* const plugin,
+                                   PartId const part_id,
+                                   char const* const name,
+                                   char const* const vessel_guid,
+                                   QP const from_parent) {
+  journal::Method<journal::InsertUnloadedPart> m(
+      {plugin, part_id, name, vessel_guid, from_parent});
+  CHECK_NOTNULL(plugin);
+  plugin->InsertUnloadedPart(
+      part_id,
+      name,
+      vessel_guid,
+      RelativeDegreesOfFreedom<AliceSun>(
+          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
+          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
+  return m.Return();
 }
 
 bool principia__IsKspStockSystem(Plugin* const plugin) {
@@ -630,38 +699,9 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
   return m.Return(result.release());
 }
 
-XYZ principia__PhysicsBubbleDisplacementCorrection(Plugin const* const plugin,
-                                                   XYZ const sun_position) {
-  journal::Method<journal::PhysicsBubbleDisplacementCorrection> m(
-      {plugin, sun_position});
-  CHECK_NOTNULL(plugin);
-  Displacement<World> const result =
-      plugin->BubbleDisplacementCorrection(
-          World::origin + Displacement<World>(FromXYZ(sun_position) * Metre));
-  return m.Return(ToXYZ(result.coordinates() / Metre));
-}
-
-bool principia__PhysicsBubbleIsEmpty(Plugin const* const plugin) {
-  journal::Method<journal::PhysicsBubbleIsEmpty> m({plugin});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->PhysicsBubbleIsEmpty());
-}
-
-XYZ principia__PhysicsBubbleVelocityCorrection(Plugin const* const plugin,
-                                               int const reference_body_index) {
-  journal::Method<journal::PhysicsBubbleVelocityCorrection> m(
-      {plugin, reference_body_index});
-  CHECK_NOTNULL(plugin);
-  Velocity<World> const result =
-      plugin->BubbleVelocityCorrection(reference_body_index);
-  return m.Return(ToXYZ(result.coordinates() / (Metre / Second)));
-}
-
-void principia__PluginUpdateAllVesselsInPileUps(
-    Plugin* const plugin) {
-  journal::Method<journal::PluginUpdateAllVesselsInPileUps> m(
-      {plugin});
-  CHECK_NOTNULL(plugin)->UpdateAllVesselsInPileUps();
+void principia__PrepareToReportCollisions(Plugin* const plugin) {
+  journal::Method<journal::PrepareToReportCollisions> m({plugin});
+  CHECK_NOTNULL(plugin)->PrepareToReportCollisions();
   return m.Return();
 }
 
@@ -697,7 +737,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Fork(),
+                                  prediction.Begin(),
                                   prediction.End(),
                                   q_sun,
                                   rendered_apoapsides,
@@ -732,12 +772,10 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
 }
 
 void principia__ReportCollision(Plugin const* const plugin,
-                                char const* const vessel1_guid,
-                                char const* const vessel2_guid) {
-  journal::Method<journal::ReportCollision> m({plugin,
-                                               vessel1_guid,
-                                               vessel2_guid});
-  CHECK_NOTNULL(plugin)->ReportCollision(vessel1_guid, vessel2_guid);
+                                PartId const part1_id,
+                                PartId const part2_id) {
+  journal::Method<journal::ReportCollision> m({plugin, part1_id, part2_id});
+  CHECK_NOTNULL(plugin)->ReportCollision(part1_id, part2_id);
   return m.Return();
 }
 
@@ -755,12 +793,12 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
                                        PullSerializer** const serializer) {
   journal::Method<journal::SerializePlugin> m({plugin, serializer},
                                               {serializer});
-  LOG(INFO) << __FUNCTION__;
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
+    LOG(INFO) << "Begin plugin seralization";
     *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
@@ -774,6 +812,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // If this is the end of the serialization, delete the serializer and return a
   // nullptr.
   if (bytes.size == 0) {
+    LOG(INFO) << "End plugin seralization";
     TakeOwnership(serializer);
     return m.Return(nullptr);
   }
@@ -805,6 +844,19 @@ void principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
   plugin->SetMainBody(index);
+  return m.Return();
+}
+
+void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
+                                                PartId const part_id,
+                                                QP const degrees_of_freedom) {
+  journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
+      {plugin, part_id, degrees_of_freedom});
+  CHECK_NOTNULL(plugin)->SetPartApparentDegreesOfFreedom(
+      part_id,
+      {World::origin +
+           Displacement<World>(FromXYZ(degrees_of_freedom.q) * Metre),
+       Velocity<World>(FromXYZ(degrees_of_freedom.p) * (Metre / Second))});
   return m.Return();
 }
 
@@ -853,23 +905,6 @@ void principia__SetVerboseLogging(int const level) {
   return m.Return();
 }
 
-// Calls |plugin->SetVesselStateOffset| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-void principia__SetVesselStateOffset(Plugin* const plugin,
-                                     char const* const vessel_guid,
-                                     QP const from_parent) {
-  journal::Method<journal::SetVesselStateOffset> m({plugin,
-                                                    vessel_guid,
-                                                    from_parent});
-  CHECK_NOTNULL(plugin);
-  plugin->SetVesselStateOffset(
-      vessel_guid,
-      RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
-          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
-  return m.Return();
-}
-
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
@@ -902,7 +937,6 @@ QP principia__VesselFromParent(Plugin const* const plugin,
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
-
 
 }  // namespace interface
 }  // namespace principia

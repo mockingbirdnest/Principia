@@ -76,12 +76,6 @@ void MockPlugin::SetPlottingFrame(
   plotting_frame.release();
 }
 
-void MockPlugin::AddVesselToNextPhysicsBubble(
-    GUID const& vessel_guid,
-    std::vector<IdAndOwnedPart>&& parts) {
-  AddVesselToNextPhysicsBubbleConstRef(vessel_guid, parts);
-}
-
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

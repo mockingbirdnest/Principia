@@ -240,32 +240,30 @@ It3rator Forkable<Tr4jectory, It3rator>::Fork() const {
 }
 
 template<typename Tr4jectory, typename It3rator>
-int Forkable<Tr4jectory, It3rator>::Size() const {
-  int result = 0;
-  for (auto it = Begin(); it != End(); ++it) {
-    ++result;
+std::int64_t Forkable<Tr4jectory, It3rator>::Size() const {
+  Tr4jectory const* ancestor = that();
+
+  // Get the size directly for the leaf trajectory, this is more efficient if
+  // there are no forks.
+  std::int64_t size = ancestor->timeline_size();
+
+  // Go up the ancestry chain adding the sizes.
+  Tr4jectory const* parent = ancestor->parent_;
+  while (parent != nullptr) {
+    size += std::distance(parent->timeline_begin(),
+                          *ancestor->position_in_parent_timeline_) + 1;
+    ancestor = parent;
+    parent = ancestor->parent_;
   }
-  return result;
+
+  return size;
 }
 
 template<typename Tr4jectory, typename It3rator>
-not_null<Tr4jectory*> Forkable<Tr4jectory, It3rator>::ReadPointerFromMessage(
-    serialization::DiscreteTrajectory::Pointer const& message,
-    not_null<Tr4jectory*> const trajectory) {
-  CHECK(trajectory->is_root());
-  not_null<Tr4jectory*> descendant = trajectory;
-  // Process a parent before its child.
-  for (int i = message.fork_size() - 1; i >= 0; --i) {
-    auto const& fork_message = message.fork(i);
-    int const children_distance = fork_message.children_distance();
-    int const timeline_distance = fork_message.timeline_distance();
-    auto children_it = descendant->children_.begin();
-    auto timeline_it = descendant->timeline_begin();
-    std::advance(children_it, children_distance);
-    std::advance(timeline_it, timeline_distance);
-    descendant = children_it->second.get();
-  }
-  return descendant;
+bool Forkable<Tr4jectory, It3rator>::Empty() const {
+  // If this object has an ancestor surely it is hook off of a point in some
+  // timeline, so this object is not empty.
+  return timeline_empty() && parent_ == nullptr;
 }
 
 template<typename Tr4jectory, typename It3rator>

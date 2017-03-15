@@ -7,11 +7,15 @@
 #include <string>
 #include <vector>
 
+#include "base/map_util.hpp"
+
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace internal_solar_system_factory {
+
+using base::Contains;
 
 inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
                            SolarSystem<ICRFJ2000Equator>* const solar_system) {
@@ -70,9 +74,9 @@ inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
   std::vector<std::string> bodies_to_remove;
   std::vector<std::string> bodies_to_spherify;
   for (std::string const& solar_system_name : solar_system->names()) {
-    if (existing.count(solar_system_name) == 0) {
+    if (!Contains(existing, solar_system_name)) {
       bodies_to_remove.push_back(solar_system_name);
-    } else if (oblate.count(solar_system_name) == 0) {
+    } else if (!Contains(oblate, solar_system_name)) {
       bodies_to_spherify.push_back(solar_system_name);
     }
   }

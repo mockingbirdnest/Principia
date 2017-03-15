@@ -10,11 +10,13 @@
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
 namespace ksp_plugin {
 
-FORWARD_DECLARE_FROM(vessel, class, Vessel);
+FORWARD_DECLARE_FROM(part, class, Part);
 
 namespace internal_pile_up {
 
@@ -30,41 +32,45 @@ using physics::RelativeDegreesOfFreedom;
 using quantities::Force;
 using quantities::Mass;
 
-// A |PileUp| handles a connected component of the graph of |Vessels| under
+// A |PileUp| handles a connected component of the graph of |Parts| under
 // physical contact.  It advances the history and prolongation of its component
-// |Vessels|, modeling them as a massless body at their centre of mass.
-class PileUp final {
+// |Parts|, modeling them as a massless body at their centre of mass.
+class PileUp {
  public:
-  explicit PileUp(std::list<not_null<Vessel*>>&& vessels);
+  PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
+  virtual ~PileUp() = default;
+
+  // This class is moveable.
+  PileUp(PileUp&& pile_up) = default;
+  PileUp& operator=(PileUp&& pile_up) = default;
 
   void set_mass(Mass const& mass);
   void set_intrinsic_force(Vector<Force, Barycentric> const& intrinsic_force);
 
-  std::list<not_null<Vessel*>> const& vessels() const;
+  std::list<not_null<Part*>> const& parts() const;
 
-  // Set the |degrees_of_freedom| for the given |vessel|.  These degrees of
+  // Set the |degrees_of_freedom| for the given |part|.  These degrees of
   // freedom are *apparent* in the sense that they were reported by the game but
   // we know better since we are doing science.
-  void SetVesselApparentDegreesOfFreedom(
-      not_null<Vessel*> vessel,
+  void SetPartApparentDegreesOfFreedom(
+      not_null<Part*> part,
       DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
-  // Update the degrees of freedom of all the vessels by comparing the centre of
-  // mass of the *apparent* degrees of freedom to the centre of mass computed by
-  // integration.  |SetVesselApparentDegreesOfFreedom| must have been called for
-  // each vessel in the pile-up, or for none.
-  void UpdateVesselsInPileUpIfUpdated();
-
-  // Obtains the *actual* degrees of freedom for the given |vessel|.  The vessel
-  // in the game should be nudged to match the value returned by this function.
-  DegreesOfFreedom<Bubble> GetVesselActualDegreesOfFreedom(
-      not_null<Vessel*> vessel,
-      DegreesOfFreedom<Barycentric> const& bubble_barycentre) const;
+  // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
+  // translating the *apparent* degrees of freedom so that their centre of mass
+  // matches that computed by integration.
+  // |SetPartApparentDegreesOfFreedom| must have been called for each part in
+  // the pile-up, or for none.
+  // The degrees of freedom set by this method are used by |NudgeParts|.
+  // NOTE(egg): Eventually, this will also change their velocities and angular
+  // velocities so that the angular momentum matches that which has been
+  // computed for |this| |PileUp|.
+  void DeformPileUpIfNeeded();
 
   // Flows the history authoritatively as far as possible up to |t|, advances
-  // the histories of the vessels.  After this call, the histories of |*this|
-  // and of its vessels have a (possibly ahistorical) final point exactly at
-  // |t|.
+  // the histories of the parts and updates the degrees of freedom of the parts
+  // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
+  // and of its parts have a (possibly ahistorical) final point exactly at |t|.
   void AdvanceTime(
       Ephemeris<Barycentric>& ephemeris,
       Instant const& t,
@@ -72,20 +78,43 @@ class PileUp final {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters);
 
+  // Adjusts the degrees of freedom of all parts in this pile up based on the
+  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
+  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |DeformPileUpIfNeeded|.
+  void NudgeParts() const;
+
+  void WriteToMessage(not_null<serialization::PileUp*> message) const;
+  static PileUp ReadFromMessage(
+      serialization::PileUp const& message,
+      std::function<not_null<Part*>(PartId)> const& part_id_to_part);
+
  private:
-  std::list<not_null<Vessel*>> vessels_;
+  // For deserialization.
+  explicit PileUp::PileUp(std::list<not_null<Part*>>&& parts);
+
+  void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
+                         bool authoritative) const;
+
+  std::list<not_null<Part*>> parts_;
+  // An optimization: the sum of the masses and intrinsic forces of the
+  // |parts_|, computed by the union-find.
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
-  DiscreteTrajectory<Barycentric> psychohistory_;
-  // True if the last point of the |psychohistory_| should be flowed from;
-  // otherwise, the last point should be removed before flowing the trajectory
-  // (in that case, there is a penultimate point, and it is historical).
-  bool psychohistory_is_authoritative_;
+
+  // TODO(phl): replace by an instance.  Specifically, this should contain
+  // either an adaptive step instance (if the last call to AdvanceTime occurred
+  // with nonzero intrinsic force), or a fixed step instance otherwise (with the
+  // prolongation being computed by an instance local to the body of
+  // |AdvanceTime|).
+  // |psychohistory_.Size()| is either 1 or 2.  The first point is
+  // authoritative, and the second point, if any, is not.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
-  // of freedom of the vessels in the frame of that body can be set, however
-  // their motion is not integrated; this is simply applied as an offset from
-  // the rigid body motion of the |PileUp|.
+  // of freedom of the parts in the frame of that body can be set, however their
+  // motion is not integrated; this is simply applied as an offset from the
+  // rigid body motion of the |PileUp|.
   // The origin of |RigidPileUp| is the centre of mass of the pile up.
   // Its axes are those of Barycentric for now; eventually we will probably want
   // to use the inertia ellipsoid.
@@ -93,10 +122,12 @@ class PileUp final {
                             serialization::Frame::RIGID_PILE_UP,
                             /*frame_is_inertial=*/false>;
 
-  std::map<not_null<Vessel*>, DegreesOfFreedom<RigidPileUp>>
-      vessel_degrees_of_freedom_;
-  std::map<not_null<Vessel*>, DegreesOfFreedom<ApparentBubble>>
-      apparent_vessel_degrees_of_freedom_;
+  std::map<not_null<Part*>, DegreesOfFreedom<RigidPileUp>>
+      actual_part_degrees_of_freedom_;
+  std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
+      apparent_part_degrees_of_freedom_;
+
+  friend class TestablePileUp;
 };
 
 }  // namespace internal_pile_up

@@ -132,12 +132,23 @@ TEST_F(DiscreteTrajectoryDeathTest, NewForkWithCopyError) {
 }
 
 TEST_F(DiscreteTrajectoryTest, NewForkWithCopySuccess) {
+  EXPECT_TRUE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t1_, d1_);
+  EXPECT_EQ(1, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t2_, d2_);
+  EXPECT_EQ(2, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t3_, d3_);
+  EXPECT_EQ(3, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   not_null<DiscreteTrajectory<World>*> const fork =
       massive_trajectory_->NewForkWithCopy(t2_);
+  EXPECT_EQ(3, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   fork->Append(t4_, d4_);
+  EXPECT_EQ(4, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   std::map<Instant, Position<World>> positions =
       Positions(*massive_trajectory_);
   std::map<Instant, Velocity<World>> velocities =
@@ -171,12 +182,23 @@ TEST_F(DiscreteTrajectoryDeathTest, NewForkWithoutCopyError) {
 }
 
 TEST_F(DiscreteTrajectoryTest, NewForkWithoutCopySuccess) {
+  EXPECT_TRUE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t1_, d1_);
+  EXPECT_EQ(1, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t2_, d2_);
+  EXPECT_EQ(2, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   massive_trajectory_->Append(t3_, d3_);
+  EXPECT_EQ(3, massive_trajectory_->Size());
+  EXPECT_FALSE(massive_trajectory_->Empty());
   not_null<DiscreteTrajectory<World>*> const fork =
       massive_trajectory_->NewForkWithoutCopy(t2_);
+  EXPECT_EQ(2, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   fork->Append(t4_, d4_);
+  EXPECT_EQ(3, fork->Size());
+  EXPECT_FALSE(fork->Empty());
   std::map<Instant, Position<World>> positions =
       Positions(*massive_trajectory_);
   std::map<Instant, Velocity<World>> velocities =
