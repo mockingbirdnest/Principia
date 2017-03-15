@@ -85,14 +85,31 @@ Burn GetBurn(Plugin const& plugin,
                                kExtensionFieldNumber;
     parameters.primary_index = extension.primary();
     parameters.secondary_index = extension.secondary();
-  }
-  if (message.HasExtension(
+  } else if (message.HasExtension(
           serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
     auto const& extension = message.GetExtension(
         serialization::BodyCentredNonRotatingDynamicFrame::extension);
     parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
                                kExtensionFieldNumber;
     parameters.centre_index = extension.centre();
+  } else if (message.HasExtension(
+          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
+    auto const& extension = message.GetExtension(
+        serialization::BodyCentredBodyDirectionDynamicFrame::extension);
+    parameters.extension = serialization::BodyCentredBodyDirectionDynamicFrame::
+                               kExtensionFieldNumber;
+    parameters.primary_index = extension.primary();
+    parameters.secondary_index = extension.secondary();
+  } else if (message.HasExtension(
+          serialization::BodySurfaceDynamicFrame::extension)) {
+    auto const& extension = message.GetExtension(
+        serialization::BodySurfaceDynamicFrame::extension);
+    parameters.extension = serialization::BodySurfaceDynamicFrame::
+                               kExtensionFieldNumber;
+    parameters.centre_index = extension.centre();
+  } else {
+    LOG(FATAL) << "Could not construct frame parameters from "
+               << message.DebugString();
   }
 
   return {manœuvre.thrust() / Kilo(Newton),
