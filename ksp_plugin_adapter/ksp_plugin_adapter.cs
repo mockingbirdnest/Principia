@@ -82,6 +82,7 @@ public partial class PrincipiaPluginAdapter
   // Whether a journal will be recorded when the plugin is next constructed.
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
+
   // Whether a journal is currently being recorded.
   private static bool journaling_;
 #if CRASH_BUTTON
@@ -250,6 +251,21 @@ public partial class PrincipiaPluginAdapter
                                            refBody : vessel.orbit.referenceBody,
                                            UT : universal_time);
      }
+  }
+
+  private bool time_is_advancing(double universal_time) {
+    double plugin_time = plugin_.CurrentTime();
+    if (plugin_time > universal_time) {
+      // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
+      // and make it fatal again.
+      Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
+                universal_time +
+                " plugin-universal=" + (plugin_time - universal_time));
+      return false;
+    } else if (plugin_time == universal_time) {
+      return false;
+    }
+    return true;
   }
 
   private bool is_in_space(Vessel vessel) {
@@ -697,6 +713,8 @@ public partial class PrincipiaPluginAdapter
       // the FashionablyLate callbacks, including ReportNonConservativeForces,
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.
+      StartCoroutine(
+          AdvanceAndNudgeVesselsAfterPhysicsSimulation(universal_time));
     }
   }
 
@@ -722,8 +740,20 @@ public partial class PrincipiaPluginAdapter
 
   #endregion
 
-  private void AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation() {
-     double universal_time = Planetarium.GetUniversalTime();
+  private System.Collections.IEnumerator
+  AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
+     yield return new UnityEngine.WaitForFixedUpdate();
+
+     // Unity's physics has just finished doing its thing.  If we correct the
+     // positions here, nobody will know that they're not the ones obtained by
+     // Unity.  Careful however: while the positions here are those of the next
+     // step, the Planetarium hasn't run yet, and still has its old time.
+     universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+
+     time_is_advancing_ = time_is_advancing(universal_time);
+     if (!time_is_advancing_) {
+       yield break;
+     }
 
      plugin_.PrepareToReportCollisions();
 
@@ -733,9 +763,7 @@ public partial class PrincipiaPluginAdapter
      // physics simulation, which is why we report them before calling
      // |AdvanceTime|.
      foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-       if (plugin_.HasVessel(vessel1.id.ToString()) &&
-           plugin_.VesselIsLoaded(vessel1.id.ToString()) &&
-           !vessel1.packed) {
+       if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
          if (vessel1.isEVA && vessel1.evaController.OnALadder) {
            var vessel2 = vessel1.evaController.LadderPart.vessel;
            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
@@ -746,12 +774,9 @@ public partial class PrincipiaPluginAdapter
          }
          foreach (Part part1 in vessel1.parts) {
            foreach (var collider in part1.currentCollisions) {
-             var part2 =
-                 collider.gameObject.GetComponentUpwards<Part>();
+             var part2 = collider.gameObject.GetComponentUpwards<Part>();
              var vessel2 = part2.vessel;
-             if (vessel2 != null &&
-                 plugin_.HasVessel(vessel2.id.ToString()) &&
-                 plugin_.VesselIsLoaded(vessel1.id.ToString())) {
+             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
                plugin_.ReportCollision(part1.flightID, part2.flightID);
              }
            }
@@ -759,27 +784,10 @@ public partial class PrincipiaPluginAdapter
        }
      }
 
-     double plugin_time = plugin_.CurrentTime();
-     if (plugin_time > universal_time) {
-       // TODO(egg): Make this resistant to bad floating points up to 2ULPs,
-       // and make it fatal again.
-       Log.Error("Closed Timelike Curve: " + plugin_time + " > " +
-                 universal_time + " plugin-universal=" +
-                 (plugin_time - universal_time));
-       time_is_advancing_ = false;
-       return;
-     } else if (plugin_time == universal_time) {
-       time_is_advancing_ = false;
-       return;
-     }
-     time_is_advancing_ = true;
-
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       if (vessel.packed ||
-           !plugin_.HasVessel(vessel.id.ToString()) ||
-           !plugin_.VesselIsLoaded(vessel.id.ToString())) {
+       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
        }
        foreach (Part part in vessel.parts) {
@@ -794,8 +802,13 @@ public partial class PrincipiaPluginAdapter
        }
      }
 
-     plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-     is_post_apocalyptic_ |= plugin_.HasEncounteredApocalypse(out revelation_);
+     if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
+       // If we are timewarping, the next FixedUpdate might not occur in
+       // TimeScale * fixedDeltaTime.
+       yield break;
+     }
+
+     plugin_.AdvanceParts(universal_time);
 
      // We don't want to do too many things here, since all the KSP classes
      // still think they're in the preceding step.  We only nudge the Unity
@@ -808,9 +821,7 @@ public partial class PrincipiaPluginAdapter
          // TODO(egg): if I understand anything, there should probably be a
          // special treatment for loaded packed vessels.  I don't understand
          // anything though.
-         if (vessel.packed ||
-             !plugin_.HasVessel(vessel.id.ToString()) ||
-             !plugin_.VesselIsLoaded(vessel.id.ToString())) {
+         if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
            continue;
          }
          foreach (Part part in vessel.parts) {
@@ -855,7 +866,16 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
-    AdvanceTimeAndNudgeVesselsAfterPhysicsSimulation();
+    if (PluginRunning()) {
+      double plugin_time = plugin_.CurrentTime();
+      double universal_time = Planetarium.GetUniversalTime();
+      time_is_advancing_ = time_is_advancing(universal_time);
+      if (time_is_advancing_) {
+        plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+        is_post_apocalyptic_ |=
+            plugin_.HasEncounteredApocalypse(out revelation_);
+      }
+    }
     SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
@@ -1634,6 +1654,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
     if (Planetarium.GetUniversalTime() > plugin_.CurrentTime()) {
+      // Make sure that the plugin has caught up with the game before existing
+      // vessels are added.
       plugin_.AdvanceTime(Planetarium.GetUniversalTime(),
                           Planetarium.InverseRotAngle);
     }

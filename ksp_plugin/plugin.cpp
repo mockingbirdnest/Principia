@@ -585,9 +585,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
+void Plugin::AdvanceParts(Instant const& t) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
@@ -602,21 +600,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     // anymore, it could be part of |PileUp::AdvanceTime|.
     pile_up.NudgeParts();
   }
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.AdvanceTime();
-  }
-  for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    vessel->ForAllParts([](Part& part) { part.clear_intrinsic_force(); });
-  }
-
-  VLOG(1) << "Time has been advanced" << '\n'
-          << "from : " << current_time_ << '\n'
-          << "to   : " << t;
-  current_time_ = t;
-  planetarium_rotation_ = planetarium_rotation;
-  UpdatePlanetariumRotation();
-  loaded_vessels_.clear();
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
@@ -650,6 +633,39 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
       FindOrDie(celestials_, index)->
           trajectory().EvaluateDegreesOfFreedom(current_time_,
                                                 /*hint=*/nullptr));
+}
+
+void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
+  VLOG(1) << __FUNCTION__ << '\n'
+          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
+  CHECK(!initializing_);
+  CHECK_GT(t, current_time_);
+
+  if (!vessels_.empty()) {
+    bool tails_are_empty;
+    vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
+      tails_are_empty = part.tail().Empty();
+    });
+    if (tails_are_empty) {
+      AdvanceParts(t);
+    }
+  }
+
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.AdvanceTime();
+  }
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+    vessel->ForAllParts([](Part& part) { part.clear_intrinsic_force(); });
+  }
+
+  VLOG(1) << "Time has been advanced" << '\n'
+          << "from : " << current_time_ << '\n'
+          << "to   : " << t;
+  current_time_ = t;
+  planetarium_rotation_ = planetarium_rotation;
+  UpdatePlanetariumRotation();
+  loaded_vessels_.clear();
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {

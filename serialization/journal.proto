@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5119.
+  extensions 5000 to 5999;  // Last used: 5120.
 }
 
 message AdvanceTime {
@@ -100,12 +100,13 @@ message AdvanceTime {
   optional In in = 1;
 }
 
-message PrepareToReportCollisions {
+message AdvanceParts {
   extend Method {
-    optional PrepareToReportCollisions extension = 5118;
+    optional AdvanceParts extension = 5120;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double t = 2;
   }
   optional In in = 1;
 }
@@ -1008,6 +1009,16 @@ message NewPlugin {
   optional Return return = 3;
 }
 
+message PrepareToReportCollisions {
+  extend Method {
+    optional PrepareToReportCollisions extension = 5118;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
 message RenderedPrediction {
   extend Method {
     optional RenderedPrediction extension = 5031;
@@ -1279,22 +1290,6 @@ message VesselGetPredictionAdaptiveStepParameters {
   }
   message Return {
     required AdaptiveStepParameters adaptive_step_parameters = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message VesselIsLoaded {
-  extend Method {
-    optional VesselIsLoaded extension = 5119;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  message Return {
-    required bool result = 1;
   }
   optional In in = 1;
   optional Return return = 3;

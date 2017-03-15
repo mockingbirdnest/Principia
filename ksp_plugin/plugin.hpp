@@ -156,9 +156,6 @@ class Plugin {
                                   bool loaded,
                                   bool& inserted);
 
-  // Whether |loaded_vessels_| contains |vessel|.
-  bool is_loaded(not_null<Vessel*> vessel) const;
-
   // Adds a part with the given |part_id| to the vessel with the given |GUID|,
   // which must be unloaded, putting the part at the given offset from the
   // parent body of the vessel.  The part is given unit mass; this does not
@@ -212,16 +209,10 @@ class Plugin {
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
-  // Must be called after initialization.
-  // Clears the intrinsic force on all loaded parts.
-  // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
-  // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
-  // the rotation between the |World| axes and the |Barycentric| axes (we don't
-  // use Planetarium.Rotation since it undergoes truncation to single-precision
-  // even though it's a double-precision value).  Note that KSP's
-  // |Planetarium.InverseRotAngle| is in degrees.
-  virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
+  // Advances time on the pile ups to |t|, filling the tails of all parts up to
+  // instant |t|.  The vessels are unaffected, and |current_time_| remains
+  // unchanged.
+  virtual void AdvanceParts(Instant const& t);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
@@ -235,6 +226,19 @@ class Plugin {
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
       PartId part_at_origin) const;
+
+  // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
+  // Must be called after initialization.
+  // Calls |AdvanceParts| if it has not been called; otherwise the vessels are
+  // advanced using the tails previously computed during that call.
+  // Clears the intrinsic force on all loaded parts.
+  // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
+  // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
+  // the rotation between the |World| axes and the |Barycentric| axes (we don't
+  // use Planetarium.Rotation since it undergoes truncation to single-precision
+  // even though it's a double-precision value).  Note that KSP's
+  // |Planetarium.InverseRotAngle| is in degrees.
+  virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -439,6 +443,8 @@ class Plugin {
                Mass mass,
                DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
+  // Whether |loaded_vessels_| contains |vessel|.
+  bool is_loaded(not_null<Vessel*> vessel) const;
   // Whether |new_unloaded_vessels_| contains |vessel|.
   bool is_new_unloaded(not_null<Vessel*> vessel) const;
 
