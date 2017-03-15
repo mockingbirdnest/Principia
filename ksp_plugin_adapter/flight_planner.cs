@@ -298,6 +298,7 @@ class FlightPlanner : WindowRenderer {
                   UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
                   (Vector3d)manoeuvre.inertial_direction);
           guidance_node_.UT = manoeuvre.burn.initial_time;
+          vessel_.patchedConicSolver.UpdateFlightPlan();
           should_clear_guidance = false;
         }
         break;
