@@ -50,7 +50,8 @@ ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin
 PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
-LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lsupc++
+LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lsupc++
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
