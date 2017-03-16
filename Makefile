@@ -50,7 +50,8 @@ ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin
 PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
-LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a $(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lsupc++
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
@@ -207,7 +208,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 
 $(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -lsupc++ -o $@
 
 ########## Testing
 
