@@ -91,11 +91,6 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool show_crash_options_ = false;
 #endif
-  // Timing diagnostics.
-  private System.Diagnostics.Stopwatch stopwatch_ =
-      new System.Diagnostics.Stopwatch();
-  private double last_universal_time_;
-  private double slowdown_;
 
   private bool time_is_advancing_;
 
@@ -697,11 +692,6 @@ public partial class PrincipiaPluginAdapter
 
     if (PluginRunning()) {
       double universal_time = Planetarium.GetUniversalTime();
-      slowdown_ = stopwatch_.ElapsedMilliseconds /
-                  ((universal_time - last_universal_time_) * 1000.0);
-      last_universal_time_ = universal_time;
-      stopwatch_.Reset();
-      stopwatch_.Start();
 
       plugin_.SetMainBody(
           FlightGlobals.currentMainBody.GetValueOrDefault(
@@ -1220,13 +1210,6 @@ public partial class PrincipiaPluginAdapter
       plugin_state = "running";
     }
     UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-    UnityEngine.GUILayout.TextArea(
-        "Time runs slowed by " +
-        slowdown_);
-    if (FlightGlobals.ActiveVessel != null) {
-      UnityEngine.GUILayout.TextArea(FlightGlobals.ActiveVessel.geeForce +
-                                     " g0");
-    }
     String last_reset_information;
     if (!PluginRunning()) {
       last_reset_information = "";

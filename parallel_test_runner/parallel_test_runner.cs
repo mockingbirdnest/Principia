@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace principia {
@@ -42,7 +43,8 @@ class ParallelTestRunner {
   static void Main(string[] args) {
     Granularity? granularity_option = null;
     bool? instrument_option = null;
-
+    
+    var death_test_processes = new List<Process>();
     var processes = new List<Process>();
     int test_process_counter = 0;
 
@@ -82,10 +84,21 @@ class ParallelTestRunner {
           process.StartInfo.RedirectStandardOutput = true;
           process.StartInfo.RedirectStandardError = true;
           process.StartInfo.FileName = test_binary;
+          process.StartInfo.Arguments = "--gtest_filter=-*DeathTest.*";
           process.StartInfo.Arguments +=
               " --gtest_output=xml:TestResults\\gtest_results_" +
               test_process_counter++ + ".xml";
           processes.Add(process);
+          process = new Process();
+          process.StartInfo.UseShellExecute = false;
+          process.StartInfo.RedirectStandardOutput = false;
+          process.StartInfo.RedirectStandardError = false;
+          process.StartInfo.FileName = test_binary;
+          process.StartInfo.Arguments = "--gtest_filter=*DeathTest.*";
+          process.StartInfo.Arguments +=
+              " --gtest_output=xml:TestResults\\gtest_results_" +
+              test_process_counter++ + ".xml";
+          death_test_processes.Add(process);
           continue;
         }
         var info = new ProcessStartInfo(test_binary, "--gtest_list_tests");
@@ -94,10 +107,12 @@ class ParallelTestRunner {
         var list_tests = Process.Start(info);
         var output = list_tests.StandardOutput;
         string test_case = null;
+        bool? is_death_test = null;
         while(!output.EndOfStream) {
           string line = output.ReadLine();
           if (line[0] != ' ') {
             test_case = line;
+            is_death_test = Regex.Match(line, ".*DeathTest").Success;
             if (granularity == Granularity.TestCase) {
               var process = new Process();
               process.StartInfo.UseShellExecute = false;
@@ -108,7 +123,11 @@ class ParallelTestRunner {
               process.StartInfo.Arguments +=
                   " --gtest_output=xml:TestResults\\gtest_results_" +
                   test_process_counter++ + ".xml";
-              processes.Add(process);
+              if (is_death_test.Value) {
+                death_test_processes.Add(process);
+              } else {
+                processes.Add(process);
+              }
             }
           } else if (granularity == Granularity.Test) {
             var process = new Process();
@@ -125,7 +144,11 @@ class ParallelTestRunner {
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";
-            processes.Add(process);
+            if (is_death_test.Value) {
+              death_test_processes.Add(process);
+            } else {
+              processes.Add(process);
+            }
           }
         }
       }
@@ -141,8 +164,23 @@ class ParallelTestRunner {
       Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
     }
 
-    Console.WriteLine("Running " + processes.Count + " processes...");
+    Console.WriteLine("Running " + death_test_processes.Count +
+                      " death test processes...");
     stopwatch.Restart();
+
+    foreach (Process process in death_test_processes) {
+      process.StartInfo.RedirectStandardOutput = false;
+      process.StartInfo.RedirectStandardError = false;
+      process.Start();
+      process.WaitForExit();
+      if (process.ExitCode != 0) {
+        Console.WriteLine("Exit code " + process.ExitCode +
+                          " from a death test");
+        Environment.Exit(process.ExitCode);
+      }
+    }
+
+    Console.WriteLine("Running " + processes.Count + " processes...");
 
     Task[] tasks = new Task[processes.Count];
     for (int i = 0; i < processes.Count; ++i) {
