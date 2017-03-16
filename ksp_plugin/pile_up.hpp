@@ -91,7 +91,7 @@ class PileUp {
 
  private:
   // For deserialization.
-  explicit PileUp::PileUp(std::list<not_null<Part*>>&& parts);
+  explicit PileUp(std::list<not_null<Part*>>&& parts);
 
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
                          bool authoritative) const;

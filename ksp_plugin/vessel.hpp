@@ -97,7 +97,7 @@ class Vessel {
 
   virtual DiscreteTrajectory<Barycentric> const& prediction() const;
 
-  virtual void Vessel::set_prediction_adaptive_step_parameters(
+  virtual void set_prediction_adaptive_step_parameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           prediction_adaptive_step_parameters);
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
