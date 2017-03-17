@@ -877,7 +877,8 @@ public partial class PrincipiaPluginAdapter
    }
 
   private void DisableVesselPrecalculate() {
-    foreach (var vessel in FlightGlobals.Vessels) {
+    foreach (var vessel in
+             FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
     }
   }
@@ -902,6 +903,9 @@ public partial class PrincipiaPluginAdapter
     // since vessel.precalc.FixedUpdate may remove its vessel.
     for (int i = FlightGlobals.Vessels.Count - 1; i >= 0; --i) {
       var vessel = FlightGlobals.Vessels[i];
+      if (vessel.precalc == null) {
+        continue;
+      }
       vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
     }
