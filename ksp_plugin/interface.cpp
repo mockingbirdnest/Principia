@@ -566,7 +566,7 @@ void principia__InsertOrKeepVessel(Plugin* const plugin,
 
 void principia__InsertOrKeepLoadedPart(
     Plugin* const plugin,
-    std::uint32_t const part_id,
+    PartId const part_id,
     char const* const name,
     double const mass_in_tonnes,
     char const* const vessel_guid,
