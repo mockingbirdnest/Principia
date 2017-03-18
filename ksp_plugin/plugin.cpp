@@ -1357,9 +1357,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
-        FindOrDie(celestials, celestial_message.index());
+          FindOrDie(celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-        FindOrDie(celestials, celestial_message.parent_index()).get();
+          FindOrDie(celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }
