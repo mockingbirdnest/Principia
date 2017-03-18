@@ -926,17 +926,5 @@ void principia__UpdatePrediction(Plugin const* const plugin,
   return m.Return();
 }
 
-// Calls |plugin->VesselFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-QP principia__VesselFromParent(Plugin const* const plugin,
-                               char const* const vessel_guid) {
-  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  RelativeDegreesOfFreedom<AliceSun> const result =
-      plugin->VesselFromParent(vessel_guid);
-  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
-                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
-}
-
 }  // namespace interface
 }  // namespace principia

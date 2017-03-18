@@ -17,9 +17,11 @@ using geometry::Displacement;
 using geometry::OrthogonalMap;
 using geometry::Vector;
 using geometry::Velocity;
+using ksp_plugin::AliceSun;
 using ksp_plugin::ApparentBubble;
 using ksp_plugin::Bubble;
 using physics::DegreesOfFreedom;
+using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Force;
@@ -32,6 +34,18 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
   return m.Return(
       ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
+}
+
+// Calls |plugin->VesselFromParent| with the arguments given.
+// |plugin| must not be null.  No transfer of ownership.
+QP principia__VesselFromParent(Plugin const* const plugin,
+                               char const* const vessel_guid) {
+  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  RelativeDegreesOfFreedom<AliceSun> const result =
+      plugin->VesselFromParent(vessel_guid);
+  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
+                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
