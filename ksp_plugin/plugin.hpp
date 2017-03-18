@@ -454,9 +454,6 @@ class Plugin {
   std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
 
-  // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<not_null<Vessel const*>> kept_vessels_;
-
   struct AbsoluteInitializationObjects final{
     IndexToMassiveBody bodies;
     IndexToDegreesOfFreedom initial_state;
@@ -515,6 +512,8 @@ class Plugin {
   // The vessels that were inserted unloaded and have yet to be collected into a
   // pile-up.
   std::set<not_null<Vessel*>> new_unloaded_vessels_;
+  // The vessels that will be kept during the next call to |AdvanceTime|.
+  std::set<not_null<Vessel const*>> kept_vessels_;
 
   friend class NavballFrameField;
   friend class TestablePlugin;

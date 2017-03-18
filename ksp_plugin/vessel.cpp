@@ -44,6 +44,15 @@ Vessel::Vessel(GUID const& guid,
       psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
+Vessel::~Vessel() {
+  // The parts must remove themselves from their pile-ups *before* any of them
+  // starts to destroy, otherwise |clear_pile_up| might access destroyed parts.
+  for (auto const& pair : parts_) {
+    auto const& part = pair.second;
+    part->clear_pile_up();
+  }
+}
+
 not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
 }
@@ -88,6 +97,13 @@ void Vessel::FreeParts() {
   }
   CHECK(!parts_.empty());
   kept_parts_.clear();
+}
+
+void Vessel::ClearAllIntrinsicForces() {
+  for (auto const& pair : parts_) {
+    auto const& part = pair.second;
+    part->clear_intrinsic_force();
+  }
 }
 
 void Vessel::PreparePsychohistory(Instant const& t) {

@@ -182,7 +182,6 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*> const& forks)
     const {
-  LOG(INFO) << __FUNCTION__;
   CHECK(this->is_root());
 
   std::vector<DiscreteTrajectory<Frame>*> mutable_forks = forks;
@@ -192,10 +191,6 @@ void DiscreteTrajectory<Frame>::WriteToMessage(
                     [](DiscreteTrajectory<Frame>* const fork) {
                       return fork == nullptr;
                     }));
-
-  LOG(INFO) << NAMED(this);
-  LOG(INFO) << NAMED(message->SpaceUsed());
-  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 template<typename Frame>

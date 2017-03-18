@@ -566,7 +566,7 @@ void principia__InsertOrKeepVessel(Plugin* const plugin,
 
 void principia__InsertOrKeepLoadedPart(
     Plugin* const plugin,
-    std::uint32_t const part_id,
+    PartId const part_id,
     char const* const name,
     double const mass_in_tonnes,
     char const* const vessel_guid,
@@ -798,7 +798,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
-    LOG(INFO) << "Begin plugin seralization";
+    LOG(INFO) << "Begin plugin serialization";
     *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
@@ -812,7 +812,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // If this is the end of the serialization, delete the serializer and return a
   // nullptr.
   if (bytes.size == 0) {
-    LOG(INFO) << "End plugin seralization";
+    LOG(INFO) << "End plugin serialization";
     TakeOwnership(serializer);
     return m.Return(nullptr);
   }
@@ -924,18 +924,6 @@ void principia__UpdatePrediction(Plugin const* const plugin,
   CHECK_NOTNULL(plugin);
   plugin->UpdatePrediction(vessel_guid);
   return m.Return();
-}
-
-// Calls |plugin->VesselFromParent| with the arguments given.
-// |plugin| must not be null.  No transfer of ownership.
-QP principia__VesselFromParent(Plugin const* const plugin,
-                               char const* const vessel_guid) {
-  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  RelativeDegreesOfFreedom<AliceSun> const result =
-      plugin->VesselFromParent(vessel_guid);
-  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
-                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
 }  // namespace interface

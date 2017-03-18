@@ -25,12 +25,6 @@ void principia__IteratorDelete(Iterator** const iterator) {
   return m.Return();
 }
 
-void principia__IteratorIncrement(Iterator* const iterator) {
-  journal::Method<journal::IteratorIncrement> m({iterator});
-  CHECK_NOTNULL(iterator)->Increment();
-  return m.Return();
-}
-
 QP principia__IteratorGetQP(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetQP> m({iterator});
   CHECK_NOTNULL(iterator);
@@ -72,6 +66,12 @@ XYZ principia__IteratorGetXYZ(Iterator const* const iterator) {
                          .coordinates() /
                      Metre);
       }));
+}
+
+void principia__IteratorIncrement(Iterator* const iterator) {
+  journal::Method<journal::IteratorIncrement> m({iterator});
+  CHECK_NOTNULL(iterator)->Increment();
+  return m.Return();
 }
 
 int principia__IteratorSize(Iterator const* const iterator) {
