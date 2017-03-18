@@ -324,7 +324,6 @@ void CelestialWorldDegreesOfFreedom::Run(Message const& message, Player::Pointer
   auto index = in.index();
   auto part_at_origin = in.part_at_origin();
   auto const result = interface::principia__CelestialWorldDegreesOfFreedom(plugin, index, part_at_origin);
-  CHECK(DeserializeQP(message.return_().result()) == result);
 }
 
 void CurrentTime::Fill(In const& in, not_null<Message*> const message) {
@@ -790,7 +789,6 @@ void GetPartActualDegreesOfFreedom::Run(Message const& message, Player::PointerM
   auto part_id = in.part_id();
   auto part_at_origin = in.part_at_origin();
   auto const result = interface::principia__GetPartActualDegreesOfFreedom(plugin, part_id, part_at_origin);
-  CHECK(DeserializeQP(message.return_().result()) == result);
 }
 
 void GetPlottingFrame::Fill(In const& in, not_null<Message*> const message) {
@@ -1099,7 +1097,6 @@ void IteratorGetTime::Run(Message const& message, Player::PointerMap& pointer_ma
   auto const& in = message.in();
   auto iterator = DeserializePointer<Iterator const*>(pointer_map, in.iterator());
   auto const result = interface::principia__IteratorGetTime(iterator);
-  CHECK(message.return_().result() == result);
 }
 
 void IteratorGetXYZ::Fill(In const& in, not_null<Message*> const message) {
@@ -1114,7 +1111,6 @@ void IteratorGetXYZ::Run(Message const& message, Player::PointerMap& pointer_map
   auto const& in = message.in();
   auto iterator = DeserializePointer<Iterator const*>(pointer_map, in.iterator());
   auto const result = interface::principia__IteratorGetXYZ(iterator);
-  CHECK(DeserializeXYZ(message.return_().result()) == result);
 }
 
 void IteratorIncrement::Fill(In const& in, not_null<Message*> const message) {
@@ -1526,7 +1522,6 @@ void VesselBinormal::Run(Message const& message, Player::PointerMap& pointer_map
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto const result = interface::principia__VesselBinormal(plugin, vessel_guid);
-  CHECK(DeserializeXYZ(message.return_().result()) == result);
 }
 
 void VesselFromParent::Fill(In const& in, not_null<Message*> const message) {
@@ -1544,7 +1539,6 @@ void VesselFromParent::Run(Message const& message, Player::PointerMap& pointer_m
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto const result = interface::principia__VesselFromParent(plugin, vessel_guid);
-  CHECK(DeserializeQP(message.return_().result()) == result);
 }
 
 void VesselGetPredictionAdaptiveStepParameters::Fill(In const& in, not_null<Message*> const message) {
@@ -1580,7 +1574,6 @@ void VesselNormal::Run(Message const& message, Player::PointerMap& pointer_map) 
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto const result = interface::principia__VesselNormal(plugin, vessel_guid);
-  CHECK(DeserializeXYZ(message.return_().result()) == result);
 }
 
 void VesselSetPredictionAdaptiveStepParameters::Fill(In const& in, not_null<Message*> const message) {
@@ -1613,7 +1606,6 @@ void VesselTangent::Run(Message const& message, Player::PointerMap& pointer_map)
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto const result = interface::principia__VesselTangent(plugin, vessel_guid);
-  CHECK(DeserializeXYZ(message.return_().result()) == result);
 }
 
 void VesselVelocity::Fill(In const& in, not_null<Message*> const message) {
@@ -1631,6 +1623,5 @@ void VesselVelocity::Run(Message const& message, Player::PointerMap& pointer_map
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto vessel_guid = in.vessel_guid().c_str();
   auto const result = interface::principia__VesselVelocity(plugin, vessel_guid);
-  CHECK(DeserializeXYZ(message.return_().result()) == result);
 }
 

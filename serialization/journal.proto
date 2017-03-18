@@ -201,7 +201,7 @@ message CelestialWorldDegreesOfFreedom {
     required fixed32 part_at_origin = 3;
   }
   message Return {
-    required QP result = 1;
+    required QP result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -611,7 +611,7 @@ message GetPartActualDegreesOfFreedom {
     required fixed32 part_at_origin = 3;
   }
   message Return {
-    required QP result = 1;
+    required QP result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -871,7 +871,7 @@ message IteratorGetTime {
                                    (is_subject) = true];
   }
   message Return {
-    required double result = 1;
+    required double result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -886,7 +886,7 @@ message IteratorGetXYZ {
                                    (is_subject) = true];
   }
   message Return {
-    required XYZ result = 1;
+    required XYZ result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1257,7 +1257,7 @@ message VesselBinormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ result = 1;
+    required XYZ result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1273,7 +1273,7 @@ message VesselFromParent {
     required string vessel_guid = 2;
   }
   message Return {
-    required QP result = 1;
+    required QP result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1305,7 +1305,7 @@ message VesselNormal {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ result = 1;
+    required XYZ result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1334,7 +1334,7 @@ message VesselTangent {
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ result = 1;
+    required XYZ result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -1350,7 +1350,7 @@ message VesselVelocity{
     required string vessel_guid = 2;
   }
   message Return {
-    required XYZ result = 1;
+    required XYZ result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
