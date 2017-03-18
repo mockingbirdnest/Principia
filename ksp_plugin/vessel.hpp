@@ -54,7 +54,7 @@ class Vessel {
   Vessel& operator=(Vessel const&) = delete;
   Vessel& operator=(Vessel&&) = delete;
 
-  virtual ~Vessel() = default;
+  virtual ~Vessel();
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
@@ -78,6 +78,8 @@ class Vessel {
   // removals; thus a call to |AddPart| must occur before |FreeParts| is first
   // called.
   virtual void FreeParts();
+
+  virtual void ClearAllIntrinsicForces();
 
   // If the psychohistory is empty, appends a single authoritative point to it,
   // computed as the barycentre of all parts.  |parts_| must not be empty.
@@ -173,10 +175,8 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<not_null<Part const*>> kept_parts_;
 
-  // If the psychohistory is not authoritative it contains at least one point.
+  // The psychohistory contains at least one authoritative point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
-  // TODO(egg): this is nonsensical, we start with an empty psychohistory, how
-  // can that be authoritative?  This class needs saner invariants.
   bool psychohistory_is_authoritative_ = true;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
