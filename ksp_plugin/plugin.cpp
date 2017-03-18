@@ -514,10 +514,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
+      CHECK(!is_new_unloaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       it = vessels_.erase(it);
     }
   }
+  CHECK(kept_vessels_.empty());
   // Free old parts and bind vessels.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
