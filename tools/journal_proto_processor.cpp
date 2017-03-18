@@ -799,6 +799,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         "  CHECK(" +
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
+  } else {
+    CHECK(field_options.GetExtension(journal::serialization::omit_check))
+      << field_descriptor->full_name() << " has incorrect (omit_check) option";
   }
   cs_interface_return_marshal_[descriptor] =
       field_cs_marshal_[field_descriptor].empty()

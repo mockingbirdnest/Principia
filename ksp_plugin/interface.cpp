@@ -798,7 +798,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
-    LOG(INFO) << "Begin plugin seralization";
+    LOG(INFO) << "Begin plugin serialization";
     *serializer = new PullSerializer(chunk_size, number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
@@ -812,7 +812,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // If this is the end of the serialization, delete the serializer and return a
   // nullptr.
   if (bytes.size == 0) {
-    LOG(INFO) << "End plugin seralization";
+    LOG(INFO) << "End plugin serialization";
     TakeOwnership(serializer);
     return m.Return(nullptr);
   }
