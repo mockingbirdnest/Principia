@@ -146,7 +146,7 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 Plugin::~Plugin() {
   // We must manually destroy the vessels, triggering the destruction of the
   // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.  This also remove the parts from the
+  // which must therefore still exist.  This also removes the parts from the
   // pile-ups, which also exist.
   vessels_.clear();
 }
