@@ -27,7 +27,7 @@ using PartId = std::uint32_t;
 // pointers to Parts.
 struct PartByPartIdComparator {
   bool operator()(not_null<Part*> left, not_null<Part*> right) const;
-  bool operator()(not_null<Part const*> left, 
+  bool operator()(not_null<Part const*> left,
                   not_null<Part const*> right) const;
 };
 
