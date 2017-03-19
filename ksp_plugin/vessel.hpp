@@ -187,14 +187,6 @@ class Vessel {
   std::unique_ptr<FlightPlan> flight_plan_;
 };
 
-// Comparator by GUID.  Useful for ensuring a consistent ordering in sets of
-// pointers to Vessel.
-struct VesselByGUIDComparator {
-  bool operator()(not_null<Vessel*> left, not_null<Vessel*> right) const;
-  bool operator()(not_null<Vessel const*> left,
-                  not_null<Vessel const*> right) const;
-};
-
 // Factories for use by the clients and the compatibility code.
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters();
@@ -206,7 +198,6 @@ using internal_vessel::DefaultHistoryParameters;
 using internal_vessel::DefaultPredictionParameters;
 using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
-using internal_vessel::VesselByGUIDComparator;
 
 }  // namespace ksp_plugin
 }  // namespace principia

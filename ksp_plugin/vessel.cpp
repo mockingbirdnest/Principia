@@ -419,17 +419,6 @@ Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
              /*speed_integration_tolerance=*/1 * Metre / Second);
 }
 
-bool VesselByGUIDComparator::operator()(not_null<Vessel*> const left,
-                                        not_null<Vessel*> const right) const {
-  return left->guid() < right->guid();
-}
-
-bool VesselByGUIDComparator::operator()(
-    not_null<Vessel const*> const left,
-    not_null<Vessel const*> const right) const {
-  return left->guid() < right->guid();
-}
-
 }  // namespace internal_vessel
 }  // namespace ksp_plugin
 }  // namespace principia

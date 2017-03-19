@@ -122,10 +122,12 @@ class PileUp {
                             serialization::Frame::RIGID_PILE_UP,
                             /*frame_is_inertial=*/false>;
 
-  std::map<not_null<Part*>, DegreesOfFreedom<RigidPileUp>>
-      actual_part_degrees_of_freedom_;
-  std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>
-      apparent_part_degrees_of_freedom_;
+  std::map<not_null<Part*>,
+           DegreesOfFreedom<RigidPileUp>,
+           PartByPartIdComparator> actual_part_degrees_of_freedom_;
+  std::map<not_null<Part*>,
+           DegreesOfFreedom<ApparentBubble>,
+           PartByPartIdComparator> apparent_part_degrees_of_freedom_;
 
   friend class TestablePileUp;
 };
