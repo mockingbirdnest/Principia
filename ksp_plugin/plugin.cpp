@@ -489,7 +489,7 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (not_null<Vessel*> vessel : loaded_vessels_) {
+  for (not_null<Vessel const*> vessel : loaded_vessels_) {
     // TODO(egg): we're taking the address of a parameter passed by reference
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
@@ -540,14 +540,14 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   // over all parts in vessels that were in the bubble in the preceding frame;
   // the latter set would be useful for invariant-checking in
   // |GetPartActualDegreesOfFreedom| anyway.
-  for (not_null<Vessel*> const vessel : loaded_vessels_) {
+  for (not_null<Vessel const*> const vessel : loaded_vessels_) {
     vessel->ForSomePart([this](Part& part) {
       Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
                                                             current_time_);
     });
   }
 
-  for (not_null<Vessel*> const vessel : new_unloaded_vessels_) {
+  for (not_null<Vessel const*> const vessel : new_unloaded_vessels_) {
     vessel->ForSomePart([vessel, this](Part& first_part) {
       vessel->ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),

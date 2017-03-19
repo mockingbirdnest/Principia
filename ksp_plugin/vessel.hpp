@@ -56,6 +56,9 @@ class Vessel {
 
   virtual ~Vessel();
 
+  // Returns the GUID passed at construction.
+  virtual GUID const& guid() const;
+
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
@@ -173,7 +176,7 @@ class Vessel {
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
-  std::set<not_null<Part const*>> kept_parts_;
+  std::set<PartId> kept_parts_;
 
   // The psychohistory contains at least one authoritative point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
@@ -182,6 +185,14 @@ class Vessel {
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 
   std::unique_ptr<FlightPlan> flight_plan_;
+};
+
+// Comparator by GUID.  Useful for ensuring a consistent ordering in sets of
+// pointers to Vessel.
+struct VesselByGUIDComparator {
+  bool operator()(not_null<Vessel*> left, not_null<Vessel*> right) const;
+  bool operator()(not_null<Vessel const*> left,
+                  not_null<Vessel const*> right) const;
 };
 
 // Factories for use by the clients and the compatibility code.
@@ -195,6 +206,7 @@ using internal_vessel::DefaultHistoryParameters;
 using internal_vessel::DefaultPredictionParameters;
 using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
+using internal_vessel::VesselByGUIDComparator;
 
 }  // namespace ksp_plugin
 }  // namespace principia
