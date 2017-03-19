@@ -383,7 +383,7 @@ public partial class PrincipiaPluginAdapter
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
                                  UpdateVesselOrbits);
     // Timing3, 7.
-    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Late,
                                  ReportVesselsAndParts);
   }
 
@@ -727,7 +727,7 @@ public partial class PrincipiaPluginAdapter
       // toying with Krakensbane and FloatingOrigin) here.
 
       // Now we let the game and Unity do their thing. among other things,
-      // the FashionablyLate callbacks, including ReportNonConservativeForces,
+      // the Late callbacks, including ReportNonConservativeForces,
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.
       StartCoroutine(
@@ -751,7 +751,7 @@ public partial class PrincipiaPluginAdapter
                                     SetBodyFramesAndPrecalculateVessels);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
                                     UpdateVesselOrbits);
-    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late,
                                     ReportVesselsAndParts);
   }
 
