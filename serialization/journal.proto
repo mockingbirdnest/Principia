@@ -611,7 +611,7 @@ message GetPartActualDegreesOfFreedom {
     required fixed32 part_at_origin = 3;
   }
   message Return {
-    required QP result = 1;// [(omit_check) = true];
+    required QP result = 1 [(omit_check) = true];
   }
   optional In in = 1;
   optional Return return = 3;
