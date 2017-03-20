@@ -42,9 +42,9 @@ struct VesselByGUIDComparator {
 };
 
 template<typename T>
-using PartTo =std::map<not_null<Part*>,
-                       T,
-                       PartByPartIdComparator>;
+using PartTo = std::map<not_null<Part*>,
+                        T,
+                        PartByPartIdComparator>;
 using VesselSet = std::set<not_null<Vessel*>,
                            VesselByGUIDComparator>;
 using VesselConstSet = std::set<not_null<Vessel const*>,
