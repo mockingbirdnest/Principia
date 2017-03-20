@@ -65,16 +65,12 @@ class TestablePileUp : public PileUp {
     return *psychohistory_;
   }
 
-  std::map<not_null<Part*>,
-           DegreesOfFreedom<RigidPileUp>,
-           PartByPartIdComparator> const&
+  PartTo<DegreesOfFreedom<RigidPileUp>> const&
   actual_part_degrees_of_freedom() const {
     return actual_part_degrees_of_freedom_;
   }
 
-  std::map<not_null<Part*>,
-           DegreesOfFreedom<ApparentBubble>,
-           PartByPartIdComparator> const&
+  PartTo<DegreesOfFreedom<ApparentBubble>> const&
   apparent_part_degrees_of_freedom() const {
     return apparent_part_degrees_of_freedom_;
   }

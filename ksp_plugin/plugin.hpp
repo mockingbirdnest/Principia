@@ -507,15 +507,12 @@ class Plugin {
   std::list<PileUp> pile_ups_;
 
   // The vessels that are currently loaded, i.e. in the physics bubble.
-  std::set<not_null<Vessel*>,
-           VesselByGUIDComparator> loaded_vessels_;
+  VesselSet loaded_vessels_;
   // The vessels that were inserted unloaded and have yet to be collected into a
   // pile-up.
-  std::set<not_null<Vessel const*>,
-           VesselByGUIDComparator> new_unloaded_vessels_;
+  VesselConstSet new_unloaded_vessels_;
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<not_null<Vessel const*>,
-           VesselByGUIDComparator> kept_vessels_;
+  VesselConstSet kept_vessels_;
 
   friend class NavballFrameField;
   friend class TestablePlugin;

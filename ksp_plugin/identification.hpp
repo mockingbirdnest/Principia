@@ -1,6 +1,8 @@
 #pragma once
 
 #include <limits>
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/not_null.hpp"
@@ -39,12 +41,24 @@ struct VesselByGUIDComparator {
                   not_null<Vessel const*> right) const;
 };
 
+template<typename T>
+using PartTo =std::map<not_null<Part*>,
+                       T,
+                       PartByPartIdComparator>;
+using VesselSet = std::set<not_null<Vessel*>,
+                           VesselByGUIDComparator>;
+using VesselConstSet = std::set<not_null<Vessel const*>,
+                                VesselByGUIDComparator>;
+
 }  // namespace internal_identification
 
 using internal_identification::GUID;
 using internal_identification::PartByPartIdComparator;
 using internal_identification::PartId;
+using internal_identification::PartTo;
 using internal_identification::VesselByGUIDComparator;
+using internal_identification::VesselConstSet;
+using internal_identification::VesselSet;
 
 }  // namespace ksp_plugin
 }  // namespace principia
