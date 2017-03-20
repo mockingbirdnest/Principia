@@ -272,7 +272,9 @@ public partial class PrincipiaPluginAdapter
     return vessel.state != Vessel.State.DEAD &&
            (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
             vessel.situation == Vessel.Situations.ORBITING ||
-            vessel.situation == Vessel.Situations.ESCAPING);
+            vessel.situation == Vessel.Situations.ESCAPING) &&
+           (vessel.packed ||
+            vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude);
   }
 
   private bool is_on_rails_in_space(Vessel vessel) {
@@ -985,6 +987,18 @@ public partial class PrincipiaPluginAdapter
                 FlightGlobals.currentMainBody.flightGlobalsIndex);
       }
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
+
+      Vector3d ? offset = null;
+      if (FlightGlobals.ActiveVessel != null &&
+          plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
+            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
+            FlightGlobals.ActiveVessel.rootPart.flightID);
+        krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
+        offset = (Vector3d)main_body_dof.q -
+                 FlightGlobals.ActiveVessel.mainBody.position;
+      }
+
       foreach (var body in FlightGlobals.Bodies) {
         // TODO(egg): I have no idea why this |swizzle| thing makes things work.
         // This probably really means something in terms of frames that should
@@ -996,6 +1010,15 @@ public partial class PrincipiaPluginAdapter
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
             Z = swizzly_body_world_to_world * new Vector3d{x = 0, y = 0, z = 1}};
+        if (offset.HasValue) {
+          body.position += offset.Value;
+        }
+      }
+      if (offset.HasValue) {
+        foreach (Vessel vessel in FlightGlobals.Vessels.Where(
+            is_on_rails_in_space)) {
+          vessel.SetPosition(vessel.transform.position + offset.Value);
+        }
       }
     }
   }
