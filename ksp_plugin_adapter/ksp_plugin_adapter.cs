@@ -272,7 +272,9 @@ public partial class PrincipiaPluginAdapter
     return vessel.state != Vessel.State.DEAD &&
            (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
             vessel.situation == Vessel.Situations.ORBITING ||
-            vessel.situation == Vessel.Situations.ESCAPING);
+            vessel.situation == Vessel.Situations.ESCAPING) &&
+           (vessel.packed ||
+            vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude);
   }
 
   private bool is_on_rails_in_space(Vessel vessel) {
@@ -932,7 +934,6 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
-      //OrbitPhysicsManager.CheckReferenceFrame();
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
@@ -941,9 +942,6 @@ public partial class PrincipiaPluginAdapter
                                    !vessel.packed,
                                    out inserted);
         if (!vessel.packed) {
-          if (FlightGlobals.RefFrameIsRotating) {
-            Log.Warning("Frame is rotating when loading vessel " + vessel.name);
-          }
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
                      p = (XYZ)(-krakensbane.FrameVel)};
