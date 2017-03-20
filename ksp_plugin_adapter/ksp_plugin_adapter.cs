@@ -1018,13 +1018,12 @@ public partial class PrincipiaPluginAdapter
       }
 
       foreach (var body in FlightGlobals.Bodies) {
-        // TODO(egg): I have no idea why this |swizzle| thing makes things
-        // work. This probably really means something in terms of frames that
-        // should be done in the C++ instead---once I figure out what it is.
+        // TODO(egg): I have no idea why this |swizzle| thing makes things work.
+        // This probably really means something in terms of frames that should
+        // be done in the C++ instead---once I figure out what it is.
         var swizzly_body_world_to_world =
             ((UnityEngine.QuaternionD)plugin_.CelestialRotation(
-                 body.flightGlobalsIndex))
-                .swizzle;
+                 body.flightGlobalsIndex)).swizzle;
         body.BodyFrame = new Planetarium.CelestialFrame{
             X = swizzly_body_world_to_world * new Vector3d{x = 1, y = 0, z = 0},
             Y = swizzly_body_world_to_world * new Vector3d{x = 0, y = 1, z = 0},
