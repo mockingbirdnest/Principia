@@ -782,6 +782,7 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   CHECK_EQ(1, descriptor->field_count())
       << descriptor->full_name() << " must have exactly one field";
   FieldDescriptor const* field_descriptor = descriptor->field(0);
+  FieldOptions const& field_options = field_descriptor->options();
   CHECK_EQ(FieldDescriptor::LABEL_REQUIRED, field_descriptor->label())
       << descriptor->full_name() << " must be required";
   ProcessField(field_descriptor);
@@ -793,11 +794,14 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
   if (Contains(field_cxx_inserter_fn_, field_descriptor)) {
     cxx_run_body_epilog_[descriptor] =
         field_cxx_inserter_fn_[field_descriptor](cxx_field_getter, "result");
-  } else {
+  } else if (!field_options.HasExtension(journal::serialization::omit_check)) {
     cxx_run_body_epilog_[descriptor] =
         "  CHECK(" +
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
         " == result);\n";
+  } else {
+    CHECK(field_options.GetExtension(journal::serialization::omit_check))
+      << field_descriptor->full_name() << " has incorrect (omit_check) option";
   }
   cs_interface_return_marshal_[descriptor] =
       field_cs_marshal_[field_descriptor].empty()

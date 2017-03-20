@@ -144,17 +144,10 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 }
 
 Plugin::~Plugin() {
-  // If we simply let the destructor of |Part| deal with removing itself from
-  // pile-ups, by calling |clear_pile_up|, it will try to access the other
-  // parts, which may have been already destroyed...
-  for (auto const& pair : vessels_) {
-    pair.second->ForAllParts([](Part& part) {
-      part.clear_pile_up();
-    });
-  }
   // We must manually destroy the vessels, triggering the destruction of the
   // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.
+  // which must therefore still exist.  This also removes the parts from the
+  // pile-ups, which also exist.
   vessels_.clear();
 }
 
@@ -522,8 +515,6 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
-      // See the destructor.
-      vessel->ForAllParts([](Part& part) { part.clear_pile_up(); });
       it = vessels_.erase(it);
     }
   }
@@ -658,7 +649,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     vessel.AdvanceTime();
   }
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
-    vessel->ForAllParts([](Part& part) { part.clear_intrinsic_force(); });
+    vessel->ClearAllIntrinsicForces();
   }
 
   VLOG(1) << "Time has been advanced" << '\n'
@@ -1357,9 +1348,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =
-        FindOrDie(celestials, celestial_message.index());
+          FindOrDie(celestials, celestial_message.index());
       not_null<Celestial const*> const parent =
-        FindOrDie(celestials, celestial_message.parent_index()).get();
+          FindOrDie(celestials, celestial_message.parent_index()).get();
       celestial->set_parent(parent);
     }
   }
