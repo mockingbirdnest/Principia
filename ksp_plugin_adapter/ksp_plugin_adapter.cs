@@ -932,7 +932,7 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
-      OrbitPhysicsManager.CheckReferenceFrame();
+      //OrbitPhysicsManager.CheckReferenceFrame();
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
@@ -941,6 +941,9 @@ public partial class PrincipiaPluginAdapter
                                    !vessel.packed,
                                    out inserted);
         if (!vessel.packed) {
+          if (FlightGlobals.RefFrameIsRotating) {
+            Log.Warning("Frame is rotating when loading vessel " + vessel.name);
+          }
           QP main_body_degrees_of_freedom =
               new QP{q = (XYZ)vessel.mainBody.position,
                      p = (XYZ)(-krakensbane.FrameVel)};
