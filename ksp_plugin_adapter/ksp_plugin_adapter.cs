@@ -944,6 +944,7 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
+      OrbitPhysicsManager.CheckReferenceFrame();
       saw_unpacked_vessel_in_rotating_space_ = false;
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
