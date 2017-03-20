@@ -85,8 +85,6 @@ public partial class PrincipiaPluginAdapter
   // opportunity.
   private bool must_set_plotting_frame_ = false;
 
-  private bool saw_unpacked_vessel_in_rotating_space_ = false;
-
   // Whether a journal is currently being recorded.
   private static bool journaling_;
 #if CRASH_BUTTON
@@ -805,16 +803,6 @@ public partial class PrincipiaPluginAdapter
 
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
-     // The reference frame is still rotating; that likely means we just got
-     // out of the atmosphere.  We do not insert vessels when the frame is
-     // rotating, and similarly we certainly do not want to look at the apparent
-     // velocities.
-     if (saw_unpacked_vessel_in_rotating_space_) {
-       Log.Info(
-           "breaking because saw_unpacked_vessel_in_rotating_space_ is set");
-       yield break;
-     }
-
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
          continue;
@@ -945,15 +933,8 @@ public partial class PrincipiaPluginAdapter
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
       OrbitPhysicsManager.CheckReferenceFrame();
-      saw_unpacked_vessel_in_rotating_space_ = false;
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
-        if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
-          saw_unpacked_vessel_in_rotating_space_ = true;
-          Log.Info(vessel.name + "(" + vessel.id +
-                   ") was unpacked in rotating space");
-          continue;
-        }
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                    vessel.vesselName,
                                    vessel.mainBody.flightGlobalsIndex,
