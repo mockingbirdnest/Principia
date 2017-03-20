@@ -85,6 +85,8 @@ public partial class PrincipiaPluginAdapter
   // opportunity.
   private bool must_set_plotting_frame_ = false;
 
+  private bool saw_unpacked_vessel_in_rotating_space_ = false;
+
   // Whether a journal is currently being recorded.
   private static bool journaling_;
 #if CRASH_BUTTON
@@ -383,7 +385,7 @@ public partial class PrincipiaPluginAdapter
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
                                  UpdateVesselOrbits);
     // Timing3, 7.
-    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Late,
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  ReportVesselsAndParts);
   }
 
@@ -727,7 +729,7 @@ public partial class PrincipiaPluginAdapter
       // toying with Krakensbane and FloatingOrigin) here.
 
       // Now we let the game and Unity do their thing. among other things,
-      // the Late callbacks, including ReportNonConservativeForces,
+      // the FashionablyLate callbacks, including ReportNonConservativeForces,
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.
       StartCoroutine(
@@ -751,7 +753,7 @@ public partial class PrincipiaPluginAdapter
                                     SetBodyFramesAndPrecalculateVessels);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
                                     UpdateVesselOrbits);
-    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late,
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     ReportVesselsAndParts);
   }
 
@@ -802,6 +804,16 @@ public partial class PrincipiaPluginAdapter
      }
 
      plugin_.FreeVesselsAndPartsAndCollectPileUps();
+
+     // The reference frame is still rotating; that likely means we just got
+     // out of the atmosphere.  We do not insert vessels when the frame is
+     // rotating, and similarly we certainly do not want to look at the apparent
+     // velocities.
+     if (saw_unpacked_vessel_in_rotating_space_) {
+       Log.Info(
+           "breaking because saw_unpacked_vessel_in_rotating_space_ is set");
+       yield break;
+     }
 
      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
@@ -932,8 +944,15 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
+      saw_unpacked_vessel_in_rotating_space_ = false;
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
+        if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
+          saw_unpacked_vessel_in_rotating_space_ = true;
+          Log.Info(vessel.name + "(" + vessel.id +
+                   ") was unpacked in rotating space");
+          continue;
+        }
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                    vessel.vesselName,
                                    vessel.mainBody.flightGlobalsIndex,
