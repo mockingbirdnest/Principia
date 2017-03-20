@@ -95,6 +95,9 @@
     <ClCompile Include="..\ksp_plugin\part_subsets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\ksp_plugin\identification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">

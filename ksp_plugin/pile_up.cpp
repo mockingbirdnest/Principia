@@ -68,7 +68,7 @@ std::list<not_null<Part*>> const& PileUp::parts() const {
 void PileUp::SetPartApparentDegreesOfFreedom(
     not_null<Part*> const part,
     DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom) {
-  std::map<not_null<Part*>, DegreesOfFreedom<ApparentBubble>>::iterator it;
+  PartTo<DegreesOfFreedom<ApparentBubble>>::iterator it;
   bool inserted;
   std::tie(it, inserted) =
       apparent_part_degrees_of_freedom_.emplace(part, degrees_of_freedom);

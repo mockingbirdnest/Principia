@@ -16,6 +16,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
@@ -53,6 +54,10 @@ Vessel::~Vessel() {
   }
 }
 
+GUID const& Vessel::guid() const {
+  return guid_;
+}
+
 not_null<MasslessBody const*> Vessel::body() const {
   return &body_;
 }
@@ -82,13 +87,14 @@ not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
 }
 
 void Vessel::KeepPart(PartId const id) {
-  kept_parts_.insert(FindOrDie(parts_, id).get());
+  CHECK(Contains(parts_, id)) << id;
+  kept_parts_.insert(id);
 }
 
 void Vessel::FreeParts() {
   for (auto it = parts_.begin(); it != parts_.end();) {
-    not_null<Part*> part = it->second.get();
-    if (Contains(kept_parts_, part)) {
+    not_null<Part*> const part = it->second.get();
+    if (Contains(kept_parts_, part->part_id())) {
       ++it;
     } else {
       part->clear_pile_up();
@@ -267,8 +273,9 @@ void Vessel::WriteToMessage(
     auto const& part = pair.second;
     part->WriteToMessage(message->add_parts());
   }
-  for (auto const& part : kept_parts_) {
-    message->add_kept_parts(part->part_id());
+  for (auto const& part_id : kept_parts_) {
+    CHECK(Contains(parts_, part_id));
+    message->add_kept_parts(part_id);
   }
   psychohistory_->WriteToMessage(message->mutable_psychohistory(),
                                  /*forks=*/{});
@@ -305,7 +312,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->parts_.emplace(part_id, std::move(part));
   }
   for (PartId const part_id : message.kept_parts()) {
-    vessel->kept_parts_.insert(vessel->parts_.at(part_id).get());
+    CHECK(Contains(vessel->parts_, part_id));
+    vessel->kept_parts_.insert(part_id);
   }
   vessel->psychohistory_ =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),

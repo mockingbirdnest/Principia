@@ -378,7 +378,6 @@ class Plugin {
 
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
-  using GUIDToUnownedVessel = std::map<GUID, not_null<Vessel*> const>;
   using IndexToOwnedCelestial =
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
   using NewtonianMotionEquation =
@@ -504,16 +503,16 @@ class Plugin {
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
 
-  // Do not |erase| from this list, use |Vessel::clear_pile_up| instead.
+  // Do not |erase| from this list, use |Part::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
 
   // The vessels that are currently loaded, i.e. in the physics bubble.
-  std::set<not_null<Vessel*>> loaded_vessels_;
+  VesselSet loaded_vessels_;
   // The vessels that were inserted unloaded and have yet to be collected into a
   // pile-up.
-  std::set<not_null<Vessel*>> new_unloaded_vessels_;
+  VesselConstSet new_unloaded_vessels_;
   // The vessels that will be kept during the next call to |AdvanceTime|.
-  std::set<not_null<Vessel const*>> kept_vessels_;
+  VesselConstSet kept_vessels_;
 
   friend class NavballFrameField;
   friend class TestablePlugin;

@@ -103,6 +103,9 @@
     <ClCompile Include="part_subsets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="identification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />

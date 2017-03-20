@@ -56,6 +56,9 @@ class Vessel {
 
   virtual ~Vessel();
 
+  // Returns the GUID passed at construction.
+  virtual GUID const& guid() const;
+
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
@@ -173,7 +176,7 @@ class Vessel {
   not_null<Ephemeris<Barycentric>*> const ephemeris_;
 
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
-  std::set<not_null<Part const*>> kept_parts_;
+  std::set<PartId> kept_parts_;
 
   // The psychohistory contains at least one authoritative point.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;

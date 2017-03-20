@@ -358,6 +358,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="burn.cpp" />
     <ClCompile Include="flight_plan.cpp" />
+    <ClCompile Include="identification.cpp" />
     <ClCompile Include="interface.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_iterator.cpp" />

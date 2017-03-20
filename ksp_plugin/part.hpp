@@ -72,12 +72,12 @@ class Part final {
 
   // This temporarily holds the trajectory followed by the part during the call
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
-  // by |Vessel::AdvanceTime| for the containing |Vessel|.
+  // by |Part::AdvanceTime| for the containing |Part|.
   DiscreteTrajectory<Barycentric>& tail();
   DiscreteTrajectory<Barycentric> const& tail() const;
 
   // True if and only if the last point of the tail is authoritative, i.e.,
-  // corresponds to a point in the psychohistory of the enclosing vessel.
+  // corresponds to a point in the psychohistory of the enclosing Part.
   bool tail_is_authoritative() const;
   void set_tail_is_authoritative(bool tail_is_authoritative);
 
@@ -134,14 +134,9 @@ class Part final {
 
 std::ostream& operator<<(std::ostream& out, Part const& part);
 
-using PartIdToOwnedPart = std::map<PartId, not_null<std::unique_ptr<Part>>>;
-using IdAndOwnedPart = PartIdToOwnedPart::value_type;
-
 }  // namespace internal_part
 
-using internal_part::IdAndOwnedPart;
 using internal_part::Part;
-using internal_part::PartIdToOwnedPart;
 
 }  // namespace ksp_plugin
 

@@ -32,7 +32,11 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
     return;
   }
   collected_ = true;
-  if (!EqualsExistingPileUp()) {
+  if (EqualsExistingPileUp()) {
+    PileUp& pile_up = *parts_.front()->containing_pile_up()->iterator();
+    pile_up.set_mass(total_mass_);
+    pile_up.set_intrinsic_force(total_intrinsic_force_);
+  } else {
     if (StrictSubsetOfExistingPileUp()) {
       parts_.front()->clear_pile_up();
     }
@@ -41,10 +45,6 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
     for (not_null<Part*> const part : it->parts()) {
       part->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
-  } else {
-    PileUp& pile_up = *parts_.front()->containing_pile_up()->iterator();
-    pile_up.set_mass(total_mass_);
-    pile_up.set_intrinsic_force(total_intrinsic_force_);
   }
 }
 
