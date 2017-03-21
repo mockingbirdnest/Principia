@@ -976,10 +976,22 @@ public partial class PrincipiaPluginAdapter
             }
           }
         } else if (inserted) {
-          foreach (ProtoPartSnapshot part in
-                   vessel.protoVessel.protoPartSnapshots) {
-            // TODO(egg): perhaps we can live with the asteroids if we detect
-            // them here and reassign their flightID.
+          var parts = vessel.protoVessel.protoPartSnapshots;
+          // For reasons that are unclear, the asteroid spawning code sometimes
+          // generates the same flightID twice; we regenerate the flightID on
+          // any asteroid we find.
+          if (vessel.vesselType == VesselType.SpaceObject &&
+              parts.Count == 1 &&
+              parts[0].partName == "PotatoRoid" &&
+              parts[0].flightID == parts[0].missionID) {
+            var part = parts[0];
+            var old_id = part.flightID;
+            part.flightID = ShipConstruction.GetUniqueFlightID(
+                HighLogic.CurrentGame.flightState);
+            Log.Info("Regenerating the part ID of " + vessel.name + ": " +
+                     part.flightID + " (was " + old_id + ")");
+          }
+          foreach (ProtoPartSnapshot part in parts) {
             plugin_.InsertUnloadedPart(
                 part.flightID,
                 part.partName,
