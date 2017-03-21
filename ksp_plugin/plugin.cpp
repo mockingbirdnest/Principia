@@ -424,8 +424,6 @@ void Plugin::InsertUnloadedPart(
               relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
-  not_null<Part*> const part = vessel->part(part_id);
-  Subset<Part>::MakeSingleton(*part, part);
 }
 
 void Plugin::InsertOrKeepLoadedPart(
@@ -478,9 +476,6 @@ void Plugin::InsertOrKeepLoadedPart(
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
   part->set_mass(mass);
-  // NOTE(egg): we do not call |MakeSingleton| here, as that copies the current
-  // intrinsic force of the part, so we must wait for
-  // |IncrementPartIntrinsicForce| to be called.
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -492,11 +487,12 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (not_null<Vessel const*> vessel : loaded_vessels_) {
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
     // TODO(egg): we're taking the address of a parameter passed by reference
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
-    vessel->ForAllParts(
+    vessel.ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
 }
@@ -523,39 +519,28 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     }
   }
   CHECK(kept_vessels_.empty());
-  // Free old parts and bind vessels.
+
+  // Free old parts.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
-    vessel->ForSomePart([vessel](Part& first_part) {
-      vessel->ForAllParts([&first_part](Part& part) {
+  }
+
+  // Bind the vessels.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([&vessel, this](Part& first_part) {
+      vessel.ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
       });
-    });
-  }
-  // We only need to collect one part per vessel, since the other parts are in
-  // the same subset.
-  // TODO(egg): this is incorrect: if two vessels are piled up together and
-  // one leaves the bubble, its parts are not piled up after this operation.
-  // Further, since pile ups that leave the bubble are not collected, they may
-  // retain intrinsic acceleration from their last frame inside the bubble.
-  // This could be fixed by either iterating over all parts, or just iterating
-  // over all parts in vessels that were in the bubble in the preceding frame;
-  // the latter set would be useful for invariant-checking in
-  // |GetPartActualDegreesOfFreedom| anyway.
-  for (not_null<Vessel const*> const vessel : loaded_vessels_) {
-    vessel->ForSomePart([this](Part& part) {
-      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
-                                                            current_time_);
     });
   }
 
-  for (not_null<Vessel const*> const vessel : new_unloaded_vessels_) {
-    vessel->ForSomePart([vessel, this](Part& first_part) {
-      vessel->ForAllParts([&first_part](Part& part) {
-        Subset<Part>::Unite(Subset<Part>::Find(first_part),
-                            Subset<Part>::Find(part));
-      });
+  // We only need to collect one part per vessel, since the other parts are in
+  // the same subset.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([&vessel, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
           current_time_);
@@ -587,6 +572,22 @@ void Plugin::AdvanceParts(Instant const& t) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
+#if 1
+  {
+    std::set<int> tail_sizes;
+    for (auto const& pair : vessels_) {
+      Vessel& vessel = *pair.second;
+      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
+      vessel.ForAllParts([&tail_sizes](Part& part) {
+        CHECK(part.is_piled_up())<<part.ShortDebugString();
+        tail_sizes.insert(part.tail().Size());
+      });
+    }
+    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
+        << tail_sizes.size() << " " << *tail_sizes.begin();
+  }
+#endif
+
   ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
     pile_up.DeformPileUpIfNeeded();
@@ -598,6 +599,23 @@ void Plugin::AdvanceParts(Instant const& t) {
     // anymore, it could be part of |PileUp::AdvanceTime|.
     pile_up.NudgeParts();
   }
+
+#if 1
+  {
+    std::set<int> tail_sizes;
+    for (auto const& pair : vessels_) {
+      Vessel& vessel = *pair.second;
+      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
+      vessel.ForAllParts([&tail_sizes](Part& part) {
+        CHECK(part.is_piled_up())<<part.ShortDebugString();
+        tail_sizes.insert(part.tail().Size());
+        LOG(INFO)<<part.tail().Size()<<" "<<part.ShortDebugString();
+      });
+    }
+    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
+        << tail_sizes.size() << " " << *tail_sizes.begin();
+  }
+#endif
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
@@ -639,6 +657,22 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
+#if 1
+  {
+    std::set<int> tail_sizes;
+    for (auto const& pair : vessels_) {
+      Vessel& vessel = *pair.second;
+      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
+      vessel.ForAllParts([&tail_sizes](Part& part) {
+        CHECK(part.is_piled_up())<<part.ShortDebugString();
+        tail_sizes.insert(part.tail().Size());
+      });
+    }
+    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
+        << tail_sizes.size() << " " << *tail_sizes.begin();
+  }
+#endif
+
   if (!vessels_.empty()) {
     bool tails_are_empty;
     vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
@@ -656,6 +690,22 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ClearAllIntrinsicForces();
   }
+
+#if 1
+  {
+    std::set<int> tail_sizes;
+    for (auto const& pair : vessels_) {
+      Vessel& vessel = *pair.second;
+      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
+      vessel.ForAllParts([&tail_sizes](Part& part) {
+        CHECK(part.is_piled_up())<<part.ShortDebugString();
+        tail_sizes.insert(part.tail().Size());
+      });
+    }
+    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
+        << tail_sizes.size() << " " << *tail_sizes.begin();
+  }
+#endif
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
