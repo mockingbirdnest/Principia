@@ -444,8 +444,6 @@ class Plugin {
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;
-  // Whether |new_unloaded_vessels_| contains |vessel|.
-  bool is_new_unloaded(not_null<Vessel*> vessel) const;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
@@ -508,9 +506,6 @@ class Plugin {
 
   // The vessels that are currently loaded, i.e. in the physics bubble.
   VesselSet loaded_vessels_;
-  // The vessels that were inserted unloaded and have yet to be collected into a
-  // pile-up.
-  VesselConstSet new_unloaded_vessels_;
   // The vessels that will be kept during the next call to |AdvanceTime|.
   VesselConstSet kept_vessels_;
 

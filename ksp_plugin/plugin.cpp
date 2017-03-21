@@ -396,8 +396,6 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   vessel->set_parent(parent);
   if (loaded) {
     loaded_vessels_.insert(vessel);
-  } else if (inserted) {
-    new_unloaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
                          << " vessel " << vessel->ShortDebugString();
@@ -412,7 +410,6 @@ void Plugin::InsertUnloadedPart(
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
-  CHECK(is_new_unloaded(vessel));
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
@@ -513,7 +510,6 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
-      CHECK(!is_new_unloaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       it = vessels_.erase(it);
     }
@@ -540,13 +536,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   // the same subset.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel, this](Part& first_part) {
+    vessel.ForSomePart([this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
           current_time_);
     });
   }
-  new_unloaded_vessels_.clear();
 }
 
 void Plugin::SetPartApparentDegreesOfFreedom(
@@ -1077,7 +1072,6 @@ void Plugin::WriteToMessage(
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
-    vessel_message->set_new_unloaded(Contains(new_unloaded_vessels_, vessel));
     vessel_message->set_kept(Contains(kept_vessels_, vessel));
   }
   for (auto const& pair : part_id_to_vessel_) {
@@ -1147,9 +1141,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
     if (vessel_message.loaded()) {
       plugin->loaded_vessels_.insert(vessel.get());
-    }
-    if (vessel_message.new_unloaded()) {
-      plugin->new_unloaded_vessels_.insert(vessel.get());
     }
     if (vessel_message.kept()) {
       plugin->kept_vessels_.insert(vessel.get());
@@ -1388,10 +1379,6 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
-}
-
-bool Plugin::is_new_unloaded(not_null<Vessel*> vessel) const {
-  return Contains(new_unloaded_vessels_, vessel);
 }
 
 }  // namespace internal_plugin
