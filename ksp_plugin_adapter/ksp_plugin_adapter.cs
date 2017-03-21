@@ -924,6 +924,15 @@ public partial class PrincipiaPluginAdapter
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
+      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.packed) {
+        if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
+          Log.Info("Killing stock gravity");
+          PhysicsGlobals.GraviticForceMultiplier = 0;
+        }
+      } else if (PhysicsGlobals.GraviticForceMultiplier == 0) {
+        Log.Info("Reinstating stock gravity");
+        PhysicsGlobals.GraviticForceMultiplier = 1;
+      }
       foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
         bool inserted;
         plugin_.InsertOrKeepVessel(vessel.id.ToString(),
