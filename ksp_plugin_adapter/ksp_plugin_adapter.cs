@@ -963,6 +963,8 @@ public partial class PrincipiaPluginAdapter
         } else if (inserted) {
           foreach (ProtoPartSnapshot part in
                    vessel.protoVessel.protoPartSnapshots) {
+            // TODO(egg): perhaps we can live with the asteroids if we detect
+            // them here and reassign their flightID.
             plugin_.InsertUnloadedPart(
                 part.flightID,
                 part.partName,
