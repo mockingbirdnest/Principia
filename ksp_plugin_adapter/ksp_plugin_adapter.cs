@@ -423,8 +423,6 @@ public partial class PrincipiaPluginAdapter
       String[] serializations = node.GetValues(principia_key);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
-        Log.Info("serialization is " + serialization.Length +
-                 " characters long");
         Interface.DeserializePlugin(serialization,
                                     serialization.Length,
                                     ref deserializer,
@@ -948,7 +946,7 @@ public partial class PrincipiaPluginAdapter
           foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
             plugin_.InsertOrKeepLoadedPart(
                 part.flightID,
-                part.partName,
+                part.name,
                 part.physicsMass,
                 vessel.id.ToString(),
                 vessel.mainBody.flightGlobalsIndex,
