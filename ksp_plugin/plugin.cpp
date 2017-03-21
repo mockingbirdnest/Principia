@@ -389,6 +389,9 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                                     ephemeris_.get(),
                                                     prediction_parameters_));
   not_null<Vessel*> const vessel = it->second.get();
+  if (vessel->name() != vessel_name) {
+    vessel->set_name(vessel_name);
+  }
   kept_vessels_.emplace(vessel);
   vessel->set_parent(parent);
   if (loaded) {

@@ -46,6 +46,7 @@ Vessel::Vessel(GUID const& guid,
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 Vessel::~Vessel() {
+  LOG(INFO) << "Destroying vessel " << ShortDebugString();
   // The parts must remove themselves from their pile-ups *before* any of them
   // starts to destroy, otherwise |clear_pile_up| might access destroyed parts.
   for (auto const& pair : parts_) {
@@ -56,6 +57,16 @@ Vessel::~Vessel() {
 
 GUID const& Vessel::guid() const {
   return guid_;
+}
+
+std::string const& Vessel::name() const {
+  return name_;
+}
+
+void Vessel::set_name(std::string const& new_name) {
+  LOG(INFO) << "Vessel " << ShortDebugString() << " is now known as "
+            << new_name;
+  name_ = new_name;
 }
 
 not_null<MasslessBody const*> Vessel::body() const {
