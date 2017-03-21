@@ -63,7 +63,7 @@ std::string const& Vessel::name() const {
   return name_;
 }
 
-void Vessel::rename(std::string const& new_name) {
+void Vessel::set_name(std::string const& new_name) {
   LOG(INFO) << "Vessel " << ShortDebugString() << " is now known as "
             << new_name;
   name_ = new_name;

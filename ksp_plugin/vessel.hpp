@@ -62,7 +62,7 @@ class Vessel {
   // Returns the name.
   virtual std::string const& name() const;
   // Changes the name.
-  virtual void rename(std::string const& new_name);
+  virtual void set_name(std::string const& new_name);
 
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
