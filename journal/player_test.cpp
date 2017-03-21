@@ -93,17 +93,14 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 1
+#if 0
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
     // An example of how journaling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\second crash of 20170321\JOURNAL.20170321-121513)";
-//        R"(P:\Public Mockingbird\Principia\Journals\third crash of 20170321\JOURNAL.20170321-125716)";
-//        R"(P:\Public Mockingbird\Principia\Journals\second crash of 20170321\JOURNAL.20170321-121513)";
-//        R"(P:\Public Mockingbird\Principia\Journals\second crash of 20170321\JOURNAL.20170321-121513)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170317-181650)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -117,20 +114,6 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << "Last successful method out/return: \n"
                << player.last_method_out_return().DebugString();
 
-#if 1
-    serialization::Method method_in;
-    auto* extension = method_in.MutableExtension(
-        serialization::AdvanceTime::extension);
-    auto* in = extension->mutable_in();
-    in->set_plugin(3009076736);
-    in->set_t(1435.9078710927461);
-    in->set_planetarium_rotation(253.28451690962027);
-    serialization::Method method_out_return;
-    method_out_return.MutableExtension(
-        serialization::AdvanceTime::extension);
-    LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-    CHECK(RunIfAppropriate<AdvanceTime>(method_in, method_out_return, player));
-#endif
 #if 0
     serialization::Method method_in;
     auto* extension = method_in.MutableExtension(

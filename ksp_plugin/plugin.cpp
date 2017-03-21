@@ -572,22 +572,6 @@ void Plugin::AdvanceParts(Instant const& t) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
-#if 1
-  {
-    std::set<int> tail_sizes;
-    for (auto const& pair : vessels_) {
-      Vessel& vessel = *pair.second;
-      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
-      vessel.ForAllParts([&tail_sizes](Part& part) {
-        CHECK(part.is_piled_up())<<part.ShortDebugString();
-        tail_sizes.insert(part.tail().Size());
-      });
-    }
-    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
-        << tail_sizes.size() << " " << *tail_sizes.begin();
-  }
-#endif
-
   ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
     pile_up.DeformPileUpIfNeeded();
@@ -599,23 +583,6 @@ void Plugin::AdvanceParts(Instant const& t) {
     // anymore, it could be part of |PileUp::AdvanceTime|.
     pile_up.NudgeParts();
   }
-
-#if 1
-  {
-    std::set<int> tail_sizes;
-    for (auto const& pair : vessels_) {
-      Vessel& vessel = *pair.second;
-      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
-      vessel.ForAllParts([&tail_sizes](Part& part) {
-        CHECK(part.is_piled_up())<<part.ShortDebugString();
-        tail_sizes.insert(part.tail().Size());
-        LOG(INFO)<<part.tail().Size()<<" "<<part.ShortDebugString();
-      });
-    }
-    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
-        << tail_sizes.size() << " " << *tail_sizes.begin();
-  }
-#endif
 }
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
@@ -657,22 +624,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
-#if 1
-  {
-    std::set<int> tail_sizes;
-    for (auto const& pair : vessels_) {
-      Vessel& vessel = *pair.second;
-      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
-      vessel.ForAllParts([&tail_sizes](Part& part) {
-        CHECK(part.is_piled_up())<<part.ShortDebugString();
-        tail_sizes.insert(part.tail().Size());
-      });
-    }
-    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
-        << tail_sizes.size() << " " << *tail_sizes.begin();
-  }
-#endif
-
   if (!vessels_.empty()) {
     bool tails_are_empty;
     vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
@@ -690,22 +641,6 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ClearAllIntrinsicForces();
   }
-
-#if 1
-  {
-    std::set<int> tail_sizes;
-    for (auto const& pair : vessels_) {
-      Vessel& vessel = *pair.second;
-      LOG(INFO)<<"-- "<<vessel.ShortDebugString()<<" "<<is_loaded(&vessel);
-      vessel.ForAllParts([&tail_sizes](Part& part) {
-        CHECK(part.is_piled_up())<<part.ShortDebugString();
-        tail_sizes.insert(part.tail().Size());
-      });
-    }
-    CHECK(tail_sizes.size() == 1 || *tail_sizes.begin() > 0)
-        << tail_sizes.size() << " " << *tail_sizes.begin();
-  }
-#endif
 
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'

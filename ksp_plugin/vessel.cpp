@@ -46,7 +46,7 @@ Vessel::Vessel(GUID const& guid,
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 Vessel::~Vessel() {
-  //LOG(INFO) << "Destroying vessel " << ShortDebugString();
+  LOG(INFO) << "Destroying vessel " << ShortDebugString();
   // The parts must remove themselves from their pile-ups *before* any of them
   // starts to destroy, otherwise |clear_pile_up| might access destroyed parts.
   for (auto const& pair : parts_) {
