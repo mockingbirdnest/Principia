@@ -59,6 +59,11 @@ class Vessel {
   // Returns the GUID passed at construction.
   virtual GUID const& guid() const;
 
+  // Returns the name.
+  virtual std::string const& name() const;
+  // Changes the name.
+  virtual void rename(std::string const& new_name);
+
   // Returns the body for this vessel.
   virtual not_null<MasslessBody const*> body() const;
 
@@ -166,7 +171,7 @@ class Vessel {
   DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
 
   GUID const guid_;
-  std::string const name_;
+  std::string name_;
 
   MasslessBody const body_;
   Ephemeris<Barycentric>::AdaptiveStepParameters
