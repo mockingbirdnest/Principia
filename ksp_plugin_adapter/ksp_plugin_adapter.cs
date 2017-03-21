@@ -981,7 +981,8 @@ public partial class PrincipiaPluginAdapter
           // generates the same flightID twice; we regenerate the flightID on
           // any asteroid we find.
           if (vessel.vesselType == VesselType.SpaceObject &&
-               parts.Count == 1 &&
+              parts.Count == 1 &&
+              parts[0].partName == "PotatoRoid" &&
               parts[0].flightID == parts[0].missionID) {
             var part = parts[0];
             var old_id = part.flightID;
