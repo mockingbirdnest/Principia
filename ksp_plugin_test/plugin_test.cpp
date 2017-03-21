@@ -436,6 +436,7 @@ TEST_F(PluginTest, Serialization) {
       satellite,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin->PrepareToReportCollisions();
   plugin->FreeVesselsAndPartsAndCollectPileUps();
 
   Time const shift = 1 * Second;
