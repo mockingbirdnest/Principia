@@ -832,8 +832,8 @@ public partial class PrincipiaPluginAdapter
      // transforms of loaded vessels & their parts.
      if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
          plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-       // TODO(egg): move this to the C++, this is just to check that I
-       // understand the issue.
+       Vector3d q_correction_at_root_part = Vector3d.zero;
+       Vector3d v_correction_at_root_part = Vector3d.zero;
        foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
          // TODO(egg): if I understand anything, there should probably be a
          // special treatment for loaded packed vessels.  I don't understand
@@ -846,12 +846,27 @@ public partial class PrincipiaPluginAdapter
              continue;
            }
            QP part_actual_degrees_of_freedom =
-               plugin_.GetPartActualDegreesOfFreedom(part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+               plugin_.GetPartActualDegreesOfFreedom(
+                   part.flightID,
+                   FlightGlobals.ActiveVessel.rootPart.flightID);
+           if (part == FlightGlobals.ActiveVessel.rootPart) {
+             q_correction_at_root_part =
+                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
+             v_correction_at_root_part =
+                 (Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity;
+           }
+
            // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
            // transform nonsense must probably be done.
            part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
            part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
          }
+       }
+       foreach (physicalObject physical_object in
+                FlightGlobals.physicalObjects.Where(o => o != null &&
+                                                    o.rb != null)) {
+         physical_object.rb.position += q_correction_at_root_part;
+         physical_object.rb.velocity += v_correction_at_root_part;
        }
        QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
            FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
