@@ -207,6 +207,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
       vessel_guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
   plugin_->SetPlottingFrame(
@@ -296,6 +297,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                               part_name,
                               vessel_guid,
                               {from_the_earth_to_l5, initial_velocity});
+  plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
   plugin_->SetPlottingFrame(
@@ -674,6 +676,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       {Displacement<AliceSun>({1 * Metre, 0 * Metre, 0 * Metre}),
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
+  plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps();
 
   plugin.SetPlottingFrame(

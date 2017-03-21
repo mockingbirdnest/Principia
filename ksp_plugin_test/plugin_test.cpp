@@ -779,6 +779,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
   auto const satellite = plugin_->GetVessel(guid);
 
@@ -861,6 +862,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
   Instant const& time = initial_time_ + 1 * Second;
@@ -909,6 +911,7 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
                                 SolarSystemFactory::Sun,
                                 /*loaded=*/false,
                                 inserted);
+    plugin_->PrepareToReportCollisions();
     plugin_->FreeVesselsAndPartsAndCollectPileUps();
     plugin_->VesselFromParent(guid);
   }, R"regex(!parts_\.empty\(\))regex");
@@ -957,6 +960,7 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
       guid,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
   EXPECT_THAT(plugin_->VesselFromParent(guid),
               Componentwise(
@@ -1079,6 +1083,7 @@ TEST_F(PluginTest, Frenet) {
       satellite,
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
+  plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps();
   Vector<double, World> t = alice_sun_to_world(
                                 Normalize(satellite_initial_velocity_));
