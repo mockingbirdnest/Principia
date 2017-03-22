@@ -862,6 +862,14 @@ public partial class PrincipiaPluginAdapter
            part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
          }
        }
+       // Warn if the correction corresponds to a velocity greater than 1 m/s
+       // or to an acceleration greater than 1 m/s².
+       if (q_correction_at_root_part.magnitude > 1 * TimeWarp.fixedDeltaTime) {
+         Log.Warning("Large position correction: " + q_correction_at_root_part);
+       }
+       if (v_correction_at_root_part.magnitude > 1 * TimeWarp.fixedDeltaTime) {
+         Log.Warning("Large velocity correction: " + v_correction_at_root_part);
+       }
        foreach (physicalObject physical_object in
                 FlightGlobals.physicalObjects.Where(o => o != null &&
                                                     o.rb != null)) {
