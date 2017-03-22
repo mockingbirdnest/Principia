@@ -870,6 +870,16 @@ public partial class PrincipiaPluginAdapter
        if (v_correction_at_root_part.magnitude > 1 * TimeWarp.fixedDeltaTime) {
          Log.Warning("Large velocity correction: " + v_correction_at_root_part);
        }
+       if (FlightGlobals.ActiveVessel.rootPart.transform != FlightGlobals.ActiveVessel.transform) {
+         Log.Error("Root part transform is not vessel transform for vessel " +
+                   FlightGlobals.ActiveVessel.vesselName + "; root part is " +
+                   FlightGlobals.ActiveVessel.rootPart.name +
+                   ", root transform is that of part " +
+                   FlightGlobals.ActiveVessel.GetReferenceTransformPart().name +
+                   " if " +
+                   (FlightGlobals.ActiveVessel.GetReferenceTransformPart()
+                        .transform == FlightGlobals.ActiveVessel.transform));
+       }
        foreach (physicalObject physical_object in
                 FlightGlobals.physicalObjects.Where(o => o != null &&
                                                     o.rb != null)) {
