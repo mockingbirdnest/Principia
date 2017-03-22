@@ -921,12 +921,13 @@ public partial class PrincipiaPluginAdapter
       if (vessel.precalc == null) {
         continue;
       }
-      Log.Info("  | " + vessel.vesselName +
-               " pre-precalc: " + (vessel.acceleration_immediate));
       vessel.precalc.enabled = true;
       vessel.precalc.FixedUpdate();
-      Log.Info("  | " + vessel.vesselName +
-               " post-precalc: " + (vessel.acceleration_immediate));
+      Log.Info("  | " + vessel.vesselName + "\n  | | " +
+               vessel.acceleration_immediate + "\n  | | " +
+               vessel.graviticAcceleration + "\n  | | " +
+               vessel.geeForce_immediate + "\n  | | " + vessel.acceleration +
+               "\n  | | " + vessel.geeForce);
     }
   }
 
