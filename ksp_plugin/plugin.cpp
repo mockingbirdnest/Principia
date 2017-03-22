@@ -380,15 +380,19 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
-  GUIDToOwnedVessel::iterator it;
-  std::tie(it, inserted) =
+  {
+    bool& should_insert = inserted;
+    should_insert = !Contains(vessels_, vessel_guid);
+    if (should_insert) {
       vessels_.emplace(vessel_guid,
                        make_not_null_unique<Vessel>(vessel_guid,
                                                     vessel_name,
                                                     parent,
                                                     ephemeris_.get(),
                                                     prediction_parameters_));
-  not_null<Vessel*> const vessel = it->second.get();
+    }
+  }
+  not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   if (vessel->name() != vessel_name) {
     vessel->set_name(vessel_name);
   }
