@@ -396,8 +396,6 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   vessel->set_parent(parent);
   if (loaded) {
     loaded_vessels_.insert(vessel);
-  } else if (inserted) {
-    new_unloaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
                          << " vessel " << vessel->ShortDebugString();
@@ -412,7 +410,6 @@ void Plugin::InsertUnloadedPart(
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
   not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
-  CHECK(is_new_unloaded(vessel));
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
@@ -424,8 +421,6 @@ void Plugin::InsertUnloadedPart(
               relative);
   // NOTE(egg): we do not keep the part; it may disappear just as we load, if
   // it happens to be a part with no physical significance (rb == null).
-  not_null<Part*> const part = vessel->part(part_id);
-  Subset<Part>::MakeSingleton(*part, part);
 }
 
 void Plugin::InsertOrKeepLoadedPart(
@@ -478,9 +473,6 @@ void Plugin::InsertOrKeepLoadedPart(
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
   part->set_mass(mass);
-  // NOTE(egg): we do not call |MakeSingleton| here, as that copies the current
-  // intrinsic force of the part, so we must wait for
-  // |IncrementPartIntrinsicForce| to be called.
 }
 
 void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
@@ -492,11 +484,12 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
 }
 
 void Plugin::PrepareToReportCollisions() {
-  for (not_null<Vessel const*> vessel : loaded_vessels_) {
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
     // TODO(egg): we're taking the address of a parameter passed by reference
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
-    vessel->ForAllParts(
+    vessel.ForAllParts(
         [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
 }
@@ -517,51 +510,38 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
-      CHECK(!is_new_unloaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       it = vessels_.erase(it);
     }
   }
   CHECK(kept_vessels_.empty());
-  // Free old parts and bind vessels.
+
+  // Free old parts.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
-    vessel->ForSomePart([vessel](Part& first_part) {
-      vessel->ForAllParts([&first_part](Part& part) {
+  }
+
+  // Bind the vessels.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([&vessel, this](Part& first_part) {
+      vessel.ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
       });
-    });
-  }
-  // We only need to collect one part per vessel, since the other parts are in
-  // the same subset.
-  // TODO(egg): this is incorrect: if two vessels are piled up together and
-  // one leaves the bubble, its parts are not piled up after this operation.
-  // Further, since pile ups that leave the bubble are not collected, they may
-  // retain intrinsic acceleration from their last frame inside the bubble.
-  // This could be fixed by either iterating over all parts, or just iterating
-  // over all parts in vessels that were in the bubble in the preceding frame;
-  // the latter set would be useful for invariant-checking in
-  // |GetPartActualDegreesOfFreedom| anyway.
-  for (not_null<Vessel const*> const vessel : loaded_vessels_) {
-    vessel->ForSomePart([this](Part& part) {
-      Subset<Part>::Find(part).mutable_properties().Collect(&pile_ups_,
-                                                            current_time_);
     });
   }
 
-  for (not_null<Vessel const*> const vessel : new_unloaded_vessels_) {
-    vessel->ForSomePart([vessel, this](Part& first_part) {
-      vessel->ForAllParts([&first_part](Part& part) {
-        Subset<Part>::Unite(Subset<Part>::Find(first_part),
-                            Subset<Part>::Find(part));
-      });
+  // We only need to collect one part per vessel, since the other parts are in
+  // the same subset.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
           current_time_);
     });
   }
-  new_unloaded_vessels_.clear();
 }
 
 void Plugin::SetPartApparentDegreesOfFreedom(
@@ -1092,7 +1072,6 @@ void Plugin::WriteToMessage(
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
-    vessel_message->set_new_unloaded(Contains(new_unloaded_vessels_, vessel));
     vessel_message->set_kept(Contains(kept_vessels_, vessel));
   }
   for (auto const& pair : part_id_to_vessel_) {
@@ -1162,9 +1141,6 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
     if (vessel_message.loaded()) {
       plugin->loaded_vessels_.insert(vessel.get());
-    }
-    if (vessel_message.new_unloaded()) {
-      plugin->new_unloaded_vessels_.insert(vessel.get());
     }
     if (vessel_message.kept()) {
       plugin->kept_vessels_.insert(vessel.get());
@@ -1403,10 +1379,6 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
-}
-
-bool Plugin::is_new_unloaded(not_null<Vessel*> vessel) const {
-  return Contains(new_unloaded_vessels_, vessel);
 }
 
 }  // namespace internal_plugin

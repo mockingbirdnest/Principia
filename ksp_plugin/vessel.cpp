@@ -88,21 +88,25 @@ void Vessel::AddPart(not_null<std::unique_ptr<Part>> part) {
 }
 
 not_null<std::unique_ptr<Part>> Vessel::ExtractPart(PartId const id) {
+  CHECK_LE(kept_parts_.size(), parts_.size());
   auto const it = parts_.find(id);
   CHECK(it != parts_.end()) << id;
   auto result = std::move(it->second);
   LOG(INFO) << "Extracting part " << result->ShortDebugString()
             << " from vessel " << ShortDebugString();
   parts_.erase(it);
+  kept_parts_.erase(id);
   return result;
 }
 
 void Vessel::KeepPart(PartId const id) {
+  CHECK_LE(kept_parts_.size(), parts_.size());
   CHECK(Contains(parts_, id)) << id;
   kept_parts_.insert(id);
 }
 
 void Vessel::FreeParts() {
+  CHECK_LE(kept_parts_.size(), parts_.size());
   for (auto it = parts_.begin(); it != parts_.end();) {
     not_null<Part*> const part = it->second.get();
     if (Contains(kept_parts_, part->part_id())) {
@@ -184,7 +188,8 @@ void Vessel::AdvanceTime() {
   tails.reserve(parts_.size());
   for (auto const& pair : parts_) {
     Part const& part = *pair.second;
-    CHECK(!part.tail().Empty());
+    CHECK(!part.tail().Empty()) << part.ShortDebugString()
+                                << " " << ShortDebugString();
     its.push_back(part.tail().Begin());
     tails.push_back(part.tail().last());
   }
