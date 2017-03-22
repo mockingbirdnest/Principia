@@ -925,13 +925,27 @@ public partial class PrincipiaPluginAdapter
         continue;
       }
       vessel.precalc.enabled = true;
-      vessel.precalc.FixedUpdate();
       if (!vessel.packed) {
-        Log.Info("  | " + vessel.vesselName + "\n  | | " +
+        Log.Info("  2 " + vessel.vesselName + "\n  | | " +
                  vessel.acceleration_immediate + "\n  | | " +
                  vessel.graviticAcceleration + "\n  | | " +
                  vessel.geeForce_immediate + "\n  | | " + vessel.acceleration +
-                 "\n  | | " + vessel.geeForce);
+                 "\n  | | " + vessel.geeForce +
+                 "\n  | | " + vessel.precalc.physStatsNotDoneInUpdate +
+                 "\n  | | " + vessel.precalc.ranFixedThisFrame +
+                 "\n  | | " + vessel.precalc.packedInFixed + 
+                 "\n  | | " + vessel.precalc.GetType());
+      }
+      vessel.precalc.FixedUpdate();
+      if (!vessel.packed) {
+        Log.Info("  3 " + vessel.vesselName + "\n  | | " +
+                 vessel.acceleration_immediate + "\n  | | " +
+                 vessel.graviticAcceleration + "\n  | | " +
+                 vessel.geeForce_immediate + "\n  | | " + vessel.acceleration +
+                 "\n  | | " + vessel.geeForce +
+                 "\n  | | " + vessel.precalc.physStatsNotDoneInUpdate +
+                 "\n  | | " + vessel.precalc.ranFixedThisFrame +
+                 "\n  | | " + vessel.precalc.packedInFixed);
       }
     }
   }
