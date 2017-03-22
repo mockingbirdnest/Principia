@@ -934,7 +934,8 @@ public partial class PrincipiaPluginAdapter
                  "\n  | | " + vessel.precalc.physStatsNotDoneInUpdate +
                  "\n  | | " + vessel.precalc.ranFixedThisFrame +
                  "\n  | | " + vessel.precalc.packedInFixed + 
-                 "\n  | | " + vessel.precalc.GetType());
+                 "\n  | | " + vessel.precalc.GetType() +
+                 "\n  | | " + FlightIntegrator.ActiveVesselFI.GetType());
       }
       vessel.precalc.FixedUpdate();
       if (!vessel.packed) {
