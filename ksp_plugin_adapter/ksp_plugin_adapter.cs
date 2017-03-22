@@ -922,7 +922,11 @@ public partial class PrincipiaPluginAdapter
         continue;
       }
       vessel.precalc.enabled = true;
-      vessel.precalc.FixedUpdate();
+      // In stock this is equivalent to |FixedUpdate()|.  With
+      // ModularFlightIntegrator's ModularVesselPrecalculate, which gets run
+      // in TimingPre like us, this comes with a flag that ensures it only gets
+      // run once.
+      vessel.precalc.MainPhysics(true);
     }
   }
 
