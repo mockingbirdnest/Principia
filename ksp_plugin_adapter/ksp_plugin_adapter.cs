@@ -895,9 +895,6 @@ public partial class PrincipiaPluginAdapter
     foreach (var vessel in
              FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
-      if (!vessel.packed) {
-        Log.Error("  | DISABLE " + vessel.vesselName);
-      }
     }
   }
 
@@ -925,29 +922,7 @@ public partial class PrincipiaPluginAdapter
         continue;
       }
       vessel.precalc.enabled = true;
-      if (!vessel.packed) {
-        Log.Info("  2 " + vessel.vesselName + "\n  | | " +
-                 vessel.acceleration_immediate + "\n  | | " +
-                 vessel.graviticAcceleration + "\n  | | " +
-                 vessel.geeForce_immediate + "\n  | | " + vessel.acceleration +
-                 "\n  | | " + vessel.geeForce +
-                 "\n  | | " + vessel.precalc.physStatsNotDoneInUpdate +
-                 "\n  | | " + vessel.precalc.ranFixedThisFrame +
-                 "\n  | | " + vessel.precalc.packedInFixed + 
-                 "\n  | | " + vessel.precalc.GetType() +
-                 "\n  | | " + FlightIntegrator.ActiveVesselFI.GetType());
-      }
       vessel.precalc.FixedUpdate();
-      if (!vessel.packed) {
-        Log.Info("  3 " + vessel.vesselName + "\n  | | " +
-                 vessel.acceleration_immediate + "\n  | | " +
-                 vessel.graviticAcceleration + "\n  | | " +
-                 vessel.geeForce_immediate + "\n  | | " + vessel.acceleration +
-                 "\n  | | " + vessel.geeForce +
-                 "\n  | | " + vessel.precalc.physStatsNotDoneInUpdate +
-                 "\n  | | " + vessel.precalc.ranFixedThisFrame +
-                 "\n  | | " + vessel.precalc.packedInFixed);
-      }
     }
   }
 
