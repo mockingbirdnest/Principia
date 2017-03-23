@@ -759,137 +759,136 @@ public partial class PrincipiaPluginAdapter
 
   private System.Collections.IEnumerator
   AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
-     yield return new UnityEngine.WaitForFixedUpdate();
+    yield return new UnityEngine.WaitForFixedUpdate();
 
-     // Unity's physics has just finished doing its thing.  If we correct the
-     // positions here, nobody will know that they're not the ones obtained by
-     // Unity.  Careful however: while the positions here are those of the next
-     // step, the Planetarium hasn't run yet, and still has its old time.
-     universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+    // Unity's physics has just finished doing its thing.  If we correct the
+    // positions here, nobody will know that they're not the ones obtained by
+    // Unity.  Careful however: while the positions here are those of the next
+    // step, the Planetarium hasn't run yet, and still has its old time.
+    universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
-     time_is_advancing_ = time_is_advancing(universal_time);
-     if (!time_is_advancing_) {
-       yield break;
-     }
+    time_is_advancing_ = time_is_advancing(universal_time);
+    if (!time_is_advancing_) {
+      yield break;
+    }
 
-     plugin_.PrepareToReportCollisions();
+    plugin_.PrepareToReportCollisions();
 
-     // The collisions are reported and stored into |currentCollisions| in
-     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
-     // Here, the |currentCollisions| are the collisions that occurred in the
-     // physics simulation, which is why we report them before calling
-     // |AdvanceTime|.
-     foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-       if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
-         if (vessel1.isEVA && vessel1.evaController.OnALadder) {
-           var vessel2 = vessel1.evaController.LadderPart.vessel;
-           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
-               !vessel2.packed) {
-             plugin_.ReportCollision(vessel1.rootPart.flightID,
-                                     vessel1.evaController.LadderPart.flightID);
-           }
-         }
-         foreach (Part part1 in vessel1.parts) {
-           foreach (var collider in part1.currentCollisions) {
-             var part2 = collider.gameObject.GetComponentUpwards<Part>();
-             var vessel2 = part2.vessel;
-             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-               plugin_.ReportCollision(part1.flightID, part2.flightID);
-             }
-           }
-         }
-       }
-     }
+    // The collisions are reported and stored into |currentCollisions| in
+    // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
+    // Here, the |currentCollisions| are the collisions that occurred in the
+    // physics simulation, which is why we report them before calling
+    // |AdvanceTime|.
+    foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
+      if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
+        if (vessel1.isEVA && vessel1.evaController.OnALadder) {
+          var vessel2 = vessel1.evaController.LadderPart.vessel;
+          if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
+              !vessel2.packed) {
+            plugin_.ReportCollision(vessel1.rootPart.flightID,
+                                    vessel1.evaController.LadderPart.flightID);
+          }
+        }
+        foreach (Part part1 in vessel1.parts) {
+          foreach (var collider in part1.currentCollisions) {
+            var part2 = collider.gameObject.GetComponentUpwards<Part>();
+            var vessel2 = part2.vessel;
+            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+              plugin_.ReportCollision(part1.flightID, part2.flightID);
+            }
+          }
+        }
+      }
+    }
 
-     plugin_.FreeVesselsAndPartsAndCollectPileUps();
+    plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
-     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
-         continue;
-       }
-       foreach (Part part in vessel.parts) {
-         if (part.rb == null) {
-           continue;
-         }
-         plugin_.SetPartApparentDegreesOfFreedom(
-             part.flightID,
-             // TODO(egg): use the centre of mass.
-             new QP{q = (XYZ)(Vector3d)part.rb.position,
-                    p = (XYZ)(Vector3d)part.rb.velocity});
-       }
-     }
+    foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+      if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+        continue;
+      }
+      foreach (Part part in vessel.parts) {
+        if (part.rb == null) {
+          continue;
+        }
+        plugin_.SetPartApparentDegreesOfFreedom(
+            part.flightID,
+            // TODO(egg): use the centre of mass.
+            new QP{q = (XYZ)(Vector3d)part.rb.position,
+                   p = (XYZ)(Vector3d)part.rb.velocity});
+      }
+    }
 
-     if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
-       // If we are timewarping, the next FixedUpdate might not occur in
-       // TimeScale * fixedDeltaTime.
-       yield break;
-     }
+    if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
+      // If we are timewarping, the next FixedUpdate might not occur in
+      // TimeScale * fixedDeltaTime.
+      yield break;
+    }
 
-     plugin_.AdvanceParts(universal_time);
+    plugin_.AdvanceParts(universal_time);
 
-     // We don't want to do too many things here, since all the KSP classes
-     // still think they're in the preceding step.  We only nudge the Unity
-     // transforms of loaded vessels & their parts.
-     if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
-         plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
-       Vector3d q_correction_at_root_part = Vector3d.zero;
-       Vector3d v_correction_at_root_part = Vector3d.zero;
-       foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-         // TODO(egg): if I understand anything, there should probably be a
-         // special treatment for loaded packed vessels.  I don't understand
-         // anything though.
-         if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
-           continue;
-         }
-         foreach (Part part in vessel.parts) {
-           if (part.rb == null) {
-             continue;
-           }
-           QP part_actual_degrees_of_freedom =
-               plugin_.GetPartActualDegreesOfFreedom(
-                   part.flightID,
-                   FlightGlobals.ActiveVessel.rootPart.flightID);
-           if (part == FlightGlobals.ActiveVessel.rootPart) {
-             q_correction_at_root_part =
-                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
-             v_correction_at_root_part =
-                 (Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity;
-           }
+    // We don't want to do too many things here, since all the KSP classes
+    // still think they're in the preceding step.  We only nudge the Unity
+    // transforms of loaded vessels & their parts.
+    if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
+        plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
+      Vector3d q_correction_at_root_part = Vector3d.zero;
+      Vector3d v_correction_at_root_part = Vector3d.zero;
+      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+        // TODO(egg): if I understand anything, there should probably be a
+        // special treatment for loaded packed vessels.  I don't understand
+        // anything though.
+        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+          continue;
+        }
+        foreach (Part part in vessel.parts) {
+          if (part.rb == null) {
+            continue;
+          }
+          QP part_actual_degrees_of_freedom =
+              plugin_.GetPartActualDegreesOfFreedom(
+                  part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+          if (part == FlightGlobals.ActiveVessel.rootPart) {
+            q_correction_at_root_part =
+                (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
+            v_correction_at_root_part =
+                (Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity;
+          }
 
-           // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
-           // transform nonsense must probably be done.
-           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
-           part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
-         }
-       }
-       foreach (physicalObject physical_object in
-                FlightGlobals.physicalObjects.Where(o => o != null &&
-                                                    o.rb != null)) {
-         physical_object.rb.position += q_correction_at_root_part;
-         physical_object.rb.velocity += v_correction_at_root_part;
-       }
-       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
-           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-           FlightGlobals.ActiveVessel.rootPart.flightID);
-       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
-       Vector3d offset = (Vector3d)main_body_dof.q -
-                         FlightGlobals.ActiveVessel.mainBody.position;
-       // We cannot use FloatingOrigin.SetOffset to move the world here, because
-       // as far as I can tell, that does not move the bubble relative to the
-       // rest of the universe.
-       foreach (CelestialBody celestial in FlightGlobals.Bodies) {
-         celestial.position += offset;
-       }
-       foreach (
-           Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
-         vessel.SetPosition(vessel.transform.position + offset);
-       }
-       // NOTE(egg): this is almost certainly incorrect, since we give the
-       // bodies their positions at the next instant, wherease KSP still expects
-       // them at the previous instant, and will propagate them at the beginning
-       // of the next frame...
-     }
-   }
+          // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
+          // transform nonsense must probably be done.
+          part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
+          part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
+        }
+      }
+      foreach (
+          physicalObject physical_object in FlightGlobals.physicalObjects.Where(
+              o => o != null && o.rb != null)) {
+        physical_object.rb.position += q_correction_at_root_part;
+        physical_object.rb.velocity += v_correction_at_root_part;
+      }
+      QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
+          FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
+          FlightGlobals.ActiveVessel.rootPart.flightID);
+      krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
+      Vector3d offset = (Vector3d)main_body_dof.q -
+                        FlightGlobals.ActiveVessel.mainBody.position;
+      // We cannot use FloatingOrigin.SetOffset to move the world here, because
+      // as far as I can tell, that does not move the bubble relative to the
+      // rest of the universe.
+      foreach (CelestialBody celestial in FlightGlobals.Bodies) {
+        celestial.position += offset;
+      }
+      foreach (
+          Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
+        vessel.SetPosition(vessel.transform.position + offset);
+      }
+      // NOTE(egg): this is almost certainly incorrect, since we give the
+      // bodies their positions at the next instant, wherease KSP still expects
+      // them at the previous instant, and will propagate them at the beginning
+      // of the next frame...
+    }
+  }
 
   private void DisableVesselPrecalculate() {
     foreach (var vessel in
