@@ -26,9 +26,6 @@
     <ClInclude Include="frames.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="celestial_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="part.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -58,6 +55,9 @@
     </ClInclude>
     <ClInclude Include="identification.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="celestial.cpp">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

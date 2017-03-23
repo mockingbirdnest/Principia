@@ -1,13 +1,10 @@
-﻿
-#pragma once
-
-#include "ksp_plugin/celestial.hpp"
+﻿#include "ksp_plugin/celestial.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_celestial {
 
-inline Celestial::Celestial(not_null<MassiveBody const*> body)
+inline Celestial::Celestial(not_null<RotatingBody<Barycentric> const*> body)
     : body_(body),
       current_time_hint_(
           make_not_null_unique<ContinuousTrajectory<Barycentric>::Hint>()) {}
@@ -52,7 +49,7 @@ inline Velocity<Barycentric> Celestial::current_velocity(
   return trajectory().EvaluateVelocity(current_time, current_time_hint());
 }
 
-inline not_null<MassiveBody const*> Celestial::body() const {
+inline not_null<RotatingBody<Barycentric> const*> Celestial::body() const {
   return body_;
 }
 
