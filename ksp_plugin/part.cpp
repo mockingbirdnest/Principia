@@ -31,7 +31,9 @@ Part::Part(
       degrees_of_freedom_(degrees_of_freedom),
       tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
-      deletion_callback_(std::move(deletion_callback)) {}
+      deletion_callback_(std::move(deletion_callback)) {
+  CHECK_GT(mass_, Mass{}) << ShortDebugString();
+}
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
@@ -46,6 +48,7 @@ PartId Part::part_id() const {
 }
 
 void Part::set_mass(Mass const& mass) {
+  CHECK_GT(mass, Mass{}) << ShortDebugString();
   mass_ = mass;
 }
 
