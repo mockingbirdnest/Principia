@@ -252,56 +252,59 @@ class FlightPlanner : WindowRenderer {
               "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
                               current_time - manoeuvre.final_time)));
         }
-        UnityEngine.GUILayout.BeginHorizontal();
-        show_guidance_ =
-            UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
-        if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-          TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
-        }
-        UnityEngine.GUILayout.EndHorizontal();
-        if (show_guidance_ &&
-            !double.IsNaN(manoeuvre.inertial_direction.x +
-                          manoeuvre.inertial_direction.y +
-                          manoeuvre.inertial_direction.z)) {
-          if (guidance_node_ == null ||
-              !vessel_.patchedConicSolver.maneuverNodes.Contains(
-                  guidance_node_)) {
-            while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
-              vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-            }
-            guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
-                manoeuvre.burn.initial_time);
-          } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-            while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
-              if (vessel_.patchedConicSolver.maneuverNodes.First() ==
-                  guidance_node_) {
+        if (vessel_.patchedConicSolver != null) {
+          UnityEngine.GUILayout.BeginHorizontal();
+          show_guidance_ =
+              UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
+          if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
+            TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+          }
+          UnityEngine.GUILayout.EndHorizontal();
+          if (show_guidance_ &&
+              !double.IsNaN(manoeuvre.inertial_direction.x +
+                            manoeuvre.inertial_direction.y +
+                            manoeuvre.inertial_direction.z)) {
+            if (guidance_node_ == null ||
+                !vessel_.patchedConicSolver.maneuverNodes.Contains(
+                    guidance_node_)) {
+              while (vessel_.patchedConicSolver.maneuverNodes.Count > 0) {
                 vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-              } else {
-                vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+              }
+              guidance_node_ = vessel_.patchedConicSolver.AddManeuverNode(
+                  manoeuvre.burn.initial_time);
+            } else if (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+              while (vessel_.patchedConicSolver.maneuverNodes.Count > 1) {
+                if (vessel_.patchedConicSolver.maneuverNodes.First() ==
+                    guidance_node_) {
+                  vessel_.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+                } else {
+                  vessel_.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+                }
               }
             }
+            Vector3d stock_velocity_at_node_time =
+                vessel_.orbit.getOrbitalVelocityAtUT(
+                                  manoeuvre.burn.initial_time).xzy;
+            Vector3d stock_displacement_from_parent_at_node_time =
+                vessel_.orbit.getRelativePositionAtUT(
+                                  manoeuvre.burn.initial_time).xzy;
+            UnityEngine.Quaternion stock_frenet_frame_to_world =
+                UnityEngine.Quaternion.LookRotation(
+                    stock_velocity_at_node_time,
+                    Vector3d.Cross(
+                        stock_velocity_at_node_time,
+                        stock_displacement_from_parent_at_node_time));
+            guidance_node_.DeltaV =
+                ((Vector3d)manoeuvre.burn.delta_v).magnitude *
+                (Vector3d)(UnityEngine.Quaternion.Inverse(
+                               stock_frenet_frame_to_world) *
+                           (Vector3d)manoeuvre.inertial_direction);
+            guidance_node_.UT = manoeuvre.burn.initial_time;
+            vessel_.patchedConicSolver.UpdateFlightPlan();
+            should_clear_guidance = false;
           }
-          Vector3d stock_velocity_at_node_time =
-              vessel_.orbit.getOrbitalVelocityAtUT(
-                                manoeuvre.burn.initial_time).xzy;
-          Vector3d stock_displacement_from_parent_at_node_time =
-              vessel_.orbit.getRelativePositionAtUT(
-                                manoeuvre.burn.initial_time).xzy;
-          UnityEngine.Quaternion stock_frenet_frame_to_world =
-              UnityEngine.Quaternion.LookRotation(
-                  stock_velocity_at_node_time,
-                  Vector3d.Cross(stock_velocity_at_node_time,
-                                 stock_displacement_from_parent_at_node_time));
-          guidance_node_.DeltaV =
-              ((Vector3d)manoeuvre.burn.delta_v).magnitude *
-              (Vector3d)(
-                  UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
-                  (Vector3d)manoeuvre.inertial_direction);
-          guidance_node_.UT = manoeuvre.burn.initial_time;
-          vessel_.patchedConicSolver.UpdateFlightPlan();
-          should_clear_guidance = false;
+          break;
         }
-        break;
       }
     }
     if (should_clear_guidance && guidance_node_ != null) {
