@@ -794,10 +794,12 @@ public partial class PrincipiaPluginAdapter
             new QP{q = (XYZ)vessel.mainBody.position,
                    p = (XYZ)(-krakensbane.FrameVel)};
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          // In the first few frames after spawning a Kerbal, its physicsMass is
+          // 0; we use its rb.mass instead.
           plugin_.InsertOrKeepLoadedPart(
               part.flightID,
               part.name,
-              part.physicsMass,
+              part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
