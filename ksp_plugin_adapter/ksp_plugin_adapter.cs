@@ -819,7 +819,8 @@ public partial class PrincipiaPluginAdapter
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
               // TODO(egg): use the centre of mass.
-              part_id_to_degrees_of_freedom_[part.flightID]);
+              new QP{q = (XYZ)(Vector3d)part.rb.position,
+                     p = (XYZ)(Vector3d)part.rb.velocity});
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
             plugin_.IncrementPartIntrinsicForce(
                 part.flightID,
