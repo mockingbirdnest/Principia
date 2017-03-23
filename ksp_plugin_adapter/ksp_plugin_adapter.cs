@@ -869,7 +869,7 @@ public partial class PrincipiaPluginAdapter
         foreach (Part part1 in vessel1.parts) {
           foreach (var collider in part1.currentCollisions) {
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
-            var vessel2 = part2.vessel;
+            var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
               plugin_.ReportCollision(part1.flightID, part2.flightID);
             }
