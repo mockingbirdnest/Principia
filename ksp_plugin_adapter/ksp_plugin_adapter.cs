@@ -804,7 +804,11 @@ public partial class PrincipiaPluginAdapter
         QP main_body_degrees_of_freedom =
             new QP{q = (XYZ)vessel.mainBody.position,
                    p = (XYZ)(-krakensbane.FrameVel)};
+        Log.Error("main body dof: " +  vessel.mainBody.position + ", " + (-krakensbane.FrameVel));
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          Log.Error("insert or keep " + part.name + ": " + part.physicsMass +
+                    " tonnes physics, " + part.mass + " tonnes mass, " +
+                    part.rb.mass + " tonnes rbmass");
           plugin_.InsertOrKeepLoadedPart(
               part.flightID,
               part.name,
@@ -903,6 +907,7 @@ public partial class PrincipiaPluginAdapter
         if (part.rb == null) {
           continue;
         }
+        Log.Error("set apparent for " + part.name + ": " + part.rb.position + ", " + part.rb.velocity);
         plugin_.SetPartApparentDegreesOfFreedom(
             part.flightID,
             // TODO(egg): use the centre of mass.
@@ -947,6 +952,12 @@ public partial class PrincipiaPluginAdapter
           QP part_actual_degrees_of_freedom =
               plugin_.GetPartActualDegreesOfFreedom(
                   part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+          Log.Error(
+              "q correction for " + part.name + ": " +
+              ((Vector3d)part_actual_degrees_of_freedom.q - part.rb.position));
+          Log.Error(
+              "v correction for " + part.name + ": " +
+              ((Vector3d)part_actual_degrees_of_freedom.p - part.rb.velocity));
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
