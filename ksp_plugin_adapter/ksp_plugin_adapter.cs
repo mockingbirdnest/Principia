@@ -809,10 +809,12 @@ public partial class PrincipiaPluginAdapter
           Log.Error("insert or keep " + part.name + ": " + part.physicsMass +
                     " tonnes physics, " + part.mass + " tonnes mass, " +
                     part.rb.mass + " tonnes rbmass");
+          // In the first few frames after spawning a Kerbal, its physicsMass is
+          // 0; we use its rb.mass instead.
           plugin_.InsertOrKeepLoadedPart(
               part.flightID,
               part.name,
-              part.physicsMass,
+              part.physicsMass == 0 ? part.rb.mass : part.physicsMass,
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
