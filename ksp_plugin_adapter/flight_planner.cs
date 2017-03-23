@@ -252,6 +252,11 @@ class FlightPlanner : WindowRenderer {
               "Cutoff " + FormatTimeSpan(TimeSpan.FromSeconds(
                               current_time - manoeuvre.final_time)));
         }
+        // In career mode, the patched conic solver may be null.  In that case
+        // we do not offer the option of showing the manœuvre on the navball,
+        // even though the flight plan is still available to plan it.
+        // TODO(egg): We may want to consider setting the burn vector directly
+        // rather than going through the solver.
         if (vessel_.patchedConicSolver != null) {
           UnityEngine.GUILayout.BeginHorizontal();
           show_guidance_ =
