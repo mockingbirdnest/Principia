@@ -149,12 +149,6 @@ public partial class PrincipiaPluginAdapter
       new Dictionary<uint, Part.ForceHolder[]>();
   private Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
-  // The degrees of freedom at FashionablyLate.  Those are used to insert new
-  // parts with the correct initial state.
-  // TODO(egg): check that we need this, and if so, use it.  Perhaps it should
-  // use the degrees of freedom at BetterLateThanNever?
-  private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
-      new Dictionary<uint, QP>();
 
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
