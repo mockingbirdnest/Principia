@@ -1080,10 +1080,14 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
-    vessel.patchedConicRenderer.relativityMode =
-        PatchRendering.RelativityMode.RELATIVE;
+    if (vessel.patchedConicRenderer != null) {
+      vessel.patchedConicRenderer.relativityMode =
+          PatchRendering.RelativityMode.RELATIVE;
+    }
+
     if (display_patched_conics_) {
-      if (!vessel.patchedConicRenderer.enabled) {
+      if (vessel.patchedConicRenderer != null &&
+          !vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
       }
     } else {
@@ -1094,6 +1098,15 @@ public partial class PrincipiaPluginAdapter
         vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
         vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
       }
+
+      if (vessel.patchedConicRenderer == null) {
+        // vessel.patchedConicRenderer may be null when in career mode, if
+        // patched conics have yet to be unlocked.  In that case there is
+        // nothing to remove.  Note that Principia doesn't care about unlocks
+        // and always displays all the information it can.
+        return;
+      }
+
       vessel.patchedConicRenderer.enabled = false;
       foreach (PatchRendering patch_rendering in
                vessel.patchedConicRenderer.patchRenders) {
