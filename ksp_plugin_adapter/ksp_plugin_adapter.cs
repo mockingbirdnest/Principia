@@ -141,6 +141,21 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  // TODO(egg): these should be moved to the C++; there it can be made a vector
+  // because we can test whether we have the part or not. Set in
+  // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
+  // WaitForFixedUpdate.
+  private Dictionary<uint, Part.ForceHolder[]> part_id_to_intrinsic_forces_ =
+      new Dictionary<uint, Part.ForceHolder[]>();
+  private Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
+      new Dictionary<uint, Vector3d>();
+  // The degrees of freedom at FashionablyLate.  Those are used to insert new
+  // parts with the correct initial state.
+  // TODO(egg): check that we need this, and if so, use it.  Perhaps it should
+  // use the degrees of freedom at BetterLateThanNever?
+  private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
+      new Dictionary<uint, QP>();
+
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
   private String revelation_ = "";
@@ -761,6 +776,7 @@ public partial class PrincipiaPluginAdapter
   AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
     yield return new UnityEngine.WaitForFixedUpdate();
 
+  try {
     // Unity's physics has just finished doing its thing.  If we correct the
     // positions here, nobody will know that they're not the ones obtained by
     // Unity.  Careful however: while the positions here are those of the next
@@ -770,6 +786,67 @@ public partial class PrincipiaPluginAdapter
     time_is_advancing_ = time_is_advancing(universal_time);
     if (!time_is_advancing_) {
       yield break;
+    }
+
+    foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+      bool inserted;
+      plugin_.InsertOrKeepVessel(vessel.id.ToString(),
+                                 vessel.vesselName,
+                                 vessel.mainBody.flightGlobalsIndex,
+                                 !vessel.packed,
+                                 out inserted);
+      if (!vessel.packed) {
+        QP main_body_degrees_of_freedom =
+            new QP{q = (XYZ)vessel.mainBody.position,
+                   p = (XYZ)(-krakensbane.FrameVel)};
+        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          plugin_.InsertOrKeepLoadedPart(
+              part.flightID,
+              part.name,
+              part.physicsMass,
+              vessel.id.ToString(),
+              vessel.mainBody.flightGlobalsIndex,
+              main_body_degrees_of_freedom,
+              // TODO(egg): use the centre of mass.
+              new QP{q = (XYZ)(Vector3d)part.rb.position,
+                     p = (XYZ)(Vector3d)part.rb.velocity});
+          if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
+            plugin_.IncrementPartIntrinsicForce(
+                part.flightID,
+                (XYZ)part_id_to_intrinsic_force_[part.flightID]);
+          }
+          if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
+            foreach (
+                var force in part_id_to_intrinsic_forces_[part.flightID]) {
+              plugin_.IncrementPartIntrinsicForce(part.flightID,
+                                                  (XYZ)force.force);
+            }
+          }
+        }
+      } else if (inserted) {
+        var parts = vessel.protoVessel.protoPartSnapshots;
+        // For reasons that are unclear, the asteroid spawning code sometimes
+        // generates the same flightID twice; we regenerate the flightID on
+        // any asteroid we find.
+        if (vessel.vesselType == VesselType.SpaceObject &&
+            parts.Count == 1 &&
+            parts[0].partName == "PotatoRoid" &&
+            parts[0].flightID == parts[0].missionID) {
+          var part = parts[0];
+          var old_id = part.flightID;
+          part.flightID = ShipConstruction.GetUniqueFlightID(
+              HighLogic.CurrentGame.flightState);
+          Log.Info("Regenerating the part ID of " + vessel.name + ": " +
+                   part.flightID + " (was " + old_id + ")");
+        }
+        foreach (ProtoPartSnapshot part in parts) {
+          plugin_.InsertUnloadedPart(
+              part.flightID,
+              part.partName,
+              vessel.id.ToString(),
+              new QP{q = (XYZ)vessel.orbit.pos, p = (XYZ)vessel.orbit.vel});
+        }
+      }
     }
 
     plugin_.PrepareToReportCollisions();
@@ -888,6 +965,7 @@ public partial class PrincipiaPluginAdapter
       // them at the previous instant, and will propagate them at the beginning
       // of the next frame...
     }
+  } catch (Exception e) { Log.Fatal(e.ToString()); }
   }
 
   private void DisableVesselPrecalculate() {
@@ -950,56 +1028,17 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
-      foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
-        bool inserted;
-        plugin_.InsertOrKeepVessel(vessel.id.ToString(),
-                                   vessel.vesselName,
-                                   vessel.mainBody.flightGlobalsIndex,
-                                   !vessel.packed,
-                                   out inserted);
-        if (!vessel.packed) {
-          QP main_body_degrees_of_freedom =
-              new QP{q = (XYZ)vessel.mainBody.position,
-                     p = (XYZ)(-krakensbane.FrameVel)};
-          foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
-            plugin_.InsertOrKeepLoadedPart(
-                part.flightID,
-                part.name,
-                part.physicsMass,
-                vessel.id.ToString(),
-                vessel.mainBody.flightGlobalsIndex,
-                main_body_degrees_of_freedom,
-                // TODO(egg): use the centre of mass.
-                new QP{q = (XYZ)(Vector3d)part.rb.position,
-                       p = (XYZ)(Vector3d)part.rb.velocity});
-            plugin_.IncrementPartIntrinsicForce(part.flightID, (XYZ)part.force);
-            foreach (var force in part.forces) {
-              plugin_.IncrementPartIntrinsicForce(part.flightID,
-                                                  (XYZ)force.force);
-            }
+      part_id_to_intrinsic_force_.Clear();
+      part_id_to_intrinsic_forces_.Clear();
+      foreach (Vessel vessel in
+               FlightGlobals.Vessels.Where(v => is_in_space(v) && !v.packed)) {
+        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          if (part.force != Vector3d.zero) {
+            part_id_to_intrinsic_force_.Add(part.flightID, part.force);
           }
-        } else if (inserted) {
-          var parts = vessel.protoVessel.protoPartSnapshots;
-          // For reasons that are unclear, the asteroid spawning code sometimes
-          // generates the same flightID twice; we regenerate the flightID on
-          // any asteroid we find.
-          if (vessel.vesselType == VesselType.SpaceObject &&
-              parts.Count == 1 &&
-              parts[0].partName == "PotatoRoid" &&
-              parts[0].flightID == parts[0].missionID) {
-            var part = parts[0];
-            var old_id = part.flightID;
-            part.flightID = ShipConstruction.GetUniqueFlightID(
-                HighLogic.CurrentGame.flightState);
-            Log.Info("Regenerating the part ID of " + vessel.name + ": " +
-                     part.flightID + " (was " + old_id + ")");
-          }
-          foreach (ProtoPartSnapshot part in parts) {
-            plugin_.InsertUnloadedPart(
-                part.flightID,
-                part.partName,
-                vessel.id.ToString(),
-                new QP{q = (XYZ)vessel.orbit.pos, p = (XYZ)vessel.orbit.vel});
+          if (part.forces.Count > 0) {
+            part_id_to_intrinsic_forces_.Add(part.flightID,
+                                             part.forces.ToArray());
           }
         }
       }
