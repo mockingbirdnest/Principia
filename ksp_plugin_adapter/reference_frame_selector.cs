@@ -79,7 +79,7 @@ class ReferenceFrameSelector : WindowRenderer {
         } else {
           // TODO(egg): find a proper name...
           return selected.name + "-Centred " + selected.referenceBody.name +
-                 "-Fixed";
+                 "-Aligned";
         }
      case FrameType.BODY_SURFACE:
        return selected.name + "-Centred " + selected.name + "-Fixed";
@@ -104,7 +104,7 @@ class ReferenceFrameSelector : WindowRenderer {
           throw Log.Fatal("Naming barycentric rotating frame of root body");
         } else {
           return selected.name[0] + "C" + selected.referenceBody.name[0] +
-                 "F";
+                 "A";
         }
       case FrameType.BODY_SURFACE:
         return selected.name[0] + "C" + selected.name[0] + "F";
