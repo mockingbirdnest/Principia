@@ -77,7 +77,6 @@ class ReferenceFrameSelector : WindowRenderer {
           throw Log.Fatal(
               "Naming parent-direction rotating frame of root body");
         } else {
-          // TODO(egg): find a proper name...
           return selected.name + "-Centred " + selected.referenceBody.name +
                  "-Aligned";
         }
