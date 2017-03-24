@@ -94,14 +94,14 @@ class ReferenceFrameSelector : WindowRenderer {
         return selected.name[0] + "CI";
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
-          throw Log.Fatal(
-              "Naming parent-direction rotating frame of root body");
+          throw Log.Fatal("Naming barycentric rotating frame of root body");
         } else {
           return selected.referenceBody.name[0] + (selected.name[0] + "B");
         }
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         if (selected.is_root()) {
-          throw Log.Fatal("Naming barycentric rotating frame of root body");
+          throw Log.Fatal(
+              "Naming parent-direction rotating frame of root body");
         } else {
           return selected.name[0] + "C" + selected.referenceBody.name[0] +
                  "A";
