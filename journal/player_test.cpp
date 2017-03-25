@@ -22,7 +22,7 @@ namespace journal {
 void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     Player player(
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20160626-143407)");
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170322-175914)");
     int count = 0;
     while (player.Play()) {
       ++count;
@@ -93,14 +93,13 @@ TEST_F(PlayerTest, Benchmarks) {
   }
 }
 
-#if 0
 // This test is only run if the --gtest_filter flag names it explicitly.
 TEST_F(PlayerTest, Debug) {
   if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
     // An example of how journaling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170317-181650)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170322-175914)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -132,7 +131,6 @@ TEST_F(PlayerTest, Debug) {
 #endif
   }
 }
-#endif
 
 }  // namespace journal
 }  // namespace principia
