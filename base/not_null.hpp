@@ -113,13 +113,6 @@ using _checked_not_null = typename std::enable_if<
 template<typename Pointer>
 using is_instance_of_not_null = is_instance_of<not_null, Pointer>;
 
-template<typename Pointer>
-struct is_not_null_non_owner : std::false_type, not_constructible {};
-
-template<typename T>
-struct is_not_null_non_owner<not_null<T*>> : std::true_type,
-                                             not_constructible {};
-
 // |not_null<Pointer>| is a wrapper for a non-null object of type |Pointer|.
 // |Pointer| should be a C-style pointer or a smart pointer.  |Pointer| must not
 // be a const, reference, rvalue reference, or |not_null|.  |not_null<Pointer>|

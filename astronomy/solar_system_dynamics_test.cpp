@@ -101,7 +101,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     auto const parent_name =
         SolarSystemFactory::name(SolarSystemFactory::parent(index));
     auto const body = system.massive_body(ephemeris, name);
-    auto const* const parent =
+    auto const parent =
         dynamic_cast_not_null<RotatingBody<ICRFJ2000Equator> const*>(
             system.massive_body(ephemeris, parent_name));
 

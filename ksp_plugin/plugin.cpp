@@ -254,18 +254,15 @@ void Plugin::EndInitialization() {
       hex.data[hex.size - 1] = 0;
       file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
 #endif
-      // Moving out of the vector and keeping a pointer in the map requires that
-      // we release and rewrap the pointer.  Apologies.
-      auto const unowned_body =
-          dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-              system.bodies[i].release());
-      std::unique_ptr<RotatingBody<Barycentric> const> owned_body(unowned_body);
-      Index const celestial_index = bodies_to_indices[unowned_body];
+      auto rotating_body = dynamic_cast_not_null<
+          std::unique_ptr<RotatingBody<Barycentric> const>>(
+              std::move(system.bodies[i]));
+      Index const celestial_index = bodies_to_indices[rotating_body.get()];
       InsertCelestialAbsoluteCartesian(
           celestial_index,
           FindOrDie(parents, celestial_index),
           system.degrees_of_freedom[i],
-          std::move(owned_body));
+          std::move(rotating_body));
     }
 #if LOG_KSP_SYSTEM
     file.close();

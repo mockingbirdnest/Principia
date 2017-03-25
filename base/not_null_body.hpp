@@ -12,6 +12,12 @@ namespace principia {
 namespace base {
 
 template<typename Pointer>
+struct is_unique : std::false_type, not_constructible {};
+
+template<typename T>
+struct is_unique<std::unique_ptr<T>> : std::true_type, not_constructible {};
+
+template<typename Pointer>
 template<typename OtherPointer, typename>
 not_null<Pointer>::not_null(not_null<OtherPointer> const& other)
     : pointer_(other.pointer_) {}
@@ -203,11 +209,19 @@ std::ostream& operator<<(std::ostream& stream,
   return stream << &*pointer;
 }
 
-template<typename Result, typename Pointer>
-Result dynamic_cast_not_null(Pointer const pointer) {
-  static_assert(is_not_null_non_owner<Pointer>::value,
-                "|pointer| should be |not_null<T*>|");
-  return dynamic_cast<Result>(static_cast<typename Pointer::pointer>(pointer));
+template<typename Result, typename T>
+not_null<Result> dynamic_cast_not_null(not_null<T*> const pointer) {
+  static_assert(std::is_pointer<Result>::value, "|Result| should be |U*|");
+  return not_null<Result>(dynamic_cast<Result>(static_cast<T*>(pointer)));
+}
+
+template<typename Result, typename T>
+not_null<Result> dynamic_cast_not_null(not_null<std::unique_ptr<T>>&& pointer) {
+  static_assert(is_unique<Result>::value,
+                "|Result| should be |std::unique_ptr<U>|");
+  T* const unowned_pointer = pointer.release();
+  Result owned_pointer(dynamic_cast<typename Result::pointer>(unowned_pointer));
+  return std::move(owned_pointer);
 }
 
 }  // namespace base
