@@ -35,7 +35,7 @@
 #include "physics/body_surface_frame_field.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
-#include "physics/rotating_body.hpp"
+#include "physics/massive_body.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -69,7 +69,7 @@ using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::KeplerianElements;
-using physics::RotatingBody;
+using physics::MassiveBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Force;
@@ -113,7 +113,7 @@ void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
-    not_null<std::unique_ptr<MassiveBody const>> body) {
+    not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
@@ -156,7 +156,7 @@ void Plugin::InsertCelestialJacobiKeplerian(
     std::experimental::optional<Index> const& parent_index,
     std::experimental::optional<KeplerianElements<Barycentric>> const&
         keplerian_elements,
-    not_null<std::unique_ptr<MassiveBody>> body) {
+    not_null<std::unique_ptr<RotatingBody<Barycentric>>> body) {
   LOG(INFO) << __FUNCTION__ << "\n"
             << NAMED(celestial_index) << "\n"
             << NAMED(parent_index) << "\n"
@@ -167,7 +167,7 @@ void Plugin::InsertCelestialJacobiKeplerian(
   CHECK(!absolute_initialization_);
   CHECK_EQ((bool)parent_index, (bool)keplerian_elements);
   CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
-  MassiveBody* const unowned_body = body.get();
+  RotatingBody<Barycentric>* const unowned_body = body.get();
   if (hierarchical_initialization_) {
     hierarchical_initialization_->system.Add(
         std::move(body),
@@ -209,9 +209,10 @@ void Plugin::EndInitialization() {
 
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
         hierarchical_initialization_->system.ConsumeBarycentricSystem();
-    std::map<not_null<MassiveBody const*>, Index> bodies_to_indices;
+    std::map<not_null<RotatingBody<Barycentric> const*>,
+             Index> bodies_to_indices;
     for (auto const& index_body :
-         hierarchical_initialization_->indices_to_bodies) {
+             hierarchical_initialization_->indices_to_bodies) {
       bodies_to_indices[index_body.second] = index_body.first;
     }
     auto const parents = std::move(hierarchical_initialization_->parents);
@@ -253,12 +254,15 @@ void Plugin::EndInitialization() {
       hex.data[hex.size - 1] = 0;
       file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
 #endif
-      Index const celestial_index = bodies_to_indices[system.bodies[i].get()];
+      auto rotating_body = dynamic_cast_not_null<
+          std::unique_ptr<RotatingBody<Barycentric> const>>(
+              std::move(system.bodies[i]));
+      Index const celestial_index = bodies_to_indices[rotating_body.get()];
       InsertCelestialAbsoluteCartesian(
           celestial_index,
           FindOrDie(parents, celestial_index),
           system.degrees_of_freedom[i],
-          std::move(system.bodies[i]));
+          std::move(rotating_body));
     }
 #if LOG_KSP_SYSTEM
     file.close();
@@ -266,8 +270,7 @@ void Plugin::EndInitialization() {
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);
-  main_body_ = CHECK_NOTNULL(
-      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(sun_->body()));
+  main_body_ = sun_->body();
   UpdatePlanetariumRotation();
   initializing_.Flop();
 
@@ -315,8 +318,7 @@ void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
 }
 
 void Plugin::SetMainBody(Index const index) {
-  main_body_ = dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-      FindOrDie(celestials_, index)->body());
+  main_body_ = FindOrDie(celestials_, index)->body();
   LOG_IF(FATAL, main_body_ == nullptr) << index;
   UpdatePlanetariumRotation();
 }
@@ -329,8 +331,7 @@ Rotation<BodyWorld, World> Plugin::CelestialRotation(
   Permutation<BodyWorld, BodyFixed> const body_mirror(
       Permutation<BodyWorld, BodyFixed>::XZY);
 
-  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
-      *FindOrDie(celestials_, index)->body());
+  auto const& body = *FindOrDie(celestials_, index)->body();
 
   OrthogonalMap<BodyWorld, World> const result =
       OrthogonalMap<WorldSun, World>::Identity() *
@@ -355,14 +356,12 @@ Rotation<CelestialSphere, World> Plugin::CelestialSphereRotation()
 }
 
 Angle Plugin::CelestialInitialRotation(Index const celestial_index) const {
-  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
-      *FindOrDie(celestials_, celestial_index)->body());
+  auto const& body = *FindOrDie(celestials_, celestial_index)->body();
   return body.AngleAt(game_epoch_);
 }
 
 Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
-  auto const& body = dynamic_cast<RotatingBody<Barycentric> const&>(
-      *FindOrDie(celestials_, celestial_index)->body());
+  auto const& body = *FindOrDie(celestials_, celestial_index)->body();
   // The result will be negative if the pole is the negative pole
   // (e.g. for Venus).  This is the convention KSP uses for retrograde rotation.
   return 2 * π * Radian / body.angular_frequency();
@@ -868,8 +867,7 @@ Plugin::NewBodySurfaceNavigationFrame(
       *FindOrDie(celestials_, reference_body_index);
   return make_not_null_unique<BodySurfaceDynamicFrame<Barycentric, Navigation>>(
       ephemeris_.get(),
-      dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-          reference_body.body()));
+      reference_body.body());
 }
 
 void Plugin::SetPlottingFrame(
@@ -958,7 +956,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   };
 
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
-  auto const plotting_frame_as_body_surface_dynamic_frame =
+  auto* const plotting_frame_as_body_surface_dynamic_frame =
       dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation>*>(
           &*plotting_frame_);
   if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
@@ -972,9 +970,9 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
         this,
         make_not_null_unique<
             BodySurfaceFrameField<Barycentric, RightHandedNavball>>(
-            *ephemeris_,
-            current_time_,
-            plotting_frame_as_body_surface_dynamic_frame->centre()),
+                *ephemeris_,
+                current_time_,
+                plotting_frame_as_body_surface_dynamic_frame->centre()),
         sun_world_position);
   }
 }
@@ -1167,9 +1165,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Angle::ReadFromMessage(message.planetarium_rotation());
 
   plugin->sun_ = FindOrDie(plugin->celestials_, message.sun_index()).get();
-  plugin->main_body_ =
-      CHECK_NOTNULL(dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-          plugin->sun_->body()));
+  plugin->main_body_ = plugin->sun_->body();
   plugin->UpdatePlanetariumRotation();
 
   std::unique_ptr<NavigationFrame> plotting_frame =
@@ -1203,12 +1199,17 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 }
 
 std::unique_ptr<Ephemeris<Barycentric>> Plugin::NewEphemeris(
-    std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+    std::vector<
+        not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>&& bodies,
     std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
     Instant const& initial_time,
     Length const& fitting_tolerance,
     Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
-  return std::make_unique<Ephemeris<Barycentric>>(std::move(bodies),
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> massive_bodies;
+  for (auto& body : bodies) {
+    massive_bodies.emplace_back(std::move(body));
+  }
+  return std::make_unique<Ephemeris<Barycentric>>(std::move(massive_bodies),
                                                   initial_state,
                                                   initial_time,
                                                   fitting_tolerance,
@@ -1225,7 +1226,8 @@ Plugin::Plugin(
       prediction_parameters_(prediction_parameters) {}
 
 void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<
+      not_null<std::unique_ptr<RotatingBody<Barycentric> const>>> bodies;
   std::vector<DegreesOfFreedom<Barycentric>> initial_state;
   for (auto& pair : absolute_initialization_->bodies) {
     auto& body = pair.second;
@@ -1253,8 +1255,8 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
   SetPlottingFrame(
       make_not_null_unique<
           BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-          ephemeris_.get(),
-          sun_->body()));
+              ephemeris_.get(),
+              sun_->body()));
 }
 
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
@@ -1324,7 +1326,9 @@ void Plugin::ReadCelestialsFromMessages(
   for (auto const& celestial_message : celestial_messages) {
     auto const inserted = celestials.emplace(
         celestial_message.index(),
-        make_not_null_unique<Celestial>(*bodies_it));
+        make_not_null_unique<Celestial>(
+            dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
+                *bodies_it)));
     CHECK(inserted.second);
     inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
     ++bodies_it;
@@ -1346,7 +1350,7 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
     std::experimental::optional<Index> const& parent_index,
     std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
         keplerian_elements,
-    MassiveBody const& body) {
+    RotatingBody<Barycentric> const& body) {
   serialization::CelestialJacobiKeplerian message;
   message.set_celestial_index(celestial_index);
   if (parent_index) {

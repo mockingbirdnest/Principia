@@ -27,6 +27,7 @@
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -57,7 +58,6 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
-using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
@@ -99,7 +99,7 @@ class Plugin {
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
-      not_null<std::unique_ptr<MassiveBody const>> body);
+      not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body);
 
   // Hierarchical initialization must be ongoing.
   virtual void InsertCelestialJacobiKeplerian(
@@ -107,7 +107,7 @@ class Plugin {
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
-      not_null<std::unique_ptr<MassiveBody>> body);
+      not_null<std::unique_ptr<RotatingBody<Barycentric>>> body);
 
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
@@ -370,7 +370,8 @@ class Plugin {
  protected:
   // May be overriden in tests to inject a mock.
   virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+      std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>&&
+          bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
       Instant const& initial_time,
       Length const& fitting_tolerance,
@@ -382,8 +383,9 @@ class Plugin {
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
-  using IndexToMassiveBody =
-      std::map<Index, not_null<std::unique_ptr<MassiveBody const>>>;
+  using IndexToRotatingBody =
+      std::map<Index,
+               not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>;
   using IndexToDegreesOfFreedom =
       std::map<Index, DegreesOfFreedom<Barycentric>>;
   using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
@@ -432,7 +434,7 @@ class Plugin {
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
-      MassiveBody const& body);
+      RotatingBody<Barycentric> const& body);
 
   // Adds a part to a vessel, recording it in the appropriate map and setting up
   // a deletion callback.
@@ -452,7 +454,7 @@ class Plugin {
   IndexToOwnedCelestial celestials_;
 
   struct AbsoluteInitializationObjects final{
-    IndexToMassiveBody bodies;
+    IndexToRotatingBody bodies;
     IndexToDegreesOfFreedom initial_state;
   };
   std::experimental::optional<AbsoluteInitializationObjects>
@@ -460,10 +462,10 @@ class Plugin {
 
   struct HierarchicalInitializationObjects final {
     HierarchicalInitializationObjects(
-        not_null<std::unique_ptr<MassiveBody const>> sun)
+        not_null<std::unique_ptr<RotatingBody<Barycentric> const>> sun)
         : system(std::move(sun)) {}
     HierarchicalSystem<Barycentric> system;
-    std::map<Index, MassiveBody const*> indices_to_bodies;
+    std::map<Index, RotatingBody<Barycentric> const*> indices_to_bodies;
     std::map<Index, std::experimental::optional<Index>> parents;
   };
   std::experimental::optional<HierarchicalInitializationObjects>

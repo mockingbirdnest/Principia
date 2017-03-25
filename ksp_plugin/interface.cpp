@@ -80,7 +80,7 @@ namespace {
 int const chunk_size = 64 << 10;
 int const number_of_chunks = 8;
 
-base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
+base::not_null<std::unique_ptr<RotatingBody<Barycentric>>> MakeRotatingBody(
     BodyParameters const& body_parameters) {
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
@@ -131,7 +131,7 @@ base::not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
   if (body_parameters.reference_radius != nullptr) {
     gravity_model.set_reference_radius(body_parameters.reference_radius);
   }
-  return SolarSystem<Barycentric>::MakeMassiveBody(gravity_model);
+  return SolarSystem<Barycentric>::MakeRotatingBody(gravity_model);
 }
 
 }  // namespace
@@ -516,7 +516,7 @@ void principia__InsertCelestialAbsoluteCartesian(
       parent_index == nullptr ? std::experimental::nullopt
                               : std::experimental::make_optional(*parent_index),
       SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
-      MakeMassiveBody(body_parameters));
+      MakeRotatingBody(body_parameters));
   return m.Return();
 }
 
@@ -541,7 +541,7 @@ void principia__InsertCelestialJacobiKeplerian(
           ? std::experimental::nullopt
           : std::experimental::make_optional(
                 FromKeplerianElements(*keplerian_elements)),
-      MakeMassiveBody(body_parameters));
+      MakeRotatingBody(body_parameters));
   return m.Return();
 }
 

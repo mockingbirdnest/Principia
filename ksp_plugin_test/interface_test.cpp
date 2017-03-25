@@ -299,12 +299,12 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   BodyParameters const body_parameters = {
       "Brian",
       "1.2345e6  m^3/s^2",
-      std::numeric_limits<double>::quiet_NaN(),
-      /*mean_radius=*/nullptr,
-      /*axis_right_ascension=*/nullptr,
-      /*axis_declination=*/nullptr,
-      /*reference_angle=*/nullptr,
-      /*angular_velocity=*/nullptr,
+      /*reference_instant=*/0.0,
+      /*mean_radius=*/"1 m",
+      /*axis_right_ascension=*/"0 deg",
+      /*axis_declination=*/"90 deg",
+      /*reference_angle=*/"0 deg",
+      /*angular_velocity=*/"1 rad/s",
       /*j2=*/nullptr,
       /*reference_radius=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
@@ -344,7 +344,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                              666 * Kilo(Metre))))));
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
-                                          999,
+                                          999.0,
                                           "666 km",
                                           "42 deg",
                                           u8"8°",
