@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -78,7 +79,11 @@ class SolarSystem final {
   // structured objects.
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
       serialization::InitialState::Body const& body);
-  static std::unique_ptr<MassiveBody> MakeMassiveBody(
+  static not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
+      serialization::GravityModel::Body const& body);
+  static not_null<std::unique_ptr<RotatingBody<Frame>>> MakeRotatingBody(
+      serialization::GravityModel::Body const& body);
+  static not_null<std::unique_ptr<OblateBody<Frame>>> MakeOblateBody(
       serialization::GravityModel::Body const& body);
 
   // Utilities for patching the internal protocol buffers after initialization.
@@ -87,6 +92,17 @@ class SolarSystem final {
   void RemoveOblateness(std::string const& name);
 
  private:
+  // Fails if the given |body| doesn't have a consistent set of fields.
+  static void Check(serialization::GravityModel::Body const& body);
+
+  // Factory functions for the parameter classes of the bodies.
+  static not_null<std::unique_ptr<MassiveBody::Parameters>>
+  MakeMassiveBodyParameters(serialization::GravityModel::Body const& body);
+  static not_null<std::unique_ptr<typename RotatingBody<Frame>::Parameters>>
+  MakeRotatingBodyParameters(serialization::GravityModel::Body const& body);
+  static not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
+  MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
+
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
   MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();

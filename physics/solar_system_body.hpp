@@ -32,6 +32,7 @@ namespace internal_solar_system {
 using astronomy::J2000;
 using astronomy::JulianDate;
 using base::FindOrDie;
+using base::make_not_null_unique;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
@@ -198,50 +199,58 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 }
 
 template<typename Frame>
-std::unique_ptr<MassiveBody> SolarSystem<Frame>::MakeMassiveBody(
+not_null<std::unique_ptr<MassiveBody>> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
-  CHECK(body.has_name());
-  CHECK(body.has_gravitational_parameter()) << body.name();
-  CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
-  CHECK_EQ(body.has_reference_instant(),
-           body.has_axis_right_ascension()) << body.name();
-  CHECK_EQ(body.has_reference_instant(),
-           body.has_axis_declination()) << body.name();
-  CHECK_EQ(body.has_reference_instant(),
-           body.has_reference_angle()) << body.name();
-  CHECK_EQ(body.has_reference_instant(),
-           body.has_angular_frequency()) << body.name();
-  CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
-
-  MassiveBody::Parameters massive_body_parameters(
-                              body.name(),
-                              ParseQuantity<GravitationalParameter>(
-                                  body.gravitational_parameter()));
+  Check(body);
+  auto const massive_body_parameters = MakeMassiveBodyParameters(body);
   if (body.has_mean_radius()) {
-    std::unique_ptr<typename RotatingBody<Frame>::Parameters>
-        rotating_body_parameters;
-    rotating_body_parameters =
-        std::make_unique<typename RotatingBody<Frame>::Parameters>(
-            ParseQuantity<Length>(body.mean_radius()),
-            ParseQuantity<Angle>(body.reference_angle()),
-            JulianDate(body.reference_instant()),
-            ParseQuantity<AngularFrequency>(body.angular_frequency()),
-            ParseQuantity<Angle>(body.axis_right_ascension()),
-            ParseQuantity<Angle>(body.axis_declination()));
+    auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
     if (body.has_j2()) {
-      typename OblateBody<Frame>::Parameters oblate_body_parameters(
-          ParseQuantity<double>(body.j2()),
-          ParseQuantity<Length>(body.reference_radius()));
-      return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
+      auto const oblate_body_parameters = MakeOblateBodyParameters(body);
+      return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
                                                  *rotating_body_parameters,
-                                                 oblate_body_parameters);
+                                                 *oblate_body_parameters);
     } else {
-      return std::make_unique<RotatingBody<Frame>>(massive_body_parameters,
+      return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
                                                    *rotating_body_parameters);
     }
   } else {
-    return std::make_unique<MassiveBody>(massive_body_parameters);
+    return std::make_unique<MassiveBody>(*massive_body_parameters);
   }
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<RotatingBody<Frame>>>
+SolarSystem<Frame>::MakeRotatingBody(
+    serialization::GravityModel::Body const& body) {
+  Check(body);
+  CHECK(body.has_mean_radius());
+  auto const massive_body_parameters = MakeMassiveBodyParameters(body);
+  auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
+  if (body.has_j2()) {
+    auto const oblate_body_parameters = MakeOblateBodyParameters(body);
+    return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
+                                               *rotating_body_parameters,
+                                               *oblate_body_parameters);
+  } else {
+    return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
+                                                 *rotating_body_parameters);
+  }
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<OblateBody<Frame>>>
+SolarSystem<Frame>::MakeOblateBody(
+    serialization::GravityModel::Body const& body) {
+  Check(body);
+  CHECK(body.has_mean_radius());
+  CHECK(body.has_j2());
+  auto const massive_body_parameters = MakeMassiveBodyParameters(body);
+  auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
+  auto const oblate_body_parameters = MakeOblateBodyParameters(body);
+  return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
+                                             *rotating_body_parameters,
+                                             *oblate_body_parameters);
 }
 
 template<typename Frame>
@@ -264,6 +273,53 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
   serialization::GravityModel::Body* body = it->second;
   body->clear_j2();
   body->clear_reference_radius();
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
+  CHECK(body.has_name());
+  CHECK(body.has_gravitational_parameter()) << body.name();
+  CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_axis_right_ascension()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_axis_declination()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_reference_angle()) << body.name();
+  CHECK_EQ(body.has_reference_instant(),
+           body.has_angular_frequency()) << body.name();
+  CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<MassiveBody::Parameters>>
+SolarSystem<Frame>::MakeMassiveBodyParameters(
+    serialization::GravityModel::Body const& body) {
+  return make_not_null_unique<MassiveBody::Parameters>(
+      body.name(),
+      ParseQuantity<GravitationalParameter>(body.gravitational_parameter()));
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<typename RotatingBody<Frame>::Parameters>>
+SolarSystem<Frame>::MakeRotatingBodyParameters(
+    serialization::GravityModel::Body const& body) {
+  return make_not_null_unique<typename RotatingBody<Frame>::Parameters>(
+      ParseQuantity<Length>(body.mean_radius()),
+      ParseQuantity<Angle>(body.reference_angle()),
+      JulianDate(body.reference_instant()),
+      ParseQuantity<AngularFrequency>(body.angular_frequency()),
+      ParseQuantity<Angle>(body.axis_right_ascension()),
+      ParseQuantity<Angle>(body.axis_declination()));
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
+SolarSystem<Frame>::MakeOblateBodyParameters(
+    serialization::GravityModel::Body const& body) {
+  return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+      ParseQuantity<double>(body.j2()),
+      ParseQuantity<Length>(body.reference_radius()));
 }
 
 template<typename Frame>
