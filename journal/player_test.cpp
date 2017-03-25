@@ -22,7 +22,7 @@ namespace journal {
 void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     Player player(
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20160626-143407)");
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170322-175914)");
     int count = 0;
     while (player.Play()) {
       ++count;
