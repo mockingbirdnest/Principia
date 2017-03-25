@@ -138,7 +138,9 @@ class ParallelTestRunner {
             process.StartInfo.Arguments =
                 "--gtest_filter=" + test_case + line.Split(' ')[2];
             if (process.StartInfo.Arguments ==
-                "--gtest_filter=PlayerTest.Benchmarks") {
+                "--gtest_filter=PlayerTest.Benchmarks" ||
+                process.StartInfo.Arguments ==
+                "--gtest_filter=PlayerTest.Debug") {
               continue;
             }
             process.StartInfo.Arguments +=
