@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -25,8 +26,11 @@ using geometry::Position;
 using geometry::Velocity;
 using physics::MassiveBody;
 using physics::MockEphemeris;
+using physics::RotatingBody;
+using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -38,7 +42,14 @@ using ::testing::_;
 class VesselTest : public testing::Test {
  protected:
   VesselTest()
-      : body_(MassiveBody::Parameters(1 * Kilogram)),
+      : body_(MassiveBody::Parameters(1 * Kilogram),
+              RotatingBody<Barycentric>::Parameters(
+                  /*mean_radius=*/1 * Metre,
+                  /*reference_angle=*/0 * Degree,
+                  /*reference_instant=*/astronomy::J2000,
+                  /*angular_frequency=*/1 * Radian / Second,
+                  /*right_ascension_of_pole=*/0 * Degree,
+                  /*declination_of_pole=*/90 * Degree)),
         celestial_(&body_),
         vessel_("123",
                 "vessel",
@@ -62,7 +73,7 @@ class VesselTest : public testing::Test {
   }
 
   MockEphemeris<Barycentric> ephemeris_;
-  MassiveBody const body_;
+  RotatingBody<Barycentric> const body_;
   Celestial const celestial_;
   PartId const part_id1_ = 111;
   PartId const part_id2_ = 222;

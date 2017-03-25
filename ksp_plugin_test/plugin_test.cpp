@@ -20,6 +20,7 @@
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
@@ -48,6 +49,7 @@ using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
 using physics::KeplerOrbit;
+using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
@@ -151,7 +153,8 @@ class TestablePlugin : public Plugin {
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|.
   std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
+      std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>&&
+          bodies,
       std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
       Instant const& initial_time,
       Length const& fitting_tolerance,
@@ -174,8 +177,10 @@ class TestablePlugin : public Plugin {
              degrees_of_freedom.velocity()});
       }
 
-      // Make sure that the |trajectory| member does the right thing.
-      ON_CALL(*mock_ephemeris_, trajectory(bodies_[index].get()))
+      // Make sure that the |trajectory| member does the right thing.  Note that
+      // the implicit conversion doesn't work too well in the matcher.
+      not_null<MassiveBody const*> body = bodies_[index].get();
+      ON_CALL(*mock_ephemeris_, trajectory(body))
           .WillByDefault(Return(trajectory.get()));
 
       ++index;
@@ -190,7 +195,8 @@ class TestablePlugin : public Plugin {
   // Someone has to own the bodies; normally it would be the ephemeris, but
   // since we mock it, we keep them here instead.  Similarly for the
   // trajectories.
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+  std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>
+      bodies_;
   std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Barycentric>>>>
       trajectories_;
   std::unique_ptr<MockEphemeris<Barycentric>> owned_mock_ephemeris_;
@@ -264,7 +270,7 @@ class PluginTest : public testing::Test {
           parent_index,
           id_icrf_barycentric_(
               solar_system_->initial_state(SolarSystemFactory::name(index))),
-          SolarSystem<Barycentric>::MakeMassiveBody(
+          SolarSystem<Barycentric>::MakeRotatingBody(
               solar_system_->gravity_model_message(name)));
     }
   }
@@ -348,7 +354,7 @@ class PluginTest : public testing::Test {
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant const initial_time_;
-  not_null<std::unique_ptr<MassiveBody>> sun_body_;
+  not_null<std::unique_ptr<RotatingBody<Barycentric>>> sun_body_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<TestablePlugin>> plugin_;
