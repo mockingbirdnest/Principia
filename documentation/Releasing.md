@@ -15,7 +15,7 @@ git push la-vache --tags
 ```
 After this is done, build the DLL using Profile Guided Optimization:
 
-- [ ] Make sure that the `PlayerTest.Debug` test contains the latest journal file name and has been merged as the last pull request.
+- [ ] Make sure that the `PlayerTest.Benchmark` test contains the latest journal file name and has been merged as the last pull request.
 - [ ] Select configuration `Release`, platform `x64`.
 - [ ] Remove all existing artifacts: `rm .\Release`.
 - [ ] Run `Build > Rebuild Solution`.  This makes sure that the tools and generated code are up-to-date.  It also creates the `journal_test.exe` binary.
