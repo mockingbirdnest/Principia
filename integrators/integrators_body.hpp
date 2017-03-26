@@ -1,12 +1,12 @@
-
+ï»¿
 #pragma once
 
 #include "integrators/integrators.hpp"
 
 #include "base/macros.hpp"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nystrÃ¶m_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nystrÃ¶m_integrator.hpp"
 
 namespace principia {
 namespace integrators {

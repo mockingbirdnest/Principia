@@ -138,8 +138,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
         std::function<
             double(Time const& current_step_size,
                    typename ODE::SystemStateError const& error)>;
-    // The first time step tried by the integrator. It must have the same sign as
-    // |problem.t_final - initial_state.time.value|.
+    // The first time step tried by the integrator. It must have the same sign
+    // as |problem.t_final - initial_state.time.value|.
     Time first_time_step;
     // This number must be in ]0, 1[.  Higher values increase the chance of step
     // rejection, lower values yield smaller steps.
@@ -149,8 +149,9 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     // ratio of a tolerance to some norm of the error.  The step is recomputed
     // with a smaller step size if the result is less than 1, and accepted
     // otherwise.
-    // In both cases, the new step size is chosen so as to try and make the result
-    // of the next call to |tolerance_to_error_ratio| close to |safety_factor|.
+    // In both cases, the new step size is chosen so as to try and make the
+    // result of the next call to |tolerance_to_error_ratio| close to
+    // |safety_factor|.
     ToleranceToErrorRatio tolerance_to_error_ratio;
     // Integration will stop after |*max_steps| even if it has not reached
     // |t_final|.
