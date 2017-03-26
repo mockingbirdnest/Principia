@@ -3,8 +3,8 @@
 
 #include <type_traits>
 
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
 namespace integrators {

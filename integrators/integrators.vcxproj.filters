@@ -50,7 +50,13 @@
     <ClInclude Include="symplectic_partitioned_runge_kutta_integrator_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="mock_ordinary_differential_equations.hpp">
+    <ClInclude Include="integrators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="integrators_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_integrators.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

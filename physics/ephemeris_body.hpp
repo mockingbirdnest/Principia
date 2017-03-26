@@ -37,7 +37,7 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
-using integrators::AdaptiveStepSize;
+using integrators::Parameters;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
@@ -406,7 +406,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   problem.equation = massless_body_equation;
   problem.initial_state = &initial_state;
 
-  AdaptiveStepSize<NewtonianMotionEquation> step_size;
+  Parameters<NewtonianMotionEquation> step_size;
   step_size.first_time_step = t_final - initial_state.time.value;
   CHECK_GT(step_size.first_time_step, 0 * Second)
       << "Flow back to the future: " << t_final

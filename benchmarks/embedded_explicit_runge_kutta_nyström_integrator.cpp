@@ -117,7 +117,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
     solution.push_back(state);
   };
 
-  AdaptiveStepSize<ODE> adaptive_step_size;
+  Parameters<ODE> adaptive_step_size;
   adaptive_step_size.first_time_step = t_final - t_initial;
   adaptive_step_size.safety_factor = 0.9;
   adaptive_step_size.tolerance_to_error_ratio =
@@ -176,7 +176,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
     solution.push_back(state);
   };
 
-  AdaptiveStepSize<ODE> adaptive_step_size;
+  Parameters<ODE> adaptive_step_size;
   adaptive_step_size.first_time_step = t_final - t_initial;
   adaptive_step_size.safety_factor = 0.9;
   adaptive_step_size.tolerance_to_error_ratio =
