@@ -371,8 +371,8 @@ Ephemeris<Frame>::NewInstance(
   massless_body_equation.compute_acceleration =
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
-                std::cref(intrinsic_accelerations), _1, _2, _3,
-                std::ref(hints));
+                std::cref(intrinsic_accelerations), _1, _2, _3,//
+                std::ref(hints));//
 
   typename NewtonianMotionEquation::SystemState initial_state;
   for (auto const& trajectory : trajectories) {
@@ -389,7 +389,7 @@ Ephemeris<Frame>::NewInstance(
   problem.initial_state = &initial_state;
 
 #if defined(WE_LOVE_228)
-  typename NewtonianMotionEquation::SystemState last_state;
+  typename NewtonianMotionEquation::SystemState last_state;//
   auto const append_state =
       [&last_state](
           typename NewtonianMotionEquation::SystemState const& state) {
@@ -497,54 +497,14 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
-    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-    std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
     Instant const& t,
-    FixedStepParameters const& parameters) {
+    typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   VLOG(1) << __FUNCTION__ << " " << NAMED(parameters.step_) << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }
 
-  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
-  NewtonianMotionEquation massless_body_equation;
-  massless_body_equation.compute_acceleration =
-      std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
-                this,
-                std::cref(intrinsic_accelerations), _1, _2, _3,
-                std::ref(hints));
-
-  typename NewtonianMotionEquation::SystemState initial_state;
-  for (auto const& trajectory : trajectories) {
-    auto const trajectory_last = trajectory->last();
-    auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
-    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
-    initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
-    initial_state.positions.emplace_back(last_degrees_of_freedom.position());
-    initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
-  }
-
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = massless_body_equation;
-  problem.initial_state = &initial_state;
-
-#if defined(WE_LOVE_228)
-  typename NewtonianMotionEquation::SystemState last_state;
-  auto const append_state =
-      [&last_state](
-          typename NewtonianMotionEquation::SystemState const& state) {
-        last_state = state;
-      };
-#else
-  auto const append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesState,
-                _1, std::cref(trajectories));
-#endif
-
-  auto const instance =
-      parameters.integrator_->NewInstance(
-          problem, append_state, parameters.step_);
-  instance->Solve(t);
+  instance.Solve(t);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
