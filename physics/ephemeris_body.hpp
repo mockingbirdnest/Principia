@@ -15,6 +15,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -37,7 +38,6 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
-using integrators::Parameters;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
@@ -406,18 +406,19 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   problem.equation = massless_body_equation;
   problem.initial_state = &initial_state;
 
-  Parameters<NewtonianMotionEquation> step_size;
-  step_size.first_time_step = t_final - initial_state.time.value;
-  CHECK_GT(step_size.first_time_step, 0 * Second)
+  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::Parameters
+      integrator_parameters;
+  integrator_parameters.first_time_step = t_final - initial_state.time.value;
+  CHECK_GT(integrator_parameters.first_time_step, 0 * Second)
       << "Flow back to the future: " << t_final
       << " <= " << initial_state.time.value;
-  step_size.safety_factor = 0.9;
-  step_size.tolerance_to_error_ratio =
+  integrator_parameters.safety_factor = 0.9;
+  integrator_parameters.tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 std::cref(parameters.length_integration_tolerance_),
                 std::cref(parameters.speed_integration_tolerance_),
                 _1, _2);
-  step_size.max_steps = parameters.max_steps_;
+  integrator_parameters.max_steps = parameters.max_steps_;
 
   typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
       append_state;
@@ -433,8 +434,8 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
         &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
   }
 
-  auto const instance =
-      parameters.integrator_->NewInstance(problem, append_state, step_size);
+  auto const instance = parameters.integrator_->NewInstance(
+      problem, append_state, integrator_parameters);
   auto const status = instance->Solve(t_final);
 
   if (last_point_only) {
