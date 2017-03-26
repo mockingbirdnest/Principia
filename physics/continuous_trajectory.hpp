@@ -98,25 +98,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // End of the implementation of the interface.
 
-  // Evaluation functions for clients who know that they have a
-  // |ContinuousTrajectory|.  It does not result in a dynamic cast.
-  virtual Position<Frame> EvaluatePosition(Instant const& time,
-                                           Hint* hint) const;
-  virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
-                                           Hint* hint) const;
-  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
-                                                           Hint* hint) const;
-
-  // Disambiguation for clients who statically do not pass a hint (otherwise the
-  // nullptr is ambiguous between |TrajectoryHint*| and |Hint*|.
-  virtual Position<Frame> EvaluatePosition(Instant const& time,
-                                           std::nullptr_t hint) const;
-  virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
-                                           std::nullptr_t hint) const;
-  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time,
-      std::nullptr_t hint) const;
-
   // Returns a checkpoint for the current state of this object.
   Checkpoint GetCheckpoint() const;
 

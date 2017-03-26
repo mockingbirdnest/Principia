@@ -156,119 +156,72 @@ template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     TrajectoryHint* const hint) const {
-  return hint == nullptr
-             ? EvaluatePosition(time, nullptr)
-             : EvaluatePosition(time, CHECK_NOTNULL(dynamic_cast<Hint*>(hint)));
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      return series_[hint->index_].Evaluate(time) + Frame::origin;
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return it->Evaluate(time) + Frame::origin;
+    }
+  }
 }
 
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
     TrajectoryHint* const hint) const {
-  return hint == nullptr
-             ? EvaluateVelocity(time, nullptr)
-             : EvaluateVelocity(time, CHECK_NOTNULL(dynamic_cast<Hint*>(hint)));
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      return series_[hint->index_].EvaluateDerivative(time);
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return it->EvaluateDerivative(time);
+    }
+  }
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
     Trajectory<Frame>::Hint* const hint) const {
-  return hint == nullptr ? EvaluateDegreesOfFreedom(time, nullptr)
-                         : EvaluateDegreesOfFreedom(
-                               time,
-                               CHECK_NOTNULL(dynamic_cast<Hint*>(hint)));
-}
-
-template<typename Frame>
-Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
-    Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    return series_[hint->index_].Evaluate(time) + Frame::origin;
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
+      return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
+                                     series.EvaluateDerivative(time));
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
+                                     it->EvaluateDerivative(time));
     }
-    return it->Evaluate(time) + Frame::origin;
   }
-}
-
-template<typename Frame>
-Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
-    Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    return series_[hint->index_].EvaluateDerivative(time);
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
-    }
-    return it->EvaluateDerivative(time);
-  }
-}
-
-template<typename Frame>
-DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
-    Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
-    return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
-                                   series.EvaluateDerivative(time));
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
-    }
-    return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
-                                   it->EvaluateDerivative(time));
-  }
-}
-
-template<typename Frame>
-Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
-    Instant const& time,
-    std::nullptr_t hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
-  return it->Evaluate(time) + Frame::origin;
-}
-
-template<typename Frame>
-Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
-    Instant const& time,
-    std::nullptr_t hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
-  return it->EvaluateDerivative(time);
-}
-
-template<typename Frame>
-DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
-    Instant const& time,
-    std::nullptr_t hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
-  return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
-                                 it->EvaluateDerivative(time));
 }
 
 template<typename Frame>
