@@ -34,7 +34,7 @@ class Trajectory {
   virtual Instant t_max() const = 0;
 
   // Gets a |Hint| of the appropriate derived type.
-  virtual not_null<std::unique_ptr<Hint>> GetHint() const = 0;
+  virtual not_null<std::unique_ptr<Hint>> NewHint() const = 0;
 
   // Evaluates the trajectory at the given |time|, which must be in
   // [t_min(), t_max()].  The |hint| may be used to speed up evaluation in

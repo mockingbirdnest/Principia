@@ -77,24 +77,23 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // Implementation of the interface |Trajectory|.
 
-  using TrajectoryHint = Trajectory<Frame>::Hint;
-
   // |t_max| may be less than the last time passed to Append.  For an empty
   // trajectory, an infinity with the proper sign is returned.
   Instant t_min() const override;
   Instant t_max() const override;
 
-  not_null<std::unique_ptr<TrajectoryHint>> GetHint() const override;
+  not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>> NewHint()
+      const override;
 
   Position<Frame> EvaluatePosition(
       Instant const& time,
-      TrajectoryHint* hint) const override;
+      typename Trajectory<Frame>::Hint* hint) const override;
   Velocity<Frame> EvaluateVelocity(
       Instant const& time,
-      TrajectoryHint* hint) const override;
+      typename Trajectory<Frame>::Hint* hint) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& time,
-      TrajectoryHint* hint) const override;
+      typename Trajectory<Frame>::Hint* hint) const override;
 
   // End of the implementation of the interface.
 
@@ -113,7 +112,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
-  class Hint : public TrajectoryHint {
+  class Hint : public Trajectory<Frame>::Hint {
    public:
     Hint();
    private:

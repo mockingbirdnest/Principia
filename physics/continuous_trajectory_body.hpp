@@ -148,14 +148,14 @@ Instant ContinuousTrajectory<Frame>::t_max() const {
 
 template<typename Frame>
 not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>>
-ContinuousTrajectory<Frame>::GetHint() const {
+ContinuousTrajectory<Frame>::NewHint() const {
   return make_not_null_unique<Hint>();
 }
 
 template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
-    TrajectoryHint* const hint) const {
+    typename Trajectory<Frame>::Hint* const hint) const {
   Hint* const down_cast_hint =
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
   {
@@ -178,7 +178,7 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
-    TrajectoryHint* const hint) const {
+    typename Trajectory<Frame>::Hint* const hint) const {
   Hint* const down_cast_hint =
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
   {
@@ -201,7 +201,7 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
-    Trajectory<Frame>::Hint* const hint) const {
+    typename Trajectory<Frame>::Hint* const hint) const {
   Hint* const down_cast_hint =
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
   {
