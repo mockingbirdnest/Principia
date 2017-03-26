@@ -360,6 +360,52 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<typename Integrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>
+Ephemeris<Frame>::NewInstance(
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+    IntrinsicAccelerations const& intrinsic_accelerations,
+    FixedStepParameters const& parameters) const {
+  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
+  NewtonianMotionEquation massless_body_equation;
+  massless_body_equation.compute_acceleration =
+      std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
+                this,
+                std::cref(intrinsic_accelerations), _1, _2, _3,
+                std::ref(hints));
+
+  typename NewtonianMotionEquation::SystemState initial_state;
+  for (auto const& trajectory : trajectories) {
+    auto const trajectory_last = trajectory->last();
+    auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
+    initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
+    initial_state.positions.emplace_back(last_degrees_of_freedom.position());
+    initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
+  }
+
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = massless_body_equation;
+  problem.initial_state = &initial_state;
+
+#if defined(WE_LOVE_228)
+  typename NewtonianMotionEquation::SystemState last_state;
+  auto const append_state =
+      [&last_state](
+          typename NewtonianMotionEquation::SystemState const& state) {
+        last_state = state;
+      };
+#else
+  auto const append_state =
+      std::bind(&Ephemeris::AppendMasslessBodiesState,
+                _1, std::cref(trajectories));
+#endif
+
+  return parameters.integrator_->NewInstance(
+      problem, append_state, parameters.step_);
+}
+
+template<typename Frame>
 bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,

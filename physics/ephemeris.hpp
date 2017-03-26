@@ -149,6 +149,14 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t);
 
+  //TODO(phl):typedef
+  virtual not_null<
+      std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
+  NewInstance(
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      IntrinsicAccelerations const& intrinsic_accelerations,
+      FixedStepParameters const& parameters) const;
+
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
