@@ -297,7 +297,9 @@
     <ClInclude Include="adams_moulton_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
-    <ClInclude Include="mock_ordinary_differential_equations.hpp" />
+    <ClInclude Include="integrators.hpp" />
+    <ClInclude Include="integrators_body.hpp" />
+    <ClInclude Include="mock_integrators.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
     <ClInclude Include="ordinary_differential_equations_body.hpp" />
     <ClInclude Include="symmetric_linear_multistep_integrator.hpp" />

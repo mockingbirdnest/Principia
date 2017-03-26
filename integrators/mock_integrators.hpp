@@ -3,11 +3,11 @@
 
 #include "base/not_null.hpp"
 #include "gmock/gmock.h"
-#include "integrators/ordinary_differential_equations.hpp"
+#include "integrators/integrators.hpp"
 
 namespace principia {
 namespace integrators {
-namespace internal_ordinary_differential_equations {
+namespace internal_integrators {
 
 using base::make_not_null_unique;
 
@@ -50,9 +50,9 @@ class MockFixedStepSizeIntegrator
       serialization::FixedStepSizeIntegrator::DUMMY) {}
 };
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal_integrators
 
-using internal_ordinary_differential_equations::MockFixedStepSizeIntegrator;
+using internal_integrators::MockFixedStepSizeIntegrator;
 
 }  // namespace integrators
 }  // namespace principia
