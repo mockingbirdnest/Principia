@@ -49,22 +49,6 @@ bool ContinuousTrajectory<Frame>::empty() const {
 }
 
 template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_min() const {
-  if (empty()) {
-    return astronomy::InfiniteFuture;
-  }
-  return *first_time_;
-}
-
-template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_max() const {
-  if (empty()) {
-    return astronomy::InfinitePast;
-  }
-  return series_.back().t_max();
-}
-
-template<typename Frame>
 double ContinuousTrajectory<Frame>::average_degree() const {
   if (empty()) {
     return 0;
@@ -144,6 +128,43 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
     first_time_ = time;
   }
 }
+
+template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_min() const {
+  if (empty()) {
+    return astronomy::InfiniteFuture;
+  }
+  return *first_time_;
+}
+
+template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_max() const {
+  if (empty()) {
+    return astronomy::InfinitePast;
+  }
+  return series_.back().t_max();
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<Trajectory<Frame>::Hint>>
+ContinuousTrajectory<Frame>::GetHint() const {
+  return make_not_null_unique<Hint>();
+}
+
+template<typename Frame>
+Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
+    Instant const& time,
+    Trajectory<Frame>::Hint* const hint) const {}
+
+template<typename Frame>
+Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
+    Instant const& time,
+    Trajectory<Frame>::Hint* const hint) const {}
+
+template<typename Frame>
+DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
+    Instant const& time,
+    Trajectory<Frame>::Hint* const hint) const {}
 
 template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(

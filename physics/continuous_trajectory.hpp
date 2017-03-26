@@ -9,6 +9,7 @@
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/physics.pb.h"
 
@@ -27,7 +28,7 @@ using quantities::Time;
 using numerics::ЧебышёвSeries;
 
 template<typename Frame>
-class ContinuousTrajectory {
+class ContinuousTrajectory : public Trajectory<Frame> {
  public:
   // A |Hint| is used to speed up the evaluation of trajectories.  When
   // repeatedly calling one of the evaluation functions with increasing values
@@ -60,12 +61,6 @@ class ContinuousTrajectory {
   // Returns true iff this trajectory cannot be evaluated for any time.
   bool empty() const;
 
-  // The time range for which the trajectory can be evaluated.  Note that
-  // |t_max| may be less than the last time passed to Append.  For an empty
-  // trajectory, an infinity with the proper sign is returned.
-  Instant t_min() const;
-  Instant t_max() const;
-
   // The average degree of the polynomials for the trajectory.  Only useful for
   // benchmarking or analyzing performance.  Do not use in real code.
   double average_degree() const;
@@ -80,10 +75,29 @@ class ContinuousTrajectory {
   // Removes all data for times strictly less than |time|.
   void ForgetBefore(Instant const& time);
 
-  // Evaluates the trajectory at the given |time|, which must be in
-  // [t_min(), t_max()].  The |hint| may be used to speed up evaluation
-  // in increasing time order.  It may be a nullptr (in which case no speed-up
-  // takes place).
+  // Implementation of the interface |Trajectory|.
+
+  // |t_max| may be less than the last time passed to Append.  For an empty
+  // trajectory, an infinity with the proper sign is returned.
+  Instant t_min() const override;
+  Instant t_max() const override;
+
+  not_null<std::unique_ptr<Trajectory<Frame>::Hint>> GetHint() const override;
+
+  Position<Frame> EvaluatePosition(
+      Instant const& time,
+      Trajectory<Frame>::Hint* hint) const override;
+  Velocity<Frame> EvaluateVelocity(
+      Instant const& time,
+      Trajectory<Frame>::Hint* hint) const override;
+  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
+      Instant const& time,
+      Trajectory<Frame>::Hint* hint) const override;
+
+  // End of the implementation of the interface.
+
+  // Evaluation functions for clients who know that they have a
+  // |ContinuousTrajectory|.  It does not result in a dynamic cast.
   virtual Position<Frame> EvaluatePosition(Instant const& time,
                                            Hint* hint) const;
   virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
@@ -106,7 +120,7 @@ class ContinuousTrajectory {
 
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
-  class Hint final {
+  class Hint : public Trajectory<Frame>::Hint {
    public:
     Hint();
    private:
