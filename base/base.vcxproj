@@ -269,6 +269,8 @@
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
+    <ClInclude Include="function.hpp" />
+    <ClInclude Include="function_body.hpp" />
     <ClInclude Include="get_line.hpp" />
     <ClInclude Include="get_line_body.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
@@ -299,6 +301,7 @@
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />
+    <ClCompile Include="function_test.cpp" />
     <ClCompile Include="hexadecimal_test.cpp" />
     <ClCompile Include="not_null_test.cpp" />
     <ClCompile Include="pull_serializer_test.cpp" />
