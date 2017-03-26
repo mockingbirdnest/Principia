@@ -254,8 +254,8 @@ class WorkErrorGraphGenerator {
     int number_of_evaluations = 0;
     problem.equation.compute_acceleration = std::bind(
         compute_accelerations_, _1, _2, _3, &number_of_evaluations);
-    problem.initial_state = &initial_state_;
-    auto const t0 = problem.initial_state->time.value;
+    problem.initial_state = initial_state_;
+    auto const t0 = problem.initial_state.time.value;
     Length max_q_error;
     Speed max_v_error;
     Energy max_e_error;

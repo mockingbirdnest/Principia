@@ -108,8 +108,7 @@ void TestTermination(
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -168,8 +167,7 @@ void Test1000SecondsAt1Millisecond(
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -238,8 +236,7 @@ void TestConvergence(Integrator const& integrator,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
@@ -313,8 +310,7 @@ void TestSymplecticity(Integrator const& integrator,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -370,20 +366,19 @@ void TestTimeReversibility(Integrator const& integrator) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
     final_state = state;
   };
 
   {
-    problem.initial_state = &initial_state;
+    problem.initial_state = {{q_initial}, {v_initial}, t_initial};
     auto const instance = integrator.NewInstance(problem, append_state, step);
     instance->Solve(t_final);
   }
 
   {
-    problem.initial_state = &final_state;
+    problem.initial_state = final_state;
     auto const instance = integrator.NewInstance(problem, append_state, -step);
     instance->Solve(t_initial);
   }
@@ -423,8 +418,7 @@ void TestSerialization(Integrator const& integrator) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };

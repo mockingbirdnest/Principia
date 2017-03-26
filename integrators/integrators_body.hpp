@@ -17,7 +17,7 @@ Integrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state)
     : equation_(problem.equation),
-      current_state_(*problem.initial_state),
+      current_state_(problem.initial_state),
       append_state_(std::move(append_state)) {
   CHECK_EQ(current_state_.positions.size(),
            current_state_.velocities.size());
@@ -54,11 +54,10 @@ FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
     ODE const& equation,
     AppendState const& append_state) {
-  auto const current_state =
-      ODE::SystemState::ReadFromMessage(message.current_state());
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
-  problem.initial_state = &current_state;
+  problem.initial_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
 
   CHECK(message.HasExtension(
       serialization::FixedStepSizeIntegratorInstance::extension))
@@ -171,11 +170,10 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     AppendState const& append_state,
     typename Parameters::ToleranceToErrorRatio const&
         tolerance_to_error_ratio) {
-  auto const current_state =
-      ODE::SystemState::ReadFromMessage(message.current_state());
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
-  problem.initial_state = &current_state;
+  problem.initial_state =
+      ODE::SystemState::ReadFromMessage(message.current_state());
 
   CHECK(message.HasExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension))

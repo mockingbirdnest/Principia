@@ -28,7 +28,6 @@ template<typename ODE_>
 class Integrator {
  public:
   using ODE = ODE_;
-
   using AppendState =
       std::function<void(typename ODE::SystemState const& state)>;
 
@@ -73,8 +72,6 @@ template<typename ODE_>
 class FixedStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
-  using AppendState = typename Integrator<ODE>::AppendState;
-
 
   // The last call to |append_state| has a |state.time.value| equal to the
   // unique |Instant| of the form |problem.t_final + n * step| in
@@ -135,7 +132,6 @@ template<typename ODE_>
 class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
-  using AppendState = typename Integrator<ODE>::AppendState;
 
   struct Parameters final {
     using ToleranceToErrorRatio =

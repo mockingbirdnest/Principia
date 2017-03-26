@@ -103,8 +103,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -136,7 +135,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   subsequent_rejections = 0;
   initial_rejections = 0;
   first_step = true;
-  problem.initial_state = &solution.back();
+  problem.initial_state = solution.back();
   parameters.first_time_step = t_initial - t_final;
   parameters.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
@@ -186,8 +185,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
@@ -254,8 +252,6 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   auto const mass = [initial_mass, t_initial, mass_flow](Instant const& t) {
     return initial_mass - (t - t_initial) * mass_flow;
   };
-  ODE::SystemState initial_state =
-      {{0 * Metre}, {0 * Metre / Second}, t_initial};
 
   Length const length_tolerance = 1 * Milli(Metre);
   Speed const speed_tolerance = 1 * Milli(Metre) / Second;
@@ -273,7 +269,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
     solution.push_back(state);
   };
   problem.equation = rocket_equation;
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{0 * Metre}, {0 * Metre / Second}, t_initial};
   AdaptiveStepSizeIntegrator<ODE>::Parameters parameters;
   parameters.first_time_step = t_final - t_initial;
   parameters.safety_factor = 0.9;
@@ -319,8 +315,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{x_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };

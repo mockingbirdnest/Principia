@@ -275,7 +275,7 @@ Instance::StartupSolve(Instant const& t_final) {
       };
 
   auto const startup_instance =
-      integrator_.startup_integrator_.NewInstance({equation, &current_state},
+      integrator_.startup_integrator_.NewInstance({equation, current_state},
                                                   startup_append_state,
                                                   startup_step);
 
