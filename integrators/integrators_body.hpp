@@ -30,6 +30,11 @@ Integrator<ODE_>::Instance::time() const {
 }
 
 template<typename ODE_>
+typename ODE_::SystemState const& Integrator<ODE_>::Instance::state() const {
+  return current_state_;
+}
+
+template<typename ODE_>
 void Integrator<ODE_>::Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   current_state_.WriteToMessage(message->mutable_current_state());
