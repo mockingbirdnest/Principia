@@ -77,22 +77,24 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // Implementation of the interface |Trajectory|.
 
+  using TrajectoryHint = Trajectory<Frame>::Hint;
+
   // |t_max| may be less than the last time passed to Append.  For an empty
   // trajectory, an infinity with the proper sign is returned.
   Instant t_min() const override;
   Instant t_max() const override;
 
-  not_null<std::unique_ptr<Trajectory<Frame>::Hint>> GetHint() const override;
+  not_null<std::unique_ptr<TrajectoryHint>> GetHint() const override;
 
   Position<Frame> EvaluatePosition(
       Instant const& time,
-      Trajectory<Frame>::Hint* hint) const override;
+      TrajectoryHint* hint) const override;
   Velocity<Frame> EvaluateVelocity(
       Instant const& time,
-      Trajectory<Frame>::Hint* hint) const override;
+      TrajectoryHint* hint) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
       Instant const& time,
-      Trajectory<Frame>::Hint* hint) const override;
+      TrajectoryHint* hint) const override;
 
   // End of the implementation of the interface.
 
@@ -104,6 +106,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                                            Hint* hint) const;
   virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(Instant const& time,
                                                            Hint* hint) const;
+
+  // Disambiguation for clients who statically do not pass a hint (otherwise the
+  // nullptr is ambiguous between |TrajectoryHint*| and |Hint*|.
+  virtual Position<Frame> EvaluatePosition(Instant const& time,
+                                           std::nullptr_t hint) const;
+  virtual Velocity<Frame> EvaluateVelocity(Instant const& time,
+                                           std::nullptr_t hint) const;
+  virtual DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
+      Instant const& time,
+      std::nullptr_t hint) const;
 
   // Returns a checkpoint for the current state of this object.
   Checkpoint GetCheckpoint() const;
@@ -120,7 +132,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The only thing that clients may do with |Hint| objects is to
   // default-initialize them.
-  class Hint : public Trajectory<Frame>::Hint {
+  class Hint : public TrajectoryHint {
    public:
     Hint();
    private:
