@@ -10,20 +10,20 @@ template<typename Result, typename... Args>
 class Functor {
  public:
   virtual ~Functor() = default;
-  virtual Result call(Args&&...) = 0;
+  virtual Result Call(Args&&...) = 0;
 };
 
 template<typename F, typename Result, typename... Args>
 class ConcreteFunctor final : public Functor<Result, Args...> {
  public:
-  explicit ConcreteFunctor(F Functor);
-  Result call(Args&&... args) final;
+  explicit ConcreteFunctor(F functor);
+  Result Call(Args&&... args) final;
  private:
   F functor_;
 };
 
 template<typename Signature>
-struct function;
+class function;
 
 template<typename Result, typename... Args>
 class function<Result(Args...)> {
