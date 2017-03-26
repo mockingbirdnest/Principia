@@ -250,7 +250,7 @@ class PluginTest : public testing::Test {
     using ODE = Ephemeris<Barycentric>::NewtonianMotionEquation;
     ODE::SystemState initial_state;
     McLachlanAtela1992Order5Optimal<Position<Barycentric>>().
-        NewInstance(IntegrationProblem<ODE>{ODE{}, &initial_state},
+        NewInstance(IntegrationProblem<ODE>{ODE{}, initial_state},
                      [](typename ODE::SystemState const&) {},
                      1.0 * Second)->WriteToMessage(
             valid_ephemeris_message_.mutable_instance());

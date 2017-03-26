@@ -104,7 +104,7 @@ Instance::Solve(Instant const& t_final) {
 
   auto& current_state = this->current_state_;
   auto& append_state = this->append_state_;
-  auto& adaptive_step_size = this->adaptive_step_size_;
+  auto& parameters = this->parameters_;
   auto const& equation = this->equation_;
 
   // |current_state| gets updated as the integration progresses to allow
@@ -115,8 +115,7 @@ Instance::Solve(Instant const& t_final) {
 
   // Argument checks.
   int const dimension = current_state.positions.size();
-  Sign const integration_direction =
-      Sign(adaptive_step_size.first_time_step);
+  Sign const integration_direction = Sign(parameters.first_time_step);
   if (integration_direction.Positive()) {
     // Integrating forward.
     CHECK_LT(current_state.time.value, t_final);
@@ -126,7 +125,7 @@ Instance::Solve(Instant const& t_final) {
   }
 
   // Time step.
-  Time h = adaptive_step_size.first_time_step;
+  Time h = parameters.first_time_step;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
@@ -178,7 +177,7 @@ Instance::Solve(Instant const& t_final) {
       // Adapt step size.
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
-      h *= adaptive_step_size.safety_factor *
+      h *= parameters.safety_factor *
                std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
@@ -238,7 +237,7 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
       tolerance_to_error_ratio =
-          adaptive_step_size.tolerance_to_error_ratio(h, error_estimate);
+          parameters.tolerance_to_error_ratio(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     if (first_same_as_last) {
@@ -255,10 +254,10 @@ Instance::Solve(Instant const& t_final) {
     }
     append_state(current_state);
     ++step_count;
-    if (step_count == adaptive_step_size.max_steps && !at_end) {
+    if (step_count == parameters.max_steps && !at_end) {
       return Status(termination_condition::ReachedMaximalStepCount,
                     "Reached maximum step count " +
-                        std::to_string(adaptive_step_size.max_steps) +
+                        std::to_string(parameters.max_steps) +
                         " at time " + DebugString(t.value) +
                         "; requested t_final is " + DebugString(t_final) +
                         ".");
@@ -329,10 +328,10 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size,
+    Parameters const& parameters,
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(
-          problem, std::move(append_state), adaptive_step_size),
+          problem, std::move(append_state), parameters),
       integrator_(integrator) {}
 
 template<typename Position, int higher_order, int lower_order, int stages,
@@ -346,11 +345,11 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             first_same_as_last>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             AppendState const& append_state,
-            AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+            Parameters const& parameters) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, adaptive_step_size, *this));
+      new Instance(problem, append_state, parameters, *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,
@@ -366,7 +365,7 @@ ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance const& message,
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
-    AdaptiveStepSize<ODE> const& adaptive_step_size) const {
+    Parameters const& parameters) const {
   CHECK(message.HasExtension(
       serialization::EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
           extension))
@@ -375,7 +374,7 @@ ReadFromMessage(
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
   return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
-      problem, append_state, adaptive_step_size, *this));
+      problem, append_state, parameters, *this));
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator

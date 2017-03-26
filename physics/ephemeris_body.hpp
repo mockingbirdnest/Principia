@@ -15,6 +15,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
+#include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/hermite3.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -37,7 +38,6 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
-using integrators::AdaptiveStepSize;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
 using numerics::Bisect;
@@ -204,7 +204,13 @@ Ephemeris<Frame>::Ephemeris(
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
-  typename NewtonianMotionEquation::SystemState state;
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = {
+      std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
+                this,
+                _1, _2, _3)};
+
+  typename NewtonianMotionEquation::SystemState& state = problem.initial_state;
   state.time = DoublePrecision<Instant>(initial_time);
 
   for (int i = 0; i < bodies.size(); ++i) {
@@ -244,12 +250,6 @@ Ephemeris<Frame>::Ephemeris(
       ++number_of_spherical_bodies_;
     }
   }
-
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation.compute_acceleration =
-      std::bind(&Ephemeris::ComputeMassiveBodiesGravitationalAccelerations,
-                this, _1, _2, _3);
-  problem.initial_state = &state;
 
   instance_ = parameters.integrator_->NewInstance(
       problem,
@@ -388,53 +388,51 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   Prolong(t_final);
 
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
-  NewtonianMotionEquation massless_body_equation;
-  massless_body_equation.compute_acceleration =
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = {
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
-                std::cref(intrinsic_accelerations), _1, _2, _3,
-                std::ref(hints));
+                std::cref(intrinsic_accelerations),
+                _1, _2, _3,
+                std::ref(hints))};
 
-  typename NewtonianMotionEquation::SystemState initial_state;
   auto const trajectory_last = trajectory->last();
   auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
-  initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
-  initial_state.positions.emplace_back(last_degrees_of_freedom.position());
-  initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
+  problem.initial_state = {{last_degrees_of_freedom.position()},
+                           {last_degrees_of_freedom.velocity()},
+                           trajectory_last.time()};
 
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = massless_body_equation;
-  problem.initial_state = &initial_state;
-
-  AdaptiveStepSize<NewtonianMotionEquation> step_size;
-  step_size.first_time_step = t_final - initial_state.time.value;
-  CHECK_GT(step_size.first_time_step, 0 * Second)
+  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::Parameters
+      integrator_parameters;
+  integrator_parameters.first_time_step =
+      t_final - problem.initial_state.time.value;
+  CHECK_GT(integrator_parameters.first_time_step, 0 * Second)
       << "Flow back to the future: " << t_final
-      << " <= " << initial_state.time.value;
-  step_size.safety_factor = 0.9;
-  step_size.tolerance_to_error_ratio =
+      << " <= " << problem.initial_state.time.value;
+  integrator_parameters.safety_factor = 0.9;
+  integrator_parameters.tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 std::cref(parameters.length_integration_tolerance_),
                 std::cref(parameters.speed_integration_tolerance_),
-                _1, _2);
-  step_size.max_steps = parameters.max_steps_;
+                _1,
+                _2);
+  integrator_parameters.max_steps = parameters.max_steps_;
 
   typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
       append_state;
   typename NewtonianMotionEquation::SystemState last_state;
   if (last_point_only) {
-    append_state =
-      [&last_state](
-          typename NewtonianMotionEquation::SystemState const& state) {
-        last_state = state;
-      };
+    append_state = [&last_state](
+        typename NewtonianMotionEquation::SystemState const& state) {
+      last_state = state;
+    };
   } else {
     append_state = std::bind(
         &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
   }
 
-  auto const instance =
-      parameters.integrator_->NewInstance(problem, append_state, step_size);
+  auto const instance = parameters.integrator_->NewInstance(
+      problem, append_state, integrator_parameters);
   auto const status = instance->Solve(t_final);
 
   if (last_point_only) {
@@ -461,26 +459,25 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   }
 
   std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
-  NewtonianMotionEquation massless_body_equation;
-  massless_body_equation.compute_acceleration =
+  IntegrationProblem<NewtonianMotionEquation> problem;
+  problem.equation = {
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
-                std::cref(intrinsic_accelerations), _1, _2, _3,
-                std::ref(hints));
+                std::cref(intrinsic_accelerations),
+                _1, _2, _3,
+                std::ref(hints))};
 
-  typename NewtonianMotionEquation::SystemState initial_state;
   for (auto const& trajectory : trajectories) {
     auto const trajectory_last = trajectory->last();
     auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
     // TODO(phl): why do we keep rewriting this?  Should we check consistency?
-    initial_state.time = DoublePrecision<Instant>(trajectory_last.time());
-    initial_state.positions.emplace_back(last_degrees_of_freedom.position());
-    initial_state.velocities.emplace_back(last_degrees_of_freedom.velocity());
+    problem.initial_state.time =
+        DoublePrecision<Instant>(trajectory_last.time());
+    problem.initial_state.positions.emplace_back(
+        last_degrees_of_freedom.position());
+    problem.initial_state.velocities.emplace_back(
+        last_degrees_of_freedom.velocity());
   }
-
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = massless_body_equation;
-  problem.initial_state = &initial_state;
 
 #if defined(WE_LOVE_228)
   typename NewtonianMotionEquation::SystemState last_state;
