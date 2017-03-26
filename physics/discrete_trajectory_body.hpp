@@ -178,6 +178,46 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
+Instant DiscreteTrajectory<Frame>::t_min() const {
+  return Empty() ? InfiniteFuture : Begin().time();
+}
+
+template<typename Frame>
+Instant DiscreteTrajectory<Frame>::t_max() const {
+  return Empty() ? InfinitePast : last().time();
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>>
+DiscreteTrajectory<Frame>::NewHint() const {
+  return std::unique_ptr<typename Trajectory<Frame>::Hint>(new Hint(Begin()));
+}
+
+template<typename Frame>
+Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
+    Instant const& time,
+    typename Trajectory<Frame>::Hint* hint) const {
+  return /*TODO*/;
+}
+
+template<typename Frame>
+Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
+    Instant const& time,
+    typename Trajectory<Frame>::Hint* hint) const {
+  return /*TODO*/;
+}
+
+template<typename Frame>
+DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
+    Instant const& time,
+    typename Trajectory<Frame>::Hint* hint) const {
+  return /*TODO*/;
+}
+
+template<typename Frame>
+DiscreteTrajectory<Frame>::Hint::Hint(Iterator const& it) : it_(it) {}
+
+template<typename Frame>
 void DiscreteTrajectory<Frame>::WriteToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<DiscreteTrajectory<Frame>*> const& forks)
