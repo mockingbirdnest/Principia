@@ -16,7 +16,7 @@ class Functor {
 template<typename F, typename Result, typename... Args>
 class ConcreteFunctor final : public Functor<Result, Args...> {
  public:
-  ConcreteFunctor(F Functor);
+  explicit ConcreteFunctor(F Functor);
   Result call(Args&&... args) final;
  private:
   F functor_;
@@ -31,7 +31,7 @@ class function<Result(Args...)> {
   template<typename F>
   function(F functor);
 
-  function(function&&) = default;
+  function(function&&) = default;  // NOLINT(whitespace/operators)
   function& operator=(function&&) = default;
 
   Result operator()(Args&&... args);

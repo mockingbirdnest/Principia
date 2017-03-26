@@ -28,6 +28,6 @@ Result function<Result(Args...)>::operator()(Args&&... args) {
   return functor_->call(std::forward<Args>(args)...);
 }
 
-}  // namespace internal_functio
+}  // namespace internal_function
 }  // namespace base
 }  // namespace principia
