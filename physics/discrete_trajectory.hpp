@@ -55,6 +55,7 @@ namespace internal_discrete_trajectory {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
