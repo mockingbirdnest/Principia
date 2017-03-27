@@ -1,6 +1,7 @@
 ﻿
 #include "physics/discrete_trajectory.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <list>
 #include <map>
@@ -835,7 +836,7 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
         {World::origin + Displacement<World>{{r * Cos(ω * t),
                                               r * Sin(ω * t),
                                               0 * Metre}},
-         Velocity<World>{{-v * Sin (ω * t),
+         Velocity<World>{{-v * Sin(ω * t),
                           v * Cos(ω * t),
                           0 * Metre / Second}}});
   }

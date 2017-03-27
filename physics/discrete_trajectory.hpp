@@ -153,7 +153,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   class Hint : public Trajectory<Frame>::Hint {
    private:
-    Hint(Iterator const& it);
+    explicit Hint(Iterator const& it);
     Iterator it_;
     friend class DiscreteTrajectory<Frame>;
   };
