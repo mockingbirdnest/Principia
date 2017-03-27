@@ -113,6 +113,12 @@
     <ClInclude Include="not_constructible.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="function.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="function_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -143,6 +149,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="bundle_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="function_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

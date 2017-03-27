@@ -340,6 +340,7 @@
     <ClInclude Include="rotating_body_body.hpp" />
     <ClInclude Include="solar_system.hpp" />
     <ClInclude Include="solar_system_body.hpp" />
+    <ClInclude Include="trajectory.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
