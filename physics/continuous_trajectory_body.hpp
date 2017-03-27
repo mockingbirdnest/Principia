@@ -18,6 +18,7 @@ namespace physics {
 namespace internal_continuous_trajectory {
 
 using base::Error;
+using base::make_not_null_unique;
 using numerics::ULPDistance;
 using quantities::DebugString;
 using quantities::SIUnit;
@@ -46,22 +47,6 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
 template<typename Frame>
 bool ContinuousTrajectory<Frame>::empty() const {
   return series_.empty();
-}
-
-template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_min() const {
-  if (empty()) {
-    return astronomy::InfiniteFuture;
-  }
-  return *first_time_;
-}
-
-template<typename Frame>
-Instant ContinuousTrajectory<Frame>::t_max() const {
-  if (empty()) {
-    return astronomy::InfinitePast;
-  }
-  return series_.back().t_max();
 }
 
 template<typename Frame>
@@ -146,59 +131,96 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_min() const {
+  if (empty()) {
+    return astronomy::InfiniteFuture;
+  }
+  return *first_time_;
+}
+
+template<typename Frame>
+Instant ContinuousTrajectory<Frame>::t_max() const {
+  if (empty()) {
+    return astronomy::InfinitePast;
+  }
+  return series_.back().t_max();
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>>
+ContinuousTrajectory<Frame>::NewHint() const {
+  return make_not_null_unique<Hint>();
+}
+
+template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    return series_[hint->index_].Evaluate(time) + Frame::origin;
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
+    typename Trajectory<Frame>::Hint* const hint) const {
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      return series_[hint->index_].Evaluate(time) + Frame::origin;
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return it->Evaluate(time) + Frame::origin;
     }
-    return it->Evaluate(time) + Frame::origin;
   }
 }
 
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    return series_[hint->index_].EvaluateDerivative(time);
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
+    typename Trajectory<Frame>::Hint* const hint) const {
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      return series_[hint->index_].EvaluateDerivative(time);
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return it->EvaluateDerivative(time);
     }
-    return it->EvaluateDerivative(time);
   }
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
     Instant const& time,
-    Hint* const hint) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
-  if (MayUseHint(time, hint)) {
-    ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
-    return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
-                                   series.EvaluateDerivative(time));
-  } else {
-    auto const it = FindSeriesForInstant(time);
-    CHECK(it != series_.end());
-    if (hint != nullptr) {
-      hint->index_ = it - series_.cbegin();
+    typename Trajectory<Frame>::Hint* const hint) const {
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  {
+    Hint* const hint = down_cast_hint;
+    CHECK_LE(t_min(), time);
+    CHECK_GE(t_max(), time);
+    if (MayUseHint(time, hint)) {
+      ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
+      return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
+                                     series.EvaluateDerivative(time));
+    } else {
+      auto const it = FindSeriesForInstant(time);
+      CHECK(it != series_.end());
+      if (hint != nullptr) {
+        hint->index_ = it - series_.cbegin();
+      }
+      return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
+                                     it->EvaluateDerivative(time));
     }
-    return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
-                                   it->EvaluateDerivative(time));
   }
 }
 

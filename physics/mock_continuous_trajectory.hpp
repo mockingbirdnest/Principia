@@ -18,12 +18,12 @@ class MockContinuousTrajectory : public ContinuousTrajectory<Frame> {
   MOCK_CONST_METHOD2_T(
       EvaluatePosition,
       Position<Frame>(Instant const& time,
-                      typename ContinuousTrajectory<Frame>::Hint* hint));
+                      typename Trajectory<Frame>::Hint* hint));
   MOCK_CONST_METHOD2_T(
       EvaluateDegreesOfFreedom,
       DegreesOfFreedom<Frame>(
           Instant const& time,
-          typename ContinuousTrajectory<Frame>::Hint* hint));
+          typename Trajectory<Frame>::Hint* hint));
 };
 
 }  // namespace internal_continuous_trajectory
