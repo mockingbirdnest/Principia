@@ -857,10 +857,8 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
     max_v_error =
         std::max(max_v_error, RelativeError(v, v_interpolated.Norm()));
   }
-  // The actual error is about 1.5 %.
-  EXPECT_THAT(max_r_error, AllOf(Ge(0.01), Le(0.02)));
-  // The actual error is about 1.2 %.
-  EXPECT_THAT(max_v_error, AllOf(Ge(0.01), Le(0.02)));
+  EXPECT_THAT(max_r_error, AllOf(Ge(0.014), Le(0.016)));
+  EXPECT_THAT(max_v_error, AllOf(Ge(0.011), Le(0.013)));
 }
 
 }  // namespace internal_discrete_trajectory

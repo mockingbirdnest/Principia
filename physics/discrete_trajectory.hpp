@@ -11,6 +11,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/forkable.hpp"
 #include "physics/trajectory.hpp"
@@ -62,6 +63,7 @@ using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
 using internal_forkable::DiscreteTrajectoryIterator;
+using numerics::Hermite3;
 
 template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
@@ -195,6 +197,13 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
+
+  // Returns the Hermite interpolation for the left-open, right-closed
+  // trajectory segment containing the given |time|, or, if |time| is |t_min()|,
+  // returns a first-degree polynomial which should be evaluated only at
+  // |t_min()|.
+  Hermite3<Instant, Position<Frame>> GetInterpolation(Instant const& time,
+                                                      Hint* hint) const;
 
   Timeline timeline_;
 

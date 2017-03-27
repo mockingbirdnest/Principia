@@ -11,7 +11,6 @@
 #include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
-#include "numerics/hermite3.hpp"
 
 namespace principia {
 namespace physics {
@@ -55,8 +54,6 @@ namespace internal_discrete_trajectory {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
-using geometry::Instant;
-using numerics::Hermite3;
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
@@ -209,20 +206,7 @@ Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
     // TODO(egg): do things with the hint.
     CHECK_LE(t_min(), time);
     CHECK_GE(t_max(), time);
-    // This is the upper bound of the interval upon which we will do the
-    // interpolation.
-    auto const upper = LowerBound(time);
-    if (upper == Begin()) {
-      return upper.degrees_of_freedom().position();
-    }
-    auto const lower = --Iterator{upper};
-    Hermite3<Instant, Position<Frame>> interpolation{
-        {lower.time(), upper.time()},
-        {lower.degrees_of_freedom().position(),
-         upper.degrees_of_freedom().position()},
-        {lower.degrees_of_freedom().velocity(),
-         upper.degrees_of_freedom().velocity()}};
-    return interpolation.Evaluate(time);
+    return GetInterpolation(time, hint).Evaluate(time);
   }
 }
 
@@ -234,23 +218,9 @@ Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
   {
     Hint* const hint = down_cast_hint;
-    // TODO(egg): do things with the hint.
     CHECK_LE(t_min(), time);
     CHECK_GE(t_max(), time);
-    // This is the upper bound of the interval upon which we will do the
-    // interpolation.
-    auto const upper = LowerBound(time);
-    if (upper == Begin()) {
-      return upper.degrees_of_freedom().velocity();
-    }
-    auto const lower = --Iterator{upper};
-    Hermite3<Instant, Position<Frame>> interpolation{
-        {lower.time(), upper.time()},
-        {lower.degrees_of_freedom().position(),
-         upper.degrees_of_freedom().position()},
-        {lower.degrees_of_freedom().velocity(),
-         upper.degrees_of_freedom().velocity()}};
-    return interpolation.EvaluateDerivative(time);
+    return GetInterpolation(time, hint).EvaluateDerivative(time);
   }
 }
 
@@ -262,22 +232,9 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
   {
     Hint* const hint = down_cast_hint;
-    // TODO(egg): do things with the hint.
     CHECK_LE(t_min(), time);
     CHECK_GE(t_max(), time);
-    // This is the upper bound of the interval upon which we will do the
-    // interpolation.
-    auto const upper = LowerBound(time);
-    if (upper == Begin()) {
-      return upper.degrees_of_freedom();
-    }
-    auto const lower = --Iterator{upper};
-    Hermite3<Instant, Position<Frame>> interpolation{
-        {lower.time(), upper.time()},
-        {lower.degrees_of_freedom().position(),
-         upper.degrees_of_freedom().position()},
-        {lower.degrees_of_freedom().velocity(),
-         upper.degrees_of_freedom().velocity()}};
+    auto const interpolation = GetInterpolation(time, hint);
     return {interpolation.Evaluate(time),
             interpolation.EvaluateDerivative(time)};
   }
@@ -390,6 +347,23 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
                                                                  forks);
+}
+
+template<typename Frame>
+Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
+    Instant const& time,
+    Hint* hint)  const {
+  // TODO(egg): do things with the hint.
+  // This is the upper bound of the interval upon which we will do the
+  // interpolation.
+  auto const upper = LowerBound(time);
+  auto const lower = upper == Begin() ? upper : --Iterator{upper};
+  return Hermite3<Instant, Position<Frame>> {
+      {lower.time(), upper.time()},
+      {lower.degrees_of_freedom().position(),
+       upper.degrees_of_freedom().position()},
+      {lower.degrees_of_freedom().velocity(),
+       upper.degrees_of_freedom().velocity()}};
 }
 
 }  // namespace internal_discrete_trajectory
