@@ -202,8 +202,9 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // trajectory segment containing the given |time|, or, if |time| is |t_min()|,
   // returns a first-degree polynomial which should be evaluated only at
   // |t_min()|.
-  Hermite3<Instant, Position<Frame>> GetInterpolation(Instant const& time,
-                                                      Hint* hint) const;
+  Hermite3<Instant, Position<Frame>> GetInterpolation(
+      Instant const& time,
+      Trajectory<Frame>::Hint* hint) const;
 
   Timeline timeline_;
 

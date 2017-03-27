@@ -199,29 +199,14 @@ template<typename Frame>
 Position<Frame> DiscreteTrajectory<Frame>::EvaluatePosition(
     Instant const& time,
     typename Trajectory<Frame>::Hint* hint) const {
-  Hint* const down_cast_hint =
-      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    // TODO(egg): do things with the hint.
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    return GetInterpolation(time, hint).Evaluate(time);
-  }
+  return GetInterpolation(time, hint).Evaluate(time);
 }
 
 template<typename Frame>
 Velocity<Frame> DiscreteTrajectory<Frame>::EvaluateVelocity(
     Instant const& time,
-    typename Trajectory<Frame>::Hint* hint) const {
-  Hint* const down_cast_hint =
-      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    return GetInterpolation(time, hint).EvaluateDerivative(time);
-  }
+    typename Trajectory<Frame>::Hint* hint) const {;
+  return GetInterpolation(time, hint).EvaluateDerivative(time);
 }
 
 template<typename Frame>
@@ -230,14 +215,8 @@ DegreesOfFreedom<Frame> DiscreteTrajectory<Frame>::EvaluateDegreesOfFreedom(
     typename Trajectory<Frame>::Hint* hint) const {
   Hint* const down_cast_hint =
       hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    auto const interpolation = GetInterpolation(time, hint);
-    return {interpolation.Evaluate(time),
-            interpolation.EvaluateDerivative(time)};
-  }
+  auto const interpolation = GetInterpolation(time, hint);
+  return {interpolation.Evaluate(time), interpolation.EvaluateDerivative(time)};
 }
 
 template<typename Frame>
@@ -352,18 +331,25 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
 template<typename Frame>
 Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
     Instant const& time,
-    Hint* hint)  const {
-  // TODO(egg): do things with the hint.
-  // This is the upper bound of the interval upon which we will do the
-  // interpolation.
-  auto const upper = LowerBound(time);
-  auto const lower = upper == Begin() ? upper : --Iterator{upper};
-  return Hermite3<Instant, Position<Frame>> {
-      {lower.time(), upper.time()},
-      {lower.degrees_of_freedom().position(),
-       upper.degrees_of_freedom().position()},
-      {lower.degrees_of_freedom().velocity(),
-       upper.degrees_of_freedom().velocity()}};
+    Trajectory<Frame>::Hint* hint) const {
+  Hint* const down_cast_hint =
+      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  {
+    // TODO(egg): do things with the hint.
+    Hint* const hint = down_cast_hint;
+    // This is the upper bound of the interval upon which we will do the
+    // interpolation.
+    auto const upper = LowerBound(time);
+    auto const lower = upper == Begin() ? upper : --Iterator{upper};
+    return Hermite3<Instant, Position<Frame>>{
+        {lower.time(), upper.time()},
+        {lower.degrees_of_freedom().position(),
+         upper.degrees_of_freedom().position()},
+        {lower.degrees_of_freedom().velocity(),
+         upper.degrees_of_freedom().velocity()}};
+  }
 }
 
 }  // namespace internal_discrete_trajectory
