@@ -57,10 +57,10 @@ template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 FixedStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
-    ODE const& equation,
+    ODE equation,
     AppendState const& append_state) {
   IntegrationProblem<ODE> problem;
-  problem.equation = equation;
+  problem.equation = std::move(equation);
   problem.initial_state =
       ODE::SystemState::ReadFromMessage(message.current_state());
 
@@ -171,12 +171,12 @@ template<typename ODE_>
 not_null<std::unique_ptr<typename Integrator<ODE_>::Instance>>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
-    ODE const& equation,
+    ODE equation,
     AppendState const& append_state,
     typename Parameters::ToleranceToErrorRatio const&
         tolerance_to_error_ratio) {
   IntegrationProblem<ODE> problem;
-  problem.equation = equation;
+  problem.equation = std::move(equation);
   problem.initial_state =
       ODE::SystemState::ReadFromMessage(message.current_state());
 

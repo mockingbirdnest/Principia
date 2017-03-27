@@ -83,12 +83,9 @@ void TestTermination(Integrator const& integrator) {
   int evaluations = 0;
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration = std::bind(
+      ComputeHarmonicOscillatorAcceleration, _1, _2, _3, &evaluations);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -131,12 +128,9 @@ void Test1000SecondsAt1Millisecond(
   int evaluations = 0;
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration = std::bind(
+      ComputeHarmonicOscillatorAcceleration, _1, _2, _3, &evaluations);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -185,12 +179,11 @@ void TestConvergence(Integrator const& integrator,
   log_step_sizes.reserve(step_sizes);
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
@@ -259,12 +252,11 @@ void TestSymplecticity(Integrator const& integrator,
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -312,12 +304,11 @@ void TestSerialization(Integrator const& integrator) {
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -326,10 +317,15 @@ void TestSerialization(Integrator const& integrator) {
   auto const instance1 = integrator.NewInstance(problem, append_state, step);
   serialization::IntegratorInstance message1;
   instance1->WriteToMessage(&message1);
-  auto const instance2 = FixedStepSizeIntegrator<
-      typename Integrator::ODE>::Instance::ReadFromMessage(message1,
-                                                           harmonic_oscillator,
-                                                           append_state);
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
+  auto const instance2 = FixedStepSizeIntegrator<typename Integrator::ODE>::
+      Instance::ReadFromMessage(message1,
+                                std::move(harmonic_oscillator),
+                                append_state);
   serialization::IntegratorInstance message2;
   instance2->WriteToMessage(&message2);
   EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());

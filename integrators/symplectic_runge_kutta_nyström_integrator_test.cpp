@@ -102,12 +102,9 @@ void TestTermination(
   int evaluations = 0;
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration = std::bind(
+      ComputeHarmonicOscillatorAcceleration, _1, _2, _3, &evaluations);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -161,12 +158,9 @@ void Test1000SecondsAt1Millisecond(
   int evaluations = 0;
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration = std::bind(
+      ComputeHarmonicOscillatorAcceleration, _1, _2, _3, &evaluations);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -230,12 +224,11 @@ void TestConvergence(Integrator const& integrator,
   log_step_sizes.reserve(step_sizes);
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   ODE::SystemState final_state;
   auto const append_state = [&final_state](ODE::SystemState const& state) {
@@ -304,12 +297,11 @@ void TestSymplecticity(Integrator const& integrator,
       0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
 
   std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
+  problem.equation.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3,
+                /*evaluations=*/nullptr);
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);

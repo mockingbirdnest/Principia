@@ -28,13 +28,15 @@ class function;
 template<typename Result, typename... Args>
 class function<Result(Args...)> {
  public:
+  function();
+
   template<typename F>
   function(F functor);
 
   function(function&&) = default;  // NOLINT(whitespace/operators)
   function& operator=(function&&) = default;
 
-  Result operator()(Args&&... args);
+  Result operator()(Args&&... args) const;
 
  private:
   std::unique_ptr<Functor<Result, Args...>> functor_;

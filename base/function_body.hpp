@@ -18,13 +18,16 @@ Result ConcreteFunctor<F, Result, Args...>::Call(Args&&... args) {
 }
 
 template<typename Result, typename... Args>
+function<Result(Args...)>::function() {}
+
+template<typename Result, typename... Args>
 template<typename F>
 function<Result(Args...)>::function(F functor)
     : functor_(std::make_unique<ConcreteFunctor<F, Result, Args...>>(
           std::move(functor))) {}
 
 template<typename Result, typename... Args>
-Result function<Result(Args...)>::operator()(Args&&... args) {
+Result function<Result(Args...)>::operator()(Args&&... args) const {
   return functor_->Call(std::forward<Args>(args)...);
 }
 

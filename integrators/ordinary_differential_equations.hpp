@@ -4,6 +4,7 @@
 #include <functional>
 #include <vector>
 
+#include "base/function.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -49,7 +50,7 @@ struct SpecialSecondOrderDifferentialEquation final {
   // The type of q″.
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
-      std::function<
+      base::function<
           void(Instant const& t,
                std::vector<Position> const& positions,
                std::vector<Acceleration>& accelerations)>;

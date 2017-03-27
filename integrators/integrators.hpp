@@ -89,7 +89,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
         not_null<serialization::IntegratorInstance*> message) const override;
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
-                    ODE const& equation,
+                    ODE equation,
                     AppendState const& append_state);
 
    protected:
@@ -178,7 +178,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
         not_null<serialization::IntegratorInstance*> message) const override;
     static not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
     ReadFromMessage(serialization::IntegratorInstance const& message,
-                    ODE const& equation,
+                    ODE equation,
                     AppendState const& append_state,
                     typename Parameters::ToleranceToErrorRatio const&
                         tolerance_to_error_ratio);

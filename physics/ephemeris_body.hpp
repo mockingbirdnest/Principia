@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/function.hpp"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
@@ -366,24 +367,32 @@ Ephemeris<Frame>::NewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
     FixedStepParameters const& parameters) const {
-  auto hints1 = make_not_null_unique<
-      std::vector<typename ContinuousTrajectory<Frame>::Hint>>(bodies_.size());
   IntegrationProblem<NewtonianMotionEquation> problem;
-  //problem.equation = {
-  //    std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
-  //              this,
-  //              intrinsic_accelerations,
-  //              _1, _2, _3,
-  //              std::ref(hints))};
-  typename NewtonianMotionEquation::RightHandSideComputation a(
-      [ this, intrinsic_accelerations, hints = std::move(hints1) ](
+
+  // The hints are owned by the lambda.
+  //typename NewtonianMotionEquation::RightHandSideComputation a([this,
+  //     intrinsic_accelerations,
+  //     hints = make_not_null_unique<
+  //         std::vector<typename ContinuousTrajectory<Frame>::Hint>>(
+  //         bodies_.size())](Instant const& t,
+  //      std::vector<Position<Frame>> const& positions,
+  //      std::vector<Vector<Acceleration, Frame>>& accelerations) {
+  //  ComputeMasslessBodiesTotalAccelerations(
+  //      intrinsic_accelerations, t, positions, accelerations, *hints);
+  //});
+  //problem.equation.compute_acceleration = std::move(a);
+  problem.equation.compute_acceleration =
+      [this,
+       intrinsic_accelerations,
+       hints = make_not_null_unique<
+           std::vector<typename ContinuousTrajectory<Frame>::Hint>>(
+           bodies_.size())](
           Instant const& t,
           std::vector<Position<Frame>> const& positions,
           std::vector<Vector<Acceleration, Frame>>& accelerations) {
-        ComputeMasslessBodiesTotalAccelerations(
-            intrinsic_accelerations, t, positions, accelerations, *hints);
-      });
-  problem.equation =std::move(a);
+    ComputeMasslessBodiesTotalAccelerations(
+        intrinsic_accelerations, t, positions, accelerations, *hints);
+  };
 
   for (auto const& trajectory : trajectories) {
     auto const trajectory_last = trajectory->last();
@@ -398,12 +407,12 @@ Ephemeris<Frame>::NewInstance(
   }
 
 #if defined(WE_LOVE_228)
+  trajectories_228_ = trajectories;
   auto const append_state =
       [](typename NewtonianMotionEquation::SystemState const& state) {};
 #else
   auto const append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesState,
-                _1, std::cref(trajectories));
+      std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
 #endif
 
   return parameters.integrator_->NewInstance(
@@ -514,7 +523,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   // in that case there was not enough room to advance the |trajectories|.
   auto const& last_state = instance.state();
   if (!last_state.positions.empty()) {
-    AppendMasslessBodiesState(last_state, trajectories);
+    AppendMasslessBodiesState(last_state, trajectories_228_);
   }
 #endif
 }
