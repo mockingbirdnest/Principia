@@ -34,7 +34,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primary_(primary),
       secondary_(secondary),
-      primary_trajectory_([this] { return ephemeris_->trajectory(primary_); }),
+      primary_trajectory_([t = ephemeris_->trajectory(primary_)] { return t; }),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
