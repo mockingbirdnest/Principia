@@ -23,6 +23,8 @@ class Hermite3 final {
            std::pair<Value, Value> const& values,
            std::pair<Derivative1, Derivative1> const& derivatives);
 
+  // NOTE(egg): this does not appear to use Casteljau's algorithm; perhaps it
+  // should?
   Value Evaluate(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
 
