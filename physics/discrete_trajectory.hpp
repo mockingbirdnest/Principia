@@ -138,27 +138,12 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   Instant t_min() const override;
   Instant t_max() const override;
 
-  not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>> NewHint()
-      const override;
-
-  Position<Frame> EvaluatePosition(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
-  Velocity<Frame> EvaluateVelocity(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
+  Position<Frame> EvaluatePosition(Instant const& time) const override;
+  Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
+      Instant const& time) const override;
 
   // End of the implementation of the interface.
-
-  class Hint : public Trajectory<Frame>::Hint {
-   private:
-    explicit Hint(Iterator const& it);
-    Iterator it_;
-    friend class DiscreteTrajectory<Frame>;
-  };
 
   // This trajectory must be a root.  Only the given |forks| are serialized.
   // They must be descended from this trajectory.  The pointers in |forks| may
@@ -203,8 +188,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // returns a first-degree polynomial which should be evaluated only at
   // |t_min()|.
   Hermite3<Instant, Position<Frame>> GetInterpolation(
-      Instant const& time,
-      Trajectory<Frame>::Hint* hint) const;
+      Instant const& time) const;
 
   Timeline timeline_;
 
