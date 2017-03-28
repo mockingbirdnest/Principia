@@ -27,14 +27,27 @@ using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
-BodyCentredBodyDirectionDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    not_null<MassiveBody const*> const primary,
-    not_null<MassiveBody const*> const secondary)
+    BodyCentredBodyDirectionDynamicFrame(
+        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+        not_null<MassiveBody const*> const primary,
+        not_null<MassiveBody const*> const secondary)
     : ephemeris_(ephemeris),
       primary_(primary),
       secondary_(secondary),
-      primary_trajectory_(ephemeris_->trajectory(primary_)),
+      primary_trajectory_([this] { return ephemeris_->trajectory(primary_); }),
+      secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
+
+template<typename InertialFrame, typename ThisFrame>
+BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
+    BodyCentredBodyDirectionDynamicFrame(
+        not_null<Ephemeris<InertialFrame> const*> ephemeris,
+        std::function<not_null<Trajectory<InertialFrame> const*>()>
+            primary_trajectory,
+        not_null<MassiveBody const*> secondary)
+    : ephemeris_(ephemeris),
+      primary_(nullptr),
+      secondary_(secondary),
+      primary_trajectory_(primary_trajectory_),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
@@ -42,7 +55,7 @@ RigidMotion<InertialFrame, ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
     ToThisFrameAtTime(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+      primary_trajectory_()->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
 
@@ -100,7 +113,7 @@ AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 MotionOfThisFrame(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+      primary_trajectory_()->EvaluateDegreesOfFreedom(t, &primary_hint_);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
 
