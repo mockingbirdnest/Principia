@@ -123,11 +123,10 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
 
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, small).
-            EvaluateDegreesOfFreedom(t, &hint);
+            EvaluateDegreesOfFreedom(t);
 
     auto const rotation_in_big_frame_at_t =
         Rotation<ICRFJ2000Equator, Big>(2 * π * (t - t0_) * Radian / period_,

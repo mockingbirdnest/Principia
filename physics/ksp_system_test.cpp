@@ -257,8 +257,7 @@ class KSPSystemTest : public ::testing::Test {
          t < initial_time + duration;
          t += 45 * Minute) {
       auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
-        return ephemeris.trajectory(celestial.body)->
-                   EvaluatePosition(t, /*hint=*/nullptr);
+        return ephemeris.trajectory(celestial.body)->EvaluatePosition(t);
       };
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
@@ -374,13 +373,11 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   }
   for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
     auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
-      return ephemeris->trajectory(celestial.body)->
-                 EvaluatePosition(t, /*hint=*/nullptr);
+      return ephemeris->trajectory(celestial.body)->EvaluatePosition(t);
     };
     auto const degrees_of_freedom = [t, &ephemeris](
         KSPCelestial const& celestial) {
-      return ephemeris->trajectory(celestial.body)->
-                 EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
+      return ephemeris->trajectory(celestial.body)->EvaluateDegreesOfFreedom(t);
     };
     auto const jool_position = position(jool_);
 

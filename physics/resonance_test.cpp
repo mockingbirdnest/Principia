@@ -173,8 +173,7 @@ class ResonanceTest : public ::testing::Test {
     std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
     for (Instant t = begin; t < end; t += 45 * Minute) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
-        return ephemeris.trajectory(body)->
-            EvaluatePosition(t, /*hint=*/nullptr);
+        return ephemeris.trajectory(body)->EvaluatePosition(t);
       };
 
       times.emplace_back((t - game_epoch_) / Second);
@@ -206,7 +205,7 @@ class ResonanceTest : public ::testing::Test {
   void LogPeriods(Ephemeris<KSP> const& ephemeris) {
     auto const position = [this, &ephemeris](
         not_null<MassiveBody const*> body, Instant const& t) {
-      return ephemeris.trajectory(body)->EvaluatePosition(t, nullptr);
+      return ephemeris.trajectory(body)->EvaluatePosition(t);
     };
     auto const barycentre = [this, &position](Instant const& t) {
       BarycentreCalculator<Position<KSP>, Mass> result;

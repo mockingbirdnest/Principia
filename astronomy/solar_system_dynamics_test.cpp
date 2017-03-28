@@ -111,8 +111,7 @@ class SolarSystemDynamicsTest : public testing::Test {
                          GravitationalParameter> expected_subsystem_barycentre;
 
     actual_subsystem_barycentre.Add(
-        ephemeris.trajectory(body)->
-            EvaluateDegreesOfFreedom(epoch, /*hint=*/nullptr),
+        ephemeris.trajectory(body)->EvaluateDegreesOfFreedom(epoch),
         body->gravitational_parameter());
     expected_subsystem_barycentre.Add(expected_system.initial_state(name),
                                       body->gravitational_parameter());
@@ -120,8 +119,7 @@ class SolarSystemDynamicsTest : public testing::Test {
       std::string  moon_name = SolarSystemFactory::name(moon_index);
       auto const moon = system.massive_body(ephemeris, moon_name);
       actual_subsystem_barycentre.Add(
-          ephemeris.trajectory(moon)->
-              EvaluateDegreesOfFreedom(epoch, /*hint=*/nullptr),
+          ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(epoch),
           moon->gravitational_parameter());
       expected_subsystem_barycentre.Add(
           expected_system.initial_state(moon_name),
@@ -132,8 +130,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     auto const expected_dof = expected_subsystem_barycentre.Get();
 
     auto const actual_parent_dof =
-        ephemeris.trajectory(parent)->
-            EvaluateDegreesOfFreedom(epoch, /*hint=*/nullptr);
+        ephemeris.trajectory(parent)->EvaluateDegreesOfFreedom(epoch);
     auto const expected_parent_dof =
         expected_system.initial_state(parent_name);
 
@@ -390,14 +387,12 @@ TEST(MarsTest, Phobos) {
 
   ContinuousTrajectory<ICRFJ2000Equator> const& mars_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Mars");
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint mars_hint;
 
   std::vector<Position<ICRFJ2000Equator>> mars_positions;
   std::vector<Velocity<ICRFJ2000Equator>> mars_velocities;
 
   ContinuousTrajectory<ICRFJ2000Equator> const& phobos_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Phobos");
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint phobos_hint;
 
   std::vector<Position<ICRFJ2000Equator>> phobos_positions;
   std::vector<Velocity<ICRFJ2000Equator>> phobos_velocities;
@@ -405,12 +400,10 @@ TEST(MarsTest, Phobos) {
   std::vector<Displacement<ICRFJ2000Equator>> mars_phobos_displacements;
   std::vector<Velocity<ICRFJ2000Equator>> mars_phobos_velocities;
   for (Instant t = J2000; t < J2000 + 30 * Day; t += 5 * Minute) {
-    mars_positions.push_back(mars_trajectory.EvaluatePosition(t, &mars_hint));
-    mars_velocities.push_back(mars_trajectory.EvaluateVelocity(t, &mars_hint));
-    phobos_positions.push_back(
-        phobos_trajectory.EvaluatePosition(t, &phobos_hint));
-    phobos_velocities.push_back(
-        phobos_trajectory.EvaluateVelocity(t, &phobos_hint));
+    mars_positions.push_back(mars_trajectory.EvaluatePosition(t));
+    mars_velocities.push_back(mars_trajectory.EvaluateVelocity(t));
+    phobos_positions.push_back(phobos_trajectory.EvaluatePosition(t));
+    phobos_velocities.push_back(phobos_trajectory.EvaluateVelocity(t));
     mars_phobos_displacements.push_back(
         phobos_positions.back() - mars_positions.back());
     mars_phobos_velocities.push_back(phobos_velocities.back() -

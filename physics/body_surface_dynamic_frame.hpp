@@ -63,7 +63,6 @@ class BodySurfaceDynamicFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<RotatingBody<InertialFrame> const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
-  mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
 
 }  // namespace internal_body_surface_dynamic_frame

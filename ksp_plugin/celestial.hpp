@@ -39,7 +39,6 @@ class Celestial final {
   void set_trajectory(
       not_null<ContinuousTrajectory<Barycentric> const*> trajectory);
   ContinuousTrajectory<Barycentric> const& trajectory() const;
-  not_null<ContinuousTrajectory<Barycentric>::Hint*> current_time_hint() const;
   DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
       Instant const& current_time) const;
   Position<Barycentric> current_position(Instant const& current_time) const;
@@ -56,9 +55,6 @@ class Celestial final {
   // be null for the sun.
   Celestial const* parent_ = nullptr;
   ContinuousTrajectory<Barycentric> const* trajectory_ = nullptr;
-  not_null<
-      std::unique_ptr<
-          ContinuousTrajectory<Barycentric>::Hint>> current_time_hint_;
 };
 
 }  // namespace internal_celestial

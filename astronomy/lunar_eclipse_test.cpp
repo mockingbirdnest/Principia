@@ -94,12 +94,9 @@ class LunarEclipseTest : public testing::Test {
     // between Sun and Earth, and axis running through the centres of each.
     auto const umbral_half_aperture = [this, earth, moon, sun](
         Instant const& t) {
-      auto const q_sun =
-          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_moon =
-          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_earth =
-          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
+      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
+      auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ - (r_earth_ + atmospheric_depth_)) /
                     (q_sun - q_earth).Norm());
     };
@@ -110,12 +107,9 @@ class LunarEclipseTest : public testing::Test {
                                    moon_offset_sign,
                                    sun,
                                    umbral_half_aperture](Instant const& t) {
-      auto const q_sun =
-          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_moon =
-          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_earth =
-          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
+      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
+      auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       auto const apex_of_moon_locus_at_umbral_contact =
           q_earth +
           Normalize(q_earth - q_sun) *
@@ -165,12 +159,9 @@ class LunarEclipseTest : public testing::Test {
 
     auto const penumbral_half_aperture = [this, earth, moon, sun](
         Instant const& t) {
-      auto const q_sun =
-          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_moon =
-          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_earth =
-          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
+      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
+      auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
       return ArcSin((r_sun_ + r_earth_ + atmospheric_depth_) /
                     (q_sun - q_earth).Norm());
     };
@@ -181,12 +172,9 @@ class LunarEclipseTest : public testing::Test {
                                    moon_offset_sign,
                                    sun,
                                    penumbral_half_aperture](Instant const& t) {
-      auto const q_sun =
-          ephemeris_->trajectory(sun)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_moon =
-          ephemeris_->trajectory(moon)->EvaluatePosition(t, /*hint=*/nullptr);
-      auto const q_earth =
-          ephemeris_->trajectory(earth)->EvaluatePosition(t, /*hint=*/nullptr);
+      auto const q_sun = ephemeris_->trajectory(sun)->EvaluatePosition(t);
+      auto const q_moon = ephemeris_->trajectory(moon)->EvaluatePosition(t);
+      auto const q_earth = ephemeris_->trajectory(earth)->EvaluatePosition(t);
 
       auto const apex_of_moon_locus_at_penumbral_contact =
           q_earth +
