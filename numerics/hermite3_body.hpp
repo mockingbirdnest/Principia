@@ -23,6 +23,16 @@ Hermite3<Argument, Value>::Hermite3(
   a0_ = values.first;
   a1_ = derivatives.first;
   Difference<Argument> const Δargument = arguments_.second - arguments_.first;
+  // If we were given the same point twice, there is a removable singularity.
+  // Otherwise, if the arguments are the same but not the values or the
+  // derivatives, we proceed to merrily NaN away as we should.
+  if (Δargument == Difference<Argument>{} &&
+      values.first == values.second &&
+      derivatives.first == derivatives.second) {
+    a2_ = {};
+    a3_ = {};
+    return;
+  }
   auto const one_over_Δargument = 1.0 / Δargument;
   auto const one_over_Δargument_squared =
       one_over_Δargument * one_over_Δargument;

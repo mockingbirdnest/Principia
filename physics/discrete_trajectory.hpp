@@ -11,8 +11,10 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/hermite3.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/forkable.hpp"
+#include "physics/trajectory.hpp"
 #include "quantities/named_quantities.hpp"
 #include "serialization/physics.pb.h"
 
@@ -54,16 +56,19 @@ namespace internal_discrete_trajectory {
 
 using base::not_null;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Speed;
 using internal_forkable::DiscreteTrajectoryIterator;
+using numerics::Hermite3;
 
 template<typename Frame>
 class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
-                                           DiscreteTrajectoryIterator<Frame>> {
+                                           DiscreteTrajectoryIterator<Frame>>,
+                           public Trajectory<Frame> {
   using Timeline = std::map<Instant, DegreesOfFreedom<Frame>>;
   using TimelineConstIterator = typename Forkable<
       DiscreteTrajectory<Frame>,
@@ -126,6 +131,35 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // |time|.  This trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
+  // Implementation of the interface |Trajectory|.
+
+  // The bounds are the times of |Begin()| and |last()| if this trajectory is
+  // nonempty, otherwise they are infinities of the appropriate signs.
+  Instant t_min() const override;
+  Instant t_max() const override;
+
+  not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>> NewHint()
+      const override;
+
+  Position<Frame> EvaluatePosition(
+      Instant const& time,
+      typename Trajectory<Frame>::Hint* hint) const override;
+  Velocity<Frame> EvaluateVelocity(
+      Instant const& time,
+      typename Trajectory<Frame>::Hint* hint) const override;
+  DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
+      Instant const& time,
+      typename Trajectory<Frame>::Hint* hint) const override;
+
+  // End of the implementation of the interface.
+
+  class Hint : public Trajectory<Frame>::Hint {
+   private:
+    explicit Hint(Iterator const& it);
+    Iterator it_;
+    friend class DiscreteTrajectory<Frame>;
+  };
+
   // This trajectory must be a root.  Only the given |forks| are serialized.
   // They must be descended from this trajectory.  The pointers in |forks| may
   // be null at entry.
@@ -163,6 +197,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   void FillSubTreeFromMessage(
       serialization::DiscreteTrajectory const& message,
       std::vector<DiscreteTrajectory<Frame>**> const& forks);
+
+  // Returns the Hermite interpolation for the left-open, right-closed
+  // trajectory segment containing the given |time|, or, if |time| is |t_min()|,
+  // returns a first-degree polynomial which should be evaluated only at
+  // |t_min()|.
+  Hermite3<Instant, Position<Frame>> GetInterpolation(
+      Instant const& time,
+      Trajectory<Frame>::Hint* hint) const;
 
   Timeline timeline_;
 
