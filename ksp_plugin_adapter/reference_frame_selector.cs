@@ -202,8 +202,10 @@ class ReferenceFrameSelector : WindowRenderer {
         selected_celestial_ = FlightGlobals.Bodies[parameters.centre_index];
         break;
       case FrameType.BARYCENTRIC_ROTATING:
-      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         selected_celestial_ = FlightGlobals.Bodies[parameters.secondary_index];
+        break;
+      case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+        selected_celestial_ = FlightGlobals.Bodies[parameters.primary_index];
         break;
     }
   }
