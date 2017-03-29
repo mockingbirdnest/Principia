@@ -1182,7 +1182,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
           not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
           not_null<Part*> const part = vessel->part(part_id);
           return part;
-        }));
+        },
+        plugin->ephemeris_.get()));
   }
 
   // Now fill the containing pile-up of all the parts.

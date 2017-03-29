@@ -42,9 +42,9 @@ class PileUp {
   PileUp(
       std::list<not_null<Part*>>&& parts,
       Instant const& t,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
   virtual ~PileUp() = default;
@@ -91,11 +91,18 @@ class PileUp {
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
   static PileUp ReadFromMessage(
       serialization::PileUp const& message,
-      std::function<not_null<Part*>(PartId)> const& part_id_to_part);
+      std::function<not_null<Part*>(PartId)> const& part_id_to_part,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
  private:
   // For deserialization.
-  explicit PileUp(std::list<not_null<Part*>>&& parts);
+  PileUp(
+      std::list<not_null<Part*>>&& parts,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
                          bool authoritative) const;
@@ -103,6 +110,7 @@ class PileUp {
   std::list<not_null<Part*>> parts_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
+  Ephemeris<Barycentric>::FixedStepParameters fixed_step_parameters_;
 
   // An optimization: the sum of the masses and intrinsic forces of the
   // |parts_|, computed by the union-find.
