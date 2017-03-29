@@ -842,16 +842,13 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
   }
   double max_r_error = 0;
   double max_v_error = 0;
-  auto hint = circle.NewHint();
   for (Time t; t < period; t += period / 32) {
     auto const degrees_of_freedom_interpolated =
-        circle.EvaluateDegreesOfFreedom(t0_ + t, hint.get());
+        circle.EvaluateDegreesOfFreedom(t0_ + t);
     auto const& q_interpolated = degrees_of_freedom_interpolated.position();
     auto const& v_interpolated = degrees_of_freedom_interpolated.velocity();
-    EXPECT_THAT(circle.EvaluatePosition(t0_ + t, /*hint=*/nullptr),
-                Eq(q_interpolated));
-    EXPECT_THAT(circle.EvaluateVelocity(t0_ + t, /*hint=*/nullptr),
-                Eq(v_interpolated));
+    EXPECT_THAT(circle.EvaluatePosition(t0_ + t), Eq(q_interpolated));
+    EXPECT_THAT(circle.EvaluateVelocity(t0_ + t), Eq(v_interpolated));
     max_r_error = std::max(
         max_r_error, RelativeError(r, (q_interpolated - World::origin).Norm()));
     max_v_error =

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "gmock/gmock.h"
-#include "integrators/mock_ordinary_differential_equations.hpp"
+#include "integrators/mock_integrators.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {

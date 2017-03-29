@@ -111,21 +111,20 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
       std::bind(ComputeHarmonicOscillatorAcceleration1D, _1, _2, _3);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{q_initial}, {v_initial}, t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  AdaptiveStepSize<ODE> adaptive_step_size;
-  adaptive_step_size.first_time_step = t_final - t_initial;
-  adaptive_step_size.safety_factor = 0.9;
-  adaptive_step_size.tolerance_to_error_ratio =
+  Integrator::Parameters parameters;
+  parameters.first_time_step = t_final - t_initial;
+  parameters.safety_factor = 0.9;
+  parameters.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
   auto const instance =
-      integrator.NewInstance(problem, append_state, adaptive_step_size);
+      integrator.NewInstance(problem, append_state, parameters);
   instance->Solve(t_final);
 
   state.PauseTiming();
@@ -168,23 +167,20 @@ void SolveHarmonicOscillatorAndComputeError3D(
       std::bind(ComputeHarmonicOscillatorAcceleration3D, _1, _2, _3);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
-  ODE::SystemState const initial_state = {{World::origin + q_initial},
-                                          {v_initial},
-                                          t_initial};
-  problem.initial_state = &initial_state;
+  problem.initial_state = {{World::origin + q_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
 
-  AdaptiveStepSize<ODE> adaptive_step_size;
-  adaptive_step_size.first_time_step = t_final - t_initial;
-  adaptive_step_size.safety_factor = 0.9;
-  adaptive_step_size.tolerance_to_error_ratio =
+  Integrator::Parameters parameters;
+  parameters.first_time_step = t_final - t_initial;
+  parameters.safety_factor = 0.9;
+  parameters.tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
   auto const instance =
-      integrator.NewInstance(problem, append_state, adaptive_step_size);
+      integrator.NewInstance(problem, append_state, parameters);
   instance->Solve(t_final);
 
   state.PauseTiming();

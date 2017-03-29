@@ -11,6 +11,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "physics/massive_body.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -26,6 +27,7 @@ using geometry::Identity;
 using geometry::Permutation;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::KeplerianElements;
+using physics::MassiveBody;
 using physics::SolarSystem;
 using quantities::Abs;
 using quantities::Acceleration;

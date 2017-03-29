@@ -44,9 +44,9 @@ RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+      primary_trajectory_->EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
-      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
       Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
           {primary_degrees_of_freedom,
@@ -107,9 +107,9 @@ AcceleratedRigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const primary_degrees_of_freedom =
-      primary_trajectory_->EvaluateDegreesOfFreedom(t, &primary_hint_);
+      primary_trajectory_->EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
-      secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
+      secondary_trajectory_->EvaluateDegreesOfFreedom(t);
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);

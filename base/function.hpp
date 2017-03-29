@@ -1,0 +1,50 @@
+#pragma once
+
+#include <memory>
+
+namespace principia {
+namespace base {
+namespace internal_function {
+
+template<typename Result, typename... Args>
+class Functor {
+ public:
+  virtual ~Functor() = default;
+  virtual Result Call(Args&&...) = 0;
+};
+
+template<typename F, typename Result, typename... Args>
+class ConcreteFunctor final : public Functor<Result, Args...> {
+ public:
+  explicit ConcreteFunctor(F functor);
+  Result Call(Args&&... args) final;
+ private:
+  F functor_;
+};
+
+template<typename Signature>
+class function;
+
+template<typename Result, typename... Args>
+class function<Result(Args...)> {
+ public:
+  template<typename F>
+  function(F functor);
+
+  function(function&&) = default;  // NOLINT(whitespace/operators)
+  function& operator=(function&&) = default;
+
+  Result operator()(Args&&... args);
+
+ private:
+  std::unique_ptr<Functor<Result, Args...>> functor_;
+};
+
+}  // namespace internal_function
+
+using internal_function::function;
+
+}  // namespace base
+}  // namespace principia
+
+#include "base/function_body.hpp"

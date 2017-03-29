@@ -149,6 +149,24 @@ TEST_F(NotNullTest, CheckArguments) {
 #endif
 }
 
+TEST_F(NotNullTest, DynamicCast) {
+  class Base {
+   public:
+    virtual ~Base() = default;
+  };
+  class Derived : public Base {};
+  {
+    not_null<Base*> b = new Derived;
+    not_null<Derived*> d = dynamic_cast_not_null<Derived*>(b);
+    delete b;
+  }
+  {
+    not_null<std::unique_ptr<Base>> b = make_not_null_unique<Derived>();
+    not_null<std::unique_ptr<Derived>> d =
+        dynamic_cast_not_null<std::unique_ptr<Derived>>(std::move(b));
+  }
+}
+
 TEST_F(NotNullTest, RValue) {
   std::unique_ptr<int> owner_int = std::make_unique<int>(1);
   not_null<int*> not_null_int = new int(2);

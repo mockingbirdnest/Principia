@@ -31,6 +31,7 @@
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
     <ClCompile Include="..\ksp_plugin\burn.cpp" />
+    <ClCompile Include="..\ksp_plugin\celestial.cpp" />
     <ClCompile Include="..\ksp_plugin\flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />

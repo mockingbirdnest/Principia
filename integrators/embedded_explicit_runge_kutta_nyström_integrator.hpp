@@ -3,8 +3,8 @@
 // included in the order of inheritance to avoid circular dependencies.  This
 // class will end up being reincluded as part of the implementation of its
 // parent.
-#ifndef PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
-#include "integrators/ordinary_differential_equations.hpp"
+#ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
+#include "integrators/integrators.hpp"
 #else
 #ifndef PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
 #define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
@@ -94,7 +94,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
    private:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
-             AdaptiveStepSize<ODE> const& adaptive_step_size,
+             Parameters const& adaptive_step_size,
              EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
 
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator_;
@@ -104,14 +104,14 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
-      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+      Parameters const& adaptive_step_size) const override;
 
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
-      AdaptiveStepSize<ODE> const& adaptive_step_size) const override;
+      Parameters const& adaptive_step_size) const override;
 
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
@@ -145,4 +145,4 @@ using internal_embedded_explicit_runge_kutta_nyström_integrator::
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
 
 #endif  // PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
-#endif  // PRINCIPIA_INTEGRATORS_ORDINARY_DIFFERENTIAL_EQUATIONS_HPP_
+#endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_

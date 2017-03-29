@@ -137,8 +137,8 @@ TEST_F(MercuryPerihelionTest, Year1950) {
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
-      mercury_trajectory.EvaluateDegreesOfFreedom(t_1950_, /*hint=*/nullptr) -
-      sun_trajectory.EvaluateDegreesOfFreedom(t_1950_, /*hint=*/nullptr);
+      mercury_trajectory.EvaluateDegreesOfFreedom(t_1950_) -
+      sun_trajectory.EvaluateDegreesOfFreedom(t_1950_);
   KeplerOrbit<ICRFJ2000Equator> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_1950_);
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
@@ -171,8 +171,8 @@ TEST_F(MercuryPerihelionTest, Year1960) {
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
-      mercury_trajectory.EvaluateDegreesOfFreedom(t_1960_, /*hint=*/nullptr) -
-      sun_trajectory.EvaluateDegreesOfFreedom(t_1960_, /*hint=*/nullptr);
+      mercury_trajectory.EvaluateDegreesOfFreedom(t_1960_) -
+      sun_trajectory.EvaluateDegreesOfFreedom(t_1960_);
   KeplerOrbit<ICRFJ2000Equator> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_1960_);
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
@@ -207,8 +207,8 @@ TEST_F(MercuryPerihelionTest, Year2050) {
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
   RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
-      mercury_trajectory.EvaluateDegreesOfFreedom(t_2050_, /*hint=*/nullptr) -
-      sun_trajectory.EvaluateDegreesOfFreedom(t_2050_, /*hint=*/nullptr);
+      mercury_trajectory.EvaluateDegreesOfFreedom(t_2050_) -
+      sun_trajectory.EvaluateDegreesOfFreedom(t_2050_);
   KeplerOrbit<ICRFJ2000Equator> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_2050_);
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =

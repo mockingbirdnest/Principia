@@ -22,14 +22,16 @@ class MockPlugin : public Plugin {
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
-      base::not_null<std::unique_ptr<MassiveBody const>> body) override;
+      base::not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body)
+      override;
 
   MOCK_METHOD4(
       InsertCelestialAbsoluteCartesianConstRef,
       void(Index celestial_index,
            std::experimental::optional<Index> const& parent_index,
            DegreesOfFreedom<Barycentric> const& initial_state,
-           base::not_null<std::unique_ptr<MassiveBody const>> const& body));
+           base::not_null<
+               std::unique_ptr<RotatingBody<Barycentric> const>> const& body));
 
   MOCK_METHOD0(EndInitialization,
                void());
