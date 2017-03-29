@@ -97,9 +97,12 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   };
 
   std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
-  problem.equation.compute_acceleration = std::bind(
-      ComputeHarmonicOscillatorAcceleration, _1, _2, _3, &evaluations);
+  problem.equation = harmonic_oscillator;
   problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -176,11 +179,12 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   auto const step_size_callback = [](bool tolerable) {};
 
   std::vector<ODE::SystemState> solution;
-  IntegrationProblem<ODE> problem;
-  problem.equation.compute_acceleration =
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3,
-                /*evaluations=*/nullptr);
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
   problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -264,7 +268,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
   };
-  problem.equation = std::move(rocket_equation);
+  problem.equation = rocket_equation;
   problem.initial_state = {{0 * Metre}, {0 * Metre / Second}, t_initial};
   AdaptiveStepSizeIntegrator<ODE>::Parameters parameters;
   parameters.first_time_step = t_final - t_initial;
@@ -305,11 +309,12 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
   auto const step_size_callback = [](bool tolerable) {};
 
   std::vector<ODE::SystemState> solution;
-  IntegrationProblem<ODE> problem;
-  problem.equation.compute_acceleration =
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3,
-                /*evaluations=*/nullptr);
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
   problem.initial_state = {{x_initial}, {v_initial}, t_initial};
   auto const append_state = [&solution](ODE::SystemState const& state) {
     solution.push_back(state);
@@ -325,15 +330,10 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
       integrator.NewInstance(problem, append_state, parameters);
   serialization::IntegratorInstance message1;
   instance1->WriteToMessage(&message1);
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
-                _1, _2, _3,
-                /*evaluations=*/nullptr);
   auto const instance2 =
       AdaptiveStepSizeIntegrator<ODE>::Instance::ReadFromMessage(
           message1,
-          std::move(harmonic_oscillator),
+          harmonic_oscillator,
           append_state,
           parameters.tolerance_to_error_ratio);
   serialization::IntegratorInstance message2;

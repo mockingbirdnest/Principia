@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "base/function.hpp"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
