@@ -5,9 +5,7 @@ namespace ksp_plugin {
 namespace internal_celestial {
 
 Celestial::Celestial(not_null<RotatingBody<Barycentric> const*> body)
-    : body_(body),
-      current_time_hint_(
-          make_not_null_unique<ContinuousTrajectory<Barycentric>::Hint>()) {}
+    : body_(body) {}
 
 bool Celestial::is_initialized() const {
   return trajectory_ != nullptr;
@@ -24,29 +22,22 @@ ContinuousTrajectory<Barycentric> const& Celestial::trajectory() const {
   return *trajectory_;
 }
 
-not_null<ContinuousTrajectory<Barycentric>::Hint*>
-Celestial::current_time_hint() const {
-  CHECK(is_initialized());
-  return current_time_hint_.get();
-}
-
 DegreesOfFreedom<Barycentric> Celestial::current_degrees_of_freedom(
     Instant const& current_time) const {
   CHECK(is_initialized());
-  return trajectory().EvaluateDegreesOfFreedom(current_time,
-                                               current_time_hint());
+  return trajectory().EvaluateDegreesOfFreedom(current_time);
 }
 
 Position<Barycentric> Celestial::current_position(
     Instant const& current_time) const {
   CHECK(is_initialized());
-  return trajectory().EvaluatePosition(current_time, current_time_hint());
+  return trajectory().EvaluatePosition(current_time);
 }
 
 Velocity<Barycentric> Celestial::current_velocity(
     Instant const& current_time) const {
   CHECK(is_initialized());
-  return trajectory().EvaluateVelocity(current_time, current_time_hint());
+  return trajectory().EvaluateVelocity(current_time);
 }
 
 not_null<RotatingBody<Barycentric> const*> Celestial::body() const {

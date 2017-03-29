@@ -152,8 +152,6 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
 TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
   int const steps = 100;
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint big_hint;
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint small_hint;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const to_big_frame_at_t = big_frame_->ToThisFrameAtTime(t);
 
@@ -161,10 +159,10 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
     // the small body is at a fixed position in the sky.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, big).
-            EvaluateDegreesOfFreedom(t, &big_hint);
+            EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, small).
-            EvaluateDegreesOfFreedom(t, &small_hint);
+            EvaluateDegreesOfFreedom(t);
 
     DegreesOfFreedom<BigSmallFrame> const big_in_big_small_at_t =
         to_big_frame_at_t(big_in_inertial_frame_at_t);
@@ -224,7 +222,7 @@ TEST_F(BodySurfaceDynamicFrameTest, CoriolisAcceleration) {
            ICRFJ2000Equator::origin,
        Velocity<ICRFJ2000Equator>()};
 
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(centre_dof));
   {
@@ -263,7 +261,7 @@ TEST_F(BodySurfaceDynamicFrameTest, CentrifugalAcceleration) {
        Velocity<ICRFJ2000Equator>({0 * Metre / Second,
                                    0 * Metre / Second,
                                    0 * Metre / Second})};
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(centre_dof));
   {
@@ -305,7 +303,7 @@ TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
                                    0 * Metre / Second,
                                    0 * Metre / Second})};
 
-  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_centre_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(centre_dof));
   {

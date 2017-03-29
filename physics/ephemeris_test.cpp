@@ -276,11 +276,10 @@ TEST_F(EphemerisTest, EarthMoon) {
   ContinuousTrajectory<ICRFJ2000Equator> const& moon_trajectory =
       *ephemeris.trajectory(moon);
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
-      earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+      earth_trajectory.EvaluatePosition(t0_ + i * period / 100) -
           centre_of_mass);
   }
   EXPECT_THAT(earth_positions.size(), Eq(101));
@@ -292,7 +291,7 @@ TEST_F(EphemerisTest, EarthMoon) {
   std::vector<Displacement<ICRFJ2000Equator>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
     moon_positions.push_back(
-      moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+      moon_trajectory.EvaluatePosition(t0_ + i * period / 100) -
           centre_of_mass);
   }
   EXPECT_THAT(moon_positions.size(), Eq(101));
@@ -369,16 +368,15 @@ TEST_F(EphemerisTest, Moon) {
   ContinuousTrajectory<ICRFJ2000Equator> const& moon_trajectory =
       *ephemeris.trajectory(moon);
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   DegreesOfFreedom<ICRFJ2000Equator> const moon_degrees_of_freedom =
-      moon_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+      moon_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
   Length const q = (moon_degrees_of_freedom.position() -
                     ICRFJ2000Equator::origin).coordinates().y;
   Speed const v = moon_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRFJ2000Equator>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
     moon_positions.push_back(
-        moon_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+        moon_trajectory.EvaluatePosition(t0_ + i * period / 100) -
             ICRFJ2000Equator::origin);
   }
 
@@ -457,16 +455,15 @@ TEST_F(EphemerisTest, EarthProbe) {
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
-      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
   Length const q_earth = (earth_degrees_of_freedom.position() -
                           ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
-        earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+        earth_trajectory.EvaluatePosition(t0_ + i * period / 100) -
             ICRFJ2000Equator::origin);
   }
 
@@ -593,16 +590,15 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint hint;
   DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
-      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period, &hint);
+      earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
   Length const q_earth = (earth_degrees_of_freedom.position() -
                           ICRFJ2000Equator::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRFJ2000Equator>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
     earth_positions.push_back(
-        earth_trajectory.EvaluatePosition(t0_ + i * period / 100, &hint) -
+        earth_trajectory.EvaluatePosition(t0_ + i * period / 100) -
             ICRFJ2000Equator::origin);
   }
 
@@ -705,14 +701,12 @@ TEST_F(EphemerisTest, Serialization) {
   for (Instant time = ephemeris.t_min();
        time <= ephemeris.t_max();
        time += (ephemeris.t_max() - ephemeris.t_min()) / 100) {
-    EXPECT_EQ(ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(
-                  time, /*hint=*/nullptr),
-              ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(
-                  time, /*hint=*/nullptr));
-    EXPECT_EQ(ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(
-                  time, /*hint=*/nullptr),
-              ephemeris_read->trajectory(moon_read)->EvaluateDegreesOfFreedom(
-                  time, /*hint=*/nullptr));
+    EXPECT_EQ(
+        ephemeris.trajectory(earth)->EvaluateDegreesOfFreedom(time),
+        ephemeris_read->trajectory(earth_read)->EvaluateDegreesOfFreedom(time));
+    EXPECT_EQ(
+        ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(time),
+        ephemeris_read->trajectory(moon_read)->EvaluateDegreesOfFreedom(time));
   }
 
   serialization::Ephemeris second_message;

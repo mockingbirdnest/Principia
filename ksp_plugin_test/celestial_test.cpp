@@ -40,7 +40,6 @@ using CelestialDeathTest = CelestialTest;
 
 TEST_F(CelestialDeathTest, Uninitialized) {
   EXPECT_DEATH({celestial_->trajectory();}, "is_initialized");
-  EXPECT_DEATH({celestial_->current_time_hint();}, "is_initialized");
   EXPECT_DEATH({celestial_->current_degrees_of_freedom(Instant());},
                "is_initialized");
   EXPECT_DEATH({celestial_->current_position(Instant());}, "is_initialized");

@@ -387,14 +387,12 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                t);
   Prolong(t_final);
 
-  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = {
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
                 std::cref(intrinsic_accelerations),
-                _1, _2, _3,
-                std::ref(hints))};
+                _1, _2, _3)};
 
   auto const trajectory_last = trajectory->last();
   auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
@@ -458,14 +456,12 @@ void Ephemeris<Frame>::FlowWithFixedStep(
     Prolong(t);
   }
 
-  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
   IntegrationProblem<NewtonianMotionEquation> problem;
   problem.equation = {
       std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
                 this,
                 std::cref(intrinsic_accelerations),
-                _1, _2, _3,
-                std::ref(hints))};
+                _1, _2, _3)};
 
   for (auto const& trajectory : trajectories) {
     auto const trajectory_last = trajectory->last();
@@ -512,12 +508,7 @@ ComputeGravitationalAccelerationOnMasslessBody(
     Position<Frame> const& position,
     Instant const& t) const {
   std::vector<Vector<Acceleration, Frame>> accelerations(1);
-  std::vector<typename ContinuousTrajectory<Frame>::Hint> hints(bodies_.size());
-  ComputeMasslessBodiesGravitationalAccelerations(
-      t,
-      {position},
-      accelerations,
-      hints);
+  ComputeMasslessBodiesGravitationalAccelerations(t, {position}, accelerations);
 
   return accelerations[0];
 }
@@ -557,11 +548,11 @@ ComputeGravitationalAccelerationOnMassiveBody(
     auto const& current_body_trajectory = trajectories_[b];
     if (current_body.get() == body) {
       positions[0] =
-          current_body_trajectory->EvaluatePosition(t, /*hint=*/nullptr);
+          current_body_trajectory->EvaluatePosition(t);
     } else {
       reodered_bodies.push_back(current_body.get());
       positions.push_back(
-          current_body_trajectory->EvaluatePosition(t, /*hint=*/nullptr));
+          current_body_trajectory->EvaluatePosition(t));
     }
   }
 
@@ -609,7 +600,6 @@ void Ephemeris<Frame>::ComputeApsides(
     DiscreteTrajectory<Frame>& periapsides) {
   not_null<ContinuousTrajectory<Frame> const*> const body_trajectory =
       trajectory(body);
-  typename ContinuousTrajectory<Frame>::Hint hint;
 
   std::experimental::optional<Instant> previous_time;
   std::experimental::optional<DegreesOfFreedom<Frame>>
@@ -622,7 +612,7 @@ void Ephemeris<Frame>::ComputeApsides(
     Instant const time = it.time();
     DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
-        body_trajectory->EvaluateDegreesOfFreedom(time, &hint);
+        body_trajectory->EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
         degrees_of_freedom - body_degrees_of_freedom;
     Square<Length> const squared_distance =
@@ -712,18 +702,16 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
       trajectory(body1);
   not_null<ContinuousTrajectory<Frame> const*> const body2_trajectory =
       trajectory(body2);
-  typename ContinuousTrajectory<Frame>::Hint hint1;
-  typename ContinuousTrajectory<Frame>::Hint hint2;
 
   // Computes the derivative of the squared distance between |body1| and |body2|
   // at time |t|.
   auto const evaluate_square_distance_derivative =
-      [body1_trajectory, body2_trajectory, &hint1, &hint2](
+      [body1_trajectory, body2_trajectory](
           Instant const& t) -> Variation<Square<Length>> {
     DegreesOfFreedom<Frame> const body1_degrees_of_freedom =
-        body1_trajectory->EvaluateDegreesOfFreedom(t, &hint1);
+        body1_trajectory->EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<Frame> const body2_degrees_of_freedom =
-        body2_trajectory->EvaluateDegreesOfFreedom(t, &hint2);
+        body2_trajectory->EvaluateDegreesOfFreedom(t);
     RelativeDegreesOfFreedom<Frame> const relative =
         body1_degrees_of_freedom - body2_degrees_of_freedom;
     return 2.0 * InnerProduct(relative.displacement(), relative.velocity());
@@ -748,9 +736,9 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
                                         *previous_time,
                                         time);
       DegreesOfFreedom<Frame> const apsis1_degrees_of_freedom =
-          body1_trajectory->EvaluateDegreesOfFreedom(apsis_time, &hint1);
+          body1_trajectory->EvaluateDegreesOfFreedom(apsis_time);
       DegreesOfFreedom<Frame> const apsis2_degrees_of_freedom =
-          body2_trajectory->EvaluateDegreesOfFreedom(apsis_time, &hint2);
+          body2_trajectory->EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).Negative()) {
         apoapsides1.Append(apsis_time, apsis1_degrees_of_freedom);
         apoapsides2.Append(apsis_time, apsis2_degrees_of_freedom);
@@ -1007,11 +995,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     MassiveBody const& body1,
     std::size_t const b1,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Vector<Acceleration, Frame>>& accelerations,
-    typename ContinuousTrajectory<Frame>::Hint& hint1) const {
+    std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
-  Position<Frame> const position1 =
-      trajectories_[b1]->EvaluatePosition(t, &hint1);
+  Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1090,8 +1076,7 @@ template<typename Frame>
 void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations,
-      std::vector<typename ContinuousTrajectory<Frame>::Hint>& hints) const {
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
@@ -1102,8 +1087,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
         t,
         body1, b1,
         positions,
-        accelerations,
-        hints[b1]);
+        accelerations);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
        b1 < number_of_oblate_bodies_ +
@@ -1115,8 +1099,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
         t,
         body1, b1,
         positions,
-        accelerations,
-        hints[b1]);
+        accelerations);
   }
 }
 
@@ -1125,12 +1108,10 @@ void Ephemeris<Frame>::ComputeMasslessBodiesTotalAccelerations(
     IntrinsicAccelerations const& intrinsic_accelerations,
     Instant const& t,
     std::vector<Position<Frame>> const& positions,
-    std::vector<Vector<Acceleration, Frame>>& accelerations,
-    std::vector<typename ContinuousTrajectory<Frame>::Hint>& hints) const {
+    std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   // First, the acceleration due to the gravitational field of the
   // massive bodies.
-  ComputeMasslessBodiesGravitationalAccelerations(
-      t, positions, accelerations, hints);
+  ComputeMasslessBodiesGravitationalAccelerations(t, positions, accelerations);
 
   // Then, the intrinsic accelerations, if any.
   if (!intrinsic_accelerations.empty()) {

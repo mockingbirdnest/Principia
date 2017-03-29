@@ -26,7 +26,7 @@ RigidMotion<InertialFrame, ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const centre_degrees_of_freedom =
-      centre_trajectory_->EvaluateDegreesOfFreedom(t, &hint_);
+      centre_trajectory_->EvaluateDegreesOfFreedom(t);
   RigidTransformation<InertialFrame, ThisFrame> const
       rigid_transformation(centre_degrees_of_freedom.position(),
                            ThisFrame::origin,

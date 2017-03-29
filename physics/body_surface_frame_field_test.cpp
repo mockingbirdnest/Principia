@@ -50,7 +50,7 @@ class BodySurfaceFrameFieldTest : public ::testing::Test {
                   /*declination_of_pole=*/π / 4 * Radian)) {
     // The polar axis is {1/2, 1/2, 1/Sqrt[2]}.
     EXPECT_CALL(ephemeris_, trajectory(_)).WillOnce(Return(&trajectory_));
-    EXPECT_CALL(trajectory_, EvaluatePosition(J2000, nullptr))
+    EXPECT_CALL(trajectory_, EvaluatePosition(J2000))
         .WillOnce(Return(ICRFJ2000Equator::origin));
     field_ =
         std::make_unique<BodySurfaceFrameField<ICRFJ2000Equator, TestFrame>>(

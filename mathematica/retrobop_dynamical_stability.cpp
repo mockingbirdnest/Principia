@@ -176,16 +176,16 @@ HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
 Position<Barycentric> EvaluatePosition(Ephemeris<Barycentric> const& ephemeris,
                                        Celestial const celestial,
                                        Instant const& t) {
-  return ephemeris.trajectory(ephemeris.bodies()[celestial])
-      ->EvaluatePosition(t, /*hint=*/nullptr);
+  return ephemeris.trajectory(ephemeris.bodies()[celestial])->
+             EvaluatePosition(t);
 }
 
 DegreesOfFreedom<Barycentric> EvaluateDegreesOfFreedom(
     Ephemeris<Barycentric> const& ephemeris,
     Celestial const celestial,
     Instant const& t) {
-  return ephemeris.trajectory(ephemeris.bodies()[celestial])
-      ->EvaluateDegreesOfFreedom(t, /*hint=*/nullptr);
+  return ephemeris.trajectory(ephemeris.bodies()[celestial])->
+             EvaluateDegreesOfFreedom(t);
 }
 
 DegreesOfFreedom<Barycentric> JoolSystemBarycentre(

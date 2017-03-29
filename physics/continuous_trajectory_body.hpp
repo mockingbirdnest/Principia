@@ -147,81 +147,34 @@ Instant ContinuousTrajectory<Frame>::t_max() const {
 }
 
 template<typename Frame>
-not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>>
-ContinuousTrajectory<Frame>::NewHint() const {
-  return make_not_null_unique<Hint>();
-}
-
-template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
-    Instant const& time,
-    typename Trajectory<Frame>::Hint* const hint) const {
-  Hint* const down_cast_hint =
-      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    if (MayUseHint(time, hint)) {
-      return series_[hint->index_].Evaluate(time) + Frame::origin;
-    } else {
-      auto const it = FindSeriesForInstant(time);
-      CHECK(it != series_.end());
-      if (hint != nullptr) {
-        hint->index_ = it - series_.cbegin();
-      }
-      return it->Evaluate(time) + Frame::origin;
-    }
-  }
+    Instant const& time) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  auto const it = FindSeriesForInstant(time);
+  CHECK(it != series_.end());
+  return it->Evaluate(time) + Frame::origin;
 }
 
 template<typename Frame>
 Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
-    Instant const& time,
-    typename Trajectory<Frame>::Hint* const hint) const {
-  Hint* const down_cast_hint =
-      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    if (MayUseHint(time, hint)) {
-      return series_[hint->index_].EvaluateDerivative(time);
-    } else {
-      auto const it = FindSeriesForInstant(time);
-      CHECK(it != series_.end());
-      if (hint != nullptr) {
-        hint->index_ = it - series_.cbegin();
-      }
-      return it->EvaluateDerivative(time);
-    }
-  }
+    Instant const& time) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  auto const it = FindSeriesForInstant(time);
+  CHECK(it != series_.end());
+  return it->EvaluateDerivative(time);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
-    Instant const& time,
-    typename Trajectory<Frame>::Hint* const hint) const {
-  Hint* const down_cast_hint =
-      hint == nullptr ? nullptr : CHECK_NOTNULL(dynamic_cast<Hint*>(hint));
-  {
-    Hint* const hint = down_cast_hint;
-    CHECK_LE(t_min(), time);
-    CHECK_GE(t_max(), time);
-    if (MayUseHint(time, hint)) {
-      ЧебышёвSeries<Displacement<Frame>> const& series = series_[hint->index_];
-      return DegreesOfFreedom<Frame>(series.Evaluate(time) + Frame::origin,
-                                     series.EvaluateDerivative(time));
-    } else {
-      auto const it = FindSeriesForInstant(time);
-      CHECK(it != series_.end());
-      if (hint != nullptr) {
-        hint->index_ = it - series_.cbegin();
-      }
-      return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
-                                     it->EvaluateDerivative(time));
-    }
-  }
+    Instant const& time) const {
+  CHECK_LE(t_min(), time);
+  CHECK_GE(t_max(), time);
+  auto const it = FindSeriesForInstant(time);
+  CHECK(it != series_.end());
+  return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
+                                 it->EvaluateDerivative(time));
 }
 
 template<typename Frame>
@@ -304,10 +257,6 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   }
   return continuous_trajectory;
 }
-
-template<typename Frame>
-ContinuousTrajectory<Frame>::Hint::Hint()
-    : index_(std::numeric_limits<int>::max()) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
@@ -441,27 +390,6 @@ ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
                         return left.t_max() < right;
                       });
   return it;
-}
-
-template<typename Frame>
-bool ContinuousTrajectory<Frame>::MayUseHint(Instant const& time,
-                                             Hint* const hint) const {
-  if (hint != nullptr) {
-    // A shorthand for the index held by the |hint|.
-    int& index = hint->index_;
-    if (index < series_.size() && series_[index].t_min() <= time) {
-      if (time <= series_[index].t_max()) {
-        // Use this interval.
-        return true;
-      } else if (index < series_.size() - 1 &&
-                 time <= series_[index + 1].t_max()) {
-        // Move to the next interval.
-        ++index;
-        return true;
-      }
-    }
-  }
-  return false;
 }
 
 }  // namespace internal_continuous_trajectory

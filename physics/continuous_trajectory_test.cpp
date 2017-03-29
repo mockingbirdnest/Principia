@@ -252,18 +252,16 @@ TEST_F(ContinuousTrajectoryTest, Polynomial) {
   EXPECT_EQ(t0_ + (((number_of_steps - 1) / 8) * 8 + 1) * step,
             trajectory_->t_max());
 
-  ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
-    EXPECT_THAT(trajectory_->EvaluatePosition(time, &hint) - World::origin,
+    EXPECT_THAT(trajectory_->EvaluatePosition(time) - World::origin,
                 AlmostEquals(position_function(time) - World::origin, 0, 11));
-    EXPECT_THAT(trajectory_->EvaluateVelocity(time, &hint),
+    EXPECT_THAT(trajectory_->EvaluateVelocity(time),
                 AlmostEquals(velocity_function(time), 1, 3));
-    EXPECT_EQ(trajectory_->EvaluateDegreesOfFreedom(time, &hint),
-              DegreesOfFreedom<World>(
-                  trajectory_->EvaluatePosition(time, &hint),
-                  trajectory_->EvaluateVelocity(time, &hint)));
+    EXPECT_EQ(trajectory_->EvaluateDegreesOfFreedom(time),
+              DegreesOfFreedom<World>(trajectory_->EvaluatePosition(time),
+                                      trajectory_->EvaluateVelocity(time)));
   }
 }
 
@@ -322,15 +320,13 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   EXPECT_EQ(t0_ + (((number_of_steps - 1) / 8) * 8 + 1) * step,
             trajectory_->t_max());
 
-  ContinuousTrajectory<World>::Hint hint;
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
-    Position<World> const actual_position =
-        trajectory_->EvaluatePosition(time, &hint);
+    Position<World> const actual_position = trajectory_->EvaluatePosition(time);
     Position<World> const expected_position = position_function(time);
     Velocity<World> const actual_velocity =
-        trajectory_->EvaluateVelocity(time, &hint);
+        trajectory_->EvaluateVelocity(time);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.491 * Milli(Metre),
               AbsoluteError(expected_position, actual_position));
@@ -348,11 +344,9 @@ TEST_F(ContinuousTrajectoryTest, Io) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
-    Position<World> const actual_position =
-        trajectory_->EvaluatePosition(time, &hint);
+    Position<World> const actual_position = trajectory_->EvaluatePosition(time);
     Position<World> const expected_position = position_function(time);
-    Velocity<World> const actual_velocity =
-        trajectory_->EvaluateVelocity(time, &hint);
+    Velocity<World> const actual_velocity = trajectory_->EvaluateVelocity(time);
     Velocity<World> const expected_velocity = velocity_function(time);
     EXPECT_GT(0.492 * Milli(Metre),
               AbsoluteError(expected_position, actual_position));
@@ -402,22 +396,12 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   Instant const continuity_time =
       t0_ + initial_time + (8 * interval + 1) * step;
 
-  ContinuousTrajectory<World>::Hint hint;
-
-  // Evaluate the position with an uninitialized hint.  This picks the series
-  // below |continuity_time| and fills |hint| accordingly.
   Position<World> const p1 =
-      trajectory_->EvaluatePosition(continuity_time, &hint);
-
-  // Evaluate the position slightly after |continuity_time|.  This moves |hint|
-  // forward.
+      trajectory_->EvaluatePosition(continuity_time);
   Position<World> const p2 =
-      trajectory_->EvaluatePosition(continuity_time + step, &hint);
-
-  // Evaluate the position at |continuity_time| again.  Because |hint| was
-  // moved forward, this picks the series above |continuity_time|.
+      trajectory_->EvaluatePosition(continuity_time + step);
   Position<World> const p3 =
-      trajectory_->EvaluatePosition(continuity_time, &hint);
+      trajectory_->EvaluatePosition(continuity_time);
   EXPECT_THAT(p1, AlmostEquals(p3, 0, 2));
 }
 
@@ -466,8 +450,8 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   for (Instant time = trajectory_->t_min();
        time <= trajectory_->t_max();
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr),
-              trajectory_->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr));
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
+              trajectory_->EvaluateDegreesOfFreedom(time));
   }
 
   serialization::ContinuousTrajectory second_message;
@@ -534,8 +518,8 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   for (Instant time = trajectory_->t_min();
        time <= checkpoint_t_max;
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr),
-              trajectory_->EvaluateDegreesOfFreedom(time, /*hint=*/nullptr));
+    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
+              trajectory_->EvaluateDegreesOfFreedom(time));
   }
 }
 
