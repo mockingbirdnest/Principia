@@ -81,8 +81,6 @@ class BarycentricRotatingDynamicFrame
       primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       secondary_trajectory_;
-  mutable typename ContinuousTrajectory<InertialFrame>::Hint primary_hint_;
-  mutable typename ContinuousTrajectory<InertialFrame>::Hint secondary_hint_;
 };
 
 }  // namespace internal_barycentric_rotating_dynamic_frame

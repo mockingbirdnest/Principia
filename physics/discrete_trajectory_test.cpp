@@ -1,6 +1,7 @@
 ﻿
 #include "physics/discrete_trajectory.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <list>
 #include <map>
@@ -16,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 namespace physics {
@@ -28,16 +30,23 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
+using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::Speed;
 using quantities::SIUnit;
+using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::RelativeError;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
 using ::testing::Eq;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::Pair;
 using ::testing::Ref;
 
@@ -813,6 +822,40 @@ TEST_F(DiscreteTrajectoryTest, IteratorSuccess) {
   EXPECT_EQ(d4_, it.degrees_of_freedom());
   ++it;
   EXPECT_TRUE(it == fork->End());
+}
+
+TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
+  DiscreteTrajectory<World> circle;
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Speed const v = ω * r / Radian;
+  Time const period = 2 * π * Radian / ω;
+  for (Time t; t <= period; t += period / 4) {
+    circle.Append(
+        t0_ + t,
+        {World::origin + Displacement<World>{{r * Cos(ω * t),
+                                              r * Sin(ω * t),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * t),
+                          v * Cos(ω * t),
+                          0 * Metre / Second}}});
+  }
+  double max_r_error = 0;
+  double max_v_error = 0;
+  for (Time t; t < period; t += period / 32) {
+    auto const degrees_of_freedom_interpolated =
+        circle.EvaluateDegreesOfFreedom(t0_ + t);
+    auto const& q_interpolated = degrees_of_freedom_interpolated.position();
+    auto const& v_interpolated = degrees_of_freedom_interpolated.velocity();
+    EXPECT_THAT(circle.EvaluatePosition(t0_ + t), Eq(q_interpolated));
+    EXPECT_THAT(circle.EvaluateVelocity(t0_ + t), Eq(v_interpolated));
+    max_r_error = std::max(
+        max_r_error, RelativeError(r, (q_interpolated - World::origin).Norm()));
+    max_v_error =
+        std::max(max_v_error, RelativeError(v, v_interpolated.Norm()));
+  }
+  EXPECT_THAT(max_r_error, AllOf(Ge(0.014), Le(0.016)));
+  EXPECT_THAT(max_v_error, AllOf(Ge(0.011), Le(0.013)));
 }
 
 }  // namespace internal_discrete_trajectory

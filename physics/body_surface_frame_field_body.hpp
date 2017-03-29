@@ -25,7 +25,7 @@ BodySurfaceFrameField<Frame, ThisFrame>::BodySurfaceFrameField(
     not_null<RotatingBody<Frame> const*> const body)
     : body_axis_(body->polar_axis()),
       body_position_(
-          ephemeris.trajectory(body)->EvaluatePosition(t, /*hint=*/nullptr)) {}
+          ephemeris.trajectory(body)->EvaluatePosition(t)) {}
 
 template<typename Frame, typename ThisFrame>
 Rotation<ThisFrame, Frame>

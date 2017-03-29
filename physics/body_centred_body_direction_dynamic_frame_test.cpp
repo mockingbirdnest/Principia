@@ -134,18 +134,16 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ToBigSmallFrameAtTime) {
   int const steps = 100;
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint big_hint;
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint small_hint;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
 
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, big).
-            EvaluateDegreesOfFreedom(t, &big_hint);
+            EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, small).
-            EvaluateDegreesOfFreedom(t, &small_hint);
+            EvaluateDegreesOfFreedom(t);
 
     DegreesOfFreedom<BigSmallFrame> const big_in_big_small_at_t =
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
@@ -211,10 +209,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -268,10 +266,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -325,10 +323,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
        Velocity<ICRFJ2000Equator>({40 * Metre / Second,
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -384,10 +382,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
                                    -30 * Metre / Second,
                                    0 * Metre / Second})};
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {

@@ -30,12 +30,6 @@ using numerics::ЧебышёвSeries;
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
-  // A |Hint| is used to speed up the evaluation of trajectories.  When
-  // repeatedly calling one of the evaluation functions with increasing values
-  // of the |time| parameter, evaluation may be faster if the same |Hint| object
-  // is passed to all the calls.
-  class Hint;
-
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
   // state that gets incrementally updated as the Чебышёв polynomials are
   // constructed.  The client may get a |Checkpoint| at any time and use it to
@@ -82,18 +76,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Instant t_min() const override;
   Instant t_max() const override;
 
-  not_null<std::unique_ptr<typename Trajectory<Frame>::Hint>> NewHint()
-      const override;
-
-  Position<Frame> EvaluatePosition(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
-  Velocity<Frame> EvaluateVelocity(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
+  Position<Frame> EvaluatePosition(Instant const& time) const override;
+  Velocity<Frame> EvaluateVelocity(Instant const& time) const override;
   DegreesOfFreedom<Frame> EvaluateDegreesOfFreedom(
-      Instant const& time,
-      typename Trajectory<Frame>::Hint* hint) const override;
+      Instant const& time) const override;
 
   // End of the implementation of the interface.
 
@@ -109,16 +95,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
                       Checkpoint const& checkpoint) const;
   static not_null<std::unique_ptr<ContinuousTrajectory>> ReadFromMessage(
       serialization::ContinuousTrajectory const& message);
-
-  // The only thing that clients may do with |Hint| objects is to
-  // default-initialize them.
-  class Hint : public Trajectory<Frame>::Hint {
-   public:
-    Hint();
-   private:
-    int index_;
-    friend class ContinuousTrajectory<Frame>;
-  };
 
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
   // state that gets incrementally updated as the Чебышёв polynomials are
@@ -170,10 +146,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // after the last series.  Time complexity is O(N Log N).
   typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
   FindSeriesForInstant(Instant const& time) const;
-
-  // Returns true if the given |hint| is usable for the given |time|.  If it is,
-  // |hint->index| is the index of the series to use.
-  bool MayUseHint(Instant const& time, Hint* hint) const;
 
   // Construction parameters;
   Time const step_;

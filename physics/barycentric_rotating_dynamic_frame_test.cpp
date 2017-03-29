@@ -146,8 +146,6 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
 TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
   int const steps = 100;
 
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint big_hint;
-  ContinuousTrajectory<ICRFJ2000Equator>::Hint small_hint;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
     auto const to_big_small_frame_at_t = big_small_frame_->ToThisFrameAtTime(t);
 
@@ -164,10 +162,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, big).
-            EvaluateDegreesOfFreedom(t, &big_hint);
+            EvaluateDegreesOfFreedom(t);
     DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, small).
-            EvaluateDegreesOfFreedom(t, &small_hint);
+            EvaluateDegreesOfFreedom(t);
 
     DegreesOfFreedom<BigSmallFrame> const big_in_big_small_at_t =
         to_big_small_frame_at_t(big_in_inertial_frame_at_t);
@@ -246,10 +244,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
                      {2 * Metre, 1 * Metre, 0 * Metre})));
   EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRFJ2000Equator>()));
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -312,10 +310,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
                      {2 * Metre, 1 * Metre, 0 * Metre})));
   EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRFJ2000Equator>()));
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -378,10 +376,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
                      {2 * Metre, 1 * Metre, 0 * Metre})));
   EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRFJ2000Equator>()));
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {
@@ -446,10 +444,10 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
                      {2 * Metre, 1 * Metre, 0 * Metre})));
   EXPECT_THAT(barycentre_dof.velocity(), Eq(Velocity<ICRFJ2000Equator>()));
 
-  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
-  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t, _))
+  EXPECT_CALL(mock_small_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(small_dof));
   {

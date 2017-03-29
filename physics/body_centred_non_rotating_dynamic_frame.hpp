@@ -61,7 +61,6 @@ class BodyCentredNonRotatingDynamicFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   not_null<MassiveBody const*> const centre_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const centre_trajectory_;
-  mutable typename ContinuousTrajectory<InertialFrame>::Hint hint_;
 };
 
 

@@ -290,8 +290,7 @@ class Ephemeris {
       MassiveBody const& body1,
       std::size_t const b1,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations,
-      typename ContinuousTrajectory<Frame>::Hint& hint1) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
@@ -300,15 +299,11 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
-  // massless bodies.  The massless bodies are at the given |positions|.  The
-  // |hints| are passed to
-  // ComputeGravitationalAccelerationByMassiveBodyOnMasslessBody for efficient
-  // computation of the positions of the massive bodies.
+  // massless bodies.  The massless bodies are at the given |positions|.
   void ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations,
-      std::vector<typename ContinuousTrajectory<Frame>::Hint>& hints) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Same as above, but the massless bodies have intrinsic accelerations.
   // |intrinsic_accelerations| may be empty.
@@ -316,8 +311,7 @@ class Ephemeris {
       std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations,
-      std::vector<typename ContinuousTrajectory<Frame>::Hint>& hints) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(
