@@ -499,15 +499,19 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
     auto const dof_from_both_bodies =
         barycentric_from_both_bodies.ToThisFrameAtTime(t0_ + t)(
             {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
-    EXPECT_THAT(dof_from_discrete.position(),
-                AlmostEquals(dof_from_both_bodies.position(), 0));
-    EXPECT_THAT(dof_from_discrete.velocity(),
-                AlmostEquals(dof_from_both_bodies.velocity(), 0));
-    EXPECT_THAT(barycentric_from_discrete.GeometricAcceleration(
-                    t0_ + t, dof_from_discrete),
-                AlmostEquals(barycentric_from_both_bodies.GeometricAcceleration(
-                                 t0_ + t, dof_from_both_bodies),
-                             0));
+    EXPECT_THAT(
+        (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
+        VanishesBefore(1 * Kilo(Metre), 0));
+    EXPECT_THAT(
+        (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
+        VanishesBefore(1 * Kilo(Metre) / Second, 0));
+    EXPECT_THAT(
+        (barycentric_from_discrete.GeometricAcceleration(t0_ + t,
+                                                         dof_from_discrete) -
+         barycentric_from_both_bodies.GeometricAcceleration(
+             t0_ + t,
+             dof_from_both_bodies)).Norm(),
+         VanishesBefore(1 * Metre / Pow<2>(Second), 0));
   }
 }
 
