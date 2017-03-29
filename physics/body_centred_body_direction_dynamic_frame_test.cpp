@@ -470,7 +470,9 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
 }
 
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
-  // A discrete trajectory that remains fixed at the barycentre.
+  // A discrete trajectory that remains motionless at the barycentre.  Since
+  // both bodies don't have the same mass, this means it has an intrinsic
+  // acceleration.
   DiscreteTrajectory<ICRFJ2000Equator> barycentre_trajectory;
   for (Time t; t <= period_; t += period_ / 16) {
     auto const big_dof =
@@ -492,7 +494,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
                                 small_};
   BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
       barycentric_from_both_bodies{ephemeris_.get(), big_, small_};
-  for (Time t; t <= period_ / 2; t += period_ / 32) {
+  for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
     auto const dof_from_discrete =
         barycentric_from_discrete.ToThisFrameAtTime(t0_ + t)(
             {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
@@ -501,17 +503,27 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
             {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
-        VanishesBefore(1 * Kilo(Metre), 0));
+        VanishesBefore(1 * Kilo(Metre), 0, 10));
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
-        VanishesBefore(1 * Kilo(Metre) / Second, 0));
+        VanishesBefore(1 * Kilo(Metre) / Second, 0, 40));
+    // For the moment, the |BodyCentredBodyDirectionDynamicFrame| assumes that
+    // its reference trajectories are free-falling, and gives us the wrong
+    // geometric acceleration when this is not the case.
+    auto const intrinsic_acceleration =
+        ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
+            ICRFJ2000Equator::origin +
+                Displacement<ICRFJ2000Equator>({0 * Kilo(Metre),
+                                                10.0 / 7.0 * Kilo(Metre),
+                                                0 * Kilo(Metre)}),
+            t0_ + t);
     EXPECT_THAT(
         (barycentric_from_discrete.GeometricAcceleration(t0_ + t,
                                                          dof_from_discrete) -
          barycentric_from_both_bodies.GeometricAcceleration(
              t0_ + t,
              dof_from_both_bodies)).Norm(),
-         VanishesBefore(1 * Metre / Pow<2>(Second), 0));
+         AlmostEquals(intrinsic_acceleration.Norm(), 0, 142));
   }
 }
 
