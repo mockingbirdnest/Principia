@@ -47,7 +47,7 @@ BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
     : ephemeris_(ephemeris),
       primary_(nullptr),
       secondary_(secondary),
-      primary_trajectory_(primary_trajectory_),
+      primary_trajectory_(primary_trajectory),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
@@ -118,7 +118,12 @@ MotionOfThisFrame(Instant const& t) const {
       secondary_trajectory_->EvaluateDegreesOfFreedom(t, &secondary_hint_);
 
   Vector<Acceleration, InertialFrame> const primary_acceleration =
-      ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_, t);
+      // TODO(egg): eventually we want to add the intrinsic acceleration here.
+      primary_ == nullptr
+          ? ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
+                primary_degrees_of_freedom.position(), t)
+          : ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_,
+                                                                      t);
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 
