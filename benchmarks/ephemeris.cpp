@@ -84,11 +84,11 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
     error = (at_спутник_1_launch->trajectory(
                  *ephemeris,
                  SolarSystemFactory::name(SolarSystemFactory::Sun)).
-                     EvaluatePosition(final_time, nullptr) -
+                     EvaluatePosition(final_time) -
              at_спутник_1_launch->trajectory(
                  *ephemeris,
                  SolarSystemFactory::name(SolarSystemFactory::Earth)).
-                     EvaluatePosition(final_time, nullptr)).
+                     EvaluatePosition(final_time)).
                  Norm();
     state.ResumeTiming();
   }
@@ -171,13 +171,13 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::Sun)).
-                         EvaluatePosition(final_time, nullptr) -
+                         EvaluatePosition(final_time) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::Earth)).
-                           EvaluatePosition(final_time, nullptr) -
+                           EvaluatePosition(final_time) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
     steps = trajectory.Size();
@@ -253,13 +253,13 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     sun_error = (at_спутник_1_launch->trajectory(
                      *ephemeris,
                      SolarSystemFactory::name(SolarSystemFactory::Sun)).
-                         EvaluatePosition(final_time, nullptr) -
+                         EvaluatePosition(final_time) -
                  trajectory.last().degrees_of_freedom().position()).
                      Norm();
     earth_error = (at_спутник_1_launch->trajectory(
                        *ephemeris,
                        SolarSystemFactory::name(SolarSystemFactory::Earth)).
-                           EvaluatePosition(final_time, nullptr) -
+                           EvaluatePosition(final_time) -
                    trajectory.last().degrees_of_freedom().position()).
                        Norm();
     steps = trajectory.Size();
