@@ -6,6 +6,7 @@
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
+#include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/massless_body.hpp"
@@ -24,6 +25,7 @@ using base::not_null;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Vector;
+using integrators::Integrator;
 using physics::DiscreteTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -37,7 +39,14 @@ using quantities::Mass;
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
-  PileUp(std::list<not_null<Part*>>&& parts, Instant const& t);
+  PileUp(
+      std::list<not_null<Part*>>&& parts,
+      Instant const& t,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
+
   virtual ~PileUp() = default;
 
   // This class is moveable.
@@ -71,12 +80,7 @@ class PileUp {
   // the histories of the parts and updates the degrees of freedom of the parts
   // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
   // and of its parts have a (possibly ahistorical) final point exactly at |t|.
-  void AdvanceTime(
-      Ephemeris<Barycentric>& ephemeris,
-      Instant const& t,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters);
+  void AdvanceTime(Instant const& t);
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
   // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
@@ -97,6 +101,9 @@ class PileUp {
                          bool authoritative) const;
 
   std::list<not_null<Part*>> parts_;
+  not_null<Ephemeris<Barycentric>*> ephemeris_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
+
   // An optimization: the sum of the masses and intrinsic forces of the
   // |parts_|, computed by the union-find.
   Mass mass_;
@@ -110,6 +117,11 @@ class PileUp {
   // |psychohistory_.Size()| is either 1 or 2.  The first point is
   // authoritative, and the second point, if any, is not.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
+
+  //TODO(phl):comment
+  not_null<std::unique_ptr<typename Integrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>>
+      fixed_instance_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees
   // of freedom of the parts in the frame of that body can be set, however their

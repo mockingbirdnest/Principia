@@ -24,9 +24,21 @@ using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 
-PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
+PileUp::PileUp(
+    std::list<not_null<Part*>>&& parts,
+    Instant const& t,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    not_null<Ephemeris<Barycentric>*> const ephemeris)
     : parts_(std::move(parts)),
-      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+      ephemeris_(ephemeris),
+  adaptive_step_parameters_(adaptive_step_parameters),
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      fixed_instance_(ephemeris_->NewInstance(
+          {psychohistory_.get()},
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          fixed_step_parameters)) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -121,12 +133,7 @@ void PileUp::DeformPileUpIfNeeded() {
   apparent_part_degrees_of_freedom_.clear();
 }
 
-void PileUp::AdvanceTime(
-    Ephemeris<Barycentric>& ephemeris,
-    Instant const& t,
-    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
+void PileUp::AdvanceTime(Instant const& t) {
   CHECK_GE(psychohistory_->Size(), 1);
   CHECK_LE(psychohistory_->Size(), 2);
 
@@ -137,17 +144,13 @@ void PileUp::AdvanceTime(
     auto const last_authoritative = psychohistory_->Begin();
     psychohistory_->ForgetAfter(last_authoritative.time());
     CHECK_EQ(psychohistory_->Size(), 1);
-    ephemeris.FlowWithFixedStep(
-        {psychohistory_.get()},
-        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-        t,
-        fixed_step_parameters);
+    ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     if (psychohistory_->last().time() < t) {
-      CHECK(ephemeris.FlowWithAdaptiveStep(
+      CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_.get(),
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                 t,
-                adaptive_step_parameters,
+                adaptive_step_parameters_,
                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
                 /*last_point_only=*/true));
       last_point_is_authoritative = false;
@@ -159,11 +162,11 @@ void PileUp::AdvanceTime(
     // tails.
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    CHECK(ephemeris.FlowWithAdaptiveStep(
+    CHECK(ephemeris_->FlowWithAdaptiveStep(
               psychohistory_.get(),
               intrinsic_acceleration,
               t,
-              adaptive_step_parameters,
+              adaptive_step_parameters_,
               Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
               /*last_point_only=*/false));
   }
