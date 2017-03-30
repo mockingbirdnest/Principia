@@ -293,6 +293,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="apsides.hpp" />
+    <ClInclude Include="apsides_body.hpp" />
     <ClInclude Include="barycentric_rotating_dynamic_frame.hpp" />
     <ClInclude Include="barycentric_rotating_dynamic_frame_body.hpp" />
     <ClInclude Include="body.hpp" />
@@ -344,6 +346,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
     <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp" />
     <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp" />

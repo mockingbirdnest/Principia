@@ -158,6 +158,12 @@
     <ClInclude Include="trajectory.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="apsides.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="apsides_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="degrees_of_freedom_test.cpp">
@@ -218,6 +224,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="body_surface_frame_field_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="apsides_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
