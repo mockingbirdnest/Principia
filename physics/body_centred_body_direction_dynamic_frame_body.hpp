@@ -27,26 +27,36 @@ using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
-    BodyCentredBodyDirectionDynamicFrame(
-        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-        not_null<MassiveBody const*> const primary,
-        not_null<MassiveBody const*> const secondary)
+BodyCentredBodyDirectionDynamicFrame(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const primary,
+    not_null<MassiveBody const*> const secondary)
     : ephemeris_(ephemeris),
       primary_(primary),
       secondary_(secondary),
+      compute_gravitational_acceleration_on_primary_(
+          [this](Position<InertialFrame> const& position, Instant const& t) {
+            return ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(
+                primary_, t);
+          }),
       primary_trajectory_([t = ephemeris_->trajectory(primary_)] { return t; }),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
-    BodyCentredBodyDirectionDynamicFrame(
-        not_null<Ephemeris<InertialFrame> const*> ephemeris,
-        std::function<not_null<Trajectory<InertialFrame> const*>()>
-            primary_trajectory,
-        not_null<MassiveBody const*> secondary)
+BodyCentredBodyDirectionDynamicFrame(
+    not_null<Ephemeris<InertialFrame> const*> ephemeris,
+    std::function<not_null<Trajectory<InertialFrame> const*>()>
+        primary_trajectory,
+    not_null<MassiveBody const*> secondary)
     : ephemeris_(ephemeris),
       primary_(nullptr),
       secondary_(secondary),
+      compute_gravitational_acceleration_on_primary_(
+          [this](Position<InertialFrame> const& position, Instant const& t) {
+            return ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
+                position, t);
+          }),
       primary_trajectory_(primary_trajectory),
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
@@ -117,13 +127,11 @@ MotionOfThisFrame(Instant const& t) const {
   DegreesOfFreedom<InertialFrame> const secondary_degrees_of_freedom =
       secondary_trajectory_->EvaluateDegreesOfFreedom(t);
 
+  // TODO(egg): eventually we want to add the intrinsic acceleration here.
   Vector<Acceleration, InertialFrame> const primary_acceleration =
-      // TODO(egg): eventually we want to add the intrinsic acceleration here.
-      primary_ == nullptr
-          ? ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
-                primary_degrees_of_freedom.position(), t)
-          : ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(primary_,
-                                                                      t);
+      compute_gravitational_acceleration_on_primary_(
+          primary_degrees_of_freedom.position(), t);
+
   Vector<Acceleration, InertialFrame> const secondary_acceleration =
       ephemeris_->ComputeGravitationalAccelerationOnMassiveBody(secondary_, t);
 

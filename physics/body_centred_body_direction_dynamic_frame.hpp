@@ -83,6 +83,9 @@ class BodyCentredBodyDirectionDynamicFrame
   not_null<Ephemeris<InertialFrame> const*> const ephemeris_;
   MassiveBody const* const primary_;
   not_null<MassiveBody const*> const secondary_;
+  std::function<Vector<Acceleration, InertialFrame>(
+      Position<InertialFrame> const& position,
+      Instant const& t)> compute_gravitational_acceleration_on_primary_;
   std::function<not_null<Trajectory<InertialFrame> const*>()> const
       primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
