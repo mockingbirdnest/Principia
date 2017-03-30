@@ -8,6 +8,7 @@ namespace internal_apsides {
 
 using geometry::Barycentre;
 using geometry::Instant;
+using geometry::Position;
 using geometry::Sign;
 using numerics::Hermite3;
 using quantities::Length;

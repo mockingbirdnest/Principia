@@ -14,7 +14,6 @@ namespace internal_apsides {
 using base::not_null;
 using geometry::Displacement;
 using geometry::Frame;
-using geometry::Position;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
