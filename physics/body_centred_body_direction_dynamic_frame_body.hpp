@@ -45,10 +45,10 @@ BodyCentredBodyDirectionDynamicFrame(
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
 BodyCentredBodyDirectionDynamicFrame(
-    not_null<Ephemeris<InertialFrame> const*> ephemeris,
-    std::function<not_null<Trajectory<InertialFrame> const*>()>
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    std::function<not_null<Trajectory<InertialFrame> const*>()> const
         primary_trajectory,
-    not_null<MassiveBody const*> secondary)
+    not_null<MassiveBody const*> const secondary)
     : ephemeris_(ephemeris),
       primary_(nullptr),
       secondary_(secondary),
