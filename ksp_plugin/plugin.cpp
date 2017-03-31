@@ -1391,6 +1391,17 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
 
+Plugin::Target::Target(not_null<Vessel const*> vessel,
+                       not_null<Ephemeris<Barycentric> const*> ephemeris,
+                       Celestial const& celestial)
+    : vessel(vessel),
+      target_frame(
+          make_not_null_unique<
+              BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+              ephemeris,
+              [this]() { return this->vessel->prediction(); },
+              celestial.body())) {}
+
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

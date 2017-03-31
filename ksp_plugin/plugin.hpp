@@ -496,6 +496,14 @@ class Plugin {
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
+  struct Target {
+    Target(not_null<Vessel const*> vessel,
+           not_null<Ephemeris<Barycentric> const*> ephemeris,
+           Celestial const& celestial);
+    not_null<Vessel const*> const vessel;
+    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
+  };
+  std::experimental::optional<Target> target_;
 
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
