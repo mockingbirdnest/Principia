@@ -881,6 +881,17 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
 }
 
+void Plugin::SetTargetVessel(GUID const& vessel_guid,
+                             Index const reference_body_index) {
+  target_ = Target{find_vessel_by_guid_or_die(vessel_guid),
+                   ephemeris_.get(),
+                   *FindOrDie(celestials_, reference_body_index)};
+}
+
+void Plugin::ClearTargetVessel() {
+  target_ = std::experimental::nullopt;
+}
+
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Position<World> const& sun_world_position) const {
 
