@@ -230,6 +230,13 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
        ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
 
+void principia__ClearTargetVessel(Plugin* const plugin) {
+  journal::Method<journal::ClearTargetVessel> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->ClearTargetVessel();
+  return m.Return();
+}
+
 double principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -877,6 +884,16 @@ void principia__SetPredictionLength(Plugin* const plugin,
   journal::Method<journal::SetPredictionLength> m({plugin, t});
   CHECK_NOTNULL(plugin);
   plugin->SetPredictionLength(t * Second);
+  return m.Return();
+}
+
+void principia__SetTargetVessel(Plugin* const plugin,
+                                char const* const vessel_guid,
+                                int const reference_body_index) {
+  journal::Method<journal::SetTargetVessel> m(
+      {plugin, vessel_guid, reference_body_index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetTargetVessel(vessel_guid, reference_body_index);
   return m.Return();
 }
 
