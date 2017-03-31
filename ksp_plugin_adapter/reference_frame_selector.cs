@@ -45,9 +45,9 @@ class ReferenceFrameSelector : WindowRenderer {
         expanded_.Add(celestial, false);
       }
     }
-    selected_celestial_ =
+    selected_celestial =
         FlightGlobals.currentMainBody ?? Planetarium.fetch.Sun;
-    for (CelestialBody celestial = selected_celestial_;
+    for (CelestialBody celestial = selected_celestial;
          celestial.orbit != null;
          celestial = celestial.orbit.referenceBody) {
       if (!celestial.is_leaf()) {
@@ -60,6 +60,7 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public FrameType frame_type { get; private set; }
+  public CelestialBody selected_celestial { get; private set; }
 
   public static String Name(FrameType type, CelestialBody selected) {
    switch (type) {
@@ -143,15 +144,15 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public String Name() {
-    return Name(frame_type, selected_celestial_);
+    return Name(frame_type, selected_celestial);
   }
 
   public String ShortName() {
-    return ShortName(frame_type, selected_celestial_);
+    return ShortName(frame_type, selected_celestial);
   }
 
   public String Description() {
-    return Description(frame_type, selected_celestial_);
+    return Description(frame_type, selected_celestial);
   }
 
   public CelestialBody[] FixedBodies() {
@@ -159,7 +160,7 @@ class ReferenceFrameSelector : WindowRenderer {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
       case FrameType.BODY_SURFACE:
-        return new CelestialBody[]{selected_celestial_};
+        return new CelestialBody[]{selected_celestial};
       case FrameType.BARYCENTRIC_ROTATING:
         return new CelestialBody[]{};
       default:
@@ -173,22 +174,22 @@ class ReferenceFrameSelector : WindowRenderer {
       case FrameType.BODY_SURFACE:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
-            centre_index = selected_celestial_.flightGlobalsIndex};
+            centre_index = selected_celestial.flightGlobalsIndex};
       case FrameType.BARYCENTRIC_ROTATING:
         return new NavigationFrameParameters{
             extension = (int)frame_type,
             primary_index =
-                selected_celestial_.referenceBody.flightGlobalsIndex,
-            secondary_index = selected_celestial_.flightGlobalsIndex};
+                selected_celestial.referenceBody.flightGlobalsIndex,
+            secondary_index = selected_celestial.flightGlobalsIndex};
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
         // We put the primary body as secondary, because the one we want fixed
         // is the secondary body (which means it has to be the primary in the
         // terminology of |BodyCentredBodyDirection|).
         return new NavigationFrameParameters{
             extension = (int)frame_type,
-            primary_index = selected_celestial_.flightGlobalsIndex,
+            primary_index = selected_celestial.flightGlobalsIndex,
             secondary_index =
-                selected_celestial_.referenceBody.flightGlobalsIndex};
+                selected_celestial.referenceBody.flightGlobalsIndex};
       default:
         throw Log.Fatal("Unexpected frame_type " + frame_type.ToString());
     }
@@ -199,13 +200,13 @@ class ReferenceFrameSelector : WindowRenderer {
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_SURFACE:
-        selected_celestial_ = FlightGlobals.Bodies[parameters.centre_index];
+        selected_celestial = FlightGlobals.Bodies[parameters.centre_index];
         break;
       case FrameType.BARYCENTRIC_ROTATING:
-        selected_celestial_ = FlightGlobals.Bodies[parameters.secondary_index];
+        selected_celestial = FlightGlobals.Bodies[parameters.secondary_index];
         break;
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
-        selected_celestial_ = FlightGlobals.Bodies[parameters.primary_index];
+        selected_celestial = FlightGlobals.Bodies[parameters.primary_index];
         break;
     }
   }
@@ -253,8 +254,8 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUILayout.BeginVertical();
     TypeSelector(FrameType.BODY_SURFACE);
     TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
-    if (!selected_celestial_.is_root()) {
-      CelestialBody parent = selected_celestial_.orbit.referenceBody;
+    if (!selected_celestial.is_root()) {
+      CelestialBody parent = selected_celestial.orbit.referenceBody;
       TypeSelector(FrameType.BARYCENTRIC_ROTATING);
       TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
     }
@@ -293,10 +294,10 @@ class ReferenceFrameSelector : WindowRenderer {
         expanded_[celestial] = !expanded_[celestial];
       }
     }
-    if (UnityEngine.GUILayout.Toggle(selected_celestial_ == celestial,
+    if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
                                      celestial.name)) {
-      if (selected_celestial_ != celestial) {
-        selected_celestial_ = celestial;
+      if (selected_celestial != celestial) {
+        selected_celestial = celestial;
         if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
           frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
         }
@@ -315,7 +316,7 @@ class ReferenceFrameSelector : WindowRenderer {
    bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
    UnityEngine.GUI.skin.toggle.wordWrap = true;
    if (UnityEngine.GUILayout.Toggle(frame_type == value,
-                                    Description(value, selected_celestial_),
+                                    Description(value, selected_celestial),
                                     UnityEngine.GUILayout.Width(150),
                                     UnityEngine.GUILayout.Height(120))) {
       if (frame_type != value) {
@@ -337,7 +338,6 @@ class ReferenceFrameSelector : WindowRenderer {
   private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
-  private CelestialBody selected_celestial_;
   private readonly string name_;
 }
 

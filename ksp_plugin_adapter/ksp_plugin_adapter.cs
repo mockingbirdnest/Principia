@@ -584,11 +584,22 @@ public partial class PrincipiaPluginAdapter
         // Texture the ball.
         navball_changed_ = false;
         previous_display_mode_ = FlightGlobals.speedDisplayMode;
-        if (FlightGlobals.speedDisplayMode !=
-                FlightGlobals.SpeedDisplayModes.Orbit ||
+        if (FlightGlobals.speedDisplayMode ==
+                FlightGlobals.SpeedDisplayModes.Surface ||
             !PluginRunning()) {
           set_navball_texture(compass_navball_texture_);
         } else {
+          if (FlightGlobals.speedDisplayMode ==
+                  FlightGlobals.SpeedDisplayModes.Target &&
+              plugin_.HasVessel(
+                  FlightGlobals.activeTarget.vessel.id.ToString())) {
+            plugin_.SetTargetVessel(
+                FlightGlobals.activeTarget.vessel.id.ToString(),
+                plotting_frame_selector_.get()
+                    .selected_celestial.flightGlobalsIndex);
+          } else {
+            plugin_.ClearTargetVessel();
+          }
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
               set_navball_texture(surface_navball_texture_);
