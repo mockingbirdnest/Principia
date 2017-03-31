@@ -27,10 +27,10 @@ using quantities::si::Radian;
 
 template<typename InertialFrame, typename ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
-    BodyCentredBodyDirectionDynamicFrame(
-        not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-        not_null<MassiveBody const*> const primary,
-        not_null<MassiveBody const*> const secondary)
+BodyCentredBodyDirectionDynamicFrame(
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
+    not_null<MassiveBody const*> const primary,
+    not_null<MassiveBody const*> const secondary)
     : ephemeris_(ephemeris),
       primary_(primary),
       secondary_(secondary),
