@@ -746,7 +746,9 @@ Plugin::RenderedTrajectoryFromIterators(
 
   NavigationFrame& plotting_frame =
       target_ ? *target_->target_frame : *plotting_frame_;
-  // TODO(egg): advance the prediction of the target vessel here.
+  if (target_) {
+    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  }
 
   // Compute the trajectory in the navigation frame.
   DiscreteTrajectory<Navigation> intermediate_trajectory;
