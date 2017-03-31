@@ -1414,7 +1414,7 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
 
-Plugin::Target::Target(not_null<Vessel const*> vessel,
+Plugin::Target::Target(not_null<Vessel*> vessel,
                        not_null<Ephemeris<Barycentric> const*> ephemeris,
                        Celestial const& celestial)
     : vessel(vessel),
