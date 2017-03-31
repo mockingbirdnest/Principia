@@ -701,6 +701,9 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       current_time_ + prediction_length_);
+  if (target_) {
+    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  }
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -746,9 +749,6 @@ Plugin::RenderedTrajectoryFromIterators(
 
   NavigationFrame& plotting_frame =
       target_ ? *target_->target_frame : *plotting_frame_;
-  if (target_) {
-    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
-  }
 
   // Compute the trajectory in the navigation frame.
   DiscreteTrajectory<Navigation> intermediate_trajectory;
