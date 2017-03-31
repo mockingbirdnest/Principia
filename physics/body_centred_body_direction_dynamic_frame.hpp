@@ -49,8 +49,7 @@ class BodyCentredBodyDirectionDynamicFrame
 
   BodyCentredBodyDirectionDynamicFrame(
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
-      std::function<not_null<Trajectory<InertialFrame> const*>()>
-          primary_trajectory,
+      std::function<Trajectory<InertialFrame> const&()> primary_trajectory,
       not_null<MassiveBody const*> secondary);
 
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
@@ -86,8 +85,7 @@ class BodyCentredBodyDirectionDynamicFrame
   std::function<Vector<Acceleration, InertialFrame>(
       Position<InertialFrame> const& position,
       Instant const& t)> compute_gravitational_acceleration_on_primary_;
-  std::function<not_null<Trajectory<InertialFrame> const*>()> const
-      primary_trajectory_;
+  std::function<Trajectory<InertialFrame> const&()> const primary_trajectory_;
   not_null<ContinuousTrajectory<InertialFrame> const*> const
       secondary_trajectory_;
 };
