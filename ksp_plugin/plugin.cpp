@@ -741,13 +741,23 @@ Plugin::RenderedTrajectoryFromIterators(
     Position<World> const& sun_world_position) const {
   auto result = make_not_null_unique<DiscreteTrajectory<World>>();
 
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+  // TODO(egg): advance the prediction of the target vessel here.
+
   // Compute the trajectory in the navigation frame.
   DiscreteTrajectory<Navigation> intermediate_trajectory;
   for (auto it = begin; it != end; ++it) {
+    if (target_) {
+      if (it.time() < target_->vessel->prediction().t_min()) {
+        continue;
+      } else if (it.time() > target_->vessel->prediction().t_max()) {
+        break;
+      }
+    }
     intermediate_trajectory.Append(
         it.time(),
-        plotting_frame_->ToThisFrameAtTime(it.time())(
-            it.degrees_of_freedom()));
+        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
   // Render the trajectory at current time in |World|.
@@ -755,8 +765,7 @@ Plugin::RenderedTrajectoryFromIterators(
       intermediate_trajectory.End();
   auto from_navigation_frame_to_world_at_current_time =
       BarycentricToWorld(sun_world_position) *
-          plotting_frame_->
-              FromThisFrameAtTime(current_time_).rigid_transformation();
+      plotting_frame.FromThisFrameAtTime(current_time_).rigid_transformation();
   for (auto intermediate_it = intermediate_trajectory.Begin();
        intermediate_it != intermediate_end;
        ++intermediate_it) {
@@ -883,9 +892,9 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
-  target_ = Target{find_vessel_by_guid_or_die(vessel_guid),
-                   ephemeris_.get(),
-                   *FindOrDie(celestials_, reference_body_index)};
+  target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
+                  ephemeris_.get(),
+                  *FindOrDie(celestials_, reference_body_index));
 }
 
 void Plugin::ClearTargetVessel() {
@@ -1410,7 +1419,7 @@ Plugin::Target::Target(not_null<Vessel const*> vessel,
           make_not_null_unique<
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
               ephemeris,
-              [this]() { return this->vessel->prediction(); },
+              [this]() -> auto& { return this->vessel->prediction(); },
               celestial.body())) {}
 
 }  // namespace internal_plugin
