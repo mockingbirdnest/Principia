@@ -22,6 +22,7 @@
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -29,11 +30,14 @@ namespace internal_body_centred_body_direction_dynamic_frame {
 
 using astronomy::ICRFJ2000Equator;
 using base::check_not_null;
+using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
+using quantities::SIUnit;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -42,6 +46,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::InSequence;
 using ::testing::IsNull;
@@ -462,6 +467,64 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
                                 1 * Metre / Second})};
   EXPECT_EQ(big_small_frame_->GeometricAcceleration(t, point_dof),
             read_big_small_frame->GeometricAcceleration(t, point_dof));
+}
+
+TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
+  // A discrete trajectory that remains motionless at the barycentre.  Since
+  // both bodies don't have the same mass, this means it has an intrinsic
+  // acceleration.
+  DiscreteTrajectory<ICRFJ2000Equator> barycentre_trajectory;
+  for (Time t; t <= period_; t += period_ / 16) {
+    auto const big_dof =
+        ephemeris_->trajectory(big_)->EvaluateDegreesOfFreedom(t0_ + t);
+    auto const small_dof =
+        ephemeris_->trajectory(small_)->EvaluateDegreesOfFreedom(t0_ + t);
+    auto const barycentre =
+        Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
+            {big_dof, small_dof},
+            {big_->gravitational_parameter(),
+             small_->gravitational_parameter()});
+    EXPECT_THAT(barycentre.velocity().Norm(),
+                VanishesBefore(1 * Kilo(Metre) / Second, 0, 40));
+    barycentre_trajectory.Append(t0_ + t, barycentre);
+  }
+  BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
+      barycentric_from_discrete{ephemeris_.get(),
+                                [t = &barycentre_trajectory] { return t; },
+                                small_};
+  BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
+      barycentric_from_both_bodies{ephemeris_.get(), big_, small_};
+  for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
+    auto const dof_from_discrete =
+        barycentric_from_discrete.ToThisFrameAtTime(t0_ + t)(
+            {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
+    auto const dof_from_both_bodies =
+        barycentric_from_both_bodies.ToThisFrameAtTime(t0_ + t)(
+            {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
+    EXPECT_THAT(
+        (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
+        VanishesBefore(1 * Kilo(Metre), 0, 10));
+    EXPECT_THAT(
+        (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
+        VanishesBefore(1 * Kilo(Metre) / Second, 0, 40));
+    // For the moment, the |BodyCentredBodyDirectionDynamicFrame| assumes that
+    // its reference trajectories are free-falling, and gives us the wrong
+    // geometric acceleration when this is not the case.
+    auto const intrinsic_acceleration =
+        ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
+            ICRFJ2000Equator::origin +
+                Displacement<ICRFJ2000Equator>({0 * Kilo(Metre),
+                                                10.0 / 7.0 * Kilo(Metre),
+                                                0 * Kilo(Metre)}),
+            t0_ + t);
+    EXPECT_THAT(
+        (barycentric_from_discrete.GeometricAcceleration(t0_ + t,
+                                                         dof_from_discrete) -
+         barycentric_from_both_bodies.GeometricAcceleration(
+             t0_ + t,
+             dof_from_both_bodies)).Norm(),
+         AlmostEquals(intrinsic_acceleration.Norm(), 0, 142));
+  }
 }
 
 }  // namespace internal_body_centred_body_direction_dynamic_frame
