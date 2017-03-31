@@ -516,6 +516,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
+      if (target_ && target_->vessel == vessel) {
+        target_ = std::experimental::nullopt;
+      }
       it = vessels_.erase(it);
     }
   }
