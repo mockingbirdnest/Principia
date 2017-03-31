@@ -489,9 +489,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
     barycentre_trajectory.Append(t0_ + t, barycentre);
   }
   BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
-      barycentric_from_discrete{ephemeris_.get(),
-                                [t = &barycentre_trajectory] { return t; },
-                                small_};
+      barycentric_from_discrete{
+          ephemeris_.get(),
+          [&t = barycentre_trajectory]() -> auto& { return t; },
+          small_};
   BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
       barycentric_from_both_bodies{ephemeris_.get(), big_, small_};
   for (Time t = period_ / 32; t <= period_ / 2; t += period_ / 32) {
