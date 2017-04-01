@@ -229,11 +229,11 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
     degrees_of_freedom.WriteToMessage(&(
         (*message
               ->mutable_apparent_part_degrees_of_freedom())[part->part_id()]));
-    adaptive_step_parameters_.WriteToMessage(
-        message->mutable_adaptive_step_parameters());
-    fixed_step_parameters_.WriteToMessage(
-        message->mutable_fixed_step_parameters());
   }
+  adaptive_step_parameters_.WriteToMessage(
+      message->mutable_adaptive_step_parameters());
+  fixed_step_parameters_.WriteToMessage(
+      message->mutable_fixed_step_parameters());
 }
 
 PileUp PileUp::ReadFromMessage(
@@ -244,33 +244,51 @@ PileUp PileUp::ReadFromMessage(
   for (auto const part_id : message.part_id()) {
     parts.push_back(part_id_to_part(part_id));
   }
-  PileUp pile_up(
-      std::move(parts),
-      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-          message.adaptive_step_parameters()),
-      Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
-          message.fixed_step_parameters()),
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),
-                                                       /*forks=*/{}),
-      ephemeris);
-  pile_up.mass_ = Mass::ReadFromMessage(message.mass());
-  pile_up.intrinsic_force_ =
+
+  bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
+                             !message.has_fixed_step_parameters();
+  std::unique_ptr<PileUp> pile_up;
+  if (is_pre_cartan) {
+    pile_up = std::unique_ptr<PileUp>(
+        new PileUp(std::move(parts),
+                   DefaultProlongationParameters(),
+                   DefaultHistoryParameters(),
+                   DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                       message.psychohistory(),
+                       /*forks=*/{}),
+                   ephemeris));
+  } else {
+    pile_up = std::unique_ptr<PileUp>(
+      new PileUp(
+          std::move(parts),
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.adaptive_step_parameters()),
+          Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.fixed_step_parameters()),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(
+              message.psychohistory(),
+              /*forks=*/{}),
+          ephemeris));
+  }
+
+  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
+  pile_up->intrinsic_force_ =
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
   for (auto const& pair : message.actual_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up.actual_part_degrees_of_freedom_.emplace(
+    pile_up->actual_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
   }
   for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up.apparent_part_degrees_of_freedom_.emplace(
+    pile_up->apparent_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
-  return pile_up;
+  return std::move(*pile_up);
 }
 
 PileUp::PileUp(
