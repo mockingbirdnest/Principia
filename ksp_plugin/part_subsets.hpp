@@ -10,6 +10,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/ephemeris.hpp"
 
 // This ksp_plugin file is in namespace |base| to specialize templates declared
 // therein.
@@ -48,8 +49,16 @@ class Subset<ksp_plugin::Part>::Properties final {
   // - if |StrictSubsetOfExistingPileUp()|, erases the existing |PileUp| inserts
   //   a new |PileUp| into |pile_ups| with the parts in |parts_|.
   // - if |!subset_of_existing_pile_up_|, inserts a new |PileUp| into |pile_ups|
-  //   with the parts in |parts_|.
-  void Collect(not_null<PileUps*> pile_ups, geometry::Instant const& t);
+  //   with the parts in |parts_|.  The new |PileUp| is created using the given
+  //   parameters.
+  void Collect(
+      not_null<PileUps*> pile_ups,
+      geometry::Instant const& t,
+      physics::Ephemeris<ksp_plugin::Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters,
+      physics::Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters const&
+          fixed_step_parameters,
+      not_null<physics::Ephemeris<ksp_plugin::Barycentric>*> ephemeris);
 
  private:
   // Whether |left| and |right| are both subsets of the same existing |PileUp|.

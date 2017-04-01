@@ -542,7 +542,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     vessel.ForSomePart([this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
-          current_time_);
+          current_time_,
+          DefaultProlongationParameters(),
+          DefaultHistoryParameters(),
+          ephemeris_.get());
     });
   }
 }
@@ -573,10 +576,7 @@ void Plugin::AdvanceParts(Instant const& t) {
   ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
     pile_up.DeformPileUpIfNeeded();
-    pile_up.AdvanceTime(*ephemeris_,
-                        t,
-                        DefaultHistoryParameters(),
-                        DefaultProlongationParameters());
+    pile_up.AdvanceTime(t);
     // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
     // anymore, it could be part of |PileUp::AdvanceTime|.
     pile_up.NudgeParts();
