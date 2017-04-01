@@ -516,6 +516,9 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
+      if (target_ && target_->vessel == vessel) {
+        target_ = std::experimental::nullopt;
+      }
       it = vessels_.erase(it);
     }
   }
@@ -698,6 +701,9 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       current_time_ + prediction_length_);
+  if (target_) {
+    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  }
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -741,13 +747,22 @@ Plugin::RenderedTrajectoryFromIterators(
     Position<World> const& sun_world_position) const {
   auto result = make_not_null_unique<DiscreteTrajectory<World>>();
 
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+
   // Compute the trajectory in the navigation frame.
   DiscreteTrajectory<Navigation> intermediate_trajectory;
   for (auto it = begin; it != end; ++it) {
+    if (target_) {
+      if (it.time() < target_->vessel->prediction().t_min()) {
+        continue;
+      } else if (it.time() > target_->vessel->prediction().t_max()) {
+        break;
+      }
+    }
     intermediate_trajectory.Append(
         it.time(),
-        plotting_frame_->ToThisFrameAtTime(it.time())(
-            it.degrees_of_freedom()));
+        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
   }
 
   // Render the trajectory at current time in |World|.
@@ -755,8 +770,7 @@ Plugin::RenderedTrajectoryFromIterators(
       intermediate_trajectory.End();
   auto from_navigation_frame_to_world_at_current_time =
       BarycentricToWorld(sun_world_position) *
-          plotting_frame_->
-              FromThisFrameAtTime(current_time_).rigid_transformation();
+      plotting_frame.FromThisFrameAtTime(current_time_).rigid_transformation();
   for (auto intermediate_it = intermediate_trajectory.Begin();
        intermediate_it != intermediate_end;
        ++intermediate_it) {
@@ -879,6 +893,20 @@ void Plugin::SetPlottingFrame(
 
 not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
   return plotting_frame_.get();
+}
+
+void Plugin::SetTargetVessel(GUID const& vessel_guid,
+                             Index const reference_body_index) {
+  if (!target_ || target_->vessel->guid() != vessel_guid) {
+    target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
+                    ephemeris_.get(),
+                    *FindOrDie(celestials_, reference_body_index));
+  }
+  target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+}
+
+void Plugin::ClearTargetVessel() {
+  target_ = std::experimental::nullopt;
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
@@ -1390,6 +1418,17 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
+
+Plugin::Target::Target(not_null<Vessel*> vessel,
+                       not_null<Ephemeris<Barycentric> const*> ephemeris,
+                       Celestial const& celestial)
+    : vessel(vessel),
+      target_frame(
+          make_not_null_unique<
+              BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
+              ephemeris,
+              [this]() -> auto& { return this->vessel->prediction(); },
+              celestial.body())) {}
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin

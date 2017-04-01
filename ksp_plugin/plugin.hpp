@@ -337,6 +337,10 @@ class Plugin {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
+  virtual void SetTargetVessel(GUID const& vessel_guid,
+                               Index reference_body_index);
+  virtual void ClearTargetVessel();
+
   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
       Position<World> const& sun_world_position) const;
@@ -496,6 +500,15 @@ class Plugin {
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
+
+  struct Target {
+    Target(not_null<Vessel*> vessel,
+           not_null<Ephemeris<Barycentric> const*> ephemeris,
+           Celestial const& celestial);
+    not_null<Vessel*> const vessel;
+    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
+  };
+  std::experimental::optional<Target> target_;
 
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
