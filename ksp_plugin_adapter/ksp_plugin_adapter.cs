@@ -281,7 +281,8 @@ public partial class PrincipiaPluginAdapter
     return vessel.state != Vessel.State.DEAD &&
            (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
             vessel.situation == Vessel.Situations.ORBITING ||
-            vessel.situation == Vessel.Situations.ESCAPING) &&
+            vessel.situation == Vessel.Situations.ESCAPING ||
+            vessel.situation == Vessel.Situations.FLYING) &&
            (vessel.packed ||
             vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude);
   }
@@ -782,7 +783,32 @@ public partial class PrincipiaPluginAdapter
       yield break;
     }
 
-    foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+    foreach (Vessel vessel in FlightGlobals.Vessels) {
+      string reason_for_skipping_insertion = "";
+      if (vessel.state == Vessel.State.DEAD) {
+        reason_for_skipping_insertion += " vessel is dead;";
+      }
+      if (vessel.situation != Vessel.Situations.SUB_ORBITAL &&
+          vessel.situation != Vessel.Situations.ORBITING &&
+          vessel.situation != Vessel.Situations.ESCAPING &&
+          vessel.situation != Vessel.Situations.FLYING) {
+        reason_for_skipping_insertion +=
+            " vessel state is " + vessel.situation + ";";
+      }
+      if (!vessel.packed &&
+          vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
+        reason_for_skipping_insertion +=
+            " vessel is unpacked at an altitude of " + vessel.altitude +
+            " above " + vessel.mainBody + ";";
+      }
+      if (reason_for_skipping_insertion != "") {
+        if (plugin_.HasVessel(vessel.id.ToString())) {
+          Log.Info("Removing vessel " + vessel.vesselName + "(" + vessel.id +
+                   ")" + " because" + reason_for_skipping_insertion);
+        }
+        continue;
+      }
+
       bool inserted;
       plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                  vessel.vesselName,
