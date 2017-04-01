@@ -151,7 +151,8 @@ void PileUp::AdvanceTime(Instant const& t) {
     }
     ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     if (psychohistory_->last().time() < t) {
-      fixed_instance_ = nullptr;
+      // Do not clear the |fixed_instance_| here, we will use it for the next
+      // fixed-step integration.
       CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_.get(),
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -162,11 +163,13 @@ void PileUp::AdvanceTime(Instant const& t) {
       last_point_is_authoritative = false;
     }
   } else {
+    // Destroy the fixed instance, it wouldn't be correct to use it the next
+    // time we go through this function.  It will be re-created as needed.
+    fixed_instance_ = nullptr;
     // We make the existing last point authoritative, i.e. we do not remove it.
     // If it was already authoritative nothing happens, if it was not, we
     // integrate on top of it, and it gets appended authoritatively to the part
     // tails.
-    fixed_instance_ = nullptr;
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
     CHECK(ephemeris_->FlowWithAdaptiveStep(

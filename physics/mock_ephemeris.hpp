@@ -39,6 +39,13 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
+  MOCK_CONST_METHOD3_T(
+      NewInstance,
+      not_null<std::unique_ptr<
+          typename Integrator<NewtonianMotionEquation>::Instance>>(
+          std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+          IntrinsicAccelerations const& intrinsic_accelerations,
+          FixedStepParameters const& parameters));
   MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
       bool(not_null<DiscreteTrajectory<Frame>*> trajectory,
@@ -48,14 +55,10 @@ class MockEphemeris : public Ephemeris<Frame> {
            AdaptiveStepParameters const& parameters,
            std::int64_t max_ephemeris_steps,
            bool last_point_only));
-  MOCK_METHOD4_T(
+  MOCK_METHOD2_T(
       FlowWithFixedStep,
-      void(std::vector<not_null<DiscreteTrajectory<Frame>*>> const&
-               trajectories,
-           typename Ephemeris<Frame>::IntrinsicAccelerations const&
-               intrinsic_accelerations,
-           Instant const& t,
-           FixedStepParameters const& parameters));
+      void(Instant const& t,
+           typename Integrator<NewtonianMotionEquation>::Instance& instance));
 
   MOCK_CONST_METHOD2_T(
       ComputeGravitationalAccelerationOnMasslessBody,
@@ -111,6 +114,17 @@ ACTION_P(AppendToDiscreteTrajectory, degrees_of_freedom) {
 
 ACTION_P2(AppendToDiscreteTrajectory, time, degrees_of_freedom) {
   arg0->Append(time, degrees_of_freedom);
+}
+
+// TODO(phl): Remove "2" once the other actions are gone.
+ACTION_P2(AppendToDiscreteTrajectory2, trajectory, degrees_of_freedom) {
+  (*trajectory)->Append(arg0, degrees_of_freedom);
+}
+
+ACTION_P3(AppendToDiscreteTrajectory, trajectory, time, degrees_of_freedom) {
+  // The extra level of indirection is useful for tests that get a pointer to a
+  // trajectory and squirrel it away using |SaveArg<N>|.
+  (*trajectory)->Append(time, degrees_of_freedom);
 }
 
 }  // namespace principia

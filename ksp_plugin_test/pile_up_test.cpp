@@ -10,6 +10,7 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/mock_integrators.hpp"
 #include "physics/mock_ephemeris.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -25,6 +26,7 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::MockFixedStepSizeIntegrator;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
@@ -40,7 +42,9 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using ::testing::ByMove;
 using ::testing::DoAll;
+using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsEmpty;
 using ::testing::Return;
@@ -61,8 +65,8 @@ class TestablePileUp : public PileUp {
     return intrinsic_force_;
   }
 
-  DiscreteTrajectory<Barycentric> const& psychohistory() const {
-    return *psychohistory_;
+  not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
+    return psychohistory_.get();
   }
 
   PartTo<DegreesOfFreedom<RigidPileUp>> const&
@@ -88,7 +92,7 @@ class PileUpTest : public testing::Test {
     EXPECT_EQ(3 * Kilogram, pile_up.mass());
 
     EXPECT_THAT(
-        pile_up.psychohistory().last().degrees_of_freedom(),
+        pile_up.psychohistory()->last().degrees_of_freedom(),
         Componentwise(AlmostEquals(Barycentric::origin +
                                        Displacement<Barycentric>(
                                            {13.0 / 3.0 * Metre,
@@ -279,9 +283,9 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
                                       890.0 / 9.0 * Metre / Second}), 0)));
-  EXPECT_EQ(1, pile_up.psychohistory().Size());
+  EXPECT_EQ(1, pile_up.psychohistory()->Size());
   EXPECT_THAT(
-      pile_up.psychohistory().last().degrees_of_freedom(),
+      pile_up.psychohistory()->last().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.0 * Metre,
@@ -335,9 +339,16 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
-  EXPECT_CALL(ephemeris, FlowWithFixedStep(_, _, _, _))
+  auto psychohistory = pile_up.psychohistory();
+  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
+  EXPECT_CALL(ephemeris,
+              NewInstance(ElementsAre(pile_up.psychohistory()), _, _))
+      .WillOnce(Return(ByMove(std::move(instance))));
+  EXPECT_CALL(ephemeris, FlowWithFixedStep(_, _))
       .WillOnce(DoAll(
-          AppendToDiscreteTrajectories(
+          AppendToDiscreteTrajectory(
+              &psychohistory,
               astronomy::J2000 + 0.4 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +
@@ -346,7 +357,8 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                   Velocity<Barycentric>({10.1 * Metre / Second,
                                          140.1 * Metre / Second,
                                          310.1 / 3.0 * Metre / Second}))),
-          AppendToDiscreteTrajectories(
+          AppendToDiscreteTrajectory(
+              &psychohistory,
               astronomy::J2000 + 0.8 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +
@@ -440,9 +452,9 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {260.0 / 9.0 * Metre / Second,
                                       430.0 / 3.0 * Metre / Second,
                                       890.0 / 9.0 * Metre / Second}), 0)));
-  EXPECT_EQ(2, pile_up.psychohistory().Size());
+  EXPECT_EQ(2, pile_up.psychohistory()->Size());
   EXPECT_THAT(
-      pile_up.psychohistory().Begin().degrees_of_freedom(),
+      pile_up.psychohistory()->Begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.2 * Metre,
@@ -453,7 +465,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       140.2 * Metre / Second,
                                       310.2 / 3.0 * Metre / Second}), 0)));
   EXPECT_THAT(
-      pile_up.psychohistory().last().degrees_of_freedom(),
+      pile_up.psychohistory()->last().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {1.0 * Metre,

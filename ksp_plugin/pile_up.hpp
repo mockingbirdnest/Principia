@@ -126,7 +126,10 @@ class PileUp {
   // authoritative, and the second point, if any, is not.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
-  //TODO(phl):comment
+  // When present, this instance is used to integrate the trajectory of this
+  // pile-up using a fixed-step integrator.  This instance is destroyed
+  // if a variable-step integrator needs to be used because of an intrinsic
+  // acceleration.
   std::unique_ptr<typename Integrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;

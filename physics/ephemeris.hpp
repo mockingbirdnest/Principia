@@ -150,7 +150,9 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t);
 
-  //TODO(phl):typedef,comments.
+  // Creates an instance suitable for integrating the given |trajectories| with
+  // their |intrinsic_accelerations| using a fixed-step integrator parameterized
+  // by |parameters|.
   virtual not_null<
       std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
   NewInstance(
@@ -173,10 +175,10 @@ class Ephemeris {
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
-  // Integrates, until at most |t|, the |trajectories| followed by massless
+  // Integrates, until at most |t|, the trajectories followed by massless
   // bodies in the gravitational potential described by |*this|.  If
-  // |t > t_max()|, calls |Prolong(t)| beforehand.
-  //TODO(phl):comments
+  // |t > t_max()|, calls |Prolong(t)| beforehand.  The trajectories and
+  // integration parameters are given by the |instance|.
   virtual void FlowWithFixedStep(
       Instant const& t,
       typename Integrator<NewtonianMotionEquation>::Instance& instance);
