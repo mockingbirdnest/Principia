@@ -196,16 +196,6 @@ class Ephemeris {
       not_null<MassiveBody const*> body,
       Instant const& t) const;
 
-  // Computes the apsides with respect to |body| for the discrete trajectory
-  // segment given by |begin| and |end|.  Appends to the given trajectories one
-  // point for each apsis.
-  virtual void ComputeApsides(
-      not_null<MassiveBody const*> body,
-      typename DiscreteTrajectory<Frame>::Iterator begin,
-      typename DiscreteTrajectory<Frame>::Iterator end,
-      DiscreteTrajectory<Frame>& apoapsides,
-      DiscreteTrajectory<Frame>& periapsides);
-
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
   // Appends to the given trajectories two point for each apsis, one for |body1|
   // and one for |body2|.  The times of |apoapsides1| and |apoapsideds2| are

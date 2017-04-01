@@ -33,6 +33,7 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
+#include "physics/apsides.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
@@ -65,6 +66,7 @@ using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
 using physics::BodySurfaceFrameField;
+using physics::ComputeApsides;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
@@ -781,10 +783,11 @@ void Plugin::ComputeAndRenderApsides(
     std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ephemeris_->ComputeApsides(FindOrDie(celestials_, celestial_index)->body(),
-                             begin, end,
-                             apoapsides_trajectory,
-                             periapsides_trajectory);
+  ComputeApsides(FindOrDie(celestials_, celestial_index)->trajectory(),
+                 begin,
+                 end,
+                 apoapsides_trajectory,
+                 periapsides_trajectory);
   apoapsides = RenderedTrajectoryFromIterators(apoapsides_trajectory.Begin(),
                                                apoapsides_trajectory.End(),
                                                sun_world_position);
