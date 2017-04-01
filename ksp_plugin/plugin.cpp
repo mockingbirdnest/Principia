@@ -897,9 +897,12 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
-  target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
-                  ephemeris_.get(),
-                  *FindOrDie(celestials_, reference_body_index));
+  if (!target_ || target_->vessel->guid() != vessel_guid) {
+    target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
+                    ephemeris_.get(),
+                    *FindOrDie(celestials_, reference_body_index));
+  }
+  target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
 }
 
 void Plugin::ClearTargetVessel() {
