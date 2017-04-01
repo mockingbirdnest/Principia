@@ -127,8 +127,8 @@ class PileUp {
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
 
   //TODO(phl):comment
-  not_null<std::unique_ptr<typename Integrator<
-      Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>>
+  std::unique_ptr<typename Integrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>::Instance>
       fixed_instance_;
 
   // The |PileUp| is seen as a (currently non-rotating) rigid body; the degrees

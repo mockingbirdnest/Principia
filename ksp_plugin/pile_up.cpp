@@ -36,11 +36,7 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
-      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      fixed_instance_(ephemeris_->NewInstance(
-          {psychohistory_.get()},
-          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-          fixed_step_parameters_)) {
+      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -146,8 +142,16 @@ void PileUp::AdvanceTime(Instant const& t) {
     auto const last_authoritative = psychohistory_->Begin();
     psychohistory_->ForgetAfter(last_authoritative.time());
     CHECK_EQ(psychohistory_->Size(), 1);
+
+    if (fixed_instance_ == nullptr) {
+      fixed_instance_ = ephemeris_->NewInstance(
+          {psychohistory_.get()},
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          fixed_step_parameters_);
+    }
     ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     if (psychohistory_->last().time() < t) {
+      fixed_instance_ = nullptr;
       CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_.get(),
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -162,6 +166,7 @@ void PileUp::AdvanceTime(Instant const& t) {
     // If it was already authoritative nothing happens, if it was not, we
     // integrate on top of it, and it gets appended authoritatively to the part
     // tails.
+    fixed_instance_ = nullptr;
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
     CHECK(ephemeris_->FlowWithAdaptiveStep(
@@ -302,11 +307,7 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
-      psychohistory_(std::move(psychohistory)),
-      fixed_instance_(ephemeris_->NewInstance(
-          {psychohistory_.get()},
-          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-          fixed_step_parameters_)) {}
+      psychohistory_(std::move(psychohistory)) {}
 
 void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,
