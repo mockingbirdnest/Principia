@@ -500,6 +500,7 @@ class Plugin {
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
   std::unique_ptr<NavigationFrame> plotting_frame_;
+
   struct Target {
     Target(not_null<Vessel*> vessel,
            not_null<Ephemeris<Barycentric> const*> ephemeris,
