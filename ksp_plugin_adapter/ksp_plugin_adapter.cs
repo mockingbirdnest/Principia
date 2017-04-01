@@ -589,17 +589,6 @@ public partial class PrincipiaPluginAdapter
             !PluginRunning()) {
           set_navball_texture(compass_navball_texture_);
         } else {
-          if (FlightGlobals.speedDisplayMode ==
-                  FlightGlobals.SpeedDisplayModes.Target &&
-              plugin_.HasVessel(
-                  FlightGlobals.activeTarget.vessel.id.ToString())) {
-            plugin_.SetTargetVessel(
-                FlightGlobals.activeTarget.vessel.id.ToString(),
-                plotting_frame_selector_.get()
-                    .selected_celestial.flightGlobalsIndex);
-          } else {
-            plugin_.ClearTargetVessel();
-          }
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
               set_navball_texture(surface_navball_texture_);
@@ -615,6 +604,18 @@ public partial class PrincipiaPluginAdapter
               break;
           }
         }
+      }
+
+      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Target &&
+          target_vessel != null &&
+          plugin_.HasVessel(target_vessel.id.ToString())) {
+        plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                                plotting_frame_selector_.get()
+                                    .selected_celestial.flightGlobalsIndex);
+      } else {
+        plugin_.ClearTargetVessel();
       }
 
       // Orient the ball.
