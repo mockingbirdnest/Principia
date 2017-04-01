@@ -1,6 +1,10 @@
 ﻿
 #include "physics/apsides.hpp"
 
+#include <limits>
+#include <map>
+#include <vector>
+
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "physics/ephemeris.hpp"

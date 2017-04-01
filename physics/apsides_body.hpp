@@ -2,6 +2,8 @@
 
 #include "physics/apsides.hpp"
 
+#include <set>
+
 namespace principia {
 namespace physics {
 namespace internal_apsides {
