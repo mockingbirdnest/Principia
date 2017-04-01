@@ -206,15 +206,15 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void ApplyToVesselsInSpace(VesselProcessor process_vessel) {
-     foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+  private void ApplyToManageableVessels(VesselProcessor process_vessel) {
+     foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_manageable)) {
        process_vessel(vessel);
     }
   }
 
   private void ApplyToVesselsOnRails(VesselProcessor process_vessel) {
     foreach (Vessel vessel in
-             FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
+             FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
       process_vessel(vessel);
     }
   }
@@ -277,27 +277,47 @@ public partial class PrincipiaPluginAdapter
     return true;
   }
 
-  private bool is_in_space(Vessel vessel) {
-    return vessel.state != Vessel.State.DEAD &&
-           (vessel.situation == Vessel.Situations.SUB_ORBITAL ||
-            vessel.situation == Vessel.Situations.ORBITING ||
-            vessel.situation == Vessel.Situations.ESCAPING) &&
-           (vessel.packed ||
-            vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude);
+  private bool is_manageable(Vessel vessel) {
+    return UnmanageabilityReasons(vessel) == null;
   }
 
-  private bool is_on_rails_in_space(Vessel vessel) {
-    return vessel.packed && is_in_space(vessel);
+  private string UnmanageabilityReasons(Vessel vessel) {
+    List<string> reasons = new List<string>(capacity : 3);
+    if (vessel.state == Vessel.State.DEAD) {
+      reasons.Add("vessel is dead");
+    }
+    if (vessel.situation != Vessel.Situations.SUB_ORBITAL &&
+        vessel.situation != Vessel.Situations.ORBITING &&
+        vessel.situation != Vessel.Situations.ESCAPING &&
+        vessel.situation != Vessel.Situations.FLYING) {
+      reasons.Add("vessel state is " + vessel.situation);
+    }
+    if (!vessel.packed &&
+        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
+      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
+                  " m above " + vessel.mainBody.theName +
+                  ", below the threshold of " +
+                  vessel.mainBody.inverseRotThresholdAltitude + " m");
+    }
+    if (reasons.Count == 0) {
+      return null;
+    } else {
+      return string.Join(", ", reasons.ToArray());
+    }
   }
 
-  private bool has_active_vessel_in_space() {
+  private bool is_manageable_on_rails(Vessel vessel) {
+    return vessel.packed && is_manageable(vessel);
+  }
+
+  private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    return active_vessel != null && is_in_space(active_vessel);
+    return active_vessel != null && is_manageable(active_vessel);
   }
 
   private bool draw_active_vessel_trajectory() {
     return MapView.MapIsEnabled &&
-           has_active_vessel_in_space();
+           has_active_manageable_vessel();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -617,7 +637,7 @@ public partial class PrincipiaPluginAdapter
       }
 
       if (PluginRunning() &&
-          has_active_vessel_in_space() &&
+          has_active_manageable_vessel() &&
           plugin_.HasVessel(active_vessel.id.ToString()) &&
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Orbit) {
@@ -782,7 +802,16 @@ public partial class PrincipiaPluginAdapter
       yield break;
     }
 
-    foreach (Vessel vessel in FlightGlobals.Vessels.Where(is_in_space)) {
+    foreach (Vessel vessel in FlightGlobals.Vessels) {
+      string unmanageability_reasons = UnmanageabilityReasons(vessel);
+      if (unmanageability_reasons != null) {
+        if (plugin_.HasVessel(vessel.id.ToString())) {
+          Log.Info("Removing vessel " + vessel.vesselName + "(" + vessel.id +
+                   ")" + " because " + unmanageability_reasons);
+        }
+        continue;
+      }
+
       bool inserted;
       plugin_.InsertOrKeepVessel(vessel.id.ToString(),
                                  vessel.vesselName,
@@ -892,7 +921,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    if (!has_active_vessel_in_space() || FlightGlobals.ActiveVessel.packed) {
+    if (!has_active_manageable_vessel() || FlightGlobals.ActiveVessel.packed) {
       // If we are timewarping, the next FixedUpdate might not occur in
       // TimeScale * fixedDeltaTime.
       yield break;
@@ -903,7 +932,7 @@ public partial class PrincipiaPluginAdapter
     // We don't want to do too many things here, since all the KSP classes
     // still think they're in the preceding step.  We only nudge the Unity
     // transforms of loaded vessels & their parts.
-    if (has_active_vessel_in_space() && !FlightGlobals.ActiveVessel.packed &&
+    if (has_active_manageable_vessel() && !FlightGlobals.ActiveVessel.packed &&
         plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
       Vector3d q_correction_at_root_part = Vector3d.zero;
       Vector3d v_correction_at_root_part = Vector3d.zero;
@@ -953,7 +982,7 @@ public partial class PrincipiaPluginAdapter
         celestial.position += offset;
       }
       foreach (
-          Vessel vessel in FlightGlobals.Vessels.Where(is_on_rails_in_space)) {
+          Vessel vessel in FlightGlobals.Vessels.Where(is_manageable_on_rails)) {
         vessel.SetPosition(vessel.transform.position + offset);
       }
       // NOTE(egg): this is almost certainly incorrect, since we give the
@@ -1015,7 +1044,7 @@ public partial class PrincipiaPluginAdapter
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
-      if (has_active_vessel_in_space() && FlightGlobals.ActiveVessel.packed) {
+      if (has_active_manageable_vessel() && FlightGlobals.ActiveVessel.packed) {
         if (PhysicsGlobals.GraviticForceMultiplier != 0) {  // sic.
           Log.Info("Killing stock gravity");
           PhysicsGlobals.GraviticForceMultiplier = 0;
@@ -1027,7 +1056,8 @@ public partial class PrincipiaPluginAdapter
       part_id_to_intrinsic_force_.Clear();
       part_id_to_intrinsic_forces_.Clear();
       foreach (Vessel vessel in
-               FlightGlobals.Vessels.Where(v => is_in_space(v) && !v.packed)) {
+               FlightGlobals.Vessels.Where(v => is_manageable(v) &&
+                                                !v.packed)) {
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
           if (part.force != Vector3d.zero) {
             part_id_to_intrinsic_force_.Add(part.flightID, part.force);
@@ -1081,7 +1111,7 @@ public partial class PrincipiaPluginAdapter
       }
       if (offset.HasValue) {
         foreach (Vessel vessel in FlightGlobals.Vessels.Where(
-            is_on_rails_in_space)) {
+            is_manageable_on_rails)) {
           vessel.SetPosition(vessel.transform.position + offset.Value);
         }
       }
