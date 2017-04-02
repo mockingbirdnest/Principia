@@ -123,9 +123,9 @@ Instance::Solve(Instant const& t_final) {
     // Integrating backward.
     CHECK_GT(current_state.time.value, t_final);
   }
-  CHECK(!computed_tolerance_to_error_ratio_ || !parameters.last_step_is_exact)
+  CHECK(first_use_ || !parameters.last_step_is_exact)
       << "Cannot reuse an instance where the last step is exact";
-
+  first_use_ = false;
 
   // Time step.  Updated as the integration progresses to allow restartability.
   Time& h = time_step_;
@@ -159,6 +159,7 @@ Instance::Solve(Instant const& t_final) {
   }
 
   bool at_end = false;
+  double tolerance_to_error_ratio;
 
   // The first stage of the Runge-Kutta-Nyström iteration.  In the FSAL case,
   // |first_stage == 1| after the first step, since the first RHS evaluation has
@@ -180,11 +181,10 @@ Instance::Solve(Instant const& t_final) {
     // tolerable.
     do {
       // Adapt step size.
-      // TODO(egg): find out whether there's a smarter way to compute that
-      // root, especially since we make the order compile-time.
+      // TODO(egg): find out whether there's a smarter way to compute that root,
+      // especially since we make the order compile-time.
       h *= parameters.safety_factor *
-            std::pow(*computed_tolerance_to_error_ratio_,
-                    1.0 / (lower_order + 1));
+               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (t.value + (t.error + h) == t.value) {
@@ -194,7 +194,7 @@ Instance::Solve(Instant const& t_final) {
                           "stiff system suspected.");
       }
 
-    runge_kutta_nyström_step :
+    runge_kutta_nyström_step:
       // Termination condition.
       if (parameters_.last_step_is_exact) {
         Time const time_to_end = (t_final - t.value) - t.error;
@@ -245,9 +245,8 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.position_error[k] = Δq_k - Δq_hat[k];
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
-      computed_tolerance_to_error_ratio_ =
-          tolerance_to_error_ratio_(h, error_estimate);
-    } while (computed_tolerance_to_error_ratio_ < 1.0);
+      tolerance_to_error_ratio = tolerance_to_error_ratio_(h, error_estimate);
+    } while (tolerance_to_error_ratio < 1.0);
 
     if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
       // We did overshoot.  Drop the point that we just computed and exit.
