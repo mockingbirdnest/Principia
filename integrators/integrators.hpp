@@ -2,7 +2,6 @@
 #define PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 
 #include <functional>
-#include <limits>
 
 #include "base/not_null.hpp"
 #include "base/status.hpp"
@@ -136,29 +135,23 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
 
+  // This functor is called at each step, with the |current_step_size| used by
+  // the integrator and the estimated |error| on that step.  It returns the
+  // ratio of a tolerance to some norm of the error.  The step is recomputed
+  // with a smaller step size if the result is less than 1, and accepted
+  // otherwise.
+  // In both cases, the new step size is chosen so as to try and make the
+  // result of the next call to this functor close to |safety_factor|.
+  using ToleranceToErrorRatio =
+      std::function<
+          double(Time const& current_step_size,
+                  typename ODE::SystemStateError const& error)>;
+
   struct Parameters final {
-    using ToleranceToErrorRatio =
-        std::function<
-            double(Time const& current_step_size,
-                   typename ODE::SystemStateError const& error)>;
-    // The first time step tried by the integrator. It must have the same sign
-    // as |problem.t_final - initial_state.time.value|.
-    Time first_time_step;
-    // This number must be in ]0, 1[.  Higher values increase the chance of step
-    // rejection, lower values yield smaller steps.
-    double safety_factor;
-    // This functor is called at each step, with the |current_step_size| used by
-    // the integrator and the estimated |error| on that step.  It returns the
-    // ratio of a tolerance to some norm of the error.  The step is recomputed
-    // with a smaller step size if the result is less than 1, and accepted
-    // otherwise.
-    // In both cases, the new step size is chosen so as to try and make the
-    // result of the next call to |tolerance_to_error_ratio| close to
-    // |safety_factor|.
-    ToleranceToErrorRatio tolerance_to_error_ratio;
-    // Integration will stop after |*max_steps| even if it has not reached
-    // |t_final|.
-    std::int64_t max_steps = std::numeric_limits<std::int64_t>::max();
+    Parameters(Time first_time_step,
+               double safety_factor,
+               std::int64_t max_steps,
+               bool last_step_is_exact);
 
     void WriteToMessage(
         not_null<serialization::AdaptiveStepSizeIntegratorInstance::
@@ -166,6 +159,20 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     static Parameters ReadFromMessage(
         serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
             message);
+
+    // The first time step tried by the integrator. It must have the same sign
+    // as |problem.t_final - initial_state.time.value|.
+    Time const first_time_step;
+    // This number must be in ]0, 1[.  Higher values increase the chance of step
+    // rejection, lower values yield smaller steps.
+    double const safety_factor;
+    // Integration will stop after |*max_steps| even if it has not reached
+    // |t_final|.
+    std::int64_t const max_steps;
+    // If true, the he last call to |append_state| has
+    // |state.time.value == t_final| (unless |max_steps| is reached).  Otherwise
+    // it may have |state.time.value < t_final|.
+    bool const last_step_is_exact;
   };
 
   // The last call to |append_state| will have |state.time.value == t_final|.
@@ -180,15 +187,18 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     ReadFromMessage(serialization::IntegratorInstance const& message,
                     ODE const& equation,
                     AppendState const& append_state,
-                    typename Parameters::ToleranceToErrorRatio const&
-                        tolerance_to_error_ratio);
+                    ToleranceToErrorRatio const& tolerance_to_error_ratio);
 
    protected:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
+             ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters);
 
     Parameters const parameters_;
+    ToleranceToErrorRatio const tolerance_to_error_ratio_;
+    Time time_step_;
+    bool first_use_ = true;
   };
 
   // The factory function for |Instance|, above.  It ensures that the instance
@@ -196,6 +206,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
   NewInstance(IntegrationProblem<ODE> const& problem,
               typename Integrator<ODE>::AppendState const& append_state,
+              ToleranceToErrorRatio const& tolerance_to_error_ratio,
               Parameters const& parameters) const = 0;
 
   void WriteToMessage(
@@ -212,6 +223,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
+      ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const = 0;
 
   explicit AdaptiveStepSizeIntegrator(

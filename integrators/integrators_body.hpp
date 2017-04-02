@@ -137,6 +137,17 @@ FixedStepSizeIntegrator<ODE_>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename ODE_>
+AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
+    Time const first_time_step,
+    double const safety_factor,
+    std::int64_t const max_steps,
+    bool const last_step_is_exact)
+    : first_time_step(first_time_step),
+      safety_factor(safety_factor),
+      max_steps(max_steps),
+      last_step_is_exact(last_step_is_exact) {}
+
+template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
@@ -150,10 +161,9 @@ typename AdaptiveStepSizeIntegrator<ODE_>::Parameters
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
-  Parameters result;
-  result.first_time_step = Time::ReadFromMessage(message.first_time_step());
-  result.safety_factor = message.safety_factor();
-  result.max_steps = message.max_steps();
+  Parameters result(Time::ReadFromMessage(message.first_time_step()),
+                    message.safety_factor(),
+                    message.max_steps(), );
   return result;
 }
 
@@ -173,8 +183,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
     ODE const& equation,
     AppendState const& append_state,
-    typename Parameters::ToleranceToErrorRatio const&
-        tolerance_to_error_ratio) {
+    ToleranceToErrorRatio const& tolerance_to_error_ratio) {
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -187,20 +196,21 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   auto parameters =
       Parameters::ReadFromMessage(extension.parameters());
-  parameters.tolerance_to_error_ratio = tolerance_to_error_ratio;
   AdaptiveStepSizeIntegrator const& integrator =
       AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
   return integrator.ReadFromMessage(
-      extension, problem, append_state, parameters);
+      extension, problem, append_state, tolerance_to_error_ratio, parameters);
 }
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
+    ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters)
-    : Integrator<ODE>::Instance(problem, std::move(append_state)),
+    : Integrator<ODE>::Instance(problem, append_state),
+      tolerance_to_error_ratio_(tolerance_to_error_ratio),
       parameters_(parameters) {
   CHECK_NE(Time(), parameters.first_time_step);
   CHECK_GT(parameters.safety_factor, 0);
