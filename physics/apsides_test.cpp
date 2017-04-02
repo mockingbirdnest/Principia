@@ -226,7 +226,36 @@ TEST_F(ApsidesTest, ComputeNodes) {
     previous_time = time;
   }
 
-  EXPECT_THAT(ascending_nodes.Size() + descending_nodes.Size(), Eq(20));
+  EXPECT_THAT(ascending_nodes.Size(), Eq(10));
+  EXPECT_THAT(descending_nodes.Size(), Eq(10));
+
+  DiscreteTrajectory<World> south_ascending_nodes;
+  DiscreteTrajectory<World> south_descending_nodes;
+  Vector<double, World> const mostly_south({1,1,-1});
+  ComputeNodes(trajectory.Begin(),
+               trajectory.End(),
+               mostly_south,
+               south_ascending_nodes,
+               south_descending_nodes);
+  EXPECT_THAT(south_ascending_nodes.Size(), Eq(10));
+  EXPECT_THAT(south_descending_nodes.Size(), Eq(10));
+
+  for (auto south_ascending_it  = south_ascending_nodes.Begin(),
+            ascending_it        = ascending_nodes.Begin(),
+            south_descending_it = south_descending_nodes.Begin(),
+            descending_it       = descending_nodes.Begin();
+       south_ascending_it != south_ascending_nodes.End();
+       ++south_ascending_it,
+       ++ascending_it,
+       ++south_descending_it,
+       ++descending_it) {
+    EXPECT_THAT(south_ascending_it.degrees_of_freedom(),
+                Eq(descending_it.degrees_of_freedom()));
+    EXPECT_THAT(south_ascending_it.time(), Eq(descending_it.time()));
+    EXPECT_THAT(south_descending_it.degrees_of_freedom(),
+                Eq(ascending_it.degrees_of_freedom()));
+    EXPECT_THAT(south_descending_it.time(), Eq(ascending_it.time()));
+  }
 }
 
 }  // namespace internal_apsides
