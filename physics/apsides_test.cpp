@@ -218,8 +218,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
         (it.degrees_of_freedom().position() - World::origin)
                 .coordinates()
                 .ToSpherical()
-                .longitude + 2 * π * Radian,
-        AlmostEquals(elements.longitude_of_ascending_node + π * Radian, 1, 25));
+                .longitude,
+        AlmostEquals(elements.longitude_of_ascending_node - π * Radian, 1, 25));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(period, 1, 29));
     }
