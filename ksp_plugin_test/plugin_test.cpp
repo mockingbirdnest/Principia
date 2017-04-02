@@ -17,6 +17,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -26,6 +27,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -45,6 +47,7 @@ using geometry::Permutation;
 using geometry::Trivector;
 using integrators::IntegrationProblem;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::MockFixedStepSizeIntegrator;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -78,11 +81,13 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::make_not_null;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
+using ::testing::ByMove;
 using ::testing::Contains;
 using ::testing::DoAll;
 using ::testing::Eq;
@@ -94,6 +99,7 @@ using ::testing::Lt;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::SizeIs;
 using ::testing::StrictMock;
@@ -746,14 +752,21 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
 
   auto* const mock_dynamic_frame =
       new MockDynamicFrame<Barycentric, Navigation>();
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+      make_not_null<DiscreteTrajectory<Barycentric>*>()};
+  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
+  EXPECT_CALL(plugin_->mock_ephemeris(), NewInstance(_, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&trajectories),
+                      Return(ByMove(std::move(instance)))));
   EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
       .WillRepeatedly(Return(Instant()));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
-      .WillRepeatedly(AppendToDiscreteTrajectories(dof));
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
+      .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
@@ -840,6 +853,13 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
 
+  std::vector<not_null<DiscreteTrajectory<Barycentric>*>> trajectories = {
+      make_not_null<DiscreteTrajectory<Barycentric>*>()};
+  auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
+      Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
+  EXPECT_CALL(plugin_->mock_ephemeris(), NewInstance(_, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&trajectories),
+                      Return(ByMove(std::move(instance)))));
   EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
       .WillRepeatedly(Return(Instant()));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
@@ -848,8 +868,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
-  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _, _, _))
-      .WillRepeatedly(AppendToDiscreteTrajectories(dof));
+  EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
+      .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));

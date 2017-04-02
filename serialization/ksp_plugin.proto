@@ -64,6 +64,9 @@ message PileUp {
   required DiscreteTrajectory psychohistory = 4;
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
+  // Added in Cartan.
+  optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
+  optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;
 }
 
 message Plugin {

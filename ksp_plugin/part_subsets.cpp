@@ -13,6 +13,7 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::PileUp;
 using physics::DegreesOfFreedom;
+using physics::Ephemeris;
 
 namespace base {
 
@@ -27,7 +28,11 @@ Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
 
 void Subset<ksp_plugin::Part>::Properties::Collect(
     not_null<PileUps*> const pile_ups,
-    Instant const& t) {
+    Instant const& t,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    not_null<Ephemeris<Barycentric>*> ephemeris) {
   if (collected_) {
     return;
   }
@@ -40,7 +45,11 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
     if (StrictSubsetOfExistingPileUp()) {
       parts_.front()->clear_pile_up();
     }
-    pile_ups->emplace_front(std::move(parts_), t);
+    pile_ups->emplace_front(std::move(parts_),
+                            t,
+                            adaptive_step_parameters,
+                            fixed_step_parameters,
+                            ephemeris);
     auto const it = pile_ups->begin();
     for (not_null<Part*> const part : it->parts()) {
       part->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));

@@ -360,6 +360,48 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<typename Integrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation>::Instance>>
+Ephemeris<Frame>::NewInstance(
+    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+    IntrinsicAccelerations const& intrinsic_accelerations,
+    FixedStepParameters const& parameters) const {
+  IntegrationProblem<NewtonianMotionEquation> problem;
+
+  problem.equation.compute_acceleration = [this, intrinsic_accelerations](
+      Instant const& t,
+      std::vector<Position<Frame>> const& positions,
+      std::vector<Vector<Acceleration, Frame>>& accelerations) {
+    ComputeMasslessBodiesTotalAccelerations(
+        intrinsic_accelerations, t, positions, accelerations);
+  };
+
+  for (auto const& trajectory : trajectories) {
+    auto const trajectory_last = trajectory->last();
+    auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
+    problem.initial_state.time =
+        DoublePrecision<Instant>(trajectory_last.time());
+    problem.initial_state.positions.emplace_back(
+        last_degrees_of_freedom.position());
+    problem.initial_state.velocities.emplace_back(
+        last_degrees_of_freedom.velocity());
+  }
+
+#if defined(WE_LOVE_228)
+  trajectories_228_ = trajectories;
+  auto const append_state =
+      [](typename NewtonianMotionEquation::SystemState const& state) {};
+#else
+  auto const append_state =
+      std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
+#endif
+
+  return parameters.integrator_->NewInstance(
+      problem, append_state, parameters.step_);
+}
+
+template<typename Frame>
 bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
@@ -447,57 +489,21 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
-    std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-    std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
     Instant const& t,
-    FixedStepParameters const& parameters) {
-  VLOG(1) << __FUNCTION__ << " " << NAMED(parameters.step_) << " " << NAMED(t);
+    typename Integrator<NewtonianMotionEquation>::Instance& instance) {
+  VLOG(1) << __FUNCTION__ << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }
 
-  IntegrationProblem<NewtonianMotionEquation> problem;
-  problem.equation = {
-      std::bind(&Ephemeris::ComputeMasslessBodiesTotalAccelerations,
-                this,
-                std::cref(intrinsic_accelerations),
-                _1, _2, _3)};
-
-  for (auto const& trajectory : trajectories) {
-    auto const trajectory_last = trajectory->last();
-    auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
-    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
-    problem.initial_state.time =
-        DoublePrecision<Instant>(trajectory_last.time());
-    problem.initial_state.positions.emplace_back(
-        last_degrees_of_freedom.position());
-    problem.initial_state.velocities.emplace_back(
-        last_degrees_of_freedom.velocity());
-  }
-
-#if defined(WE_LOVE_228)
-  typename NewtonianMotionEquation::SystemState last_state;
-  auto const append_state =
-      [&last_state](
-          typename NewtonianMotionEquation::SystemState const& state) {
-        last_state = state;
-      };
-#else
-  auto const append_state =
-      std::bind(&Ephemeris::AppendMasslessBodiesState,
-                _1, std::cref(trajectories));
-#endif
-
-  auto const instance =
-      parameters.integrator_->NewInstance(
-          problem, append_state, parameters.step_);
-  instance->Solve(t);
+  instance.Solve(t);
 
 #if defined(WE_LOVE_228)
   // The |positions| are empty if and only if |append_state| was never called;
   // in that case there was not enough room to advance the |trajectories|.
+  auto const& last_state = instance.state();
   if (!last_state.positions.empty()) {
-    AppendMasslessBodiesState(last_state, trajectories);
+    AppendMasslessBodiesState(last_state, trajectories_228_);
   }
 #endif
 }

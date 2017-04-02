@@ -579,13 +579,15 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
              0 * SIUnit<Acceleration>()});
       };
 
-  ephemeris.FlowWithFixedStep(
+  auto instance = ephemeris.NewInstance(
       {&trajectory1, &trajectory2},
       {intrinsic_acceleration1, intrinsic_acceleration2},
-      t0_ + period,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
           McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
           period / 1000));
+  ephemeris.FlowWithFixedStep(
+      t0_ + period,
+      *instance);
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);

@@ -6,6 +6,7 @@
 
 #include "geometry/identity.hpp"
 #include "ksp_plugin/part.hpp"
+#include "ksp_plugin/vessel.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {
@@ -24,8 +25,17 @@ using physics::DegreesOfFreedom;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 
-PileUp::PileUp(std::list<not_null<Part*>>&& parts, Instant const& t)
+PileUp::PileUp(
+    std::list<not_null<Part*>>&& parts,
+    Instant const& t,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    not_null<Ephemeris<Barycentric>*> const ephemeris)
     : parts_(std::move(parts)),
+      ephemeris_(ephemeris),
+      adaptive_step_parameters_(adaptive_step_parameters),
+      fixed_step_parameters_(fixed_step_parameters),
       psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
@@ -121,12 +131,7 @@ void PileUp::DeformPileUpIfNeeded() {
   apparent_part_degrees_of_freedom_.clear();
 }
 
-void PileUp::AdvanceTime(
-    Ephemeris<Barycentric>& ephemeris,
-    Instant const& t,
-    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
+void PileUp::AdvanceTime(Instant const& t) {
   CHECK_GE(psychohistory_->Size(), 1);
   CHECK_LE(psychohistory_->Size(), 2);
 
@@ -137,33 +142,41 @@ void PileUp::AdvanceTime(
     auto const last_authoritative = psychohistory_->Begin();
     psychohistory_->ForgetAfter(last_authoritative.time());
     CHECK_EQ(psychohistory_->Size(), 1);
-    ephemeris.FlowWithFixedStep(
-        {psychohistory_.get()},
-        Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-        t,
-        fixed_step_parameters);
+
+    if (fixed_instance_ == nullptr) {
+      fixed_instance_ = ephemeris_->NewInstance(
+          {psychohistory_.get()},
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          fixed_step_parameters_);
+    }
+    ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     if (psychohistory_->last().time() < t) {
-      CHECK(ephemeris.FlowWithAdaptiveStep(
+      // Do not clear the |fixed_instance_| here, we will use it for the next
+      // fixed-step integration.
+      CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_.get(),
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                 t,
-                adaptive_step_parameters,
+                adaptive_step_parameters_,
                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
                 /*last_point_only=*/true));
       last_point_is_authoritative = false;
     }
   } else {
+    // Destroy the fixed instance, it wouldn't be correct to use it the next
+    // time we go through this function.  It will be re-created as needed.
+    fixed_instance_ = nullptr;
     // We make the existing last point authoritative, i.e. we do not remove it.
     // If it was already authoritative nothing happens, if it was not, we
     // integrate on top of it, and it gets appended authoritatively to the part
     // tails.
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    CHECK(ephemeris.FlowWithAdaptiveStep(
+    CHECK(ephemeris_->FlowWithAdaptiveStep(
               psychohistory_.get(),
               intrinsic_acceleration,
               t,
-              adaptive_step_parameters,
+              adaptive_step_parameters_,
               Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
               /*last_point_only=*/false));
   }
@@ -225,42 +238,79 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
         (*message
               ->mutable_apparent_part_degrees_of_freedom())[part->part_id()]));
   }
+  adaptive_step_parameters_.WriteToMessage(
+      message->mutable_adaptive_step_parameters());
+  fixed_step_parameters_.WriteToMessage(
+      message->mutable_fixed_step_parameters());
 }
 
 PileUp PileUp::ReadFromMessage(
     serialization::PileUp const& message,
-    std::function<not_null<Part*>(PartId)> const& part_id_to_part) {
+    std::function<not_null<Part*>(PartId)> const& part_id_to_part,
+    not_null<Ephemeris<Barycentric>*> const ephemeris) {
   std::list<not_null<Part*>> parts;
   for (auto const part_id : message.part_id()) {
     parts.push_back(part_id_to_part(part_id));
   }
-  PileUp pile_up(std::move(parts));
-  pile_up.mass_ = Mass::ReadFromMessage(message.mass());
-  pile_up.intrinsic_force_ =
+
+  bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
+                             !message.has_fixed_step_parameters();
+  std::unique_ptr<PileUp> pile_up;
+  if (is_pre_cartan) {
+    pile_up = std::unique_ptr<PileUp>(
+        new PileUp(std::move(parts),
+                   DefaultProlongationParameters(),
+                   DefaultHistoryParameters(),
+                   DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                       message.psychohistory(),
+                       /*forks=*/{}),
+                   ephemeris));
+  } else {
+    pile_up = std::unique_ptr<PileUp>(
+      new PileUp(
+          std::move(parts),
+          Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+              message.adaptive_step_parameters()),
+          Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+              message.fixed_step_parameters()),
+          DiscreteTrajectory<Barycentric>::ReadFromMessage(
+              message.psychohistory(),
+              /*forks=*/{}),
+          ephemeris));
+  }
+
+  pile_up->mass_ = Mass::ReadFromMessage(message.mass());
+  pile_up->intrinsic_force_ =
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force());
-  pile_up.psychohistory_ =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.psychohistory(),
-                                                       /*forks=*/{});
   for (auto const& pair : message.actual_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up.actual_part_degrees_of_freedom_.emplace(
+    pile_up->actual_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<RigidPileUp>::ReadFromMessage(degrees_of_freedom));
   }
   for (auto const& pair : message.apparent_part_degrees_of_freedom()) {
     std::uint32_t const part_id = pair.first;
     serialization::Pair const& degrees_of_freedom = pair.second;
-    pile_up.apparent_part_degrees_of_freedom_.emplace(
+    pile_up->apparent_part_degrees_of_freedom_.emplace(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
-  return pile_up;
+  return std::move(*pile_up);
 }
 
-PileUp::PileUp(std::list<not_null<Part*>>&& parts)
+PileUp::PileUp(
+    std::list<not_null<Part*>>&& parts,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory,
+    not_null<Ephemeris<Barycentric>*> ephemeris)
     : parts_(std::move(parts)),
-      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+      ephemeris_(ephemeris),
+      adaptive_step_parameters_(adaptive_step_parameters),
+      fixed_step_parameters_(fixed_step_parameters),
+      psychohistory_(std::move(psychohistory)) {}
 
 void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,

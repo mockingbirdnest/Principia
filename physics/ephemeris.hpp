@@ -150,6 +150,16 @@ class Ephemeris {
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
   virtual void Prolong(Instant const& t);
 
+  // Creates an instance suitable for integrating the given |trajectories| with
+  // their |intrinsic_accelerations| using a fixed-step integrator parameterized
+  // by |parameters|.
+  virtual not_null<
+      std::unique_ptr<typename Integrator<NewtonianMotionEquation>::Instance>>
+  NewInstance(
+      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
+      IntrinsicAccelerations const& intrinsic_accelerations,
+      FixedStepParameters const& parameters) const;
+
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
@@ -165,14 +175,13 @@ class Ephemeris {
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
-  // Integrates, until at most |t|, the |trajectories| followed by massless
+  // Integrates, until at most |t|, the trajectories followed by massless
   // bodies in the gravitational potential described by |*this|.  If
-  // |t > t_max()|, calls |Prolong(t)| beforehand.
+  // |t > t_max()|, calls |Prolong(t)| beforehand.  The trajectories and
+  // integration parameters are given by the |instance|.
   virtual void FlowWithFixedStep(
-      std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
-      IntrinsicAccelerations const& intrinsic_accelerations,
       Instant const& t,
-      FixedStepParameters const& parameters);
+      typename Integrator<NewtonianMotionEquation>::Instance& instance);
 
   // Returns the gravitational acceleration on a massless body located at the
   // given |position| at time |t|.
@@ -333,6 +342,11 @@ class Ephemeris {
   int number_of_spherical_bodies_ = 0;
 
   Status last_severe_integration_status_;
+
+#if defined(WE_LOVE_228)
+  // https://m.popkey.co/6bee24/6GJWk.gif.
+  mutable std::vector<not_null<DiscreteTrajectory<Frame>*>> trajectories_228_;
+#endif
 };
 
 }  // namespace internal_ephemeris
