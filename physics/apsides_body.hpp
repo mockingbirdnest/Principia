@@ -82,23 +82,15 @@ void ComputeApsides(Trajectory<Frame> const& reference,
              -squared_distance_derivative});
       }
 
-      // Now that we know the time of the apsis, construct a Hermite
-      // approximation of the position of the body, and use it to derive its
-      // degrees of freedom.  Note that an extremum of
+      // Now that we know the time of the apsis, use a Hermite approximation to
+      // derive its degrees of freedom.  Note that an extremum of
       // |squared_distance_approximation| is in general not an extremum for
       // |position_approximation|: the distance computed using the latter is a
       // 6th-degree polynomial.  However, approximating this polynomial using a
       // 3rd-degree polynomial would yield |squared_distance_approximation|, so
       // we shouldn't be far from the truth.
-      Hermite3<Instant, Position<Frame>> position_approximation(
-          {*previous_time, time},
-          {previous_degrees_of_freedom->position(),
-           degrees_of_freedom.position()},
-          {previous_degrees_of_freedom->velocity(),
-           degrees_of_freedom.velocity()});
-      DegreesOfFreedom<Frame> const apsis_degrees_of_freedom(
-          position_approximation.Evaluate(apsis_time),
-          position_approximation.EvaluateDerivative(apsis_time));
+      DegreesOfFreedom<Frame> const apsis_degrees_of_freedom =
+          begin.trajectory()->EvaluateDegreesOfFreedom(apsis_time);
       if (Sign(squared_distance_derivative).Negative()) {
         apoapsides.Append(apsis_time, apsis_degrees_of_freedom);
       } else {
