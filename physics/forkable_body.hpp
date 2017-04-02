@@ -10,6 +10,13 @@ namespace physics {
 namespace internal_forkable {
 
 template<typename Tr4jectory, typename It3rator>
+not_null<Tr4jectory const*>
+ForkableIterator<Tr4jectory, It3rator>::trajectory() const {
+  CHECK(!ancestry_.empty());
+  return ancestry_.back();
+}
+
+template<typename Tr4jectory, typename It3rator>
 bool ForkableIterator<Tr4jectory, It3rator>::operator==(
     It3rator const& right) const {
   DCHECK_EQ(trajectory(), right.trajectory());
@@ -86,13 +93,6 @@ template<typename Tr4jectory, typename It3rator>
 typename ForkableIterator<Tr4jectory, It3rator>::TimelineConstIterator
 ForkableIterator<Tr4jectory, It3rator>::current() const {
   return current_;
-}
-
-template<typename Tr4jectory, typename It3rator>
-not_null<Tr4jectory const*>
-ForkableIterator<Tr4jectory, It3rator>::trajectory() const {
-  CHECK(!ancestry_.empty());
-  return ancestry_.back();
 }
 
 template<typename Tr4jectory, typename It3rator>
