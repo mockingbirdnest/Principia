@@ -124,13 +124,12 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
   for (auto it = begin; it != end; ++it) {
     Instant const time = it.time();
     DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
-    Length const z = degrees_of_freedom.position().coordinates().z;
+    Length const z =
+        (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;
 
-    if (previous_z && Sign(previous_z) != Sign(*previous_z)) {
-      CHECK(previous_time &&
-            previous_degrees_of_freedom &&
-            previous_squared_distance);
+    if (previous_z && Sign(z) != Sign(*previous_z)) {
+      CHECK(previous_time && previous_z && previous_z_speed);
 
       // |z| changed sign.  Construct a Hermite approximation of |z| and find
       // its zeros.
@@ -149,7 +148,7 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
 
       DegreesOfFreedom<Frame> const node_degrees_of_freedom =
           begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
-      if (Sign(InnerProduct(north, Vector<double, Frame>{0, 0, 1})) ==
+      if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
           Sign(z_speed)) {
         // |north| is up and we are going up, or |north| is down and we are
         // going down.
@@ -161,8 +160,8 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
 
     previous_time = time;
     previous_degrees_of_freedom = degrees_of_freedom;
-    previous_squared_distance = squared_distance;
-    previous_squared_distance_derivative = squared_distance_derivative;
+    previous_z = z;
+    previous_z_speed = z_speed;
   }
 }
 

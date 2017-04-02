@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "physics/ephemeris.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
@@ -29,12 +30,15 @@ using quantities::astronomy::JulianYear;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
 using quantities::si::AstronomicalUnit;
+using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Milli;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using ::testing::Eq;
 
 class ApsidesTest : public ::testing::Test {
  protected:
@@ -156,20 +160,20 @@ TEST_F(ApsidesTest, ComputeNodes) {
               McLachlanAtela1992Order5Optimal<Position<World>>(),
               1 * Hour));
 
-  Displacement<World> r(
-      {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
-  Length const r_norm = r.Norm();
-  Velocity<World> v({4 * Kilo(Metre) / Second,
-                     5 * Kilo(Metre) / Second,
-                     6 * Kilo(Metre) / Second});
-  Speed const v_norm = v.Norm();
-
-  Time const T = 2 * π * Sqrt(-(Pow<3>(r_norm) * Pow<2>(μ) /
-                                Pow<3>(r_norm * Pow<2>(v_norm) - 2 * μ)));
-  Length const a = -r_norm * μ / (r_norm * Pow<2>(v_norm) - 2 * μ);
+  KeplerianElements<World> elements;
+  elements.eccentricity = 0.25;
+  elements.semimajor_axis = 1 * AstronomicalUnit;
+  elements.inclination = 10 * Degree;
+  elements.longitude_of_ascending_node = 42 * Degree;
+  elements.argument_of_periapsis = 100 * Degree;
+  KeplerOrbit<World> const orbit{
+      *ephemeris.bodies()[0], MasslessBody{}, elements, t0};
+  elements = orbit.elements_at_epoch();
 
   DiscreteTrajectory<World> trajectory;
-  trajectory.Append(t0, DegreesOfFreedom<World>(World::origin + r, v));
+  trajectory.Append(t0, initial_state[0] + orbit.StateVectors(t0));
+  // TODO(egg): the period should be in KeplerianElements.
+  Time const period = 2 * π * Radian / *elements.mean_motion;
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -183,51 +187,46 @@ TEST_F(ApsidesTest, ComputeNodes) {
       Ephemeris<World>::unlimited_max_ephemeris_steps,
       /*last_point_only=*/false);
 
-  DiscreteTrajectory<World> apoapsides;
-  DiscreteTrajectory<World> periapsides;
-  ComputeApsides(*ephemeris.trajectory(b),
-                 trajectory.Begin(),
-                 trajectory.End(),
-                 apoapsides,
-                 periapsides);
+  Vector<double, World> const north({0,0,1});
+
+  DiscreteTrajectory<World> ascending_nodes;
+  DiscreteTrajectory<World> descending_nodes;
+  ComputeNodes(trajectory.Begin(),
+               trajectory.End(),
+               north,
+               ascending_nodes,
+               descending_nodes);
 
   std::experimental::optional<Instant> previous_time;
-  std::map<Instant, DegreesOfFreedom<World>> all_apsides;
-  for (auto it = apoapsides.Begin(); it != apoapsides.End(); ++it) {
+  for (auto it = ascending_nodes.Begin(); it != ascending_nodes.End(); ++it) {
     Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
+    EXPECT_THAT((it.degrees_of_freedom().position() - World::origin)
+                    .coordinates()
+                    .ToSpherical()
+                    .longitude,
+                AlmostEquals(elements.longitude_of_ascending_node, 5, 97));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2079));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(period, 3, 13));
     }
     previous_time = time;
   }
 
   previous_time = std::experimental::nullopt;
-  for (auto it = periapsides.Begin(); it != periapsides.End(); ++it) {
+  for (auto it = descending_nodes.Begin(); it != descending_nodes.End(); ++it) {
     Instant const time = it.time();
-    all_apsides.emplace(time, it.degrees_of_freedom());
+    EXPECT_THAT(
+        (it.degrees_of_freedom().position() - World::origin)
+                .coordinates()
+                .ToSpherical()
+                .longitude + 2 * π * Radian,
+        AlmostEquals(elements.longitude_of_ascending_node + π * Radian, 1, 25));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 143, 257));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(period, 1, 29));
     }
     previous_time = time;
   }
 
-  EXPECT_EQ(6, all_apsides.size());
-
-  previous_time = std::experimental::nullopt;
-  std::experimental::optional<Position<World>> previous_position;
-  for (auto const pair : all_apsides) {
-    Instant const time = pair.first;
-    Position<World> const position = pair.second.position();
-    if (previous_time) {
-      EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 3567));
-      EXPECT_THAT((position - *previous_position).Norm(),
-                  AlmostEquals(2.0 * a, 0, 176));
-    }
-    previous_time = time;
-    previous_position = position;
-  }
+  EXPECT_THAT(ascending_nodes.Size() + descending_nodes.Size(), Eq(20));
 }
 
 }  // namespace internal_apsides
