@@ -3,6 +3,8 @@
 
 #include "integrators/integrators.hpp"
 
+#include <limits>
+
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -137,12 +139,33 @@ FixedStepSizeIntegrator<ODE_>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename ODE_>
+AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
+    Time const first_time_step,
+    double const safety_factor,
+    std::int64_t const max_steps,
+    bool const last_step_is_exact)
+    : first_time_step(first_time_step),
+      safety_factor(safety_factor),
+      max_steps(max_steps),
+      last_step_is_exact(last_step_is_exact) {}
+
+template<typename ODE_>
+AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
+    Time const first_time_step,
+    double const safety_factor)
+    : Parameters(first_time_step,
+                 safety_factor,
+                 /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+                 /*last_step_is_exact=*/true) {}
+
+template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
   first_time_step.WriteToMessage(message->mutable_first_time_step());
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
+  message->set_last_step_is_exact(last_step_is_exact);
 }
 
 template<typename ODE_>
@@ -150,10 +173,11 @@ typename AdaptiveStepSizeIntegrator<ODE_>::Parameters
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
-  Parameters result;
-  result.first_time_step = Time::ReadFromMessage(message.first_time_step());
-  result.safety_factor = message.safety_factor();
-  result.max_steps = message.max_steps();
+  bool const is_pre_cartan = !message.has_last_step_is_exact();
+  Parameters result(Time::ReadFromMessage(message.first_time_step()),
+                    message.safety_factor(),
+                    message.max_steps(),
+                    is_pre_cartan ? true : message.last_step_is_exact());
   return result;
 }
 
@@ -164,6 +188,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
+  time_step_.WriteToMessage(extension->mutable_time_step());
+  extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
@@ -173,8 +199,7 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
     serialization::IntegratorInstance const& message,
     ODE const& equation,
     AppendState const& append_state,
-    typename Parameters::ToleranceToErrorRatio const&
-        tolerance_to_error_ratio) {
+    ToleranceToErrorRatio const& tolerance_to_error_ratio) {
   IntegrationProblem<ODE> problem;
   problem.equation = equation;
   problem.initial_state =
@@ -187,21 +212,38 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   auto parameters =
       Parameters::ReadFromMessage(extension.parameters());
-  parameters.tolerance_to_error_ratio = tolerance_to_error_ratio;
   AdaptiveStepSizeIntegrator const& integrator =
       AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
-  return integrator.ReadFromMessage(
-      extension, problem, append_state, parameters);
+  // TODO(phl): We would really like this function to return a pointer to an
+  // instance from this class, not an instance from |Integrator|.  Unfortunately
+  // this confuses Visual Studio 2015...
+  auto instance = integrator.ReadFromMessage(
+      extension, problem, append_state, tolerance_to_error_ratio, parameters);
+
+  Instance* const down_cast_instance = dynamic_cast<Instance*>(&*instance);
+  bool const is_pre_cartan = !extension.has_time_step();
+  if (is_pre_cartan) {
+    down_cast_instance->time_step_ = parameters.first_time_step;
+  } else {
+    down_cast_instance->time_step_ =
+        Time::ReadFromMessage(extension.time_step());
+    down_cast_instance->first_use_ = extension.first_use();
+  }
+
+  return instance;
 }
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
+    ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters)
-    : Integrator<ODE>::Instance(problem, std::move(append_state)),
-      parameters_(parameters) {
+    : Integrator<ODE>::Instance(problem, append_state),
+      tolerance_to_error_ratio_(tolerance_to_error_ratio),
+      parameters_(parameters),
+      time_step_(parameters.first_time_step) {
   CHECK_NE(Time(), parameters.first_time_step);
   CHECK_GT(parameters.safety_factor, 0);
   CHECK_LT(parameters.safety_factor, 1);

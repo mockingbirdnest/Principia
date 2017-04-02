@@ -116,15 +116,17 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
     solution.push_back(state);
   };
 
-  Integrator::Parameters parameters;
-  parameters.first_time_step = t_final - t_initial;
-  parameters.safety_factor = 0.9;
-  parameters.tolerance_to_error_ratio =
+  Integrator::Parameters const parameters(
+      /*first_time_step=*/t_final - t_initial,
+      /*safety_factor=*/0.9);
+  auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio1D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
-  auto const instance =
-      integrator.NewInstance(problem, append_state, parameters);
+  auto const instance = integrator.NewInstance(problem,
+                                               append_state,
+                                               tolerance_to_error_ratio,
+                                               parameters);
   instance->Solve(t_final);
 
   state.PauseTiming();
@@ -172,15 +174,17 @@ void SolveHarmonicOscillatorAndComputeError3D(
     solution.push_back(state);
   };
 
-  Integrator::Parameters parameters;
-  parameters.first_time_step = t_final - t_initial;
-  parameters.safety_factor = 0.9;
-  parameters.tolerance_to_error_ratio =
+  Integrator::Parameters const parameters(
+      /*first_time_step=*/t_final - t_initial,
+      /*safety_factor=*/0.9);
+  auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio3D<ODE>,
                 _1, _2, length_tolerance, speed_tolerance);
 
-  auto const instance =
-      integrator.NewInstance(problem, append_state, parameters);
+  auto const instance = integrator.NewInstance(problem,
+                                               append_state,
+                                               tolerance_to_error_ratio,
+                                               parameters);
   instance->Solve(t_final);
 
   state.PauseTiming();

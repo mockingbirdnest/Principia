@@ -94,6 +94,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
    private:
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
+             ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& adaptive_step_size,
              EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
 
@@ -104,14 +105,17 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
-      Parameters const& adaptive_step_size) const override;
+      ToleranceToErrorRatio const& tolerance_to_error_ratio,
+      Parameters const& parameters) const override;
 
  private:
-  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
+  ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
-      Parameters const& adaptive_step_size) const override;
+      ToleranceToErrorRatio const& tolerance_to_error_ratio,
+      Parameters const& parameters) const override;
 
   FixedVector<double, stages> const c_;
   FixedStrictlyLowerTriangularMatrix<double, stages> const a_;

@@ -442,21 +442,20 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                            {last_degrees_of_freedom.velocity()},
                            trajectory_last.time()};
 
-  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::Parameters
-      integrator_parameters;
-  integrator_parameters.first_time_step =
-      t_final - problem.initial_state.time.value;
+  typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::Parameters const
+      integrator_parameters(
+          /*first_time_step=*/t_final - problem.initial_state.time.value,
+          /*safety_factor=*/0.9,
+          parameters.max_steps_,
+          /*last_step_is_exact=*/true);
   CHECK_GT(integrator_parameters.first_time_step, 0 * Second)
       << "Flow back to the future: " << t_final
       << " <= " << problem.initial_state.time.value;
-  integrator_parameters.safety_factor = 0.9;
-  integrator_parameters.tolerance_to_error_ratio =
+  auto const tolerance_to_error_ratio =
       std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
                 std::cref(parameters.length_integration_tolerance_),
                 std::cref(parameters.speed_integration_tolerance_),
-                _1,
-                _2);
-  integrator_parameters.max_steps = parameters.max_steps_;
+                _1, _2);
 
   typename AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::AppendState
       append_state;
@@ -471,8 +470,11 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
         &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
   }
 
-  auto const instance = parameters.integrator_->NewInstance(
-      problem, append_state, integrator_parameters);
+  auto const instance =
+      parameters.integrator_->NewInstance(problem,
+                                          append_state,
+                                          tolerance_to_error_ratio,
+                                          integrator_parameters);
   auto const status = instance->Solve(t_final);
 
   if (last_point_only) {

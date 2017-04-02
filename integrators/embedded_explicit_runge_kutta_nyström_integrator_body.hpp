@@ -104,7 +104,7 @@ Instance::Solve(Instant const& t_final) {
 
   auto& current_state = this->current_state_;
   auto& append_state = this->append_state_;
-  auto& parameters = this->parameters_;
+  auto& parameters = parameters_;
   auto const& equation = this->equation_;
 
   // |current_state| gets updated as the integration progresses to allow
@@ -123,9 +123,12 @@ Instance::Solve(Instant const& t_final) {
     // Integrating backward.
     CHECK_GT(current_state.time.value, t_final);
   }
+  CHECK(first_use_ || !parameters.last_step_is_exact)
+      << "Cannot reuse an instance where the last step is exact";
+  first_use_ = false;
 
-  // Time step.
-  Time h = parameters.first_time_step;
+  // Time step.  Updated as the integration progresses to allow restartability.
+  Time& h = time_step_;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
@@ -167,7 +170,10 @@ Instance::Solve(Instant const& t_final) {
   // The number of steps already performed.
   std::int64_t step_count = 0;
 
-  // No step size control on the first step.
+  // No step size control on the first step.  If this instance is being
+  // restarted we already have a value of |h| suitable for the next step, based
+  // on the computation of |tolerance_to_error_ratio_| during the last
+  // invocation.
   goto runge_kutta_nyström_step;
 
   while (!at_end) {
@@ -190,13 +196,16 @@ Instance::Solve(Instant const& t_final) {
 
     runge_kutta_nyström_step:
       // Termination condition.
-      Time const time_to_end = (t_final - t.value) - t.error;
-      at_end = integration_direction * h >= integration_direction * time_to_end;
-      if (at_end) {
-        // The chosen step size will overshoot.  Clip it to just reach the end,
-        // and terminate if the step is accepted.
-        h = time_to_end;
-        final_state = current_state;
+      if (parameters_.last_step_is_exact) {
+        Time const time_to_end = (t_final - t.value) - t.error;
+        at_end = integration_direction * h >=
+                 integration_direction * time_to_end;
+        if (at_end) {
+          // The chosen step size will overshoot.  Clip it to just reach the
+          // end, and terminate if the step is accepted.
+          h = time_to_end;
+          final_state = current_state;
+        }
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
@@ -236,9 +245,14 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.position_error[k] = Δq_k - Δq_hat[k];
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
-      tolerance_to_error_ratio =
-          parameters.tolerance_to_error_ratio(h, error_estimate);
+      tolerance_to_error_ratio = tolerance_to_error_ratio_(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
+
+    if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
+      // We did overshoot.  Drop the point that we just computed and exit.
+      final_state = current_state;
+      break;
+    }
 
     if (first_same_as_last) {
       using std::swap;
@@ -328,10 +342,11 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
 Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
+    ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters,
     EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator)
     : AdaptiveStepSizeIntegrator<ODE>::Instance(
-          problem, std::move(append_state), parameters),
+          problem, append_state, tolerance_to_error_ratio, parameters),
       integrator_(integrator) {}
 
 template<typename Position, int higher_order, int lower_order, int stages,
@@ -345,11 +360,15 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             first_same_as_last>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             AppendState const& append_state,
+            ToleranceToErrorRatio const& tolerance_to_error_ratio,
             Parameters const& parameters) const {
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<Instance>(
-      new Instance(problem, append_state, parameters, *this));
+  return std::unique_ptr<Instance>(new Instance(problem,
+                                                append_state,
+                                                tolerance_to_error_ratio,
+                                                parameters,
+                                                *this));
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,
@@ -365,6 +384,7 @@ ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance const& message,
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
+    ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters) const {
   CHECK(message.HasExtension(
       serialization::EmbeddedExplicitRungeKuttaNystromIntegratorInstance::
@@ -373,8 +393,12 @@ ReadFromMessage(
 
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(new Instance(
-      problem, append_state, parameters, *this));
+  return std::unique_ptr<typename AdaptiveStepSizeIntegrator<ODE>::Instance>(
+      new Instance(problem,
+                   append_state,
+                   tolerance_to_error_ratio,
+                   parameters,
+                   *this));
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator

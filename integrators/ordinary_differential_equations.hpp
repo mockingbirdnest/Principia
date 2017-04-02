@@ -64,6 +64,12 @@ struct SpecialSecondOrderDifferentialEquation final {
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
 
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.positions == rhs.positions &&
+             lhs.velocities == rhs.velocities &&
+             lhs.time == rhs.time;
+    }
+
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
     static SystemState ReadFromMessage(
         serialization::SystemState const& message);
