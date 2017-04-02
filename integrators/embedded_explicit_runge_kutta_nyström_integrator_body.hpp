@@ -169,28 +169,32 @@ Instance::Solve(Instant const& t_final) {
   // The number of steps already performed.
   std::int64_t step_count = 0;
 
+  // No step size control on the first step.  If this instance is being
+  // restarted we already have a value of |h| suitable for the next step, based
+  // on the computation of |tolerance_to_error_ratio_| during the last
+  // invocation.
+  goto runge_kutta_nyström_step;
+
   while (!at_end) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
-      // No step size control on the first use.
-      if (computed_tolerance_to_error_ratio_) {
-        // Adapt step size.
-        // TODO(egg): find out whether there's a smarter way to compute that
-        // root, especially since we make the order compile-time.
-        h *= parameters.safety_factor *
-             std::pow(*computed_tolerance_to_error_ratio_,
-                      1.0 / (lower_order + 1));
-        // TODO(egg): should we check whether it vanishes in double precision
-        // instead?
-        if (t.value + (t.error + h) == t.value) {
-          return Status(termination_condition::VanishingStepSize,
-                        "At time " + DebugString(t.value) +
-                            ", step size is effectively zero.  Singularity or "
-                            "stiff system suspected.");
-        }
+      // Adapt step size.
+      // TODO(egg): find out whether there's a smarter way to compute that
+      // root, especially since we make the order compile-time.
+      h *= parameters.safety_factor *
+            std::pow(*computed_tolerance_to_error_ratio_,
+                    1.0 / (lower_order + 1));
+      // TODO(egg): should we check whether it vanishes in double precision
+      // instead?
+      if (t.value + (t.error + h) == t.value) {
+        return Status(termination_condition::VanishingStepSize,
+                      "At time " + DebugString(t.value) +
+                          ", step size is effectively zero.  Singularity or "
+                          "stiff system suspected.");
       }
 
+    runge_kutta_nyström_step :
       // Termination condition.
       if (parameters_.last_step_is_exact) {
         Time const time_to_end = (t_final - t.value) - t.error;
@@ -202,9 +206,6 @@ Instance::Solve(Instant const& t_final) {
           h = time_to_end;
           final_state = current_state;
         }
-      } else {
-        // Speculatively save the current state, it might be the last.
-        final_state = current_state;
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
@@ -250,6 +251,7 @@ Instance::Solve(Instant const& t_final) {
 
     if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
       // We did overshoot.  Drop the point that we just computed and exit.
+      final_state = current_state;
       break;
     }
 
