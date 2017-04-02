@@ -61,9 +61,14 @@ message AdaptiveStepSizeIntegratorInstance {
     required Quantity first_time_step = 1;
     required double safety_factor = 2;
     required int64 max_steps = 3;
+    // Added in Cartan.
+    optional bool last_step_is_exact = 4;
   }
   required Parameters parameters = 1;
   required AdaptiveStepSizeIntegrator integrator = 2;
+  // Added in Cartan.
+  optional Quantity time_step = 3;
+  optional bool first_use = 4;
 }
 
 message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {

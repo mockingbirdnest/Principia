@@ -154,6 +154,7 @@ void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
   first_time_step.WriteToMessage(message->mutable_first_time_step());
   message->set_safety_factor(safety_factor);
   message->set_max_steps(max_steps);
+  message->set_last_step_is_exact(last_step_is_exact);
 }
 
 template<typename ODE_>
@@ -161,9 +162,11 @@ typename AdaptiveStepSizeIntegrator<ODE_>::Parameters
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance::Parameters const&
         message) {
+  bool const is_pre_cartan = !message.has_last_step_is_exact();
   Parameters result(Time::ReadFromMessage(message.first_time_step()),
                     message.safety_factor(),
-                    message.max_steps(), );
+                    message.max_steps(),
+                    is_pre_cartan ? true : message.last_step_is_exact());
   return result;
 }
 
@@ -174,6 +177,8 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
   auto* const extension = message->MutableExtension(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
+  time_step_.WriteToMessage(extension->mutable_time_step());
+  extension->set_first_use(first_use_);
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
@@ -199,8 +204,11 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   AdaptiveStepSizeIntegrator const& integrator =
       AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
-  return integrator.ReadFromMessage(
+  auto instance = integrator.ReadFromMessage(
       extension, problem, append_state, tolerance_to_error_ratio, parameters);
+  //TODO(phl): compatibility.
+  instance->time_step_ = Time::ReadFromMessage(extension.time_step());
+  instance->first_use_ = extension.first_use();
 }
 
 template<typename ODE_>
@@ -211,7 +219,8 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
     Parameters const& parameters)
     : Integrator<ODE>::Instance(problem, append_state),
       tolerance_to_error_ratio_(tolerance_to_error_ratio),
-      parameters_(parameters) {
+      parameters_(parameters),
+      time_step_(parameters.first_time_step) {
   CHECK_NE(Time(), parameters.first_time_step);
   CHECK_GT(parameters.safety_factor, 0);
   CHECK_LT(parameters.safety_factor, 1);

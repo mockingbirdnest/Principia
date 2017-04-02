@@ -170,7 +170,6 @@ Instance::Solve(Instant const& t_final) {
   // No step size control on the first use.
   if (first_use_) {
     first_use_ = false;
-    h = parameters.first_time_step;
     goto runge_kutta_nyström_step;
   } else {
     CHECK(!parameters.last_step_is_exact)
@@ -369,7 +368,7 @@ NewInstance(IntegrationProblem<ODE> const& problem,
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-not_null<std::unique_ptr<typename Integrator<
+not_null<std::unique_ptr<typename AdaptiveStepSizeIntegrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             higher_order,
@@ -389,7 +388,7 @@ ReadFromMessage(
 
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
   // private.
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(
+  return std::unique_ptr<typename AdaptiveStepSizeIntegrator<ODE>::Instance>(
       new Instance(problem,
                    append_state,
                    tolerance_to_error_ratio,

@@ -195,8 +195,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& parameters);
 
-    Parameters const parameters_;
     ToleranceToErrorRatio const tolerance_to_error_ratio_;
+    Parameters const parameters_;
     Time time_step_;
     bool first_use_ = true;
   };
@@ -218,8 +218,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   // For convenience, deserialization is an instance member of the |Integrator|,
   // not a static member of the |Instance|.  Which makes sense if you see
   // |Integrator| as a factory for |Instance|.
-  virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
-  ReadFromMessage(
+  virtual not_null<std::unique_ptr<Instance>> ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
