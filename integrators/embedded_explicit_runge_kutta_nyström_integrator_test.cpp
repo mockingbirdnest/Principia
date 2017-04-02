@@ -112,9 +112,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   {
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
         /*first_time_step=*/t_final - t_initial,
-        /*safety_factor=*/0.9,
-        /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*last_step_is_exact=*/true);
+        /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
                   _1, _2,
@@ -148,9 +146,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   {
     AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
         /*first_time_step=*/t_initial - t_final,
-        /*safety_factor=*/0.9,
-        /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-        /*last_step_is_exact=*/true);
+        /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
                   _1,_2,
@@ -299,9 +295,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   problem.initial_state = {{0 * Metre}, {0 * Metre / Second}, t_initial};
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
-      /*safety_factor=*/0.9,
-      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-      /*last_step_is_exact=*/true);
+      /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio = [length_tolerance, speed_tolerance](
       Time const& h, ODE::SystemStateError const& error) {
     return std::min(length_tolerance / Abs(error.position_error[0]),
@@ -351,9 +345,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
   };
   AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
-      /*safety_factor=*/0.9,
-      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-      /*last_step_is_exact=*/true);
+      /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
                 _1,_2,

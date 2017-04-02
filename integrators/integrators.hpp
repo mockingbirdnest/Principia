@@ -153,6 +153,10 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
                std::int64_t max_steps,
                bool last_step_is_exact);
 
+    // |max_steps| is infinite and the last step is exact.
+    Parameters(Time first_time_step,
+               double safety_factor);
+
     void WriteToMessage(
         not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                      Parameters*> const message) const;

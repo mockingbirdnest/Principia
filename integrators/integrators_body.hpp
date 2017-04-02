@@ -148,6 +148,15 @@ AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
       last_step_is_exact(last_step_is_exact) {}
 
 template<typename ODE_>
+AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
+    Time const first_time_step,
+    double const safety_factor)
+    : Parameters(first_time_step,
+                 safety_factor,
+                 /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+                 /*last_step_is_exact=*/true) {}
+
+template<typename ODE_>
 void AdaptiveStepSizeIntegrator<ODE_>::Parameters::WriteToMessage(
     not_null<serialization::AdaptiveStepSizeIntegratorInstance::
                  Parameters*> const message) const {
