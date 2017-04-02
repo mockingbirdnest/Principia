@@ -149,7 +149,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
         /*safety_factor=*/0.9);
     auto const tolerance_to_error_ratio =
         std::bind(HarmonicOscillatorToleranceRatio,
-                  _1,_2,
+                  _1, _2,
                   2 * length_tolerance,
                   2 * speed_tolerance,
                   step_size_callback);
@@ -412,7 +412,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
       std::bind(HarmonicOscillatorToleranceRatio,
-                _1,_2,
+                _1, _2,
                 length_tolerance,
                 speed_tolerance,
                 step_size_callback);

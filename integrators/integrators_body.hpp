@@ -3,6 +3,8 @@
 
 #include "integrators/integrators.hpp"
 
+#include <limits>
+
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
