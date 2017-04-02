@@ -156,7 +156,6 @@ Instance::Solve(Instant const& t_final) {
   }
 
   bool at_end = false;
-  double tolerance_to_error_ratio;
 
   // The first stage of the Runge-Kutta-Nyström iteration.  In the FSAL case,
   // |first_stage == 1| after the first step, since the first RHS evaluation has
@@ -184,7 +183,8 @@ Instance::Solve(Instant const& t_final) {
       // TODO(egg): find out whether there's a smarter way to compute that root,
       // especially since we make the order compile-time.
       h *= parameters.safety_factor *
-               std::pow(tolerance_to_error_ratio, 1.0 / (lower_order + 1));
+           std::pow(*computed_tolerance_to_error_ratio_,
+                    1.0 / (lower_order + 1));
       // TODO(egg): should we check whether it vanishes in double precision
       // instead?
       if (t.value + (t.error + h) == t.value) {
@@ -196,17 +196,19 @@ Instance::Solve(Instant const& t_final) {
 
     runge_kutta_nyström_step:
       // Termination condition.
-      Time const time_to_end = (t_final - t.value) - t.error;
-      at_end = integration_direction * h >= integration_direction * time_to_end;
-      if (at_end) {
-        if (parameters_.last_step_is_exact) {
+      if (parameters_.last_step_is_exact) {
+        Time const time_to_end = (t_final - t.value) - t.error;
+        at_end = integration_direction * h >=
+                 integration_direction * time_to_end;
+        if (at_end) {
           // The chosen step size will overshoot.  Clip it to just reach the
           // end, and terminate if the step is accepted.
           h = time_to_end;
           final_state = current_state;
-        } else {
-          break;
         }
+      } else {
+        // Speculatively save the current state, it might be the last.
+        final_state = current_state;
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
@@ -246,8 +248,14 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.position_error[k] = Δq_k - Δq_hat[k];
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
-      tolerance_to_error_ratio = tolerance_to_error_ratio_(h, error_estimate);
-    } while (tolerance_to_error_ratio < 1.0);
+      computed_tolerance_to_error_ratio_ =
+          tolerance_to_error_ratio_(h, error_estimate);
+    } while (computed_tolerance_to_error_ratio_ < 1.0);
+
+    if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
+      // We did overshoot.  Drop the point that we just computed and exit.
+      break;
+    }
 
     if (first_same_as_last) {
       using std::swap;

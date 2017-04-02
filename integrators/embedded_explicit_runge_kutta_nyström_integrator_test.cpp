@@ -171,8 +171,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   EXPECT_EQ(11, subsequent_rejections);
 }
 
-TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
-       MaxSteps) {
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       DormandElMikkawyPrince1986RKN434FM<Length>();
   Length const x_initial = 1 * Metre;
@@ -317,6 +316,71 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
               AlmostEquals(t_singular - t_initial, 20));
   EXPECT_THAT(solution.back().positions.back().value,
               AlmostEquals(specific_impulse * initial_mass / mass_flow, 711));
+}
+
+TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
+  AdaptiveStepSizeIntegrator<ODE> const& integrator =
+      DormandElMikkawyPrince1986RKN434FM<Length>();
+  Length const x_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  Time const period = 2 * π * Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Instant const t_initial;
+  Time const duration = 10 * period;
+  Length const length_tolerance = 1 * Milli(Metre);
+  Speed const speed_tolerance = 1 * Milli(Metre) / Second;
+  // The number of steps if no step limit is set.
+  std::int64_t const steps_forward = 132;
+
+  auto const step_size_callback = [](bool tolerable) {};
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{x_initial}, {v_initial}, t_initial};
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  AdaptiveStepSizeIntegrator<ODE>::Parameters const parameters(
+      /*first_time_step=*/duration,
+      /*safety_factor=*/0.9,
+      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+      /*last_step_is_exact=*/false);
+  auto const tolerance_to_error_ratio =
+      std::bind(HarmonicOscillatorToleranceRatio,
+                _1, _2,
+                length_tolerance,
+                speed_tolerance,
+                step_size_callback);
+
+  auto const instance = integrator.NewInstance(problem,
+                                               append_state,
+                                               tolerance_to_error_ratio,
+                                               parameters);
+  auto outcome = instance->Solve(t_initial + duration);
+  EXPECT_EQ(termination_condition::Done, outcome.error());
+
+  // Check that the time step has been updated.
+  EXPECT_EQ(131, solution.size());
+  EXPECT_THAT(solution[solution.size() - 1].time.value -
+              solution[solution.size() - 2].time.value,
+              AlmostEquals(0.00810677945075361400 * duration, 0));
+
+  // Restart the integration.
+  outcome = instance->Solve(t_initial + 2 * duration);
+  EXPECT_EQ(termination_condition::Done, outcome.error());
+
+  // Check that the time step has been updated again.
+  EXPECT_EQ(261, solution.size());
+  EXPECT_THAT(solution[solution.size() - 1].time.value -
+              solution[solution.size() - 2].time.value,
+              AlmostEquals(0.00808892488314169240 * duration, 0));
 }
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {

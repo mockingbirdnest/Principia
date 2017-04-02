@@ -1,6 +1,7 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #define PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 
+#include <experimental/optional>
 #include <functional>
 
 #include "base/not_null.hpp"
@@ -203,6 +204,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     Parameters const parameters_;
     Time time_step_;
     bool first_use_ = true;
+    std::experimental::optional<double> computed_tolerance_to_error_ratio_;
   };
 
   // The factory function for |Instance|, above.  It ensures that the instance
