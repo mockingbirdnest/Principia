@@ -58,6 +58,9 @@ class ForkableIterator {
   ForkableIterator() = default;
   virtual ~ForkableIterator() = default;
 
+  // Returns the (most forked) trajectory to which this iterator applies.
+  not_null<Tr4jectory const*> trajectory() const;
+
   bool operator==(It3rator const& right) const;
   bool operator!=(It3rator const& right) const;
 
@@ -74,9 +77,6 @@ class ForkableIterator {
   TimelineConstIterator current() const;
 
  private:
-  // Returns the (most forked) trajectory to which this iterator applies.
-  not_null<Tr4jectory const*> trajectory() const;
-
   // We want a single representation for an end iterator.  In various places
   // we may end up with |current_| at the end of its timeline, but that
   // timeline is not the "most forked" one.  This function normalizes this
