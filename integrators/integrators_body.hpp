@@ -187,7 +187,10 @@ void AdaptiveStepSizeIntegrator<ODE_>::Instance::WriteToMessage(
       serialization::AdaptiveStepSizeIntegratorInstance::extension);
   parameters_.WriteToMessage(extension->mutable_parameters());
   time_step_.WriteToMessage(extension->mutable_time_step());
-  extension->set_first_use(first_use_);
+  if (computed_tolerance_to_error_ratio_) {
+    extension->set_computed_tolerance_to_error_ratio(
+        *computed_tolerance_to_error_ratio_);
+  }
   integrator().WriteToMessage(extension->mutable_integrator());
 }
 
@@ -223,11 +226,13 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   bool const is_pre_cartan = !extension.has_time_step();
   if (is_pre_cartan) {
     down_cast_instance->time_step_ = parameters.first_time_step;
-    down_cast_instance->first_use_ = true;
   } else {
     down_cast_instance->time_step_ =
         Time::ReadFromMessage(extension.time_step());
-    down_cast_instance->first_use_ = extension.first_use();
+    if (extension.has_computed_tolerance_to_error_ratio()) {
+      down_cast_instance->computed_tolerance_to_error_ratio_ =
+          extension.computed_tolerance_to_error_ratio();
+    }
   }
 
   return instance;

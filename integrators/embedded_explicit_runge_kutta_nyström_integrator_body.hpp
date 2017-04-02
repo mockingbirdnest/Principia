@@ -123,6 +123,9 @@ Instance::Solve(Instant const& t_final) {
     // Integrating backward.
     CHECK_GT(current_state.time.value, t_final);
   }
+  CHECK(!computed_tolerance_to_error_ratio_ || !parameters.last_step_is_exact)
+      << "Cannot reuse an instance where the last step is exact";
+
 
   // Time step.  Updated as the integration progresses to allow restartability.
   Time& h = time_step_;
@@ -166,35 +169,28 @@ Instance::Solve(Instant const& t_final) {
   // The number of steps already performed.
   std::int64_t step_count = 0;
 
-  // No step size control on the first use.
-  if (first_use_) {
-    first_use_ = false;
-    goto runge_kutta_nyström_step;
-  } else {
-    CHECK(!parameters.last_step_is_exact)
-        << "Cannot reuse an instance where the last step is exact";
-  }
-
   while (!at_end) {
     // Compute the next step with decreasing step sizes until the error is
     // tolerable.
     do {
-      // Adapt step size.
-      // TODO(egg): find out whether there's a smarter way to compute that root,
-      // especially since we make the order compile-time.
-      h *= parameters.safety_factor *
-           std::pow(*computed_tolerance_to_error_ratio_,
-                    1.0 / (lower_order + 1));
-      // TODO(egg): should we check whether it vanishes in double precision
-      // instead?
-      if (t.value + (t.error + h) == t.value) {
-        return Status(termination_condition::VanishingStepSize,
-                      "At time " + DebugString(t.value) +
-                          ", step size is effectively zero.  Singularity or "
-                          "stiff system suspected.");
+      // No step size control on the first use.
+      if (computed_tolerance_to_error_ratio_) {
+        // Adapt step size.
+        // TODO(egg): find out whether there's a smarter way to compute that
+        // root, especially since we make the order compile-time.
+        h *= parameters.safety_factor *
+             std::pow(*computed_tolerance_to_error_ratio_,
+                      1.0 / (lower_order + 1));
+        // TODO(egg): should we check whether it vanishes in double precision
+        // instead?
+        if (t.value + (t.error + h) == t.value) {
+          return Status(termination_condition::VanishingStepSize,
+                        "At time " + DebugString(t.value) +
+                            ", step size is effectively zero.  Singularity or "
+                            "stiff system suspected.");
+        }
       }
 
-    runge_kutta_nyström_step:
       // Termination condition.
       if (parameters_.last_step_is_exact) {
         Time const time_to_end = (t_final - t.value) - t.error;

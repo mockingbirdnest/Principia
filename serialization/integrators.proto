@@ -68,7 +68,7 @@ message AdaptiveStepSizeIntegratorInstance {
   required AdaptiveStepSizeIntegrator integrator = 2;
   // Added in Cartan.
   optional Quantity time_step = 3;
-  optional bool first_use = 4;
+  optional double computed_tolerance_to_error_ratio = 4;
 }
 
 message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {

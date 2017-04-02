@@ -203,7 +203,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
     ToleranceToErrorRatio const tolerance_to_error_ratio_;
     Parameters const parameters_;
     Time time_step_;
-    bool first_use_ = true;
+    // Contains a value after the instance has been used.
     std::experimental::optional<double> computed_tolerance_to_error_ratio_;
   };
 
