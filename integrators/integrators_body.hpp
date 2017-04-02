@@ -204,11 +204,24 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::ReadFromMessage(
   AdaptiveStepSizeIntegrator const& integrator =
       AdaptiveStepSizeIntegrator::ReadFromMessage(extension.integrator());
 
+  // TODO(phl): We would really like this function to return a pointer to an
+  // instance from this class, not an instance from |Integrator|.  Unfortunately
+  // this confuses Visual Studio 2015...
   auto instance = integrator.ReadFromMessage(
       extension, problem, append_state, tolerance_to_error_ratio, parameters);
-  //TODO(phl): compatibility.
-  instance->time_step_ = Time::ReadFromMessage(extension.time_step());
-  instance->first_use_ = extension.first_use();
+
+  Instance* const down_cast_instance = dynamic_cast<Instance*>(&*instance);
+  bool const is_pre_cartan = !extension.has_time_step();
+  if (is_pre_cartan) {
+    down_cast_instance->time_step_ = parameters.first_time_step;
+    down_cast_instance->first_use_ = true;
+  } else {
+    down_cast_instance->time_step_ =
+        Time::ReadFromMessage(extension.time_step());
+    down_cast_instance->first_use_ = extension.first_use();
+  }
+
+  return instance;
 }
 
 template<typename ODE_>

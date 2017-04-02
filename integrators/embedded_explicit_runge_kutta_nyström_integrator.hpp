@@ -109,7 +109,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       Parameters const& parameters) const override;
 
  private:
-  not_null<std::unique_ptr<typename AdaptiveStepSizeIntegrator<ODE>::Instance>>
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
   ReadFromMessage(
       serialization::AdaptiveStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,

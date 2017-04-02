@@ -368,7 +368,7 @@ NewInstance(IntegrationProblem<ODE> const& problem,
 
 template<typename Position, int higher_order, int lower_order, int stages,
          bool first_same_as_last>
-not_null<std::unique_ptr<typename AdaptiveStepSizeIntegrator<
+not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
                                             higher_order,
