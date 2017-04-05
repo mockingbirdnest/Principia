@@ -27,6 +27,7 @@
 #include "glog/stl_logging.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
@@ -1272,7 +1273,7 @@ void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
   ephemeris_ = NewEphemeris(std::move(bodies),
                             initial_state,
                             current_time_,
-                            fitting_tolerance,
+                            default_ephemeris_fitting_tolerance,
                             DefaultEphemerisParameters());
   for (auto const& pair : celestials_) {
     auto& celestial = *pair.second;

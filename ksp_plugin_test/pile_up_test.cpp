@@ -4,8 +4,8 @@
 #include <map>
 #include <vector>
 
+#include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "ksp_plugin/vessel.hpp"  // For the Default...Parameters.
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"

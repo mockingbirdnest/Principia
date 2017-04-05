@@ -19,6 +19,7 @@
 #include "gtest/gtest.h"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"

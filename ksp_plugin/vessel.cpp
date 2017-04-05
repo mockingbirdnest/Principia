@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -21,14 +21,8 @@ using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
 using geometry::Position;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::McLachlanAtela1992Order5Optimal;
 using quantities::IsFinite;
 using quantities::Time;
-using quantities::si::Kilogram;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Second;
 
 Vessel::Vessel(GUID const& guid,
                std::string const& name,
@@ -411,28 +405,6 @@ DiscreteTrajectory<Barycentric>::Iterator Vessel::last_authoritative() const {
     --it;
   }
   return it;
-}
-
-Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
-  return Ephemeris<Barycentric>::FixedStepParameters(
-             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-             /*step=*/10 * Second);
-}
-
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters() {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
-             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-             /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-             /*length_integration_tolerance=*/1 * Milli(Metre),
-             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
-}
-
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters() {
-  return Ephemeris<Barycentric>::AdaptiveStepParameters(
-             DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-             /*max_steps=*/1000,
-             /*length_integration_tolerance=*/1 * Metre,
-             /*speed_integration_tolerance=*/1 * Metre / Second);
 }
 
 }  // namespace internal_vessel
