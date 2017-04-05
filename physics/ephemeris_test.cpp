@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -45,6 +46,7 @@ using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::Quinlan1999Order8A;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -1017,8 +1019,9 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
 INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,
     EphemerisTest,
-    ::testing::Values(&
-        McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>()));
+    ::testing::Values(
+        &McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        &Quinlan1999Order8A<Position<ICRFJ2000Equator>>()));
 
 }  // namespace internal_ephemeris
 }  // namespace physics

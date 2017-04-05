@@ -217,9 +217,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator)
-    : FixedStepSizeIntegrator<ODE>::Instance(problem,
-                                             std::move(append_state),
-                                             step),
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator) {
   previous_steps_.emplace_back();
   FillStepFromSystemState(this->equation_,
@@ -234,9 +232,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     Time const& step,
     std::list<Step> const& previous_steps,
     SymmetricLinearMultistepIntegrator const& integrator)
-    : FixedStepSizeIntegrator<ODE>::Instance(problem,
-                                             std::move(append_state),
-                                             step),
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       previous_steps_(previous_steps),
       integrator_(integrator) {}
 
