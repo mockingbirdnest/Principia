@@ -124,8 +124,8 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
       current_state.positions[d] = current_position;
     }
     equation.compute_acceleration(t.value,
-                                   positions,
-                                   current_step.accelerations);
+                                  positions,
+                                  current_step.accelerations);
 
     VelocitySolve(dimension);
 

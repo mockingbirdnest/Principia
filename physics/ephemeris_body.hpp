@@ -365,7 +365,7 @@ not_null<std::unique_ptr<typename Integrator<
 Ephemeris<Frame>::NewInstance(
     std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
     IntrinsicAccelerations const& intrinsic_accelerations,
-    FixedStepParameters const& parameters) const {
+    FixedStepParameters const& parameters) {
   IntegrationProblem<NewtonianMotionEquation> problem;
 
   problem.equation.compute_acceleration = [this, intrinsic_accelerations](
@@ -376,12 +376,13 @@ Ephemeris<Frame>::NewInstance(
         intrinsic_accelerations, t, positions, accelerations);
   };
 
+  CHECK(!trajectories.empty());
+  Instant const trajectory_last_time = (*trajectories.begin())->last().time();
+  problem.initial_state.time = DoublePrecision<Instant>(trajectory_last_time);
   for (auto const& trajectory : trajectories) {
     auto const trajectory_last = trajectory->last();
     auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
-    // TODO(phl): why do we keep rewriting this?  Should we check consistency?
-    problem.initial_state.time =
-        DoublePrecision<Instant>(trajectory_last.time());
+    CHECK_EQ(trajectory_last.time(), trajectory_last_time);
     problem.initial_state.positions.emplace_back(
         last_degrees_of_freedom.position());
     problem.initial_state.velocities.emplace_back(
@@ -396,6 +397,10 @@ Ephemeris<Frame>::NewInstance(
   auto const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
 #endif
+
+  // The construction of the instance may evaluate the degrees of freedom of the
+  // bodies.
+  Prolong(trajectory_last_time + parameters.step_);
 
   return parameters.integrator_->NewInstance(
       problem, append_state, parameters.step_);

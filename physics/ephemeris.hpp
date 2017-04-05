@@ -158,7 +158,7 @@ class Ephemeris {
   NewInstance(
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories,
       IntrinsicAccelerations const& intrinsic_accelerations,
-      FixedStepParameters const& parameters) const;
+      FixedStepParameters const& parameters);
 
   // Integrates, until exactly |t| (except for timeouts or singularities), the
   // |trajectory| followed by a massless body in the gravitational potential

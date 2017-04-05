@@ -39,7 +39,7 @@ class MockEphemeris : public Ephemeris<Frame> {
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
-  MOCK_CONST_METHOD3_T(
+  MOCK_METHOD3_T(
       NewInstance,
       not_null<std::unique_ptr<
           typename Integrator<NewtonianMotionEquation>::Instance>>(
