@@ -352,9 +352,6 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // after the first integration.
   while (t_max() < t) {
     instance_->Solve(t_final);
-    // Here |problem.initial_state| still points at |last_state_|, which is the
-    // state at the end of the previous call to |Solve|.  It is therefore the
-    // right initial state for the next call to |Solve|, if any.
     t_final += parameters_.step_;
   }
 }

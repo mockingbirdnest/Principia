@@ -249,9 +249,8 @@ Instance::StartupSolve(Instant const& t_final) {
   CHECK(!previous_steps_.empty());
   CHECK_LT(previous_steps_.size(), order_);
 
-  int startup_step_index = 0;
   auto const startup_append_state =
-      [this, &startup_step_index](typename ODE::SystemState const& state) {
+      [this](typename ODE::SystemState const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order_) {
@@ -259,7 +258,7 @@ Instance::StartupSolve(Instant const& t_final) {
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
-          if (++startup_step_index % startup_step_divisor == 0) {
+          if (++startup_step_index_ % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order_);
             previous_steps_.emplace_back();
             this->append_state_(state);
