@@ -39,6 +39,8 @@ public partial class PrincipiaPluginAdapter
   private Controlled<FlightPlanner> flight_planner_;
   private MapNodePool map_node_pool_;
 
+  private bool selecting_active_vessel_target_ = false;
+
   private IntPtr plugin_ = IntPtr.Zero;
 
   private bool display_patched_conics_ = false;
@@ -1161,52 +1163,76 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (display_patched_conics_) {
+    if (display_patched_conics_ || !is_manageable(vessel)) {
+      vessel.orbitDriver.Renderer.drawMode =
+          vessel.PatchedConicsAttached
+              ? OrbitRenderer.DrawMode.OFF
+              : OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE;
+      vessel.orbitDriver.Renderer.drawIcons =
+          ((vessel.isActiveVessel ||
+            vessel == FlightGlobals.ActiveVessel.targetObject as Vessel) &&
+           !vessel.PatchedConicsAttached)
+              ? OrbitRenderer.DrawIcons.ALL
+              : OrbitRenderer.DrawIcons.OBJ;
+
       if (vessel.patchedConicRenderer != null &&
           !vessel.patchedConicRenderer.enabled) {
         vessel.patchedConicRenderer.enabled = true;
       }
     } else {
-      if (vessel.orbitDriver.Renderer.drawMode != OrbitRenderer.DrawMode.OFF ||
-          vessel.orbitDriver.Renderer.drawIcons !=
-              OrbitRenderer.DrawIcons.OBJ) {
-        Log.Info("Removing patched conic rendering for the active vessel");
-        vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
-        vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
-      }
+      vessel.orbitDriver.Renderer.drawMode = OrbitRenderer.DrawMode.OFF;
+      vessel.orbitDriver.Renderer.drawIcons = OrbitRenderer.DrawIcons.OBJ;
 
-      if (vessel.patchedConicRenderer == null) {
-        // vessel.patchedConicRenderer may be null when in career mode, if
-        // patched conics have yet to be unlocked.  In that case there is
-        // nothing to remove.  Note that Principia doesn't care about unlocks
-        // and always displays all the information it can.
-        return;
-      }
-
-      vessel.patchedConicRenderer.enabled = false;
-      foreach (PatchRendering patch_rendering in
-               vessel.patchedConicRenderer.patchRenders) {
-        patch_rendering.DestroyUINodes();
-        patch_rendering.DestroyVector();
-      }
-      foreach (PatchRendering patch_rendering in
-               vessel.patchedConicRenderer.flightPlanRenders) {
-        patch_rendering.DestroyUINodes();
-        patch_rendering.DestroyVector();
-      }
-      foreach (ManeuverNode node in vessel.patchedConicSolver.maneuverNodes) {
-        node.DetachGizmo();
-        if (node.scaledSpaceTarget) {
-          MapView.MapCamera.RemoveTarget(node.scaledSpaceTarget);
-          node.scaledSpaceTarget.Terminate();
+      // vessel.patchedConicRenderer may be null when in career mode, if
+      // patched conics have yet to be unlocked.  In that case there is
+      // nothing to remove.  Note that Principia doesn't care about unlocks
+      // and always displays all the information it can.
+      if (vessel.patchedConicRenderer != null) {
+        vessel.patchedConicRenderer.enabled = false;
+        foreach (PatchRendering patch_rendering in
+                     vessel.patchedConicRenderer.patchRenders) {
+          patch_rendering.DestroyUINodes();
+          patch_rendering.DestroyVector();
+        }
+        foreach (PatchRendering patch_rendering in
+                     vessel.patchedConicRenderer.flightPlanRenders) {
+          patch_rendering.DestroyUINodes();
+          patch_rendering.DestroyVector();
+        }
+        foreach (ManeuverNode node in vessel.patchedConicSolver.maneuverNodes) {
+          node.DetachGizmo();
+          if (node.scaledSpaceTarget) {
+            MapView.MapCamera.RemoveTarget(node.scaledSpaceTarget);
+            node.scaledSpaceTarget.Terminate();
+          }
         }
       }
+
+      if (vessel.orbitTargeter != null) {
+        vessel.orbitTargeter.enabled = false;
+      }
+    }
+  }
+
+  private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
+                                 Mouse.Buttons buttons) {
+    if (selecting_active_vessel_target_) {
+      FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
+      selecting_active_vessel_target_ = false;
     }
   }
 
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
+    }
+    foreach (var vessel in FlightGlobals.Vessels.Where(
+                               v => v.mapObject?.uiNode != null)) {
+      // There is no way to check if we have already added a callback to an
+      // event...
+      vessel.mapObject.uiNode.OnClick -= OnVesselNodeClick;
+      vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
+      RemoveStockTrajectoriesIfNeeded(vessel);
     }
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel == null) {
@@ -1217,8 +1243,6 @@ public partial class PrincipiaPluginAdapter
         draw_active_vessel_trajectory() &&
         plugin_.HasVessel(active_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
-      RemoveStockTrajectoriesIfNeeded(active_vessel);
-
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
 
       GLLines.Draw(() => {
@@ -1389,6 +1413,13 @@ public partial class PrincipiaPluginAdapter
              "Max history length",
              ref changed_history_length,
              "{0:0.00e00} s");
+    if (MapView.MapIsEnabled &&
+        FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+      selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
+          selecting_active_vessel_target_, "Select target...");
+    } else {
+      selecting_active_vessel_target_ = false;
+    }
     ReferenceFrameSelection();
     if (PluginRunning()) {
       flight_planner_.get().RenderButton();
