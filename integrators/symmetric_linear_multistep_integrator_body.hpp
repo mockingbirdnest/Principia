@@ -38,9 +38,16 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
-  if (previous_steps_.size() < order_ - 1) {
+  if (previous_steps_.size() < order_) {
     StartupSolve(t_final);
+
+    // If |t_final| is not large enough, we may not have generated enough
+    // points.  Bail out, we'll continue the next time |Solve| is called.
+    if (previous_steps_.size() < order_) {
+      return Status::OK;
+    }
   }
+  CHECK_EQ(previous_steps_.size(), order_);
 
   // Argument checks.
   int const dimension = previous_steps_.back().displacements.size();
