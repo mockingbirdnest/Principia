@@ -1163,15 +1163,15 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (display_patched_conics_) {
+    if (display_patched_conics_ || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
               : OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE;
       vessel.orbitDriver.Renderer.drawIcons =
-          (vessel.isActiveVessel ||
-           vessel == FlightGlobals.ActiveVessel.targetObject as Vessel) &&
-                  !vessel.PatchedConicsAttached
+          ((vessel.isActiveVessel ||
+            vessel == FlightGlobals.ActiveVessel.targetObject as Vessel) &&
+           !vessel.PatchedConicsAttached)
               ? OrbitRenderer.DrawIcons.ALL
               : OrbitRenderer.DrawIcons.OBJ;
 
