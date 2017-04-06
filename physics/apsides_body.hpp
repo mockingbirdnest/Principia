@@ -116,20 +116,18 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   DiscreteTrajectory<Frame>& ascending,
                   DiscreteTrajectory<Frame>& descending) {
   std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<DegreesOfFreedom<Frame>>
-      previous_degrees_of_freedom;
   std::experimental::optional<Length> previous_z;
   std::experimental::optional<Speed> previous_z_speed;
 
   for (auto it = begin; it != end; ++it) {
     Instant const time = it.time();
-    DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
     Length const z =
         (degrees_of_freedom.position() - Frame::origin).coordinates().z;
     Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;
 
     if (previous_z && Sign(z) != Sign(*previous_z)) {
-      CHECK(previous_time && previous_z && previous_z_speed);
+      CHECK(previous_time && previous_z_speed);
 
       // |z| changed sign.  Construct a Hermite approximation of |z| and find
       // its zeros.
@@ -159,7 +157,6 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
     }
 
     previous_time = time;
-    previous_degrees_of_freedom = degrees_of_freedom;
     previous_z = z;
     previous_z_speed = z_speed;
   }

@@ -187,7 +187,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
       Ephemeris<World>::unlimited_max_ephemeris_steps,
       /*last_point_only=*/false);
 
-  Vector<double, World> const north({0,0,1});
+  Vector<double, World> const north({0, 0, 1});
 
   DiscreteTrajectory<World> ascending_nodes;
   DiscreteTrajectory<World> descending_nodes;
