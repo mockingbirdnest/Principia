@@ -173,6 +173,7 @@ Instance::WriteToMessage(
   for (auto const& previous_step : previous_steps_) {
     previous_step.WriteToMessage(extension->add_previous_steps());
   }
+  extension->set_startup_step_index(startup_step_index_);
 }
 
 template<typename Position, int order_>
@@ -237,9 +238,11 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
+    int const startup_step_index,
     std::list<Step> const& previous_steps,
     SymmetricLinearMultistepIntegrator const& integrator)
     : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+      startup_step_index_(startup_step_index),
       previous_steps_(previous_steps),
       integrator_(integrator) {}
 
@@ -382,7 +385,12 @@ SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
     previous_steps.push_back(Instance::Step::ReadFromMessage(previous_step));
   }
   return std::unique_ptr<typename Integrator<ODE>::Instance>(
-      new Instance(problem, append_state, step, previous_steps, *this));
+      new Instance(problem,
+                   append_state,
+                   step,
+                   extension.startup_step_index(),
+                   previous_steps,
+                   *this));
 }
 
 }  // namespace internal_symmetric_linear_multistep_integrator

@@ -103,6 +103,8 @@ message SymmetricLinearMultistepIntegratorInstance {
     required DoublePrecision time = 3;
   }
   repeated Step previous_steps = 1;
+  // Added in Cartan.
+  optional int32 startup_step_index = 2;
 }
 
 message SymplecticRungeKuttaNystromIntegratorInstance {
