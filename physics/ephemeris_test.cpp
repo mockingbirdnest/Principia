@@ -809,16 +809,15 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m2 = 3 * SolarMass;
   Mass const m3 = 4 * SolarMass;
 
-  auto const b0 = new OblateBody<ICRFJ2000Equator>(m0,
-                                        RotatingBody<ICRFJ2000Equator>::Parameters(
-                                            1 * Metre,
-                                            1 * Radian,
-                                            t0_,
-                                            4 * Radian / Second,
-                                            0 * Radian,
-                                            π / 2 * Radian),
-                                        OblateBody<ICRFJ2000Equator>::Parameters(
-                                            j2, radius));
+  auto const b0 = new OblateBody<ICRFJ2000Equator>(
+      m0,
+      RotatingBody<ICRFJ2000Equator>::Parameters(1 * Metre,
+                                                 1 * Radian,
+                                                 t0_,
+                                                 4 * Radian / Second,
+                                                 0 * Radian,
+                                                 π / 2 * Radian),
+      OblateBody<ICRFJ2000Equator>::Parameters(j2, radius));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
   auto const b3 = new MassiveBody(m3);
@@ -831,24 +830,24 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
 
   Velocity<ICRFJ2000Equator> const v({0 * SIUnit<Speed>(),
-                           0 * SIUnit<Speed>(),
-                           0 * SIUnit<Speed>()});
+                                      0 * SIUnit<Speed>(),
+                                      0 * SIUnit<Speed>()});
   Position<ICRFJ2000Equator> const q0 = ICRFJ2000Equator::origin +
       Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             0 * AstronomicalUnit});
+                                        0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit});
   Position<ICRFJ2000Equator> const q1 = ICRFJ2000Equator::origin +
       Vector<Length, ICRFJ2000Equator>({1 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             0 * AstronomicalUnit});
+                                        0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit});
   Position<ICRFJ2000Equator> const q2 = ICRFJ2000Equator::origin +
       Vector<Length, ICRFJ2000Equator>({1 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             1 * AstronomicalUnit});
+                                        0 * AstronomicalUnit,
+                                        1 * AstronomicalUnit});
   Position<ICRFJ2000Equator> const q3 = ICRFJ2000Equator::origin +
       Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             1 * AstronomicalUnit});
+                                        0 * AstronomicalUnit,
+                                        1 * AstronomicalUnit});
   initial_state.emplace_back(q0, v);
   initial_state.emplace_back(q1, v);
   initial_state.emplace_back(q2, v);

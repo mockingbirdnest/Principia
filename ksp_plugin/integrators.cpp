@@ -1,7 +1,10 @@
+﻿
 #include "ksp_plugin/integrators.hpp"
 
+#include <limits>
+
 #include "geometry/named_quantities.hpp"
-#include "integrators/embedded_explicit_runge_kutta_nystr�m_integrator.hpp"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 
 namespace principia {
