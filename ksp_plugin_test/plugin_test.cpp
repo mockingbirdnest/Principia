@@ -398,6 +398,7 @@ TEST_F(PluginDeathTest, SerializationError) {
 TEST_F(PluginTest, Serialization) {
   GUID const satellite = "satellite";
   PartId const part_id = 666;
+  Time const step = DefaultHistoryParameters().step();
 
   // We need an actual |Plugin| here rather than a |TestablePlugin|, since
   // that's what |ReadFromMessage| returns.
@@ -509,16 +510,32 @@ TEST_F(PluginTest, Serialization) {
       message.vessel(0).vessel().psychohistory();
 #if defined(WE_LOVE_228)
   EXPECT_EQ(3, vessel_0_psychohistory.timeline_size());
-  EXPECT_EQ((HistoryTime(time, 3) - shift - Instant()) / (1 * Second),
-            vessel_0_psychohistory.timeline(0).instant().scalar().magnitude());
-  EXPECT_EQ((HistoryTime(time, 6) - shift - Instant()) / (1 * Second),
-            vessel_0_psychohistory.timeline(1).instant().scalar().magnitude());
-  EXPECT_EQ((HistoryTime(time, 6) - Instant()) / (1 * Second),
-            vessel_0_psychohistory.timeline(2).instant().scalar().magnitude());
+  Instant const t0 =
+      Instant() +
+      vessel_0_psychohistory.timeline(0).instant().scalar().magnitude() *
+          Second;
+  Instant const t1 =
+      Instant() +
+      vessel_0_psychohistory.timeline(1).instant().scalar().magnitude() *
+          Second;
+  Instant const t2 =
+      Instant() +
+      vessel_0_psychohistory.timeline(2).instant().scalar().magnitude() *
+          Second;
+  // |t0| and |t1| are part of the history and may not be exactly aligned.  |t2|
+  // is not authoritative and is exactly aligned.
+  EXPECT_THAT(t0,
+              AllOf(Gt(HistoryTime(time, 3) - step), Le(HistoryTime(time, 3))));
+  EXPECT_THAT(t1,
+              AllOf(Gt(HistoryTime(time, 6) - step), Le(HistoryTime(time, 6))));
+  EXPECT_EQ(HistoryTime(time, 6), t2);
 #else
   EXPECT_EQ(3, vessel_0_psychohistory.timeline_size());
-  EXPECT_EQ((HistoryTime(time, 4) - Instant()) / (1 * Second),
-            vessel_0_psychohistory.timeline(0).instant().scalar().magnitude());
+  Instant const t0 =
+      Instant() +
+      vessel_0_psychohistory.timeline(0).instant().scalar().magnitude() *
+          Second;
+  EXPECT_EQ((HistoryTime(time, 4), t0);
 #endif
   EXPECT_TRUE(message.has_plotting_frame());
   EXPECT_TRUE(message.plotting_frame().HasExtension(
