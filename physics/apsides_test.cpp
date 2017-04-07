@@ -231,7 +231,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   DiscreteTrajectory<World> south_ascending_nodes;
   DiscreteTrajectory<World> south_descending_nodes;
-  Vector<double, World> const mostly_south({1,1,-1});
+  Vector<double, World> const mostly_south({1, 1, -1});
   ComputeNodes(trajectory.Begin(),
                trajectory.End(),
                mostly_south,
