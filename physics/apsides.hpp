@@ -7,6 +7,8 @@ namespace principia {
 namespace physics {
 namespace internal_apsides {
 
+using geometry::Vector;
+
 // Computes the apsides with respect to |reference| for the discrete trajectory
 // segment given by |begin| and |end|.  Appends to the given trajectories one
 // point for each apsis.
@@ -16,6 +18,17 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     typename DiscreteTrajectory<Frame>::Iterator end,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides);
+
+// Computes the crossings of the discrete trajectory segment given by |begin|
+// and |end| with the xy plane.  Appends the crossings that go towards the
+// |north| side of the xy plane to |ascending|, and those that go away from the
+// |north| side to |descending|.
+template<typename Frame>
+void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
+                  typename DiscreteTrajectory<Frame>::Iterator end,
+                  Vector<double, Frame> const& north,
+                  DiscreteTrajectory<Frame>& ascending,
+                  DiscreteTrajectory<Frame>& descending);
 
 // TODO(egg): when we can usefully iterate over an arbitrary |Trajectory|, move
 // the following from |Ephemeris|.
