@@ -61,6 +61,11 @@ namespace physics {
 
 namespace {
 
+using Flow =
+    void(not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+         Instant const& t,
+         Ephemeris<ICRFJ2000Equator>& ephemeris);
+
 Length FittingTolerance(int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
 }
@@ -199,6 +204,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                  std::to_string(total_degree));
 }
 
+template<Flow* flow>
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                 benchmark::State& state) {
   Length sun_error;
@@ -239,13 +245,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                               earth_probe_velocity));
 
     state.ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(
-        &trajectory,
-        Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
-        final_time,
-        PredictionParameters(),
-        Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    flow(&trajectory, final_time, *ephemeris);
     state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -314,23 +314,25 @@ void BM_EphemerisL4ProbeAllBodiesAndOblateness(
       state);
 }
 
+template<Flow* flow>
 void BM_EphemerisLEOProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                             state);
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MajorBodiesOnly, state);
 }
 
+template<Flow* flow>
 void BM_EphemerisLEOProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                             state);
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies, state);
 }
 
+template<Flow* flow>
 void BM_EphemerisLEOProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(
-      SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
-      state);
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::AllBodiesAndOblateness, state);
 }
 
 void BM_EphemerisFittingTolerance(
@@ -339,15 +341,31 @@ void BM_EphemerisFittingTolerance(
                             state);
 }
 
+void FlowEphemerisWithAdaptiveStep(
+    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    Instant const& t,
+    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+  ephemeris.FlowWithAdaptiveStep(
+      trajectory,
+      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
+      t,
+      PredictionParameters(),
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false);
+}
+
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness)->Arg(-3);
 BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly)->Arg(-3);
 BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies)->Arg(-3);
 BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMajorBodiesOnly,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
 
 BENCHMARK(BM_EphemerisFittingTolerance)->DenseRange(-4, 4);
 
