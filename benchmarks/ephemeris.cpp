@@ -114,6 +114,7 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
   state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
 }
 
+template<Flow* flow>
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                benchmark::State& state) {
   Length sun_error;
@@ -170,13 +171,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                   sun_l4_velocity)));
 
     state.ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(
-        &trajectory,
-        Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
-        final_time,
-        PredictionParameters(),
-        Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    flow(&trajectory, final_time, *ephemeris);
     state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -295,23 +290,25 @@ void BM_EphemerisSolarSystemAllBodiesAndOblateness(
       state);
 }
 
+template<Flow* flow>
 void BM_EphemerisL4ProbeMajorBodiesOnly(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            state);
+  EphemerisL4ProbeBenchmark<flow>(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                                  state);
 }
 
+template<Flow* flow>
 void BM_EphemerisL4ProbeMinorAndMajorBodies(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                            state);
+  EphemerisL4ProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies, state);
 }
 
+template<Flow* flow>
 void BM_EphemerisL4ProbeAllBodiesAndOblateness(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(
-      SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
-      state);
+  EphemerisL4ProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::AllBodiesAndOblateness, state);
 }
 
 template<Flow* flow>
@@ -335,10 +332,11 @@ void BM_EphemerisLEOProbeAllBodiesAndOblateness(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness, state);
 }
 
+template<Flow* flow>
 void BM_EphemerisFittingTolerance(
     benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            state);
+  EphemerisL4ProbeBenchmark<flow>(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                                  state);
 }
 
 void FlowEphemerisWithAdaptiveStep(
@@ -357,9 +355,12 @@ void FlowEphemerisWithAdaptiveStep(
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeMajorBodiesOnly,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
 BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMajorBodiesOnly,
                     &FlowEphemerisWithAdaptiveStep)->Arg(-3);
 BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
@@ -367,7 +368,8 @@ BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
 BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeAllBodiesAndOblateness,
                     &FlowEphemerisWithAdaptiveStep)->Arg(-3);
 
-BENCHMARK(BM_EphemerisFittingTolerance)->DenseRange(-4, 4);
+BENCHMARK_TEMPLATE1(BM_EphemerisFittingTolerance,
+                    &FlowEphemerisWithAdaptiveStep)->DenseRange(-4, 4);
 
 }  // namespace physics
 }  // namespace principia
