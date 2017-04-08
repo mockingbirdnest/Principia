@@ -716,7 +716,7 @@ TEST_P(EphemerisTest, Serialization) {
       << "SECOND\n" << second_message.DebugString();
 }
 
-// The gravitational acceleration on at elephant located at the pole.
+// The gravitational acceleration on an elephant located at the pole.
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Time const duration = 1 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;

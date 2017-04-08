@@ -4,6 +4,8 @@
 
 #include <set>
 
+#include "numerics/root_finders.hpp"
+
 namespace principia {
 namespace physics {
 namespace internal_apsides {
@@ -12,8 +14,10 @@ using geometry::Barycentre;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
+using numerics::Bisect;
 using numerics::Hermite3;
 using quantities::Length;
+using quantities::Speed;
 using quantities::Square;
 using quantities::Variation;
 
@@ -102,6 +106,59 @@ void ComputeApsides(Trajectory<Frame> const& reference,
     previous_degrees_of_freedom = degrees_of_freedom;
     previous_squared_distance = squared_distance;
     previous_squared_distance_derivative = squared_distance_derivative;
+  }
+}
+
+template<typename Frame>
+void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
+                  typename DiscreteTrajectory<Frame>::Iterator end,
+                  Vector<double, Frame> const& north,
+                  DiscreteTrajectory<Frame>& ascending,
+                  DiscreteTrajectory<Frame>& descending) {
+  std::experimental::optional<Instant> previous_time;
+  std::experimental::optional<Length> previous_z;
+  std::experimental::optional<Speed> previous_z_speed;
+
+  for (auto it = begin; it != end; ++it) {
+    Instant const time = it.time();
+    DegreesOfFreedom<Frame> const& degrees_of_freedom = it.degrees_of_freedom();
+    Length const z =
+        (degrees_of_freedom.position() - Frame::origin).coordinates().z;
+    Speed const z_speed = degrees_of_freedom.velocity().coordinates().z;
+
+    if (previous_z && Sign(z) != Sign(*previous_z)) {
+      CHECK(previous_time && previous_z_speed);
+
+      // |z| changed sign.  Construct a Hermite approximation of |z| and find
+      // its zeros.
+      // TODO(egg): Bisection on a polynomial seems daft; we should have
+      // Newton's method.
+      Hermite3<Instant, Length> const z_approximation(
+          {*previous_time, time},
+          {*previous_z, z},
+          {*previous_z_speed, z_speed});
+      Instant const node_time = Bisect(
+          [&z_approximation](Instant const& t) {
+            return z_approximation.Evaluate(t);
+          },
+          *previous_time,
+          time);
+
+      DegreesOfFreedom<Frame> const node_degrees_of_freedom =
+          begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
+      if (Sign(InnerProduct(north, Vector<double, Frame>({0, 0, 1}))) ==
+          Sign(z_speed)) {
+        // |north| is up and we are going up, or |north| is down and we are
+        // going down.
+        ascending.Append(node_time, node_degrees_of_freedom);
+      } else {
+        descending.Append(node_time, node_degrees_of_freedom);
+      }
+    }
+
+    previous_time = time;
+    previous_z = z;
+    previous_z_speed = z_speed;
   }
 }
 
