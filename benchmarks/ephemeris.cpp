@@ -61,9 +61,26 @@ namespace physics {
 
 namespace {
 
+Length FittingTolerance(int const scale) {
+  return 5 * std::pow(10.0, scale) * Metre;
+}
+
+Ephemeris<ICRFJ2000Equator>::FixedStepParameters EphemerisParameters() {
+  return Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+      /*step=*/45 * Minute);
+}
+
+Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters PredictionParameters() {
+  return Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+      DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+      /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+      /*length_integration_tolerance=*/1 * Metre,
+      /*speed_integration_tolerance=*/1 * Metre / Second);
+}
+
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                    benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length error;
   while (state.KeepRunning()) {
     state.PauseTiming();
@@ -72,11 +89,8 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
     Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
 
     auto const ephemeris =
-        at_спутник_1_launch->MakeEphemeris(
-            fitting_tolerance,
-            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-                /*step=*/45 * Minute));
+        at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                           EphemerisParameters());
 
     state.ResumeTiming();
     ephemeris->Prolong(final_time);
@@ -97,7 +111,6 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -107,11 +120,8 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
 
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
-          fitting_tolerance,
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                         EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -159,11 +169,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
         final_time,
-        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
-            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second),
+        PredictionParameters(),
         Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
         /*last_point_only=*/false);
     state.PauseTiming();
@@ -195,7 +201,6 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                 benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -205,11 +210,8 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
 
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
-          fitting_tolerance,
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                         EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -241,11 +243,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         &trajectory,
         Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
         final_time,
-        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
-            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second),
+        PredictionParameters(),
         Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
         /*last_point_only=*/false);
     state.PauseTiming();
