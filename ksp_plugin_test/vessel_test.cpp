@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "physics/mock_ephemeris.hpp"

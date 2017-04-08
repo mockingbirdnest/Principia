@@ -5,8 +5,8 @@
 #include <map>
 
 #include "geometry/identity.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
-#include "ksp_plugin/vessel.hpp"
 #include "physics/rigid_motion.hpp"
 
 namespace principia {

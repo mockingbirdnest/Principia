@@ -38,9 +38,16 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
-  if (previous_steps_.size() < order_ - 1) {
+  if (previous_steps_.size() < order_) {
     StartupSolve(t_final);
+
+    // If |t_final| is not large enough, we may not have generated enough
+    // points.  Bail out, we'll continue the next time |Solve| is called.
+    if (previous_steps_.size() < order_) {
+      return Status::OK;
+    }
   }
+  CHECK_EQ(previous_steps_.size(), order_);
 
   // Argument checks.
   int const dimension = previous_steps_.back().displacements.size();
@@ -124,8 +131,8 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
       current_state.positions[d] = current_position;
     }
     equation.compute_acceleration(t.value,
-                                   positions,
-                                   current_step.accelerations);
+                                  positions,
+                                  current_step.accelerations);
 
     VelocitySolve(dimension);
 
@@ -166,6 +173,7 @@ Instance::WriteToMessage(
   for (auto const& previous_step : previous_steps_) {
     previous_step.WriteToMessage(extension->add_previous_steps());
   }
+  extension->set_startup_step_index(startup_step_index_);
 }
 
 template<typename Position, int order_>
@@ -217,9 +225,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     AppendState const& append_state,
     Time const& step,
     SymmetricLinearMultistepIntegrator const& integrator)
-    : FixedStepSizeIntegrator<ODE>::Instance(problem,
-                                             std::move(append_state),
-                                             step),
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
       integrator_(integrator) {
   previous_steps_.emplace_back();
   FillStepFromSystemState(this->equation_,
@@ -232,11 +238,11 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
+    int const startup_step_index,
     std::list<Step> const& previous_steps,
     SymmetricLinearMultistepIntegrator const& integrator)
-    : FixedStepSizeIntegrator<ODE>::Instance(problem,
-                                             std::move(append_state),
-                                             step),
+    : FixedStepSizeIntegrator<ODE>::Instance(problem, append_state, step),
+      startup_step_index_(startup_step_index),
       previous_steps_(previous_steps),
       integrator_(integrator) {}
 
@@ -253,9 +259,8 @@ Instance::StartupSolve(Instant const& t_final) {
   CHECK(!previous_steps_.empty());
   CHECK_LT(previous_steps_.size(), order_);
 
-  int startup_step_index = 0;
   auto const startup_append_state =
-      [this, &startup_step_index](typename ODE::SystemState const& state) {
+      [this](typename ODE::SystemState const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
         if (previous_steps_.size() < order_) {
@@ -263,7 +268,7 @@ Instance::StartupSolve(Instant const& t_final) {
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
-          if (++startup_step_index % startup_step_divisor == 0) {
+          if (++startup_step_index_ % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order_);
             previous_steps_.emplace_back();
             this->append_state_(state);
@@ -380,7 +385,12 @@ SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
     previous_steps.push_back(Instance::Step::ReadFromMessage(previous_step));
   }
   return std::unique_ptr<typename Integrator<ODE>::Instance>(
-      new Instance(problem, append_state, step, previous_steps, *this));
+      new Instance(problem,
+                   append_state,
+                   step,
+                   extension.startup_step_index(),
+                   previous_steps,
+                   *this));
 }
 
 }  // namespace internal_symmetric_linear_multistep_integrator

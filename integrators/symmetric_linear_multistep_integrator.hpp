@@ -80,6 +80,7 @@ class SymmetricLinearMultistepIntegrator
     Instance(IntegrationProblem<ODE> const& problem,
              AppendState const& append_state,
              Time const& step,
+             int startup_step_index,
              std::list<Step> const& previous_steps,
              SymmetricLinearMultistepIntegrator const& integrator);
 
@@ -97,6 +98,7 @@ class SymmetricLinearMultistepIntegrator
                                         typename ODE::SystemState const& state,
                                         Step& step);
 
+    int startup_step_index_ = 0;
     std::list<Step> previous_steps_;  // At most |order_ - 1| elements.
     SymmetricLinearMultistepIntegrator const& integrator_;
     friend class SymmetricLinearMultistepIntegrator;

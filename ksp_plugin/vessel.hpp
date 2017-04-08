@@ -192,16 +192,8 @@ class Vessel {
   std::unique_ptr<FlightPlan> flight_plan_;
 };
 
-// Factories for use by the clients and the compatibility code.
-Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters();
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
-
 }  // namespace internal_vessel
 
-using internal_vessel::DefaultHistoryParameters;
-using internal_vessel::DefaultPredictionParameters;
-using internal_vessel::DefaultProlongationParameters;
 using internal_vessel::Vessel;
 
 }  // namespace ksp_plugin

@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
@@ -36,6 +37,7 @@ namespace internal_ephemeris {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::SolarSystemBarycentreEquator;
+using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -44,6 +46,7 @@ using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::Quinlan1999Order8A;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -84,17 +87,23 @@ char constexpr small_name[] = "Small";
 
 }  // namespace
 
-class EphemerisTest : public testing::Test {
+class EphemerisTest
+    : public testing::TestWithParam<
+          FixedStepSizeIntegrator<
+              Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const*> {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
-
   EphemerisTest() {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
             "initial_state_jd_2433282_500000000.proto.txt");
     t0_ = solar_system_.epoch();
+  }
+
+  FixedStepSizeIntegrator<
+      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+  integrator() {
+    return *GetParam();
   }
 
   void SetUpEarthMoonSystem(
@@ -153,7 +162,7 @@ class EphemerisTest : public testing::Test {
   Instant t0_;
 };
 
-TEST_F(EphemerisTest, ProlongSpecialCases) {
+TEST_P(EphemerisTest, ProlongSpecialCases) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -166,12 +175,9 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
-  EXPECT_THAT(
-      ephemeris.planetary_integrator(),
-      Ref(McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>()));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
+  EXPECT_THAT(ephemeris.planetary_integrator(), Ref(integrator()));
 
   EXPECT_EQ(astronomy::InfinitePast, ephemeris.t_max());
   EXPECT_EQ(astronomy::InfiniteFuture, ephemeris.t_min());
@@ -192,7 +198,7 @@ TEST_F(EphemerisTest, ProlongSpecialCases) {
   EXPECT_EQ(t_max, ephemeris.t_max());
 }
 
-TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
+TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   Length const distance = 1e9 * Metre;
   Speed const velocity = 1e3 * Metre / Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -210,9 +216,8 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
 
   MasslessBody probe;
   DiscreteTrajectory<ICRFJ2000Equator> trajectory;
@@ -249,7 +254,7 @@ TEST_F(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
 }
 
 // The canonical Earth-Moon system, tuned to produce circular orbits.
-TEST_F(EphemerisTest, EarthMoon) {
+TEST_P(EphemerisTest, EarthMoon) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -265,9 +270,8 @@ TEST_F(EphemerisTest, EarthMoon) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
 
   ephemeris.Prolong(t0_ + period);
 
@@ -302,7 +306,7 @@ TEST_F(EphemerisTest, EarthMoon) {
 }
 
 // Test the behavior of ForgetBefore on the Earth-Moon system.
-TEST_F(EphemerisTest, ForgetBefore) {
+TEST_P(EphemerisTest, ForgetBefore) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -318,9 +322,8 @@ TEST_F(EphemerisTest, ForgetBefore) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 10));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 10));
 
   ephemeris.Prolong(t0_ + 16 * period);
 
@@ -341,7 +344,7 @@ TEST_F(EphemerisTest, ForgetBefore) {
 }
 
 // The Moon alone.  It moves in straight line.
-TEST_F(EphemerisTest, Moon) {
+TEST_P(EphemerisTest, Moon) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -359,9 +362,8 @@ TEST_F(EphemerisTest, Moon) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
 
   ephemeris.Prolong(t0_ + period);
 
@@ -388,7 +390,7 @@ TEST_F(EphemerisTest, Moon) {
               AlmostEquals(0.50 * period * v, 362));
   EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v, 46));
+              AlmostEquals(0.75 * period * v, 45, 46));
   EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[100].coordinates().x,
               AlmostEquals(1.00 * period * v, 135));
@@ -398,7 +400,7 @@ TEST_F(EphemerisTest, Moon) {
 // The Earth and a massless probe 1 billion meters away, with the same velocity,
 // and an acceleration which exactly compensates gravitational attraction.  Both
 // bodies move in straight lines.
-TEST_F(EphemerisTest, EarthProbe) {
+TEST_P(EphemerisTest, EarthProbe) {
   Length const distance = 1e9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
@@ -421,9 +423,8 @@ TEST_F(EphemerisTest, EarthProbe) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
 
   MasslessBody probe;
   DiscreteTrajectory<ICRFJ2000Equator> trajectory;
@@ -469,16 +470,16 @@ TEST_F(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 1012));
+              AlmostEquals(0.25 * period * v_earth, 998, 1012));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 551));
+              AlmostEquals(0.50 * period * v_earth, 551, 564));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 22));
+              AlmostEquals(0.75 * period * v_earth, 22, 32));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 232));
+              AlmostEquals(1.00 * period * v_earth, 219, 232));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
@@ -495,9 +496,9 @@ TEST_F(EphemerisTest, EarthProbe) {
   }
   // The solution is a line, so the rounding errors dominate.  Different
   // compilers result in different errors and thus different numbers of steps.
-  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(419), Eq(-1)));
+  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(434), Eq(419), Eq(-1)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 207));
+              AlmostEquals(1.00 * period * v_probe, 194, 207));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -521,7 +522,7 @@ TEST_F(EphemerisTest, EarthProbe) {
 
 // The Earth and two massless probes, similar to the previous test but flowing
 // with a fixed step.
-TEST_F(EphemerisTest, EarthTwoProbes) {
+TEST_P(EphemerisTest, EarthTwoProbes) {
   Length const distance_1 = 1e9 * Metre;
   Length const distance_2 = 3e9 * Metre;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -545,9 +546,8 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
 
   MasslessBody probe1;
   DiscreteTrajectory<ICRFJ2000Equator> trajectory1;
@@ -582,9 +582,8 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   auto instance = ephemeris.NewInstance(
       {&trajectory1, &trajectory2},
       {intrinsic_acceleration1, intrinsic_acceleration2},
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-          period / 1000));
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                       period / 1000));
   ephemeris.FlowWithFixedStep(
       t0_ + period,
       *instance);
@@ -606,16 +605,16 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 1012));
+              AlmostEquals(0.25 * period * v_earth, 998, 1012));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 551));
+              AlmostEquals(0.50 * period * v_earth, 551, 564));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 22));
+              AlmostEquals(0.75 * period * v_earth, 22, 32));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 232));
+              AlmostEquals(1.00 * period * v_earth, 219, 232));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -
@@ -650,7 +649,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
 #endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe1, 40));
+              AlmostEquals(1.00 * period * v_probe1, 40, 63));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe2, 1));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
@@ -659,7 +658,7 @@ TEST_F(EphemerisTest, EarthTwoProbes) {
               Eq(q_probe2));
 }
 
-TEST_F(EphemerisTest, Serialization) {
+TEST_P(EphemerisTest, Serialization) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   Position<ICRFJ2000Equator> centre_of_mass;
@@ -675,9 +674,8 @@ TEST_F(EphemerisTest, Serialization) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              period / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           period / 100));
   ephemeris.Prolong(t0_ + period);
 
   EXPECT_EQ(0, ephemeris.serialization_index_for_body(earth));
@@ -718,8 +716,8 @@ TEST_F(EphemerisTest, Serialization) {
       << "SECOND\n" << second_message.DebugString();
 }
 
-// The gravitational acceleration on at elephant located at the pole.
-TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
+// The gravitational acceleration on an elephant located at the pole.
+TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Time const duration = 1 * Second;
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
@@ -743,9 +741,8 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              duration / 100));
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                           duration / 100));
 
   MasslessBody elephant;
   DiscreteTrajectory<ICRFJ2000Equator> trajectory;
@@ -802,7 +799,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
 }
 
-TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
+TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
   Length const radius = 1 * LunarDistance;
@@ -812,69 +809,68 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Mass const m2 = 3 * SolarMass;
   Mass const m3 = 4 * SolarMass;
 
-  auto const b0 = new OblateBody<World>(m0,
-                                        RotatingBody<World>::Parameters(
-                                            1 * Metre,
-                                            1 * Radian,
-                                            t0_,
-                                            4 * Radian / Second,
-                                            0 * Radian,
-                                            π / 2 * Radian),
-                                        OblateBody<World>::Parameters(
-                                            j2, radius));
+  auto const b0 = new OblateBody<ICRFJ2000Equator>(
+      m0,
+      RotatingBody<ICRFJ2000Equator>::Parameters(1 * Metre,
+                                                 1 * Radian,
+                                                 t0_,
+                                                 4 * Radian / Second,
+                                                 0 * Radian,
+                                                 π / 2 * Radian),
+      OblateBody<ICRFJ2000Equator>::Parameters(j2, radius));
   auto const b1 = new MassiveBody(m1);
   auto const b2 = new MassiveBody(m2);
   auto const b3 = new MassiveBody(m3);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  std::vector<DegreesOfFreedom<World>> initial_state;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b0));
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b1));
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b2));
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b3));
 
-  Velocity<World> const v({0 * SIUnit<Speed>(),
-                           0 * SIUnit<Speed>(),
-                           0 * SIUnit<Speed>()});
-  Position<World> const q0 = World::origin +
-      Vector<Length, World>({0 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             0 * AstronomicalUnit});
-  Position<World> const q1 = World::origin +
-      Vector<Length, World>({1 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             0 * AstronomicalUnit});
-  Position<World> const q2 = World::origin +
-      Vector<Length, World>({1 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             1 * AstronomicalUnit});
-  Position<World> const q3 = World::origin +
-      Vector<Length, World>({0 * AstronomicalUnit,
-                             0 * AstronomicalUnit,
-                             1 * AstronomicalUnit});
+  Velocity<ICRFJ2000Equator> const v({0 * SIUnit<Speed>(),
+                                      0 * SIUnit<Speed>(),
+                                      0 * SIUnit<Speed>()});
+  Position<ICRFJ2000Equator> const q0 = ICRFJ2000Equator::origin +
+      Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit});
+  Position<ICRFJ2000Equator> const q1 = ICRFJ2000Equator::origin +
+      Vector<Length, ICRFJ2000Equator>({1 * AstronomicalUnit,
+                                        0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit});
+  Position<ICRFJ2000Equator> const q2 = ICRFJ2000Equator::origin +
+      Vector<Length, ICRFJ2000Equator>({1 * AstronomicalUnit,
+                                        0 * AstronomicalUnit,
+                                        1 * AstronomicalUnit});
+  Position<ICRFJ2000Equator> const q3 = ICRFJ2000Equator::origin +
+      Vector<Length, ICRFJ2000Equator>({0 * AstronomicalUnit,
+                                        0 * AstronomicalUnit,
+                                        1 * AstronomicalUnit});
   initial_state.emplace_back(q0, v);
   initial_state.emplace_back(q1, v);
   initial_state.emplace_back(q2, v);
   initial_state.emplace_back(q3, v);
 
-  Ephemeris<World>
+  Ephemeris<ICRFJ2000Equator>
       ephemeris(
           std::move(bodies),
           initial_state,
           t0_,
           5 * Milli(Metre),
-          Ephemeris<World>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<World>>(),
+          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+              integrator(),
               duration / 100));
   ephemeris.Prolong(t0_ + duration);
 
-  Vector<Acceleration, World> actual_acceleration0 =
+  Vector<Acceleration, ICRFJ2000Equator> actual_acceleration0 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
-  Vector<Acceleration, World> expected_acceleration0 =
+  Vector<Acceleration, ICRFJ2000Equator> expected_acceleration0 =
       GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
                                m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
                                m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
-      Vector<Acceleration, World>(
+      Vector<Acceleration, ICRFJ2000Equator>(
           {(1.5 * m1 - (9 / Sqrt(512)) * m2) * GravitationalConstant *
                Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
@@ -883,13 +879,13 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   EXPECT_THAT(actual_acceleration0,
               AlmostEquals(expected_acceleration0, 0, 6));
 
-  Vector<Acceleration, World> actual_acceleration1 =
+  Vector<Acceleration, ICRFJ2000Equator> actual_acceleration1 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b1, t0_);
-  Vector<Acceleration, World> expected_acceleration1 =
+  Vector<Acceleration, ICRFJ2000Equator> expected_acceleration1 =
       GravitationalConstant * (m0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
                                m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
                                m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm())) +
-      Vector<Acceleration, World>(
+      Vector<Acceleration, ICRFJ2000Equator>(
           {-1.5 * GravitationalConstant * m0 * Pow<2>(radius) * j2 /
                Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
@@ -897,13 +893,13 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   EXPECT_THAT(actual_acceleration1,
               AlmostEquals(expected_acceleration1, 0, 4));
 
-  Vector<Acceleration, World> actual_acceleration2 =
+  Vector<Acceleration, ICRFJ2000Equator> actual_acceleration2 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b2, t0_);
-  Vector<Acceleration, World> expected_acceleration2 =
+  Vector<Acceleration, ICRFJ2000Equator> expected_acceleration2 =
       GravitationalConstant * (m0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
                                m1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
                                m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm())) +
-      Vector<Acceleration, World>(
+      Vector<Acceleration, ICRFJ2000Equator>(
           {(9 / Sqrt(512)) * GravitationalConstant * m0 *
                Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
@@ -912,13 +908,13 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   EXPECT_THAT(actual_acceleration2,
               AlmostEquals(expected_acceleration2, 0, 3));
 
-  Vector<Acceleration, World> actual_acceleration3 =
+  Vector<Acceleration, ICRFJ2000Equator> actual_acceleration3 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b3, t0_);
-  Vector<Acceleration, World> expected_acceleration3 =
+  Vector<Acceleration, ICRFJ2000Equator> expected_acceleration3 =
       GravitationalConstant * (m0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
                                m1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
                                m2 * (q2 - q3) / Pow<3>((q2 - q3).Norm())) +
-      Vector<Acceleration, World>(
+      Vector<Acceleration, ICRFJ2000Equator>(
           {0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>(),
            3 * GravitationalConstant * m0 * Pow<2>(radius) * j2 /
@@ -927,7 +923,7 @@ TEST_F(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
               AlmostEquals(expected_acceleration3, 0, 4));
 }
 
-TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
+TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   SolarSystem<ICRFJ2000Equator> solar_system;
   solar_system.Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
@@ -1018,6 +1014,13 @@ TEST_F(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     previous_time = time;
   }
 }
+
+INSTANTIATE_TEST_CASE_P(
+    AllEphemerisTests,
+    EphemerisTest,
+    ::testing::Values(
+        &McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        &Quinlan1999Order8A<Position<ICRFJ2000Equator>>()));
 
 }  // namespace internal_ephemeris
 }  // namespace physics

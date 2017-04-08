@@ -77,7 +77,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   using ODE = ODE_;
 
   // The last call to |append_state| has a |state.time.value| equal to the
-  // unique |Instant| of the form |problem.t_final + n * step| in
+  // unique |Instant| of the form |t_final + n * step| in
   // ]t_final - step, t_final].  |append_state| will be called with
   // |state.time.values|s at intervals differing from |step| by at most one ULP.
   class Instance : public Integrator<ODE>::Instance {
