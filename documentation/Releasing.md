@@ -15,6 +15,7 @@ git push la-vache --tags
 ```
 After this is done, build the DLL using Profile Guided Optimization:
 
+- [ ] Make sure that the fingerprints for detecting and fixing the stock system are up-to-date.
 - [ ] Make sure that the `PlayerTest.Benchmark` test contains the latest journal file name and has been merged as the last pull request.
 - [ ] Select configuration `Release`, platform `x64`.
 - [ ] Remove all existing artifacts: `rm .\Release`.

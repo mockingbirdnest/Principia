@@ -13,6 +13,7 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/rotation.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -43,10 +44,12 @@ using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::Quinlan1999Order8A;
 using quantities::DebugString;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sqrt;
+using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::bipm::NauticalMile;
 using quantities::si::AstronomicalUnit;
@@ -61,9 +64,23 @@ namespace physics {
 
 namespace {
 
+using Flow =
+    void(not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+         Instant const& t,
+         Ephemeris<ICRFJ2000Equator>& ephemeris);
+
+Length FittingTolerance(int const scale) {
+  return 5 * std::pow(10.0, scale) * Metre;
+}
+
+Ephemeris<ICRFJ2000Equator>::FixedStepParameters EphemerisParameters() {
+  return Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+      McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+      /*step=*/45 * Minute);
+}
+
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                    benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length error;
   while (state.KeepRunning()) {
     state.PauseTiming();
@@ -72,11 +89,8 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
     Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
 
     auto const ephemeris =
-        at_спутник_1_launch->MakeEphemeris(
-            fitting_tolerance,
-            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-                /*step=*/45 * Minute));
+        at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                           EphemerisParameters());
 
     state.ResumeTiming();
     ephemeris->Prolong(final_time);
@@ -95,23 +109,22 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
   state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
 }
 
+template<Flow* flow>
 void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
+                               Time const integration_duration,
                                benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
 
   auto const at_спутник_1_launch =
       SolarSystemFactory::AtСпутник1Launch(accuracy);
-  Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
+  Instant const final_time = at_спутник_1_launch->epoch() +
+                             integration_duration;
 
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
-          fitting_tolerance,
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                         EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -155,17 +168,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                   sun_l4_velocity)));
 
     state.ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(
-        &trajectory,
-        Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
-        final_time,
-        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
-            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second),
-        Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    flow(&trajectory, final_time, *ephemeris);
     state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -193,9 +196,9 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                  std::to_string(total_degree));
 }
 
+template<Flow* flow>
 void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                                 benchmark::State& state) {
-  Length const fitting_tolerance = 5 * std::pow(10.0, state.range_x()) * Metre;
   Length sun_error;
   Length earth_error;
   int steps;
@@ -205,11 +208,8 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
 
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(
-          fitting_tolerance,
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
+                                         EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -237,17 +237,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
                               earth_probe_velocity));
 
     state.ResumeTiming();
-    ephemeris->FlowWithAdaptiveStep(
-        &trajectory,
-        Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
-        final_time,
-        Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
-            DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
-            /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second),
-        Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
-        /*last_point_only=*/false);
+    flow(&trajectory, final_time, *ephemeris);
     state.PauseTiming();
 
     sun_error = (at_спутник_1_launch->trajectory(
@@ -277,81 +267,156 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 }  // namespace
 
-void BM_EphemerisSolarSystemMajorBodiesOnly(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EphemerisSolarSystemMajorBodiesOnly(benchmark::State& state) {
   EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
                                 state);
 }
 
-void BM_EphemerisSolarSystemMinorAndMajorBodies(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EphemerisSolarSystemMinorAndMajorBodies(benchmark::State& state) {
   EphemerisSolarSystemBenchmark(
       SolarSystemFactory::Accuracy::MinorAndMajorBodies,
       state);
 }
 
-void BM_EphemerisSolarSystemAllBodiesAndOblateness(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EphemerisSolarSystemAllBodiesAndOblateness(benchmark::State& state) {
   EphemerisSolarSystemBenchmark(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
       state);
 }
 
-void BM_EphemerisL4ProbeMajorBodiesOnly(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            state);
+template<Flow* flow>
+void BM_EphemerisL4ProbeMajorBodiesOnly(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<flow>(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                                  /*integration_duration=*/100 * JulianYear,
+                                  state);
 }
 
-void BM_EphemerisL4ProbeMinorAndMajorBodies(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                            state);
-}
-
-void BM_EphemerisL4ProbeAllBodiesAndOblateness(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(
-      SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+template<Flow* flow>
+void BM_EphemerisL4ProbeMinorAndMajorBodies(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies,
+      /*integration_duration=*/100 * JulianYear,
       state);
 }
 
-void BM_EphemerisLEOProbeMajorBodiesOnly(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                             state);
-}
-
-void BM_EphemerisLEOProbeMinorAndMajorBodies(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy::MinorAndMajorBodies,
-                             state);
-}
-
-void BM_EphemerisLEOProbeAllBodiesAndOblateness(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisLEOProbeBenchmark(
+template<Flow* flow>
+void BM_EphemerisL4ProbeAllBodiesAndOblateness(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<flow>(
       SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+      /*integration_duration=*/100 * JulianYear,
       state);
 }
 
-void BM_EphemerisFittingTolerance(
-    benchmark::State& state) {  // NOLINT(runtime/references)
-  EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy::MajorBodiesOnly,
-                            state);
+template<Flow* flow>
+void BM_EphemerisLEOProbeMajorBodiesOnly(benchmark::State& state) {
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MajorBodiesOnly, state);
+}
+
+template<Flow* flow>
+void BM_EphemerisLEOProbeMinorAndMajorBodies(benchmark::State& state) {
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies, state);
+}
+
+template<Flow* flow>
+void BM_EphemerisLEOProbeAllBodiesAndOblateness(benchmark::State& state) {
+  EphemerisLEOProbeBenchmark<flow>(
+      SolarSystemFactory::Accuracy::AllBodiesAndOblateness, state);
+}
+
+template<Flow* flow>
+void BM_EphemerisFittingTolerance(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<flow>(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                                  /*integration_duration=*/100 * JulianYear,
+                                  state);
+}
+
+template<Flow* flow>
+void BM_EphemerisStartup(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<flow>(SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                                  /*integration_duration=*/100 * Second,
+                                  state);
+}
+
+void FlowEphemerisWithAdaptiveStep(
+    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    Instant const& t,
+    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+  CHECK(ephemeris.FlowWithAdaptiveStep(
+      trajectory,
+      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
+      t,
+      Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+          /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second),
+      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+      /*last_point_only=*/false));
+}
+
+void FlowEphemerisWithFixedStepSLMS(
+    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    Instant const& t,
+    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+  auto const instance = ephemeris.NewInstance(
+      {trajectory},
+      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
+          /*step=*/10 * Second));
+  ephemeris.FlowWithFixedStep(t, *instance);
+}
+
+void FlowEphemerisWithFixedStepSRKN(
+    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    Instant const& t,
+    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+  auto const instance = ephemeris.NewInstance(
+      {trajectory},
+      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+          /*step=*/10 * Second));
+  ephemeris.FlowWithFixedStep(t, *instance);
 }
 
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeMajorBodiesOnly)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeMinorAndMajorBodies)->Arg(-3);
-BENCHMARK(BM_EphemerisL4ProbeAllBodiesAndOblateness)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeMajorBodiesOnly)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeMinorAndMajorBodies)->Arg(-3);
-BENCHMARK(BM_EphemerisLEOProbeAllBodiesAndOblateness)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeMajorBodiesOnly,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisL4ProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMajorBodiesOnly,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMajorBodiesOnly,
+                    &FlowEphemerisWithFixedStepSLMS)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMajorBodiesOnly,
+                    &FlowEphemerisWithFixedStepSRKN)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithFixedStepSLMS)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeMinorAndMajorBodies,
+                    &FlowEphemerisWithFixedStepSRKN)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithAdaptiveStep)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithFixedStepSLMS)->Arg(-3);
+BENCHMARK_TEMPLATE1(BM_EphemerisLEOProbeAllBodiesAndOblateness,
+                    &FlowEphemerisWithFixedStepSRKN)->Arg(-3);
 
-BENCHMARK(BM_EphemerisFittingTolerance)->DenseRange(-4, 4);
+BENCHMARK_TEMPLATE1(BM_EphemerisFittingTolerance,
+                    &FlowEphemerisWithAdaptiveStep)->DenseRange(-4, 4);
+
+BENCHMARK_TEMPLATE1(BM_EphemerisStartup,
+                    &FlowEphemerisWithFixedStepSLMS)->Arg(3);
+BENCHMARK_TEMPLATE1(BM_EphemerisStartup,
+                    &FlowEphemerisWithFixedStepSRKN)->Arg(3);
 
 }  // namespace physics
 }  // namespace principia
