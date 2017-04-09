@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -17,6 +18,7 @@
 #include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -36,6 +38,8 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
+using integrators::BlanesMoan2002SRKN14A;
+using integrators::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -48,6 +52,7 @@ using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularMomentum;
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Day;
@@ -57,6 +62,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::AbsoluteError;
 using ::testing::AllOf;
@@ -262,7 +268,7 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
       solar_system_at_j2000.MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
+              BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
               /*step=*/45 * Minute));
   ephemeris->Prolong(ten_years_later.epoch());
 
@@ -368,6 +374,72 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
 }
 #endif
 
+TEST_F(SolarSystemDynamicsTest, Convergence) {
+  Time const integration_duration = 1 * JulianYear;
+  int iterations = 8;
+
+  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
+  solar_system_at_j2000.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2451545_000000000.proto.txt");
+
+  std::map<int, std::vector<DegreesOfFreedom<ICRFJ2000Equator>>>
+      index_to_degrees_of_freedom;
+  std::vector<Time> steps;
+  for (int i = 0; i < iterations; ++i) {
+    Time const step = (16 << i) * Second;
+    steps.push_back(step);
+    LOG(INFO) << "Integrating with step " << step;
+    auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+        /*fitting_tolerance=*/5 * Milli(Metre),
+        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+            step));
+    ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
+
+    for (auto const& pair : bodies_orbiting_) {
+      auto const& indices = pair.second;
+      for (auto const& index : indices) {
+        auto const name = SolarSystemFactory::name(index);
+        auto const body = solar_system_at_j2000.massive_body(*ephemeris, name);
+        index_to_degrees_of_freedom[index].emplace_back(
+          ephemeris->trajectory(body)->EvaluateDegreesOfFreedom(
+            solar_system_at_j2000.epoch() + integration_duration));
+      }
+    }
+  }
+
+  std::map<int, std::vector<RelativeDegreesOfFreedom<ICRFJ2000Equator>>> index_to_errors;
+  for (auto const& pair : index_to_degrees_of_freedom) {
+    auto const index = pair.first;
+    auto const& degrees_of_freedom = pair.second;
+    CHECK_EQ(degrees_of_freedom.size(), iterations);
+    for (int i = 1; i < iterations; ++i) {
+      index_to_errors[index].emplace_back(degrees_of_freedom[i] -
+                                          degrees_of_freedom[0]);
+    }
+  }
+
+  std::vector<Length> position_errors(iterations - 1);
+  std::vector<int> worst_body(iterations - 1);
+  for (int i = 0; i < iterations - 1; ++i) {
+    for (auto const& pair : index_to_errors) {
+      auto const index = pair.first;
+      auto const& errors = pair.second;
+      if (position_errors[i] < errors[i].displacement().Norm()) {
+        position_errors[i] < errors[i].displacement().Norm();
+        worst_body[i] = index;
+      }
+      position_errors[i] = std::max(position_errors[i],
+                                    errors[i].displacement().Norm());
+    }
+    LOG(INFO) << "step: " << steps[i + 1] << " position error: "
+              << position_errors[i] << " body: "
+              << SolarSystemFactory::name(worst_body[i]);
+  }
+}
+
 #if !_DEBUG
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
@@ -381,7 +453,7 @@ TEST(MarsTest, Phobos) {
       solar_system_at_j2000.MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
+              BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
               /*step=*/45 * Minute));
   ephemeris->Prolong(J2000 + 1 * JulianYear);
 
