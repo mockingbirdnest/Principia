@@ -392,7 +392,8 @@ Ephemeris<Frame>::NewInstance(
       typename NewtonianMotionEquation::SystemState const& state) {
     last_state_228_ = state;
   };
-#else auto const append_state =
+#else
+  auto const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
 #endif
 
