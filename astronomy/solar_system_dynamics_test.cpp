@@ -11,6 +11,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/integrators.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -38,8 +39,11 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
+using integrators::BlanesMoan2002SRKN11B;
 using integrators::BlanesMoan2002SRKN14A;
+using integrators::FixedStepSizeIntegrator;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::Quinlan1999Order8A;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -374,72 +378,6 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
 }
 #endif
 
-TEST_F(SolarSystemDynamicsTest, Convergence) {
-  Time const integration_duration = 1 * JulianYear;
-  int iterations = 8;
-
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
-  solar_system_at_j2000.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-      SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2451545_000000000.proto.txt");
-
-  std::map<int, std::vector<DegreesOfFreedom<ICRFJ2000Equator>>>
-      index_to_degrees_of_freedom;
-  std::vector<Time> steps;
-  for (int i = 0; i < iterations; ++i) {
-    Time const step = (16 << i) * Second;
-    steps.push_back(step);
-    LOG(INFO) << "Integrating with step " << step;
-    auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-        /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-            step));
-    ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
-
-    for (auto const& pair : bodies_orbiting_) {
-      auto const& indices = pair.second;
-      for (auto const& index : indices) {
-        auto const name = SolarSystemFactory::name(index);
-        auto const body = solar_system_at_j2000.massive_body(*ephemeris, name);
-        index_to_degrees_of_freedom[index].emplace_back(
-          ephemeris->trajectory(body)->EvaluateDegreesOfFreedom(
-            solar_system_at_j2000.epoch() + integration_duration));
-      }
-    }
-  }
-
-  std::map<int, std::vector<RelativeDegreesOfFreedom<ICRFJ2000Equator>>> index_to_errors;
-  for (auto const& pair : index_to_degrees_of_freedom) {
-    auto const index = pair.first;
-    auto const& degrees_of_freedom = pair.second;
-    CHECK_EQ(degrees_of_freedom.size(), iterations);
-    for (int i = 1; i < iterations; ++i) {
-      index_to_errors[index].emplace_back(degrees_of_freedom[i] -
-                                          degrees_of_freedom[0]);
-    }
-  }
-
-  std::vector<Length> position_errors(iterations - 1);
-  std::vector<int> worst_body(iterations - 1);
-  for (int i = 0; i < iterations - 1; ++i) {
-    for (auto const& pair : index_to_errors) {
-      auto const index = pair.first;
-      auto const& errors = pair.second;
-      if (position_errors[i] < errors[i].displacement().Norm()) {
-        position_errors[i] < errors[i].displacement().Norm();
-        worst_body[i] = index;
-      }
-      position_errors[i] = std::max(position_errors[i],
-                                    errors[i].displacement().Norm());
-    }
-    LOG(INFO) << "step: " << steps[i + 1] << " position error: "
-              << position_errors[i] << " body: "
-              << SolarSystemFactory::name(worst_body[i]);
-  }
-}
-
 #if !_DEBUG
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
@@ -492,6 +430,132 @@ TEST(MarsTest, Phobos) {
 }
 
 #endif
+
+struct ConvergenceTestParameters {
+  FixedStepSizeIntegrator<
+      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator;
+  int iterations;
+  int first_step_in_seconds;
+};
+
+class SolarSystemDynamicsConvergenceTest
+    : public ::testing::TestWithParam<ConvergenceTestParameters> {
+ protected:
+  FixedStepSizeIntegrator<
+      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator() const {
+    return GetParam().integrator;
+  }
+
+  int iterations() const {
+    return GetParam().iterations;
+  }
+
+  int first_step_in_seconds() const {
+    return GetParam().first_step_in_seconds;
+  }
+};
+
+TEST_P(SolarSystemDynamicsConvergenceTest, Convergence) {
+  google::LogToStderr();
+  Time const integration_duration = 1 * JulianYear;
+
+  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
+  solar_system_at_j2000.Initialize(
+      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "initial_state_jd_2451545_000000000.proto.txt");
+  std::vector<std::string> const& body_names = solar_system_at_j2000.names();
+
+  std::map<std::string, std::vector<DegreesOfFreedom<ICRFJ2000Equator>>>
+      name_to_degrees_of_freedom;
+  std::vector<Time> steps;
+  std::vector<std::chrono::duration<double>> durations;
+  for (int i = 0; i < iterations(); ++i) {
+    Time const step = (first_step_in_seconds() << i) * Second;
+    steps.push_back(step);
+    LOG(INFO) << "Integrating with step " << step;
+
+    auto const start = std::chrono::system_clock::now();
+    auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+        /*fitting_tolerance=*/5 * Milli(Metre),
+        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+            // BlanesMoan2002SRKN11B<Position<ICRFJ2000Equator>>(),
+            integrator(),
+            step));
+    ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
+    auto const end = std::chrono::system_clock::now();
+    durations.push_back(end - start);
+
+    for (auto const& body_name : body_names) {
+      auto const body =
+          solar_system_at_j2000.massive_body(*ephemeris, body_name);
+      name_to_degrees_of_freedom[body_name].emplace_back(
+          ephemeris->trajectory(body)->EvaluateDegreesOfFreedom(
+              solar_system_at_j2000.epoch() + integration_duration));
+    }
+  }
+
+  std::map<std::string, std::vector<RelativeDegreesOfFreedom<ICRFJ2000Equator>>>
+      name_to_errors;
+  for (auto const& pair : name_to_degrees_of_freedom) {
+    auto const& name = pair.first;
+    auto const& degrees_of_freedom = pair.second;
+    CHECK_EQ(degrees_of_freedom.size(), iterations());
+    for (int i = 1; i < iterations(); ++i) {
+      name_to_errors[name].emplace_back(degrees_of_freedom[i] -
+                                        degrees_of_freedom[0]);
+    }
+  }
+
+  using MathematicaEntry = std::tuple<Time, Length, std::string, Time>;
+  using MathematicaEntries = std::vector<MathematicaEntry>;
+
+  std::vector<Length> position_errors(iterations() - 1);
+  std::vector<std::string> worst_body(iterations() - 1);
+  MathematicaEntries mathematica_entries;
+  for (int i = 0; i < iterations() - 1; ++i) {
+    for (auto const& pair : name_to_errors) {
+      auto const& name = pair.first;
+      auto const& errors = pair.second;
+      if (position_errors[i] < errors[i].displacement().Norm()) {
+        position_errors[i] < errors[i].displacement().Norm();
+        worst_body[i] = name;
+      }
+      position_errors[i] = std::max(position_errors[i],
+                                    errors[i].displacement().Norm());
+    }
+    mathematica_entries.push_back({steps[i + 1],
+                                   position_errors[i],
+                                   mathematica::Escape(worst_body[i]),
+                                   durations[i + 1].count() * Second});
+  }
+
+  std::string const test_name(
+      ::testing::UnitTest::GetInstance()->current_test_info()->name());
+  std::ofstream file;
+  file.open("convergence.generated.wl");
+  file << mathematica::Assign(
+      std::string("ppaConvergence") + test_name[test_name.size() - 1],
+      mathematica::ToMathematica(mathematica_entries));
+  file.close();
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AllSolarSystemDynamicsConvergenceTests,
+    SolarSystemDynamicsConvergenceTest,
+    ::testing::Values(
+        ConvergenceTestParameters{
+            BlanesMoan2002SRKN11B<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/7,
+            /*first_step_in_seconds=*/32},
+        ConvergenceTestParameters{
+            Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64}));
 
 }  // namespace astronomy
 }  // namespace principia
