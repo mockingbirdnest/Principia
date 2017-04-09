@@ -99,7 +99,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journaling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170322-175914)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170408-183750)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -116,18 +116,18 @@ TEST_F(PlayerTest, Debug) {
 #if 0
     serialization::Method method_in;
     auto* extension = method_in.MutableExtension(
-        serialization::ReportCollision::extension);
+        serialization::AdvanceTime::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(355375312);
-    in->set_vessel1_guid("14b05bd3-9707-4d49-a6be-a7de481f3e0a");
-    in->set_vessel2_guid("3e6fcb7e-4761-48ed-829f-0adb035f457e");
+    in->set_plugin(162439824);
+    in->set_t(2133783007.4494345);
+    in->set_planetarium_rotation(263.82274205799138);
     serialization::Method method_out_return;
     method_out_return.MutableExtension(
-        serialization::ReportCollision::extension);
+        serialization::AdvanceTime::extension);
     LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-    CHECK(RunIfAppropriate<ReportCollision>(method_in,
-                                            method_out_return,
-                                            player));
+    CHECK(RunIfAppropriate<AdvanceTime>(method_in,
+                                        method_out_return,
+                                        player));
 #endif
   }
 }
