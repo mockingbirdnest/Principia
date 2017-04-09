@@ -61,8 +61,9 @@ class MockPlugin : public Plugin {
 
   MOCK_CONST_METHOD1(ForgetAllHistoriesBefore, void(Instant const& t));
 
-  MOCK_CONST_METHOD1(VesselFromParent,
+  MOCK_CONST_METHOD2(VesselFromParent,
                      RelativeDegreesOfFreedom<AliceSun>(
+                         Index parent_index,
                          GUID const& vessel_guid));
 
   MOCK_CONST_METHOD1(CelestialFromParent,

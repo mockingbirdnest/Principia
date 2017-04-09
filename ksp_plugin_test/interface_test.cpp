@@ -222,7 +222,7 @@ TEST_F(InterfaceDeathTest, Errors) {
                                   parent_relative_degrees_of_freedom);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
-    principia__VesselFromParent(plugin, vessel_guid);
+    principia__VesselFromParent(plugin, celestial_index, vessel_guid);
   }, "plugin.*non NULL");
   EXPECT_DEATH({
     principia__CelestialFromParent(plugin, celestial_index);
@@ -436,7 +436,7 @@ TEST_F(InterfaceTest, ForgetAllHistoriesBefore) {
 
 TEST_F(InterfaceTest, VesselFromParent) {
   EXPECT_CALL(*plugin_,
-              VesselFromParent(vessel_guid))
+              VesselFromParent(celestial_index, vessel_guid))
       .WillOnce(Return(RelativeDegreesOfFreedom<AliceSun>(
                            Displacement<AliceSun>(
                                {parent_position.x * SIUnit<Length>(),
@@ -447,6 +447,7 @@ TEST_F(InterfaceTest, VesselFromParent) {
                                 parent_velocity.y * SIUnit<Speed>(),
                                 parent_velocity.z * SIUnit<Speed>()}))));
   QP const result = principia__VesselFromParent(plugin_.get(),
+                                                celestial_index,
                                                 vessel_guid);
   EXPECT_THAT(result, Eq(parent_relative_degrees_of_freedom));
 }
