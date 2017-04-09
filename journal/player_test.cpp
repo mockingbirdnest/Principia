@@ -113,7 +113,7 @@ TEST_F(PlayerTest, Debug) {
     LOG(ERROR) << "Last successful method out/return: \n"
                << player.last_method_out_return().DebugString();
 
-#if 1
+#if 0
     serialization::Method method_in;
     auto* extension = method_in.MutableExtension(
         serialization::AdvanceTime::extension);
