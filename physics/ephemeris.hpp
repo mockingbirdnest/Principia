@@ -345,7 +345,8 @@ class Ephemeris {
 
 #if defined(WE_LOVE_228)
   // https://m.popkey.co/6bee24/6GJWk.gif.
-  mutable std::vector<not_null<DiscreteTrajectory<Frame>*>> trajectories_228_;
+  typename NewtonianMotionEquation::SystemState last_state_228_;
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> trajectories_228_;
 #endif
 };
 
