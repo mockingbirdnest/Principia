@@ -256,7 +256,9 @@ public partial class PrincipiaPluginAdapter
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
      if (plugin_.HasVessel(vessel.id.ToString())) {
-       QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
+       QP from_parent = plugin_.VesselFromParent(
+           vessel.mainBody.flightGlobalsIndex,
+           vessel.id.ToString());
        vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
                                            vel : (Vector3d)from_parent.p,
                                            refBody : vessel.orbit.referenceBody,

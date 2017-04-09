@@ -399,14 +399,14 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
     vessel->set_name(vessel_name);
   }
   kept_vessels_.emplace(vessel);
-  vessel->set_parent(parent);
+  if (vessel->parent() != parent) {
+    vessel->set_parent(parent);
+  }
   if (loaded) {
     loaded_vessels_.insert(vessel);
   }
   LOG_IF(INFO, inserted) << "Inserted " << (loaded ? "loaded" : "unloaded")
                          << " vessel " << vessel->ShortDebugString();
-  VLOG(1) << "Parent of vessel " << vessel->ShortDebugString()
-          << " is at index " << parent_index;
 }
 
 void Plugin::InsertUnloadedPart(
@@ -665,10 +665,16 @@ void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
 }
 
 RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
+    Index const parent_index,
     GUID const& vessel_guid) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
       find_vessel_by_guid_or_die(vessel_guid);
+  not_null<Celestial const*> parent =
+      FindOrDie(celestials_, parent_index).get();
+  if (vessel->parent() != parent) {
+    vessel->set_parent(parent);
+  }
   RelativeDegreesOfFreedom<Barycentric> const barycentric_result =
       vessel->psychohistory().last().degrees_of_freedom() -
       vessel->parent()->current_degrees_of_freedom(current_time_);

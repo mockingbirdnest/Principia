@@ -39,11 +39,13 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
 // Calls |plugin->VesselFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP principia__VesselFromParent(Plugin const* const plugin,
+                               int const parent_index,
                                char const* const vessel_guid) {
-  journal::Method<journal::VesselFromParent> m({plugin, vessel_guid});
+  journal::Method<journal::VesselFromParent> m(
+      {plugin, parent_index, vessel_guid});
   CHECK_NOTNULL(plugin);
   RelativeDegreesOfFreedom<AliceSun> const result =
-      plugin->VesselFromParent(vessel_guid);
+      plugin->VesselFromParent(parent_index, vessel_guid);
   return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
                    ToXYZ(result.velocity().coordinates() / (Metre / Second))});
 }
