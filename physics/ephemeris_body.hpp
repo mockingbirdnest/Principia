@@ -387,7 +387,6 @@ Ephemeris<Frame>::NewInstance(
   }
 
 #if defined(WE_LOVE_228)
-  last_state_228_ = std::experimental::nullopt;
   trajectories_228_ = trajectories;
   auto const append_state = [this](
       typename NewtonianMotionEquation::SystemState const& state) {
@@ -510,6 +509,7 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   // that case there was not enough room to advance the trajectories.
   if (last_state_228_) {
     AppendMasslessBodiesState(*last_state_228_, trajectories_228_);
+    last_state_228_ = std::experimental::nullopt;
   }
 #endif
 }
