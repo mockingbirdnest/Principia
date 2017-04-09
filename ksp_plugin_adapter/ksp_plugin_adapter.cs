@@ -587,8 +587,7 @@ public partial class PrincipiaPluginAdapter
 
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    if (active_vessel != null &&
-        !FlightGlobals.ActiveVessel.isEVA) {
+    if (active_vessel != null) {
       if (navball_ == null) {
         navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
                        typeof(KSP.UI.Screens.Flight.NavBall));
