@@ -387,6 +387,7 @@ Ephemeris<Frame>::NewInstance(
   }
 
 #if defined(WE_LOVE_228)
+  last_state_228_ = std::experimental::nullopt;
   trajectories_228_ = trajectories;
   auto const append_state = [this](
       typename NewtonianMotionEquation::SystemState const& state) {
@@ -505,10 +506,10 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   instance.Solve(t);
 
 #if defined(WE_LOVE_228)
-  // The |positions| are empty if and only if |append_state| was never called;
-  // in that case there was not enough room to advance the |trajectories|.
-  if (!last_state_228_.positions.empty()) {
-    AppendMasslessBodiesState(last_state_228_, trajectories_228_);
+  // The last state is empty if and only if |append_state| was never called; in
+  // that case there was not enough room to advance the trajectories.
+  if (last_state_228_) {
+    AppendMasslessBodiesState(*last_state_228_, trajectories_228_);
   }
 #endif
 }
