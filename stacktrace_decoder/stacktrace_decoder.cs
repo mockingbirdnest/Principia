@@ -13,7 +13,7 @@ namespace tools {
 
 class StackTraceDecoder {
   const string dbh =
-      @"\Program Files (x86)\Windows Kits\10\Debuggers\x86\dbh.exe";
+      @"\Program Files (x86)\Windows Kits\10\Debuggers\x64\dbh.exe";
 
   private static void Main(string[] args) {
     bool unity_crash;
