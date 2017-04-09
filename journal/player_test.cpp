@@ -99,7 +99,7 @@ TEST_F(PlayerTest, Debug) {
     // An example of how journaling may be used for debugging.  You must set
     // |path| and fill the |method_in| and |method_out_return| protocol buffers.
     std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170408-183750)";
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170409-123223)";
     Player player(path);
     int count = 0;
     while (player.Play()) {
@@ -118,9 +118,9 @@ TEST_F(PlayerTest, Debug) {
     auto* extension = method_in.MutableExtension(
         serialization::AdvanceTime::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(162439824);
-    in->set_t(2133783007.4494345);
-    in->set_planetarium_rotation(263.82274205799138);
+    in->set_plugin(1359274544);
+    in->set_t(2133783009.4294326);
+    in->set_planetarium_rotation(263.85613126498265);
     serialization::Method method_out_return;
     method_out_return.MutableExtension(
         serialization::AdvanceTime::extension);

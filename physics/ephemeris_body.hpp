@@ -387,10 +387,10 @@ Ephemeris<Frame>::NewInstance(
   }
 
 #if defined(WE_LOVE_228)
-  trajectories_228_ = trajectories;
-  auto const append_state = [this](
+  auto const append_state = [this, trajectories](
       typename NewtonianMotionEquation::SystemState const& state) {
     last_state_228_ = state;
+    trajectories_228_ = trajectories;
   };
 #else
   auto const append_state =
