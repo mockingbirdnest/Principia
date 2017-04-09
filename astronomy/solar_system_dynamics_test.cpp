@@ -455,6 +455,7 @@ class SolarSystemDynamicsConvergenceTest
   }
 };
 
+#if 0  // This takes a long time to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
@@ -556,6 +557,7 @@ INSTANTIATE_TEST_CASE_P(
             Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64}));
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
