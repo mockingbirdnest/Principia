@@ -281,6 +281,10 @@ public partial class PrincipiaPluginAdapter
     return true;
   }
 
+  private Part closest_physical_parent(Part part) {
+    return part.rb ? part : closest_physical_parent(part.parent);
+  }
+
   private bool is_manageable(Vessel vessel) {
     return UnmanageabilityReasons(vessel) == null;
   }
@@ -903,8 +907,10 @@ public partial class PrincipiaPluginAdapter
           var vessel2 = vessel1.evaController.LadderPart.vessel;
           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
               !vessel2.packed) {
-            plugin_.ReportCollision(vessel1.rootPart.flightID,
-                                    vessel1.evaController.LadderPart.flightID);
+            plugin_.ReportCollision(
+                vessel1.rootPart.flightID,
+                closest_physical_parent(
+                    vessel1.evaController.LadderPart).flightID);
           }
         }
         foreach (Part part1 in vessel1.parts) {
@@ -912,7 +918,8 @@ public partial class PrincipiaPluginAdapter
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-              plugin_.ReportCollision(part1.flightID, part2.flightID);
+              plugin_.ReportCollision(closest_physical_parent(part1).flightID,
+                                      closest_physical_parent(part2).flightID);
             }
           }
         }
