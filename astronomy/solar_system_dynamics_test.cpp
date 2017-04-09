@@ -440,6 +440,15 @@ struct ConvergenceTestParameters {
 
 class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
+ public:
+  static void SetUpTestCase() {
+    file_.open("convergence.generated.wl");
+  }
+
+  static void TearDownTestCase() {
+    file_.close();
+  }
+
  protected:
   FixedStepSizeIntegrator<
       Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator() const {
@@ -453,9 +462,13 @@ class SolarSystemDynamicsConvergenceTest
   int first_step_in_seconds() const {
     return GetParam().first_step_in_seconds;
   }
+
+  static std::ofstream file_;
 };
 
-#if 0  // This takes a long time to run.
+std::ofstream SolarSystemDynamicsConvergenceTest::file_;
+
+#if 0  // This takes 7-8 minutes to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
@@ -533,12 +546,9 @@ TEST_P(SolarSystemDynamicsConvergenceTest, Convergence) {
 
   std::string const test_name(
       ::testing::UnitTest::GetInstance()->current_test_info()->name());
-  std::ofstream file;
-  file.open("convergence.generated.wl");
-  file << mathematica::Assign(
+  file_ << mathematica::Assign(
       std::string("ppaConvergence") + test_name[test_name.size() - 1],
       mathematica::ToMathematica(mathematica_entries));
-  file.close();
 }
 
 INSTANTIATE_TEST_CASE_P(
