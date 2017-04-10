@@ -437,7 +437,7 @@ struct ConvergenceTestParameters {
   FixedStepSizeIntegrator<
       Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator;
   int iterations;
-  int first_step_in_seconds;
+  double first_step_in_seconds;
 };
 
 class SolarSystemDynamicsConvergenceTest
@@ -487,7 +487,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   std::vector<Time> steps;
   std::vector<std::chrono::duration<double>> durations;
   for (int i = 0; i < iterations(); ++i) {
-    Time const step = (first_step_in_seconds() << i) * Second;
+    Time const step = first_step_in_seconds() * (1 << i) * Second;
     steps.push_back(step);
     LOG(INFO) << "Integrating with step " << step;
 
@@ -576,7 +576,15 @@ INSTANTIATE_TEST_CASE_P(
         ConvergenceTestParameters{
             QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
-            /*first_step_in_seconds=*/64}));
+            /*first_step_in_seconds=*/64},
+
+        // This is our favorite integrator.  For a step of 600 s it gives a
+        // position error of about 2.3 m on Miranda and takes about 2.0 s of
+        // elapsed time.  For steps larger than about 680 s, the errors explode.
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/5,
+            /*first_step_in_seconds=*/75}));
 
 }  // namespace astronomy
 }  // namespace principia
