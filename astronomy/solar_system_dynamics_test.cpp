@@ -44,6 +44,8 @@ using integrators::BlanesMoan2002SRKN14A;
 using integrators::FixedStepSizeIntegrator;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
+using integrators::QuinlanTremaine1990Order10;
+using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -59,6 +61,7 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
+using quantities::si::ArcSecond;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -254,8 +257,8 @@ class SolarSystemDynamicsTest : public testing::Test {
   std::map<int, std::vector<int>> bodies_orbiting_;
 };
 
-#if 0  // This takes a minute to run.
-TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
+// This takes a minute to run.
+TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
   SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
   solar_system_at_j2000.Initialize(
       SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
@@ -376,7 +379,6 @@ TEST_F(SolarSystemDynamicsTest, TenYearsFromJ2000) {
     }
   }
 }
-#endif
 
 #if !_DEBUG
 // This test produces the file phobos.generated.wl which is consumed by the
@@ -468,8 +470,8 @@ class SolarSystemDynamicsConvergenceTest
 
 std::ofstream SolarSystemDynamicsConvergenceTest::file_;
 
-#if 0  // This takes 7-8 minutes to run.
-TEST_P(SolarSystemDynamicsConvergenceTest, Convergence) {
+// This takes 7-8 minutes to run.
+TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
 
@@ -557,17 +559,24 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         ConvergenceTestParameters{
             BlanesMoan2002SRKN11B<Position<ICRFJ2000Equator>>(),
-            /*iterations=*/6,
+            /*iterations=*/8,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
             McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-            /*iterations=*/7,
+            /*iterations=*/8,
             /*first_step_in_seconds=*/32},
         ConvergenceTestParameters{
             Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order10<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            /*iterations=*/6,
             /*first_step_in_seconds=*/64}));
-#endif
 
 }  // namespace astronomy
 }  // namespace principia

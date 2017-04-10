@@ -310,8 +310,7 @@ TEST_F(LunarEclipseTest, Year1952) {
   }
 }
 
-#if 0
-TEST_F(LunarEclipseTest, Year2000) {
+TEST_F(LunarEclipseTest, DISABLED_Year2000) {
   constexpr auto P1 = "2000-01-21T02:04:26"_UT1;
   constexpr auto U1 = "2000-01-21T03:01:50"_UT1;
   constexpr auto U2 = "2000-01-21T04:05:01"_UT1;
@@ -327,7 +326,7 @@ TEST_F(LunarEclipseTest, Year2000) {
   CheckLunarPenumbralEclipse(P4, U14, 8e-5 * Radian, -160 * Second);
 }
 
-TEST_F(LunarEclipseTest, Year2048) {
+TEST_F(LunarEclipseTest, DISABLED_Year2048) {
   // No UT1 in the future, but's that's what NASA gives us (don't ask).  Using
   // TT plus the ΔT that they use.
   constexpr Time ΔT = 91.2 * Second;
@@ -345,7 +344,6 @@ TEST_F(LunarEclipseTest, Year2048) {
   CheckLunarUmbralEclipse(U4, U14,    3e-4 * Radian, -359 * Second);
   CheckLunarPenumbralEclipse(P4, U14, 2e-4 * Radian, -358 * Second);
 }
-#endif
 
 #endif
 

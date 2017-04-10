@@ -137,12 +137,6 @@ class ParallelTestRunner {
             process.StartInfo.FileName = test_binary;
             process.StartInfo.Arguments =
                 "--gtest_filter=" + test_case + line.Split(' ')[2];
-            if (process.StartInfo.Arguments ==
-                "--gtest_filter=PlayerTest.Benchmarks" ||
-                process.StartInfo.Arguments ==
-                "--gtest_filter=PlayerTest.Debug") {
-              continue;
-            }
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";

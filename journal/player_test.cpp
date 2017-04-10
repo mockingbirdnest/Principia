@@ -18,7 +18,6 @@
 namespace principia {
 namespace journal {
 
-// The benchmark is only run if --gtest_filter=PlayerTest.Benchmarks
 void BM_PlayForReal(benchmark::State& state) {  // NOLINT(runtime/references)
   while (state.KeepRunning()) {
     Player player(
@@ -85,51 +84,44 @@ TEST_F(PlayerTest, PlayTiny) {
   EXPECT_EQ(2, count);
 }
 
-// This test (a.k.a. benchmark) is only run if the --gtest_filter flag names it
-// explicitly.
-TEST_F(PlayerTest, Benchmarks) {
-  if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
-    benchmark::RunSpecifiedBenchmarks();
-  }
+TEST_F(PlayerTest, DISABLED_Benchmarks) {
+  benchmark::RunSpecifiedBenchmarks();
 }
 
-// This test is only run if the --gtest_filter flag names it explicitly.
-TEST_F(PlayerTest, Debug) {
-  if (testing::FLAGS_gtest_filter == test_case_name_ + "." + test_name_) {
-    // An example of how journaling may be used for debugging.  You must set
-    // |path| and fill the |method_in| and |method_out_return| protocol buffers.
-    std::string path =
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170409-123223)";
-    Player player(path);
-    int count = 0;
-    while (player.Play()) {
-      ++count;
-      LOG_IF(ERROR, (count % 100'000) == 0) << count
-                                            << " journal entries replayed";
-    }
-    LOG(ERROR) << count << " journal entries in total";
-    LOG(ERROR) << "Last successful method in:\n"
-               << player.last_method_in().DebugString();
-    LOG(ERROR) << "Last successful method out/return: \n"
-               << player.last_method_out_return().DebugString();
+TEST_F(PlayerTest, DISABLED_Debug) {
+  // An example of how journaling may be used for debugging.  You must set
+  // |path| and fill the |method_in| and |method_out_return| protocol buffers.
+  std::string path =
+      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170409-123223)";
+  Player player(path);
+  int count = 0;
+  while (player.Play()) {
+    ++count;
+    LOG_IF(ERROR, (count % 100'000) == 0) << count
+                                          << " journal entries replayed";
+  }
+  LOG(ERROR) << count << " journal entries in total";
+  LOG(ERROR) << "Last successful method in:\n"
+              << player.last_method_in().DebugString();
+  LOG(ERROR) << "Last successful method out/return: \n"
+              << player.last_method_out_return().DebugString();
 
 #if 0
-    serialization::Method method_in;
-    auto* extension = method_in.MutableExtension(
-        serialization::AdvanceTime::extension);
-    auto* in = extension->mutable_in();
-    in->set_plugin(1359274544);
-    in->set_t(2133783009.4294326);
-    in->set_planetarium_rotation(263.85613126498265);
-    serialization::Method method_out_return;
-    method_out_return.MutableExtension(
-        serialization::AdvanceTime::extension);
-    LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-    CHECK(RunIfAppropriate<AdvanceTime>(method_in,
-                                        method_out_return,
-                                        player));
+  serialization::Method method_in;
+  auto* extension = method_in.MutableExtension(
+      serialization::AdvanceTime::extension);
+  auto* in = extension->mutable_in();
+  in->set_plugin(1359274544);
+  in->set_t(2133783009.4294326);
+  in->set_planetarium_rotation(263.85613126498265);
+  serialization::Method method_out_return;
+  method_out_return.MutableExtension(
+      serialization::AdvanceTime::extension);
+  LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
+  CHECK(RunIfAppropriate<AdvanceTime>(method_in,
+                                      method_out_return,
+                                      player));
 #endif
-  }
 }
 
 }  // namespace journal
