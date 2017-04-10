@@ -25,8 +25,6 @@
 #include "geometry/permutation.hpp"
 #include "glog/logging.h"
 #include "glog/stl_logging.h"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
@@ -60,8 +58,6 @@ using geometry::Identity;
 using geometry::Normalize;
 using geometry::Permutation;
 using geometry::Sign;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::McLachlanAtela1992Order5Optimal;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
@@ -93,12 +89,6 @@ std::uint64_t const ksp_fixed_system_fingerprint = 0x1248ADFCBD8BCE64u;
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
-
-Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
-  return Ephemeris<Barycentric>::FixedStepParameters(
-             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-             /*step=*/45 * Minute);
-}
 
 }  // namespace
 

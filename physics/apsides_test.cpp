@@ -7,6 +7,8 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/astronomy.hpp"
@@ -21,7 +23,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Pow;
 using quantities::Speed;
@@ -31,9 +33,9 @@ using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Degree;
-using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Milli;
+using quantities::si::Minute;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -63,8 +65,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
           t0,
           5 * Milli(Metre),
           Ephemeris<World>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<World>>(),
-              1 * Hour));
+              QuinlanTremaine1990Order12<Position<World>>(),
+              10 * Minute));
 
   Displacement<World> r(
       {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
@@ -157,8 +159,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
           t0,
           5 * Milli(Metre),
           Ephemeris<World>::FixedStepParameters(
-              McLachlanAtela1992Order5Optimal<Position<World>>(),
-              1 * Hour));
+              QuinlanTremaine1990Order12<Position<World>>(),
+              10 * Minute));
 
   KeplerianElements<World> elements;
   elements.eccentricity = 0.25;

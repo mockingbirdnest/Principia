@@ -5,6 +5,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
@@ -27,7 +28,7 @@ using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::QuinlanTremaine1990Order12;
 using numerics::Bisect;
 using quantities::GravitationalParameter;
 using quantities::Mass;
@@ -269,8 +270,8 @@ class ResonanceTest : public ::testing::Test {
                game_epoch_,
                /*fitting_tolerance=*/5 * Milli(Metre),
                Ephemeris<KSP>::FixedStepParameters(
-                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-               45 * Minute));
+                   QuinlanTremaine1990Order12<Position<KSP>>(),
+               10 * Minute));
   }
 
   // Interpreting the elements as Jacobi coordinates in the Jool system.

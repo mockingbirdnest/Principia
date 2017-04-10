@@ -7,7 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -27,7 +27,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::SIUnit;
@@ -245,8 +245,8 @@ class KSPSystemTest : public ::testing::Test {
                ksp_epoch,
                /*fitting_tolerance=*/1 * Milli(Metre),
                Ephemeris<KSP>::FixedStepParameters(
-                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-               /*step=*/45 * Minute));
+                   QuinlanTremaine1990Order12<Position<KSP>>(),
+               /*step=*/10 * Minute));
   }
 
   void FillPositions(Ephemeris<KSP> const& ephemeris,
