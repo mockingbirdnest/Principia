@@ -1,9 +1,11 @@
 ﻿
 #pragma once
 
+#include <algorithm>
 #include <experimental/optional>
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -453,7 +455,8 @@ class SolarSystemDynamicsConvergenceTest
 
  protected:
   FixedStepSizeIntegrator<
-      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator() const {
+      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+  integrator() const {
     return GetParam().integrator;
   }
 
