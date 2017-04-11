@@ -446,7 +446,7 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    file_.open("convergence.generated.wl");
+    file_.open("solar_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {
@@ -497,10 +497,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
     auto const start = std::chrono::system_clock::now();
     auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            // BlanesMoan2002SRKN11B<Position<ICRFJ2000Equator>>(),
-            integrator(),
-            step));
+        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(), step));
     ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
     auto const end = std::chrono::system_clock::now();
     durations.push_back(end - start);
@@ -551,9 +548,9 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
 
   std::string const test_name(
       ::testing::UnitTest::GetInstance()->current_test_info()->name());
-  file_ << mathematica::Assign(
-      std::string("ppaConvergence") + test_name[test_name.size() - 1],
-      mathematica::ToMathematica(mathematica_entries));
+  file_ << mathematica::Assign(std::string("ppaSolarSystemConvergence") +
+                                   test_name[test_name.size() - 1],
+                               mathematica::ToMathematica(mathematica_entries));
 }
 
 INSTANTIATE_TEST_CASE_P(
