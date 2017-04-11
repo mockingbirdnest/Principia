@@ -1,8 +1,10 @@
 ﻿
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "gmock/gmock.h"
