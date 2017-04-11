@@ -1,12 +1,17 @@
 ﻿
+#include <algorithm>
+#include <chrono>
 #include <fstream>
 #include <map>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
+#include "integrators/integrators.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/hierarchical_system.hpp"
@@ -27,7 +32,12 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
+using integrators::FixedStepSizeIntegrator;
+using integrators::BlanesMoan2002SRKN11B;
 using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::Quinlan1999Order8A;
+using integrators::QuinlanTremaine1990Order10;
+using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::SIUnit;
@@ -49,12 +59,12 @@ using ::testing::Lt;
 
 namespace physics {
 
-class KSPSystemTest : public ::testing::Test {
- protected:
-  using KSP = Frame<serialization::Frame::TestTag,
-                    serialization::Frame::TEST,
-                    /*frame_is_inertial=*/true>;
+using KSP = Frame<serialization::Frame::TestTag,
+                  serialization::Frame::TEST,
+                  /*frame_is_inertial=*/true>;
 
+class KSPSystem {
+ protected:
   struct KSPCelestial final {
     KeplerianElements<KSP> elements;
     KSPCelestial* parent = nullptr;
@@ -62,41 +72,76 @@ class KSPSystemTest : public ::testing::Test {
     std::unique_ptr<MassiveBody> owned_body;
   };
 
-  KSPSystemTest() {
+  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
+      Ephemeris<KSP>::FixedStepParameters const& parameters) {
     sun_.owned_body = std::make_unique<MassiveBody>(
-        1.1723327948324908e+18 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Sun",
+            1.1723327948324908e+18 * SIUnit<GravitationalParameter>()));
     eeloo_.owned_body = std::make_unique<MassiveBody>(
-        74410814527.049576 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Eeloo",
+            74410814527.049576 * SIUnit<GravitationalParameter>()));
     jool_.owned_body = std::make_unique<MassiveBody>(
-        282528004209995.31 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Jool",
+            282528004209995.31 * SIUnit<GravitationalParameter>()));
     pol_.owned_body = std::make_unique<MassiveBody>(
-        721702080.00000012 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Pol",
+            721702080.00000012 * SIUnit<GravitationalParameter>()));
     bop_.owned_body = std::make_unique<MassiveBody>(
-        2486834944.414907 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Bop",
+            2486834944.414907 * SIUnit<GravitationalParameter>()));
     tylo_.owned_body = std::make_unique<MassiveBody>(
-        2825280042099.9531 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Tylo",
+            2825280042099.9531 * SIUnit<GravitationalParameter>()));
     vall_.owned_body = std::make_unique<MassiveBody>(
-        207481499473.75098 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Vall",
+            207481499473.75098 * SIUnit<GravitationalParameter>()));
     laythe_.owned_body = std::make_unique<MassiveBody>(
-        1962000029236.0784 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Laythe",
+            1962000029236.0784 * SIUnit<GravitationalParameter>()));
     dres_.owned_body = std::make_unique<MassiveBody>(
-        21484488600.000004 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Dres",
+            21484488600.000004 * SIUnit<GravitationalParameter>()));
     duna_.owned_body = std::make_unique<MassiveBody>(
-        301363211975.09772 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Duna",
+            301363211975.09772 * SIUnit<GravitationalParameter>()));
     ike_.owned_body = std::make_unique<MassiveBody>(
-        18568368573.144012 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Ike",
+            18568368573.144012 * SIUnit<GravitationalParameter>()));
     kerbin_.owned_body = std::make_unique<MassiveBody>(
-        3531600000000 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Kerbin",
+            3531600000000 * SIUnit<GravitationalParameter>()));
     minmus_.owned_body = std::make_unique<MassiveBody>(
-        1765800026.3124719 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Minmus",
+            1765800026.3124719 * SIUnit<GravitationalParameter>()));
     mun_.owned_body = std::make_unique<MassiveBody>(
-        65138397520.780701 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Mun",
+            65138397520.780701 * SIUnit<GravitationalParameter>()));
     eve_.owned_body = std::make_unique<MassiveBody>(
-        8171730229210.874 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Eve",
+            8171730229210.874 * SIUnit<GravitationalParameter>()));
     gilly_.owned_body = std::make_unique<MassiveBody>(
-        8289449.814716354 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Gilly",
+            8289449.814716354 * SIUnit<GravitationalParameter>()));
     moho_.owned_body = std::make_unique<MassiveBody>(
-        168609378654.50949 * SIUnit<GravitationalParameter>());
+        MassiveBody::Parameters(
+            "Moho",
+            168609378654.50949 * SIUnit<GravitationalParameter>()));
     for (auto const celestial : all_bodies_) {
       celestial->body = celestial->owned_body.get();
     }
@@ -228,9 +273,7 @@ class KSPSystemTest : public ::testing::Test {
         +1.22173047639603061e+00 * Radian;
     moho_.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
     moho_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-  }
 
-  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {
     HierarchicalSystem<KSP> hierarchical_system(std::move(sun_.owned_body));
     for (auto const celestial : planets_and_moons_) {
       hierarchical_system.Add(std::move(celestial->owned_body),
@@ -242,38 +285,12 @@ class KSPSystemTest : public ::testing::Test {
     return make_not_null_unique<Ephemeris<KSP>>(
                std::move(barycentric_system.bodies),
                std::move(barycentric_system.degrees_of_freedom),
-               ksp_epoch,
+               ksp_epoch_,
                /*fitting_tolerance=*/1 * Milli(Metre),
-               Ephemeris<KSP>::FixedStepParameters(
-                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-               /*step=*/45 * Minute));
+               parameters);
   }
 
-  void FillPositions(Ephemeris<KSP> const& ephemeris,
-                     Instant const& initial_time,
-                     Time const& duration,
-                     std::vector<std::vector<Vector<double, KSP>>>& container) {
-    for (Instant t = initial_time;
-         t < initial_time + duration;
-         t += 45 * Minute) {
-      auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
-        return ephemeris.trajectory(celestial.body)->EvaluatePosition(t);
-      };
-      BarycentreCalculator<Position<KSP>, GravitationalParameter>
-          jool_system_barycentre;
-      for (auto const celestial : jool_system_) {
-        jool_system_barycentre.Add(position(*celestial),
-                                   celestial->body->gravitational_parameter());
-      }
-      container.emplace_back();
-      for (auto const celestial : jool_system_) {
-        container.back().emplace_back(
-            (position(*celestial) - jool_system_barycentre.Get()) / Metre);
-      }
-    }
-  }
-
-  Instant const ksp_epoch;
+  Instant const ksp_epoch_;
 
   KSPCelestial sun_;
   KSPCelestial eeloo_;
@@ -329,17 +346,49 @@ class KSPSystemTest : public ::testing::Test {
       {&jool_, &laythe_, &vall_, &tylo_, &pol_, &bop_};
 };
 
+// We apologize for the inheritance.
+class KSPSystemTest : public ::testing::Test, protected KSPSystem {
+ protected:
+  using KSPSystem::KSPSystem;
+
+  void FillPositions(Ephemeris<KSP> const& ephemeris,
+                     Instant const& initial_time,
+                     Time const& duration,
+                     std::vector<std::vector<Vector<double, KSP>>>& container) {
+    for (Instant t = initial_time;
+         t < initial_time + duration;
+         t += 45 * Minute) {
+      auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
+        return ephemeris.trajectory(celestial.body)->EvaluatePosition(t);
+      };
+      BarycentreCalculator<Position<KSP>, GravitationalParameter>
+          jool_system_barycentre;
+      for (auto const celestial : jool_system_) {
+        jool_system_barycentre.Add(position(*celestial),
+                                   celestial->body->gravitational_parameter());
+      }
+      container.emplace_back();
+      for (auto const celestial : jool_system_) {
+        container.back().emplace_back(
+            (position(*celestial) - jool_system_barycentre.Get()) / Metre);
+      }
+    }
+  }
+};
+
+#if !defined(_DEBUG)
 TEST_F(KSPSystemTest, KerbalSystem) {
-#if NDEBUG
   google::LogToStderr();
 
   auto const moons = {&laythe_, &vall_, &tylo_, &pol_, &bop_};
 
-  auto const ephemeris = MakeEphemeris();
+  auto const ephemeris = MakeEphemeris(Ephemeris<KSP>::FixedStepParameters(
+      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+      /*step=*/45 * Minute));
 #if 0
   auto const a_century_hence = ksp_epoch + 100 * JulianYear;
 #else  // A small century so the tests don't take too long.
-  auto const a_century_hence = ksp_epoch + 5 * JulianYear;
+  auto const a_century_hence = ksp_epoch_ + 5 * JulianYear;
 #endif
 
   LOG(INFO) << "Starting integration";
@@ -349,7 +398,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::map<not_null<KSPCelestial const*>, std::vector<double>>
       extremal_separations_in_m;
   std::map<not_null<KSPCelestial const*>, std::vector<double>> times_in_s;
-  Instant t = ksp_epoch;
+  Instant t = ksp_epoch_;
   std::map<not_null<KSPCelestial const*>, Length> last_separations;
   std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
 
@@ -371,7 +420,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   for (auto const* moon : moons) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
-  for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch + n * Hour) {
+  for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch_ + n * Hour) {
     auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
       return ephemeris->trajectory(celestial.body)->EvaluatePosition(t);
     };
@@ -387,7 +436,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
                                                      Metre);
-        times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch) / Second);
+        times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch_) / Second);
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
@@ -439,12 +488,12 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_1_year;
   FillPositions(*ephemeris,
-                ksp_epoch,
+                ksp_epoch_,
                 1 * JulianYear,
                 barycentric_positions_1_year);
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_2_year;
   FillPositions(*ephemeris,
-                ksp_epoch,
+                ksp_epoch_,
                 2 * JulianYear,
                 barycentric_positions_2_year);
 
@@ -493,8 +542,151 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   file << mathematica::Assign("barycentricPositions2",
                               barycentric_positions_2_year);
   file.close();
-#endif
 }
+#endif
+
+struct ConvergenceTestParameters {
+  FixedStepSizeIntegrator<
+      Ephemeris<KSP>::NewtonianMotionEquation> const& integrator;
+  int iterations;
+  double first_step_in_seconds;
+};
+
+class KSPSystemConvergenceTest
+    : public ::testing::TestWithParam<ConvergenceTestParameters>,
+      protected KSPSystem {
+ public:
+  static void SetUpTestCase() {
+    file_.open("ksp_system_convergence.generated.wl");
+  }
+
+  static void TearDownTestCase() {
+    file_.close();
+  }
+
+ protected:
+  FixedStepSizeIntegrator<
+      Ephemeris<KSP>::NewtonianMotionEquation> const&
+  integrator() const {
+    return GetParam().integrator;
+  }
+
+  int iterations() const {
+    return GetParam().iterations;
+  }
+
+  int first_step_in_seconds() const {
+    return GetParam().first_step_in_seconds;
+  }
+
+  static std::ofstream file_;
+};
+
+std::ofstream KSPSystemConvergenceTest::file_;
+
+// This takes 7-8 minutes to run.
+TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
+  google::LogToStderr();
+  Time const integration_duration = 1 * JulianYear;
+
+  std::map<std::string, std::vector<DegreesOfFreedom<KSP>>>
+      name_to_degrees_of_freedom;
+  std::vector<Time> steps;
+  std::vector<std::chrono::duration<double>> durations;
+  for (int i = 0; i < iterations(); ++i) {
+    Time const step = first_step_in_seconds() * (1 << i) * Second;
+    steps.push_back(step);
+    LOG(INFO) << "Integrating with step " << step;
+
+    auto const start = std::chrono::system_clock::now();
+    auto const ephemeris = MakeEphemeris(
+        Ephemeris<KSP>::FixedStepParameters(integrator(), step));
+    ephemeris->Prolong(ksp_epoch_ + integration_duration);
+    auto const end = std::chrono::system_clock::now();
+    durations.push_back(end - start);
+
+    for (auto const celestial : all_bodies_) {
+      auto* const body = celestial->body;
+      name_to_degrees_of_freedom[body->name()].emplace_back(
+          ephemeris->trajectory(body)->EvaluateDegreesOfFreedom(
+              ksp_epoch_ + integration_duration));
+    }
+  }
+
+  std::map<std::string, std::vector<RelativeDegreesOfFreedom<KSP>>>
+      name_to_errors;
+  for (auto const& pair : name_to_degrees_of_freedom) {
+    auto const& name = pair.first;
+    auto const& degrees_of_freedom = pair.second;
+    CHECK_EQ(degrees_of_freedom.size(), iterations());
+    for (int i = 1; i < iterations(); ++i) {
+      name_to_errors[name].emplace_back(degrees_of_freedom[i] -
+                                        degrees_of_freedom[0]);
+    }
+  }
+
+  using MathematicaEntry = std::tuple<Time, Length, std::string, Time>;
+  using MathematicaEntries = std::vector<MathematicaEntry>;
+
+  std::vector<Length> position_errors(iterations() - 1);
+  std::vector<std::string> worst_body(iterations() - 1);
+  MathematicaEntries mathematica_entries;
+  for (int i = 0; i < iterations() - 1; ++i) {
+    for (auto const& pair : name_to_errors) {
+      auto const& name = pair.first;
+      auto const& errors = pair.second;
+      if (position_errors[i] < errors[i].displacement().Norm()) {
+        position_errors[i] < errors[i].displacement().Norm();
+        worst_body[i] = name;
+      }
+      position_errors[i] = std::max(position_errors[i],
+                                    errors[i].displacement().Norm());
+    }
+    mathematica_entries.push_back({steps[i + 1],
+                                   position_errors[i],
+                                   mathematica::Escape(worst_body[i]),
+                                   durations[i + 1].count() * Second});
+  }
+
+  std::string const test_name(
+      ::testing::UnitTest::GetInstance()->current_test_info()->name());
+  file_ << mathematica::Assign(
+      std::string("ppaKSPSystemConvergence") + test_name[test_name.size() - 1],
+      mathematica::ToMathematica(mathematica_entries));
+}
+
+INSTANTIATE_TEST_CASE_P(
+    AllKSPSystemConvergenceTests,
+    KSPSystemConvergenceTest,
+    ::testing::Values(
+        ConvergenceTestParameters{
+            BlanesMoan2002SRKN11B<Position<KSP>>(),
+            /*iterations=*/8,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+            /*iterations=*/8,
+            /*first_step_in_seconds=*/32},
+        ConvergenceTestParameters{
+            Quinlan1999Order8A<Position<KSP>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order10<Position<KSP>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order12<Position<KSP>>(),
+            /*iterations=*/6,
+            /*first_step_in_seconds=*/64},
+
+        // This is our favorite integrator.  For a step of 600 s it gives a
+        // position error of about 28 m on Bop and takes about 0.7 s of elapsed
+        // time.
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order12<Position<KSP>>(),
+            /*iterations=*/5,
+            /*first_step_in_seconds=*/75}));
 
 }  // namespace physics
 }  // namespace principia
