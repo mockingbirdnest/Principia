@@ -197,8 +197,7 @@ TEST_F(MercuryPerihelionTest, Year1960) {
               AllOf(Gt(17.0 * ArcSecond), Lt(17.1 * ArcSecond)));
 }
 
-#if 0
-TEST_F(MercuryPerihelionTest, Year2050) {
+TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
   ephemeris_->Prolong(t_2050_);
 
   auto const& sun_trajectory =
@@ -232,7 +231,7 @@ TEST_F(MercuryPerihelionTest, Year2050) {
                   keplerian_elements_2050_.mean_anomaly,
               AllOf(Gt(171 * ArcSecond), Lt(172 * ArcSecond)));
 }
-#endif
+
 #endif
 
 }  // namespace astronomy

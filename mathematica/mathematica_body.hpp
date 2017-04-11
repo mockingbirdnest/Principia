@@ -125,7 +125,7 @@ std::string ToMathematica(std::tuple<Types...> const& tuple) {
   std::vector<std::string> expressions;
   expressions.reserve(sizeof...(Types));
   TupleHelper<sizeof...(Types), Types...>::ToMathematicaStrings(
-      tuple, &expressions);
+      tuple, expressions);
   return Apply("List", expressions);
 }
 
