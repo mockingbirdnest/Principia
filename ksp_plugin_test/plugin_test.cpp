@@ -935,14 +935,14 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
   GUID const guid = "Test Satellite";
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
-    plugin_->VesselFromParent(guid);
+    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
   }, "Check failed: !initializing");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
     EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
         .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
     plugin_->EndInitialization();
-    plugin_->VesselFromParent(guid);
+    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
   }, "Map key not found");
   EXPECT_DEATH({
     InsertAllSolarSystemBodies();
@@ -957,7 +957,7 @@ TEST_F(PluginDeathTest, VesselFromParentError) {
                                 inserted);
     plugin_->PrepareToReportCollisions();
     plugin_->FreeVesselsAndPartsAndCollectPileUps();
-    plugin_->VesselFromParent(guid);
+    plugin_->VesselFromParent(SolarSystemFactory::Sun, guid);
   }, R"regex(!parts_\.empty\(\))regex");
 }
 
@@ -1006,10 +1006,10 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                                          satellite_initial_velocity_));
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
-  EXPECT_THAT(plugin_->VesselFromParent(guid),
-              Componentwise(
-                  AlmostEquals(satellite_initial_displacement_, 13556),
-                  AlmostEquals(satellite_initial_velocity_, 1)));
+  EXPECT_THAT(
+      plugin_->VesselFromParent(SolarSystemFactory::Earth, guid),
+      Componentwise(AlmostEquals(satellite_initial_displacement_, 13556),
+                    AlmostEquals(satellite_initial_velocity_, 1)));
 }
 
 TEST_F(PluginTest, UpdateCelestialHierarchy) {

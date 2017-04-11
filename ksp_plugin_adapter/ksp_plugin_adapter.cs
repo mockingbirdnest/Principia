@@ -256,7 +256,9 @@ public partial class PrincipiaPluginAdapter
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
      if (plugin_.HasVessel(vessel.id.ToString())) {
-       QP from_parent = plugin_.VesselFromParent(vessel.id.ToString());
+       QP from_parent = plugin_.VesselFromParent(
+           vessel.mainBody.flightGlobalsIndex,
+           vessel.id.ToString());
        vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
                                            vel : (Vector3d)from_parent.p,
                                            refBody : vessel.orbit.referenceBody,
@@ -277,6 +279,10 @@ public partial class PrincipiaPluginAdapter
       return false;
     }
     return true;
+  }
+
+  private Part closest_physical_parent(Part part) {
+    return part.rb ? part : closest_physical_parent(part.parent);
   }
 
   private bool is_manageable(Vessel vessel) {
@@ -585,8 +591,7 @@ public partial class PrincipiaPluginAdapter
 
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
-    if (active_vessel != null &&
-        !FlightGlobals.ActiveVessel.isEVA) {
+    if (active_vessel != null) {
       if (navball_ == null) {
         navball_ = (KSP.UI.Screens.Flight.NavBall)FindObjectOfType(
                        typeof(KSP.UI.Screens.Flight.NavBall));
@@ -901,8 +906,10 @@ public partial class PrincipiaPluginAdapter
           var vessel2 = vessel1.evaController.LadderPart.vessel;
           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
               !vessel2.packed) {
-            plugin_.ReportCollision(vessel1.rootPart.flightID,
-                                    vessel1.evaController.LadderPart.flightID);
+            plugin_.ReportCollision(
+                vessel1.rootPart.flightID,
+                closest_physical_parent(
+                    vessel1.evaController.LadderPart).flightID);
           }
         }
         foreach (Part part1 in vessel1.parts) {
@@ -910,7 +917,8 @@ public partial class PrincipiaPluginAdapter
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
-              plugin_.ReportCollision(part1.flightID, part2.flightID);
+              plugin_.ReportCollision(closest_physical_parent(part1).flightID,
+                                      closest_physical_parent(part2).flightID);
             }
           }
         }

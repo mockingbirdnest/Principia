@@ -250,6 +250,7 @@ class Plugin {
   // A vessel with GUID |vessel_guid| must have been inserted and kept. Must
   // be called after initialization.
   virtual RelativeDegreesOfFreedom<AliceSun> VesselFromParent(
+      Index parent_index,
       GUID const& vessel_guid) const;
 
   // Returns the displacement and velocity of the celestial at index

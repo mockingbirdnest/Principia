@@ -72,6 +72,8 @@ not_null<Celestial const*> Vessel::parent() const {
 }
 
 void Vessel::set_parent(not_null<Celestial const*> const parent) {
+  LOG(INFO) << "Vessel " << ShortDebugString() << " switches parent from "
+            << parent_->body()->name() << " to " << parent->body()->name();
   parent_ = parent;
 }
 
