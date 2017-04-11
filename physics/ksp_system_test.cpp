@@ -70,7 +70,8 @@ class KSPSystem {
     std::unique_ptr<MassiveBody> owned_body;
   };
 
-  KSPSystem() {
+  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
+      Ephemeris<KSP>::FixedStepParameters const& parameters) {
     sun_.owned_body = std::make_unique<MassiveBody>(
         MassiveBody::Parameters(
             "Sun",
@@ -270,10 +271,7 @@ class KSPSystem {
         +1.22173047639603061e+00 * Radian;
     moho_.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
     moho_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-  }
 
-  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
-      Ephemeris<KSP>::FixedStepParameters const& parameters) {
     HierarchicalSystem<KSP> hierarchical_system(std::move(sun_.owned_body));
     for (auto const celestial : planets_and_moons_) {
       hierarchical_system.Add(std::move(celestial->owned_body),
@@ -678,7 +676,15 @@ INSTANTIATE_TEST_CASE_P(
         ConvergenceTestParameters{
             QuinlanTremaine1990Order12<Position<KSP>>(),
             /*iterations=*/6,
-            /*first_step_in_seconds=*/64}));
+            /*first_step_in_seconds=*/64},
+
+        // This is our favorite integrator.  For a step of 600 s it gives a
+        // position error of about 28 m on Bop and takes about 0.7 s of elapsed
+        // time.
+        ConvergenceTestParameters{
+            QuinlanTremaine1990Order12<Position<KSP>>(),
+            /*iterations=*/5,
+            /*first_step_in_seconds=*/75}));
 
 }  // namespace physics
 }  // namespace principia
