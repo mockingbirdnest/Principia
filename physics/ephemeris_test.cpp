@@ -47,7 +47,6 @@ using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
-using integrators::QuinlanTremaine1990Order12;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -943,8 +942,9 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   auto ephemeris = solar_system.MakeEphemeris(
       fitting_tolerance,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
-          /*step=*/10 * Minute));
+          integrators::McLachlanAtela1992Order4Optimal<
+              Position<ICRFJ2000Equator>>(),
+          /*step=*/10 * Milli(Second)));
   ephemeris->Prolong(t0 + 10 * T);
 
   MassiveBody const* const big =

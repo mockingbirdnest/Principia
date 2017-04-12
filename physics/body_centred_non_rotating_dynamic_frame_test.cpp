@@ -11,7 +11,7 @@
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
@@ -36,7 +36,6 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::SIUnit;
@@ -44,7 +43,6 @@ using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
-using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
@@ -82,9 +80,9 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
     ephemeris_ = solar_system_.MakeEphemeris(
                     /*fitting_tolerance=*/1 * Milli(Metre),
                     Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                        QuinlanTremaine1990Order12<
+                        integrators::McLachlanAtela1992Order4Optimal<
                             Position<ICRFJ2000Equator>>(),
-                        /*step=*/10 * Minute));
+                        /*step=*/10 * Milli(Second)));
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_initial_state_ = solar_system_.initial_state(big);
     big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);

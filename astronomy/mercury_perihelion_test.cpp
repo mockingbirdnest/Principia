@@ -145,7 +145,7 @@ TEST_F(MercuryPerihelionTest, Year1950) {
       orbit.elements_at_epoch();
 
   EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_1950_.eccentricity), 3.8e-14);
+                          keplerian_elements_1950_.eccentricity), 1.4e-13);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,

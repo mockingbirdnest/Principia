@@ -18,7 +18,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/mock_integrators.hpp"
-#include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -47,8 +47,8 @@ using geometry::Identity;
 using geometry::Permutation;
 using geometry::Trivector;
 using integrators::IntegrationProblem;
+using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::MockFixedStepSizeIntegrator;
-using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -256,10 +256,10 @@ class PluginTest : public testing::Test {
         valid_ephemeris_message_.mutable_fixed_step_parameters());
     using ODE = Ephemeris<Barycentric>::NewtonianMotionEquation;
     ODE::SystemState initial_state;
-    QuinlanTremaine1990Order12<Position<Barycentric>>().
+    McLachlanAtela1992Order5Optimal<Position<Barycentric>>().
         NewInstance(IntegrationProblem<ODE>{ODE{}, initial_state},
                      [](typename ODE::SystemState const&) {},
-                     10 * Minute)->WriteToMessage(
+                     1.0 * Second)->WriteToMessage(
             valid_ephemeris_message_.mutable_instance());
   }
 
