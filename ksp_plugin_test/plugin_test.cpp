@@ -18,6 +18,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/mock_integrators.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -49,6 +50,7 @@ using geometry::Trivector;
 using integrators::IntegrationProblem;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::MockFixedStepSizeIntegrator;
+using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
