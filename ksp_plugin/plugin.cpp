@@ -27,6 +27,7 @@
 #include "glog/stl_logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
+#include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -64,6 +65,7 @@ using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
 using physics::BodySurfaceFrameField;
 using physics::ComputeApsides;
+using physics::ComputeNodes;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
@@ -771,6 +773,31 @@ void Plugin::ComputeAndRenderApsides(
   periapsides = RenderedTrajectoryFromIterators(periapsides_trajectory.Begin(),
                                                 periapsides_trajectory.End(),
                                                 sun_world_position);
+}
+
+void Plugin::ComputeAndRenderNodes(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Position<World> const& sun_world_position,
+    std::unique_ptr<DiscreteTrajectory<World>>& ascending,
+    std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
+  CHECK(target_);
+  auto const trajectory_in_navigation =
+      RenderedTrajectoryInNavigation(begin, end);
+  DiscreteTrajectory<Navigation> ascending_trajectory;
+  DiscreteTrajectory<Navigation> descending_trajectory;
+  // The so-called North is the binormal to the trajectory.
+  ComputeNodes(trajectory_in_navigation->Begin(),
+               trajectory_in_navigation->End(),
+               Vector<double, Navigation>({0, 0, 1}),
+               ascending_trajectory,
+               descending_trajectory);
+  ascending = RenderedTrajectoryInWorld(ascending_trajectory.Begin(),
+                                        ascending_trajectory.End(),
+                                        sun_world_position);
+  descending = RenderedTrajectoryInWorld(descending_trajectory.Begin(),
+                                         descending_trajectory.End(),
+                                         sun_world_position);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {

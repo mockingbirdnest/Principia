@@ -301,6 +301,13 @@ class Plugin {
       std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
       std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
 
+  virtual void ComputeAndRenderNodes(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Position<World> const& sun_world_position,
+      std::unique_ptr<DiscreteTrajectory<World>>& ascending,
+      std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
+
   virtual void SetPredictionLength(Time const& t);
 
   virtual void SetPredictionAdaptiveStepParameters(
@@ -433,7 +440,7 @@ class Plugin {
 
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-  Plugin::RenderedTrajectoryInNavigation(
+  RenderedTrajectoryInNavigation(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
@@ -442,7 +449,7 @@ class Plugin {
   // |Planetarium.fetch.Sun.position|.  It is used to define the relation
   // between |WorldSun| and |World|.
   not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  Plugin::RenderedTrajectoryInWorld(
+  RenderedTrajectoryInWorld(
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
       Position<World> const& sun_world_position) const;
