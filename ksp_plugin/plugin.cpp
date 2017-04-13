@@ -33,7 +33,6 @@
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
-#include "physics/apsides.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
