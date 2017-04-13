@@ -641,8 +641,10 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetTargetVessel(target_vessel.id.ToString(),
                                 plotting_frame_selector_.get()
                                     .selected_celestial.flightGlobalsIndex);
+        plotting_frame_selector_.get().target_override = target_vessel;
       } else {
         plugin_.ClearTargetVessel();
+        plotting_frame_selector_.get().target_override = null;
       }
 
       // Orient the ball.
