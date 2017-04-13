@@ -742,47 +742,13 @@ Plugin::RenderedTrajectoryFromIterators(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  auto result = make_not_null_unique<DiscreteTrajectory<World>>();
-
-  NavigationFrame& plotting_frame =
-      target_ ? *target_->target_frame : *plotting_frame_;
-
-  // Compute the trajectory in the navigation frame.
-  DiscreteTrajectory<Navigation> intermediate_trajectory;
-  for (auto it = begin; it != end; ++it) {
-    if (target_) {
-      if (it.time() < target_->vessel->prediction().t_min()) {
-        continue;
-      } else if (it.time() > target_->vessel->prediction().t_max()) {
-        break;
-      }
-    }
-    intermediate_trajectory.Append(
-        it.time(),
-        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
-  }
-
-  // Render the trajectory at current time in |World|.
-  DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
-      intermediate_trajectory.End();
-  auto from_navigation_frame_to_world_at_current_time =
-      BarycentricToWorld(sun_world_position) *
-      plotting_frame.FromThisFrameAtTime(current_time_).rigid_transformation();
-  for (auto intermediate_it = intermediate_trajectory.Begin();
-       intermediate_it != intermediate_end;
-       ++intermediate_it) {
-    DegreesOfFreedom<Navigation> const navigation_degrees_of_freedom =
-        intermediate_it.degrees_of_freedom();
-    DegreesOfFreedom<World> const world_degrees_of_freedom =
-        DegreesOfFreedom<World>(
-            from_navigation_frame_to_world_at_current_time(
-                navigation_degrees_of_freedom.position()),
-            from_navigation_frame_to_world_at_current_time.linear_map()(
-                navigation_degrees_of_freedom.velocity()));
-    result->Append(intermediate_it.time(), world_degrees_of_freedom);
-  }
-  VLOG(1) << "Returning a " << result->Size() << "-point trajectory";
-  return result;
+  auto const trajectory_in_navigation = 
+    RenderedTrajectoryInNavigation(begin, end);
+  auto trajectory_in_world =
+      RenderedTrajectoryInWorld(trajectory_in_navigation->Begin(),
+                                trajectory_in_navigation->End(),
+                                sun_world_position);
+  return trajectory_in_world;
 }
 
 void Plugin::ComputeAndRenderApsides(
@@ -1391,6 +1357,59 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
   const std::string serialized = message.SerializeAsString();
   return Fingerprint2011(serialized.c_str(), serialized.size());
+}
+
+not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+Plugin::RenderedTrajectoryInNavigation(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+
+  for (auto it = begin; it != end; ++it) {
+    if (target_) {
+      if (it.time() < target_->vessel->prediction().t_min()) {
+        continue;
+      } else if (it.time() > target_->vessel->prediction().t_max()) {
+        break;
+      }
+    }
+    trajectory->Append(
+        it.time(),
+        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
+}
+
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderedTrajectoryInWorld(
+    DiscreteTrajectory<Navigation>::Iterator const& begin,
+    DiscreteTrajectory<Navigation>::Iterator const& end,
+    Position<World> const& sun_world_position) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+
+  RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
+      /*rigid_transformation=*/BarycentricToWorld(sun_world_position) *
+          plotting_frame.FromThisFrameAtTime(current_time_)
+              .rigid_transformation(),
+      AngularVelocity<Navigation>{},
+      Velocity<Navigation>{});
+  for (auto it = begin; it != end; ++it) {
+    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
+        it.degrees_of_freedom();
+    DegreesOfFreedom<World> const world_degrees_of_freedom =
+        from_navigation_frame_to_world_at_current_time(
+            navigation_degrees_of_freedom);
+    trajectory->Append(it.time(), world_degrees_of_freedom);
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
 }
 
 void Plugin::AddPart(not_null<Vessel*> const vessel,
