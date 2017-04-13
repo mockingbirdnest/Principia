@@ -174,6 +174,9 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public CelestialBody[] FixedBodies() {
+    if (target_override) {
+      return new CelestialBody[]{};
+    }
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
