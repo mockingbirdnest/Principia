@@ -269,26 +269,10 @@ class Plugin {
                                 Instant const& final_time,
                                 Mass const& initial_mass) const;
 
-  // Returns a trajectory in |World| depicting the trajectory of the vessel with
-  // the given |GUID| in the frame defined by the current |plotting_frame_|.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderedVesselTrajectory(GUID const& vessel_guid,
-                           Position<World> const& sun_world_position) const;
-
-  // Returns a trajectory in |World| depicting the predicted trajectory of the
-  // vessel with the given |GUID| in the frame defined by the current
-  // |plotting_frame_|.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderedPrediction(GUID const& vessel_guid,
-                     Position<World> const& sun_world_position) const;
-
-  // A utility for |RenderedPrediction| and |RenderedVesselTrajectory|,
-  // returns a |Trajectory| object corresponding to the trajectory defined by
+  // Returns a |Trajectory| object corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current |plotting_frame_|.
-  // TODO(phl): Use this directly in the interface and remove the other
-  // |Rendered...|.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderedTrajectoryFromIterators(
+  RenderBarycentricTrajectoryInWorld(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
@@ -440,7 +424,7 @@ class Plugin {
 
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-  RenderedTrajectoryInNavigation(
+  RenderBarycentricTrajectoryInNavigation(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
@@ -449,7 +433,7 @@ class Plugin {
   // |Planetarium.fetch.Sun.position|.  It is used to define the relation
   // between |WorldSun| and |World|.
   not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderedTrajectoryInWorld(
+  RenderNavigationTrajectoryInWorld(
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
       Position<World> const& sun_world_position) const;

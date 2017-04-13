@@ -363,7 +363,7 @@ Iterator* principia__FlightPlanRenderedSegment(
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetSegment(index, begin, end);
   auto rendered_trajectory = CHECK_NOTNULL(plugin)->
-      RenderedTrajectoryFromIterators(
+      RenderBarycentricTrajectoryInWorld(
           begin, end,
           World::origin + Displacement<World>(
                               FromXYZ(sun_world_position) * Metre));

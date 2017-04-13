@@ -74,39 +74,18 @@ class MockPlugin : public Plugin {
                           Instant const& final_time,
                           Mass const& initial_mass));
 
-  // NOTE(phl): gMock 1.7.0 doesn't support returning a std::unique_ptr<>.  So
-  // we override the function of the Plugin class with bona fide functions which
-  // call mock functions which fill a std::unique_ptr<> instead of returning it.
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> RenderedVesselTrajectory(
-      GUID const& vessel_guid,
-      Position<World> const& sun_world_position) const override;
-  MOCK_CONST_METHOD3(FillRenderedVesselTrajectory,
-                     void(GUID const& vessel_guid,
-                          Position<World> const& sun_world_position,
-                          std::unique_ptr<DiscreteTrajectory<World>>*
-                              rendered_vessel_trajectory));
-
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> RenderedPrediction(
-      GUID const& vessel_guid,
-      Position<World> const& sun_world_position) const override;
-  MOCK_CONST_METHOD3(
-      FillRenderedPrediction,
-      void(GUID const& vessel_guid,
-           Position<World> const& sun_world_position,
-           std::unique_ptr<DiscreteTrajectory<World>>* rendered_prediction));
-
   not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderedTrajectoryFromIterators(
+  RenderBarycentricTrajectoryInWorld(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
   MOCK_CONST_METHOD4(
-      FillRenderedTrajectoryFromIterators,
+      FillRenderedBarycentricTrajectoryInWorld,
       void(DiscreteTrajectory<Barycentric>::Iterator const& begin,
            DiscreteTrajectory<Barycentric>::Iterator const& end,
            Position<World> const& sun_world_position,
            std::unique_ptr<DiscreteTrajectory<World>>*
-               rendered_trajectory_from_iterators));
+               rendered_barycentric_trajectory_in_world));
 
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 

@@ -716,40 +716,16 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderedVesselTrajectory(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  CHECK(!initializing_);
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  VLOG(1) << "Rendering a trajectory for the vessel "
-          << vessel->ShortDebugString();
-  return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
-                                         vessel->psychohistory().End(),
-                                         sun_world_position);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  CHECK(!initializing_);
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  return RenderedTrajectoryFromIterators(vessel.prediction().Begin(),
-                                         vessel.prediction().End(),
-                                         sun_world_position);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderedTrajectoryFromIterators(
+Plugin::RenderBarycentricTrajectoryInWorld(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  auto const trajectory_in_navigation = 
-    RenderedTrajectoryInNavigation(begin, end);
+  auto const trajectory_in_navigation =
+      RenderBarycentricTrajectoryInNavigation(begin, end);
   auto trajectory_in_world =
-      RenderedTrajectoryInWorld(trajectory_in_navigation->Begin(),
-                                trajectory_in_navigation->End(),
-                                sun_world_position);
+      RenderNavigationTrajectoryInWorld(trajectory_in_navigation->Begin(),
+                                        trajectory_in_navigation->End(),
+                                        sun_world_position);
   return trajectory_in_world;
 }
 
@@ -767,12 +743,14 @@ void Plugin::ComputeAndRenderApsides(
                  end,
                  apoapsides_trajectory,
                  periapsides_trajectory);
-  apoapsides = RenderedTrajectoryFromIterators(apoapsides_trajectory.Begin(),
-                                               apoapsides_trajectory.End(),
-                                               sun_world_position);
-  periapsides = RenderedTrajectoryFromIterators(periapsides_trajectory.Begin(),
-                                                periapsides_trajectory.End(),
-                                                sun_world_position);
+  apoapsides =
+      RenderBarycentricTrajectoryInWorld(apoapsides_trajectory.Begin(),
+                                         apoapsides_trajectory.End(),
+                                         sun_world_position);
+  periapsides =
+      RenderBarycentricTrajectoryInWorld(periapsides_trajectory.Begin(),
+                                         periapsides_trajectory.End(),
+                                         sun_world_position);
 }
 
 void Plugin::ComputeAndRenderNodes(
@@ -783,7 +761,7 @@ void Plugin::ComputeAndRenderNodes(
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
   CHECK(target_);
   auto const trajectory_in_navigation =
-      RenderedTrajectoryInNavigation(begin, end);
+      RenderBarycentricTrajectoryInNavigation(begin, end);
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
   // The so-called North is the binormal to the trajectory.
@@ -792,12 +770,12 @@ void Plugin::ComputeAndRenderNodes(
                Vector<double, Navigation>({0, 0, 1}),
                ascending_trajectory,
                descending_trajectory);
-  ascending = RenderedTrajectoryInWorld(ascending_trajectory.Begin(),
-                                        ascending_trajectory.End(),
-                                        sun_world_position);
-  descending = RenderedTrajectoryInWorld(descending_trajectory.Begin(),
-                                         descending_trajectory.End(),
-                                         sun_world_position);
+  ascending = RenderNavigationTrajectoryInWorld(ascending_trajectory.Begin(),
+                                                ascending_trajectory.End(),
+                                                sun_world_position);
+  descending = RenderNavigationTrajectoryInWorld(descending_trajectory.Begin(),
+                                                 descending_trajectory.End(),
+                                                 sun_world_position);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {
@@ -1387,7 +1365,7 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-Plugin::RenderedTrajectoryInNavigation(
+Plugin::RenderBarycentricTrajectoryInNavigation(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
@@ -1412,7 +1390,7 @@ Plugin::RenderedTrajectoryInNavigation(
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderedTrajectoryInWorld(
+Plugin::RenderNavigationTrajectoryInWorld(
     DiscreteTrajectory<Navigation>::Iterator const& begin,
     DiscreteTrajectory<Navigation>::Iterator const& end,
     Position<World> const& sun_world_position) const {

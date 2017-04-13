@@ -719,9 +719,14 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
                                                   vessel_guid,
                                                   sun_world_position});
   CHECK_NOTNULL(plugin);
-  auto rendered_trajectory = plugin->RenderedPrediction(
-      vessel_guid,
-      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre));
+  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
+  auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
+                                 prediction.Begin(),
+                                 prediction.End(),
+                                 q_sun);
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
@@ -787,11 +792,6 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   return m.Return();
 }
 
-// Returns the result of |plugin->RenderedVesselTrajectory| called with the
-// arguments given, together with an iterator to its beginning.
-// |plugin| must not be null.  No transfer of ownership of |plugin|.  The caller
-// gets ownership of the result.  |frame| must not be null.  No transfer of
-// ownership of |frame|.
 Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
                                               char const* const vessel_guid,
                                               XYZ const sun_world_position) {
@@ -799,9 +799,14 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
                                                         vessel_guid,
                                                         sun_world_position});
   CHECK_NOTNULL(plugin);
-  auto rendered_trajectory = plugin->RenderedVesselTrajectory(
-      vessel_guid,
-      World::origin + Displacement<World>(FromXYZ(sun_world_position) * Metre));
+  auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
+  auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
+                                 psychohistory.Begin(),
+                                 psychohistory.End(),
+                                 q_sun);
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
