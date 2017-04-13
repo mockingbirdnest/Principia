@@ -13,15 +13,15 @@ namespace internal_integrators {
 
 using geometry::Position;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
+using integrators::QuinlanTremaine1990Order12;
 using quantities::si::Minute;
 using quantities::si::Second;
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-             McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
-             /*step=*/45 * Minute);
+             QuinlanTremaine1990Order12<Position<Barycentric>>(),
+             /*step=*/10 * Minute);
 }
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {

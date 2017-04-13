@@ -8,7 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -27,7 +27,7 @@ using base::not_null;
 using geometry::AngleBetween;
 using geometry::Instant;
 using geometry::Position;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -65,8 +65,8 @@ class MercuryPerihelionTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
-            /*step=*/45 * Minute));
+            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            /*step=*/10 * Minute));
   }
 
   MercuryPerihelionTest()
@@ -145,7 +145,7 @@ TEST_F(MercuryPerihelionTest, Year1950) {
       orbit.elements_at_epoch();
 
   EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_1950_.eccentricity), 3.8e-14);
+                          keplerian_elements_1950_.eccentricity), 1.4e-13);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,

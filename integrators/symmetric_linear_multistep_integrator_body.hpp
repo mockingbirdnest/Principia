@@ -271,10 +271,14 @@ Instance::StartupSolve(Instant const& t_final) {
           if (++startup_step_index_ % startup_step_divisor == 0) {
             CHECK_LT(previous_steps_.size(), order_);
             previous_steps_.emplace_back();
-            this->append_state_(state);
             FillStepFromSystemState(this->equation_,
                                     this->current_state_,
                                     previous_steps_.back());
+            // This call must happen last for a subtle reason: the callback may
+            // want to |Clone| this instance (see |Ephemeris::Checkpoint|) in
+            // which cases it is necessary that all the member variables be
+            // filled for restartability to work.
+            this->append_state_(state);
           }
         }
       };

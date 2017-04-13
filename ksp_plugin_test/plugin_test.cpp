@@ -18,6 +18,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/mock_integrators.hpp"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "physics/continuous_trajectory.hpp"
@@ -49,6 +50,7 @@ using geometry::Trivector;
 using integrators::IntegrationProblem;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::MockFixedStepSizeIntegrator;
+using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -787,7 +789,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
-          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
+          ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
   EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(_)).Times(2);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
@@ -890,7 +892,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
-          ReturnRef(McLachlanAtela1992Order5Optimal<Position<Barycentric>>()));
+          ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
 
   plugin_->SetPlottingFrame(plugin_->NewBodyCentredNonRotatingNavigationFrame(
       SolarSystemFactory::Sun));
