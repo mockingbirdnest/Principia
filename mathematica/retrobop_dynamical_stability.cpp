@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <experimental/filesystem>
 #include <fstream>
 #include <list>
 #include <map>
@@ -13,6 +14,7 @@
 
 #include "base/array.hpp"
 #include "base/bundle.hpp"
+#include "base/file.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -28,6 +30,7 @@ using base::not_null;
 using base::Status;
 using base::GetLine;
 using base::HexadecimalDecode;
+using base::OFStream;
 using base::UniqueBytes;
 using geometry::BarycentreCalculator;
 using geometry::Instant;
@@ -125,7 +128,8 @@ constexpr std::array<char const*, 17> names = {
     "Eeloo",
 };
 
-constexpr char system_file[] = "ksp_fixed_system.proto.hex";
+std::experimental::filesystem::path const system_file =
+    SOLUTION_DIR / "mathematica" / "ksp_fixed_system.proto.hex";
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
@@ -156,8 +160,8 @@ std::unique_ptr<Message> Read(std::ifstream& file) {
 }
 
 HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
-    std::string const& file_name) {
-  std::ifstream input_file(file_name, std::ios::in);
+    std::experimental::filesystem::path const& filename) {
+  std::ifstream input_file(filename, std::ios::in);
   CHECK(!input_file.fail());
   HierarchicalSystem<Barycentric>::BarycentricSystem system;
   for (auto body = Read<serialization::MassiveBody>(input_file);
@@ -367,8 +371,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
     }
   }
 
-  std::ofstream file;
-  file.open("retrobop_century.generated.wl");
+  OFStream file(TEMP_DIR / "retrobop_century.generated.wl");
   file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
   file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
   file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
@@ -396,7 +399,6 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
 
   file << Assign("tyloBop", ExpressIn(Metre, tylo_bop_separations));
   file << Assign("polBop", ExpressIn(Metre, pol_bop_separations));
-  file.close();
 }
 
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
@@ -444,15 +446,13 @@ void PlotPredictableYears() {
   FillPositions(
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
-  std::ofstream file;
-  file.open("retrobop_predictable_years.generated.wl");
+  OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
                  ExpressIn(Metre, barycentric_positions_1_year));
   file << Assign("barycentricPositions2",
                  ExpressIn(Metre, barycentric_positions_2_year));
   file << Assign("barycentricPositions5",
                  ExpressIn(Metre, barycentric_positions_5_year));
-  file.close();
 }
 
 void PlotCentury() {

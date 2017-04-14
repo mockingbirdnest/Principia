@@ -32,7 +32,6 @@ ipch/
 [Bb]in
 [Dd]ebug*/
 [Rr]elease*/
-Ankh.NoLoad
 
 # Clang output
 *.o
@@ -43,16 +42,10 @@ Ankh.NoLoad
 *.userprefs
 
 # Tooling
-_ReSharper*/
-*.resharper
 [Tt]est[Rr]esult*
-*.sass-cache
 
 # Project files
 [Bb]uild/
-
-# Subversion files
-.svn
 
 # Office Temp Files
 ~$*
@@ -63,10 +56,6 @@ _ReSharper*/
 # NuGet
 packages/
 *.nupkg
-
-# ncrunch
-*ncrunch*
-*crunch*.local.xml
 
 # visual studio database projects
 *.dbmdl
@@ -117,6 +106,7 @@ mathematica/*.png
 *.journal.hex
 
 deps/
+temp/
 
 # Mailboxes
 *.mbox
@@ -126,3 +116,4 @@ deps/
 
 # Vagrant
 .vagrant/
+

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <experimental/filesystem>
 #include <fstream>
 #include <ios>
 #include <limits>
@@ -13,6 +14,7 @@
 #include <vector>
 #include <set>
 
+#include "base/file.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
@@ -47,6 +49,7 @@ using base::FindOrDie;
 using base::Fingerprint2011;
 using base::FingerprintCat2011;
 using base::make_not_null_unique;
+using base::OFStream;
 using base::not_null;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
@@ -212,13 +215,13 @@ void Plugin::EndInitialization() {
     auto const parents = std::move(hierarchical_initialization_->parents);
     hierarchical_initialization_ = std::experimental::nullopt;
 #if LOG_KSP_SYSTEM
-    std::ofstream file;
+    OFStream file;
     if (system_fingerprint == ksp_stock_system_fingerprint) {
-      file.open("ksp_stock_system.proto.hex");
+      file = OFStream(TEMP_DIR / "ksp_stock_system.proto.hex");
     } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
-      file.open("ksp_fixed_system.proto.hex");
+      file = OFStream(TEMP_DIR / "ksp_fixed_system.proto.hex");
     } else {
-      file.open("unknown_system.proto.hex");
+      file = OFStream(TEMP_DIR / "unknown_system.proto.hex");
     }
     std::string bytes;
     base::UniqueArray<std::uint8_t> hex;
@@ -258,9 +261,6 @@ void Plugin::EndInitialization() {
           system.degrees_of_freedom[i],
           std::move(rotating_body));
     }
-#if LOG_KSP_SYSTEM
-    file.close();
-#endif
   }
   CHECK(absolute_initialization_);
   CHECK_NOTNULL(sun_);

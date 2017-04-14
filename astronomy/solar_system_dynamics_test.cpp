@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <experimental/filesystem>
 #include <experimental/optional>
 #include <map>
 #include <string>
@@ -9,6 +10,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -29,6 +31,7 @@
 namespace principia {
 
 using base::dynamic_cast_not_null;
+using base::OFStream;
 using geometry::AngleBetween;
 using geometry::BarycentreCalculator;
 using geometry::Bivector;
@@ -424,13 +427,11 @@ TEST(MarsTest, Phobos) {
                                      mars_velocities.back());
   }
 
-  std::ofstream file;
-  file.open("phobos.generated.wl");
+  OFStream file(TEMP_DIR / "phobos.generated.wl");
   file << mathematica::Assign("ppaMarsPhobosDisplacements",
                               mars_phobos_displacements);
   file << mathematica::Assign("ppaMarsPhobosVelocities",
                               mars_phobos_velocities);
-  file.close();
 }
 
 #endif
@@ -446,11 +447,11 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    file_.open("solar_system_convergence.generated.wl");
+    file_ = OFStream(TEMP_DIR / "solar_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {
-    file_.close();
+    file_.~OFStream();
   }
 
  protected:
@@ -468,10 +469,10 @@ class SolarSystemDynamicsConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static std::ofstream file_;
+  static OFStream file_;
 };
 
-std::ofstream SolarSystemDynamicsConvergenceTest::file_;
+OFStream SolarSystemDynamicsConvergenceTest::file_;
 
 // This takes 7-8 minutes to run.
 TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
