@@ -286,8 +286,8 @@ class ReferenceFrameSelector : WindowRenderer {
         TypeSelector(FrameType.BARYCENTRIC_ROTATING);
         TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
       }
-      UnityEngine.GUILayout.EndVertical();
     }
+    UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUILayout.EndHorizontal();
 
     UnityEngine.GUI.DragWindow(

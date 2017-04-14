@@ -660,6 +660,7 @@ public partial class PrincipiaPluginAdapter
       if (PluginRunning() &&
           has_active_manageable_vessel() &&
           plugin_.HasVessel(active_vessel.id.ToString()) &&
+          // TODO(egg): also cover Target mode.
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Orbit) {
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
