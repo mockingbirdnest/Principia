@@ -448,6 +448,7 @@ class SolarSystemDynamicsConvergenceTest
  public:
   static void SetUpTestCase() {
     file_.open(TEMP_DIR / "solar_system_convergence.generated.wl");
+    CHECK(file_.good());
   }
 
   static void TearDownTestCase() {

@@ -215,10 +215,13 @@ void Plugin::EndInitialization() {
     std::ofstream file;
     if (system_fingerprint == ksp_stock_system_fingerprint) {
       file.open(TEMP_DIR / "ksp_stock_system.proto.hex");
+      CHECK(file.good());
     } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
       file.open(TEMP_DIR / "ksp_fixed_system.proto.hex");
+      CHECK(file.good());
     } else {
       file.open(TEMP_DIR / "unknown_system.proto.hex");
+      CHECK(file.good());
     }
     std::string bytes;
     base::UniqueArray<std::uint8_t> hex;

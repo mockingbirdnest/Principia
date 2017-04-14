@@ -348,6 +348,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
 
   std::ofstream file;
   file.open(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
+  CHECK(file.good());
   file << generator.GetMathematicaData();
   file.close();
 }
@@ -412,6 +413,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
   std::ofstream file;
   file.open(TEMP_DIR / ("kepler_problem_graphs_" +
                         std::to_string(eccentricity) + ".generated.wl"));
+  CHECK(file.good());
   file << generator.GetMathematicaData();
   file.close();
 }

@@ -197,6 +197,7 @@ class ResonanceTest : public ::testing::Test {
     }
     std::ofstream file;
     file.open(TEMP_DIR / (name + "_" + purpose + ".generated.wl"));
+    CHECK(file.good());
     file << mathematica::Assign(name + purpose + "q", barycentric_positions);
     file << mathematica::Assign(name + purpose + "t", times);
     file.close();

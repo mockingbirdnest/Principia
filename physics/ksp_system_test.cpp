@@ -506,6 +506,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 
   std::ofstream file;
   file.open(TEMP_DIR / "ksp_system.generated.wl");
+  CHECK(file.good());
   file << mathematica::Assign("laytheTimes", times_in_s[&laythe_]);
   file << mathematica::Assign("vallTimes", times_in_s[&vall_]);
   file << mathematica::Assign("tyloTimes", times_in_s[&tylo_]);
@@ -559,6 +560,7 @@ class KSPSystemConvergenceTest
  public:
   static void SetUpTestCase() {
     file_.open(TEMP_DIR / "ksp_system_convergence.generated.wl");
+    CHECK(file_.good());
   }
 
   static void TearDownTestCase() {

@@ -371,6 +371,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
 
   std::ofstream file;
   file.open(TEMP_DIR / "retrobop_century.generated.wl");
+  CHECK(file.good());
   file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
   file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
   file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
@@ -448,6 +449,7 @@ void PlotPredictableYears() {
 
   std::ofstream file;
   file.open(TEMP_DIR / "retrobop_predictable_years.generated.wl");
+  CHECK(file.good());
   file << Assign("barycentricPositions1",
                  ExpressIn(Metre, barycentric_positions_1_year));
   file << Assign("barycentricPositions2",
