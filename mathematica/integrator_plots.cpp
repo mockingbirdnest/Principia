@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/bundle.hpp"
+#include "base/file.hpp"
 #include "glog/logging.h"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -40,6 +41,7 @@ namespace principia {
 
 using base::Bundle;
 using base::not_null;
+using base::OFStream;
 using base::Status;
 using geometry::BarycentreCalculator;
 using geometry::Displacement;
@@ -346,11 +348,8 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       tmax,
       "Harmonic oscillator");
 
-  std::ofstream file;
-  file.open(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
-  CHECK(file.good());
+  OFStream file(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
   file << generator.GetMathematicaData();
-  file.close();
 }
 
 void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
@@ -410,12 +409,9 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       tmax,
       " Kepler problem with e = " + std::to_string(eccentricity));
 
-  std::ofstream file;
-  file.open(TEMP_DIR / ("kepler_problem_graphs_" +
-                        std::to_string(eccentricity) + ".generated.wl"));
-  CHECK(file.good());
+  OFStream file(TEMP_DIR / ("kepler_problem_graphs_" +
+                            std::to_string(eccentricity) + ".generated.wl"));
   file << generator.GetMathematicaData();
-  file.close();
 }
 
 }  // namespace mathematica

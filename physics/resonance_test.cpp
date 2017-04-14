@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -19,6 +20,7 @@ namespace principia {
 using base::Error;
 using base::make_not_null_unique;
 using base::not_null;
+using base::OFStream;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
 using geometry::Frame;
@@ -195,12 +197,9 @@ class ResonanceTest : public ::testing::Test {
             (position(body) - jool_system_barycentre.Get()) / Metre);
       }
     }
-    std::ofstream file;
-    file.open(TEMP_DIR / (name + "_" + purpose + ".generated.wl"));
-    CHECK(file.good());
+    OFStream file(TEMP_DIR / (name + "_" + purpose + ".generated.wl"));
     file << mathematica::Assign(name + purpose + "q", barycentric_positions);
     file << mathematica::Assign(name + purpose + "t", times);
-    file.close();
   }
 
   // Compute and log the measured periods of the moons.

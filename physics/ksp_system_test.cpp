@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 
+#include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -27,6 +28,7 @@ namespace principia {
 
 using base::make_not_null_unique;
 using base::not_null;
+using base::OFStream;
 using geometry::BarycentreCalculator;
 using geometry::Frame;
 using geometry::Instant;
@@ -504,9 +506,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     }
   }
 
-  std::ofstream file;
-  file.open(TEMP_DIR / "ksp_system.generated.wl");
-  CHECK(file.good());
+  OFStream file(TEMP_DIR / "ksp_system.generated.wl");
   file << mathematica::Assign("laytheTimes", times_in_s[&laythe_]);
   file << mathematica::Assign("vallTimes", times_in_s[&vall_]);
   file << mathematica::Assign("tyloTimes", times_in_s[&tylo_]);
@@ -543,7 +543,6 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                               barycentric_positions_1_year);
   file << mathematica::Assign("barycentricPositions2",
                               barycentric_positions_2_year);
-  file.close();
 }
 #endif
 
@@ -559,12 +558,7 @@ class KSPSystemConvergenceTest
       protected KSPSystem {
  public:
   static void SetUpTestCase() {
-    file_.open(TEMP_DIR / "ksp_system_convergence.generated.wl");
-    CHECK(file_.good());
-  }
-
-  static void TearDownTestCase() {
-    file_.close();
+    file_ = OFStream(TEMP_DIR / "ksp_system_convergence.generated.wl");
   }
 
  protected:
@@ -582,10 +576,10 @@ class KSPSystemConvergenceTest
     return GetParam().first_step_in_seconds;
   }
 
-  static std::ofstream file_;
+  static OFStream file_;
 };
 
-std::ofstream KSPSystemConvergenceTest::file_;
+OFStream KSPSystemConvergenceTest::file_;
 
 // This takes 7-8 minutes to run.
 TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {

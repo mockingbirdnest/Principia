@@ -14,6 +14,7 @@
 
 #include "base/array.hpp"
 #include "base/bundle.hpp"
+#include "base/file.hpp"
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
@@ -29,6 +30,7 @@ using base::not_null;
 using base::Status;
 using base::GetLine;
 using base::HexadecimalDecode;
+using base::OFStream;
 using base::UniqueBytes;
 using geometry::BarycentreCalculator;
 using geometry::Instant;
@@ -369,9 +371,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
     }
   }
 
-  std::ofstream file;
-  file.open(TEMP_DIR / "retrobop_century.generated.wl");
-  CHECK(file.good());
+  OFStream file(TEMP_DIR / "retrobop_century.generated.wl");
   file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
   file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
   file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
@@ -399,7 +399,6 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
 
   file << Assign("tyloBop", ExpressIn(Metre, tylo_bop_separations));
   file << Assign("polBop", ExpressIn(Metre, pol_bop_separations));
-  file.close();
 }
 
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
@@ -447,16 +446,13 @@ void PlotPredictableYears() {
   FillPositions(
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
-  std::ofstream file;
-  file.open(TEMP_DIR / "retrobop_predictable_years.generated.wl");
-  CHECK(file.good());
+  OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
                  ExpressIn(Metre, barycentric_positions_1_year));
   file << Assign("barycentricPositions2",
                  ExpressIn(Metre, barycentric_positions_2_year));
   file << Assign("barycentricPositions5",
                  ExpressIn(Metre, barycentric_positions_5_year));
-  file.close();
 }
 
 void PlotCentury() {

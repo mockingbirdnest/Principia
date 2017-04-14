@@ -32,7 +32,6 @@ ipch/
 [Bb]in
 [Dd]ebug*/
 [Rr]elease*/
-Ankh.NoLoad
 
 # Clang output
 *.o
