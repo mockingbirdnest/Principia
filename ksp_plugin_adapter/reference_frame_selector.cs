@@ -61,8 +61,14 @@ class ReferenceFrameSelector : WindowRenderer {
 
   public FrameType frame_type { get; private set; }
   public CelestialBody selected_celestial { get; private set; }
+  public Vessel target_override { private get; set; }
 
-  public static String Name(FrameType type, CelestialBody selected) {
+  public static String Name(FrameType type,
+                            CelestialBody selected,
+                            Vessel target_override) {
+   if (target_override) {
+     return "Target Local Vert./Horiz. at " + selected.theName;
+   }
    switch (type) {
      case FrameType.BODY_CENTRED_NON_ROTATING:
        return selected.name + "-Centred Inertial";
@@ -88,7 +94,12 @@ class ReferenceFrameSelector : WindowRenderer {
    }
   }
 
-  public static String ShortName(FrameType type, CelestialBody selected) {
+  public static String ShortName(FrameType type,
+                                 CelestialBody selected,
+                                 Vessel target_override) {
+    if (target_override) {
+      return "Tgt LVLH@" + selected.name[0];
+    }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return selected.name[0] + "CI";
@@ -113,7 +124,14 @@ class ReferenceFrameSelector : WindowRenderer {
     }
   }
 
-  public static String Description(FrameType type, CelestialBody selected) {
+  public static String Description(FrameType type,
+                                   CelestialBody selected,
+                                   Vessel target_override) {
+    if (target_override) {
+      return "Reference frame fixing the target vessel (" +
+             target_override.vesselName + "), the plane of its orbit around " +
+             selected.theName + ", and the line between them";
+    }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return "Non-rotating reference frame fixing the centre of " +
@@ -144,18 +162,21 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public String Name() {
-    return Name(frame_type, selected_celestial);
+    return Name(frame_type, selected_celestial, target_override);
   }
 
   public String ShortName() {
-    return ShortName(frame_type, selected_celestial);
+    return ShortName(frame_type, selected_celestial, target_override);
   }
 
   public String Description() {
-    return Description(frame_type, selected_celestial);
+    return Description(frame_type, selected_celestial, target_override);
   }
 
   public CelestialBody[] FixedBodies() {
+    if (target_override) {
+      return new CelestialBody[]{};
+    }
     switch (frame_type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
       case FrameType.BODY_CENTRED_PARENT_DIRECTION:
@@ -252,15 +273,23 @@ class ReferenceFrameSelector : WindowRenderer {
 
     // Right-hand side: toggles for reference frame type selection.
     UnityEngine.GUILayout.BeginVertical();
-    TypeSelector(FrameType.BODY_SURFACE);
-    TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
-    if (!selected_celestial.is_root()) {
-      CelestialBody parent = selected_celestial.orbit.referenceBody;
-      TypeSelector(FrameType.BARYCENTRIC_ROTATING);
-      TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+    if (target_override) {
+      UnityEngine.GUILayout.Label(
+          "Using target-centred frame selected on navball speed display",
+          UnityEngine.GUILayout.Width(150));
+      UnityEngine.GUILayout.Label(
+          Description(frame_type, selected_celestial, target_override),
+          UnityEngine.GUILayout.Width(150));
+    } else {
+      TypeSelector(FrameType.BODY_SURFACE);
+      TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
+      if (!selected_celestial.is_root()) {
+        CelestialBody parent = selected_celestial.orbit.referenceBody;
+        TypeSelector(FrameType.BARYCENTRIC_ROTATING);
+        TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+      }
     }
     UnityEngine.GUILayout.EndVertical();
-
     UnityEngine.GUILayout.EndHorizontal();
 
     UnityEngine.GUI.DragWindow(
@@ -315,14 +344,15 @@ class ReferenceFrameSelector : WindowRenderer {
   private void TypeSelector(FrameType value) {
    bool old_wrap = UnityEngine.GUI.skin.toggle.wordWrap;
    UnityEngine.GUI.skin.toggle.wordWrap = true;
-   if (UnityEngine.GUILayout.Toggle(frame_type == value,
-                                    Description(value, selected_celestial),
-                                    UnityEngine.GUILayout.Width(150),
-                                    UnityEngine.GUILayout.Height(120))) {
-      if (frame_type != value) {
-        frame_type = value;
-        on_change_(FrameParameters());
-      }
+   if (UnityEngine.GUILayout.Toggle(
+           frame_type == value,
+           Description(value, selected_celestial, target_override),
+           UnityEngine.GUILayout.Width(150),
+           UnityEngine.GUILayout.Height(120))) {
+     if (frame_type != value) {
+       frame_type = value;
+       on_change_(FrameParameters());
+     }
     }
     UnityEngine.GUI.skin.toggle.wordWrap = old_wrap;
   }
