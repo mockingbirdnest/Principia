@@ -929,8 +929,11 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
+  auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =
-      plugin_->RenderedPrediction(guid, World::origin);
+      plugin_->RenderBarycentricTrajectoryInWorld(prediction.Begin(),
+                                                  prediction.End(),
+                                                  World::origin);
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {

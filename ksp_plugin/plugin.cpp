@@ -29,12 +29,12 @@
 #include "glog/stl_logging.h"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part_subsets.hpp"
+#include "physics/apsides.hpp"
 #include "physics/barycentric_rotating_dynamic_frame_body.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/body_surface_frame_field.hpp"
-#include "physics/apsides.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
@@ -67,6 +67,7 @@ using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
 using physics::BodySurfaceFrameField;
 using physics::ComputeApsides;
+using physics::ComputeNodes;
 using physics::CoordinateFrameField;
 using physics::DynamicFrame;
 using physics::Frenet;
@@ -714,75 +715,17 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderedVesselTrajectory(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  CHECK(!initializing_);
-  not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
-  VLOG(1) << "Rendering a trajectory for the vessel "
-          << vessel->ShortDebugString();
-  return RenderedTrajectoryFromIterators(vessel->psychohistory().Begin(),
-                                         vessel->psychohistory().End(),
-                                         sun_world_position);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>> Plugin::RenderedPrediction(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  CHECK(!initializing_);
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  return RenderedTrajectoryFromIterators(vessel.prediction().Begin(),
-                                         vessel.prediction().End(),
-                                         sun_world_position);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderedTrajectoryFromIterators(
+Plugin::RenderBarycentricTrajectoryInWorld(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  auto result = make_not_null_unique<DiscreteTrajectory<World>>();
-
-  NavigationFrame& plotting_frame =
-      target_ ? *target_->target_frame : *plotting_frame_;
-
-  // Compute the trajectory in the navigation frame.
-  DiscreteTrajectory<Navigation> intermediate_trajectory;
-  for (auto it = begin; it != end; ++it) {
-    if (target_) {
-      if (it.time() < target_->vessel->prediction().t_min()) {
-        continue;
-      } else if (it.time() > target_->vessel->prediction().t_max()) {
-        break;
-      }
-    }
-    intermediate_trajectory.Append(
-        it.time(),
-        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
-  }
-
-  // Render the trajectory at current time in |World|.
-  DiscreteTrajectory<Navigation>::Iterator const intermediate_end =
-      intermediate_trajectory.End();
-  auto from_navigation_frame_to_world_at_current_time =
-      BarycentricToWorld(sun_world_position) *
-      plotting_frame.FromThisFrameAtTime(current_time_).rigid_transformation();
-  for (auto intermediate_it = intermediate_trajectory.Begin();
-       intermediate_it != intermediate_end;
-       ++intermediate_it) {
-    DegreesOfFreedom<Navigation> const navigation_degrees_of_freedom =
-        intermediate_it.degrees_of_freedom();
-    DegreesOfFreedom<World> const world_degrees_of_freedom =
-        DegreesOfFreedom<World>(
-            from_navigation_frame_to_world_at_current_time(
-                navigation_degrees_of_freedom.position()),
-            from_navigation_frame_to_world_at_current_time.linear_map()(
-                navigation_degrees_of_freedom.velocity()));
-    result->Append(intermediate_it.time(), world_degrees_of_freedom);
-  }
-  VLOG(1) << "Returning a " << result->Size() << "-point trajectory";
-  return result;
+  auto const trajectory_in_navigation =
+      RenderBarycentricTrajectoryInNavigation(begin, end);
+  auto trajectory_in_world =
+      RenderNavigationTrajectoryInWorld(trajectory_in_navigation->Begin(),
+                                        trajectory_in_navigation->End(),
+                                        sun_world_position);
+  return trajectory_in_world;
 }
 
 void Plugin::ComputeAndRenderApsides(
@@ -799,12 +742,39 @@ void Plugin::ComputeAndRenderApsides(
                  end,
                  apoapsides_trajectory,
                  periapsides_trajectory);
-  apoapsides = RenderedTrajectoryFromIterators(apoapsides_trajectory.Begin(),
-                                               apoapsides_trajectory.End(),
-                                               sun_world_position);
-  periapsides = RenderedTrajectoryFromIterators(periapsides_trajectory.Begin(),
-                                                periapsides_trajectory.End(),
+  apoapsides =
+      RenderBarycentricTrajectoryInWorld(apoapsides_trajectory.Begin(),
+                                         apoapsides_trajectory.End(),
+                                         sun_world_position);
+  periapsides =
+      RenderBarycentricTrajectoryInWorld(periapsides_trajectory.Begin(),
+                                         periapsides_trajectory.End(),
+                                         sun_world_position);
+}
+
+void Plugin::ComputeAndRenderNodes(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Position<World> const& sun_world_position,
+    std::unique_ptr<DiscreteTrajectory<World>>& ascending,
+    std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
+  CHECK(target_);
+  auto const trajectory_in_navigation =
+      RenderBarycentricTrajectoryInNavigation(begin, end);
+  DiscreteTrajectory<Navigation> ascending_trajectory;
+  DiscreteTrajectory<Navigation> descending_trajectory;
+  // The so-called North is the binormal to the trajectory.
+  ComputeNodes(trajectory_in_navigation->Begin(),
+               trajectory_in_navigation->End(),
+               Vector<double, Navigation>({0, 0, 1}),
+               ascending_trajectory,
+               descending_trajectory);
+  ascending = RenderNavigationTrajectoryInWorld(ascending_trajectory.Begin(),
+                                                ascending_trajectory.End(),
                                                 sun_world_position);
+  descending = RenderNavigationTrajectoryInWorld(descending_trajectory.Begin(),
+                                                 descending_trajectory.End(),
+                                                 sun_world_position);
 }
 
 void Plugin::SetPredictionLength(Time const& t) {
@@ -1391,6 +1361,59 @@ std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
 
   const std::string serialized = message.SerializeAsString();
   return Fingerprint2011(serialized.c_str(), serialized.size());
+}
+
+not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+Plugin::RenderBarycentricTrajectoryInNavigation(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+
+  for (auto it = begin; it != end; ++it) {
+    if (target_) {
+      if (it.time() < target_->vessel->prediction().t_min()) {
+        continue;
+      } else if (it.time() > target_->vessel->prediction().t_max()) {
+        break;
+      }
+    }
+    trajectory->Append(
+        it.time(),
+        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
+}
+
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Plugin::RenderNavigationTrajectoryInWorld(
+    DiscreteTrajectory<Navigation>::Iterator const& begin,
+    DiscreteTrajectory<Navigation>::Iterator const& end,
+    Position<World> const& sun_world_position) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+
+  NavigationFrame& plotting_frame =
+      target_ ? *target_->target_frame : *plotting_frame_;
+
+  RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
+      /*rigid_transformation=*/BarycentricToWorld(sun_world_position) *
+          plotting_frame.FromThisFrameAtTime(current_time_)
+              .rigid_transformation(),
+      AngularVelocity<Navigation>{},
+      Velocity<Navigation>{});
+  for (auto it = begin; it != end; ++it) {
+    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
+        it.degrees_of_freedom();
+    DegreesOfFreedom<World> const world_degrees_of_freedom =
+        from_navigation_frame_to_world_at_current_time(
+            navigation_degrees_of_freedom);
+    trajectory->Append(it.time(), world_degrees_of_freedom);
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
 }
 
 void Plugin::AddPart(not_null<Vessel*> const vessel,

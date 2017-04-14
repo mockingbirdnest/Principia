@@ -641,8 +641,10 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetTargetVessel(target_vessel.id.ToString(),
                                 plotting_frame_selector_.get()
                                     .selected_celestial.flightGlobalsIndex);
+        plotting_frame_selector_.get().target_override = target_vessel;
       } else {
         plugin_.ClearTargetVessel();
+        plotting_frame_selector_.get().target_override = null;
       }
 
       // Orient the ball.
@@ -658,6 +660,7 @@ public partial class PrincipiaPluginAdapter
       if (PluginRunning() &&
           has_active_manageable_vessel() &&
           plugin_.HasVessel(active_vessel.id.ToString()) &&
+          // TODO(egg): also cover Target mode.
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Orbit) {
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
@@ -1423,8 +1426,20 @@ public partial class PrincipiaPluginAdapter
              "{0:0.00e00} s");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+      UnityEngine.GUILayout.BeginHorizontal();
       selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-          selecting_active_vessel_target_, "Select target...");
+          selecting_active_vessel_target_, "Select target vessel...");
+      if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
+        UnityEngine.GUILayout.Label(
+            "Target: " +
+                FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
+            UnityEngine.GUILayout.ExpandWidth(true));
+        if (UnityEngine.GUILayout.Button("Clear",
+                                         UnityEngine.GUILayout.Width(50))) {
+          FlightGlobals.fetch.SetVesselTarget(null);
+        }
+      }
+      UnityEngine.GUILayout.EndHorizontal();
     } else {
       selecting_active_vessel_target_ = false;
     }

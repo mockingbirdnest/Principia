@@ -564,15 +564,21 @@ TEST_F(InterfaceTest, RenderedPrediction) {
       t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
 
+  StrictMock<MockVessel> vessel;
+  DiscreteTrajectory<Barycentric> prediction;
+  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
+      .WillRepeatedly(Return(&vessel));
+  EXPECT_CALL(vessel, prediction())
+      .WillRepeatedly(ReturnRef(prediction));
   EXPECT_CALL(*plugin_,
-              FillRenderedPrediction(
-                  vessel_guid,
+              FillRenderedBarycentricTrajectoryInWorld(
+                  _, _,
                   World::origin + Displacement<World>(
                                       {parent_position.x * SIUnit<Length>(),
                                        parent_position.y * SIUnit<Length>(),
                                        parent_position.z * SIUnit<Length>()}),
                   _))
-      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
+      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     vessel_guid,
@@ -635,15 +641,21 @@ TEST_F(InterfaceTest, Iterator) {
   }
 
   // Construct a LineAndIterator.
+  StrictMock<MockVessel> vessel;
+  DiscreteTrajectory<Barycentric> psychohistory;
+  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
+      .WillRepeatedly(Return(&vessel));
+  EXPECT_CALL(vessel, psychohistory())
+      .WillRepeatedly(ReturnRef(psychohistory));
   EXPECT_CALL(*plugin_,
-              FillRenderedVesselTrajectory(
-                  vessel_guid,
+              FillRenderedBarycentricTrajectoryInWorld(
+                  _, _,
                   World::origin + Displacement<World>(
                                       {parent_position.x * SIUnit<Length>(),
                                        parent_position.y * SIUnit<Length>(),
                                        parent_position.z * SIUnit<Length>()}),
                   _))
-      .WillOnce(FillUniquePtr<2>(rendered_trajectory.release()));
+      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           vessel_guid,
@@ -1036,7 +1048,7 @@ TEST_F(InterfaceTest, FlightPlan) {
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
           Velocity<World>()));
   EXPECT_CALL(flight_plan, GetSegment(3, _, _));
-  EXPECT_CALL(*plugin_, FillRenderedTrajectoryFromIterators(_, _, _, _))
+  EXPECT_CALL(*plugin_, FillRenderedBarycentricTrajectoryInWorld(_, _, _, _))
       .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
