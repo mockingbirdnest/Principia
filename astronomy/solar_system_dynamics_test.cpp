@@ -447,7 +447,8 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    file_ = OFStream(TEMP_DIR / "solar_system_convergence.generated.wl");
+    file_ = OFStream(SOLUTION_DIR / "mathematica" /
+                     "solar_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {

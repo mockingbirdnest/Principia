@@ -558,7 +558,8 @@ class KSPSystemConvergenceTest
       protected KSPSystem {
  public:
   static void SetUpTestCase() {
-    file_ = OFStream(TEMP_DIR / "ksp_system_convergence.generated.wl");
+    file_ = OFStream(SOLUTION_DIR / "mathematica" /
+                     "ksp_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {
