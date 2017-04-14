@@ -752,6 +752,32 @@ void Plugin::ComputeAndRenderApsides(
                                          sun_world_position);
 }
 
+void Plugin::ComputeAndRenderClosestApproaches(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Position<World> const& sun_world_position,
+    std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
+  CHECK(target_);
+  auto const trajectory_in_navigation =
+      RenderBarycentricTrajectoryInNavigation(begin, end);
+  auto const& prediction_in_barycentric = target_->vessel->prediction();
+  auto const prediction_in_navigation =
+      RenderBarycentricTrajectoryInNavigation(
+          prediction_in_barycentric.Begin(),
+          prediction_in_barycentric.End());
+  DiscreteTrajectory<Navigation> apoapsides_trajectory;
+  DiscreteTrajectory<Navigation> periapsides_trajectory;
+  ComputeApsides(*prediction_in_navigation,
+                 trajectory_in_navigation->Begin(),
+                 trajectory_in_navigation->End(),
+                 apoapsides_trajectory,
+                 periapsides_trajectory);
+  closest_approaches =
+      RenderNavigationTrajectoryInWorld(periapsides_trajectory.Begin(),
+                                        periapsides_trajectory.End(),
+                                        sun_world_position);
+}
+
 void Plugin::ComputeAndRenderNodes(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
@@ -763,7 +789,7 @@ void Plugin::ComputeAndRenderNodes(
       RenderBarycentricTrajectoryInNavigation(begin, end);
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
-  // The so-called North is the binormal to the trajectory.
+  // The so-called North is orthogonal to the plane of the trajectory.
   ComputeNodes(trajectory_in_navigation->Begin(),
                trajectory_in_navigation->End(),
                Vector<double, Navigation>({0, 0, 1}),
