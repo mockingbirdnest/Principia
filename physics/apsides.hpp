@@ -45,6 +45,7 @@ void ComputeApsides(Trajectory<Frame> const& trajectory1,
 }  // namespace internal_apsides
 
 using internal_apsides::ComputeApsides;
+using internal_apsides::ComputeNodes;
 
 }  // namespace physics
 }  // namespace principia

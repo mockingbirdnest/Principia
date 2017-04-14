@@ -21,33 +21,18 @@ void MockPlugin::InsertCelestialAbsoluteCartesian(
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-MockPlugin::RenderedVesselTrajectory(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_vessel_trajectory;
-  FillRenderedVesselTrajectory(
-      vessel_guid, sun_world_position, &rendered_vessel_trajectory);
-  return std::move(rendered_vessel_trajectory);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-MockPlugin::RenderedPrediction(
-    GUID const& vessel_guid,
-    Position<World> const& sun_world_position) const {
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_prediction;
-  FillRenderedPrediction(vessel_guid, sun_world_position, &rendered_prediction);
-  return std::move(rendered_prediction);
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-MockPlugin::RenderedTrajectoryFromIterators(
+MockPlugin::RenderBarycentricTrajectoryInWorld(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position) const {
-  std::unique_ptr<DiscreteTrajectory<World>> rendered_trajectory_from_iterators;
-  FillRenderedTrajectoryFromIterators(
-      begin, end, sun_world_position, &rendered_trajectory_from_iterators);
-  return std::move(rendered_trajectory_from_iterators);
+  std::unique_ptr<DiscreteTrajectory<World>>
+      rendered_barycentric_trajectory_in_world;
+  FillRenderedBarycentricTrajectoryInWorld(
+      begin,
+      end,
+      sun_world_position,
+      &rendered_barycentric_trajectory_in_world);
+  return std::move(rendered_barycentric_trajectory_in_world);
 }
 
 not_null<std::unique_ptr<NavigationFrame>>

@@ -319,6 +319,36 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   return m.Return();
 }
 
+void principia__FlightPlanRenderedNodes(Plugin const* const plugin,
+                                        char const* const vessel_guid,
+                                        XYZ const sun_world_position,
+                                        Iterator** const ascending,
+                                        Iterator** const descending) {
+  journal::Method<journal::FlightPlanRenderedNodes> m(
+      {plugin, vessel_guid, sun_world_position},
+      {ascending, descending});
+  CHECK_NOTNULL(plugin);
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
+  Position<World> const q_sun =
+      World::origin +
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
+  plugin->ComputeAndRenderNodes(begin, end,
+                                q_sun,
+                                rendered_ascending,
+                                rendered_descending);
+  *ascending = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_ascending)),
+      plugin);
+  *descending = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_descending)),
+      plugin);
+  return m.Return();
+}
+
 Iterator* principia__FlightPlanRenderedSegment(
     Plugin const* const plugin,
     char const* const vessel_guid,
@@ -333,7 +363,7 @@ Iterator* principia__FlightPlanRenderedSegment(
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetSegment(index, begin, end);
   auto rendered_trajectory = CHECK_NOTNULL(plugin)->
-      RenderedTrajectoryFromIterators(
+      RenderBarycentricTrajectoryInWorld(
           begin, end,
           World::origin + Displacement<World>(
                               FromXYZ(sun_world_position) * Metre));
