@@ -1426,8 +1426,20 @@ public partial class PrincipiaPluginAdapter
              "{0:0.00e00} s");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+      UnityEngine.GUILayout.BeginHorizontal();
       selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-          selecting_active_vessel_target_, "Select target...");
+          selecting_active_vessel_target_, "Select target vessel...");
+      if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
+        UnityEngine.GUILayout.Label(
+            "Target: " +
+                FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
+            UnityEngine.GUILayout.ExpandWidth(true));
+        if (UnityEngine.GUILayout.Button("Clear",
+                                         UnityEngine.GUILayout.Width(50))) {
+          FlightGlobals.fetch.SetVesselTarget(null);
+        }
+      }
+      UnityEngine.GUILayout.EndHorizontal();
     } else {
       selecting_active_vessel_target_ = false;
     }

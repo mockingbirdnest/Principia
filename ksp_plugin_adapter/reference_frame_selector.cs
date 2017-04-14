@@ -67,7 +67,7 @@ class ReferenceFrameSelector : WindowRenderer {
                             CelestialBody selected,
                             Vessel target_override) {
    if (target_override) {
-     return "Target Local Vertical, Local Horizontal, above " + selected.name;
+     return "Target Local Vert./Horiz. at " + selected.theName;
    }
    switch (type) {
      case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -98,7 +98,7 @@ class ReferenceFrameSelector : WindowRenderer {
                                  CelestialBody selected,
                                  Vessel target_override) {
     if (target_override) {
-      return "Tgt LVLH (" + selected.name[0] + ")";
+      return "Tgt LVLH@" + selected.name[0];
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -130,7 +130,7 @@ class ReferenceFrameSelector : WindowRenderer {
     if (target_override) {
       return "Reference frame fixing the target vessel (" +
              target_override.vesselName + "), the plane of its orbit around " +
-             selected.referenceBody.theName + ", and the line between them";
+             selected.theName + ", and the line between them";
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -275,9 +275,11 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUILayout.BeginVertical();
     if (target_override) {
       UnityEngine.GUILayout.Label(
-          "Using target-centred frame selected on navball speed display");
+          "Using target-centred frame selected on navball speed display",
+          UnityEngine.GUILayout.Width(150));
       UnityEngine.GUILayout.Label(
-          Description(frame_type, selected_celestial, target_override));
+          Description(frame_type, selected_celestial, target_override),
+          UnityEngine.GUILayout.Width(150));
     } else {
       TypeSelector(FrameType.BODY_SURFACE);
       TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
