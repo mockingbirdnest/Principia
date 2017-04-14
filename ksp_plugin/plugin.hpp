@@ -502,8 +502,9 @@ class Plugin {
   struct Target {
     Target(not_null<Vessel*> vessel,
            not_null<Ephemeris<Barycentric> const*> ephemeris,
-           Celestial const& celestial);
+           not_null<Celestial const*> celestial);
     not_null<Vessel*> const vessel;
+    not_null<Celestial const*> const celestial;
     not_null<std::unique_ptr<NavigationFrame>> const target_frame;
   };
   std::experimental::optional<Target> target_;

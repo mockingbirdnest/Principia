@@ -82,7 +82,8 @@ internal class MapNodePool {
                   : celestial.orbitDriver.Renderer.nodeColor;
           colour.a = 1;
           icon.visible = true;
-          if (properties_[node].celestial.GetAltitude(
+          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
+              properties_[node].celestial.GetAltitude(
                   properties_[node].world_position) < 0) {
             // Make sure we see impacts.
             colour = XKCDColors.Orange;
@@ -92,7 +93,8 @@ internal class MapNodePool {
     new_node.OnUpdateType +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.TypeData type) => {
-          if (properties_[node].celestial.GetAltitude(
+          if (properties_[node].object_type == MapObject.ObjectType.Periapsis &&
+              properties_[node].celestial.GetAltitude(
                   properties_[node].world_position) < 0) {
             type.oType = MapObject.ObjectType.PatchTransition;
             type.pType =
@@ -104,23 +106,38 @@ internal class MapNodePool {
     new_node.OnUpdateCaption +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.CaptionData caption) => {
-          String name =
-              properties_[node].object_type == MapObject.ObjectType.Periapsis
-                  ? "Periapsis"
-                  : "Apoapsis";
-          caption.Header =
-              properties_[node].celestial.name + " " + name + " : <color=" +
-              XKCDColors.HexFormat.Chartreuse + ">" +
-              properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position).ToString("N0",
-                                                             Culture.culture) +
-              " m</color>";
+          if (properties_[node].object_type == MapObject.ObjectType.Periapsis ||
+              properties_[node].object_type == MapObject.ObjectType.Apoapsis) {
+            String name =
+                properties_[node].object_type == MapObject.ObjectType.Periapsis
+                    ? "Periapsis"
+                    : "Apoapsis";
+            caption.Header =
+                properties_[node].celestial.name + " " + name + " : <color=" +
+                XKCDColors.HexFormat.Chartreuse + ">" +
+                properties_[node].celestial.GetAltitude(
+                    properties_[node].world_position).ToString(
+                        "N0",
+                        Culture.culture) + " m</color>";
+          } else if (properties_[node].object_type ==
+                         MapObject.ObjectType.AscendingNode ||
+                     properties_[node].object_type ==
+                         MapObject.ObjectType.DescendingNode) {
+            String name = properties_[node].object_type ==
+                                  MapObject.ObjectType.AscendingNode
+                              ? "Ascending Node"
+                              : "Descending Node";
+            // TODO(egg): We should show some useful information here, perhaps
+            // out-of-plane (z) speed.
+            caption.Header = name;
+          }
           caption.captionLine1 =
               "T" +
               FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
                   Planetarium.GetUniversalTime() - properties_[node].time));
           if (properties_[node].celestial.GetAltitude(
-                  properties_[node].world_position) < 0) {
+                  properties_[node].world_position) < 0 &&
+              properties_[node].object_type == MapObject.ObjectType.Periapsis) {
             caption.Header = properties_[node].celestial.name +
                              " Impact<color=" +
                              XKCDColors.HexFormat.Chartreuse + "></color>";

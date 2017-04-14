@@ -1276,6 +1276,9 @@ public partial class PrincipiaPluginAdapter
             bool is_burn = i % 2 == 1;
             var rendered_segments = plugin_.FlightPlanRenderedSegment(
                 active_vessel_guid, sun_world_position, i);
+            if (rendered_segments.IteratorAtEnd()) {
+              continue;
+            }
             Vector3d position_at_start =
                 (Vector3d)rendered_segments.IteratorGetXYZ();
             GLLines.RenderAndDeleteTrajectory(
@@ -1313,45 +1316,87 @@ public partial class PrincipiaPluginAdapter
 
   private void RenderPredictionApsides(String vessel_guid,
                                        XYZ sun_world_position) {
-    foreach (CelestialBody celestial in
-             plotting_frame_selector_.get().FixedBodies()) {
-      IntPtr apoapsis_iterator;
-      IntPtr periapsis_iterator;
-      plugin_.RenderedPredictionApsides(vessel_guid,
-                                        celestial.flightGlobalsIndex,
-                                        sun_world_position,
-                                        out apoapsis_iterator,
-                                        out periapsis_iterator);
-      map_node_pool_.RenderAndDeleteApsides(apoapsis_iterator,
-                                            celestial,
-                                            MapObject.ObjectType.Apoapsis,
-                                            MapNodePool.NodeSource.PREDICTION);
-      map_node_pool_.RenderAndDeleteApsides(periapsis_iterator,
-                                            celestial,
-                                            MapObject.ObjectType.Periapsis,
-                                            MapNodePool.NodeSource.PREDICTION);
+    if (plotting_frame_selector_.get().target_override) {
+      IntPtr ascending_nodes_iterator;
+      IntPtr descending_nodes_iterator;
+      plugin_.RenderedPredictionNodes(vessel_guid,
+                                      sun_world_position,
+                                      out ascending_nodes_iterator,
+                                      out descending_nodes_iterator);
+      map_node_pool_.RenderAndDeleteApsides(
+          ascending_nodes_iterator,
+          plotting_frame_selector_.get().selected_celestial,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.PREDICTION);
+      map_node_pool_.RenderAndDeleteApsides(
+          descending_nodes_iterator,
+          plotting_frame_selector_.get().selected_celestial,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.PREDICTION);
+    } else {
+      foreach (CelestialBody celestial in
+               plotting_frame_selector_.get().FixedBodies()) {
+        IntPtr apoapsis_iterator;
+        IntPtr periapsis_iterator;
+        plugin_.RenderedPredictionApsides(vessel_guid,
+                                          celestial.flightGlobalsIndex,
+                                          sun_world_position,
+                                          out apoapsis_iterator,
+                                          out periapsis_iterator);
+        map_node_pool_.RenderAndDeleteApsides(
+            apoapsis_iterator,
+            celestial,
+            MapObject.ObjectType.Apoapsis,
+            MapNodePool.NodeSource.PREDICTION);
+        map_node_pool_.RenderAndDeleteApsides(
+            periapsis_iterator,
+            celestial,
+            MapObject.ObjectType.Periapsis,
+            MapNodePool.NodeSource.PREDICTION);
+      }
     }
   }
 
   private void RenderFlightPlanApsides(String vessel_guid,
                                        XYZ sun_world_position) {
-    foreach (CelestialBody celestial in
-             plotting_frame_selector_.get().FixedBodies()) {
-      IntPtr apoapsis_iterator;
-      IntPtr periapsis_iterator;
-      plugin_.FlightPlanRenderedApsides(vessel_guid,
-                                        celestial.flightGlobalsIndex,
-                                        sun_world_position,
-                                        out apoapsis_iterator,
-                                        out periapsis_iterator);
-      map_node_pool_.RenderAndDeleteApsides(apoapsis_iterator,
-                                            celestial,
-                                            MapObject.ObjectType.Apoapsis,
-                                            MapNodePool.NodeSource.FLIGHT_PLAN);
-      map_node_pool_.RenderAndDeleteApsides(periapsis_iterator,
-                                            celestial,
-                                            MapObject.ObjectType.Periapsis,
-                                            MapNodePool.NodeSource.FLIGHT_PLAN);
+    if (plotting_frame_selector_.get().target_override) {
+      IntPtr ascending_nodes_iterator;
+      IntPtr descending_nodes_iterator;
+      plugin_.FlightPlanRenderedNodes(vessel_guid,
+                                      sun_world_position,
+                                      out ascending_nodes_iterator,
+                                      out descending_nodes_iterator);
+      map_node_pool_.RenderAndDeleteApsides(
+          ascending_nodes_iterator,
+          plotting_frame_selector_.get().selected_celestial,
+          MapObject.ObjectType.AscendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN);
+      map_node_pool_.RenderAndDeleteApsides(
+          descending_nodes_iterator,
+          plotting_frame_selector_.get().selected_celestial,
+          MapObject.ObjectType.DescendingNode,
+          MapNodePool.NodeSource.FLIGHT_PLAN);
+    } else {
+      foreach (CelestialBody celestial in
+               plotting_frame_selector_.get().FixedBodies()) {
+        IntPtr apoapsis_iterator;
+        IntPtr periapsis_iterator;
+        plugin_.FlightPlanRenderedApsides(vessel_guid,
+                                          celestial.flightGlobalsIndex,
+                                          sun_world_position,
+                                          out apoapsis_iterator,
+                                          out periapsis_iterator);
+        map_node_pool_.RenderAndDeleteApsides(
+            apoapsis_iterator,
+            celestial,
+            MapObject.ObjectType.Apoapsis,
+            MapNodePool.NodeSource.FLIGHT_PLAN);
+        map_node_pool_.RenderAndDeleteApsides(
+            periapsis_iterator,
+            celestial,
+            MapObject.ObjectType.Periapsis,
+            MapNodePool.NodeSource.FLIGHT_PLAN);
+      }
     }
   }
 
