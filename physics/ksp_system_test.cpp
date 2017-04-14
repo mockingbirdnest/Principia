@@ -561,6 +561,10 @@ class KSPSystemConvergenceTest
     file_ = OFStream(TEMP_DIR / "ksp_system_convergence.generated.wl");
   }
 
+  static void TearDownTestCase() {
+    file_.~OFStream();
+  }
+
  protected:
   FixedStepSizeIntegrator<
       Ephemeris<KSP>::NewtonianMotionEquation> const&
@@ -581,7 +585,7 @@ class KSPSystemConvergenceTest
 
 OFStream KSPSystemConvergenceTest::file_;
 
-// This takes 7-8 minutes to run.
+// This takes 2 minutes to run.
 TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;

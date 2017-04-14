@@ -2,6 +2,8 @@
 
 #include "base/file.hpp"
 
+#include <string>
+
 #include "glog/logging.h"
 
 namespace principia {

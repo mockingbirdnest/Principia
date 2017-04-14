@@ -2,6 +2,7 @@
 
 #include <experimental/filesystem>
 #include <fstream>
+#include <string>
 
 namespace principia {
 namespace base {

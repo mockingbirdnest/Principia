@@ -450,6 +450,10 @@ class SolarSystemDynamicsConvergenceTest
     file_ = OFStream(TEMP_DIR / "solar_system_convergence.generated.wl");
   }
 
+  static void TearDownTestCase() {
+    file_.~OFStream();
+  }
+
  protected:
   FixedStepSizeIntegrator<
       Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
