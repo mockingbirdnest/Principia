@@ -67,7 +67,7 @@ class ReferenceFrameSelector : WindowRenderer {
                             CelestialBody selected,
                             Vessel target_override) {
    if (target_override) {
-     return "Target Local Vertical, Local Horizontal (" + selected.name + ")";
+     return "Target Local Vertical, Local Horizontal, above " + selected.name;
    }
    switch (type) {
      case FrameType.BODY_CENTRED_NON_ROTATING:
