@@ -291,7 +291,7 @@
     <None Include="integration.wl" />
     <None Include="newhall.nb" />
     <None Include="phobos.nb" />
-    <None Include="solar_systems_convergence.nb" />
+    <None Include="solar_systems_convergence.wl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\serialization\serialization.vcxproj">

@@ -60,7 +60,7 @@
     <None Include="phobos.nb">
       <Filter>Scripts</Filter>
     </None>
-    <None Include="solar_systems_convergence.nb">
+    <None Include="solar_systems_convergence.wl">
       <Filter>Scripts</Filter>
     </None>
   </ItemGroup>
