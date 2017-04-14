@@ -2,6 +2,7 @@
 #include "mathematica/integrator_plots.hpp"
 
 #include <algorithm>
+#include <experimental/filesystem>
 #include <fstream>  // NOLINT(readability/streams)
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
@@ -346,7 +347,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
       "Harmonic oscillator");
 
   std::ofstream file;
-  file.open("simple_harmonic_motion_graphs.generated.wl");
+  file.open(TEMP_DIR / "simple_harmonic_motion_graphs.generated.wl");
   file << generator.GetMathematicaData();
   file.close();
 }
@@ -409,8 +410,8 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       " Kepler problem with e = " + std::to_string(eccentricity));
 
   std::ofstream file;
-  file.open("kepler_problem_graphs_" + std::to_string(eccentricity) +
-            ".generated.wl");
+  file.open(TEMP_DIR / ("kepler_problem_graphs_" +
+                        std::to_string(eccentricity) + ".generated.wl"));
   file << generator.GetMathematicaData();
   file.close();
 }

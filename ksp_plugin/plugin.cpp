@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <experimental/filesystem>
 #include <fstream>
 #include <ios>
 #include <limits>
@@ -213,11 +214,11 @@ void Plugin::EndInitialization() {
 #if LOG_KSP_SYSTEM
     std::ofstream file;
     if (system_fingerprint == ksp_stock_system_fingerprint) {
-      file.open("ksp_stock_system.proto.hex");
+      file.open(TEMP_DIR / "ksp_stock_system.proto.hex");
     } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
-      file.open("ksp_fixed_system.proto.hex");
+      file.open(TEMP_DIR / "ksp_fixed_system.proto.hex");
     } else {
-      file.open("unknown_system.proto.hex");
+      file.open(TEMP_DIR / "unknown_system.proto.hex");
     }
     std::string bytes;
     base::UniqueArray<std::uint8_t> hex;

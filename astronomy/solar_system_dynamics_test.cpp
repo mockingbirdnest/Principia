@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <experimental/filesystem>
 #include <experimental/optional>
 #include <map>
 #include <string>
@@ -425,7 +426,7 @@ TEST(MarsTest, Phobos) {
   }
 
   std::ofstream file;
-  file.open("phobos.generated.wl");
+  file.open(TEMP_DIR / "phobos.generated.wl");
   file << mathematica::Assign("ppaMarsPhobosDisplacements",
                               mars_phobos_displacements);
   file << mathematica::Assign("ppaMarsPhobosVelocities",
@@ -446,7 +447,7 @@ class SolarSystemDynamicsConvergenceTest
     : public ::testing::TestWithParam<ConvergenceTestParameters> {
  public:
   static void SetUpTestCase() {
-    file_.open("solar_system_convergence.generated.wl");
+    file_.open(TEMP_DIR / "solar_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {

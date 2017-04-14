@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <experimental/filesystem>
 #include <fstream>
 #include <list>
 #include <map>
@@ -125,7 +126,8 @@ constexpr std::array<char const*, 17> names = {
     "Eeloo",
 };
 
-constexpr char system_file[] = "ksp_fixed_system.proto.hex";
+std::experimental::filesystem::path const system_file =
+    SOLUTION_DIR / "mathematica" / "ksp_fixed_system.proto.hex";
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
@@ -156,8 +158,8 @@ std::unique_ptr<Message> Read(std::ifstream& file) {
 }
 
 HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
-    std::string const& file_name) {
-  std::ifstream input_file(file_name, std::ios::in);
+    std::experimental::filesystem::path const& filename) {
+  std::ifstream input_file(filename, std::ios::in);
   CHECK(!input_file.fail());
   HierarchicalSystem<Barycentric>::BarycentricSystem system;
   for (auto body = Read<serialization::MassiveBody>(input_file);
@@ -368,7 +370,7 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   }
 
   std::ofstream file;
-  file.open("retrobop_century.generated.wl");
+  file.open(TEMP_DIR / "retrobop_century.generated.wl");
   file << Assign("laytheTimes", ExpressIn(Second, times_from_epoch[Laythe]));
   file << Assign("vallTimes", ExpressIn(Second, times_from_epoch[Vall]));
   file << Assign("tyloTimes", ExpressIn(Second, times_from_epoch[Tylo]));
@@ -445,7 +447,7 @@ void PlotPredictableYears() {
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
   std::ofstream file;
-  file.open("retrobop_predictable_years.generated.wl");
+  file.open(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
                  ExpressIn(Metre, barycentric_positions_1_year));
   file << Assign("barycentricPositions2",

@@ -1,6 +1,7 @@
 ﻿
 #include <algorithm>
 #include <chrono>
+#include <experimental/filesystem>
 #include <fstream>
 #include <map>
 #include <string>
@@ -504,7 +505,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   }
 
   std::ofstream file;
-  file.open("ksp_system.generated.wl");
+  file.open(TEMP_DIR / "ksp_system.generated.wl");
   file << mathematica::Assign("laytheTimes", times_in_s[&laythe_]);
   file << mathematica::Assign("vallTimes", times_in_s[&vall_]);
   file << mathematica::Assign("tyloTimes", times_in_s[&tylo_]);
@@ -557,7 +558,7 @@ class KSPSystemConvergenceTest
       protected KSPSystem {
  public:
   static void SetUpTestCase() {
-    file_.open("ksp_system_convergence.generated.wl");
+    file_.open(TEMP_DIR / "ksp_system_convergence.generated.wl");
   }
 
   static void TearDownTestCase() {

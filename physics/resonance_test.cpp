@@ -1,4 +1,5 @@
 ﻿
+#include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -195,7 +196,7 @@ class ResonanceTest : public ::testing::Test {
       }
     }
     std::ofstream file;
-    file.open(name + "_" + purpose + ".generated.wl");
+    file.open(TEMP_DIR / (name + "_" + purpose + ".generated.wl"));
     file << mathematica::Assign(name + purpose + "q", barycentric_positions);
     file << mathematica::Assign(name + purpose + "t", times);
     file.close();
