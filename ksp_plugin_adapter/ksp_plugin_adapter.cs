@@ -1529,6 +1529,7 @@ public partial class PrincipiaPluginAdapter
             UnityEngine.GUILayout.ExpandWidth(true));
         if (UnityEngine.GUILayout.Button("Clear",
                                          UnityEngine.GUILayout.Width(50))) {
+          selecting_active_vessel_target_ = false;
           FlightGlobals.fetch.SetVesselTarget(null);
         }
       }
