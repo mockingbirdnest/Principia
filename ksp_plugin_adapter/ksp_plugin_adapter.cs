@@ -616,10 +616,16 @@ public partial class PrincipiaPluginAdapter
         plugin_.SetTargetVessel(target_vessel.id.ToString(),
                                 plotting_frame_selector_.get()
                                     .selected_celestial.flightGlobalsIndex);
-        plotting_frame_selector_.get().target_override = target_vessel;
+        if (plotting_frame_selector_.get().target_override != target_vessel) {
+          navball_changed_ = true;
+          plotting_frame_selector_.get().target_override = target_vessel;
+        }
       } else {
         plugin_.ClearTargetVessel();
-        plotting_frame_selector_.get().target_override = null;
+        if (plotting_frame_selector_.get().target_override != null) {
+          navball_changed_ = true;
+          plotting_frame_selector_.get().target_override = null;
+        }
       }
 
       // Orient the ball.
@@ -660,6 +666,12 @@ public partial class PrincipiaPluginAdapter
               break;
           }
         }
+      }
+
+      if (plotting_frame_selector_.get().target_override == null &&
+          FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Target) {
+        KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
       }
 
       if (PluginRunning() && has_active_manageable_vessel() &&
