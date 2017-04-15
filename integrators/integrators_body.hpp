@@ -43,7 +43,7 @@ void Integrator<ODE_>::Instance::WriteToMessage(
 }
 
 template<typename ODE_>
-Integrator<ODE_>::Instance::Instance() {}
+Integrator<ODE_>::Instance::Instance() : equation_() {}
 
 template<typename ODE_>
 void FixedStepSizeIntegrator<ODE_>::Instance::WriteToMessage(

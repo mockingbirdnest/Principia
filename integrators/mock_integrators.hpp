@@ -16,11 +16,12 @@ class MockFixedStepSizeIntegrator
     : public FixedStepSizeIntegrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
-  using AppendState = typename Integrator<ODE>::AppendState;
+  using typename Integrator<ODE>::AppendState;
+  using typename Integrator<ODE>::Instance;
 
-  class MockInstance : public Integrator<ODE>::Instance {
+  class MockInstance : public Instance {
    public:
-    MockInstance() : Integrator<ODE>::Instance() {}
+    MockInstance() : Instance() {}
 
     MOCK_METHOD1_T(Solve, Status(Instant const& t_final));
     MOCK_CONST_METHOD0_T(Clone, not_null<std::unique_ptr<Instance>>());

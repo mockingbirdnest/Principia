@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
 
 namespace principia {
@@ -13,6 +14,7 @@ namespace internal_file {
 inline OFStream::OFStream() {}
 
 inline OFStream::OFStream(std::experimental::filesystem::path const& path) {
+#if PRINCIPIA_COMPILER_MSVC
   CHECK(path.has_filename()) << path;
   std::experimental::filesystem::path directory = path;
   directory.remove_filename();
@@ -20,6 +22,7 @@ inline OFStream::OFStream(std::experimental::filesystem::path const& path) {
     CHECK(std::experimental::filesystem::create_directories(directory))
         << directory;
   }
+#endif
   stream_.open(path);
   CHECK(stream_.good()) << path;
 }

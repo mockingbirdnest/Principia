@@ -181,12 +181,12 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
-  return Empty() ? InfiniteFuture : Begin().time();
+  return this->Empty() ? InfiniteFuture : this->Begin().time();
 }
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_max() const {
-  return Empty() ? InfinitePast : last().time();
+  return this->Empty() ? InfinitePast : last().time();
 }
 
 template<typename Frame>
@@ -321,8 +321,8 @@ Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
 CHECK_GE(t_max(), time);
   // This is the upper bound of the interval upon which we will do the
   // interpolation.
-  auto const upper = LowerBound(time);
-  auto const lower = upper == Begin() ? upper : --Iterator{upper};
+  auto const upper = this->LowerBound(time);
+  auto const lower = upper == this->Begin() ? upper : --Iterator{upper};
   return Hermite3<Instant, Position<Frame>>{
       {lower.time(), upper.time()},
       {lower.degrees_of_freedom().position(),

@@ -59,7 +59,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
                  SpecialSecondOrderDifferentialEquation<Position>> {
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
-  using AppendState = typename Integrator<ODE>::AppendState;
+  using typename Integrator<ODE>::AppendState;
+  using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
+  using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
 
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       serialization::AdaptiveStepSizeIntegrator::Kind kind,
