@@ -277,6 +277,8 @@ class Plugin {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
+  // Computes the apsides of the trajectory defined by |begin| and |end| with
+  // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
       Index celestial_index,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
@@ -285,6 +287,16 @@ class Plugin {
       std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
       std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
 
+  // Computes the closest approaches of the trajectory defined by |begin| and
+  // |end| with respect to the trajectory of the targetted vessel.
+  virtual void ComputeAndRenderClosestApproaches(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Position<World> const& sun_world_position,
+      std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
+
+  // Computes the nodes of the trajectory defined by |begin| and |end| with
+  // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,

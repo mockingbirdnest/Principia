@@ -34,8 +34,16 @@ void ComputeApsides(Trajectory<Frame> const& reference,
   std::experimental::optional<Variation<Square<Length>>>
       previous_squared_distance_derivative;
 
+  Instant const t_min = reference.t_min();
+  Instant const t_max = reference.t_max();
   for (auto it = begin; it != end; ++it) {
-    Instant const time = it.time();
+    Instant const& time = it.time();
+    if (time < t_min) {
+      continue;
+    }
+    if (time > t_max) {
+      break;
+    }
     DegreesOfFreedom<Frame> const degrees_of_freedom = it.degrees_of_freedom();
     DegreesOfFreedom<Frame> const body_degrees_of_freedom =
         reference.EvaluateDegreesOfFreedom(time);

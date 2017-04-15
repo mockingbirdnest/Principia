@@ -332,6 +332,31 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   return m.Return();
 }
 
+void principia__FlightPlanRenderedClosestApproaches(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    Iterator** const closest_approaches) {
+  journal::Method<journal::FlightPlanRenderedClosestApproaches> m(
+      {plugin, vessel_guid, sun_world_position},
+      {closest_approaches});
+  CHECK_NOTNULL(plugin);
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
+  plugin->ComputeAndRenderClosestApproaches(begin, end,
+                                            q_sun,
+                                            rendered_closest_approaches);
+  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_closest_approaches)),
+      plugin);
+  return m.Return();
+}
+
 void principia__FlightPlanRenderedNodes(Plugin const* const plugin,
                                         char const* const vessel_guid,
                                         XYZ const sun_world_position,
