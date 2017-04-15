@@ -955,7 +955,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
   auto* const plotting_frame_as_body_surface_dynamic_frame =
-      dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation>*>(
+      dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
           &*GetPlottingFrame());
   if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
     return std::make_unique<NavballFrameField>(
@@ -1371,7 +1371,7 @@ Plugin::RenderBarycentricTrajectoryInNavigation(
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
 
-  NavigationFrame& plotting_frame = *GetPlottingFrame();
+  NavigationFrame const& plotting_frame = *GetPlottingFrame();
 
   if (target_ && !begin.trajectory()->Empty() &&
       (target_->vessel->prediction().Empty() ||
@@ -1408,7 +1408,7 @@ Plugin::RenderNavigationTrajectoryInWorld(
     Position<World> const& sun_world_position) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
 
-  NavigationFrame& plotting_frame = *GetPlottingFrame();
+  NavigationFrame const& plotting_frame = *GetPlottingFrame();
 
   RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
       /*rigid_transformation=*/BarycentricToWorld(sun_world_position) *

@@ -1277,6 +1277,7 @@ public partial class PrincipiaPluginAdapter
             var rendered_segments = plugin_.FlightPlanRenderedSegment(
                 active_vessel_guid, sun_world_position, i);
             if (rendered_segments.IteratorAtEnd()) {
+              Log.Info("Skipping segment " + i);
               continue;
             }
             Vector3d position_at_start =
