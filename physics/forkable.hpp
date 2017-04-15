@@ -2,7 +2,7 @@
 #pragma once
 
 #include <deque>
-#include <experimental/optional>  // NOLINT
+#include <experimental/optional>
 #include <map>
 #include <memory>
 #include <vector>

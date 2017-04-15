@@ -32,12 +32,11 @@ class MassiveBody : public Body {
     // The constructors are implicit on purpose.
     Parameters(
         GravitationalParameter const& gravitational_parameter);  // NOLINT
-    Parameters(
-        std::string const& name,
-        GravitationalParameter const& gravitational_parameter);  // NOLINT
+    Parameters(std::string const& name,
+               GravitationalParameter const& gravitational_parameter);
     Parameters(Mass const& mass);  // NOLINT(runtime/explicit)
     Parameters(std::string const& name,
-               Mass const& mass);  // NOLINT(runtime/explicit)
+               Mass const& mass);
 
    private:
     std::string const name_;

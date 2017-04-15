@@ -123,8 +123,7 @@ std::vector<std::pair<Position<ICRFJ2000Equator>,
   return result;
 }
 
-void BM_BodyCentredNonRotatingDynamicFrame(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
@@ -172,8 +171,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(
   }
 }
 
-void BM_BarycentricRotatingDynamicFrame(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 

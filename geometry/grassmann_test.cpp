@@ -48,29 +48,25 @@ using ::testing::Eq;
 
 namespace geometry {
 
-// NOTE(egg): unqualified NOLINTs below because there are a lot of these and the
-// stupid linter talks about [whitespace/operators] on every other line anyway.
-// If this kind of transparent functor proves useful we may want a macro to make
-// those.
-
 struct TransparentInnerProduct final {
   template<typename Left, typename Right>
-  decltype(
-      InnerProduct(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
-                   std::forward<Right>(std::declval<Right&&>())))  // NOLINT
-  operator()(Left&& left, Right&& right) const {                   // NOLINT
-    return InnerProduct(std::forward<Left>(left),                  // NOLINT
-                        std::forward<Right>(right));               // NOLINT
+  decltype(InnerProduct(std::forward<Left>(std::declval<Left&&>()),
+                        std::forward<Right>(std::declval<Right&&>())))
+  operator()(Left&& left, Right&& right)  // NOLINT(whitespace/operators)
+      const {
+    return InnerProduct(std::forward<Left>(left),
+                        std::forward<Right>(right));
   }
 };
 
 struct TransparentWedge final {
   template<typename Left, typename Right>
-  decltype(Wedge(std::forward<Left>(std::declval<Left&&>()),     // NOLINT
-                 std::forward<Right>(std::declval<Right&&>())))  // NOLINT
-  operator()(Left&& left, Right&& right) const {                 // NOLINT
-    return Wedge(std::forward<Left>(left),                       // NOLINT
-                 std::forward<Right>(right));                    // NOLINT
+  decltype(Wedge(std::forward<Left>(std::declval<Left&&>()),
+                 std::forward<Right>(std::declval<Right&&>())))
+  operator()(Left&& left, Right&& right)  // NOLINT(whitespace/operators)
+      const {
+    return Wedge(std::forward<Left>(left),
+                 std::forward<Right>(right));
   }
 };
 

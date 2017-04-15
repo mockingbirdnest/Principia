@@ -1,7 +1,7 @@
 ﻿
 #include "tools/generate_profiles.hpp"
 
-#include <experimental/filesystem>  // NOLINT
+#include <experimental/filesystem>
 #include <fstream>
 
 #include "glog/logging.h"
