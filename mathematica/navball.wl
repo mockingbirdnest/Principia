@@ -392,11 +392,11 @@ targetLVLH=
    If[
     Mod[xy[[1]],\[Pi]]!=0||xy[[2]]!=0,
     longitude[xy,n,s,eq,markings]]],
-  {Gray,EdgeForm[Directive[Thick,White]],
-   equatorialDisk[0,"I",Gray](*The x axis points to the secondary, i.e., the body that is not fixed*),
-   Red,
-   equatorialDisk[-\[Pi],"T",White],
-   equatorialDisk[\[Pi],"T",White]}];
+  {Darker@Orange,EdgeForm[Directive[Thick,White]],
+   equatorialDisk[0,"I",Darker@Orange](*The x axis points towards the ground at the target*),
+   sky,
+   equatorialDisk[-\[Pi],"II",sky],
+   equatorialDisk[\[Pi],"II",sky]}];
 
 
 inertial=
