@@ -18,11 +18,13 @@ class MockEphemeris : public Ephemeris<Frame> {
  public:
   using typename Ephemeris<Frame>::AdaptiveStepParameters;
   using typename Ephemeris<Frame>::FixedStepParameters;
+  using typename Ephemeris<Frame>::IntrinsicAcceleration;
+  using typename Ephemeris<Frame>::IntrinsicAccelerations;
+  using typename Ephemeris<Frame>::NewtonianMotionEquation;
 
   MockEphemeris()
       : Ephemeris<Frame>(
-            MockFixedStepSizeIntegrator<
-                typename Ephemeris<Frame>::NewtonianMotionEquation>::Get()) {}
+            MockFixedStepSizeIntegrator<NewtonianMotionEquation>::Get()) {}
 
   MOCK_CONST_METHOD0_T(bodies,
                        std::vector<not_null<MassiveBody const*>> const&());
@@ -34,8 +36,7 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_CONST_METHOD0_T(t_max, Instant());
   MOCK_CONST_METHOD0_T(
       planetary_integrator,
-      FixedStepSizeIntegrator<
-          typename Ephemeris<Frame>::NewtonianMotionEquation> const&());
+      FixedStepSizeIntegrator<NewtonianMotionEquation> const&());
 
   MOCK_METHOD1_T(ForgetBefore, void(Instant const& t));
   MOCK_METHOD1_T(Prolong, void(Instant const& t));
@@ -49,8 +50,7 @@ class MockEphemeris : public Ephemeris<Frame> {
   MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
       bool(not_null<DiscreteTrajectory<Frame>*> trajectory,
-           typename Ephemeris<Frame>::IntrinsicAcceleration
-               intrinsic_acceleration,
+           IntrinsicAcceleration intrinsic_acceleration,
            Instant const& t,
            AdaptiveStepParameters const& parameters,
            std::int64_t max_ephemeris_steps,

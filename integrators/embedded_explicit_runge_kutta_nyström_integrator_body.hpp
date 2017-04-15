@@ -102,9 +102,10 @@ Instance::Solve(Instant const& t_final) {
   auto const& b_prime = integrator_.b_prime_;
   auto const& c = integrator_.c_;
 
-  auto& current_state = this->current_state_;
   auto& append_state = this->append_state_;
-  auto& parameters = parameters_;
+  auto& current_state = this->current_state_;
+  auto& first_use = this->first_use_;
+  auto& parameters = this->parameters_;
   auto const& equation = this->equation_;
 
   // |current_state| gets updated as the integration progresses to allow
@@ -123,12 +124,12 @@ Instance::Solve(Instant const& t_final) {
     // Integrating backward.
     CHECK_GT(current_state.time.value, t_final);
   }
-  CHECK(first_use_ || !parameters.last_step_is_exact)
+  CHECK(first_use || !parameters.last_step_is_exact)
       << "Cannot reuse an instance where the last step is exact";
-  first_use_ = false;
+  first_use = false;
 
   // Time step.  Updated as the integration progresses to allow restartability.
-  Time& h = time_step_;
+  Time& h = this->time_step_;
   // Current time.  This is a non-const reference whose purpose is to make the
   // equations more readable.
   DoublePrecision<Instant>& t = current_state.time;
@@ -196,7 +197,7 @@ Instance::Solve(Instant const& t_final) {
 
     runge_kutta_nyström_step:
       // Termination condition.
-      if (parameters_.last_step_is_exact) {
+      if (parameters.last_step_is_exact) {
         Time const time_to_end = (t_final - t.value) - t.error;
         at_end = integration_direction * h >=
                  integration_direction * time_to_end;
@@ -245,7 +246,8 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.position_error[k] = Δq_k - Δq_hat[k];
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
-      tolerance_to_error_ratio = tolerance_to_error_ratio_(h, error_estimate);
+      tolerance_to_error_ratio =
+          this->tolerance_to_error_ratio_(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {

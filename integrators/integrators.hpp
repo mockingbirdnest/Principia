@@ -75,6 +75,7 @@ template<typename ODE_>
 class FixedStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
+  using typename Integrator<ODE>::AppendState;
 
   // The last call to |append_state| has a |state.time.value| equal to the
   // unique |Instant| of the form |t_final + n * step| in
@@ -104,7 +105,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   // has a back-pointer to its integrator.
   virtual not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
   NewInstance(IntegrationProblem<ODE> const& problem,
-              typename Integrator<ODE>::AppendState const& append_state,
+              AppendState const& append_state,
               Time const& step) const = 0;
 
   void WriteToMessage(
@@ -135,6 +136,7 @@ template<typename ODE_>
 class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
  public:
   using ODE = ODE_;
+  using typename Integrator<ODE>::AppendState;
 
   // This functor is called at each step, with the |current_step_size| used by
   // the integrator and the estimated |error| on that step.  It returns the

@@ -62,6 +62,7 @@ SHARED_ARGS   := \
 	-Wall -Wpedantic                                                        \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'   \
 	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
+	-DTEMP_DIR='std::experimental::filesystem::path("/tmp")'                \
 	-DNDEBUG
 
 # detect OS

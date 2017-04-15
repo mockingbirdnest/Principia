@@ -27,7 +27,6 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   using DoubleDisplacement = DoublePrecision<Displacement>;
   using DoubleDisplacements = std::vector<DoubleDisplacement>;
   using DoublePosition = DoublePrecision<Position>;
-  using DoublePositions = std::vector<DoublePosition>;
 
   auto const& ɑ = integrator_.ɑ_;
   auto const& β_numerator = integrator_.β_numerator_;
@@ -120,6 +119,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
     // Fill the new step.  We skip the division by ɑk as it is equal to 1.0.
     double const ɑk = ɑ[0];
+    DCHECK_EQ(ɑk, 1.0);
     for (int d = 0; d < dimension; ++d) {
       DoubleDisplacement& current_displacement = Σj_minus_ɑj_qj[d];
       current_displacement.Increment(h * h *
@@ -250,7 +250,6 @@ template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::StartupSolve(Instant const& t_final) {
   auto& current_state = this->current_state_;
-  auto& append_state = this->append_state_;
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
