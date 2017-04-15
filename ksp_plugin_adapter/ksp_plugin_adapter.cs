@@ -1319,22 +1319,35 @@ public partial class PrincipiaPluginAdapter
   private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
+      Vessel target = plotting_frame_selector_.get().target_override;
       IntPtr ascending_nodes_iterator;
       IntPtr descending_nodes_iterator;
+      IntPtr approaches_iterator;
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
+      plugin_.RenderedPredictionClosestApproaches(vessel_guid,
+                                                  sun_world_position,
+                                                  out approaches_iterator);
       map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.PREDICTION);
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
       map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.PREDICTION);
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
+      map_node_pool_.RenderAndDeleteMarkers(
+          approaches_iterator,
+          MapObject.ObjectType.ApproachIntersect,
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
@@ -1347,14 +1360,16 @@ public partial class PrincipiaPluginAdapter
                                           out periapsis_iterator);
         map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
-            celestial,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.PREDICTION);
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : celestial);
         map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
-            celestial,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.PREDICTION);
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : celestial);
       }
     }
   }
@@ -1362,22 +1377,35 @@ public partial class PrincipiaPluginAdapter
   private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
+      Vessel target = plotting_frame_selector_.get().target_override;
       IntPtr ascending_nodes_iterator;
       IntPtr descending_nodes_iterator;
+      IntPtr approaches_iterator;
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
+      plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
+                                                  sun_world_position,
+                                                  out approaches_iterator);
       map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN);
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
       map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN);
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
+      map_node_pool_.RenderAndDeleteMarkers(
+          approaches_iterator,
+          MapObject.ObjectType.ApproachIntersect,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
@@ -1390,14 +1418,16 @@ public partial class PrincipiaPluginAdapter
                                           out periapsis_iterator);
         map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
-            celestial,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN);
+            MapNodePool.NodeSource.FLIGHT_PLAN,
+            vessel    : null,
+            celestial : celestial);
         map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
-            celestial,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN);
+            MapNodePool.NodeSource.FLIGHT_PLAN,
+            vessel    : null,
+            celestial : celestial);
       }
     }
   }
