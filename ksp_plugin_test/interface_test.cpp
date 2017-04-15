@@ -1004,16 +1004,6 @@ TEST_F(InterfaceTest, FlightPlan) {
       }));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
-  EXPECT_CALL(navigation_manœuvre, FrenetFrame())
-      .WillOnce(
-          Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
-  EXPECT_CALL(*plugin_, GetPlottingFrame())
-      .WillOnce(Return(plotting_frame.get()));
-  EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
-      .WillOnce(Return(barycentric_to_plotting));
-  EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
-      .WillOnce(Return(barycentric_to_plotting.Inverse()));
   EXPECT_CALL(*plugin_, BarycentricToWorldSun())
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
