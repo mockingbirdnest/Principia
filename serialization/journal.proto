@@ -70,9 +70,9 @@ message NavigationManoeuvre {
 
 // Frenet trihedron at the beginning of the manœuvre.
 message NavigationManoeuvreFrenetTrihedron {
-  required XYZ binormal = 10;
-  required XYZ normal = 11;
-  required XYZ tangent = 12;
+  required XYZ binormal = 1;
+  required XYZ normal = 2;
+  required XYZ tangent = 3;
 }
 
 message QP {

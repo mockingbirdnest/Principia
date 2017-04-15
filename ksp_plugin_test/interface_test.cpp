@@ -1010,6 +1010,7 @@ TEST_F(InterfaceTest, FlightPlan) {
       principia__FlightPlanGetManoeuvre(plugin_.get(),
                                         vessel_guid,
                                         3);
+
   EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
@@ -1017,6 +1018,24 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_EQ(40, navigation_manoeuvre.inertial_direction.x);
   EXPECT_EQ(50, navigation_manoeuvre.inertial_direction.y);
   EXPECT_EQ(60, navigation_manoeuvre.inertial_direction.z);
+
+  EXPECT_CALL(flight_plan, GetManœuvre(3))
+      .WillOnce(ReturnRef(navigation_manœuvre));
+  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
+      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
+  EXPECT_CALL(navigation_manœuvre, FrenetFrame())
+      .WillOnce(
+          Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
+  EXPECT_CALL(*plugin_, GetPlottingFrame())
+      .WillOnce(Return(plotting_frame.get()));
+  EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
+      .WillOnce(Return(barycentric_to_plotting));
+  EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
+      .WillOnce(Return(barycentric_to_plotting.Inverse()));
+  principia__FlightPlanGetManoeuvreFrenetTrihedron(plugin_.get(),
+                                                   vessel_guid,
+                                                   3);
 
   EXPECT_CALL(flight_plan, number_of_segments())
       .WillOnce(Return(12));
