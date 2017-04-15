@@ -369,6 +369,7 @@ Iterator* principia__FlightPlanRenderedSegment(
                               FromXYZ(sun_world_position) * Metre));
   if (index % 2 == 1 && !rendered_trajectory->Empty() &&
       rendered_trajectory->Begin().time() != begin.time()) {
+    // TODO(egg): this is ugly; we should centralize rendering.
     // If this is a burn and we cannot render the beginning of the burn, we
     // render none of it, otherwise we try to render the Frenet trihedron at the
     // start and we fail.
