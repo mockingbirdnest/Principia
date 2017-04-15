@@ -124,13 +124,27 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
     const google::protobuf::EnumDescriptor* enum_descriptor =
         enum_value_descriptor->type();
     {
+      using Tag = serialization::Frame::PhysicsTag;
+      if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
+        switch (static_cast<Tag>(enum_value_descriptor->number())) {
+          ROTATING_BODY_TAG_VALUE_CASE(FRENET);
+        }
+      }
+    }
+    {
       using Tag = serialization::Frame::PluginTag;
       if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
         switch (static_cast<Tag>(enum_value_descriptor->number())) {
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_SUN);
           ROTATING_BODY_TAG_VALUE_CASE(ALICE_WORLD);
+          ROTATING_BODY_TAG_VALUE_CASE(APPARENT_BUBBLE);
           ROTATING_BODY_TAG_VALUE_CASE(BARYCENTRIC);
+          ROTATING_BODY_TAG_VALUE_CASE(BODY_WORLD);
+          ROTATING_BODY_TAG_VALUE_CASE(BUBBLE);
+          ROTATING_BODY_TAG_VALUE_CASE(CELESTIAL_SPHERE);
+          ROTATING_BODY_TAG_VALUE_CASE(NAVBALL);
           ROTATING_BODY_TAG_VALUE_CASE(NAVIGATION);
+          ROTATING_BODY_TAG_VALUE_CASE(RIGID_PILE_UP);
           ROTATING_BODY_TAG_VALUE_CASE(WORLD);
           ROTATING_BODY_TAG_VALUE_CASE(WORLD_SUN);
         }

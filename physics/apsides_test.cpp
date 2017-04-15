@@ -206,7 +206,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .coordinates()
                     .ToSpherical()
                     .longitude,
-                AlmostEquals(elements.longitude_of_ascending_node, 5, 100));
+                AlmostEquals(elements.longitude_of_ascending_node, 2, 100));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(period, 1, 19));
     }

@@ -11,20 +11,22 @@ namespace internal_integrators {
 
 using base::make_not_null_unique;
 
-template <typename DifferentialEquation>
+template<typename DifferentialEquation>
 class MockFixedStepSizeIntegrator
     : public FixedStepSizeIntegrator<DifferentialEquation> {
  public:
   using ODE = DifferentialEquation;
   using typename Integrator<ODE>::AppendState;
-  using typename Integrator<ODE>::Instance;
 
-  class MockInstance : public Instance {
+  class MockInstance : public Integrator<ODE>::Instance {
    public:
-    MockInstance() : Instance() {}
+    MockInstance() : Integrator<ODE>::Instance() {}
 
     MOCK_METHOD1_T(Solve, Status(Instant const& t_final));
-    MOCK_CONST_METHOD0_T(Clone, not_null<std::unique_ptr<Instance>>());
+    MOCK_CONST_METHOD0_T(
+        Clone,
+        not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>());
+    MOCK_CONST_METHOD0_T(integrator, FixedStepSizeIntegrator<ODE> const&());
   };
 
   MOCK_CONST_METHOD3_T(
