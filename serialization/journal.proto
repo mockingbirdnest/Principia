@@ -66,10 +66,13 @@ message NavigationManoeuvre {
   required double time_of_half_delta_v = 7;
   required double time_to_half_delta_v = 8;
   required XYZ inertial_direction = 9;
-  // Frenet trihedron at the beginning of the manœuvre.
-  required XYZ binormal = 10;
-  required XYZ normal = 11;
-  required XYZ tangent = 12;
+}
+
+// Frenet trihedron at the beginning of the manœuvre.
+message NavigationManoeuvreFrenetTrihedron {
+  required XYZ binormal = 1;
+  required XYZ normal = 2;
+  required XYZ tangent = 3;
 }
 
 message QP {
@@ -85,7 +88,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5126.
+  extensions 5000 to 5999;  // Last used: 5127.
 }
 
 message AdvanceTime {
@@ -429,6 +432,23 @@ message FlightPlanGetManoeuvre {
   }
   message Return {
     required NavigationManoeuvre result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetManoeuvreFrenetTrihedron {
+  extend Method {
+    optional FlightPlanGetManoeuvreFrenetTrihedron extension = 5127;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required NavigationManoeuvreFrenetTrihedron result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
