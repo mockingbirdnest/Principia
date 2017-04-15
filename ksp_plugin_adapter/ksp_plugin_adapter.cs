@@ -1262,13 +1262,13 @@ public partial class PrincipiaPluginAdapter
                                              sun_world_position),
             XKCDColors.AcidGreen,
             GLLines.Style.FADED);
-        RenderPredictionApsides(active_vessel_guid, sun_world_position);
+        RenderPredictionMarkers(active_vessel_guid, sun_world_position);
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia,
             GLLines.Style.SOLID);
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
-          RenderFlightPlanApsides(active_vessel_guid, sun_world_position);
+          RenderFlightPlanMarkers(active_vessel_guid, sun_world_position);
 
           int number_of_segments =
               plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
@@ -1277,6 +1277,7 @@ public partial class PrincipiaPluginAdapter
             var rendered_segments = plugin_.FlightPlanRenderedSegment(
                 active_vessel_guid, sun_world_position, i);
             if (rendered_segments.IteratorAtEnd()) {
+              Log.Info("Skipping segment " + i);
               continue;
             }
             Vector3d position_at_start =
@@ -1314,7 +1315,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void RenderPredictionApsides(String vessel_guid,
+  private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       IntPtr ascending_nodes_iterator;
@@ -1323,12 +1324,12 @@ public partial class PrincipiaPluginAdapter
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
-      map_node_pool_.RenderAndDeleteApsides(
+      map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
           plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION);
-      map_node_pool_.RenderAndDeleteApsides(
+      map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
           plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
@@ -1343,12 +1344,12 @@ public partial class PrincipiaPluginAdapter
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteApsides(
+        map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
             celestial,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.PREDICTION);
-        map_node_pool_.RenderAndDeleteApsides(
+        map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
             celestial,
             MapObject.ObjectType.Periapsis,
@@ -1357,7 +1358,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void RenderFlightPlanApsides(String vessel_guid,
+  private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       IntPtr ascending_nodes_iterator;
@@ -1366,12 +1367,12 @@ public partial class PrincipiaPluginAdapter
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
-      map_node_pool_.RenderAndDeleteApsides(
+      map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
           plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN);
-      map_node_pool_.RenderAndDeleteApsides(
+      map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
           plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
@@ -1386,12 +1387,12 @@ public partial class PrincipiaPluginAdapter
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteApsides(
+        map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
             celestial,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN);
-        map_node_pool_.RenderAndDeleteApsides(
+        map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
             celestial,
             MapObject.ObjectType.Periapsis,

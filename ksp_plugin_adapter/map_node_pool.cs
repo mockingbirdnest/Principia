@@ -41,7 +41,7 @@ internal class MapNodePool {
     pool_index_ = 0;
   }
 
-  public void RenderAndDeleteApsides(IntPtr apsis_iterator,
+  public void RenderAndDeleteMarkers(IntPtr apsis_iterator,
                                      CelestialBody celestial,
                                      MapObject.ObjectType type,
                                      NodeSource source) {
