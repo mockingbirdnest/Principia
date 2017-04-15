@@ -246,7 +246,8 @@ Instance::Solve(Instant const& t_final) {
         error_estimate.position_error[k] = Δq_k - Δq_hat[k];
         error_estimate.velocity_error[k] = Δv_k - Δv_hat[k];
       }
-      tolerance_to_error_ratio = this->tolerance_to_error_ratio_(h, error_estimate);
+      tolerance_to_error_ratio =
+          this->tolerance_to_error_ratio_(h, error_estimate);
     } while (tolerance_to_error_ratio < 1.0);
 
     if (!parameters.last_step_is_exact && t.value + (t.error + h) > t_final) {
