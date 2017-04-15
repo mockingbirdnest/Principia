@@ -50,10 +50,10 @@ namespace geometry {
 
 struct TransparentInnerProduct final {
   template<typename Left, typename Right>
-  decltype(
-      InnerProduct(std::forward<Left>(std::declval<Left&&>()),
-                   std::forward<Right>(std::declval<Right&&>())))
-  operator()(Left&& left, Right&& right) const {
+  decltype(InnerProduct(std::forward<Left>(std::declval<Left&&>()),
+                        std::forward<Right>(std::declval<Right&&>())))
+  operator()(Left&& left, Right&& right)  // NOLINT(whitespace/operators)
+      const {
     return InnerProduct(std::forward<Left>(left),
                         std::forward<Right>(right));
   }
@@ -63,7 +63,8 @@ struct TransparentWedge final {
   template<typename Left, typename Right>
   decltype(Wedge(std::forward<Left>(std::declval<Left&&>()),
                  std::forward<Right>(std::declval<Right&&>())))
-  operator()(Left&& left, Right&& right) const {
+  operator()(Left&& left, Right&& right)  // NOLINT(whitespace/operators)
+      const {
     return Wedge(std::forward<Left>(left),
                  std::forward<Right>(right));
   }

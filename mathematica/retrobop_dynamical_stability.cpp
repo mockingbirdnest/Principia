@@ -206,7 +206,8 @@ DegreesOfFreedom<Barycentric> JoolSystemBarycentre(
 }
 
 not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
-    HierarchicalSystem<Barycentric>::BarycentricSystem&& system,
+    HierarchicalSystem<Barycentric>::
+        BarycentricSystem&& system,  // NOLINT(whitespace/operators)
     FixedStepSizeIntegrator<
         Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
     Time const& step) {

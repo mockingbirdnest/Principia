@@ -215,7 +215,7 @@ class not_null final {
            typename = std::enable_if_t<
                std::is_convertible<pointer, OtherPointer>::value &&
                !is_instance_of_not_null<OtherPointer>::value>>
-  operator OtherPointer() &&;
+  operator OtherPointer() &&;  // NOLINT(whitespace/operators)
 
   // Returns |*pointer_|.
   std::add_lvalue_reference_t<element_type> operator*() const;
