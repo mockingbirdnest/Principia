@@ -58,7 +58,7 @@ namespace {
 int const evaluations_per_iteration = 1000;
 }  // namespace
 
-void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateDouble(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<double> coefficients;
@@ -86,8 +86,7 @@ void BM_EvaluateDouble(benchmark::State& state) {  // NOLINT(runtime/references)
   state.SetLabel(std::to_string(result).substr(0, 0));
 }
 
-void BM_EvaluateQuantity(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateQuantity(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<Length> coefficients;
@@ -117,8 +116,7 @@ void BM_EvaluateQuantity(
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateR3ElementDouble(
-  benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<R3Element<double>> coefficients;
@@ -150,8 +148,7 @@ void BM_EvaluateR3ElementDouble(
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateVectorDouble(
-  benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateVectorDouble(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<Multivector<double, ICRFJ2000Ecliptic, 1>> coefficients;
@@ -186,8 +183,7 @@ void BM_EvaluateVectorDouble(
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluateDisplacement(
-  benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EvaluateDisplacement(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
@@ -222,8 +218,7 @@ void BM_EvaluateDisplacement(
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_NewhallApproximation(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_NewhallApproximation(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
   std::vector<double> p;

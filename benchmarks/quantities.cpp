@@ -9,8 +9,7 @@
 namespace principia {
 namespace quantities {
 
-void BM_DimensionfulDiscreteCosineTransform(
-    benchmark::State& state) {  // NOLINT(runtime/references)>
+void BM_DimensionfulDiscreteCosineTransform(benchmark::State& state) {
   std::vector<Momentum> output;
   while (state.KeepRunning()) {
     DimensionfulDiscreteCosineTransform(output);
@@ -18,8 +17,7 @@ void BM_DimensionfulDiscreteCosineTransform(
 }
 BENCHMARK(BM_DimensionfulDiscreteCosineTransform);
 
-void BM_DoubleDiscreteCosineTransform(
-    benchmark::State& state) {  // NOLINT(runtime/references)>
+void BM_DoubleDiscreteCosineTransform(benchmark::State& state) {
   std::vector<double> output;
   while (state.KeepRunning()) {
     DoubleDiscreteCosineTransform(output);

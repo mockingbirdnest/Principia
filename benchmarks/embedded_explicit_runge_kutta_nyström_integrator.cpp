@@ -207,7 +207,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
 
 template<typename Integrator, Integrator const& (*integrator)()>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+    benchmark::State& state) {
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
@@ -221,7 +221,7 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
 
 template<typename Integrator, Integrator const& (*integrator)()>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
-    benchmark::State& state) {  // NOLINT(runtime/references)
+    benchmark::State& state) {
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {

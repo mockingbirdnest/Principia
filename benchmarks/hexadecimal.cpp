@@ -124,7 +124,7 @@ std::vector<std::uint8_t> PiDigits() {
   return std::vector<std::uint8_t>(digits_str.begin(), digits_str.end());
 }
 
-void BM_EncodePi(benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_EncodePi(benchmark::State& state) {
   bool correct = true;
   std::vector<std::uint8_t> const input_bytes = PiBytes();
   std::vector<std::uint8_t> const expected_digits = PiDigits();
@@ -152,7 +152,7 @@ void HexDecode(benchmark::State& state,
   state.ResumeTiming();
 }
 
-void BM_DecodePi(benchmark::State& state) {  // NOLINT(runtime/references)
+void BM_DecodePi(benchmark::State& state) {
   bool correct = true;
   std::vector<std::uint8_t> input_digits = PiDigits();
   std::vector<std::uint8_t> expected_bytes = PiBytes();
