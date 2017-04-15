@@ -114,6 +114,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture barycentric_navball_texture_;
   private UnityEngine.Texture body_direction_navball_texture_;
   private UnityEngine.Texture surface_navball_texture_;
+  private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes previous_display_mode_;
 
@@ -392,6 +393,7 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out body_direction_navball_texture_,
                      "navball_body_direction.png");
     LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
+    LoadTextureOrDie(out target_navball_texture_, "navball_target.png");
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -606,6 +608,31 @@ public partial class PrincipiaPluginAdapter
       Action<UnityEngine.Texture> set_navball_texture = (texture) =>
           navball_material.SetTexture("_MainTexture", texture);
 
+      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Target &&
+          target_vessel != null &&
+          plugin_.HasVessel(target_vessel.id.ToString())) {
+        plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                                plotting_frame_selector_.get()
+                                    .selected_celestial.flightGlobalsIndex);
+        plotting_frame_selector_.get().target_override = target_vessel;
+      } else {
+        plugin_.ClearTargetVessel();
+        plotting_frame_selector_.get().target_override = null;
+      }
+
+      // Orient the ball.
+      if (PluginRunning() && (FlightGlobals.speedDisplayMode ==
+                                  FlightGlobals.SpeedDisplayModes.Orbit ||
+                              plotting_frame_selector_.get().target_override)) {
+        navball_.navBall.rotation =
+            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+                (XYZ)Planetarium.fetch.Sun.position,
+                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      }
+
       if (navball_changed_ ||
           previous_display_mode_ != FlightGlobals.speedDisplayMode) {
         // Texture the ball.
@@ -615,6 +642,8 @@ public partial class PrincipiaPluginAdapter
                 FlightGlobals.SpeedDisplayModes.Surface ||
             !PluginRunning()) {
           set_navball_texture(compass_navball_texture_);
+        } else if (plotting_frame_selector_.get().target_override) {
+          set_navball_texture(target_navball_texture_);
         } else {
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
@@ -633,36 +662,11 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
-      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-      if (FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Target &&
-          target_vessel != null &&
-          plugin_.HasVessel(target_vessel.id.ToString())) {
-        plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_.get()
-                                    .selected_celestial.flightGlobalsIndex);
-        plotting_frame_selector_.get().target_override = target_vessel;
-      } else {
-        plugin_.ClearTargetVessel();
-        plotting_frame_selector_.get().target_override = null;
-      }
-
-      // Orient the ball.
-      if (PluginRunning() && FlightGlobals.speedDisplayMode ==
-                                 FlightGlobals.SpeedDisplayModes.Orbit) {
-        navball_.navBall.rotation =
-            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                (XYZ)Planetarium.fetch.Sun.position,
-                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-      }
-
-      if (PluginRunning() &&
-          has_active_manageable_vessel() &&
+      if (PluginRunning() && has_active_manageable_vessel() &&
           plugin_.HasVessel(active_vessel.id.ToString()) &&
-          // TODO(egg): also cover Target mode.
-          FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Orbit) {
+          (FlightGlobals.speedDisplayMode ==
+               FlightGlobals.SpeedDisplayModes.Orbit ||
+           plotting_frame_selector_.get().target_override)) {
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
             KSP.UI.Screens.Flight.SpeedDisplay.Instance;
         if (speed_display?.textTitle != null &&
