@@ -22,6 +22,7 @@ using interface::KeplerianElements;
 using interface::Iterator;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
+using interface::NavigationManoeuvreFrenetTrihedron;
 using interface::QP;
 using interface::WXYZ;
 using interface::XYZ;

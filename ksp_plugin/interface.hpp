@@ -116,6 +116,8 @@ bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
 bool operator==(NavigationManoeuvre const& left,
                 NavigationManoeuvre const& right);
+bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
+                NavigationManoeuvreFrenetTrihedron const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);

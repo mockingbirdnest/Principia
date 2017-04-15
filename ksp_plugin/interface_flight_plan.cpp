@@ -145,29 +145,6 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
   Vector<double, World> const world_inertial_direction =
       barycentric_to_world(barycentric_inertial_direction);
   result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
-
-  OrthogonalMap<Frenet<Navigation>, Barycentric> frenet_to_barycentric =
-      manœuvre.FrenetFrame();
-  Instant const current_time = plugin.CurrentTime();
-  Instant const initial_time = manœuvre.initial_time();
-  // TODO(egg): a separate |Frame| for plotted geometry (for now plotting goes
-  // from |Barycentric| to itself, so it's easily forgotten), an utility for
-  // plotting |Vector|s like the one for |Position|s.
-  auto const plotting_frame = plugin.GetPlottingFrame();
-  OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
-      barycentric_to_world *
-      plotting_frame->FromThisFrameAtTime(current_time).orthogonal_map() *
-      plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
-      frenet_to_barycentric;
-  result.tangent = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0}))
-          .coordinates());
-  result.normal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0}))
-          .coordinates());
-  result.binormal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1}))
-          .coordinates());
   return result;
 }
 
@@ -262,6 +239,42 @@ NavigationManoeuvre principia__FlightPlanGetManoeuvre(
   return m.Return(ToInterfaceNavigationManoeuvre(
                       *plugin,
                       GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index)));
+}
+
+NavigationManoeuvreFrenetTrihedron
+principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
+                                                 char const* const vessel_guid,
+                                                 int const index) {
+  journal::Method<journal::FlightPlanGetManoeuvreFrenetTrihedron> m(
+      {plugin, vessel_guid, index});
+  CHECK_NOTNULL(plugin);
+  NavigationManoeuvreFrenetTrihedron result;
+
+  NavigationManœuvre const& manœuvre =
+      GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
+  OrthogonalMap<Barycentric, World> const barycentric_to_world =
+      plugin->BarycentricToWorld();
+  OrthogonalMap<Frenet<Navigation>, Barycentric> frenet_to_barycentric =
+      manœuvre.FrenetFrame();
+  Instant const current_time = plugin->CurrentTime();
+  Instant const initial_time = manœuvre.initial_time();
+  auto const plotting_frame = plugin->GetPlottingFrame();
+  OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
+      barycentric_to_world *
+      plotting_frame->FromThisFrameAtTime(current_time).orthogonal_map() *
+      plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
+      frenet_to_barycentric;
+  result.tangent = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0}))
+          .coordinates());
+  result.normal = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0}))
+          .coordinates());
+  result.binormal = ToXYZ(
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1}))
+          .coordinates());
+
+  return m.Return(result);
 }
 
 int principia__FlightPlanNumberOfManoeuvres(Plugin const* const plugin,

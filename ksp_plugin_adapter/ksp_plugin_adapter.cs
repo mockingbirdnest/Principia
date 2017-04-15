@@ -1288,9 +1288,10 @@ public partial class PrincipiaPluginAdapter
                 is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
             if (is_burn) {
               int manoeuvre_index = i / 2;
-              NavigationManoeuvre manoeuvre = plugin_.FlightPlanGetManoeuvre(
-                                                  active_vessel_guid,
-                                                  manoeuvre_index);
+              NavigationManoeuvreFrenetTrihedron manoeuvre =
+                  plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                      active_vessel_guid,
+                      manoeuvre_index);
               double scale = (ScaledSpace.ScaledToLocalSpace(
                                   MapView.MapCamera.transform.position) -
                               position_at_start).magnitude * 0.015;
