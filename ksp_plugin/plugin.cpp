@@ -699,9 +699,6 @@ void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
       current_time_ + prediction_length_);
-  if (target_) {
-    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
-  }
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -890,10 +887,13 @@ not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
-  if (!target_ || target_->vessel->guid() != vessel_guid) {
+  not_null<Celestial const*> celestial =
+      FindOrDie(celestials_, reference_body_index).get();
+  if (!target_ || target_->vessel->guid() != vessel_guid ||
+      target_->celestial != celestial) {
     target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
                     ephemeris_.get(),
-                    *FindOrDie(celestials_, reference_body_index));
+                    celestial);
   }
   target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
 }
@@ -1398,6 +1398,18 @@ Plugin::RenderBarycentricTrajectoryInNavigation(
   NavigationFrame& plotting_frame =
       target_ ? *target_->target_frame : *plotting_frame_;
 
+  if (target_ && !begin.trajectory()->Empty() &&
+      (target_->vessel->prediction().Empty() ||
+       begin.trajectory()->last().time() >
+           target_->vessel->prediction().last().time())) {
+    // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
+    // while retaining a timeout.
+    auto parameters = target_->vessel->prediction_adaptive_step_parameters();
+    parameters.set_max_steps(begin.trajectory()->Size());
+    target_->vessel->set_prediction_adaptive_step_parameters(parameters);
+    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  }
+
   for (auto it = begin; it != end; ++it) {
     if (target_) {
       if (it.time() < target_->vessel->prediction().t_min()) {
@@ -1468,14 +1480,15 @@ bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
 
 Plugin::Target::Target(not_null<Vessel*> vessel,
                        not_null<Ephemeris<Barycentric> const*> ephemeris,
-                       Celestial const& celestial)
+                       not_null<Celestial const*> const celestial)
     : vessel(vessel),
+      celestial(celestial),
       target_frame(
           make_not_null_unique<
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
               ephemeris,
               [this]() -> auto& { return this->vessel->prediction(); },
-              celestial.body())) {}
+              celestial->body())) {}
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin
