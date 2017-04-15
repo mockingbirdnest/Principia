@@ -1241,17 +1241,38 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
+                                    Mouse.Buttons buttons) {
+    if (buttons == Mouse.Buttons.Left) {
+      PlanetariumCamera.fetch.SetTarget(node.mapObject);
+    }
+  }
+
   private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                  Mouse.Buttons buttons) {
     if (selecting_active_vessel_target_) {
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
       selecting_active_vessel_target_ = false;
+    } else if (buttons == Mouse.Buttons.Left) {
+      if (Mouse.Left.GetDoubleClick(false)) {
+        var focus_object =
+            new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
+                node.mapObject.vessel.orbitDriver);
+        focus_object.onOptionSelected();
+      } else {
+        PlanetariumCamera.fetch.SetTarget(node.mapObject);
+      }
     }
   }
 
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
+    }
+    foreach (var celestial in FlightGlobals.Bodies.Where(
+                                  c => c.MapObject?.uiNode != null)) {
+      celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
+      celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
                                v => v.mapObject?.uiNode != null)) {
