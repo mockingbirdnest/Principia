@@ -92,6 +92,7 @@ using ::testing::Property;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
@@ -1047,7 +1048,15 @@ TEST_F(InterfaceTest, FlightPlan) {
           World::origin +
               Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
           Velocity<World>()));
-  EXPECT_CALL(flight_plan, GetSegment(3, _, _));
+  auto segment = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+  DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
+                                                Velocity<Barycentric>{}};
+  segment->Append(t0_, immobile_origin);
+  segment->Append(t0_ + 1 * Second, immobile_origin);
+  segment->Append(t0_ + 2 * Second, immobile_origin);
+  EXPECT_CALL(flight_plan, GetSegment(3, _, _))
+      .WillOnce(DoAll(SetArgReferee<1>(segment->Begin()),
+                      SetArgReferee<2>(segment->End())));
   EXPECT_CALL(*plugin_, FillRenderedBarycentricTrajectoryInWorld(_, _, _, _))
       .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
   auto* const iterator =
