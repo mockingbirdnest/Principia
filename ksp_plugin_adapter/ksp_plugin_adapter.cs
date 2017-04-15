@@ -1181,7 +1181,7 @@ public partial class PrincipiaPluginAdapter
               : OrbitRenderer.DrawMode.REDRAW_AND_RECALCULATE;
       vessel.orbitDriver.Renderer.drawIcons =
           ((vessel.isActiveVessel ||
-            vessel == FlightGlobals.ActiveVessel.targetObject as Vessel) &&
+            vessel == FlightGlobals.ActiveVessel?.targetObject as Vessel) &&
            !vessel.PatchedConicsAttached)
               ? OrbitRenderer.DrawIcons.ALL
               : OrbitRenderer.DrawIcons.OBJ;
