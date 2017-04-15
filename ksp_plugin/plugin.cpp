@@ -856,7 +856,7 @@ void Plugin::SetPlottingFrame(
 }
 
 not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
-  return plotting_frame_.get();
+  return target_ ? target_->target_frame.get() : plotting_frame_.get();
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
@@ -911,7 +911,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
       AffineMap<Barycentric, Navigation, Length, OrthogonalMap> const
           barycentric_to_navigation =
-              plugin_->plotting_frame_->ToThisFrameAtTime(current_time)
+              plugin_->GetPlottingFrame()->ToThisFrameAtTime(current_time)
                   .rigid_transformation();
       Position<Navigation> const q_in_navigation =
           (barycentric_to_navigation *
@@ -920,7 +920,8 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
       OrthogonalMap<RightHandedNavball, Barycentric>
           right_handed_navball_to_barycentric =
               barycentric_right_handed_field_ == nullptr
-                  ? plugin_->plotting_frame_->FromThisFrameAtTime(current_time)
+                  ? plugin_->GetPlottingFrame()
+                            ->FromThisFrameAtTime(current_time)
                             .orthogonal_map() *
                         navigation_right_handed_field_
                             ->FromThisFrame(q_in_navigation)
@@ -955,7 +956,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
   auto* const plotting_frame_as_body_surface_dynamic_frame =
       dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation>*>(
-          &*plotting_frame_);
+          &*GetPlottingFrame());
   if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
     return std::make_unique<NavballFrameField>(
         this,
@@ -996,9 +997,10 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       last.degrees_of_freedom();
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
-      plotting_frame_->ToThisFrameAtTime(time)(barycentric_degrees_of_freedom);
+      GetPlottingFrame()->ToThisFrameAtTime(time)(
+          barycentric_degrees_of_freedom);
   return Identity<WorldSun, World>()(BarycentricToWorldSun()(
-      plotting_frame_->FromThisFrameAtTime(time).orthogonal_map()(
+      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
           plotting_frame_degrees_of_freedom.velocity())));
 }
 
@@ -1301,16 +1303,16 @@ Vector<double, World> Plugin::FromVesselFrenetFrame(
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
       last.degrees_of_freedom();
   auto const from_frenet_frame_to_navigation_frame =
-      plotting_frame_->FrenetFrame(
+      GetPlottingFrame()->FrenetFrame(
           time,
-          plotting_frame_->ToThisFrameAtTime(time)(degrees_of_freedom));
+          GetPlottingFrame()->ToThisFrameAtTime(time)(degrees_of_freedom));
 
   // The given |vector| in the Frenet frame of the vessel's free-falling
   // trajectory in the given |navigation_frame|, converted to |WorldSun|
   // coordinates.
   return Identity<WorldSun, World>()(
       BarycentricToWorldSun()(
-          plotting_frame_->FromThisFrameAtTime(time).orthogonal_map()(
+          GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
               from_frenet_frame_to_navigation_frame(vector))));
 }
 
@@ -1369,8 +1371,7 @@ Plugin::RenderBarycentricTrajectoryInNavigation(
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
 
-  NavigationFrame& plotting_frame =
-      target_ ? *target_->target_frame : *plotting_frame_;
+  NavigationFrame& plotting_frame = *GetPlottingFrame();
 
   if (target_ && !begin.trajectory()->Empty() &&
       (target_->vessel->prediction().Empty() ||
@@ -1407,8 +1408,7 @@ Plugin::RenderNavigationTrajectoryInWorld(
     Position<World> const& sun_world_position) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
 
-  NavigationFrame& plotting_frame =
-      target_ ? *target_->target_frame : *plotting_frame_;
+  NavigationFrame& plotting_frame = *GetPlottingFrame();
 
   RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
       /*rigid_transformation=*/BarycentricToWorld(sun_world_position) *
