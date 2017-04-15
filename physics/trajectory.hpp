@@ -19,9 +19,9 @@ class Trajectory {
  public:
   virtual ~Trajectory() = default;
 
-  // The time range for which the trajectory can be evaluated.  Note that it is
-  // not required that t_min ≤ t_max: for an empty trajectory, t_min = +∞, and
-  // t_max = -∞.
+  // The time range for which the trajectory can be evaluated is [t_min, t_max].
+  // Note that it is not required that t_min ≤ t_max: for an empty trajectory,
+  // t_min = +∞, and t_max = -∞.
   virtual Instant t_min() const = 0;
   virtual Instant t_max() const = 0;
 

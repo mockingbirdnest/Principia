@@ -85,7 +85,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5124.
+  extensions 5000 to 5999;  // Last used: 5126.
 }
 
 message AdvanceTime {
@@ -494,6 +494,24 @@ message FlightPlanRenderedApsides {
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
                                       (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message FlightPlanRenderedClosestApproaches {
+  extend Method {
+    optional FlightPlanRenderedClosestApproaches extension = 5126;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+  }
+  message Out {
+    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
+                                             (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1082,6 +1100,24 @@ message RenderedPredictionApsides {
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
                                       (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message RenderedPredictionClosestApproaches {
+  extend Method {
+    optional RenderedPredictionClosestApproaches extension = 5125;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required XYZ sun_world_position = 3;
+  }
+  message Out {
+    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
+                                             (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;

@@ -763,6 +763,30 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   return m.Return();
 }
 
+void principia__RenderedPredictionClosestApproaches(
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    XYZ const sun_world_position,
+    Iterator** const closest_approaches) {
+  journal::Method<journal::RenderedPredictionClosestApproaches> m(
+      {plugin, vessel_guid, sun_world_position},
+      {closest_approaches});
+  CHECK_NOTNULL(plugin);
+  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  Position<World> q_sun =
+      World::origin +
+      Displacement<World>(FromXYZ(sun_world_position) * Metre);
+  std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
+  plugin->ComputeAndRenderClosestApproaches(prediction.Begin(),
+                                            prediction.End(),
+                                            q_sun,
+                                            rendered_closest_approaches);
+  *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
+      check_not_null(std::move(rendered_closest_approaches)),
+      plugin);
+  return m.Return();
+}
+
 void principia__RenderedPredictionNodes(Plugin const* const plugin,
                                         char const* const vessel_guid,
                                         XYZ const sun_world_position,

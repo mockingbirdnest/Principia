@@ -749,6 +749,26 @@ void Plugin::ComputeAndRenderApsides(
                                          sun_world_position);
 }
 
+void Plugin::ComputeAndRenderClosestApproaches(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Position<World> const& sun_world_position,
+    std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
+  CHECK(target_);
+
+  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
+  DiscreteTrajectory<Barycentric> periapsides_trajectory;
+  ComputeApsides(target_->vessel->prediction(),
+                 begin,
+                 end,
+                 apoapsides_trajectory,
+                 periapsides_trajectory);
+  closest_approaches =
+      RenderBarycentricTrajectoryInWorld(periapsides_trajectory.Begin(),
+                                         periapsides_trajectory.End(),
+                                         sun_world_position);
+}
+
 void Plugin::ComputeAndRenderNodes(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
@@ -760,7 +780,7 @@ void Plugin::ComputeAndRenderNodes(
       RenderBarycentricTrajectoryInNavigation(begin, end);
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
-  // The so-called North is the binormal to the trajectory.
+  // The so-called North is orthogonal to the plane of the trajectory.
   ComputeNodes(trajectory_in_navigation->Begin(),
                trajectory_in_navigation->End(),
                Vector<double, Navigation>({0, 0, 1}),
