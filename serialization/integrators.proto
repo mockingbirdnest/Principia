@@ -6,8 +6,6 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
-// TODO(phl): This message seems unused as we don't ever serialize/deserialize
-// an |Integrator|.  Remove it.
 message Integrator {
   extensions 3000 to 3999;  // Last used: 3001.
 }

@@ -6,16 +6,54 @@
 #include <cmath>
 #include <limits>
 
+#include "geometry/pair.hpp"
+
 namespace principia {
 namespace interface {
 
-using geometry::Position;
+using geometry::Pair;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::Ephemeris;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+
+// No partial specialization of functions, so we wrap everything into classes.
+// C++, I hate you.
+
+template<typename T>
+class FromQPConverter {};
+
+template<typename Frame>
+class FromQPConverter<DegreesOfFreedom<Frame>> {
+  inline DegreesOfFreedom<Frame> operator()(QP const& qp);
+};
+
+template<typename Frame>
+class FromQPConverter<RelativeDegreesOfFreedom<Frame>> {
+  inline RelativeDegreesOfFreedom<Frame> operator()(QP const& qp);
+};
+
+template<typename T>
+class FromXYZConverter {};
+
+template<typename Frame>
+class FromXYZConverter<Displacement<Frame>> {
+  inline Displacement<Frame> operator()(XYZ const& xyz);
+};
+
+template<typename Frame>
+class FromXYZConverter<Position<Frame>> {
+  inline Position<Frame> operator()(XYZ const& xyz);
+};
+
+template<typename Frame>
+class FromXYZConverter<Velocity<Frame>> {
+  inline Velocity<Frame> operator()(XYZ const& xyz) {
+    return Velocity<Frame>(FromXYZ(xyz) * (Metre / Second));
+  }
+};
 
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
@@ -172,6 +210,7 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
 inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
+  //TODO(phl):fix
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
       DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
       adaptive_step_parameters.max_steps,
@@ -204,8 +243,33 @@ inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
   return barycentric_keplerian_elements;
 }
 
-inline geometry::R3Element<double> FromXYZ(XYZ const& xyz) {
+template<>
+inline DegreesOfFreedom<World> FromQP(QP const& qp) {
+  return {FromXYZ<Position<World>>(qp.q), FromXYZ<Velocity<World>>(qp.p)};
+}
+
+template<>
+inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
+  return {FromXYZ<Displacement<World>>(qp.q), FromXYZ<Velocity<World>>(qp.p)};
+}
+
+inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
+}
+
+template<>
+inline Displacement<World> FromXYZ<Displacement<World>>(XYZ const& xyz) {
+  return Displacement<World>(FromXYZ(xyz) * Metre);
+}
+
+template<>
+inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
+  return World::origin + FromXYZ<Displacement<World>>(xyz);
+}
+
+template<>
+inline Velocity<World> FromXYZ<Velocity<World>>(XYZ const& xyz) {
+  return FromXYZConverter<Velocity<World>>()(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
@@ -251,12 +315,6 @@ inline Instant FromGameTime(Plugin const& plugin,
 inline double ToGameTime(Plugin const& plugin,
                          Instant const& t) {
   return (t - plugin.GameEpoch()) / Second;
-}
-
-inline not_null<Vessel*> GetVessel(Plugin const& plugin,
-                                   char const* const vessel_guid) {
-  CHECK(plugin.HasVessel(vessel_guid)) << vessel_guid;
-  return plugin.GetVessel(vessel_guid);
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

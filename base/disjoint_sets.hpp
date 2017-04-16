@@ -35,6 +35,7 @@ class Subset final {
   static Subset MakeSingleton(
       T& element,
       SubsetPropertiesArgs... subset_properties_args);
+
   // The arguments are invalidated; the result may be used to get information
   // about the united subset.
   static Subset Unite(Subset left, Subset right);
@@ -56,12 +57,10 @@ class Subset final {
 
     not_null<Node*> Root();
 
-    // TODO(egg): maybe they should be mutable? those intrusive structures are
-    // confusing...
     not_null<Node*> parent_;
     int rank_ = 0;
 
-    // Do not require a default constructor for |Node|.
+    // Do not require a default constructor for |Properties|.
     std::experimental::optional<Properties> properties_;
 
     friend class Subset<T>;

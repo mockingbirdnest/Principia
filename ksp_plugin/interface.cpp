@@ -596,15 +596,8 @@ void principia__InsertOrKeepLoadedPart(
       mass_in_tonnes * Tonne,
       vessel_guid,
       main_body_index,
-      {World::origin +
-           Displacement<World>(FromXYZ(main_body_world_degrees_of_freedom.q) *
-                               Metre),
-       Velocity<World>(FromXYZ(main_body_world_degrees_of_freedom.p) *
-                       (Metre / Second))},
-      {World::origin + Displacement<World>(
-                           FromXYZ(part_world_degrees_of_freedom.q) * Metre),
-       Velocity<World>(FromXYZ(part_world_degrees_of_freedom.p) *
-                       (Metre / Second))});
+      FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom));
   return m.Return();
 }
 
@@ -622,9 +615,7 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
       part_id,
       name,
       vessel_guid,
-      RelativeDegreesOfFreedom<AliceSun>(
-          Displacement<AliceSun>(FromXYZ(from_parent.q) * Metre),
-          Velocity<AliceSun>(FromXYZ(from_parent.p) * (Metre / Second))));
+      FromQP<RelativeDegreesOfFreedom<AliceSun>>(from_parent));
   return m.Return();
 }
 
@@ -671,13 +662,10 @@ WXYZ principia__NavballOrientation(
                                                   ship_world_position});
   CHECK_NOTNULL(plugin);
   auto const frame_field = plugin->NavballFrameField(
-      World::origin +
-          Displacement<World>(FromXYZ(sun_world_position) * Metre));
+      FromXYZ<Position<World>>(sun_world_position));
   return m.Return(ToWXYZ(
       frame_field->FromThisFrame(
-          World::origin +
-              Displacement<World>(
-                  FromXYZ(ship_world_position) * Metre)).quaternion()));
+          FromXYZ<Position<World>>(ship_world_position)).quaternion()));
 }
 
 // Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
@@ -720,13 +708,10 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
                                                   sun_world_position});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
                                  prediction.Begin(),
                                  prediction.End(),
-                                 q_sun);
+                                 FromXYZ<Position<World>>(sun_world_position));
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
@@ -743,15 +728,12 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
       {apoapsides, periapsides});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   prediction.Begin(),
                                   prediction.End(),
-                                  q_sun,
+                                  FromXYZ<Position<World>>(sun_world_position),
                                   rendered_apoapsides,
                                   rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
@@ -773,14 +755,12 @@ void principia__RenderedPredictionClosestApproaches(
       {closest_approaches});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
-  plugin->ComputeAndRenderClosestApproaches(prediction.Begin(),
-                                            prediction.End(),
-                                            q_sun,
-                                            rendered_closest_approaches);
+  plugin->ComputeAndRenderClosestApproaches(
+      prediction.Begin(),
+      prediction.End(),
+      FromXYZ<Position<World>>(sun_world_position),
+      rendered_closest_approaches);
   *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       check_not_null(std::move(rendered_closest_approaches)),
       plugin);
@@ -797,14 +777,11 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
       {ascending, descending});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  Position<World> const q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
   plugin->ComputeAndRenderNodes(prediction.Begin(),
                                 prediction.End(),
-                                q_sun,
+                                FromXYZ<Position<World>>(sun_world_position),
                                 rendered_ascending,
                                 rendered_descending);
   *ascending = new TypedIterator<DiscreteTrajectory<World>>(
@@ -824,13 +801,10 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
                                                         sun_world_position});
   CHECK_NOTNULL(plugin);
   auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
                                  psychohistory.Begin(),
                                  psychohistory.End(),
-                                 q_sun);
+                                 FromXYZ<Position<World>>(sun_world_position));
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
@@ -919,9 +893,7 @@ void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
       {plugin, part_id, degrees_of_freedom});
   CHECK_NOTNULL(plugin)->SetPartApparentDegreesOfFreedom(
       part_id,
-      {World::origin +
-           Displacement<World>(FromXYZ(degrees_of_freedom.q) * Metre),
-       Velocity<World>(FromXYZ(degrees_of_freedom.p) * (Metre / Second))});
+      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom));
   return m.Return();
 }
 
