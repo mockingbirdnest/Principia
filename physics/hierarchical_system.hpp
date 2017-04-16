@@ -66,7 +66,7 @@ class HierarchicalSystem final {
   };
 
   // Data about a |Subsystem|.
-  struct BarycentricSubystem final {
+  struct BarycentricSubsystem final {
     // A |MassiveBody| with the mass of the whole subsystem.
     std::unique_ptr<MassiveBody> equivalent_body;
     // The bodies composing the subsystem, in preorder, where the satellites
@@ -78,7 +78,7 @@ class HierarchicalSystem final {
   };
 
   // Invalidates its argument.
-  static BarycentricSubystem ToBarycentric(System& system);
+  static BarycentricSubsystem ToBarycentric(System& system);
 
   System system_;
   // Invariant: |subsystems_[p]->primary.get() == p|.
