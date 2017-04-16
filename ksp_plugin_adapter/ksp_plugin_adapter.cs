@@ -1262,16 +1262,9 @@ public partial class PrincipiaPluginAdapter
     if (selecting_active_vessel_target_) {
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
       selecting_active_vessel_target_ = false;
-    } else if (buttons == Mouse.Buttons.Left) {
-      if (UnityEngine.Event.current.clickCount > 1 &&
-          node.mapObject.vessel.orbitDriver) {
-        var focus_object =
-            new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
-                node.mapObject.vessel.orbitDriver);
-        focus_object.onOptionSelected();
-      } else if (PlanetariumCamera.fetch.target != node.mapObject) {
-        PlanetariumCamera.fetch.SetTarget(node.mapObject);
-      }
+    } else if (buttons == Mouse.Buttons.Left &&
+               PlanetariumCamera.fetch.target != node.mapObject) {
+      PlanetariumCamera.fetch.SetTarget(node.mapObject);
     }
   }
 
@@ -1578,6 +1571,12 @@ public partial class PrincipiaPluginAdapter
                                          UnityEngine.GUILayout.Width(50))) {
           selecting_active_vessel_target_ = false;
           FlightGlobals.fetch.SetVesselTarget(null);
+        }
+        if (UnityEngine.GUILayout.Button("Switch To")) {
+          var focus_object =
+              new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
+                  FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
+          focus_object.onOptionSelected();
         }
       }
       UnityEngine.GUILayout.EndHorizontal();
