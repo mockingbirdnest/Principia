@@ -20,6 +20,8 @@ message XYZ {
 }
 
 message AdaptiveStepParameters {
+  // Corresponds to AdaptiveStepSizeIntegrator.Kind.
+  required int64 integrator_kind = 4;
   required int64 max_steps = 1;
   required double length_integration_tolerance = 2;
   required double speed_integration_tolerance = 3;

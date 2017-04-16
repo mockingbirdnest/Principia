@@ -12,7 +12,7 @@ namespace principia {
 namespace interface {
 
 using geometry::Pair;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -172,7 +172,8 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
 
 inline bool operator==(AdaptiveStepParameters const& left,
                        AdaptiveStepParameters const& right) {
-  return left.max_steps == right.max_steps &&
+  return left.integrator_kind == right.integrator_kind &&
+         left.max_steps == right.max_steps &&
          NaNIndependentEq(left.length_integration_tolerance,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
@@ -241,9 +242,14 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
 inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
-  //TODO(phl):fix
+  serialization::AdaptiveStepSizeIntegrator message;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_IsValid(
+      adaptive_step_parameters.integrator_kind));
+  message.set_kind(static_cast<serialization::AdaptiveStepSizeIntegrator::Kind>(
+      adaptive_step_parameters.integrator_kind));
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      AdaptiveStepSizeIntegrator<Ephemeris<
+          Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message),
       adaptive_step_parameters.max_steps,
       adaptive_step_parameters.length_integration_tolerance * Metre,
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
@@ -307,7 +313,10 @@ inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
-  return {adaptive_step_parameters.max_steps(),
+  serialization::AdaptiveStepSizeIntegrator message;
+  adaptive_step_parameters.integrator().WriteToMessage(&message);
+  return {message.kind(),
+          adaptive_step_parameters.max_steps(),
           adaptive_step_parameters.length_integration_tolerance() / Metre,
           adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};

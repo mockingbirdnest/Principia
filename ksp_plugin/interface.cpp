@@ -881,7 +881,8 @@ void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
                                                 QP const degrees_of_freedom) {
   journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
       {plugin, part_id, degrees_of_freedom});
-  CHECK_NOTNULL(plugin)->SetPartApparentDegreesOfFreedom(
+  CHECK_NOTNULL(plugin);
+  plugin->SetPartApparentDegreesOfFreedom(
       part_id,
       FromQP<DegreesOfFreedom<World>>(degrees_of_freedom));
   return m.Return();
