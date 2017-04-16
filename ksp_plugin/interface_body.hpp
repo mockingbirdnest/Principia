@@ -19,38 +19,51 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-// No partial specialization of functions, so we wrap everything into classes.
+// No partial specialization of functions, so we wrap everything into structs.
 // C++, I hate you.
 
 template<typename T>
-class FromQPConverter {};
+struct FromQPConverter {};
 
 template<typename Frame>
-class FromQPConverter<DegreesOfFreedom<Frame>> {
-  inline DegreesOfFreedom<Frame> operator()(QP const& qp);
+struct FromQPConverter<DegreesOfFreedom<Frame>> {
+  static DegreesOfFreedom<Frame> Convert(QP const& qp) {
+    return DegreesOfFreedom<Frame>(
+        FromXYZConverter<Position<Frame>>::Convert(qp.q),
+        FromXYZConverter<Velocity<Frame>>::Convert(qp.p));
+  }
 };
 
 template<typename Frame>
-class FromQPConverter<RelativeDegreesOfFreedom<Frame>> {
-  inline RelativeDegreesOfFreedom<Frame> operator()(QP const& qp);
+struct FromQPConverter<RelativeDegreesOfFreedom<Frame>> {
+  static RelativeDegreesOfFreedom<Frame> Convert(QP const& qp) {
+    return RelativeDegreesOfFreedom<Frame>(
+        FromXYZConverter<Displacement<Frame>>::Convert(qp.q),
+        FromXYZConverter<Velocity<Frame>>::Convert(qp.p));
+  }
 };
 
 template<typename T>
-class FromXYZConverter {};
+struct FromXYZConverter {};
 
 template<typename Frame>
-class FromXYZConverter<Displacement<Frame>> {
-  inline Displacement<Frame> operator()(XYZ const& xyz);
+struct FromXYZConverter<Displacement<Frame>> {
+  static Displacement<Frame> Convert(XYZ const& xyz) {
+    return Displacement<Frame>(FromXYZ(xyz) * Metre);
+  }
 };
 
 template<typename Frame>
-class FromXYZConverter<Position<Frame>> {
-  inline Position<Frame> operator()(XYZ const& xyz);
+struct FromXYZConverter<Position<Frame>> {
+  static Position<Frame> Convert(XYZ const& xyz) {
+    return Position<Frame>(Frame::origin +
+                           FromXYZConverter<Displacement<Frame>>::Convert(xyz));
+  }
 };
 
 template<typename Frame>
-class FromXYZConverter<Velocity<Frame>> {
-  inline Velocity<Frame> operator()(XYZ const& xyz) {
+struct FromXYZConverter<Velocity<Frame>> {
+  static Velocity<Frame> Convert(XYZ const& xyz) {
     return Velocity<Frame>(FromXYZ(xyz) * (Metre / Second));
   }
 };
@@ -245,12 +258,17 @@ inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
 
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
-  return {FromXYZ<Position<World>>(qp.q), FromXYZ<Velocity<World>>(qp.p)};
+  return FromQPConverter<DegreesOfFreedom<World>>::Convert(qp);
+}
+
+template<>
+inline RelativeDegreesOfFreedom<AliceSun> FromQP(QP const& qp) {
+  return FromQPConverter<RelativeDegreesOfFreedom<AliceSun>>::Convert(qp);
 }
 
 template<>
 inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
-  return {FromXYZ<Displacement<World>>(qp.q), FromXYZ<Velocity<World>>(qp.p)};
+  return FromQPConverter<RelativeDegreesOfFreedom<World>>::Convert(qp);
 }
 
 inline R3Element<double> FromXYZ(XYZ const& xyz) {
@@ -258,18 +276,8 @@ inline R3Element<double> FromXYZ(XYZ const& xyz) {
 }
 
 template<>
-inline Displacement<World> FromXYZ<Displacement<World>>(XYZ const& xyz) {
-  return Displacement<World>(FromXYZ(xyz) * Metre);
-}
-
-template<>
 inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
-  return World::origin + FromXYZ<Displacement<World>>(xyz);
-}
-
-template<>
-inline Velocity<World> FromXYZ<Velocity<World>>(XYZ const& xyz) {
-  return FromXYZConverter<Velocity<World>>()(xyz);
+  return FromXYZConverter<Position<World>>::Convert(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(

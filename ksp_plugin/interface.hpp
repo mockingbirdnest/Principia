@@ -33,6 +33,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Velocity;
+using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
@@ -142,18 +143,17 @@ T FromQP(QP const& qp);
 template<>
 inline DegreesOfFreedom<World> FromQP<DegreesOfFreedom<World>>(QP const& qp);
 template<>
-inline RelativeDegreesOfFreedom<World> FromQP<RelativeDegreesOfFreedom<World>>(
-    QP const& qp);
+inline RelativeDegreesOfFreedom<AliceSun>
+FromQP<RelativeDegreesOfFreedom<AliceSun>>(QP const& qp);
+template<>
+inline RelativeDegreesOfFreedom<World>
+FromQP<RelativeDegreesOfFreedom<World>>(QP const& qp);
 
 R3Element<double> FromXYZ(XYZ const& xyz);
 template<typename T>
 T FromXYZ(XYZ const& xyz);
 template<>
-inline Displacement<World> FromXYZ<Displacement<World>>(XYZ const& xyz);
-template<>
 inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz);
-template<>
-inline Velocity<World> FromXYZ<Velocity<World>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
