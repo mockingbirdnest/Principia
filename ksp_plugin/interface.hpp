@@ -7,13 +7,17 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
@@ -26,14 +30,23 @@ namespace interface {
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using geometry::Displacement;
 using geometry::Instant;
+using geometry::Position;
+using geometry::R3Element;
+using geometry::Vector;
+using geometry::Velocity;
+using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::Frenet;
+using physics::RelativeDegreesOfFreedom;
 
 // A wrapper for a container and an iterator into that container.
 class Iterator {
@@ -122,27 +135,56 @@ bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 
+// Conversions between interchange data and typed data.
+
 physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
+
 physics::KeplerianElements<Barycentric> FromKeplerianElements(
     KeplerianElements const& keplerian_elements);
-geometry::R3Element<double> FromXYZ(XYZ const& xyz);
+
+template<typename T>
+T FromQP(QP const& qp);
+template<>
+DegreesOfFreedom<World> FromQP<DegreesOfFreedom<World>>(QP const& qp);
+template<>
+RelativeDegreesOfFreedom<AliceSun>
+FromQP<RelativeDegreesOfFreedom<AliceSun>>(QP const& qp);
+template<>
+RelativeDegreesOfFreedom<World>
+FromQP<RelativeDegreesOfFreedom<World>>(QP const& qp);
+
+R3Element<double> FromXYZ(XYZ const& xyz);
+template<typename T>
+T FromXYZ(XYZ const& xyz);
+template<>
+Position<World> FromXYZ<Position<World>>(XYZ const& xyz);
+template<>
+Velocity<Frenet<NavigationFrame>>
+FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
+
 KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements);
-WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
-XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 
-// TODO(phl): These utilities should maybe go into a separate file.
+QP ToQP(DegreesOfFreedom<World> const& dof);
+QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
+
+WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+
+XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
+XYZ ToXYZ(Position<World> const& position);
+XYZ ToXYZ(Vector<double, World> const& direction);
+XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
+
+// Conversions between interchange data and typed data that depend on the state
+// of the plugin.
 Instant FromGameTime(Plugin const& plugin, double t);
 double ToGameTime(Plugin const& plugin, Instant const& t);
-
-// TODO(phl): Return a reference.
-not_null<Vessel*> GetVessel(Plugin const& plugin, char const* vessel_guid);
 
 // A factory for NavigationFrame objects.
 not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

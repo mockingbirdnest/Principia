@@ -51,13 +51,12 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
           FromGameTime(plugin, burn.initial_time),
-          Velocity<Frenet<Navigation>>(
-              FromXYZ(burn.delta_v) * (Metre / Second))};
+          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v)};
 }
 
 FlightPlan& GetFlightPlan(Plugin const& plugin,
                           char const* const vessel_guid) {
-  Vessel const& vessel = *GetVessel(plugin, vessel_guid);
+  Vessel const& vessel = *plugin.GetVessel(vessel_guid);
   CHECK(vessel.has_flight_plan()) << vessel_guid;
   return vessel.flight_plan();
 }
@@ -122,7 +121,7 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv.coordinates() / (Metre / Second))};
+          ToXYZ(Δv)};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
@@ -144,7 +143,7 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
       manœuvre.InertialDirection();
   Vector<double, World> const world_inertial_direction =
       barycentric_to_world(barycentric_inertial_direction);
-  result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
+  result.inertial_direction = ToXYZ(world_inertial_direction);
   return result;
 }
 
@@ -178,7 +177,7 @@ void principia__FlightPlanDelete(Plugin const* const plugin,
                                  char const* const vessel_guid) {
   journal::Method<journal::FlightPlanDelete> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  GetVessel(*plugin, vessel_guid)->DeleteFlightPlan();
+  plugin->GetVessel(vessel_guid)->DeleteFlightPlan();
   return m.Return();
 }
 
@@ -187,7 +186,7 @@ bool principia__FlightPlanExists(
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanExists> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(GetVessel(*plugin, vessel_guid)->has_flight_plan());
+  return m.Return(plugin->GetVessel(vessel_guid)->has_flight_plan());
 }
 
 AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
@@ -265,14 +264,11 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
       plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
       frenet_to_barycentric;
   result.tangent = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0})));
   result.normal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0})));
   result.binormal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1})));
 
   return m.Return(result);
 }
@@ -313,14 +309,11 @@ void principia__FlightPlanRenderedApsides(Plugin const* const plugin,
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
                                   begin, end,
-                                  q_sun,
+                                  FromXYZ<Position<World>>(sun_world_position),
                                   rendered_apoapsides,
                                   rendered_periapsides);
   *apoapsides = new TypedIterator<DiscreteTrajectory<World>>(
@@ -344,13 +337,12 @@ void principia__FlightPlanRenderedClosestApproaches(
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  Position<World> q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
-  plugin->ComputeAndRenderClosestApproaches(begin, end,
-                                            q_sun,
-                                            rendered_closest_approaches);
+  plugin->ComputeAndRenderClosestApproaches(
+      begin,
+      end,
+      FromXYZ<Position<World>>(sun_world_position),
+      rendered_closest_approaches);
   *closest_approaches = new TypedIterator<DiscreteTrajectory<World>>(
       check_not_null(std::move(rendered_closest_approaches)),
       plugin);
@@ -369,13 +361,10 @@ void principia__FlightPlanRenderedNodes(Plugin const* const plugin,
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetAllSegments(begin, end);
-  Position<World> const q_sun =
-      World::origin +
-      Displacement<World>(FromXYZ(sun_world_position) * Metre);
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
   plugin->ComputeAndRenderNodes(begin, end,
-                                q_sun,
+                                FromXYZ<Position<World>>(sun_world_position),
                                 rendered_ascending,
                                 rendered_descending);
   *ascending = new TypedIterator<DiscreteTrajectory<World>>(
@@ -403,8 +392,7 @@ Iterator* principia__FlightPlanRenderedSegment(
   auto rendered_trajectory = CHECK_NOTNULL(plugin)->
       RenderBarycentricTrajectoryInWorld(
           begin, end,
-          World::origin + Displacement<World>(
-                              FromXYZ(sun_world_position) * Metre));
+          FromXYZ<Position<World>>(sun_world_position));
   if (index % 2 == 1 && !rendered_trajectory->Empty() &&
       rendered_trajectory->Begin().time() != begin.time()) {
     // TODO(egg): this is ugly; we should centralize rendering.

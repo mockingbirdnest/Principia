@@ -108,6 +108,13 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
 }
 
 template<typename Frame>
+AdaptiveStepSizeIntegrator<
+    typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+Ephemeris<Frame>::AdaptiveStepParameters::integrator() const {
+  return *integrator_;
+}
+
+template<typename Frame>
 std::int64_t Ephemeris<Frame>::AdaptiveStepParameters::max_steps() const {
   return max_steps_;
 }

@@ -32,14 +32,7 @@ QP principia__IteratorGetQP(Iterator const* const iterator) {
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<QP>(
       [](DiscreteTrajectory<World>::Iterator const& iterator) -> QP {
-        DegreesOfFreedom<World> const degrees_of_freedom =
-            iterator.degrees_of_freedom();
-        return {
-            ToXYZ(
-                (degrees_of_freedom.position() - World::origin).coordinates() /
-                Metre),
-            ToXYZ(degrees_of_freedom.velocity().coordinates() /
-                  (Metre / Second))};
+        return ToQP(iterator.degrees_of_freedom());
       }));
 }
 
@@ -62,9 +55,7 @@ XYZ principia__IteratorGetXYZ(Iterator const* const iterator) {
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZ>(
       [](DiscreteTrajectory<World>::Iterator const& iterator) -> XYZ {
-        return ToXYZ((iterator.degrees_of_freedom().position() - World::origin)
-                         .coordinates() /
-                     Metre);
+        return ToXYZ(iterator.degrees_of_freedom().position());
       }));
 }
 

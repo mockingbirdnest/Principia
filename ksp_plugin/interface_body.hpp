@@ -9,13 +9,79 @@
 namespace principia {
 namespace interface {
 
-using geometry::Position;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+
+// No partial specialization of functions, so we wrap everything into structs.
+// C++, I hate you.
+
+template<typename T>
+struct QPConverter {};
+
+template<typename Frame>
+struct QPConverter<DegreesOfFreedom<Frame>> {
+  static DegreesOfFreedom<Frame> FromQP(QP const& qp) {
+    return DegreesOfFreedom<Frame>(
+        XYZConverter<Position<Frame>>::FromXYZ(qp.q),
+        XYZConverter<Velocity<Frame>>::FromXYZ(qp.p));
+  }
+  static QP ToQP(DegreesOfFreedom<Frame> const& dof) {
+    return {XYZConverter<Position<Frame>>::ToXYZ(dof.position()),
+            XYZConverter<Velocity<Frame>>::ToXYZ(dof.velocity())};
+  }
+};
+
+template<typename Frame>
+struct QPConverter<RelativeDegreesOfFreedom<Frame>> {
+  static RelativeDegreesOfFreedom<Frame> FromQP(QP const& qp) {
+    return RelativeDegreesOfFreedom<Frame>(
+        XYZConverter<Displacement<Frame>>::FromXYZ(qp.q),
+        XYZConverter<Velocity<Frame>>::FromXYZ(qp.p));
+  }
+  static QP ToQP(RelativeDegreesOfFreedom<Frame> const& relative_dof) {
+    return {
+        XYZConverter<Displacement<Frame>>::ToXYZ(relative_dof.displacement()),
+        XYZConverter<Velocity<Frame>>::ToXYZ(relative_dof.velocity())};
+  }
+};
+
+template<typename T>
+struct XYZConverter {};
+
+template<typename Frame>
+struct XYZConverter<Displacement<Frame>> {
+  static Displacement<Frame> FromXYZ(XYZ const& xyz) {
+    return Displacement<Frame>(interface::FromXYZ(xyz) * Metre);
+  }
+  static XYZ ToXYZ(Displacement<Frame> const& displacement) {
+    return interface::ToXYZ(displacement.coordinates() / Metre);
+  }
+};
+
+template<typename Frame>
+struct XYZConverter<Position<Frame>> {
+  static Position<Frame> FromXYZ(XYZ const& xyz) {
+    return Position<Frame>(Frame::origin +
+                           XYZConverter<Displacement<Frame>>::FromXYZ(xyz));
+  }
+  static XYZ ToXYZ(Position<Frame> const& position) {
+    return XYZConverter<Displacement<Frame>>::ToXYZ(position - Frame::origin);
+  }
+};
+
+template<typename Frame>
+struct XYZConverter<Velocity<Frame>> {
+  static Velocity<Frame> FromXYZ(XYZ const& xyz) {
+    return Velocity<Frame>(interface::FromXYZ(xyz) * (Metre / Second));
+  }
+  static XYZ ToXYZ(Velocity<Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
+  }
+};
 
 inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
@@ -103,7 +169,8 @@ std::unique_ptr<T[]> TakeOwnershipArray(T** const pointer) {
 
 inline bool operator==(AdaptiveStepParameters const& left,
                        AdaptiveStepParameters const& right) {
-  return left.max_steps == right.max_steps &&
+  return left.integrator_kind == right.integrator_kind &&
+         left.max_steps == right.max_steps &&
          NaNIndependentEq(left.length_integration_tolerance,
                           right.length_integration_tolerance) &&
          NaNIndependentEq(left.speed_integration_tolerance,
@@ -172,8 +239,14 @@ inline bool operator==(XYZ const& left, XYZ const& right) {
 inline physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters) {
+  serialization::AdaptiveStepSizeIntegrator message;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_IsValid(
+      adaptive_step_parameters.integrator_kind));
+  message.set_kind(static_cast<serialization::AdaptiveStepSizeIntegrator::Kind>(
+      adaptive_step_parameters.integrator_kind));
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      AdaptiveStepSizeIntegrator<Ephemeris<
+          Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message),
       adaptive_step_parameters.max_steps,
       adaptive_step_parameters.length_integration_tolerance * Metre,
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
@@ -204,14 +277,43 @@ inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
   return barycentric_keplerian_elements;
 }
 
-inline geometry::R3Element<double> FromXYZ(XYZ const& xyz) {
+template<>
+inline DegreesOfFreedom<World> FromQP(QP const& qp) {
+  return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
+}
+
+template<>
+inline RelativeDegreesOfFreedom<AliceSun> FromQP(QP const& qp) {
+  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::FromQP(qp);
+}
+
+template<>
+inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
+  return QPConverter<RelativeDegreesOfFreedom<World>>::FromQP(qp);
+}
+
+inline R3Element<double> FromXYZ(XYZ const& xyz) {
   return {xyz.x, xyz.y, xyz.z};
+}
+
+template<>
+inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
+  return XYZConverter<Position<World>>::FromXYZ(xyz);
+}
+
+template<>
+Velocity<Frenet<NavigationFrame>>
+inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
+  return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters) {
-  return {adaptive_step_parameters.max_steps(),
+  serialization::AdaptiveStepSizeIntegrator message;
+  adaptive_step_parameters.integrator().WriteToMessage(&message);
+  return {message.kind(),
+          adaptive_step_parameters.max_steps(),
           adaptive_step_parameters.length_integration_tolerance() / Metre,
           adaptive_step_parameters.speed_integration_tolerance() /
               (Metre / Second)};
@@ -232,6 +334,14 @@ inline KeplerianElements ToKeplerianElements(
           keplerian_elements.mean_anomaly / Radian};
 }
 
+inline QP ToQP(DegreesOfFreedom<World> const& dof) {
+  return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
+}
+
+inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
+  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
+}
+
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
@@ -243,6 +353,22 @@ inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline XYZ ToXYZ(Position<World> const& position) {
+  return XYZConverter<Position<World>>::ToXYZ(position);
+}
+
+inline XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity) {
+  return XYZConverter<Velocity<Frenet<NavigationFrame>>>::ToXYZ(velocity);
+}
+
+inline XYZ ToXYZ(Vector<double, World> const& direction) {
+  return ToXYZ(direction.coordinates());
+}
+
+inline XYZ ToXYZ(Velocity<World> const& velocity) {
+  return XYZConverter<Velocity<World>>::ToXYZ(velocity);
+}
+
 inline Instant FromGameTime(Plugin const& plugin,
                             double const t) {
   return plugin.GameEpoch() + t * Second;
@@ -251,12 +377,6 @@ inline Instant FromGameTime(Plugin const& plugin,
 inline double ToGameTime(Plugin const& plugin,
                          Instant const& t) {
   return (t - plugin.GameEpoch()) / Second;
-}
-
-inline not_null<Vessel*> GetVessel(Plugin const& plugin,
-                                   char const* const vessel_guid) {
-  CHECK(plugin.HasVessel(vessel_guid)) << vessel_guid;
-  return plugin.GetVessel(vessel_guid);
 }
 
 inline not_null<std::unique_ptr<NavigationFrame>> NewNavigationFrame(

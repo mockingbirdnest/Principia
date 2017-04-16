@@ -32,8 +32,8 @@ using quantities::si::Tonne;
 XYZ principia__VesselBinormal(Plugin const* const plugin,
                               char const* const vessel_guid) {
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
-  return m.Return(
-      ToXYZ(CHECK_NOTNULL(plugin)->VesselBinormal(vessel_guid).coordinates()));
+  CHECK_NOTNULL(plugin);
+  return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
 }
 
 // Calls |plugin->VesselFromParent| with the arguments given.
@@ -44,10 +44,7 @@ QP principia__VesselFromParent(Plugin const* const plugin,
   journal::Method<journal::VesselFromParent> m(
       {plugin, parent_index, vessel_guid});
   CHECK_NOTNULL(plugin);
-  RelativeDegreesOfFreedom<AliceSun> const result =
-      plugin->VesselFromParent(parent_index, vessel_guid);
-  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
-                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+  return m.Return(ToQP(plugin->VesselFromParent(parent_index, vessel_guid)));
 }
 
 AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
@@ -57,14 +54,14 @@ AdaptiveStepParameters principia__VesselGetPredictionAdaptiveStepParameters(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   return m.Return(ToAdaptiveStepParameters(
-      GetVessel(*plugin, vessel_guid)->prediction_adaptive_step_parameters()));
+      plugin->GetVessel(vessel_guid)->prediction_adaptive_step_parameters()));
 }
 
 XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid).coordinates()));
+  return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
 void principia__VesselSetPredictionAdaptiveStepParameters(
@@ -74,7 +71,7 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
   journal::Method<journal::VesselSetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid, adaptive_step_parameters});
   CHECK_NOTNULL(plugin);
-  GetVessel(*plugin, vessel_guid)
+  plugin->GetVessel(vessel_guid)
       ->set_prediction_adaptive_step_parameters(
           FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
@@ -84,15 +81,14 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid).coordinates()));
+  return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid)));
 }
 
 XYZ principia__VesselVelocity(Plugin const* const plugin,
                               char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid).coordinates() /
-                        (Metre / Second)));
+  return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
 }
 
 }  // namespace interface
