@@ -74,6 +74,22 @@ internal class MapNodePool {
         hoverable : true,
         pinnable : true,
         blocksInput : true);
+    new_node.OnClick +=
+        (KSP.UI.Screens.Mapview.MapNode node,
+         Mouse.Buttons buttons) => {
+          if (buttons == Mouse.Buttons.Left) {
+            if (properties_[node].vessel != null &&
+                PlanetariumCamera.fetch.target !=
+                    properties_[node].vessel.mapObject) {
+              PlanetariumCamera.fetch.SetTarget(
+                  properties_[node].vessel.mapObject);
+            } else if (PlanetariumCamera.fetch.target !=
+                       properties_[node].celestial.MapObject) {
+              PlanetariumCamera.fetch.SetTarget(
+                properties_[node].celestial.MapObject);
+            }
+          }
+        };
     new_node.OnUpdateVisible +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.IconData icon) => {

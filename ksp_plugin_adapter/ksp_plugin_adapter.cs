@@ -591,6 +591,11 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
+    // Handle clicks on planets.
+    if (MapView.MapIsEnabled) {
+      HandleMapViewClicks();
+    }
+
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
@@ -607,6 +612,10 @@ public partial class PrincipiaPluginAdapter
 
       Action<UnityEngine.Texture> set_navball_texture = (texture) =>
           navball_material.SetTexture("_MainTexture", texture);
+
+      if (!PluginRunning()) {
+        return;
+      }
 
       var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
       if (FlightGlobals.speedDisplayMode ==
@@ -629,9 +638,9 @@ public partial class PrincipiaPluginAdapter
       }
 
       // Orient the ball.
-      if (PluginRunning() && (FlightGlobals.speedDisplayMode ==
-                                  FlightGlobals.SpeedDisplayModes.Orbit ||
-                              plotting_frame_selector_.get().target_override)) {
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Orbit ||
+          plotting_frame_selector_.get().target_override) {
         navball_.navBall.rotation =
             (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
             (UnityEngine.QuaternionD)plugin_.NavballOrientation(
@@ -645,8 +654,7 @@ public partial class PrincipiaPluginAdapter
         navball_changed_ = false;
         previous_display_mode_ = FlightGlobals.speedDisplayMode;
         if (FlightGlobals.speedDisplayMode ==
-                FlightGlobals.SpeedDisplayModes.Surface ||
-            !PluginRunning()) {
+            FlightGlobals.SpeedDisplayModes.Surface) {
           set_navball_texture(compass_navball_texture_);
         } else if (plotting_frame_selector_.get().target_override) {
           set_navball_texture(target_navball_texture_);
@@ -674,7 +682,7 @@ public partial class PrincipiaPluginAdapter
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
       }
 
-      if (PluginRunning() && has_active_manageable_vessel() &&
+      if (has_active_manageable_vessel() &&
           plugin_.HasVessel(active_vessel.id.ToString()) &&
           (FlightGlobals.speedDisplayMode ==
                FlightGlobals.SpeedDisplayModes.Orbit ||
@@ -1243,7 +1251,8 @@ public partial class PrincipiaPluginAdapter
 
   private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                     Mouse.Buttons buttons) {
-    if (buttons == Mouse.Buttons.Left) {
+    if (buttons == Mouse.Buttons.Left &&
+        PlanetariumCamera.fetch.target != node.mapObject) {
       PlanetariumCamera.fetch.SetTarget(node.mapObject);
     }
   }
@@ -1254,13 +1263,30 @@ public partial class PrincipiaPluginAdapter
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
       selecting_active_vessel_target_ = false;
     } else if (buttons == Mouse.Buttons.Left) {
-      if (Mouse.Left.GetDoubleClick(false)) {
+      if (UnityEngine.Event.current.clickCount > 1 &&
+          node.mapObject.vessel.orbitDriver) {
         var focus_object =
             new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
                 node.mapObject.vessel.orbitDriver);
         focus_object.onOptionSelected();
-      } else {
+      } else if (PlanetariumCamera.fetch.target != node.mapObject) {
         PlanetariumCamera.fetch.SetTarget(node.mapObject);
+      }
+    }
+  }
+
+  private void HandleMapViewClicks() {
+    if (InputLockManager.IsUnlocked(ControlTypes.MAP_UI) &&
+        !UnityEngine.EventSystems.EventSystem.current
+             .IsPointerOverGameObject() &&
+        Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus) {
+      var ray = PlanetariumCamera.Camera.ScreenPointToRay(
+          UnityEngine.Input.mousePosition);
+      foreach (var celestial in FlightGlobals.Bodies) {
+        if (celestial.scaledBody.GetRendererBounds().IntersectRay(ray) &&
+            PlanetariumCamera.fetch.target != celestial.MapObject) {
+          PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
+        }
       }
     }
   }
