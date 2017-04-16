@@ -936,7 +936,8 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
                   vessel_guid,
-                  {/*max_step=*/11,
+                  {/*integrator_kind=*/1,
+                   /*max_step=*/11,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
 
@@ -948,6 +949,7 @@ TEST_F(InterfaceTest, FlightPlan) {
   EXPECT_CALL(flight_plan, adaptive_step_parameters())
       .WillOnce(ReturnRef(adaptive_step_parameters));
   AdaptiveStepParameters expected_adaptive_step_parameters = {
+      /*integrator_kind=*/1,
       /*max_step=*/111,
       /*length_integration_tolerance=*/222,
       /*speed_integration_tolerance=*/333};
