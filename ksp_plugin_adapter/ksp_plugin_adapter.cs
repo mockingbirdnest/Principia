@@ -298,8 +298,9 @@ public partial class PrincipiaPluginAdapter
     if (vessel.situation != Vessel.Situations.SUB_ORBITAL &&
         vessel.situation != Vessel.Situations.ORBITING &&
         vessel.situation != Vessel.Situations.ESCAPING &&
-        vessel.situation != Vessel.Situations.FLYING) {
-      reasons.Add("vessel state is " + vessel.situation);
+        (vessel.situation != Vessel.Situations.FLYING || vessel.packed)) {
+      reasons.Add("vessel state is " + vessel.situation + " and vessel is " +
+                  (vessel.packed ? "packed" : "unpacked"));
     }
     if (!vessel.packed &&
         vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
