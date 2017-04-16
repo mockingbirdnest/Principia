@@ -536,7 +536,6 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
       auto const& name = pair.first;
       auto const& errors = pair.second;
       if (position_errors[i] < errors[i].displacement().Norm()) {
-        position_errors[i] < errors[i].displacement().Norm();
         worst_body[i] = name;
       }
       position_errors[i] = std::max(position_errors[i],
