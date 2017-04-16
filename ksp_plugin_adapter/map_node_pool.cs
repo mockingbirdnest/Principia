@@ -42,14 +42,16 @@ internal class MapNodePool {
   }
 
   public void RenderAndDeleteMarkers(IntPtr apsis_iterator,
-                                     CelestialBody celestial,
                                      MapObject.ObjectType type,
-                                     NodeSource source) {
+                                     NodeSource source,
+                                     Vessel vessel,
+                                     CelestialBody celestial) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
       Vector3d apsis = (Vector3d)apsis_iterator.IteratorGetXYZ();
       MapNodeProperties node_properties;
       node_properties.object_type = type;
+      node_properties.vessel = vessel;
       node_properties.celestial = celestial;
       node_properties.world_position = apsis;
       node_properties.source = source;
@@ -72,6 +74,22 @@ internal class MapNodePool {
         hoverable : true,
         pinnable : true,
         blocksInput : true);
+    new_node.OnClick +=
+        (KSP.UI.Screens.Mapview.MapNode node,
+         Mouse.Buttons buttons) => {
+          if (buttons == Mouse.Buttons.Left) {
+            if (properties_[node].vessel != null &&
+                PlanetariumCamera.fetch.target !=
+                    properties_[node].vessel.mapObject) {
+              PlanetariumCamera.fetch.SetTarget(
+                  properties_[node].vessel.mapObject);
+            } else if (PlanetariumCamera.fetch.target !=
+                       properties_[node].celestial.MapObject) {
+              PlanetariumCamera.fetch.SetTarget(
+                  properties_[node].celestial.MapObject);
+            }
+          }
+        };
     new_node.OnUpdateVisible +=
         (KSP.UI.Screens.Mapview.MapNode node,
          KSP.UI.Screens.Mapview.MapNode.IconData icon) => {
@@ -88,6 +106,10 @@ internal class MapNodePool {
             // Make sure we see impacts.
             colour = XKCDColors.Orange;
           }
+          if (properties_[node].object_type ==
+              MapObject.ObjectType.ApproachIntersect) {
+            colour = XKCDColors.Chartreuse;
+          }
           icon.color = colour;
         };
     new_node.OnUpdateType +=
@@ -99,6 +121,11 @@ internal class MapNodePool {
             type.oType = MapObject.ObjectType.PatchTransition;
             type.pType =
                 KSP.UI.Screens.Mapview.MapNode.PatchTransitionNodeType.Impact;
+          } else if (properties_[node].object_type ==
+                     MapObject.ObjectType.ApproachIntersect) {
+            type.oType = properties_[node].object_type;
+            type.aType = KSP.UI.Screens.Mapview.MapNode.ApproachNodeType
+                             .CloseApproachOwn;
           } else {
             type.oType = properties_[node].object_type;
           }
@@ -130,6 +157,14 @@ internal class MapNodePool {
             // TODO(egg): We should show some useful information here, perhaps
             // out-of-plane (z) speed.
             caption.Header = name;
+          } else if (properties_[node].object_type ==
+                     MapObject.ObjectType.ApproachIntersect) {
+            caption.Header = "Target Approach : <color=" +
+                             XKCDColors.HexFormat.Chartreuse + ">" +
+                             (properties_[node].vessel.GetWorldPos3D() -
+                              properties_[node].world_position)
+                                 .magnitude.ToString("N0", Culture.culture) +
+                             " m</color>";
           }
           caption.captionLine1 =
               "T" +
@@ -165,6 +200,7 @@ internal class MapNodePool {
   private struct MapNodeProperties {
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
+    public Vessel vessel;
     public CelestialBody celestial;
     public NodeSource source;
     public double time;

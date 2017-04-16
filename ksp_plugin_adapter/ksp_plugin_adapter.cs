@@ -114,6 +114,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture barycentric_navball_texture_;
   private UnityEngine.Texture body_direction_navball_texture_;
   private UnityEngine.Texture surface_navball_texture_;
+  private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes previous_display_mode_;
 
@@ -392,6 +393,7 @@ public partial class PrincipiaPluginAdapter
     LoadTextureOrDie(out body_direction_navball_texture_,
                      "navball_body_direction.png");
     LoadTextureOrDie(out surface_navball_texture_, "navball_surface.png");
+    LoadTextureOrDie(out target_navball_texture_, "navball_target.png");
 
     if (unmodified_orbits_ == null) {
       unmodified_orbits_ = new Dictionary<CelestialBody, Orbit>();
@@ -589,6 +591,11 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
+    // Handle clicks on planets.
+    if (MapView.MapIsEnabled) {
+      HandleMapViewClicks();
+    }
+
     override_rsas_target_ = false;
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     if (active_vessel != null) {
@@ -606,15 +613,51 @@ public partial class PrincipiaPluginAdapter
       Action<UnityEngine.Texture> set_navball_texture = (texture) =>
           navball_material.SetTexture("_MainTexture", texture);
 
+      if (!PluginRunning()) {
+        return;
+      }
+
+      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Target &&
+          target_vessel != null &&
+          plugin_.HasVessel(target_vessel.id.ToString())) {
+        plugin_.SetTargetVessel(target_vessel.id.ToString(),
+                                plotting_frame_selector_.get()
+                                    .selected_celestial.flightGlobalsIndex);
+        if (plotting_frame_selector_.get().target_override != target_vessel) {
+          navball_changed_ = true;
+          plotting_frame_selector_.get().target_override = target_vessel;
+        }
+      } else {
+        plugin_.ClearTargetVessel();
+        if (plotting_frame_selector_.get().target_override != null) {
+          navball_changed_ = true;
+          plotting_frame_selector_.get().target_override = null;
+        }
+      }
+
+      // Orient the ball.
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Orbit ||
+          plotting_frame_selector_.get().target_override) {
+        navball_.navBall.rotation =
+            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+                (XYZ)Planetarium.fetch.Sun.position,
+                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      }
+
       if (navball_changed_ ||
           previous_display_mode_ != FlightGlobals.speedDisplayMode) {
         // Texture the ball.
         navball_changed_ = false;
         previous_display_mode_ = FlightGlobals.speedDisplayMode;
         if (FlightGlobals.speedDisplayMode ==
-                FlightGlobals.SpeedDisplayModes.Surface ||
-            !PluginRunning()) {
+            FlightGlobals.SpeedDisplayModes.Surface) {
           set_navball_texture(compass_navball_texture_);
+        } else if (plotting_frame_selector_.get().target_override) {
+          set_navball_texture(target_navball_texture_);
         } else {
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
@@ -633,36 +676,17 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
-      var target_vessel = FlightGlobals.fetch.VesselTarget?.GetVessel();
-      if (FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Target &&
-          target_vessel != null &&
-          plugin_.HasVessel(target_vessel.id.ToString())) {
-        plugin_.SetTargetVessel(target_vessel.id.ToString(),
-                                plotting_frame_selector_.get()
-                                    .selected_celestial.flightGlobalsIndex);
-        plotting_frame_selector_.get().target_override = target_vessel;
-      } else {
-        plugin_.ClearTargetVessel();
-        plotting_frame_selector_.get().target_override = null;
-      }
-
-      // Orient the ball.
-      if (PluginRunning() && FlightGlobals.speedDisplayMode ==
-                                 FlightGlobals.SpeedDisplayModes.Orbit) {
-        navball_.navBall.rotation =
-            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                (XYZ)Planetarium.fetch.Sun.position,
-                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
-      }
-
-      if (PluginRunning() &&
-          has_active_manageable_vessel() &&
-          plugin_.HasVessel(active_vessel.id.ToString()) &&
-          // TODO(egg): also cover Target mode.
+      if (plotting_frame_selector_.get().target_override == null &&
           FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Orbit) {
+              FlightGlobals.SpeedDisplayModes.Target) {
+        KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
+      }
+
+      if (has_active_manageable_vessel() &&
+          plugin_.HasVessel(active_vessel.id.ToString()) &&
+          (FlightGlobals.speedDisplayMode ==
+               FlightGlobals.SpeedDisplayModes.Orbit ||
+           plotting_frame_selector_.get().target_override)) {
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
             KSP.UI.Screens.Flight.SpeedDisplay.Instance;
         if (speed_display?.textTitle != null &&
@@ -1225,17 +1249,49 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
+                                    Mouse.Buttons buttons) {
+    if (buttons == Mouse.Buttons.Left &&
+        PlanetariumCamera.fetch.target != node.mapObject) {
+      PlanetariumCamera.fetch.SetTarget(node.mapObject);
+    }
+  }
+
   private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                  Mouse.Buttons buttons) {
     if (selecting_active_vessel_target_) {
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
       selecting_active_vessel_target_ = false;
+    } else if (buttons == Mouse.Buttons.Left &&
+               PlanetariumCamera.fetch.target != node.mapObject) {
+      PlanetariumCamera.fetch.SetTarget(node.mapObject);
+    }
+  }
+
+  private void HandleMapViewClicks() {
+    if (InputLockManager.IsUnlocked(ControlTypes.MAP_UI) &&
+        !UnityEngine.EventSystems.EventSystem.current
+             .IsPointerOverGameObject() &&
+        Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus) {
+      var ray = PlanetariumCamera.Camera.ScreenPointToRay(
+          UnityEngine.Input.mousePosition);
+      foreach (var celestial in FlightGlobals.Bodies) {
+        if (celestial.scaledBody.GetRendererBounds().IntersectRay(ray) &&
+            PlanetariumCamera.fetch.target != celestial.MapObject) {
+          PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
+        }
+      }
     }
   }
 
   private void RenderTrajectories() {
     if (!PluginRunning()) {
       return;
+    }
+    foreach (var celestial in FlightGlobals.Bodies.Where(
+                                  c => c.MapObject?.uiNode != null)) {
+      celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
+      celestial.MapObject.uiNode.OnClick += OnCelestialNodeClick;
     }
     foreach (var vessel in FlightGlobals.Vessels.Where(
                                v => v.mapObject?.uiNode != null)) {
@@ -1319,22 +1375,35 @@ public partial class PrincipiaPluginAdapter
   private void RenderPredictionMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
+      Vessel target = plotting_frame_selector_.get().target_override;
       IntPtr ascending_nodes_iterator;
       IntPtr descending_nodes_iterator;
+      IntPtr approaches_iterator;
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
+      plugin_.RenderedPredictionClosestApproaches(vessel_guid,
+                                                  sun_world_position,
+                                                  out approaches_iterator);
       map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.PREDICTION);
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
       map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.PREDICTION);
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
+      map_node_pool_.RenderAndDeleteMarkers(
+          approaches_iterator,
+          MapObject.ObjectType.ApproachIntersect,
+          MapNodePool.NodeSource.PREDICTION,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
@@ -1347,14 +1416,16 @@ public partial class PrincipiaPluginAdapter
                                           out periapsis_iterator);
         map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
-            celestial,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.PREDICTION);
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : celestial);
         map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
-            celestial,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.PREDICTION);
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : celestial);
       }
     }
   }
@@ -1362,22 +1433,35 @@ public partial class PrincipiaPluginAdapter
   private void RenderFlightPlanMarkers(String vessel_guid,
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
+      Vessel target = plotting_frame_selector_.get().target_override;
       IntPtr ascending_nodes_iterator;
       IntPtr descending_nodes_iterator;
+      IntPtr approaches_iterator;
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
                                       out descending_nodes_iterator);
+      plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
+                                                  sun_world_position,
+                                                  out approaches_iterator);
       map_node_pool_.RenderAndDeleteMarkers(
           ascending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.AscendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN);
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
       map_node_pool_.RenderAndDeleteMarkers(
           descending_nodes_iterator,
-          plotting_frame_selector_.get().selected_celestial,
           MapObject.ObjectType.DescendingNode,
-          MapNodePool.NodeSource.FLIGHT_PLAN);
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
+      map_node_pool_.RenderAndDeleteMarkers(
+          approaches_iterator,
+          MapObject.ObjectType.ApproachIntersect,
+          MapNodePool.NodeSource.FLIGHT_PLAN,
+          vessel    : target,
+          celestial : plotting_frame_selector_.get().selected_celestial);
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
@@ -1390,14 +1474,16 @@ public partial class PrincipiaPluginAdapter
                                           out periapsis_iterator);
         map_node_pool_.RenderAndDeleteMarkers(
             apoapsis_iterator,
-            celestial,
             MapObject.ObjectType.Apoapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN);
+            MapNodePool.NodeSource.FLIGHT_PLAN,
+            vessel    : null,
+            celestial : celestial);
         map_node_pool_.RenderAndDeleteMarkers(
             periapsis_iterator,
-            celestial,
             MapObject.ObjectType.Periapsis,
-            MapNodePool.NodeSource.FLIGHT_PLAN);
+            MapNodePool.NodeSource.FLIGHT_PLAN,
+            vessel    : null,
+            celestial : celestial);
       }
     }
   }
@@ -1483,7 +1569,14 @@ public partial class PrincipiaPluginAdapter
             UnityEngine.GUILayout.ExpandWidth(true));
         if (UnityEngine.GUILayout.Button("Clear",
                                          UnityEngine.GUILayout.Width(50))) {
+          selecting_active_vessel_target_ = false;
           FlightGlobals.fetch.SetVesselTarget(null);
+        }
+        if (UnityEngine.GUILayout.Button("Switch To")) {
+          var focus_object =
+              new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
+                  FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
+          focus_object.onOptionSelected();
         }
       }
       UnityEngine.GUILayout.EndHorizontal();
