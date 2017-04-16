@@ -56,7 +56,7 @@ HierarchicalSystem<Frame>::ConsumeBarycentricSystem() {
 }
 
 template<typename Frame>
-typename HierarchicalSystem<Frame>::BarycentricSubystem
+typename HierarchicalSystem<Frame>::BarycentricSubsystem
 HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   auto const semimajor_axis_less_than = [](
       not_null<std::unique_ptr<Subsystem>> const& left,
@@ -83,7 +83,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
             system.satellites.end(),
             semimajor_axis_less_than);
 
-  BarycentricSubystem result;
+  BarycentricSubsystem result;
 
   // A reference frame wherein the barycentre of |system| is motionless at the
   // origin.
@@ -113,7 +113,7 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   // Fill |satellite_degrees_of_freedom|, |jacobi_coordinates|, and
   // |result.bodies|.
   for (auto const& subsystem : system.satellites) {
-    BarycentricSubystem barycentric_satellite_subsystem =
+    BarycentricSubsystem barycentric_satellite_subsystem =
         ToBarycentric(*subsystem);
     satellite_degrees_of_freedom.emplace_back(std::move(
         barycentric_satellite_subsystem.barycentric_degrees_of_freedom));
