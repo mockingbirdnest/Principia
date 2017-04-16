@@ -23,48 +23,66 @@ using quantities::si::Second;
 // C++, I hate you.
 
 template<typename T>
-struct FromQPConverter {};
+struct QPConverter {};
 
 template<typename Frame>
-struct FromQPConverter<DegreesOfFreedom<Frame>> {
-  static DegreesOfFreedom<Frame> Convert(QP const& qp) {
+struct QPConverter<DegreesOfFreedom<Frame>> {
+  static DegreesOfFreedom<Frame> FromQP(QP const& qp) {
     return DegreesOfFreedom<Frame>(
-        FromXYZConverter<Position<Frame>>::Convert(qp.q),
-        FromXYZConverter<Velocity<Frame>>::Convert(qp.p));
+        XYZConverter<Position<Frame>>::FromXYZ(qp.q),
+        XYZConverter<Velocity<Frame>>::FromXYZ(qp.p));
+  }
+  static QP ToQP(DegreesOfFreedom<Frame> const& dof) {
+    return {XYZConverter<Position<Frame>>::ToXYZ(dof.position()),
+            XYZConverter<Velocity<Frame>>::ToXYZ(dof.velocity())};
   }
 };
 
 template<typename Frame>
-struct FromQPConverter<RelativeDegreesOfFreedom<Frame>> {
-  static RelativeDegreesOfFreedom<Frame> Convert(QP const& qp) {
+struct QPConverter<RelativeDegreesOfFreedom<Frame>> {
+  static RelativeDegreesOfFreedom<Frame> FromQP(QP const& qp) {
     return RelativeDegreesOfFreedom<Frame>(
-        FromXYZConverter<Displacement<Frame>>::Convert(qp.q),
-        FromXYZConverter<Velocity<Frame>>::Convert(qp.p));
+        XYZConverter<Displacement<Frame>>::FromXYZ(qp.q),
+        XYZConverter<Velocity<Frame>>::FromXYZ(qp.p));
+  }
+  static QP ToQP(RelativeDegreesOfFreedom<Frame> const& relative_dof) {
+    return {
+        XYZConverter<Displacement<Frame>>::ToXYZ(relative_dof.displacement()),
+        XYZConverter<Velocity<Frame>>::ToXYZ(relative_dof.velocity())};
   }
 };
 
 template<typename T>
-struct FromXYZConverter {};
+struct XYZConverter {};
 
 template<typename Frame>
-struct FromXYZConverter<Displacement<Frame>> {
-  static Displacement<Frame> Convert(XYZ const& xyz) {
-    return Displacement<Frame>(FromXYZ(xyz) * Metre);
+struct XYZConverter<Displacement<Frame>> {
+  static Displacement<Frame> FromXYZ(XYZ const& xyz) {
+    return Displacement<Frame>(interface::FromXYZ(xyz) * Metre);
+  }
+  static XYZ ToXYZ(Displacement<Frame> const& displacement) {
+    return interface::ToXYZ(displacement.coordinates() / Metre);
   }
 };
 
 template<typename Frame>
-struct FromXYZConverter<Position<Frame>> {
-  static Position<Frame> Convert(XYZ const& xyz) {
+struct XYZConverter<Position<Frame>> {
+  static Position<Frame> FromXYZ(XYZ const& xyz) {
     return Position<Frame>(Frame::origin +
-                           FromXYZConverter<Displacement<Frame>>::Convert(xyz));
+                           XYZConverter<Displacement<Frame>>::FromXYZ(xyz));
+  }
+  static XYZ ToXYZ(Position<Frame> const& position) {
+    return XYZConverter<Displacement<Frame>>::ToXYZ(position - Frame::origin);
   }
 };
 
 template<typename Frame>
-struct FromXYZConverter<Velocity<Frame>> {
-  static Velocity<Frame> Convert(XYZ const& xyz) {
-    return Velocity<Frame>(FromXYZ(xyz) * (Metre / Second));
+struct XYZConverter<Velocity<Frame>> {
+  static Velocity<Frame> FromXYZ(XYZ const& xyz) {
+    return Velocity<Frame>(interface::FromXYZ(xyz) * (Metre / Second));
+  }
+  static XYZ ToXYZ(Velocity<Frame> const& velocity) {
+    return interface::ToXYZ(velocity.coordinates() / (Metre / Second));
   }
 };
 
@@ -258,17 +276,17 @@ inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
 
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
-  return FromQPConverter<DegreesOfFreedom<World>>::Convert(qp);
+  return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
 }
 
 template<>
 inline RelativeDegreesOfFreedom<AliceSun> FromQP(QP const& qp) {
-  return FromQPConverter<RelativeDegreesOfFreedom<AliceSun>>::Convert(qp);
+  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::FromQP(qp);
 }
 
 template<>
 inline RelativeDegreesOfFreedom<World> FromQP(QP const& qp) {
-  return FromQPConverter<RelativeDegreesOfFreedom<World>>::Convert(qp);
+  return QPConverter<RelativeDegreesOfFreedom<World>>::FromQP(qp);
 }
 
 inline R3Element<double> FromXYZ(XYZ const& xyz) {
@@ -277,7 +295,13 @@ inline R3Element<double> FromXYZ(XYZ const& xyz) {
 
 template<>
 inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz) {
-  return FromXYZConverter<Position<World>>::Convert(xyz);
+  return XYZConverter<Position<World>>::FromXYZ(xyz);
+}
+
+template<>
+Velocity<Frenet<NavigationFrame>>
+inline FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz) {
+  return XYZConverter<Velocity<Frenet<NavigationFrame>>>::FromXYZ(xyz);
 }
 
 inline AdaptiveStepParameters ToAdaptiveStepParameters(
@@ -304,6 +328,18 @@ inline KeplerianElements ToKeplerianElements(
           keplerian_elements.mean_anomaly / Radian};
 }
 
+template<>
+inline QP ToQP<DegreesOfFreedom<World>>(DegreesOfFreedom<World> const& dof) {
+  return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
+}
+
+template<>
+inline QP ToQP<RelativeDegreesOfFreedom<AliceSun>>(
+    RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
+  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(
+      relative_dof);
+}
+
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
   return {quaternion.real_part(),
           quaternion.imaginary_part().x,
@@ -313,6 +349,22 @@ inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
 
 inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
+}
+
+template<>
+inline XYZ ToXYZ<Position<World>>(Position<World> const& position) {
+  return XYZConverter<Position<World>>::ToXYZ(position);
+}
+
+template<>
+inline XYZ ToXYZ<Velocity<Frenet<NavigationFrame>>>(
+    Velocity<Frenet<NavigationFrame>> const& velocity) {
+  return XYZConverter<Velocity<Frenet<NavigationFrame>>>::ToXYZ(velocity);
+}
+
+template<>
+inline XYZ ToXYZ<Velocity<World>>(Velocity<World> const& velocity) {
+  return XYZConverter<Velocity<World>>::ToXYZ(velocity);
 }
 
 inline Instant FromGameTime(Plugin const& plugin,

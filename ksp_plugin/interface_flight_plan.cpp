@@ -51,9 +51,7 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
           FromGameTime(plugin, burn.initial_time),
-          // One of the few places where we convert to a non-World frame.
-          Velocity<Frenet<Navigation>>(
-              FromXYZ(burn.delta_v) * (Metre / Second))};
+          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v)};
 }
 
 FlightPlan& GetFlightPlan(Plugin const& plugin,
@@ -123,7 +121,7 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv.coordinates() / (Metre / Second))};
+          ToXYZ(Δv)};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(

@@ -182,10 +182,7 @@ QP principia__CelestialFromParent(Plugin const* const plugin,
                                   int const celestial_index) {
   journal::Method<journal::CelestialFromParent> m({plugin, celestial_index});
   CHECK_NOTNULL(plugin);
-  RelativeDegreesOfFreedom<AliceSun> const result =
-      plugin->CelestialFromParent(celestial_index);
-  return m.Return({ToXYZ(result.displacement().coordinates() / Metre),
-                   ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+  return m.Return(ToQP(plugin->CelestialFromParent(celestial_index)));
 }
 
 double principia__CelestialInitialRotationInDegrees(Plugin const* const plugin,
@@ -223,11 +220,8 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
       {plugin, index, part_at_origin});
   CHECK_NOTNULL(plugin);
-  auto const result =
-      plugin->CelestialWorldDegreesOfFreedom(index, part_at_origin);
   return m.Return(
-      {ToXYZ((result.position() - World::origin).coordinates() / Metre),
-       ToXYZ(result.velocity().coordinates() / (Metre / Second))});
+      ToQP(plugin->CelestialWorldDegreesOfFreedom(index, part_at_origin)));
 }
 
 void principia__ClearTargetVessel(Plugin* const plugin) {
@@ -366,13 +360,9 @@ QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
                                             PartId const part_at_origin) {
   journal::Method<journal::GetPartActualDegreesOfFreedom> m(
       {plugin, part_id, part_at_origin});
-  DegreesOfFreedom<World> const degrees_of_freedom =
-      CHECK_NOTNULL(plugin)->GetPartActualDegreesOfFreedom(part_id,
-                                                           part_at_origin);
-  return m.Return(QP{
-      ToXYZ((degrees_of_freedom.position() - World::origin).coordinates() /
-            Metre),
-      ToXYZ(degrees_of_freedom.velocity().coordinates() / (Metre / Second))});
+  CHECK_NOTNULL(plugin);
+  return m.Return(
+      ToQP(plugin->GetPartActualDegreesOfFreedom(part_id, part_at_origin)));
 }
 
 // Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of

@@ -16,6 +16,7 @@
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 
 namespace principia {
@@ -42,6 +43,7 @@ using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
 
 // A wrapper for a container and an iterator into that container.
@@ -132,36 +134,59 @@ bool operator==(WXYZ const& left, WXYZ const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 
 // Conversions between interchange data and typed data.
+
 physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
+
 physics::KeplerianElements<Barycentric> FromKeplerianElements(
     KeplerianElements const& keplerian_elements);
 
 template<typename T>
 T FromQP(QP const& qp);
 template<>
-inline DegreesOfFreedom<World> FromQP<DegreesOfFreedom<World>>(QP const& qp);
+DegreesOfFreedom<World> FromQP<DegreesOfFreedom<World>>(QP const& qp);
 template<>
-inline RelativeDegreesOfFreedom<AliceSun>
+RelativeDegreesOfFreedom<AliceSun>
 FromQP<RelativeDegreesOfFreedom<AliceSun>>(QP const& qp);
 template<>
-inline RelativeDegreesOfFreedom<World>
+RelativeDegreesOfFreedom<World>
 FromQP<RelativeDegreesOfFreedom<World>>(QP const& qp);
 
 R3Element<double> FromXYZ(XYZ const& xyz);
 template<typename T>
 T FromXYZ(XYZ const& xyz);
 template<>
-inline Position<World> FromXYZ<Position<World>>(XYZ const& xyz);
+Position<World> FromXYZ<Position<World>>(XYZ const& xyz);
+template<>
+Velocity<Frenet<NavigationFrame>>
+FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz);
 
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
+
 KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements);
+
+template<typename T>
+QP ToQP(T const& t);
+template<>
+QP ToQP<DegreesOfFreedom<World>>(DegreesOfFreedom<World> const& dof);
+template<>
+QP ToQP<RelativeDegreesOfFreedom<AliceSun>>(
+    RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
+
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
+template<typename T>
+XYZ ToXYZ(T const& t);
+template<>
+XYZ ToXYZ<Position<World>>(Position<World> const& position);
+template<>
+XYZ ToXYZ<Velocity<Frenet<NavigationFrame>>>(
+    Velocity<Frenet<NavigationFrame>> const& velocity);
 
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
