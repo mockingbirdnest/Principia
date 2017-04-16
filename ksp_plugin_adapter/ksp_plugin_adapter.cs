@@ -754,20 +754,22 @@ public partial class PrincipiaPluginAdapter
           plugin_.HasVessel(active_vessel.id.ToString());
 
       if (ready_to_draw_active_vessel_trajectory) {
-            // TODO(egg): make the speed tolerance independent.  Also max_steps.
-            AdaptiveStepParameters adaptive_step_parameters =
-                plugin_.VesselGetPredictionAdaptiveStepParameters(
-                    active_vessel.id.ToString());
-            adaptive_step_parameters = new AdaptiveStepParameters{
-                integrator_kind = adaptive_step_parameters.integrator_kind,
-                max_steps = (Int64)prediction_steps_[prediction_steps_index_],
-                length_integration_tolerance = prediction_length_tolerances_
-                    [prediction_length_tolerance_index_],
-                speed_integration_tolerance = prediction_length_tolerances_
-                    [prediction_length_tolerance_index_]};
-            plugin_.VesselSetPredictionAdaptiveStepParameters(
-                active_vessel.id.ToString(), adaptive_step_parameters);
-            plugin_.SetPredictionLength(double.PositiveInfinity);
+        // TODO(egg): make the speed tolerance independent.  Also max_steps.
+        AdaptiveStepParameters adaptive_step_parameters =
+            plugin_.VesselGetPredictionAdaptiveStepParameters(
+                active_vessel.id.ToString());
+        adaptive_step_parameters = new AdaptiveStepParameters {
+          integrator_kind = adaptive_step_parameters.integrator_kind,
+          max_steps = (Int64)prediction_steps_[prediction_steps_index_],
+          length_integration_tolerance =
+              prediction_length_tolerances_[
+                  prediction_length_tolerance_index_],
+          speed_integration_tolerance =
+              prediction_length_tolerances_[
+                  prediction_length_tolerance_index_]};
+        plugin_.VesselSetPredictionAdaptiveStepParameters(
+            active_vessel.id.ToString(), adaptive_step_parameters);
+        plugin_.SetPredictionLength(double.PositiveInfinity);
       }
 
       if (ready_to_draw_active_vessel_trajectory) {
