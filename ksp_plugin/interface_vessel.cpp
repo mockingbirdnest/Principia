@@ -33,7 +33,7 @@ XYZ principia__VesselBinormal(Plugin const* const plugin,
                               char const* const vessel_guid) {
   journal::Method<journal::VesselBinormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid).coordinates()));
+  return m.Return(ToXYZ(plugin->VesselBinormal(vessel_guid)));
 }
 
 // Calls |plugin->VesselFromParent| with the arguments given.
@@ -61,7 +61,7 @@ XYZ principia__VesselNormal(Plugin const* const plugin,
                             char const* const vessel_guid) {
   journal::Method<journal::VesselNormal> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid).coordinates()));
+  return m.Return(ToXYZ(plugin->VesselNormal(vessel_guid)));
 }
 
 void principia__VesselSetPredictionAdaptiveStepParameters(
@@ -81,15 +81,14 @@ XYZ principia__VesselTangent(Plugin const* const plugin,
                              char const* const vessel_guid) {
   journal::Method<journal::VesselTangent> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid).coordinates()));
+  return m.Return(ToXYZ(plugin->VesselTangent(vessel_guid)));
 }
 
 XYZ principia__VesselVelocity(Plugin const* const plugin,
                               char const* const vessel_guid) {
   journal::Method<journal::VesselVelocity> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid).coordinates() /
-                        (Metre / Second)));
+  return m.Return(ToXYZ(plugin->VesselVelocity(vessel_guid)));
 }
 
 }  // namespace interface

@@ -328,16 +328,12 @@ inline KeplerianElements ToKeplerianElements(
           keplerian_elements.mean_anomaly / Radian};
 }
 
-template<>
-inline QP ToQP<DegreesOfFreedom<World>>(DegreesOfFreedom<World> const& dof) {
+inline QP ToQP(DegreesOfFreedom<World> const& dof) {
   return QPConverter<DegreesOfFreedom<World>>::ToQP(dof);
 }
 
-template<>
-inline QP ToQP<RelativeDegreesOfFreedom<AliceSun>>(
-    RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
-  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(
-      relative_dof);
+inline QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof) {
+  return QPConverter<RelativeDegreesOfFreedom<AliceSun>>::ToQP(relative_dof);
 }
 
 inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
@@ -351,19 +347,19 @@ inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
-template<>
-inline XYZ ToXYZ<Position<World>>(Position<World> const& position) {
+inline XYZ ToXYZ(Position<World> const& position) {
   return XYZConverter<Position<World>>::ToXYZ(position);
 }
 
-template<>
-inline XYZ ToXYZ<Velocity<Frenet<NavigationFrame>>>(
-    Velocity<Frenet<NavigationFrame>> const& velocity) {
+inline XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity) {
   return XYZConverter<Velocity<Frenet<NavigationFrame>>>::ToXYZ(velocity);
 }
 
-template<>
-inline XYZ ToXYZ<Velocity<World>>(Velocity<World> const& velocity) {
+inline XYZ ToXYZ(Vector<double, World> const& direction) {
+  return ToXYZ(direction.coordinates());
+}
+
+inline XYZ ToXYZ(Velocity<World> const& velocity) {
   return XYZConverter<Velocity<World>>::ToXYZ(velocity);
 }
 

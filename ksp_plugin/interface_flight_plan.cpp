@@ -143,7 +143,7 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
       manœuvre.InertialDirection();
   Vector<double, World> const world_inertial_direction =
       barycentric_to_world(barycentric_inertial_direction);
-  result.inertial_direction = ToXYZ(world_inertial_direction.coordinates());
+  result.inertial_direction = ToXYZ(world_inertial_direction);
   return result;
 }
 
@@ -264,14 +264,11 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
       plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
       frenet_to_barycentric;
   result.tangent = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0})));
   result.normal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 1, 0})));
   result.binormal = ToXYZ(
-      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1}))
-          .coordinates());
+      frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({0, 0, 1})));
 
   return m.Return(result);
 }

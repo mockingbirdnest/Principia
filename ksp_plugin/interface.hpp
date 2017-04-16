@@ -7,6 +7,7 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
@@ -33,6 +34,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
 using geometry::R3Element;
+using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
@@ -169,24 +171,15 @@ AdaptiveStepParameters ToAdaptiveStepParameters(
 KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements);
 
-template<typename T>
-QP ToQP(T const& t);
-template<>
-QP ToQP<DegreesOfFreedom<World>>(DegreesOfFreedom<World> const& dof);
-template<>
-QP ToQP<RelativeDegreesOfFreedom<AliceSun>>(
-    RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
+QP ToQP(DegreesOfFreedom<World> const& dof);
+QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
-template<typename T>
-XYZ ToXYZ(T const& t);
-template<>
-XYZ ToXYZ<Position<World>>(Position<World> const& position);
-template<>
-XYZ ToXYZ<Velocity<Frenet<NavigationFrame>>>(
-    Velocity<Frenet<NavigationFrame>> const& velocity);
+XYZ ToXYZ(Position<World> const& position);
+XYZ ToXYZ(Vector<double, World> const& direction);
+XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
 
 // Conversions between interchange data and typed data that depend on the state
 // of the plugin.
