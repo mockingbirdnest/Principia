@@ -6,12 +6,9 @@
 #include <cmath>
 #include <limits>
 
-#include "geometry/pair.hpp"
-
 namespace principia {
 namespace interface {
 
-using geometry::Pair;
 using integrators::AdaptiveStepSizeIntegrator;
 using physics::Ephemeris;
 using quantities::si::Degree;
