@@ -302,18 +302,11 @@ public partial class PrincipiaPluginAdapter
       reasons.Add("vessel state is " + vessel.situation);
     }
     if (!vessel.packed &&
-        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude &&
-        (vessel.isActiveVessel ||
-         (FlightGlobals.ActiveVessel &&
-          !is_manageable(FlightGlobals.ActiveVessel)))) {
-      reasons.Add(
-          "vessel is unpacked at an altitude of " + vessel.altitude +
-          " m above " + vessel.mainBody.theName + ", below the threshold of " +
-          vessel.mainBody.inverseRotThresholdAltitude + " m, and " +
-          (vessel.isActiveVessel ? "is the active vessel"
-                                 : (FlightGlobals.ActiveVessel
-                                        ? "the active vessel is unmanageable"
-                                        : "there is no active vessel")));
+        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
+      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
+                  " m above " + vessel.mainBody.theName +
+                  ", below the threshold of " +
+                  vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
     if (reasons.Count == 0) {
       return null;
