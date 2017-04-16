@@ -86,7 +86,7 @@ internal class MapNodePool {
             } else if (PlanetariumCamera.fetch.target !=
                        properties_[node].celestial.MapObject) {
               PlanetariumCamera.fetch.SetTarget(
-                properties_[node].celestial.MapObject);
+                  properties_[node].celestial.MapObject);
             }
           }
         };
