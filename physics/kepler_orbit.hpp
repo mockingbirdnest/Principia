@@ -18,16 +18,44 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::SpecificAngularMomentum;
+using quantities::SpecificEnergy;
+using quantities::Speed;
+using quantities::Time;
 
 template<typename Frame>
 struct KeplerianElements final {
-  double eccentricity{};
+  // These elements determine the shape and size of the conic.
+  std::experimental::optional<double> eccentricity;
   std::experimental::optional<Length> semimajor_axis;
+  std::experimental::optional<Length> semiminor_axis;
+  std::experimental::optional<Length> semilatus_rectum;
+  std::experimental::optional<Length> periapsis_distance;
+  std::experimental::optional<SpecificEnergy> specific_energy;
+  std::experimental::optional<SpecificEnergy> characteristic_energy;
+  std::experimental::optional<SpecificAngularMomentum>
+      specific_angular_momentum;
+  // The following two elements are NaN for hyperbolic orbits.
   std::experimental::optional<AngularFrequency> mean_motion;
+  std::experimental::optional<Time> period;
+  // The following four elements are NaN for elliptic orbits.
+  std::experimental::optional<AngularFrequency> hyperbolic_mean_motion;
+  std::experimental::optional<Speed> hyperbolic_excess_velocity;
+  std::experimental::optional<Angle> asymptotic_true_anomaly;
+  std::experimental::optional<Angle> turning_angle;
+
+  // These elements determine the orientation of the conic.
   Angle inclination;
   Angle longitude_of_ascending_node;
   Angle argument_of_periapsis;
-  Angle mean_anomaly;
+
+  // These elements determine a point on the conic.
+  std::experimental::optional<Angle> true_anomaly;
+  std::experimental::optional<Time> time_since_periapsis;
+  // The mean anomaly is NaN for hyperbolic orbits.
+  std::experimental::optional<Angle> mean_anomaly;
+  // The hyperbolic mean anomaly is NaN for elliptic orbits.
+  std::experimental::optional<Angle> hyperbolic_mean_anomaly;
 
   void WriteToMessage(
       not_null<serialization::KeplerianElements*> message) const;
