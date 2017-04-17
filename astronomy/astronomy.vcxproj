@@ -226,6 +226,7 @@
     <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
+    <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
