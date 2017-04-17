@@ -78,11 +78,12 @@ internal class MapNodePool {
         (KSP.UI.Screens.Mapview.MapNode node,
          Mouse.Buttons buttons) => {
           if (buttons == Mouse.Buttons.Left) {
-            if (properties_[node].vessel != null &&
-                PlanetariumCamera.fetch.target !=
-                    properties_[node].vessel.mapObject) {
-              PlanetariumCamera.fetch.SetTarget(
-                  properties_[node].vessel.mapObject);
+            if (properties_[node].vessel != null) {
+              if (PlanetariumCamera.fetch.target !=
+                  properties_[node].vessel.mapObject) {
+                PlanetariumCamera.fetch.SetTarget(
+                    properties_[node].vessel.mapObject);
+              }
             } else if (PlanetariumCamera.fetch.target !=
                        properties_[node].celestial.MapObject) {
               PlanetariumCamera.fetch.SetTarget(

@@ -39,6 +39,9 @@ class FlightPlanner : WindowRenderer {
                               func       : RenderPlanner,
                               text       : "Flight plan",
                               options    : UnityEngine.GUILayout.MinWidth(500));
+      window_rectangle_.InputLock(this);
+    } else {
+      WindowUtilities.ClearLock(this);
     }
     UnityEngine.GUI.skin = old_skin;
   }
