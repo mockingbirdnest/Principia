@@ -552,6 +552,7 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (hide_all_gui_) {
+      WindowUtilities.ClearLock(this);
       return;
     } else if (show_main_window_) {
       UnityEngine.GUI.skin = null;
@@ -565,6 +566,7 @@ public partial class PrincipiaPluginAdapter
           options    : UnityEngine.GUILayout.MinWidth(500));
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
+      main_window_rectangle_.InputLock(this);
 
       render_windows();
     }
@@ -1277,11 +1279,16 @@ public partial class PrincipiaPluginAdapter
     if (InputLockManager.IsUnlocked(ControlTypes.MAP_UI) &&
         !UnityEngine.EventSystems.EventSystem.current
              .IsPointerOverGameObject() &&
-        Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus) {
+        Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus &&
+        !selecting_active_vessel_target_) {
       var ray = PlanetariumCamera.Camera.ScreenPointToRay(
           UnityEngine.Input.mousePosition);
       foreach (var celestial in FlightGlobals.Bodies) {
-        if (celestial.scaledBody.GetRendererBounds().IntersectRay(ray) &&
+        double scaled_distance =
+            Vector3d.Cross(ray.direction,
+                           ScaledSpace.LocalToScaledSpace(celestial.position) -
+                               ray.origin).magnitude;
+        if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius &&
             PlanetariumCamera.fetch.target != celestial.MapObject) {
           PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
         }
