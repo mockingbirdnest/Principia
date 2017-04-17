@@ -55,7 +55,7 @@ char const arrow[] = "-------------------> ";
 
 }  // namespace
 
-class LunarEclipseTest : public testing::Test {
+class LunarEclipseTest : public ::testing::Test {
  protected:
   static void SetUpTestCase() {
     google::LogToStderr();
