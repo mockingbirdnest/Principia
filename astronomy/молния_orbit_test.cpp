@@ -83,6 +83,8 @@ class МолнияOrbitTest : public ::testing::Test {
 SolarSystem<ICRFJ2000Equator> МолнияOrbitTest::solar_system_2000_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> МолнияOrbitTest::ephemeris_;
 
+#if !defined(_DEBUG)
+
 TEST_F(МолнияOrbitTest, Satellite) {
   auto const earth_body =
       dynamic_cast_not_null<OblateBody<ICRFJ2000Equator> const*>(
@@ -148,8 +150,12 @@ TEST_F(МолнияOrbitTest, Satellite) {
     auto actual_elements = actual_orbit.elements_at_epoch();
 
     if (actual_elements.longitude_of_ascending_node >
-        initial_elements.longitude_of_ascending_node) {
+        initial_elements.longitude_of_ascending_node + π * Radian) {
       actual_elements.longitude_of_ascending_node -= 2.0 * π * Radian;
+    }
+    if (actual_elements.longitude_of_ascending_node <
+        initial_elements.longitude_of_ascending_node - π * Radian) {
+      actual_elements.longitude_of_ascending_node += 2.0 * π * Radian;
     }
     longitudes_of_ascending_nodes.push_back(
         actual_elements.longitude_of_ascending_node -
@@ -174,8 +180,8 @@ TEST_F(МолнияOrbitTest, Satellite) {
   double const correlation_coefficients =
       PearsonProductMomentCorrelationCoefficient(times,
                                                  longitudes_of_ascending_nodes);
-  EXPECT_GT(correlation_coefficients, -0.998);
-  EXPECT_LT(correlation_coefficients, -0.997);
+  EXPECT_GT(correlation_coefficients, -0.99999);
+  EXPECT_LT(correlation_coefficients, -0.99998);
 
   // Check that the longituted precesses at the right speed, mostly.
   AngularFrequency const actual_precession_speed =
@@ -197,6 +203,8 @@ TEST_F(МолнияOrbitTest, Satellite) {
   file << mathematica::Assign("ppaLongitudes",
                               mma_longitudes_of_ascending_nodes);
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
