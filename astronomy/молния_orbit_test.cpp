@@ -4,6 +4,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
@@ -12,17 +13,21 @@
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massless_body.hpp"
+#include "physics/oblate_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/numerics.hpp"
+#include "testing_utilities/statistics.hpp"
 
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::J2000;
+using base::dynamic_cast_not_null;
 using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
@@ -33,11 +38,14 @@ using physics::Ephemeris;
 using physics::KeplerOrbit;
 using physics::KeplerianElements;
 using physics::MasslessBody;
+using physics::OblateBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::ArcSin;
+using quantities::Cos;
+using quantities::Length;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
@@ -47,6 +55,9 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::PearsonProductMomentCorrelationCoefficient;
+using testing_utilities::RelativeError;
+using testing_utilities::Slope;
 
 namespace astronomy {
 
@@ -73,7 +84,9 @@ SolarSystem<ICRFJ2000Equator> МолнияOrbitTest::solar_system_2000_;
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> МолнияOrbitTest::ephemeris_;
 
 TEST_F(МолнияOrbitTest, Satellite) {
-  auto const earth_body = solar_system_2000_.massive_body(*ephemeris_, "Earth");
+  auto const earth_body =
+      dynamic_cast_not_null<OblateBody<ICRFJ2000Equator> const*>(
+          solar_system_2000_.massive_body(*ephemeris_, "Earth"));
   auto const earth_degrees_of_freedom =
       solar_system_2000_.initial_state("Earth");
 
@@ -88,8 +101,8 @@ TEST_F(МолнияOrbitTest, Satellite) {
   initial_elements.mean_motion = 2.0 * π * Radian / (sidereal_day / 2.0);
   initial_elements.inclination = ArcSin(2.0 / Sqrt(5.0));
   initial_elements.argument_of_periapsis = -π / 2.0 * Radian;
-  initial_elements.longitude_of_ascending_node = 0 * Radian;//
-  initial_elements.mean_anomaly = 0 * Radian;//
+  initial_elements.longitude_of_ascending_node = 1 * Radian;
+  initial_elements.mean_anomaly = 2 * Radian;
 
   MasslessBody const satellite;
   KeplerOrbit<ICRFJ2000Equator> initial_orbit(
@@ -115,10 +128,13 @@ TEST_F(МолнияOrbitTest, Satellite) {
   // Drop the units when logging to Mathematica, because it is ridiculously slow
   // at parsing them.
   base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      "молния_orbit.generated.wl");
-  std::vector<geometry::Vector<double, ICRFJ2000Equator>> displacements;
-  std::vector<double> arguments_of_periapsis;
-  std::vector<double> longitudes_of_ascending_nodes;
+                      u"молния_orbit.generated.wl");
+  std::vector<geometry::Vector<double, ICRFJ2000Equator>> mma_displacements;
+  std::vector<double> mma_arguments_of_periapsis;
+  std::vector<double> mma_longitudes_of_ascending_nodes;
+
+  std::vector<Angle> longitudes_of_ascending_nodes;
+  std::vector<Time> times;
 
   for (Instant t = J2000; t <= J2000 + integration_duration;
        t += integration_duration / 100000.0) {
@@ -129,16 +145,57 @@ TEST_F(МолнияOrbitTest, Satellite) {
                                                satellite,
                                                relative_dof,
                                                t);
-    auto const actual_elements = actual_orbit.elements_at_epoch();
-    displacements.push_back(relative_dof.displacement() / Metre);
-    arguments_of_periapsis.push_back(
-        actual_elements.argument_of_periapsis / Radian);
+    auto actual_elements = actual_orbit.elements_at_epoch();
+
+    if (actual_elements.longitude_of_ascending_node >
+        initial_elements.longitude_of_ascending_node) {
+      actual_elements.longitude_of_ascending_node -= 2.0 * π * Radian;
+    }
     longitudes_of_ascending_nodes.push_back(
+        actual_elements.longitude_of_ascending_node -
+        initial_elements.longitude_of_ascending_node);
+    times.push_back(t - J2000);
+
+    // Check that the argument of the perigee remains roughly constant (modulo
+    // the influence of the Moon).
+    EXPECT_LT(
+        RelativeError(2.0 * π * Radian + initial_elements.argument_of_periapsis,
+                      actual_elements.argument_of_periapsis),
+        0.0026);
+
+    mma_displacements.push_back(relative_dof.displacement() / Metre);
+    mma_arguments_of_periapsis.push_back(
+        actual_elements.argument_of_periapsis / Radian);
+    mma_longitudes_of_ascending_nodes.push_back(
         actual_elements.longitude_of_ascending_node / Radian);
   }
-  file << mathematica::Assign("displacements", displacements);
-  file << mathematica::Assign("arguments", arguments_of_periapsis);
-  file << mathematica::Assign("longitudes", longitudes_of_ascending_nodes);
+
+  // Check that we have a regular precession of the longitude.
+  double const correlation_coefficients =
+      PearsonProductMomentCorrelationCoefficient(times,
+                                                 longitudes_of_ascending_nodes);
+  EXPECT_GT(correlation_coefficients, -0.998);
+  EXPECT_LT(correlation_coefficients, -0.997);
+
+  // Check that the longituted precesses at the right speed, mostly.
+  AngularFrequency const actual_precession_speed =
+      Slope(times, longitudes_of_ascending_nodes);
+  Length const semilatus_rectum =
+      *initial_orbit.elements_at_epoch().semimajor_axis *
+      (1.0 - initial_elements.eccentricity * initial_elements.eccentricity);
+  Angle const ΔΩ_per_period = -2.0 * π * Radian * earth_body->j2_over_μ() /
+                              (semilatus_rectum * semilatus_rectum) *
+                              (3.0 / 2.0) * Cos(initial_elements.inclination);
+  EXPECT_LT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
+                          actual_precession_speed),
+            0.076);
+
+  file << mathematica::Assign("ppaDisplacements",
+                              mma_displacements);
+  file << mathematica::Assign("ppaArguments",
+                              mma_arguments_of_periapsis);
+  file << mathematica::Assign("ppaLongitudes",
+                              mma_longitudes_of_ascending_nodes);
 }
 
 }  // namespace astronomy
