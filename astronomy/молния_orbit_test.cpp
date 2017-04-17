@@ -1,5 +1,6 @@
 ﻿
 #include <experimental/filesystem>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
