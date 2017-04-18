@@ -25,35 +25,48 @@ using quantities::Time;
 
 template<typename Frame>
 struct KeplerianElements final {
-  // These elements determine the shape and size of the conic.
+  // I. These elements determine the shape and size of the conic.  Two are
+  // needed, from two different numbered categories below.
+  // 1. eccentricity.
   std::experimental::optional<double> eccentricity;
+  // The following two elements are NaN for elliptic orbits.
+  std::experimental::optional<Angle> asymptotic_true_anomaly;
+  std::experimental::optional<Angle> turning_angle;
+  // 2. semimajor axis.
   std::experimental::optional<Length> semimajor_axis;
-  std::experimental::optional<Length> semiminor_axis;
-  std::experimental::optional<Length> semilatus_rectum;
-  std::experimental::optional<Length> periapsis_distance;
   std::experimental::optional<SpecificEnergy> specific_energy;
   std::experimental::optional<SpecificEnergy> characteristic_energy;
-  std::experimental::optional<SpecificAngularMomentum>
-      specific_angular_momentum;
   // The following two elements are NaN for hyperbolic orbits.
   std::experimental::optional<AngularFrequency> mean_motion;
   std::experimental::optional<Time> period;
-  // The following four elements are NaN for elliptic orbits.
+  // The following two elements are NaN for elliptic orbits.
   std::experimental::optional<AngularFrequency> hyperbolic_mean_motion;
   std::experimental::optional<Speed> hyperbolic_excess_velocity;
-  std::experimental::optional<Angle> asymptotic_true_anomaly;
-  std::experimental::optional<Angle> turning_angle;
+  // 3. semiminor axis.
+  std::experimental::optional<Length> semiminor_axis;
+  // 4. semilatus rectum.
+  std::experimental::optional<Length> semilatus_rectum;
+  std::experimental::optional<SpecificAngularMomentum>
+      specific_angular_momentum;
+  // 5. periapsis distance.
+  std::experimental::optional<Length> periapsis_distance;
+  // 6. apoapsis distance.
+  std::experimental::optional<Length> apoapsis_distance;
 
-  // These elements determine the orientation of the conic.
+  // II. These elements determine the orientation of the conic.  Three are
+  // needed.
   Angle inclination;
   Angle longitude_of_ascending_node;
-  Angle argument_of_periapsis;
+  std::experimental::optional<Angle> argument_of_periapsis;
+  std::experimental::optional<Angle> longitude_of_periapsis;
 
-  // These elements determine a point on the conic.
+  // III. These elements determine a point on the conic.  One is needed.
   std::experimental::optional<Angle> true_anomaly;
+  std::experimental::optional<Angle> true_longitude;
   std::experimental::optional<Time> time_since_periapsis;
-  // The mean anomaly is NaN for hyperbolic orbits.
+  // The mean anomaly and mean longitude are NaN for hyperbolic orbits.
   std::experimental::optional<Angle> mean_anomaly;
+  std::experimental::optional<Angle> mean_longitude;
   // The hyperbolic mean anomaly is NaN for elliptic orbits.
   std::experimental::optional<Angle> hyperbolic_mean_anomaly;
 

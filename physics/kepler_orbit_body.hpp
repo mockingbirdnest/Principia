@@ -28,10 +28,12 @@ using geometry::Velocity;
 using geometry::Wedge;
 using numerics::Bisect;
 using quantities::ArcCos;
+using quantities::ArcSin;
 using quantities::ArcTan;
 using quantities::Cbrt;
 using quantities::DebugString;
 using quantities::Pow;
+using quantities::Sin;
 using quantities::SpecificAngularMomentum;
 using quantities::SpecificEnergy;
 using quantities::Speed;
@@ -102,16 +104,123 @@ KeplerOrbit<Frame>::KeplerOrbit(
                      gravitational_parameter())),
       elements_at_epoch_(elements_at_epoch),
       epoch_(epoch) {
-  CHECK(static_cast<bool>(elements_at_epoch_.semimajor_axis) ^
-        static_cast<bool>(elements_at_epoch_.mean_motion));
-  GravitationalParameter const μ = gravitational_parameter_;
-  if (elements_at_epoch_.semimajor_axis) {
-    Length const& a = *elements_at_epoch_.semimajor_axis;
-    elements_at_epoch_.mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
-  } else {
-    AngularFrequency const& n = *elements_at_epoch_.mean_motion;
-    elements_at_epoch_.semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
+  GravitationalParameter const& μ = gravitational_parameter_;
+  auto& eccentricity = elements_at_epoch_.eccentricity;
+  auto& asymptotic_true_anomaly = elements_at_epoch_.asymptotic_true_anomaly;
+  auto& turning_angle = elements_at_epoch_.turning_angle;
+  auto& semimajor_axis = elements_at_epoch_.semimajor_axis;
+  auto& specific_energy = elements_at_epoch_.specific_energy;
+  auto& characteristic_energy = elements_at_epoch_.characteristic_energy;
+  auto& mean_motion = elements_at_epoch_.mean_motion;
+  auto& period = elements_at_epoch_.period;
+  auto& hyperbolic_mean_motion = elements_at_epoch_.hyperbolic_mean_motion;
+  auto& hyperbolic_excess_velocity =
+      elements_at_epoch_.hyperbolic_excess_velocity;
+  auto& semiminor_axis = elements_at_epoch_.semiminor_axis;
+  auto& semilatus_rectum = elements_at_epoch_.semilatus_rectum;
+  auto& specific_angular_momentum = elements_at_epoch_.specific_angular_momentum;
+  auto& periapsis_distance = elements_at_epoch_.periapsis_distance;
+  auto& apoapsis_distance = elements_at_epoch_.apoapsis_distance;
+  int const eccentricity_specifications = eccentricity.has_value() +
+                                          asymptotic_true_anomaly.has_value() +
+                                          turning_angle.has_value();
+  int const semimajor_axis_specifications =
+      semimajor_axis.has_value() + specific_energy.has_value() +
+      characteristic_energy.has_value() + mean_motion.has_value() +
+      period.has_value() + hyperbolic_mean_motion.has_value() +
+      hyperbolic_excess_velocity.has_value();
+  int const semiminor_axis_specifications = semiminor_axis.has_value();
+  int const semilatus_rectum_specifications =
+      semilatus_rectum.has_value() + specific_angular_momentum.has_value();
+  int const periapsis_distance_specifications = periapsis_distance.has_value();
+  int const apoapsis_distance_specifications = apoapsis_distance.has_value();
+  CHECK_LE(eccentricity_specifications, 1);
+  CHECK_LE(semimajor_axis_specifications, 1);
+  CHECK_LE(semiminor_axis_specifications, 1);
+  CHECK_LE(semilatus_rectum_specifications, 1);
+  CHECK_LE(periapsis_distance_specifications, 1);
+  CHECK_LE(apoapsis_distance_specifications, 1);
+  CHECK_EQ(eccentricity_specifications + semimajor_axis_specifications +
+           semiminor_axis_specifications + semilatus_rectum_specifications +
+           periapsis_distance_specifications + apoapsis_distance_specifications,
+           2);
+  // The conic shape and size is neither over- nor underspecified.
+  if (eccentricity_specifications) {
+    if (eccentricity) {
+      double const& e = *eccentricity;
+      turning_angle = 2 * ArcSin(1 / e);
+      asymptotic_true_anomaly = ArcCos(1 / e);
+    }
+    if (turning_angle) {
+      Angle const& δ = *turning_angle;
+      eccentricity = 1 / Sin(δ / 2);
+      asymptotic_true_anomaly = δ / 2 + π * Radian;
+    }
+    if (asymptotic_true_anomaly) {
+      Angle const& θ_inf = *asymptotic_true_anomaly;
+      eccentricity = -1 / Cos(θ_inf);
+      turning_angle = 2 * (θ_inf - π * Radian);
+    }
   }
+  // TODO(egg): range checks.  What do we do with normalizable oddities
+  // (negative n, T)? What about parabolae? (n = 0, a infinite, and the
+  // equivalents provide an eccentricity specification...).
+  if (semimajor_axis_specifications) {
+    if (semimajor_axis) {
+      Length const& a = *semimajor_axis;
+      specific_energy = -μ / (2 * a);
+      characteristic_energy = -μ / a;
+      mean_motion = Sqrt(μ / Pow<3>(a)) * Radian;
+      period = 2 * π * Sqrt(Pow<3>(a) / μ);
+      hyperbolic_mean_motion = Sqrt(μ / Pow<3>(-a)) * Radian;
+      hyperbolic_excess_velocity = Sqrt(-μ / a);
+    }
+    if (specific_energy) {
+      SpecificEnergy const& ε = *specific_energy;
+      semimajor_axis = -μ / (2 * ε);
+      characteristic_energy = 2 * ε;
+      mean_motion = 2 * Sqrt(-2 * Pow<3>(ε) / Pow<2>(μ)) * Radian;
+      period = π * Sqrt(-Pow<2>(μ) / (2 * Pow<3>(ε)));
+      hyperbolic_mean_motion = 2 * Sqrt(2 * Pow<3>(ε) / Pow<2>(μ)) * Radian;
+      hyperbolic_excess_velocity = Sqrt(2 * ε);
+    }
+    if (characteristic_energy) {
+      SpecificEnergy const& c3 = *characteristic_energy;
+      semimajor_axis = -μ / c3;
+      specific_energy = c3 / 2;
+      mean_motion = Sqrt(-Pow<3>(c3) / Pow<2>(μ)) * Radian;
+      period = 2 * π * Sqrt(-Pow<2>(μ) / Pow<3>(c3));
+      hyperbolic_mean_motion = Sqrt(Pow<3>(c3) / Pow<2>(μ)) * Radian;
+      hyperbolic_excess_velocity = Sqrt(c3);
+    }
+    if (mean_motion) {
+      AngularFrequency const& n = *mean_motion;
+      semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
+      specific_energy = -Pow<2>(Cbrt(μ * n / Radian)) / 2;
+      characteristic_energy =  -Pow<2>(Cbrt(μ * n / Radian));
+      period = 2 * π * Radian / n;
+      // The following two are NaN.
+      hyperbolic_mean_motion = Sqrt(-Pow<2>(n));
+      hyperbolic_excess_velocity = Sqrt(-Pow<2>(Cbrt(μ * n / Radian)));
+    }
+    if (period) {
+      Time const& T = *period;
+      semimajor_axis = Cbrt(μ * Pow<2>(T / (2 * π)));
+      specific_energy = -Cbrt(Pow<2>(π * μ / T) / 2);
+      characteristic_energy = -Cbrt(Pow<2>(2 * π * μ / T));
+      mean_motion = 2 * π * Radian / T;
+      // The following two are NaN.
+      hyperbolic_mean_motion = 2 * π * Radian * Sqrt(-1 / Pow<2>(T));
+      hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
+    }
+    if (hyperbolic_mean_motion) {
+      hyperbolic_mean_motion = 2 * π * Radian * Sqrt(-1 / Pow<2>(T));
+      hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
+    }
+    if (hyperbolic_excess_velocity) {
+    }
+  }
+  if (semilatus_rectum_specifications) {}
 }
 
 template<typename Frame>
