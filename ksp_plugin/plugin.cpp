@@ -889,7 +889,10 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
                     ephemeris_.get(),
                     celestial);
   }
-  target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  // Make sure that the current time is covered by the prediction.
+  if (current_time_ > target_->vessel->prediction().t_max()) {
+    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  }
 }
 
 void Plugin::ClearTargetVessel() {
