@@ -214,13 +214,35 @@ KeplerOrbit<Frame>::KeplerOrbit(
       hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
     }
     if (hyperbolic_mean_motion) {
-      hyperbolic_mean_motion = 2 * π * Radian * Sqrt(-1 / Pow<2>(T));
-      hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
+      AngularFrequency const& n_over_i = *hyperbolic_mean_motion;
+      semimajor_axis = -Cbrt(μ / Pow<2>(n_over_i / Radian));
+      specific_energy = Pow<2>(Cbrt(μ * n_over_i / Radian)) / 2;
+      characteristic_energy =  Pow<2>(Cbrt(μ * n_over_i / Radian));
+      // The following two are NaN.
+      period = 2 * π * Radian / Sqrt(-Pow<2>(n_over_i));
+      mean_motion = Sqrt(-Pow<2>(n_over_i));
+      hyperbolic_excess_velocity = Sqrt(Pow<2>(Cbrt(μ * n_over_i / Radian)));
     }
     if (hyperbolic_excess_velocity) {
+      Speed const& v_inf = *hyperbolic_excess_velocity;
+      semimajor_axis = -μ / Pow<2>(v_inf);
+      specific_energy = Pow<2>(v_inf) / 2;
+      characteristic_energy =  Pow<2>(v_inf);
+      // The following two are NaN.
+      period = 2 * π * Sqrt(-Pow<2>(μ) / Pow<6>(v_inf));
+      mean_motion = Sqrt(-Pow<6>(v_inf) / Pow<2>(μ)) * Radian;
+      hyperbolic_mean_motion = Sqrt(Pow<6>(v_inf) / Pow<2>(μ)) * Radian;
     }
   }
-  if (semilatus_rectum_specifications) {}
+  if (semilatus_rectum_specifications) {
+    if (semilatus_rectum) {
+      specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
+    }
+    if (specific_angular_momentum) {
+      SpecificAngularMomentum const& h = *specific_angular_momentum;
+      semilatus_rectum = Pow<2>(h * Radian) / μ;
+    }
+  }
 }
 
 template<typename Frame>
