@@ -139,18 +139,29 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
 
       // |z| changed sign.  Construct a Hermite approximation of |z| and find
       // its zeros.
-      // TODO(egg): Bisection on a polynomial seems daft; we should have
-      // Newton's method.
       Hermite3<Instant, Length> const z_approximation(
           {*previous_time, time},
           {*previous_z, z},
           {*previous_z_speed, z_speed});
-      Instant const node_time = Bisect(
-          [&z_approximation](Instant const& t) {
-            return z_approximation.Evaluate(t);
-          },
-          *previous_time,
-          time);
+
+      Instant node_time;
+      if (Sign(z_approximation.Evaluate(*previous_time)) ==
+          Sign(z_approximation.Evaluate(time))) {
+        // The Hermite approximation is poorly conditioned, let's use a linear
+        // approximation
+        node_time = Barycentre<Instant, Length>({*previous_time, time},
+                                                {z, -*previous_z});
+      } else {
+        // The normal case, find the intersection with z = 0 using bisection.
+        // TODO(egg): Bisection on a polynomial seems daft; we should have
+        // Newton's method.
+        node_time = Bisect(
+            [&z_approximation](Instant const& t) {
+              return z_approximation.Evaluate(t);
+            },
+            *previous_time,
+            time);
+      }
 
       DegreesOfFreedom<Frame> const node_degrees_of_freedom =
           begin.trajectory()->EvaluateDegreesOfFreedom(node_time);
