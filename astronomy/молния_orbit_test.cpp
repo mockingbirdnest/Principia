@@ -5,6 +5,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
+#include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
@@ -107,7 +108,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
   initial_elements.longitude_of_ascending_node = 1 * Radian;
   initial_elements.mean_anomaly = 2 * Radian;
 
-  MasslessBody const satellite;
+  MasslessBody const satellite{};
   KeplerOrbit<ICRFJ2000Equator> initial_orbit(
       *earth_body, satellite, initial_elements, J2000);
   auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
@@ -131,7 +132,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
   // Drop the units when logging to Mathematica, because it is ridiculously slow
   // at parsing them.
   base::OFStream file(SOLUTION_DIR / "mathematica" /
-                      u"молния_orbit.generated.wl");
+                      UNICODE_PATH("молния_orbit.generated.wl"));
   std::vector<geometry::Vector<double, ICRFJ2000Equator>> mma_displacements;
   std::vector<double> mma_arguments_of_periapsis;
   std::vector<double> mma_longitudes_of_ascending_nodes;
