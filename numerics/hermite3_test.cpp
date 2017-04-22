@@ -67,34 +67,19 @@ TEST_F(Hermite3Test, Typed) {
 
 // A test that shows a poorly-conditioned case where the computed position at
 // the end of the interpolation interval is different from the expected one.
+// In particular, the computed position is negative at both ends.
 TEST_F(Hermite3Test, Conditioning) {
-  Hermite3<Instant, Position<World>> h(
+  Hermite3<Instant, Length> h(
       {t0_ + 19418861.806896236 * Second, t0_ + 19418869.842261545 * Second},
-      {World::origin + Displacement<World>({3.1953689924786266e-12 * Metre,
-                                            6.1771019395071032e-12 * Metre,
-                                            -2.1383610158805017e-12 * Metre}),
-       World::origin},
-      {Velocity<World>({1.2922104075254831e-12 * Metre / Second,
-                        1.7453515790397885e-12 * Metre / Second,
-                        2.3308208035605881e-12 * Metre / Second}),
-       Velocity<World>({-4.0937095947499385e-12 * Metre / Second,
-                        1.3971639017653770e-12 * Metre / Second,
-                        -1.6875631840376598e-12 * Metre / Second})});
+      {-2.1383610158805017e-12 * Metre, 0 * Metre},
+      {2.3308208035605881e-12 * Metre / Second,
+       -1.6875631840376598e-12 * Metre / Second});
 
-  EXPECT_EQ(
-      World::origin + Displacement<World>({3.1953689924786266e-12 * Metre,
-                                           6.1771019395071032e-12 * Metre,
-                                           -2.1383610158805017e-12 * Metre}),
-      h.Evaluate(t0_ + 19418861.806896236 * Second));
-  EXPECT_NE(World::origin, h.Evaluate(t0_ + 19418869.842261545 * Second));
-  EXPECT_EQ(Velocity<World>({1.2922104075254831e-12 * Metre / Second,
-                             1.7453515790397885e-12 * Metre / Second,
-                             2.3308208035605881e-12 * Metre / Second}),
+  EXPECT_EQ(-2.1383610158805017e-12 * Metre,
+            h.Evaluate(t0_ + 19418861.806896236 * Second));
+  EXPECT_GT(0 * Metre, h.Evaluate(t0_ + 19418869.842261545 * Second));
+  EXPECT_EQ(2.3308208035605881e-12 * Metre / Second,
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
-  EXPECT_NE(Velocity<World>({-4.0937095947499385e-12 * Metre / Second,
-                             1.3971639017653770e-12 * Metre / Second,
-                             -1.6875631840376598e-12 * Metre / Second}),
-            h.EvaluateDerivative(t0_ + 19418869.842261545 * Second));
 }
 
 }  // namespace numerics
