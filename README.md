@@ -1,6 +1,6 @@
 # Principia
 
-**_Breaking News, 2017-28-03: Cardano, the first version of Principia to support KSP 1.2.2, is available.  Download it [here](https://goo.gl/BCjxaF)._**
+Cardano, the first version of Principia to support KSP 1.2.2, is available.  Download it [here](https://goo.gl/BCjxaF).
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
