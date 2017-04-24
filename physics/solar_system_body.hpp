@@ -85,22 +85,28 @@ void SolarSystem<Frame>::Initialize(
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted.second);
   }
-  for (auto const& body : initial_state_.initial_state().body()) {
-    auto const inserted =
-        initial_state_map_.insert(std::make_pair(body.name(), &body));
-    CHECK(inserted.second);
+  if (initial_state_.initial_state().has_cartesian()) {
+    for (auto const& body : initial_state_.initial_state().cartesian().body()) {
+      bool inserted;
+      std::tie(std::ignore, inserted) =
+          cartesian_initial_state_map_.emplace(body.name(), &body);
+      CHECK(inserted) << body.name();
+    }
+  }
+  else {
+    //TODO(phl):keplerian
   }
 
   // Check that the maps are consistent.
   auto it1 = gravity_model_map_.begin();
-  auto it2 = initial_state_map_.begin();
-  for (; it1 != gravity_model_map_.end() && it2 != initial_state_map_.end();
+  auto it2 = cartesian_initial_state_map_.begin();
+  for (; it1 != gravity_model_map_.end() && it2 != cartesian_initial_state_map_.end();
        ++it1, ++it2) {
     CHECK_EQ(it1->first, it2->first);
     names_.push_back(it1->first);
   }
   CHECK(it1 == gravity_model_map_.end()) << it1->first;
-  CHECK(it2 == initial_state_map_.end()) << it2->first;
+  CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
 
   epoch_ = JulianDate(initial_state_.initial_state().epoch());
 
@@ -141,7 +147,7 @@ int SolarSystem<Frame>::index(std::string const& name) const {
 template<typename Frame>
 DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
     std::string const& name) const {
-  return MakeDegreesOfFreedom(*initial_state_map_.at(name));
+  return MakeDegreesOfFreedom(*cartesian_initial_state_map_.at(name));
 }
 
 template<typename Frame>
@@ -178,14 +184,15 @@ SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
 }
 
 template<typename Frame>
-serialization::InitialState::Body const&
-SolarSystem<Frame>::initial_state_message(std::string const& name) const {
-  return *FindOrDie(initial_state_map_, name);
+serialization::InitialState::Cartesian::Body const&
+SolarSystem<Frame>::cartesian_initial_state_message(
+    std::string const& name) const {
+  return *FindOrDie(cartesian_initial_state_map_, name);
 }
 
 template<typename Frame>
 DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
-    serialization::InitialState::Body const& body) {
+    serialization::InitialState::Cartesian::Body const& body) {
   Position<Frame> const
       position = Frame::origin +
                  Vector<Length, Frame>({ParseQuantity<Length>(body.x()),
@@ -258,7 +265,7 @@ void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   for (int i = 0; i < names_.size(); ++i) {
     if (names_[i] == name) {
       names_.erase(names_.begin() + i);
-      initial_state_map_.erase(name);
+      cartesian_initial_state_map_.erase(name);
       gravity_model_map_.erase(name);
       return;
     }
@@ -337,8 +344,10 @@ template<typename Frame>
 std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
-  for (auto const& pair : initial_state_map_) {
-    serialization::InitialState::Body const* const body = pair.second;
+  //TODO(phl):keplerian.
+  for (auto const& pair : cartesian_initial_state_map_) {
+    serialization::InitialState::Cartesian::Body const* const body =
+        pair.second;
     degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
   }
   return degrees_of_freedom;

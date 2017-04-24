@@ -501,7 +501,7 @@ void principia__InsertCelestialAbsoluteCartesian(
        x, y, z,
        vx, vy, vz});
   CHECK_NOTNULL(plugin);
-  serialization::InitialState::Body initial_state;
+  serialization::InitialState::Cartesian::Body initial_state;
   initial_state.set_x(x);
   initial_state.set_y(y);
   initial_state.set_z(z);
