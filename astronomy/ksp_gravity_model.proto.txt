@@ -1,6 +1,4 @@
 gravity_model {
-  frame : BARYCENTRIC
-
   body {
     name : "Kerbol"
     gravitational_parameter : "1.1723327948324908e+18 m^3/s^2"

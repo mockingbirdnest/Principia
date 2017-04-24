@@ -75,6 +75,8 @@ class SolarSystem final {
       std::string const& name) const;
   serialization::InitialState::Cartesian::Body const&
   cartesian_initial_state_message(std::string const& name) const;
+  serialization::InitialState::Keplerian::Body const&
+  keplerian_initial_state_message(std::string const& name) const;
 
   // Factory functions for converting configuration protocol buffers into
   // structured objects.
@@ -105,7 +107,7 @@ class SolarSystem final {
   MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
 
   static KeplerianElements<Frame> MakeKeplerianElements(
-      serialization::InitialState::Keplerian::Body const& body);
+      serialization::InitialState::Keplerian::Body::Elements const& elements);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
   MakeAllMassiveBodies();

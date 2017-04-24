@@ -39,16 +39,19 @@ message InitialState {
   }
   message Keplerian {
     message Body {
+      message Elements {
+        // Exactly one of the optional fields below must be present.
+        required double eccentricity = 1;
+        optional string semimajor_axis = 2;
+        optional string mean_motion = 3;
+        required string inclination = 4;
+        required string longitude_of_ascending_node = 5;
+        required string argument_of_periapsis = 6;
+        required string mean_anomaly = 7;
+      }
       required string name = 1;
       optional string parent = 2;
-      // Exactly one of the optional fields below must be present.
-      required double eccentricity = 3;
-      optional string semimajor_axis = 4;
-      optional string mean_motion = 5;
-      required string inclination = 6;
-      required string longitude_of_ascending_node = 7;
-      required string argument_of_periapsis = 8;
-      required string mean_anomaly = 9;
+      optional Elements elements = 3;
     }
     repeated Body body = 1;
   }

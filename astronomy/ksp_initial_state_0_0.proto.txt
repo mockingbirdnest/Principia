@@ -1,5 +1,4 @@
 initial_state {
-  frame : BARYCENTRIC
   epoch : 0.0
   keplerian {
     body {
@@ -8,162 +7,194 @@ initial_state {
     body {
       name                        : "Eeloo"
       parent                      : "Kerbol"
-      eccentricity                : 2.60000000000000009e-01
-      mean_motion                 : "4.00223155970064009e-08 rad /s"
-      inclination                 : "1.07337748997651278e-01 rad"
-      longitude_of_ascending_node : "8.72664625997164767e-01 rad"
-      argument_of_periapsis       : "4.53785605518525692e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 2.60000000000000009e-01
+        mean_motion                 : "4.00223155970064009e-08 rad /s"
+        inclination                 : "1.07337748997651278e-01 rad"
+        longitude_of_ascending_node : "8.72664625997164767e-01 rad"
+        argument_of_periapsis       : "4.53785605518525692e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Jool"
       parent                      : "Kerbol"
-      eccentricity                : 5.00000007450581013e-02
-      mean_motion                 : "6.00334352457231946e-08 rad / s"
-      inclination                 : "2.27590937955459392e-02 rad"
-      longitude_of_ascending_node : "9.07571211037051406e-01 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "1.00000001490115994e-01 rad"
+      elements {
+        eccentricity                : 5.00000007450581013e-02
+        mean_motion                 : "6.00334352457231946e-08 rad / s"
+        inclination                 : "2.27590937955459392e-02 rad"
+        longitude_of_ascending_node : "9.07571211037051406e-01 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "1.00000001490115994e-01 rad"
+      }
     }
     body {
       name                        : "Pol"
       parent                      : "Jool"
-      eccentricity                : 1.70850000000000002e-01
-      mean_motion                 : "6.96658945572122982e-06 rad / s"
-      inclination                 : "7.41764932097590118e-02 rad"
-      longitude_of_ascending_node : "3.49065850398865909e-02 rad"
-      argument_of_periapsis       : "2.61799387799149408e-01 rad"
-      mean_anomaly                : "8.99999976158141979e-01 rad"
+      elements {
+        eccentricity                : 1.70850000000000002e-01
+        mean_motion                 : "6.96658945572122982e-06 rad / s"
+        inclination                 : "7.41764932097590118e-02 rad"
+        longitude_of_ascending_node : "3.49065850398865909e-02 rad"
+        argument_of_periapsis       : "2.61799387799149408e-01 rad"
+        mean_anomaly                : "8.99999976158141979e-01 rad"
+      }
     }
     body {
       name                        : "Bop"
       parent                      : "Jool"
-      eccentricity                : 2.34999999403953996e-01
-      mean_motion                 : "9.95227065103033049e-06 rad / s"
-      inclination                 : "2.87979326579064354e+00 rad"
-      longitude_of_ascending_node : "1.74532925199432948e-01 rad"
-      argument_of_periapsis       : "4.36332312998582383e-01 rad"
-      mean_anomaly                : "8.99999976158141979e-01 rad"
+      elements {
+        eccentricity                : 2.34999999403953996e-01
+        mean_motion                 : "9.95227065103033049e-06 rad / s"
+        inclination                 : "2.87979326579064354e+00 rad"
+        longitude_of_ascending_node : "1.74532925199432948e-01 rad"
+        argument_of_periapsis       : "4.36332312998582383e-01 rad"
+        mean_anomaly                : "8.99999976158141979e-01 rad"
+      }
     }
     body {
       name                        : "Tylo"
       parent                      : "Jool"
-      eccentricity                : 0.00000000000000000e+00
-      mean_motion                 : "1.94051054171045988e-05 rad / s"
-      inclination                 : "4.36332319500439990e-04 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "1.94051054171045988e-05 rad / s"
+        inclination                 : "4.36332319500439990e-04 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Vall"
       parent                      : "Jool"
-      eccentricity                : "0.00000000000000000e+00
-      mean_motion                 : "4.79720588121814983e-05 rad / s"
-      inclination                 : "0.00000000000000000e+00 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "8.99999976158141979e-01 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "4.79720588121814983e-05 rad / s"
+        inclination                 : "0.00000000000000000e+00 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "8.99999976158141979e-01 rad"
+      }
     }
     body {
       name                        : "Laythe"
       parent                      : "Jool"
-      eccentricity                : 0.00000000000000000e+00
-      mean_motion                 : "1.18593451424947995e-04 rad / s"
-      inclination                 : "0.00000000000000000e+00 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "1.18593451424947995e-04 rad / s"
+        inclination                 : "0.00000000000000000e+00 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Dres"
       parent                      : "Kerbol"
-      eccentricity                : 1.44999999999999990e-01
-      mean_motion                 : "1.31191970097993002e-07 rad / s"
-      inclination                 : "8.72664625997164739e-02 rad"
-      longitude_of_ascending_node : "4.88692190558412243e+00 rad"
-      argument_of_periapsis       : "1.57079632679489656e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 1.44999999999999990e-01
+        mean_motion                 : "1.31191970097993002e-07 rad / s"
+        inclination                 : "8.72664625997164739e-02 rad"
+        longitude_of_ascending_node : "4.88692190558412243e+00 rad"
+        argument_of_periapsis       : "1.57079632679489656e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Duna"
       parent                      : "Kerbol"
-      eccentricity                : 5.09999990463256975e-02
-      mean_motion                 : "3.62866884706430976e-07 rad / s"
-      inclination                 : "1.04719752778990849e-03 rad"
-      longitude_of_ascending_node : "2.36492113645231639e+00 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 5.09999990463256975e-02
+        mean_motion                 : "3.62866884706430976e-07 rad / s"
+        inclination                 : "1.04719752778990849e-03 rad"
+        longitude_of_ascending_node : "2.36492113645231639e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Ike"
       parent                      : "Duna"
-      eccentricity                : 2.99999993294477012e-02
-      mean_motion                 : "9.59003407994517016e-05 rad / s"
-      inclination                 : "3.49065855600351992e-03 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "1.70000004768372004e+00 rad"
+      elements {
+        eccentricity                : 2.99999993294477012e-02
+        mean_motion                 : "9.59003407994517016e-05 rad / s"
+        inclination                 : "3.49065855600351992e-03 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "1.70000004768372004e+00 rad"
+      }
     }
     body {
       name                        : "Kerbin"
       parent                      : "Kerbol"
-      eccentricity                : 0.00000000000000000e+00
-      mean_motion                 : "6.82691894080843017e-07 rad / s"
-      inclination                 : "0.00000000000000000e+00 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "6.82691894080843017e-07 rad / s"
+        inclination                 : "0.00000000000000000e+00 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Minmus"
       parent                      : "Kerbin"
-      eccentricity                : 0.00000000000000000e+00
-      mean_motion                 : "5.83228807719951003e-06 rad / s"
-      inclination                 : "1.04719755119659780e-01 rad"
-      longitude_of_ascending_node : "1.36135681655557694e+00 rad"
-      argument_of_periapsis       : "6.63225115757845263e-01 rad"
-      mean_anomaly                : "8.99999976158141979e-01 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "5.83228807719951003e-06 rad / s"
+        inclination                 : "1.04719755119659780e-01 rad"
+        longitude_of_ascending_node : "1.36135681655557694e+00 rad"
+        argument_of_periapsis       : "6.63225115757845263e-01 rad"
+        mean_anomaly                : "8.99999976158141979e-01 rad"
+      }
     }
     body {
       name                        : "Mun"
       parent                      : "Kerbin"
-      eccentricity                : "0.00000000000000000e+00
-      mean_motion                 : "4.52078533000627999e-05 rad / s"
-      inclination                 : "0.00000000000000000e+00 rad"
-      longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-      argument_of_periapsis       : 0.00000000000000000e+00 rad"
-      mean_anomaly                : 1.70000004768372004e+00 rad"
+      elements {
+        eccentricity                : 0.00000000000000000e+00
+        mean_motion                 : "4.52078533000627999e-05 rad / s"
+        inclination                 : "0.00000000000000000e+00 rad"
+        longitude_of_ascending_node : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "1.70000004768372004e+00 rad"
+      }
     }
     body {
       name                        : "Eve"
       parent                      : "Kerbol"
-      eccentricity                : 9.99999977648258036e-03
-      mean_motion                 : "1.11049676511037010e-06 rad / s"
-      inclination                 : "3.66519126274052684e-02 rad"
-      longitude_of_ascending_node : "2.61799387799149408e-01 rad"
-      argument_of_periapsis       : "0.00000000000000000e+00 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 9.99999977648258036e-03
+        mean_motion                 : "1.11049676511037010e-06 rad / s"
+        inclination                 : "3.66519126274052684e-02 rad"
+        longitude_of_ascending_node : "2.61799387799149408e-01 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
     body {
       name                        : "Gilly"
       parent                      : "Eve"
-      eccentricity                : 5.50000011920928955e-01
-      mean_motion                 : "1.61692985452753988e-05 rad / s"
-      inclination                 : "2.09439510239319560e-01 rad"
-      longitude_of_ascending_node : "1.39626340159546358e+00 rad"
-      argument_of_periapsis       : "1.74532925199432948e-01 rad"
-      mean_anomaly                : "8.99999976158141979e-01 rad"
+      elements {
+        eccentricity                : 5.50000011920928955e-01
+        mean_motion                 : "1.61692985452753988e-05 rad / s"
+        inclination                 : "2.09439510239319560e-01 rad"
+        longitude_of_ascending_node : "1.39626340159546358e+00 rad"
+        argument_of_periapsis       : "1.74532925199432948e-01 rad"
+        mean_anomaly                : "8.99999976158141979e-01 rad"
+      }
     }
     body {
       name                        : "Moho"
       parent                      : "Kerbol"
-      eccentricity                : 2.00000002980231989e-01
-      mean_motion                 : "2.83568694188237007e-06 rad / s"
-      inclination                 : "1.22173047639603072e-01 rad"
-      longitude_of_ascending_node : "1.22173047639603061e+00 rad"
-      argument_of_periapsis       : "2.61799387799149408e-01 rad"
-      mean_anomaly                : "3.14000010490416992e+00 rad"
+      elements {
+        eccentricity                : 2.00000002980231989e-01
+        mean_motion                 : "2.83568694188237007e-06 rad / s"
+        inclination                 : "1.22173047639603072e-01 rad"
+        longitude_of_ascending_node : "1.22173047639603061e+00 rad"
+        argument_of_periapsis       : "2.61799387799149408e-01 rad"
+        mean_anomaly                : "3.14000010490416992e+00 rad"
+      }
     }
   }
 }
