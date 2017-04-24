@@ -1,0 +1,72 @@
+gravity_model {
+  frame : BARYCENTRIC
+
+  body {
+    name : "Kerbol"
+    gravitational_parameter : "1.1723327948324908e+18 m^3/s^2"
+  }
+  body {
+    name : "Eeloo"
+    gravitational_parameter : "74410814527.049576 m^3/s^2"
+  }
+  body {
+    name : "Jool"
+    gravitational_parameter : "282528004209995.31 m^3/s^2"
+  }
+  body {
+    name : "Pol"
+    gravitational_parameter : "721702080.00000012 m^3/s^2"
+  }
+  body {
+    name : "Bop"
+    gravitational_parameter : "2486834944.414907 m^3/s^2"
+  }
+  body {
+    name : "Tylo"
+    gravitational_parameter : "2825280042099.9531 m^3/s^2"
+  }
+  body {
+    name : "Vall"
+    gravitational_parameter : "207481499473.75098 m^3/s^2"
+  }
+  body {
+    name : "Laythe"
+    gravitational_parameter : "1962000029236.0784 m^3/s^2"
+  }
+  body {
+    name : "Dres"
+    gravitational_parameter : "21484488600.000004 m^3/s^2"
+  }
+  body {
+    name : "Duna"
+    gravitational_parameter : "301363211975.09772 m^3/s^2"
+  }
+  body {
+    name : "Ike"
+    gravitational_parameter : "18568368573.144012 m^3/s^2"
+  }
+  body {
+    name : "Kerbin"
+    gravitational_parameter : "3531600000000 m^3/s^2"
+  }
+  body {
+    name : "Minmus"
+    gravitational_parameter : "1765800026.3124719 m^3/s^2"
+  }
+  body {
+    name : "Mun"
+    gravitational_parameter : "65138397520.780701 m^3/s^2"
+  }
+  body {
+    name : "Eve"
+    gravitational_parameter : "8171730229210.874 m^3/s^2"
+  }
+  body {
+    name : "Gilly"
+    gravitational_parameter : "8289449.814716354 m^3/s^2"
+  }
+  body {
+    name : "Moho"
+    gravitational_parameter : "168609378654.50949 m^3/s^2"
+  }
+}

@@ -202,6 +202,7 @@
     <Text Include="initial_state_jd_2455200_500000000.proto.txt" />
     <Text Include="initial_state_two_bodies_circular_test.proto.txt" />
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
+    <Text Include="ksp_gravity_model.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />

@@ -85,6 +85,9 @@
     <Text Include="initial_state_jd_2451545_000000000.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="ksp_gravity_model.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">
