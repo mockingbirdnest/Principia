@@ -18,6 +18,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
 #include "physics/degrees_of_freedom.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
@@ -81,9 +82,10 @@ void SolarSystem<Frame>::Initialize(
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
-    auto const inserted =
+    bool inserted;
+    std::tie(std::ignore, inserted) =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
-    CHECK(inserted.second);
+    CHECK(inserted) << body.name();
   }
   if (initial_state_.initial_state().has_cartesian()) {
     for (auto const& body : initial_state_.initial_state().cartesian().body()) {
@@ -94,7 +96,12 @@ void SolarSystem<Frame>::Initialize(
     }
   }
   else {
-    //TODO(phl):keplerian
+    for (auto const& body : initial_state_.initial_state().keplerian().body()) {
+      bool inserted;
+      std::tie(std::ignore, inserted) =
+          keplerian_initial_state_map_.emplace(body.name(), &body);
+      CHECK(inserted) << body.name();
+    }
   }
 
   // Check that the maps are consistent.
@@ -330,6 +337,27 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
 }
 
 template<typename Frame>
+KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
+    serialization::InitialState::Keplerian::Body const& body) {
+  KeplerianElements<Frame> elements;
+  elements.eccentricity = body.eccentricity();
+  CHECK_NE(body.has_semimajor_axis(), body.has_mean_motion()) << body.name();
+  if (body.has_semimajor_axis()) {
+    elements.semimajor_axis = ParseQuantity<Length>(body.semimajor_axis());
+  }
+  if (body.has_mean_motion()) {
+    elements.mean_motion = ParseQuantity<AngularFrequency>(body.mean_motion());
+  }
+  elements.inclination = ParseQuantity<Angle>(body.inclination());
+  elements.longitude_of_ascending_node =
+      ParseQuantity<Angle>(body.longitude_of_ascending_node());
+  elements.argument_of_periapsis =
+      ParseQuantity<Angle>(body.argument_of_periapsis());
+  elements.mean_anomaly = ParseQuantity<Angle>(body.mean_anomaly());
+  return elements;
+}
+
+template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -344,11 +372,63 @@ template<typename Frame>
 std::vector<DegreesOfFreedom<Frame>>
 SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
-  //TODO(phl):keplerian.
-  for (auto const& pair : cartesian_initial_state_map_) {
-    serialization::InitialState::Cartesian::Body const* const body =
-        pair.second;
-    degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
+  if (!cartesian_initial_state_map_.empty()) {
+    for (auto const& pair : cartesian_initial_state_map_) {
+      serialization::InitialState::Cartesian::Body const* const body =
+          pair.second;
+      degrees_of_freedom.push_back(MakeDegreesOfFreedom(*body));
+    }
+  }
+  if (!keplerian_initial_state_map_.empty()) {
+    // First, construct all the bodies and find the primary body of the system.
+    std::string primary_name;
+    std::map<std::string,
+             not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
+    std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
+    for (auto const& pair : keplerian_initial_state_map_) {
+      const auto& name = pair.first;
+      serialization::InitialState::Keplerian::Body const* const body =
+          pair.second;
+      if (!body->has_parent()) {
+        CHECK(primary_name.empty()) << name;
+        primary_name = name;
+      }
+      auto owned_body = MakeMassiveBody(gravity_model_message(name));
+      unowned_bodies.emplace(name, owned_body.get());
+      owned_bodies.emplace(name, std::move(owned_body));
+    }
+
+    // Construct a hierarchical system rooted at the primary and add the other
+    // bodies.
+    HierarchicalSystem<Frame> hierarchical_system(
+        std::move(FindOrDie(owned_bodies, primary_name)));
+    for (auto const& pair : keplerian_initial_state_map_) {
+      const auto& name = pair.first;
+      serialization::InitialState::Keplerian::Body const* const body =
+          pair.second;
+      if (name != primary_name) {
+        KeplerianElements<Frame> elements = MakeKeplerianElements(*body);
+        hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
+                                FindOrDie(unowned_bodies, body->parent()),
+                                elements);
+      }
+    }
+
+    // Construct a barycentric system out of this and fill a map from body name
+    // to degrees of freedom.
+    typename HierarchicalSystem<Frame>::BarycentricSystem const
+        barycentric_system = hierarchical_system.ConsumeBarycentricSystem();
+    std::map<std::string, DegreesOfFreedom<Frame>> name_to_degrees_of_freedom;
+    for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
+      auto const& body = barycentric_system.bodies[i];
+      auto const& degrees_of_freedom = barycentric_system.degrees_of_freedom[i];
+      name_to_degrees_of_freedom.emplace(body->name(), degrees_of_freedom);
+    }
+
+    // Obtain the final result with degrees of freedom in name order.
+    for (auto const& pair : name_to_degrees_of_freedom) {
+      degrees_of_freedom.push_back(pair.second);
+    }
   }
   return degrees_of_freedom;
 }
