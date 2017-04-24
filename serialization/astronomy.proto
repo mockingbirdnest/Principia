@@ -25,18 +25,40 @@ message GravityModel {
 }
 
 message InitialState {
-  message Body {
-    required string name = 1;
-    required string x = 2;
-    required string y = 3;
-    required string z = 4;
-    required string vx = 5;
-    required string vy = 6;
-    required string vz = 7;
+  message Cartesian {
+    message Body {
+      required string name = 1;
+      required string x = 2;
+      required string y = 3;
+      required string z = 4;
+      required string vx = 5;
+      required string vy = 6;
+      required string vz = 7;
+    }
+    repeated Body body = 1;
+  }
+  message Keplerian {
+    message Body {
+      optional string parent = 1;
+      // Exactly one of the optional fields below must be present.
+      required double eccentricity = 2;
+      optional string semimajor_axis = 3;
+      optional string mean_motion = 4;
+      required string inclination = 5;
+      required string longitude_of_ascending_node = 6;
+      required string argument_of_periapsis = 7;
+      required string mean_anomaly = 8;
+    }
+    repeated Body body = 1;
   }
   optional Frame.SolarSystemTag frame = 1;
   required double epoch = 2;  // Julian date.
-  repeated Body body = 3;
+  oneof coordinates {
+    Cartesian cartesian = 4;
+    Keplerian keplerian = 5;
+  }
+  reserved 3;
+  reserved "body";
 }
 
 message SolarSystemFile {
