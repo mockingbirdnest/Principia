@@ -43,6 +43,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
+using base::check_not_null;
 using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
@@ -876,7 +877,8 @@ void Plugin::SetPlottingFrame(
 }
 
 not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
-  return target_ ? target_->target_frame.get() : plotting_frame_.get();
+  return target_ ? target_->target_frame.get()
+                 : check_not_null(plotting_frame_.get());
 }
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,

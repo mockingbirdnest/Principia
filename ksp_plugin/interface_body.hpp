@@ -22,6 +22,9 @@ using quantities::si::Second;
 template<typename T>
 struct QPConverter {};
 
+template<typename T>
+struct XYZConverter {};
+
 template<typename Frame>
 struct QPConverter<DegreesOfFreedom<Frame>> {
   static DegreesOfFreedom<Frame> FromQP(QP const& qp) {
@@ -48,9 +51,6 @@ struct QPConverter<RelativeDegreesOfFreedom<Frame>> {
         XYZConverter<Velocity<Frame>>::ToXYZ(relative_dof.velocity())};
   }
 };
-
-template<typename T>
-struct XYZConverter {};
 
 template<typename Frame>
 struct XYZConverter<Displacement<Frame>> {
