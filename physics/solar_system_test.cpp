@@ -130,7 +130,7 @@ TEST_F(SolarSystemTest, KSPSystem) {
               Position<ICRFJ2000Equator>>(),
           /*step=*/1 * Second));
   auto const kerbin = solar_system_.massive_body(*ephemeris, "Kerbin");
-  EXPECT_LT(RelativeError(52.915158 * Zetta(Kilogram), kerbin->mass()), 6e-9);
+  EXPECT_LT(RelativeError(52.917061 * Zetta(Kilogram), kerbin->mass()), 6e-9);
   auto const& kerbin_trajectory =
       solar_system_.trajectory(*ephemeris, "Kerbin");
   EXPECT_TRUE(kerbin_trajectory.empty());

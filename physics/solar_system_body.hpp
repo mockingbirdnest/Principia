@@ -11,6 +11,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
@@ -32,6 +33,7 @@ namespace internal_solar_system {
 
 using astronomy::J2000;
 using astronomy::JulianDate;
+using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::Bivector;
@@ -402,7 +404,7 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
   }
   if (!keplerian_initial_state_map_.empty()) {
     // First, construct all the bodies and find the primary body of the system.
-    std::string primary_name;
+    std::string primary;
     std::map<std::string,
              not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
     std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
@@ -412,8 +414,8 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
           pair.second;
       CHECK_EQ(body->has_parent(), body->has_elements()) << name;
       if (!body->has_parent()) {
-        CHECK(primary_name.empty()) << name;
-        primary_name = name;
+        CHECK(primary.empty()) << name;
+        primary = name;
       }
       auto owned_body = MakeMassiveBody(gravity_model_message(name));
       unowned_bodies.emplace(name, owned_body.get());
@@ -421,21 +423,28 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     }
 
     // Construct a hierarchical system rooted at the primary and add the other
-    // bodies.
+    // bodies layer by layer.
     HierarchicalSystem<Frame> hierarchical_system(
-        std::move(FindOrDie(owned_bodies, primary_name)));
-    for (auto const& pair : keplerian_initial_state_map_) {
-      const auto& name = pair.first;
-      serialization::InitialState::Keplerian::Body const* const body =
-          pair.second;
-      if (name != primary_name) {
-        KeplerianElements<Frame> elements =
-            MakeKeplerianElements(body->elements());
-        hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
-                                FindOrDie(unowned_bodies, body->parent()),
-                                elements);
+        std::move(FindOrDie(owned_bodies, primary)));
+    std::set<std::string> previous_layer = {primary};
+    std::set<std::string> current_layer;
+    do {
+      for (auto const& pair : keplerian_initial_state_map_) {
+        const auto& name = pair.first;
+        serialization::InitialState::Keplerian::Body const* const body =
+            pair.second;
+        if (Contains(previous_layer, body->parent())) {
+          current_layer.insert(name);
+          KeplerianElements<Frame> elements =
+              MakeKeplerianElements(body->elements());
+          hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
+                                  FindOrDie(unowned_bodies, body->parent()),
+                                  elements);
+        }
       }
-    }
+      previous_layer = current_layer;
+      current_layer.clear();
+    } while (!previous_layer.empty());
 
     // Construct a barycentric system out of this and fill a map from body name
     // to degrees of freedom.

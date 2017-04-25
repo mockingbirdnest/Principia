@@ -1,5 +1,5 @@
 initial_state {
-  epoch : 0.0
+  epoch : 2451545.000000000  # J2000, corresponds to Instant{}.
   keplerian {
     body {
       name : "Kerbol"
