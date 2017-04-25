@@ -108,8 +108,7 @@ void SolarSystem<Frame>::Initialize(
     }
     CHECK(it1 == gravity_model_map_.end()) << it1->first;
     CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
-  }
-  else {
+  } else {
     for (auto const& body : initial_state_.initial_state().keplerian().body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =

@@ -88,7 +88,8 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   EXPECT_TRUE(earth_trajectory.empty());
   EXPECT_EQ("Earth", earth->name());
 
-  auto const& sun_initial_state = solar_system_.cartesian_initial_state_message("Sun");
+  auto const& sun_initial_state =
+      solar_system_.cartesian_initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264e+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354e-03 km/s", sun_initial_state.vx());
   auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
