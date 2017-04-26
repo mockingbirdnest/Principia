@@ -100,8 +100,8 @@ void GenerateConfiguration(Instant const& game_epoch,
   initial_state_cfg << "  solar_system_epoch = "
                     << solar_system.epoch() - J2000 << "\n";
   for (std::string const& name : solar_system.names()) {
-    serialization::InitialState::Body const& body =
-        solar_system.initial_state_message(name);
+    serialization::InitialState::Cartesian::Body const& body =
+        solar_system.cartesian_initial_state_message(name);
     initial_state_cfg << "  body {\n";
     initial_state_cfg << "    name = " << name << "\n";
     initial_state_cfg << "    x    = " << body.x() << "\n";
