@@ -21,13 +21,9 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "rigid_motion.hpp"
-#include "testing_utilities/almost_equals.hpp"
-#include "testing_utilities/componentwise.hpp"
-#include "testing_utilities/numerics.hpp"
 
 namespace principia {
 
-using base::make_not_null_unique;
 using base::not_null;
 using base::OFStream;
 using geometry::BarycentreCalculator;
@@ -44,21 +40,14 @@ using integrators::QuinlanTremaine1990Order10;
 using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Length;
-using quantities::SIUnit;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Degree;
 using quantities::si::Hour;
-using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
-using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::Componentwise;
-using testing_utilities::RelativeError;
-using ::testing::AllOf;
-using ::testing::Gt;
 using ::testing::Lt;
 
 namespace physics {
@@ -154,19 +143,20 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
     for (Instant t = initial_time;
          t < initial_time + duration;
          t += 45 * Minute) {
-      auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
-        return ephemeris.trajectory(celestial.body)->EvaluatePosition(t);
-      };
+      auto const position =
+          [t, &ephemeris](not_null<MassiveBody const*> const body) {
+            return ephemeris.trajectory(body)->EvaluatePosition(t);
+          };
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
-      for (auto const celestial : jool_system_) {
-        jool_system_barycentre.Add(position(*celestial),
-                                   celestial->body->gravitational_parameter());
+      for (auto const body : jool_system_) {
+        jool_system_barycentre.Add(position(body),
+                                   body->gravitational_parameter());
       }
       container.emplace_back();
-      for (auto const celestial : jool_system_) {
+      for (auto const body : jool_system_) {
         container.back().emplace_back(
-            (position(*celestial) - jool_system_barycentre.Get()) / Metre);
+            (position(body) - jool_system_barycentre.Get()) / Metre);
       }
     }
   }
@@ -200,13 +190,6 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
 
-  auto const moons = {laythe_, vall_, tylo_, pol_, bop_};
-
-  auto const ephemeris = solar_system_.MakeEphemeris(
-      /*fitting_tolerance=*/1 * Milli(Metre),
-      Ephemeris<KSP>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-          /*step=*/45 * Minute));
 #if 0
   auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
 #else  // A small century so the tests don't take too long.
@@ -214,15 +197,16 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 #endif
 
   LOG(INFO) << "Starting integration";
-  ephemeris->Prolong(a_century_hence);
+  ephemeris_->Prolong(a_century_hence);
   LOG(INFO) << "Integration done";
 
-  std::map<not_null<KSPCelestial const*>, std::vector<double>>
+  std::map<not_null<MassiveBody const*>, std::vector<double>>
       extremal_separations_in_m;
-  std::map<not_null<KSPCelestial const*>, std::vector<double>> times_in_s;
+  std::map<not_null<MassiveBody const*>, std::vector<double>> times_in_s;
+  std::map<not_null<MassiveBody const*>, Length> last_separations;
+  std::map<not_null<MassiveBody const*>, Sign> last_separation_changes;
+
   Instant t = solar_system_.epoch();
-  std::map<not_null<KSPCelestial const*>, Length> last_separations;
-  std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
 
   // Stock elements.
   std::vector<double> bop_eccentricities;
@@ -245,17 +229,18 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   for (int n = 0;
        t < a_century_hence;
        ++n, t = solar_system_.epoch() + n * Hour) {
-    auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
-      return ephemeris->trajectory(celestial.body)->EvaluatePosition(t);
-    };
-    auto const degrees_of_freedom = [t, &ephemeris](
-        KSPCelestial const& celestial) {
-      return ephemeris->trajectory(celestial.body)->EvaluateDegreesOfFreedom(t);
-    };
+    auto const position =
+        [this, t](not_null<MassiveBody const*> const body) {
+          return ephemeris_->trajectory(body)->EvaluatePosition(t);
+        };
+    auto const degrees_of_freedom =
+        [this, t](not_null<MassiveBody const*> const body) {
+          return ephemeris_->trajectory(body)->EvaluateDegreesOfFreedom(t);
+        };
     auto const jool_position = position(jool_);
 
     for (auto const moon : jool_moons_) {
-      Length const separation = (jool_position - position(*moon)).Norm();
+      Length const separation = (jool_position - position(moon)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
@@ -275,7 +260,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     {
       // KSP's osculating elements.
       auto const bop_elements =
-          KeplerOrbit<KSP>(*jool_.body,
+          KeplerOrbit<KSP>(*jool_,
                            MasslessBody(),
                            degrees_of_freedom(bop_) - degrees_of_freedom(jool_),
                            t).elements_at_epoch();
@@ -291,14 +276,14 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     {
       BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
           innermost_jool_system;
-      for (auto const* celestial : {&jool_, &laythe_, &vall_, &tylo_}) {
-        innermost_jool_system.Add(degrees_of_freedom(*celestial),
-                                  celestial->body->gravitational_parameter());
+      for (auto const body : {jool_, laythe_, vall_, tylo_}) {
+        innermost_jool_system.Add(degrees_of_freedom(body),
+                                  body->gravitational_parameter());
       }
       auto const bop_jacobi_elements =
           KeplerOrbit<KSP>(
               MassiveBody(innermost_jool_system.weight()),
-              *bop_.body,
+              *bop_,
               degrees_of_freedom(bop_) - innermost_jool_system.Get(),
               t).elements_at_epoch();
       bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
@@ -312,12 +297,12 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   }
 
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_1_year;
-  FillPositions(*ephemeris,
+  FillPositions(*ephemeris_,
                 solar_system_.epoch(),
                 1 * JulianYear,
                 barycentric_positions_1_year);
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_2_year;
-  FillPositions(*ephemeris,
+  FillPositions(*ephemeris_,
                 solar_system_.epoch(),
                 2 * JulianYear,
                 barycentric_positions_2_year);
@@ -329,21 +314,21 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   }
 
   OFStream file(TEMP_DIR / "ksp_system.generated.wl");
-  file << mathematica::Assign("laytheTimes", times_in_s[&laythe_]);
-  file << mathematica::Assign("vallTimes", times_in_s[&vall_]);
-  file << mathematica::Assign("tyloTimes", times_in_s[&tylo_]);
-  file << mathematica::Assign("polTimes", times_in_s[&pol_]);
-  file << mathematica::Assign("bopTimes", times_in_s[&bop_]);
+  file << mathematica::Assign("laytheTimes", times_in_s[laythe_]);
+  file << mathematica::Assign("vallTimes", times_in_s[vall_]);
+  file << mathematica::Assign("tyloTimes", times_in_s[tylo_]);
+  file << mathematica::Assign("polTimes", times_in_s[pol_]);
+  file << mathematica::Assign("bopTimes", times_in_s[bop_]);
   file << mathematica::Assign("laytheSeparations",
-                              extremal_separations_in_m[&laythe_]);
+                              extremal_separations_in_m[laythe_]);
   file << mathematica::Assign("vallSeparations",
-                              extremal_separations_in_m[&vall_]);
+                              extremal_separations_in_m[vall_]);
   file << mathematica::Assign("tyloSeparations",
-                              extremal_separations_in_m[&tylo_]);
+                              extremal_separations_in_m[tylo_]);
   file << mathematica::Assign("polSeparations",
-                              extremal_separations_in_m[&pol_]);
+                              extremal_separations_in_m[pol_]);
   file << mathematica::Assign("bopSeparations",
-                              extremal_separations_in_m[&bop_]);
+                              extremal_separations_in_m[bop_]);
 
   file << mathematica::Assign("bopEccentricities", bop_eccentricities);
   file << mathematica::Assign("bopInclinations", bop_inclinations_in_degrees);
@@ -426,15 +411,15 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
     auto const ephemeris = solar_system_.MakeEphemeris(
         /*fitting_tolerance=*/1 * Milli(Metre),
         Ephemeris<KSP>::FixedStepParameters(integrator(), step));
-    ephemeris->Prolong(ksp_epoch_ + integration_duration);
+    ephemeris->Prolong(solar_system_.epoch() + integration_duration);
     auto const end = std::chrono::system_clock::now();
     durations.push_back(end - start);
 
-    for (auto const celestial : all_bodies_) {
-      auto* const body = celestial->body;
-      name_to_degrees_of_freedom[body->name()].emplace_back(
-          ephemeris->trajectory(body)->EvaluateDegreesOfFreedom(
-              ksp_epoch_ + integration_duration));
+    for (auto const& name : solar_system_.names()) {
+      name_to_degrees_of_freedom[name].emplace_back(
+          solar_system_.trajectory(*ephemeris, name).
+              EvaluateDegreesOfFreedom(solar_system_.epoch() +
+                                       integration_duration));
     }
   }
 
