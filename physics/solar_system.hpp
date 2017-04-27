@@ -82,6 +82,8 @@ class SolarSystem final {
   // structured objects.
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
       serialization::InitialState::Cartesian::Body const& body);
+  static KeplerianElements<Frame> MakeKeplerianElements(
+      serialization::InitialState::Keplerian::Body::Elements const& elements);
   static not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       serialization::GravityModel::Body const& body);
   static not_null<std::unique_ptr<RotatingBody<Frame>>> MakeRotatingBody(
@@ -105,9 +107,6 @@ class SolarSystem final {
   MakeRotatingBodyParameters(serialization::GravityModel::Body const& body);
   static not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
   MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
-
-  static KeplerianElements<Frame> MakeKeplerianElements(
-      serialization::InitialState::Keplerian::Body::Elements const& elements);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
   MakeAllMassiveBodies();

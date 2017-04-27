@@ -234,6 +234,28 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 }
 
 template<typename Frame>
+KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
+    serialization::InitialState::Keplerian::Body::Elements const& elements) {
+  KeplerianElements<Frame> result;
+  result.eccentricity = elements.eccentricity();
+  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
+  if (elements.has_semimajor_axis()) {
+    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
+  }
+  if (elements.has_mean_motion()) {
+    result.mean_motion =
+        ParseQuantity<AngularFrequency>(elements.mean_motion());
+  }
+  result.inclination = ParseQuantity<Angle>(elements.inclination());
+  result.longitude_of_ascending_node =
+      ParseQuantity<Angle>(elements.longitude_of_ascending_node());
+  result.argument_of_periapsis =
+      ParseQuantity<Angle>(elements.argument_of_periapsis());
+  result.mean_anomaly = ParseQuantity<Angle>(elements.mean_anomaly());
+  return result;
+}
+
+template<typename Frame>
 not_null<std::unique_ptr<MassiveBody>> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
   Check(body);
@@ -355,28 +377,6 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
   return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
       ParseQuantity<double>(body.j2()),
       ParseQuantity<Length>(body.reference_radius()));
-}
-
-template<typename Frame>
-KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
-    serialization::InitialState::Keplerian::Body::Elements const& elements) {
-  KeplerianElements<Frame> result;
-  result.eccentricity = elements.eccentricity();
-  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
-  if (elements.has_semimajor_axis()) {
-    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
-  }
-  if (elements.has_mean_motion()) {
-    result.mean_motion =
-        ParseQuantity<AngularFrequency>(elements.mean_motion());
-  }
-  result.inclination = ParseQuantity<Angle>(elements.inclination());
-  result.longitude_of_ascending_node =
-      ParseQuantity<Angle>(elements.longitude_of_ascending_node());
-  result.argument_of_periapsis =
-      ParseQuantity<Angle>(elements.argument_of_periapsis());
-  result.mean_anomaly = ParseQuantity<Angle>(elements.mean_anomaly());
-  return result;
 }
 
 template<typename Frame>

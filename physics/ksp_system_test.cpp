@@ -58,13 +58,6 @@ using KSP = Frame<serialization::Frame::TestTag,
 
 class KSPSystem {
  protected:
-  struct KSPCelestial final {
-    KeplerianElements<KSP> elements;
-    KSPCelestial* parent = nullptr;
-    MassiveBody* body;
-    std::unique_ptr<MassiveBody> owned_body;
-  };
-
   KSPSystem() {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
@@ -134,7 +127,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
                            gilly_,
                            moho_},
         jool_system_{jool_, laythe_, vall_, tylo_, pol_, bop_},
-        jool_moons_{laythe_, vall_, tylo_, pol_, bop_} {}
+        joolian_moons_{laythe_, vall_, tylo_, pol_, bop_} {}
 
   void FillPositions(Ephemeris<KSP> const& ephemeris,
                      Instant const& initial_time,
@@ -183,7 +176,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
   std::vector<not_null<MassiveBody const*>> const all_bodies_;
   std::vector<not_null<MassiveBody const*>> const planets_and_moons_;
   std::vector<not_null<MassiveBody const*>> const jool_system_;
-  std::vector<not_null<MassiveBody const*>> const jool_moons_;
+  std::vector<not_null<MassiveBody const*>> const joolian_moons_;
 };
 
 #if !defined(_DEBUG)
@@ -223,7 +216,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::vector<double> tylo_bop_separations_in_m;
   std::vector<double> pol_bop_separations_in_m;
 
-  for (auto const moon : jool_moons_) {
+  for (auto const moon : joolian_moons_) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0;
@@ -239,7 +232,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
         };
     auto const jool_position = position(jool_);
 
-    for (auto const moon : jool_moons_) {
+    for (auto const moon : joolian_moons_) {
       Length const separation = (jool_position - position(moon)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {

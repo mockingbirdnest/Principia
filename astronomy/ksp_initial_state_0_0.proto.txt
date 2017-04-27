@@ -5,8 +5,8 @@ initial_state {
       name : "Kerbol"
     }
     body {
-      name                        : "Eeloo"
-      parent                      : "Kerbol"
+      name                          : "Eeloo"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 2.60000000000000009e-01
         mean_motion                 : "4.00223155970064009e-08 rad /s"
@@ -17,8 +17,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Jool"
-      parent                      : "Kerbol"
+      name                          : "Jool"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 5.00000007450581013e-02
         mean_motion                 : "6.00334352457231946e-08 rad / s"
@@ -29,8 +29,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Pol"
-      parent                      : "Jool"
+      name                          : "Pol"
+      parent                        : "Jool"
       elements {
         eccentricity                : 1.70850000000000002e-01
         mean_motion                 : "6.96658945572122982e-06 rad / s"
@@ -41,8 +41,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Bop"
-      parent                      : "Jool"
+      name                          : "Bop"
+      parent                        : "Jool"
       elements {
         eccentricity                : 2.34999999403953996e-01
         mean_motion                 : "9.95227065103033049e-06 rad / s"
@@ -53,8 +53,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Tylo"
-      parent                      : "Jool"
+      name                          : "Tylo"
+      parent                        : "Jool"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "1.94051054171045988e-05 rad / s"
@@ -65,8 +65,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Vall"
-      parent                      : "Jool"
+      name                          : "Vall"
+      parent                        : "Jool"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "4.79720588121814983e-05 rad / s"
@@ -77,20 +77,20 @@ initial_state {
       }
     }
     body {
-      name                        : "Laythe"
-      parent                      : "Jool"
+      name                          : "Laythe"
+      parent                        : "Jool"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "1.18593451424947995e-04 rad / s"
         inclination                 : "0.00000000000000000e+00 rad"
         longitude_of_ascending_node : "0.00000000000000000e+00 rad"
-        argument_of_periapsis : "0.00000000000000000e+00 rad"
+        argument_of_periapsis       : "0.00000000000000000e+00 rad"
         mean_anomaly                : "3.14000010490416992e+00 rad"
       }
     }
     body {
-      name                        : "Dres"
-      parent                      : "Kerbol"
+      name                          : "Dres"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 1.44999999999999990e-01
         mean_motion                 : "1.31191970097993002e-07 rad / s"
@@ -101,8 +101,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Duna"
-      parent                      : "Kerbol"
+      name                          : "Duna"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 5.09999990463256975e-02
         mean_motion                 : "3.62866884706430976e-07 rad / s"
@@ -113,8 +113,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Ike"
-      parent                      : "Duna"
+      name                          : "Ike"
+      parent                        : "Duna"
       elements {
         eccentricity                : 2.99999993294477012e-02
         mean_motion                 : "9.59003407994517016e-05 rad / s"
@@ -125,8 +125,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Kerbin"
-      parent                      : "Kerbol"
+      name                          : "Kerbin"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "6.82691894080843017e-07 rad / s"
@@ -137,8 +137,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Minmus"
-      parent                      : "Kerbin"
+      name                          : "Minmus"
+      parent                        : "Kerbin"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "5.83228807719951003e-06 rad / s"
@@ -149,8 +149,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Mun"
-      parent                      : "Kerbin"
+      name                          : "Mun"
+      parent                        : "Kerbin"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "4.52078533000627999e-05 rad / s"
@@ -161,8 +161,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Eve"
-      parent                      : "Kerbol"
+      name                          : "Eve"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 9.99999977648258036e-03
         mean_motion                 : "1.11049676511037010e-06 rad / s"
@@ -173,8 +173,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Gilly"
-      parent                      : "Eve"
+      name                          : "Gilly"
+      parent                        : "Eve"
       elements {
         eccentricity                : 5.50000011920928955e-01
         mean_motion                 : "1.61692985452753988e-05 rad / s"
@@ -185,8 +185,8 @@ initial_state {
       }
     }
     body {
-      name                        : "Moho"
-      parent                      : "Kerbol"
+      name                          : "Moho"
+      parent                        : "Kerbol"
       elements {
         eccentricity                : 2.00000002980231989e-01
         mean_motion                 : "2.83568694188237007e-06 rad / s"

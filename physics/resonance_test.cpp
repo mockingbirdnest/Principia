@@ -56,71 +56,47 @@ class ResonanceTest : public ::testing::Test {
                     serialization::Frame::TEST,
                     /*frame_is_inertial=*/true>;
 
-  // Gravitational parameters from the KSP wiki.
-  ResonanceTest()
-      : sun_(AddBody("Sun", 1.1723328e+18 * Pow<3>(Metre) / Pow<2>(Second))),
-        jool_(AddBody("Jool", 2.8252800e+14 * Pow<3>(Metre) / Pow<2>(Second))),
-        laythe_(AddBody("Laythe",
-                        1.9620000e+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        vall_(AddBody("Vall", 2.0748150e+11 * Pow<3>(Metre) / Pow<2>(Second))),
-        tylo_(AddBody("Tylo", 2.8252800e+12 * Pow<3>(Metre) / Pow<2>(Second))),
-        bop_(AddBody("Bop", 2.4868349e+09 * Pow<3>(Metre) / Pow<2>(Second))),
-        pol_(AddBody("Pol", 7.2170208e+08 * Pow<3>(Metre) / Pow<2>(Second))),
-        bodies_({sun_, jool_, laythe_, vall_, tylo_, bop_, pol_}),
-        jool_system_({jool_, laythe_, vall_, tylo_, bop_, pol_}),
-        joolian_moons_({laythe_, vall_, tylo_, bop_, pol_}) {
-    // Elements from the KSP wiki.
-    elements_[jool_].eccentricity = 0.05;
-    elements_[jool_].semimajor_axis = 68'773'560'320 * Metre;
-    elements_[jool_].inclination = 1.304 * Degree;
-    elements_[jool_].longitude_of_ascending_node = 52 * Degree;
-    elements_[jool_].argument_of_periapsis =  0 * Degree;
-    elements_[jool_].mean_anomaly = 0.1 * Radian;
-    elements_[laythe_].eccentricity = 0;
-    elements_[laythe_].semimajor_axis = 27'184'000 * Metre;
-    elements_[laythe_].inclination = 0 * Degree;
-    elements_[laythe_].longitude_of_ascending_node = 0 * Degree;
-    elements_[laythe_].argument_of_periapsis = 0 * Degree;
-    elements_[laythe_].mean_anomaly = 3.14 * Radian;
-    elements_[vall_].eccentricity = 0;
-    elements_[vall_].semimajor_axis = 43'152'000 * Metre;
-    elements_[vall_].inclination = 0 * Degree;
-    elements_[vall_].longitude_of_ascending_node = 0 * Degree;
-    elements_[vall_].argument_of_periapsis = 0 * Degree;
-    elements_[vall_].mean_anomaly = 0.9 * Radian;
-    elements_[tylo_].eccentricity = 0;
-    elements_[tylo_].semimajor_axis = 68'500'000 * Metre;
-    elements_[tylo_].inclination = 0.025 * Degree;
-    elements_[tylo_].longitude_of_ascending_node = 0 * Degree;
-    elements_[tylo_].argument_of_periapsis = 0 * Degree;
-    elements_[tylo_].mean_anomaly = 3.14 * Radian;
-    elements_[bop_].eccentricity = 0.24;
-    elements_[bop_].semimajor_axis = 128'500'000 * Metre;
-    elements_[bop_].inclination = 15 * Degree;
-    elements_[bop_].longitude_of_ascending_node = 10 * Degree;
-    elements_[bop_].argument_of_periapsis = 25 * Degree;
-    elements_[bop_].mean_anomaly = 0.9 * Radian;
-    elements_[pol_].eccentricity = 0.17;
-    elements_[pol_].semimajor_axis = 179'890'000 * Metre;
-    elements_[pol_].inclination = 4.25 * Degree;
-    elements_[pol_].longitude_of_ascending_node = 2 * Degree;
-    elements_[pol_].argument_of_periapsis = 15 * Degree;
-    elements_[pol_].mean_anomaly = 0.9 * Radian;
-    parents_.emplace(jool_, sun_);
+  ResonanceTest() {
+    solar_system_.Initialize(
+        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+    ephemeris_ = solar_system_.MakeEphemeris(
+        /*fitting_tolerance=*/5 * Milli(Metre),
+        Ephemeris<KSP>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+            /*step=*/45 * Minute));
+    kerbol_ = solar_system_.massive_body(*ephemeris_, "Kerbol");
+    jool_ = solar_system_.massive_body(*ephemeris_, "Jool");
+    pol_ = solar_system_.massive_body(*ephemeris_, "Pol");
+    bop_ = solar_system_.massive_body(*ephemeris_, "Bop");
+    tylo_ = solar_system_.massive_body(*ephemeris_, "Tylo");
+    vall_ = solar_system_.massive_body(*ephemeris_, "Vall");
+    laythe_ = solar_system_.massive_body(*ephemeris_, "Laythe");
+
+    bodies_ = {kerbol_, jool_, laythe_, vall_, tylo_, bop_, pol_};
+    jool_system_ = {jool_, laythe_, vall_, tylo_, bop_, pol_};
+    joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
+
+    parents_.emplace(jool_, kerbol_);
     for (auto const moon : joolian_moons_) {
       parents_.emplace(moon, jool_);
     }
+
+    for (auto const body : bodies_) {
+      if (body != kerbol_) {
+        elements_[body] = solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message(body->name()).
+                elements());
+      }
+    }
+
+    reference_ = solar_system_.epoch() + 90 * Day;
+    long_time_ = solar_system_.epoch() + 100 * JulianYear;
+    comparison_ = long_time_ + 90 * Day;
+
     // This test is mostly a tool for investigating orbit stability, so we want
     // log.
     google::LogToStderr();
-  }
-
-  void FixVallMeanAnomaly() {
-    // NOTE(egg): In the stock game, this is 0.9 rad.  This is very close to an
-    // unstable resonance, and as such no interpretation of the orbital elements
-    // will make the system stable for any reasonable length of time.  We make
-    // this a potentially stable resonance instead.
-    elements_[vall_].mean_anomaly = 0 * Radian;
   }
 
   // Fills |stock_orbits_|.
@@ -132,7 +108,7 @@ class ResonanceTest : public ::testing::Test {
           KeplerOrbit<KSP>(*parents_[body],
                            test_particle_,
                            elements_[body],
-                           game_epoch_));
+                           solar_system_.epoch()));
     }
   }
 
@@ -147,11 +123,11 @@ class ResonanceTest : public ::testing::Test {
   }
 
   DegreesOfFreedom<KSP> StockInitialState(not_null<MassiveBody const*> body) {
-    if (body == sun_) {
+    if (body == kerbol_) {
       return origin_;
     } else {
       return StockInitialState(parents_[body]) +
-             stock_orbits_.at(body).StateVectors(game_epoch_);
+             stock_orbits_.at(body).StateVectors(solar_system_.epoch());
     }
   }
 
@@ -166,7 +142,7 @@ class ResonanceTest : public ::testing::Test {
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
                     bool const reference,
                     std::string const& name) {
-    Instant const begin = reference ? game_epoch_ : long_time_;
+    Instant const begin = reference ? solar_system_.epoch() : long_time_;
     Instant const end = reference ? reference_ : comparison_;
     std::string const purpose = reference ? "reference" : "comparison";
     // Mathematica tends to be slow when dealing with quantities, so we give
@@ -179,7 +155,7 @@ class ResonanceTest : public ::testing::Test {
         return ephemeris.trajectory(body)->EvaluatePosition(t);
       };
 
-      times.emplace_back((t - game_epoch_) / Second);
+      times.emplace_back((t - solar_system_.epoch()) / Second);
 
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
@@ -228,11 +204,10 @@ class ResonanceTest : public ::testing::Test {
         return barycentric_position(moon, t).coordinates().y;
       };
 
-      LOG(INFO) << (moon == laythe_ ? "Laythe" : moon == vall_ ? "Vall"
-                                                               : "Tylo");
+      LOG(INFO) << moon->name();
 
-      Sign const s0(moon_y(game_epoch_));
-      Instant t0 = game_epoch_;
+      Sign const s0(moon_y(solar_system_.epoch()));
+      Instant t0 = solar_system_.epoch();
       Time const Δt = 45 * Minute;
       while (Sign(moon_y(t0)) == s0) {
         t0 += Δt;
@@ -262,23 +237,11 @@ class ResonanceTest : public ::testing::Test {
     }
   }
 
-  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
-      std::vector<DegreesOfFreedom<KSP>> const& states) {
-    return make_not_null_unique<Ephemeris<KSP>>(
-               std::move(owned_bodies_),
-               states,
-               game_epoch_,
-               /*fitting_tolerance=*/5 * Milli(Metre),
-               Ephemeris<KSP>::FixedStepParameters(
-                   McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-               45 * Minute));
-  }
-
   // Interpreting the elements as Jacobi coordinates in the Jool system.
   std::vector<DegreesOfFreedom<KSP>> JacobiInitialStates() {
     // Jool-centric coordinates: a nonrotating inertial frame in which Jool is
     // centred and immobile, for building the Jool system in Jacobi coordinates.
-    // We only use this frame at |game_epoch_|.
+    // We only use this frame at |solar_system_.epoch()|.
     using JoolCentric = Frame<serialization::Frame::TestTag,
                               serialization::Frame::TEST1,
                               /*is_inertial=*/false>;
@@ -287,10 +250,10 @@ class ResonanceTest : public ::testing::Test {
 
         std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> orbits;
 
-    orbits.emplace(jool_, KeplerOrbit<KSP>(*sun_,
+    orbits.emplace(jool_, KeplerOrbit<KSP>(*kerbol_,
                                            *jool_,
                                            elements_[jool_],
-                                           game_epoch_));
+                                           solar_system_.epoch()));
 
     // The barycentre of the bodies of the Jool system considered so far.
     BarycentreCalculator<DegreesOfFreedom<JoolCentric>, GravitationalParameter>
@@ -317,7 +280,8 @@ class ResonanceTest : public ::testing::Test {
               id(KeplerOrbit<KSP>(MassiveBody(inner_system_parameter),
                                   *moon,
                                   elements_[moon],
-                                  game_epoch_).StateVectors(game_epoch_)));
+                                  solar_system_.epoch())
+                     .StateVectors(solar_system_.epoch())));
       inner_system_parameter += moon->gravitational_parameter();
       inner_system_barycentre.Add(jool_centric_initial_state.at(moon),
                                   moon->gravitational_parameter());
@@ -326,7 +290,7 @@ class ResonanceTest : public ::testing::Test {
     // |inner_system_barycentre| is now the barycentre of the whole Jool system.
     // We want that to be placed where dictated by Jool's orbit.
     DegreesOfFreedom<KSP> const jool_barycentre_initial_state =
-        origin_ + orbits.at(jool_).StateVectors(game_epoch_);
+        origin_ + orbits.at(jool_).StateVectors(solar_system_.epoch());
     // TODO(egg): this is very messy, a constructor from a pair of
     // |DegreesOfFreedom|s like the constructor for |RigidTransformation| from a
     // pair of |Position|s would be nice...
@@ -350,14 +314,16 @@ class ResonanceTest : public ::testing::Test {
     return initial_states;
   }
 
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> owned_bodies_;
-  not_null<MassiveBody const*> const sun_;
-  not_null<MassiveBody const*> const jool_;
-  not_null<MassiveBody const*> const laythe_;
-  not_null<MassiveBody const*> const vall_;
-  not_null<MassiveBody const*> const tylo_;
-  not_null<MassiveBody const*> const bop_;
-  not_null<MassiveBody const*> const pol_;
+  SolarSystem<KSP> solar_system_;
+  std::unique_ptr<Ephemeris<KSP>> ephemeris_;
+
+  MassiveBody const* kerbol_;
+  MassiveBody const* jool_;
+  MassiveBody const* laythe_;
+  MassiveBody const* vall_;
+  MassiveBody const* tylo_;
+  MassiveBody const* bop_;
+  MassiveBody const* pol_;
   std::vector<not_null<MassiveBody const*>> bodies_;
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
@@ -369,19 +335,9 @@ class ResonanceTest : public ::testing::Test {
   // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
 
-  // TODO(egg): this is probably UB, but Point doesn't have constexprs.
-  Instant const game_epoch_;
-  Instant const reference_ = game_epoch_ + 90 * Day;
-  Instant const long_time_ = game_epoch_ + 100 * JulianYear;
-  Instant const comparison_ = long_time_ + 90 * Day;
-
- private:
-  not_null<MassiveBody const*> AddBody(std::string const& name,
-                                       GravitationalParameter const& μ) {
-    owned_bodies_.emplace_back(
-        make_not_null_unique<MassiveBody>(MassiveBody::Parameters(name, μ)));
-    return owned_bodies_.back().get();
-  }
+  Instant reference_;
+  Instant long_time_;
+  Instant comparison_;
 };
 
 #if !defined(_DEBUG)
@@ -389,13 +345,12 @@ class ResonanceTest : public ::testing::Test {
 TEST_F(ResonanceTest, Stock) {
   ComputeStockOrbits();
   UseStockMeanMotions();
-  auto const ephemeris = MakeEphemeris(StockInitialStates());
-  ephemeris->Prolong(reference_);
-  EXPECT_OK(ephemeris->last_severe_integration_status());
-  LogPeriods(*ephemeris);
-  LogEphemeris(*ephemeris, /*reference=*/true, "stock");
-  ephemeris->Prolong(long_time_);
-  auto const status = ephemeris->last_severe_integration_status();
+  ephemeris_->Prolong(reference_);
+  EXPECT_OK(ephemeris_->last_severe_integration_status());
+  LogPeriods(*ephemeris_);
+  LogEphemeris(*ephemeris_, /*reference=*/true, "stock");
+  ephemeris_->Prolong(long_time_);
+  auto const status = ephemeris_->last_severe_integration_status();
   EXPECT_EQ(Error::INVALID_ARGUMENT, status.error());
   EXPECT_THAT(
       status.message(),
@@ -423,13 +378,12 @@ TEST_F(ResonanceTest, Corrected) {
   // resonance with Pol works well.
   *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 1.5;
 
-  auto const ephemeris = MakeEphemeris(JacobiInitialStates());
-  ephemeris->Prolong(reference_);
-  LogPeriods(*ephemeris);
-  LogEphemeris(*ephemeris, /*reference=*/true, "corrected");
-  ephemeris->Prolong(long_time_);
-  ephemeris->Prolong(comparison_);
-  LogEphemeris(*ephemeris, /*reference=*/false, "corrected");
+  ephemeris_->Prolong(reference_);
+  LogPeriods(*ephemeris_);
+  LogEphemeris(*ephemeris_, /*reference=*/true, "corrected");
+  ephemeris_->Prolong(long_time_);
+  ephemeris_->Prolong(comparison_);
+  LogEphemeris(*ephemeris_, /*reference=*/false, "corrected");
 }
 
 #endif
