@@ -18,6 +18,7 @@
 #include "physics/ephemeris.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "rigid_motion.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -75,284 +76,76 @@ class KSPSystem {
     std::unique_ptr<MassiveBody> owned_body;
   };
 
-  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris(
-      Ephemeris<KSP>::FixedStepParameters const& parameters) {
-    sun_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Sun",
-            1.1723327948324908e+18 * SIUnit<GravitationalParameter>()));
-    eeloo_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Eeloo",
-            74410814527.049576 * SIUnit<GravitationalParameter>()));
-    jool_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Jool",
-            282528004209995.31 * SIUnit<GravitationalParameter>()));
-    pol_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Pol",
-            721702080.00000012 * SIUnit<GravitationalParameter>()));
-    bop_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Bop",
-            2486834944.414907 * SIUnit<GravitationalParameter>()));
-    tylo_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Tylo",
-            2825280042099.9531 * SIUnit<GravitationalParameter>()));
-    vall_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Vall",
-            207481499473.75098 * SIUnit<GravitationalParameter>()));
-    laythe_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Laythe",
-            1962000029236.0784 * SIUnit<GravitationalParameter>()));
-    dres_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Dres",
-            21484488600.000004 * SIUnit<GravitationalParameter>()));
-    duna_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Duna",
-            301363211975.09772 * SIUnit<GravitationalParameter>()));
-    ike_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Ike",
-            18568368573.144012 * SIUnit<GravitationalParameter>()));
-    kerbin_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Kerbin",
-            3531600000000 * SIUnit<GravitationalParameter>()));
-    minmus_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Minmus",
-            1765800026.3124719 * SIUnit<GravitationalParameter>()));
-    mun_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Mun",
-            65138397520.780701 * SIUnit<GravitationalParameter>()));
-    eve_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Eve",
-            8171730229210.874 * SIUnit<GravitationalParameter>()));
-    gilly_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Gilly",
-            8289449.814716354 * SIUnit<GravitationalParameter>()));
-    moho_.owned_body = std::make_unique<MassiveBody>(
-        MassiveBody::Parameters(
-            "Moho",
-            168609378654.50949 * SIUnit<GravitationalParameter>()));
-    for (auto const celestial : all_bodies_) {
-      celestial->body = celestial->owned_body.get();
-    }
-    eeloo_.parent = &sun_;
-    jool_.parent = &sun_;
-    pol_.parent = &jool_;
-    bop_.parent = &jool_;
-    tylo_.parent = &jool_;
-    vall_.parent = &jool_;
-    laythe_.parent = &jool_;
-    dres_.parent = &sun_;
-    duna_.parent = &sun_;
-    ike_.parent = &duna_;
-    kerbin_.parent = &sun_;
-    minmus_.parent = &kerbin_;
-    mun_.parent = &kerbin_;
-    eve_.parent = &sun_;
-    gilly_.parent = &eve_;
-    moho_.parent = &sun_;
-    eeloo_.elements.eccentricity = +2.60000000000000009e-01;
-    eeloo_.elements.mean_motion = +4.00223155970064009e-08 * (Radian / Second);
-    eeloo_.elements.inclination = +1.07337748997651278e-01 * Radian;
-    eeloo_.elements.longitude_of_ascending_node =
-        +8.72664625997164767e-01 * Radian;
-    eeloo_.elements.argument_of_periapsis = +4.53785605518525692e+00 * Radian;
-    eeloo_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    jool_.elements.eccentricity = +5.00000007450581013e-02;
-    jool_.elements.mean_motion = +6.00334352457231946e-08 * (Radian / Second);
-    jool_.elements.inclination = +2.27590937955459392e-02 * Radian;
-    jool_.elements.longitude_of_ascending_node =
-        +9.07571211037051406e-01 * Radian;
-    jool_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    jool_.elements.mean_anomaly = +1.00000001490115994e-01 * Radian;
-    pol_.elements.eccentricity = +1.70850000000000002e-01;
-    pol_.elements.mean_motion = +6.96658945572122982e-06 * (Radian / Second);
-    pol_.elements.inclination = +7.41764932097590118e-02 * Radian;
-    pol_.elements.longitude_of_ascending_node =
-        +3.49065850398865909e-02 * Radian;
-    pol_.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
-    pol_.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    bop_.elements.eccentricity = +2.34999999403953996e-01;
-    bop_.elements.mean_motion = +9.95227065103033049e-06 * (Radian / Second);
-    bop_.elements.inclination = +2.87979326579064354e+00 * Radian;
-    bop_.elements.longitude_of_ascending_node =
-        +1.74532925199432948e-01 * Radian;
-    bop_.elements.argument_of_periapsis = +4.36332312998582383e-01 * Radian;
-    bop_.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    tylo_.elements.eccentricity = +0.00000000000000000e+00;
-    tylo_.elements.mean_motion = +1.94051054171045988e-05 * (Radian / Second);
-    tylo_.elements.inclination = +4.36332319500439990e-04 * Radian;
-    tylo_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    tylo_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    tylo_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    vall_.elements.eccentricity = +0.00000000000000000e+00;
-    vall_.elements.mean_motion = +4.79720588121814983e-05 * (Radian / Second);
-    vall_.elements.inclination = +0.00000000000000000e+00 * Radian;
-    vall_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    vall_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    vall_.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    laythe_.elements.eccentricity = +0.00000000000000000e+00;
-    laythe_.elements.mean_motion = +1.18593451424947995e-04 * (Radian / Second);
-    laythe_.elements.inclination = +0.00000000000000000e+00 * Radian;
-    laythe_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    laythe_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    laythe_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    dres_.elements.eccentricity = +1.44999999999999990e-01;
-    dres_.elements.mean_motion = +1.31191970097993002e-07 * (Radian / Second);
-    dres_.elements.inclination = +8.72664625997164739e-02 * Radian;
-    dres_.elements.longitude_of_ascending_node =
-        +4.88692190558412243e+00 * Radian;
-    dres_.elements.argument_of_periapsis = +1.57079632679489656e+00 * Radian;
-    dres_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    duna_.elements.eccentricity = +5.09999990463256975e-02;
-    duna_.elements.mean_motion = +3.62866884706430976e-07 * (Radian / Second);
-    duna_.elements.inclination = +1.04719752778990849e-03 * Radian;
-    duna_.elements.longitude_of_ascending_node =
-        +2.36492113645231639e+00 * Radian;
-    duna_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    duna_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    ike_.elements.eccentricity = +2.99999993294477012e-02;
-    ike_.elements.mean_motion = +9.59003407994517016e-05 * (Radian / Second);
-    ike_.elements.inclination = +3.49065855600351992e-03 * Radian;
-    ike_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    ike_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    ike_.elements.mean_anomaly = +1.70000004768372004e+00 * Radian;
-    kerbin_.elements.eccentricity = +0.00000000000000000e+00;
-    kerbin_.elements.mean_motion = +6.82691894080843017e-07 * (Radian / Second);
-    kerbin_.elements.inclination = +0.00000000000000000e+00 * Radian;
-    kerbin_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    kerbin_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    kerbin_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    minmus_.elements.eccentricity = +0.00000000000000000e+00;
-    minmus_.elements.mean_motion = +5.83228807719951003e-06 * (Radian / Second);
-    minmus_.elements.inclination = +1.04719755119659780e-01 * Radian;
-    minmus_.elements.longitude_of_ascending_node =
-        +1.36135681655557694e+00 * Radian;
-    minmus_.elements.argument_of_periapsis = +6.63225115757845263e-01 * Radian;
-    minmus_.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    mun_.elements.eccentricity = +0.00000000000000000e+00;
-    mun_.elements.mean_motion = +4.52078533000627999e-05 * (Radian / Second);
-    mun_.elements.inclination = +0.00000000000000000e+00 * Radian;
-    mun_.elements.longitude_of_ascending_node =
-        +0.00000000000000000e+00 * Radian;
-    mun_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    mun_.elements.mean_anomaly = +1.70000004768372004e+00 * Radian;
-    eve_.elements.eccentricity = +9.99999977648258036e-03;
-    eve_.elements.mean_motion = +1.11049676511037010e-06 * (Radian / Second);
-    eve_.elements.inclination = +3.66519126274052684e-02 * Radian;
-    eve_.elements.longitude_of_ascending_node =
-        +2.61799387799149408e-01 * Radian;
-    eve_.elements.argument_of_periapsis = +0.00000000000000000e+00 * Radian;
-    eve_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-    gilly_.elements.eccentricity = +5.50000011920928955e-01;
-    gilly_.elements.mean_motion = +1.61692985452753988e-05 * (Radian / Second);
-    gilly_.elements.inclination = +2.09439510239319560e-01 * Radian;
-    gilly_.elements.longitude_of_ascending_node =
-        +1.39626340159546358e+00 * Radian;
-    gilly_.elements.argument_of_periapsis = +1.74532925199432948e-01 * Radian;
-    gilly_.elements.mean_anomaly = +8.99999976158141979e-01 * Radian;
-    moho_.elements.eccentricity = +2.00000002980231989e-01;
-    moho_.elements.mean_motion = +2.83568694188237007e-06 * (Radian / Second);
-    moho_.elements.inclination = +1.22173047639603072e-01 * Radian;
-    moho_.elements.longitude_of_ascending_node =
-        +1.22173047639603061e+00 * Radian;
-    moho_.elements.argument_of_periapsis = +2.61799387799149408e-01 * Radian;
-    moho_.elements.mean_anomaly = +3.14000010490416992e+00 * Radian;
-
-    HierarchicalSystem<KSP> hierarchical_system(std::move(sun_.owned_body));
-    for (auto const celestial : planets_and_moons_) {
-      hierarchical_system.Add(std::move(celestial->owned_body),
-                              celestial->parent->body,
-                              celestial->elements);
-    }
-    HierarchicalSystem<KSP>::BarycentricSystem barycentric_system =
-        hierarchical_system.ConsumeBarycentricSystem();
-    return make_not_null_unique<Ephemeris<KSP>>(
-               std::move(barycentric_system.bodies),
-               std::move(barycentric_system.degrees_of_freedom),
-               ksp_epoch_,
-               /*fitting_tolerance=*/1 * Milli(Metre),
-               parameters);
+  KSPSystem() {
+    solar_system_.Initialize(
+        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
   }
 
-  Instant const ksp_epoch_;
-
-  KSPCelestial sun_;
-  KSPCelestial eeloo_;
-  KSPCelestial jool_;
-  KSPCelestial pol_;
-  KSPCelestial bop_;
-  KSPCelestial tylo_;
-  KSPCelestial vall_;
-  KSPCelestial laythe_;
-  KSPCelestial dres_;
-  KSPCelestial duna_;
-  KSPCelestial ike_;
-  KSPCelestial kerbin_;
-  KSPCelestial minmus_;
-  KSPCelestial mun_;
-  KSPCelestial eve_;
-  KSPCelestial gilly_;
-  KSPCelestial moho_;
-  std::vector<not_null<KSPCelestial*>> const all_bodies_ = {&sun_,
-                                                            &eeloo_,
-                                                            &jool_,
-                                                            &pol_,
-                                                            &bop_,
-                                                            &tylo_,
-                                                            &vall_,
-                                                            &laythe_,
-                                                            &dres_,
-                                                            &duna_,
-                                                            &ike_,
-                                                            &kerbin_,
-                                                            &minmus_,
-                                                            &mun_,
-                                                            &eve_,
-                                                            &gilly_,
-                                                            &moho_};
-  std::vector<not_null<KSPCelestial*>> const planets_and_moons_ = {&eeloo_,
-                                                                   &jool_,
-                                                                   &pol_,
-                                                                   &bop_,
-                                                                   &tylo_,
-                                                                   &vall_,
-                                                                   &laythe_,
-                                                                   &dres_,
-                                                                   &duna_,
-                                                                   &ike_,
-                                                                   &kerbin_,
-                                                                   &minmus_,
-                                                                   &mun_,
-                                                                   &eve_,
-                                                                   &gilly_,
-                                                                   &moho_};
-  std::vector<not_null<KSPCelestial*>> const jool_system_ =
-      {&jool_, &laythe_, &vall_, &tylo_, &pol_, &bop_};
+  SolarSystem<KSP> solar_system_;
 };
 
 // We apologize for the inheritance.
 class KSPSystemTest : public ::testing::Test, protected KSPSystem {
  protected:
-  using KSPSystem::KSPSystem;
+  KSPSystemTest()
+      : ephemeris_(solar_system_.MakeEphemeris(
+            /*fitting_tolerance=*/1 * Milli(Metre),
+            Ephemeris<KSP>::FixedStepParameters(
+                McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+                /*step=*/45 * Minute))),
+        kerbol_(solar_system_.massive_body(*ephemeris_, "Kerbol")),
+        eeloo_(solar_system_.massive_body(*ephemeris_, "Eeloo")),
+        jool_(solar_system_.massive_body(*ephemeris_, "Jool")),
+        pol_(solar_system_.massive_body(*ephemeris_, "Pol")),
+        bop_(solar_system_.massive_body(*ephemeris_, "Bop")),
+        tylo_(solar_system_.massive_body(*ephemeris_, "Tylo")),
+        vall_(solar_system_.massive_body(*ephemeris_, "Vall")),
+        laythe_(solar_system_.massive_body(*ephemeris_, "Laythe")),
+        dres_(solar_system_.massive_body(*ephemeris_, "Dres")),
+        duna_(solar_system_.massive_body(*ephemeris_, "Duna")),
+        ike_(solar_system_.massive_body(*ephemeris_, "Ike")),
+        kerbin_(solar_system_.massive_body(*ephemeris_, "Kerbin")),
+        minmus_(solar_system_.massive_body(*ephemeris_, "Minmus")),
+        mun_(solar_system_.massive_body(*ephemeris_, "Mun")),
+        eve_(solar_system_.massive_body(*ephemeris_, "Eve")),
+        gilly_(solar_system_.massive_body(*ephemeris_, "Gilly")),
+        moho_(solar_system_.massive_body(*ephemeris_, "Moho")),
+        all_bodies_{kerbol_,
+                    eeloo_,
+                    jool_,
+                    pol_,
+                    bop_,
+                    tylo_,
+                    vall_,
+                    laythe_,
+                    dres_,
+                    duna_,
+                    ike_,
+                    kerbin_,
+                    minmus_,
+                    mun_,
+                    eve_,
+                    gilly_,
+                    moho_},
+        planets_and_moons_{eeloo_,
+                           jool_,
+                           pol_,
+                           bop_,
+                           tylo_,
+                           vall_,
+                           laythe_,
+                           dres_,
+                           duna_,
+                           ike_,
+                           kerbin_,
+                           minmus_,
+                           mun_,
+                           eve_,
+                           gilly_,
+                           moho_},
+        jool_system_{jool_, laythe_, vall_, tylo_, pol_, bop_},
+        jool_moons_{laythe_, vall_, tylo_, pol_, bop_} {}
 
   void FillPositions(Ephemeris<KSP> const& ephemeris,
                      Instant const& initial_time,
@@ -377,21 +170,47 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
       }
     }
   }
+
+  not_null<std::unique_ptr<Ephemeris<KSP>>> ephemeris_;
+
+  not_null<MassiveBody const*> const kerbol_;
+  not_null<MassiveBody const*> const eeloo_;
+  not_null<MassiveBody const*> const jool_;
+  not_null<MassiveBody const*> const pol_;
+  not_null<MassiveBody const*> const bop_;
+  not_null<MassiveBody const*> const tylo_;
+  not_null<MassiveBody const*> const vall_;
+  not_null<MassiveBody const*> const laythe_;
+  not_null<MassiveBody const*> const dres_;
+  not_null<MassiveBody const*> const duna_;
+  not_null<MassiveBody const*> const ike_;
+  not_null<MassiveBody const*> const kerbin_;
+  not_null<MassiveBody const*> const minmus_;
+  not_null<MassiveBody const*> const mun_;
+  not_null<MassiveBody const*> const eve_;
+  not_null<MassiveBody const*> const gilly_;
+  not_null<MassiveBody const*> const moho_;
+  std::vector<not_null<MassiveBody const*>> const all_bodies_;
+  std::vector<not_null<MassiveBody const*>> const planets_and_moons_;
+  std::vector<not_null<MassiveBody const*>> const jool_system_;
+  std::vector<not_null<MassiveBody const*>> const jool_moons_;
 };
 
 #if !defined(_DEBUG)
 TEST_F(KSPSystemTest, KerbalSystem) {
   google::LogToStderr();
 
-  auto const moons = {&laythe_, &vall_, &tylo_, &pol_, &bop_};
+  auto const moons = {laythe_, vall_, tylo_, pol_, bop_};
 
-  auto const ephemeris = MakeEphemeris(Ephemeris<KSP>::FixedStepParameters(
-      McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-      /*step=*/45 * Minute));
+  auto const ephemeris = solar_system_.MakeEphemeris(
+      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<KSP>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+          /*step=*/45 * Minute));
 #if 0
-  auto const a_century_hence = ksp_epoch + 100 * JulianYear;
+  auto const a_century_hence = solar_system_.epoch() + 100 * JulianYear;
 #else  // A small century so the tests don't take too long.
-  auto const a_century_hence = ksp_epoch_ + 5 * JulianYear;
+  auto const a_century_hence = solar_system_.epoch() + 5 * JulianYear;
 #endif
 
   LOG(INFO) << "Starting integration";
@@ -401,7 +220,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::map<not_null<KSPCelestial const*>, std::vector<double>>
       extremal_separations_in_m;
   std::map<not_null<KSPCelestial const*>, std::vector<double>> times_in_s;
-  Instant t = ksp_epoch_;
+  Instant t = solar_system_.epoch();
   std::map<not_null<KSPCelestial const*>, Length> last_separations;
   std::map<not_null<KSPCelestial const*>, Sign> last_separation_changes;
 
@@ -420,10 +239,12 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::vector<double> tylo_bop_separations_in_m;
   std::vector<double> pol_bop_separations_in_m;
 
-  for (auto const* moon : moons) {
+  for (auto const moon : jool_moons_) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
-  for (int n = 0; t < a_century_hence; ++n, t = ksp_epoch_ + n * Hour) {
+  for (int n = 0;
+       t < a_century_hence;
+       ++n, t = solar_system_.epoch() + n * Hour) {
     auto const position = [t, &ephemeris](KSPCelestial const& celestial) {
       return ephemeris->trajectory(celestial.body)->EvaluatePosition(t);
     };
@@ -433,13 +254,14 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     };
     auto const jool_position = position(jool_);
 
-    for (auto const* moon : moons) {
+    for (auto const moon : jool_moons_) {
       Length const separation = (jool_position - position(*moon)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
         extremal_separations_in_m[moon].emplace_back(last_separations[moon] /
                                                      Metre);
-        times_in_s[moon].emplace_back((t - 1 * Hour - ksp_epoch_) / Second);
+        times_in_s[moon].emplace_back((t - 1 * Hour - solar_system_.epoch()) /
+                                      Second);
       }
       last_separations[moon] = separation;
       last_separation_changes.at(moon) = separation_change;
@@ -491,12 +313,12 @@ TEST_F(KSPSystemTest, KerbalSystem) {
 
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_1_year;
   FillPositions(*ephemeris,
-                ksp_epoch_,
+                solar_system_.epoch(),
                 1 * JulianYear,
                 barycentric_positions_1_year);
   std::vector<std::vector<Vector<double, KSP>>> barycentric_positions_2_year;
   FillPositions(*ephemeris,
-                ksp_epoch_,
+                solar_system_.epoch(),
                 2 * JulianYear,
                 barycentric_positions_2_year);
 
@@ -601,7 +423,8 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
     LOG(INFO) << "Integrating with step " << step;
 
     auto const start = std::chrono::system_clock::now();
-    auto const ephemeris = MakeEphemeris(
+    auto const ephemeris = solar_system_.MakeEphemeris(
+        /*fitting_tolerance=*/1 * Milli(Metre),
         Ephemeris<KSP>::FixedStepParameters(integrator(), step));
     ephemeris->Prolong(ksp_epoch_ + integration_duration);
     auto const end = std::chrono::system_clock::now();
