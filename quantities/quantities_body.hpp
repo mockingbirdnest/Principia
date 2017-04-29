@@ -378,6 +378,16 @@ bool IsFinite(Quantity<D> const& x) {
 }
 
 template<typename Q>
+constexpr Q Infinity() {
+  return Q(std::numeric_limits<double>::infinity());
+}
+
+template<>
+constexpr double Infinity<double>() {
+  return std::numeric_limits<double>::infinity();
+}
+
+template<typename Q>
 constexpr Q SIUnit() {
   return Q(1);
 }
