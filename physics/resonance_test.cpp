@@ -361,7 +361,7 @@ TEST_F(ResonanceTest, Corrected) {
 
   ephemeris->Prolong(long_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
-  auto const periods_at_long_term = 
+  auto const periods_at_long_term =
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
