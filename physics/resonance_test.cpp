@@ -1,4 +1,5 @@
 ﻿
+#include <algorithm>
 #include <experimental/filesystem>
 #include <map>
 #include <string>
@@ -182,7 +183,6 @@ class ResonanceTest : public ::testing::Test {
         s0 = Sign(moon_y(t1));
       }
       while (t1 <= ephemeris.t_max() && Sign(moon_y(t1)) == s0) {
-        //LOG(INFO)<<t1<<" "<<moon_y(t1);
         t1 += Δt;
       }
       // The moon crosses the xz plane between t1 and t1 - Δt.
@@ -272,7 +272,7 @@ TEST_F(ResonanceTest, Stock) {
 
   ephemeris->Prolong(mid_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
-  auto const periods_at_mid_term = 
+  auto const periods_at_mid_term =
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(periods_at_mid_term.at(laythe_), Eq(Infinity<Time>()));
@@ -345,7 +345,7 @@ TEST_F(ResonanceTest, Corrected) {
 
   ephemeris->Prolong(mid_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
-  auto const periods_at_mid_term = 
+  auto const periods_at_mid_term =
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
