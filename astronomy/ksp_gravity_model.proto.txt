@@ -8,7 +8,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
-    angular_frequency       : "1.45444104332861E-05 rad/s"
+    angular_frequency       : "1.45444104332861e-05 rad/s"
   }
   body {
     name : "Eeloo"
@@ -38,7 +38,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "25 deg"
-    angular_frequency       : "6.96658945572123E-06 rad/s"
+    angular_frequency       : "6.96658945572123e-06 rad/s"
   }
   body {
     name : "Bop"
@@ -48,7 +48,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "230 deg"
-    angular_frequency       : "1.15392095279512E-05 rad/s"
+    angular_frequency       : "1.15392095279512e-05 rad/s"
   }
   body {
     name : "Tylo"
@@ -58,7 +58,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
-    angular_frequency       : "2.96479652925011E-05 rad/s"
+    angular_frequency       : "2.96479652925011e-05 rad/s"
   }
   body {
     name : "Vall"
@@ -68,7 +68,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
-    angular_frequency       : "5.92965406096283E-05 rad/s"
+    angular_frequency       : "5.92965406096283e-05 rad/s"
   }
   body {
     name : "Laythe"
@@ -98,7 +98,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "90 deg"
-    angular_frequency       : "9.59003448390607E-05 rad/s"
+    angular_frequency       : "9.59003448390607e-05 rad/s"
   }
   body {
     name : "Ike"
@@ -108,7 +108,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
-    angular_frequency       : "9.59003407994517E-05 rad/s"
+    angular_frequency       : "9.59003407994517e-05 rad/s"
   }
   body {
     name : "Kerbin"
@@ -138,7 +138,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "230 deg"
-    angular_frequency       : "4.52078533000628E-05 rad/s"
+    angular_frequency       : "4.52078533000628e-05 rad/s"
   }
   body {
     name : "Eve"
@@ -148,7 +148,7 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "0 deg"
-    angular_frequency       : "7.80519913935352E-05 rad/s"
+    angular_frequency       : "7.80519913935352e-05 rad/s"
   }
   body {
     name : "Gilly"
@@ -168,6 +168,6 @@ gravity_model {
     axis_right_ascension    : "-90 deg"
     axis_declination        : "90 deg"
     reference_angle         : "190 deg"
-    angular_frequency       : "5.19271512990048E-06 rad/s"
+    angular_frequency       : "5.19271512990048e-06 rad/s"
   }
 }
