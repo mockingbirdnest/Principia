@@ -52,6 +52,10 @@ using ::testing::Lt;
 
 namespace physics {
 
+namespace {
+constexpr Time Δt = 45 * Minute;
+}  // namespace
+
 class ResonanceTest : public ::testing::Test {
  protected:
   using KSP = Frame<serialization::Frame::TestTag,
@@ -75,7 +79,7 @@ class ResonanceTest : public ::testing::Test {
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<KSP>::FixedStepParameters(
             McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-            /*step=*/45 * Minute));
+            /*step=*/Δt));
     jool_ = solar_system_.massive_body(*ephemeris, "Jool");
     pol_ = solar_system_.massive_body(*ephemeris, "Pol");
     bop_ = solar_system_.massive_body(*ephemeris, "Bop");
@@ -106,17 +110,15 @@ class ResonanceTest : public ::testing::Test {
   }
 
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
-                    bool const reference,
+                    Instant const& t_min,
+                    Instant const& t_max,
                     std::string const& name) {
-    Instant const begin = reference ? solar_system_.epoch() : mid_term_;
-    Instant const end = reference ? short_term_ : long_term_;
-    std::string const purpose = reference ? "reference" : "comparison";
     // Mathematica tends to be slow when dealing with quantities, so we give
     // everything in SI units.
     std::vector<double> times;
     // Indexed chronologically, then by body.
     std::vector<std::vector<Vector<double, KSP>>> barycentric_positions;
-    for (Instant t = begin; t < end; t += 45 * Minute) {
+    for (Instant t = t_min; t <= t_max; t += Δt) {
       auto const position = [&ephemeris, t](not_null<MassiveBody const*> body) {
         return ephemeris.trajectory(body)->EvaluatePosition(t);
       };
@@ -139,9 +141,9 @@ class ResonanceTest : public ::testing::Test {
             (position(body) - jool_system_barycentre.Get()) / Metre);
       }
     }
-    OFStream file(TEMP_DIR / (name + "_" + purpose + ".generated.wl"));
-    file << mathematica::Assign(name + purpose + "q", barycentric_positions);
-    file << mathematica::Assign(name + purpose + "t", times);
+    OFStream file(TEMP_DIR / (name + ".generated.wl"));
+    file << mathematica::Assign(name + "q", barycentric_positions);
+    file << mathematica::Assign(name + "t", times);
   }
 
   // Compute and log the measured periods of the moons.
@@ -179,7 +181,6 @@ class ResonanceTest : public ::testing::Test {
       if (t1 <= ephemeris.t_max()) {
         s0 = Sign(moon_y(t1));
       }
-      Time const Δt = 45 * Minute;
       while (t1 <= ephemeris.t_max() && Sign(moon_y(t1)) == s0) {
         //LOG(INFO)<<t1<<" "<<moon_y(t1);
         t1 += Δt;
@@ -282,8 +283,10 @@ TEST_F(ResonanceTest, Stock) {
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
                             expected_periods_.at(pol_)), Lt(31.4e-3));
 
-
-  //LogEphemeris(*ephemeris, /*reference=*/true, "stock");
+  LogEphemeris(*ephemeris,
+               ephemeris->t_max() - 10 * longest_joolian_period_,
+               ephemeris->t_max(),
+               "stock");
 }
 
 TEST_F(ResonanceTest, Corrected) {
@@ -370,7 +373,10 @@ TEST_F(ResonanceTest, Corrected) {
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
                             expected_periods_.at(pol_)), Lt(4.8e-3));
 
-//  LogEphemeris(*ephemeris, /*reference=*/false, "corrected");
+  LogEphemeris(*ephemeris,
+               ephemeris->t_max() - 10 * longest_joolian_period_,
+               ephemeris->t_max(),
+               "corrected");
 }
 
 #endif

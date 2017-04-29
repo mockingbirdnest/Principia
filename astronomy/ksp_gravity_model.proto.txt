@@ -1,3 +1,4 @@
+# This system is for KSP 1.2.2.
 gravity_model {
   body {
     name : "Kerbol"
