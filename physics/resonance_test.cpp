@@ -68,40 +68,32 @@ class ResonanceTest : public ::testing::Test {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
-    ephemeris_ = solar_system_.MakeEphemeris(
+  }
+
+  not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {
+    auto ephemeris = solar_system_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<KSP>::FixedStepParameters(
             McLachlanAtela1992Order5Optimal<Position<KSP>>(),
             /*step=*/45 * Minute));
-    kerbol_ = solar_system_.massive_body(*ephemeris_, "Kerbol");
-    jool_ = solar_system_.massive_body(*ephemeris_, "Jool");
-    pol_ = solar_system_.massive_body(*ephemeris_, "Pol");
-    bop_ = solar_system_.massive_body(*ephemeris_, "Bop");
-    tylo_ = solar_system_.massive_body(*ephemeris_, "Tylo");
-    vall_ = solar_system_.massive_body(*ephemeris_, "Vall");
-    laythe_ = solar_system_.massive_body(*ephemeris_, "Laythe");
+    jool_ = solar_system_.massive_body(*ephemeris, "Jool");
+    pol_ = solar_system_.massive_body(*ephemeris, "Pol");
+    bop_ = solar_system_.massive_body(*ephemeris, "Bop");
+    tylo_ = solar_system_.massive_body(*ephemeris, "Tylo");
+    vall_ = solar_system_.massive_body(*ephemeris, "Vall");
+    laythe_ = solar_system_.massive_body(*ephemeris, "Laythe");
 
-    bodies_ = {kerbol_, jool_, laythe_, vall_, tylo_, bop_, pol_};
     jool_system_ = {jool_, laythe_, vall_, tylo_, bop_, pol_};
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
-    parents_.emplace(jool_, kerbol_);
     for (auto const moon : joolian_moons_) {
-      parents_.emplace(moon, jool_);
-    }
-
-    for (auto const body : bodies_) {
-      if (body != kerbol_) {
-        elements_[body] = solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message(body->name()).
-                elements());
-        expected_periods_[body] =
-            (2 * π * Radian) / *elements_[body].mean_motion;
-      }
-    }
-    for (auto const body : joolian_moons_) {
+      elements_[moon] = solar_system_.MakeKeplerianElements(
+          solar_system_.keplerian_initial_state_message(moon->name()).
+              elements());
+      expected_periods_[moon] =
+          (2 * π * Radian) / *elements_[moon].mean_motion;
       longest_joolian_period_ =
-          std::max(longest_joolian_period_, expected_periods_[body]);
+          std::max(longest_joolian_period_, expected_periods_[moon]);
     }
     LOG(INFO) << "Longest Joolian period is " << longest_joolian_period_ / Day
               << " days";
@@ -109,6 +101,8 @@ class ResonanceTest : public ::testing::Test {
     short_term_ = solar_system_.epoch() + 30 * Day;
     mid_term_ = solar_system_.epoch() + 1 * JulianYear;
     long_term_ = solar_system_.epoch() + 100 * JulianYear;
+
+    return std::move(ephemeris);
   }
 
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
@@ -221,23 +215,18 @@ class ResonanceTest : public ::testing::Test {
   }
 
   SolarSystem<KSP> solar_system_;
-  std::unique_ptr<Ephemeris<KSP>> ephemeris_;
 
-  MassiveBody const* kerbol_;
   MassiveBody const* jool_;
   MassiveBody const* laythe_;
   MassiveBody const* vall_;
   MassiveBody const* tylo_;
   MassiveBody const* bop_;
   MassiveBody const* pol_;
-  std::vector<not_null<MassiveBody const*>> bodies_;
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
   Time longest_joolian_period_;
   Periods expected_periods_;
-  // Nullable second type because we want to use operator[].
-  std::map<not_null<MassiveBody const*>, MassiveBody const*> parents_;
   // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
 
@@ -249,11 +238,12 @@ class ResonanceTest : public ::testing::Test {
 #if !defined(_DEBUG)
 
 TEST_F(ResonanceTest, Stock) {
-  ephemeris_->Prolong(short_term_);
-  EXPECT_OK(ephemeris_->last_severe_integration_status());
+  auto const ephemeris = MakeEphemeris();
+  ephemeris->Prolong(short_term_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
 
   auto const periods_at_epoch =
-      ComputePeriods(*ephemeris_, ephemeris_->t_min());
+      ComputePeriods(*ephemeris, ephemeris->t_min());
   EXPECT_THAT(RelativeError(periods_at_epoch.at(laythe_),
                             expected_periods_.at(laythe_)), Lt(1.5e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(vall_),
@@ -266,8 +256,8 @@ TEST_F(ResonanceTest, Stock) {
                             expected_periods_.at(pol_)), Lt(5.7e-3));
 
   auto const periods_at_short_term =
-      ComputePeriods(*ephemeris_,
-                     ephemeris_->t_max() - 2 * longest_joolian_period_);
+      ComputePeriods(*ephemeris,
+                     ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_short_term.at(laythe_),
                             expected_periods_.at(laythe_)), Lt(1.6e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(vall_),
@@ -279,11 +269,11 @@ TEST_F(ResonanceTest, Stock) {
   EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
                             expected_periods_.at(pol_)), Lt(4.2e-3));
 
-  ephemeris_->Prolong(mid_term_);
-  EXPECT_OK(ephemeris_->last_severe_integration_status());
+  ephemeris->Prolong(mid_term_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
   auto const periods_at_mid_term = 
-      ComputePeriods(*ephemeris_,
-                     ephemeris_->t_max() - 2 * longest_joolian_period_);
+      ComputePeriods(*ephemeris,
+                     ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(periods_at_mid_term.at(laythe_), Eq(Infinity<Time>()));
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
   EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>()));
@@ -293,31 +283,95 @@ TEST_F(ResonanceTest, Stock) {
                             expected_periods_.at(pol_)), Lt(31.4e-3));
 
 
-  //LogEphemeris(*ephemeris_, /*reference=*/true, "stock");
+  //LogEphemeris(*ephemeris, /*reference=*/true, "stock");
 }
 
-//TEST_F(ResonanceTest, Corrected) {
-//  // Instead of putting the moons in a 1:2:4 resonance, put them in a
-//  // 1:4/φ:16/φ^2 dissonance.
-//  elements_[vall_].mean_motion =
-//      *elements_[laythe_].mean_motion / 2.47214;
-//  *elements_[tylo_].mean_motion =
-//      *elements_[vall_].mean_motion / 2.47214;
-//
-//  // Put Bop somewhere further away so it's not kicked out.  A 2:3 mean-motion
-//  // resonance with Pol works well.
-//  *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 1.5;
-//
-//  ephemeris_->Prolong(short_term_);
-//  ComputePeriods(*ephemeris_, ephemeris_->t_min());
-//  ComputePeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_joolian_period_);
-//  LogEphemeris(*ephemeris_, /*reference=*/true, "corrected");
-//  ephemeris_->Prolong(mid_term_);
-//  ComputePeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_joolian_period_);
-//  ephemeris_->Prolong(comparison_);
-//  ComputePeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_joolian_period_);
-//  LogEphemeris(*ephemeris_, /*reference=*/false, "corrected");
-//}
+TEST_F(ResonanceTest, Corrected) {
+  // Create a first ephemeris to obtain the elements of the stock game.
+  auto ephemeris = MakeEphemeris();
+
+  // Instead of putting the moons in a 1:2:4 resonance, put them in a
+  // 1:4/φ:16/φ^2 dissonance.
+  constexpr double φ = 1.61803398875;
+  elements_[vall_].mean_motion =
+      *elements_[laythe_].mean_motion / (4.0 / φ);
+  *elements_[tylo_].mean_motion =
+      *elements_[laythe_].mean_motion / (16.0 / (φ * φ));
+
+  // All hail Retrobop!
+  elements_[bop_].inclination = 180 * Degree - elements_[bop_].inclination;
+  *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 0.7;
+
+  solar_system_.ReplaceElements("Vall", elements_[vall_]);
+  solar_system_.ReplaceElements("Tylo", elements_[tylo_]);
+  solar_system_.ReplaceElements("Bop", elements_[bop_]);
+
+  // Recreate the ephemeris to use the corrected system.
+  ephemeris = MakeEphemeris();
+  ephemeris->Prolong(short_term_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
+
+  auto const periods_at_epoch =
+      ComputePeriods(*ephemeris, ephemeris->t_min());
+  EXPECT_THAT(RelativeError(periods_at_epoch.at(laythe_),
+                            expected_periods_.at(laythe_)), Lt(3.9e-3));
+  EXPECT_THAT(RelativeError(periods_at_epoch.at(vall_),
+                            expected_periods_.at(vall_)), Lt(5.0e-3));
+  EXPECT_THAT(RelativeError(periods_at_epoch.at(tylo_),
+                            expected_periods_.at(tylo_)), Lt(0.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_epoch.at(bop_),
+                            expected_periods_.at(bop_)), Lt(12.9e-3));
+  EXPECT_THAT(RelativeError(periods_at_epoch.at(pol_),
+                            expected_periods_.at(pol_)), Lt(10.6e-3));
+
+  auto const periods_at_short_term =
+      ComputePeriods(*ephemeris,
+                     ephemeris->t_max() - 2 * longest_joolian_period_);
+  EXPECT_THAT(RelativeError(periods_at_short_term.at(laythe_),
+                            expected_periods_.at(laythe_)), Lt(5.0e-3));
+  EXPECT_THAT(RelativeError(periods_at_short_term.at(vall_),
+                            expected_periods_.at(vall_)), Lt(7.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_short_term.at(tylo_),
+                            expected_periods_.at(tylo_)), Lt(0.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_short_term.at(bop_),
+                            expected_periods_.at(bop_)), Lt(7.6e-3));
+  EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
+                            expected_periods_.at(pol_)), Lt(21.9-3));
+
+  ephemeris->Prolong(mid_term_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
+  auto const periods_at_mid_term = 
+      ComputePeriods(*ephemeris,
+                     ephemeris->t_max() - 2 * longest_joolian_period_);
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
+                            expected_periods_.at(laythe_)), Lt(3.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(vall_),
+                            expected_periods_.at(vall_)), Lt(1.2e-3));
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(tylo_),
+                            expected_periods_.at(tylo_)), Lt(0.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
+                            expected_periods_.at(bop_)), Lt(59.8e-3));
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
+                            expected_periods_.at(pol_)), Lt(19.1e-3));
+
+  ephemeris->Prolong(long_term_);
+  EXPECT_OK(ephemeris->last_severe_integration_status());
+  auto const periods_at_long_term = 
+      ComputePeriods(*ephemeris,
+                     ephemeris->t_max() - 2 * longest_joolian_period_);
+  EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
+                            expected_periods_.at(laythe_)), Lt(5.2e-3));
+  EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
+                            expected_periods_.at(vall_)), Lt(10.0e-3));
+  EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
+                            expected_periods_.at(tylo_)), Lt(0.7e-3));
+  EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
+                            expected_periods_.at(bop_)), Lt(7.7e-3));
+  EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
+                            expected_periods_.at(pol_)), Lt(4.8e-3));
+
+//  LogEphemeris(*ephemeris, /*reference=*/false, "corrected");
+}
 
 #endif
 

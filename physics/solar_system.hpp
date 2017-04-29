@@ -95,6 +95,8 @@ class SolarSystem final {
   // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
+  void ReplaceElements(std::string const& name,
+                       KeplerianElements<Frame> const& elements);
 
  private:
   // Fails if the given |body| doesn't have a consistent set of fields.
@@ -124,7 +126,7 @@ class SolarSystem final {
            serialization::InitialState::Cartesian::Body const*>
       cartesian_initial_state_map_;
   std::map<std::string,
-           serialization::InitialState::Keplerian::Body const*>
+           serialization::InitialState::Keplerian::Body*>
       keplerian_initial_state_map_;
 };
 
