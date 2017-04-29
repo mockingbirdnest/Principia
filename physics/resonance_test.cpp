@@ -81,11 +81,11 @@ class ResonanceTest : public ::testing::Test {
             McLachlanAtela1992Order5Optimal<Position<KSP>>(),
             /*step=*/Δt));
     jool_ = solar_system_.massive_body(*ephemeris, "Jool");
-    pol_ = solar_system_.massive_body(*ephemeris, "Pol");
-    bop_ = solar_system_.massive_body(*ephemeris, "Bop");
-    tylo_ = solar_system_.massive_body(*ephemeris, "Tylo");
-    vall_ = solar_system_.massive_body(*ephemeris, "Vall");
     laythe_ = solar_system_.massive_body(*ephemeris, "Laythe");
+    vall_ = solar_system_.massive_body(*ephemeris, "Vall");
+    tylo_ = solar_system_.massive_body(*ephemeris, "Tylo");
+    bop_ = solar_system_.massive_body(*ephemeris, "Bop");
+    pol_ = solar_system_.massive_body(*ephemeris, "Pol");
 
     jool_system_ = {jool_, laythe_, vall_, tylo_, bop_, pol_};
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
@@ -292,6 +292,8 @@ TEST_F(ResonanceTest, Stock) {
 TEST_F(ResonanceTest, Corrected) {
   // Create a first ephemeris to obtain the elements of the stock game.
   auto ephemeris = MakeEphemeris();
+
+  // TODO(phl): Move the patching to a common place.
 
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.

@@ -141,11 +141,11 @@ TEST_F(SolarSystemTest, KSPSystem) {
       solar_system_.keplerian_initial_state_message("Eeloo");
   EXPECT_EQ(2.60000000000000009e-01,
             eeloo_initial_state.elements().eccentricity());
-  EXPECT_EQ("4.00223155970064009e-08 rad /s",
+  EXPECT_EQ("4.00223155970063943e-08 rad /s",
             eeloo_initial_state.elements().mean_motion());
   auto const& eeloo_gravity_model =
       solar_system_.gravity_model_message("Eeloo");
-  EXPECT_EQ("74410814527.049576 m^3/s^2",
+  EXPECT_EQ("74410814527.0496 m^3/s^2",
             eeloo_gravity_model.gravitational_parameter());
 }
 

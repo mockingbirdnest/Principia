@@ -62,6 +62,44 @@ class KSPSystem {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+
+    // TODO(phl): Move the patching to a common place.
+
+    auto ephemeris = solar_system_.MakeEphemeris(
+        /*fitting_tolerance=*/1 * Milli(Metre),
+        Ephemeris<KSP>::FixedStepParameters(
+            McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+            /*step=*/45 * Minute));
+    KeplerianElements<KSP> laythe_elements =
+        solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message("Laythe").elements());
+    KeplerianElements<KSP> vall_elements =
+        solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message("Vall").elements());
+    KeplerianElements<KSP> tylo_elements =
+        solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message("Tylo").elements());
+    KeplerianElements<KSP> bop_elements =
+        solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message("Bop").elements());
+    KeplerianElements<KSP> pol_elements =
+        solar_system_.MakeKeplerianElements(
+            solar_system_.keplerian_initial_state_message("Pol").elements());
+
+    // Instead of putting the moons in a 1:2:4 resonance, put them in a
+    // 1:4/φ:16/φ^2 dissonance.
+    constexpr double φ = 1.61803398875;
+    vall_elements.mean_motion = *laythe_elements.mean_motion / (4.0 / φ);
+    *tylo_elements.mean_motion =
+        *laythe_elements.mean_motion / (16.0 / (φ * φ));
+
+    // All hail Retrobop!
+    bop_elements.inclination = 180 * Degree - bop_elements.inclination;
+    *bop_elements.mean_motion = *pol_elements.mean_motion / 0.7;
+
+    solar_system_.ReplaceElements("Vall", vall_elements);
+    solar_system_.ReplaceElements("Tylo", tylo_elements);
+    solar_system_.ReplaceElements("Bop", bop_elements);
   }
 
   SolarSystem<KSP> solar_system_;
