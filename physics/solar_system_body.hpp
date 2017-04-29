@@ -434,7 +434,7 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
             pair.second;
         if (Contains(previous_layer, body->parent())) {
           current_layer.insert(name);
-          KeplerianElements<Frame> elements =
+          KeplerianElements<Frame> const elements =
               MakeKeplerianElements(body->elements());
           hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
                                   FindOrDie(unowned_bodies, body->parent()),

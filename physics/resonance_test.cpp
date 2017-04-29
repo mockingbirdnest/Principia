@@ -87,56 +87,20 @@ class ResonanceTest : public ::testing::Test {
         elements_[body] = solar_system_.MakeKeplerianElements(
             solar_system_.keplerian_initial_state_message(body->name()).
                 elements());
+        expected_periods_[body] =
+            (2 * π * Radian) / *elements_[body].mean_motion;
+        longest_expected_period_ =
+            std::max(longest_expected_period_, expected_periods_[body]);
       }
     }
 
-    reference_ = solar_system_.epoch() + 90 * Day;
+    reference_ = solar_system_.epoch() + /*90*/10 * Day;
     long_time_ = solar_system_.epoch() + 100 * JulianYear;
     comparison_ = long_time_ + 90 * Day;
 
     // This test is mostly a tool for investigating orbit stability, so we want
     // log.
     google::LogToStderr();
-  }
-
-  // Fills |stock_orbits_|.
-  // KSP assumes secondaries are massless.
-  void ComputeStockOrbits() {
-    for (auto const body : jool_system_) {
-      stock_orbits_.emplace(
-          body,
-          KeplerOrbit<KSP>(*parents_[body],
-                           test_particle_,
-                           elements_[body],
-                           solar_system_.epoch()));
-    }
-  }
-
-  // Keep stock's mean motion when changing the gravitational parameter (instead
-  // of keeping the semimajor axis).
-  void UseStockMeanMotions() {
-    for (auto const body : jool_system_) {
-      elements_[body].semimajor_axis = std::experimental::nullopt;
-      elements_[body].mean_motion =
-          stock_orbits_.at(body).elements_at_epoch().mean_motion;
-    }
-  }
-
-  DegreesOfFreedom<KSP> StockInitialState(not_null<MassiveBody const*> body) {
-    if (body == kerbol_) {
-      return origin_;
-    } else {
-      return StockInitialState(parents_[body]) +
-             stock_orbits_.at(body).StateVectors(solar_system_.epoch());
-    }
-  }
-
-  std::vector<DegreesOfFreedom<KSP>> StockInitialStates() {
-    std::vector<DegreesOfFreedom<KSP>> initial_states;
-    for (auto const body : bodies_) {
-      initial_states.emplace_back(StockInitialState(body));
-    }
-    return initial_states;
   }
 
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
@@ -179,7 +143,7 @@ class ResonanceTest : public ::testing::Test {
   }
 
   // Compute and log the measured periods of the moons.
-  void LogPeriods(Ephemeris<KSP> const& ephemeris) {
+  void LogPeriods(Ephemeris<KSP> const& ephemeris, Instant const t) {
     auto const position = [this, &ephemeris](
         not_null<MassiveBody const*> body, Instant const& t) {
       return ephemeris.trajectory(body)->EvaluatePosition(t);
@@ -204,36 +168,31 @@ class ResonanceTest : public ::testing::Test {
         return barycentric_position(moon, t).coordinates().y;
       };
 
-      LOG(INFO) << moon->name();
-
-      Sign const s0(moon_y(solar_system_.epoch()));
-      Instant t0 = solar_system_.epoch();
+      Instant t1 = t;
+      Sign const s0(moon_y(t1));
       Time const Δt = 45 * Minute;
-      while (Sign(moon_y(t0)) == s0) {
-        t0 += Δt;
+      while (Sign(moon_y(t1)) == s0) {
+        LOG(INFO)<<t1<<" "<<moon_y(t1);
+        t1 += Δt;
       }
-      // The moon crosses the xz plane between t0 and t0 - Δt.
-      Instant t1 = t0;
-      int const orbits = moon == laythe_ ? 8 : moon == vall_ ? 4 : 2;
-      for (int i = 0; i < orbits; ++i) {
-        while (Sign(moon_y(t1)) != s0) {
-          t1 += Δt;
-        }
-        // The crossing of the xz plane halfway through the orbit occurs between
-        // t1 and t1 - Δt.
-        while (Sign(moon_y(t1)) == s0) {
-          t1 += Δt;
-        }
-        // The |i|th orbit ends between t1 and t1 - Δt.
+      // The moon crosses the xz plane between t1 and t1 - Δt.
+      Instant t2 = t1;
+      while (Sign(moon_y(t2)) != s0) {
+        t2 += Δt;
       }
+      // The crossing of the xz plane halfway through the orbit occurs between
+      // t2 and t2 - Δt.
+      while (Sign(moon_y(t2)) == s0) {
+        t2 += Δt;
+      }
+      // The orbit ends between t2 and t2 - Δt.
       Time const actual_period =
-          (Bisect(moon_y, t1 - Δt, t1) - Bisect(moon_y, t0 - Δt, t0)) / orbits;
-      Time const expected_period = (2 * π * Radian) /
-                                   *elements_[moon].mean_motion;
+          Bisect(moon_y, t2 - Δt, t2) - Bisect(moon_y, t1 - Δt, t1);
+      LOG(INFO) << moon->name();
       LOG(INFO) << "actual period   : " << actual_period;
-      LOG(INFO) << "expected period : " << expected_period;
+      LOG(INFO) << "expected period : " << expected_periods_[moon];
       LOG(INFO) << "error           : "
-                << RelativeError(expected_period, actual_period);
+                << RelativeError(expected_periods_[moon], actual_period);
     }
   }
 
@@ -328,10 +287,10 @@ class ResonanceTest : public ::testing::Test {
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
   std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
-  std::map<not_null<MassiveBody const*>, KeplerOrbit<KSP>> stock_orbits_;
+  Time longest_expected_period_;
+  std::map<not_null<MassiveBody const*>, Time> expected_periods_;
   // Nullable second type because we want to use operator[].
   std::map<not_null<MassiveBody const*>, MassiveBody const*> parents_;
-  MasslessBody test_particle_;
   // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
   DegreesOfFreedom<KSP> const origin_ = {KSP::origin, Velocity<KSP>()};
 
@@ -343,14 +302,16 @@ class ResonanceTest : public ::testing::Test {
 #if !defined(_DEBUG)
 
 TEST_F(ResonanceTest, Stock) {
-  ComputeStockOrbits();
-  UseStockMeanMotions();
   ephemeris_->Prolong(reference_);
   EXPECT_OK(ephemeris_->last_severe_integration_status());
-  LogPeriods(*ephemeris_);
+
+  LogPeriods(*ephemeris_, ephemeris_->t_min());
+  LogPeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_expected_period_);
+
   LogEphemeris(*ephemeris_, /*reference=*/true, "stock");
   ephemeris_->Prolong(long_time_);
   auto const status = ephemeris_->last_severe_integration_status();
+  LogPeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_expected_period_);
   EXPECT_EQ(Error::INVALID_ARGUMENT, status.error());
   EXPECT_THAT(
       status.message(),
@@ -364,9 +325,6 @@ TEST_F(ResonanceTest, Stock) {
 }
 
 TEST_F(ResonanceTest, Corrected) {
-  ComputeStockOrbits();
-  UseStockMeanMotions();
-
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.
   elements_[vall_].mean_motion =
@@ -379,10 +337,13 @@ TEST_F(ResonanceTest, Corrected) {
   *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 1.5;
 
   ephemeris_->Prolong(reference_);
-  LogPeriods(*ephemeris_);
+  LogPeriods(*ephemeris_, ephemeris_->t_min());
+  LogPeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_expected_period_);
   LogEphemeris(*ephemeris_, /*reference=*/true, "corrected");
   ephemeris_->Prolong(long_time_);
+  LogPeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_expected_period_);
   ephemeris_->Prolong(comparison_);
+  LogPeriods(*ephemeris_, ephemeris_->t_max() - 2 * longest_expected_period_);
   LogEphemeris(*ephemeris_, /*reference=*/false, "corrected");
 }
 
