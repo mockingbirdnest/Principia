@@ -45,6 +45,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::DebugString;
 using quantities::Length;
 using quantities::ParseQuantity;
 using quantities::Speed;
@@ -109,7 +110,8 @@ void SolarSystem<Frame>::Initialize(
     CHECK(it1 == gravity_model_map_.end()) << it1->first;
     CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
   } else {
-    for (auto const& body : initial_state_.initial_state().keplerian().body()) {
+    for (auto& body : *initial_state_.mutable_initial_state()->
+                          mutable_keplerian()->mutable_body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =
           keplerian_initial_state_map_.emplace(body.name(), &body);
@@ -234,6 +236,28 @@ DegreesOfFreedom<Frame> SolarSystem<Frame>::MakeDegreesOfFreedom(
 }
 
 template<typename Frame>
+KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
+    serialization::InitialState::Keplerian::Body::Elements const& elements) {
+  KeplerianElements<Frame> result;
+  result.eccentricity = elements.eccentricity();
+  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
+  if (elements.has_semimajor_axis()) {
+    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
+  }
+  if (elements.has_mean_motion()) {
+    result.mean_motion =
+        ParseQuantity<AngularFrequency>(elements.mean_motion());
+  }
+  result.inclination = ParseQuantity<Angle>(elements.inclination());
+  result.longitude_of_ascending_node =
+      ParseQuantity<Angle>(elements.longitude_of_ascending_node());
+  result.argument_of_periapsis =
+      ParseQuantity<Angle>(elements.argument_of_periapsis());
+  result.mean_anomaly = ParseQuantity<Angle>(elements.mean_anomaly());
+  return result;
+}
+
+template<typename Frame>
 not_null<std::unique_ptr<MassiveBody>> SolarSystem<Frame>::MakeMassiveBody(
     serialization::GravityModel::Body const& body) {
   Check(body);
@@ -311,6 +335,29 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
 }
 
 template<typename Frame>
+void SolarSystem<Frame>::ReplaceElements(
+    std::string const& name,
+    KeplerianElements<Frame> const& elements) {
+  auto* const body_elements =
+      FindOrDie(keplerian_initial_state_map_, name)->mutable_elements();
+  body_elements->set_eccentricity(elements.eccentricity);
+  if (elements.semimajor_axis) {
+    body_elements->set_semimajor_axis(DebugString(*elements.semimajor_axis));
+  }
+  if (elements.mean_motion) {
+    // s^-1 rad is inconvenient to parse.
+    body_elements->set_mean_motion(
+        DebugString(*elements.mean_motion / (Radian / Second)) + " rad/s");
+  }
+  body_elements->set_inclination(DebugString(elements.inclination));
+  body_elements->set_longitude_of_ascending_node(
+      DebugString(elements.longitude_of_ascending_node));
+  body_elements->set_argument_of_periapsis(
+      DebugString(elements.argument_of_periapsis));
+  body_elements->set_mean_anomaly(DebugString(elements.mean_anomaly));
+}
+
+template<typename Frame>
 void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK(body.has_name());
   CHECK(body.has_gravitational_parameter()) << body.name();
@@ -358,28 +405,6 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
 }
 
 template<typename Frame>
-KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
-    serialization::InitialState::Keplerian::Body::Elements const& elements) {
-  KeplerianElements<Frame> result;
-  result.eccentricity = elements.eccentricity();
-  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
-  if (elements.has_semimajor_axis()) {
-    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
-  }
-  if (elements.has_mean_motion()) {
-    result.mean_motion =
-        ParseQuantity<AngularFrequency>(elements.mean_motion());
-  }
-  result.inclination = ParseQuantity<Angle>(elements.inclination());
-  result.longitude_of_ascending_node =
-      ParseQuantity<Angle>(elements.longitude_of_ascending_node());
-  result.argument_of_periapsis =
-      ParseQuantity<Angle>(elements.argument_of_periapsis());
-  result.mean_anomaly = ParseQuantity<Angle>(elements.mean_anomaly());
-  return result;
-}
-
-template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
 SolarSystem<Frame>::MakeAllMassiveBodies() {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -409,8 +434,7 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
     for (auto const& pair : keplerian_initial_state_map_) {
       const auto& name = pair.first;
-      serialization::InitialState::Keplerian::Body const* const body =
-          pair.second;
+      serialization::InitialState::Keplerian::Body* const body = pair.second;
       CHECK_EQ(body->has_parent(), body->has_elements()) << name;
       if (!body->has_parent()) {
         CHECK(primary.empty()) << name;
@@ -430,11 +454,10 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     do {
       for (auto const& pair : keplerian_initial_state_map_) {
         const auto& name = pair.first;
-        serialization::InitialState::Keplerian::Body const* const body =
-            pair.second;
+        serialization::InitialState::Keplerian::Body* const body = pair.second;
         if (Contains(previous_layer, body->parent())) {
           current_layer.insert(name);
-          KeplerianElements<Frame> elements =
+          KeplerianElements<Frame> const elements =
               MakeKeplerianElements(body->elements());
           hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
                                   FindOrDie(unowned_bodies, body->parent()),

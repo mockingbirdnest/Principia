@@ -76,6 +76,18 @@ using SquareRoot = NthRoot<2, Q>;
 template<typename Q>
 using CubeRoot = NthRoot<3, Q>;
 
+// Returns a positive infinity of |Q|.
+template<typename Q>
+constexpr Q Infinity();
+template<>
+constexpr double Infinity<double>();
+
+// Returns a quiet NaN of |Q|.
+template<typename Q>
+constexpr Q NaN();
+template<>
+constexpr double NaN<double>();
+
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.
 template<typename Q>
@@ -184,6 +196,10 @@ class Quantity final {
       Quantity<RDimensions> const& right);
 
   template<typename Q>
+  friend constexpr Q Infinity();
+  template<typename Q>
+  friend constexpr Q NaN();
+  template<typename Q>
   friend constexpr Q SIUnit();
 
   template<int exponent, typename BaseDimensions>
@@ -220,11 +236,13 @@ using internal_quantities::Cube;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
 using internal_quantities::Exponentiation;
+using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
 using internal_quantities::is_quantity;
 using internal_quantities::Length;
 using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;
+using internal_quantities::NaN;
 using internal_quantities::Pow;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;

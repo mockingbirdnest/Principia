@@ -35,6 +35,7 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::NaN;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::SIUnit;
@@ -483,12 +484,12 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
   // if it has an influence.
   plugin.InsertUnloadedPart(
       enterprise_d_saucer,
-      {Displacement<AliceSun>({std::numeric_limits<double>::quiet_NaN() * a,
-                               std::numeric_limits<double>::quiet_NaN() * a,
-                               std::numeric_limits<double>::quiet_NaN() * a}),
-       Velocity<AliceSun>({std::numeric_limits<double>::quiet_NaN() * v0,
-                           std::numeric_limits<double>::quiet_NaN() * v0,
-                           std::numeric_limits<double>::quiet_NaN() * v0})});
+      {Displacement<AliceSun>({NaN<Length>(),
+                               NaN<Length>(),
+                               NaN<Length>()}),
+       Velocity<AliceSun>({NaN<Speed>(),
+                           NaN<Speed>(),
+                           NaN<Speed>()})});
   {
     std::vector<IdAndOwnedPart> parts;
     parts.emplace_back(

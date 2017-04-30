@@ -82,6 +82,8 @@ class SolarSystem final {
   // structured objects.
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
       serialization::InitialState::Cartesian::Body const& body);
+  static KeplerianElements<Frame> MakeKeplerianElements(
+      serialization::InitialState::Keplerian::Body::Elements const& elements);
   static not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       serialization::GravityModel::Body const& body);
   static not_null<std::unique_ptr<RotatingBody<Frame>>> MakeRotatingBody(
@@ -93,6 +95,8 @@ class SolarSystem final {
   // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
+  void ReplaceElements(std::string const& name,
+                       KeplerianElements<Frame> const& elements);
 
  private:
   // Fails if the given |body| doesn't have a consistent set of fields.
@@ -105,9 +109,6 @@ class SolarSystem final {
   MakeRotatingBodyParameters(serialization::GravityModel::Body const& body);
   static not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
   MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
-
-  static KeplerianElements<Frame> MakeKeplerianElements(
-      serialization::InitialState::Keplerian::Body::Elements const& elements);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
   MakeAllMassiveBodies();
@@ -125,7 +126,7 @@ class SolarSystem final {
            serialization::InitialState::Cartesian::Body const*>
       cartesian_initial_state_map_;
   std::map<std::string,
-           serialization::InitialState::Keplerian::Body const*>
+           serialization::InitialState::Keplerian::Body*>
       keplerian_initial_state_map_;
 };
 
