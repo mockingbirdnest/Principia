@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "astronomy/ksp_stabilizer.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 
 #include "physics/kepler_orbit.hpp"
 #include "quantities/numbers.hpp"
@@ -8,13 +8,13 @@
 
 namespace principia {
 namespace astronomy {
-namespace ksp_stabilizer_internal {
+namespace stabilize_ksp_internal {
 
 using geometry::Position;
 using quantities::si::Degree;
 
 template<typename Frame>
-void KSPStabilizer(SolarSystem<Frame>& solar_system) {
+void StabilizeKSP(SolarSystem<Frame>& solar_system) {
   KeplerianElements<Frame> laythe_elements =
       solar_system.MakeKeplerianElements(
           solar_system.keplerian_initial_state_message("Laythe").elements());
@@ -46,6 +46,6 @@ void KSPStabilizer(SolarSystem<Frame>& solar_system) {
   solar_system.ReplaceElements("Bop", bop_elements);
 }
 
-}  // namespace ksp_stabilizer_internal
+}  // namespace stabilize_ksp_internal
 }  // namespace astronomy
 }  // namespace principia

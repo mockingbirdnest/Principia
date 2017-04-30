@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "astronomy/ksp_stabilizer.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -296,7 +296,7 @@ TEST_F(KSPResonanceTest, Stock) {
 }
 
 TEST_F(KSPResonanceTest, Corrected) {
-  KSPStabilizer(solar_system_);
+  StabilizeKSP(solar_system_);
 
   auto const ephemeris = MakeEphemeris();
   ephemeris->Prolong(short_term_);
