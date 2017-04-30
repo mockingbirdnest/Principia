@@ -102,11 +102,11 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\astronomy\gravity_model.cfg">
+    <None Include="..\astronomy\sol_gravity_model.cfg">
       <Link>real_solar_system\gravity_model.cfg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="..\astronomy\initial_state_jd_2433282_500000000.cfg">
+    <None Include="..\astronomy\sol_initial_state_jd_2433282_500000000.cfg">
       <Link>real_solar_system\initial_state_jd_2433282_500000000.cfg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

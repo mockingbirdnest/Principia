@@ -78,9 +78,9 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
         small_initial_state_(Position<ICRFJ2000Equator>(),
                              Velocity<ICRFJ2000Equator>()) {
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
+        SOLUTION_DIR / "astronomy" / "test_gravity_model_two_bodies.proto.txt",
         SOLUTION_DIR / "astronomy" /
-            "initial_state_two_bodies_circular_test.proto.txt");
+            "test_initial_state_two_bodies_circular.proto.txt");
     t0_ = solar_system_.epoch();
     ephemeris_ = solar_system_.MakeEphemeris(
                     /*fitting_tolerance=*/1 * Milli(Metre),

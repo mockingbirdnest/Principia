@@ -59,9 +59,9 @@ class MercuryPerihelionTest : public testing::Test {
   static void SetUpTestCase() {
     google::LogToStderr();
     solar_system_1950_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433282_500000000.proto.txt");
+            "sol_initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(

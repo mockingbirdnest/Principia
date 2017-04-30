@@ -68,9 +68,9 @@ class МолнияOrbitTest : public ::testing::Test {
   static void SetUpTestCase() {
     google::LogToStderr();
     solar_system_2000_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2451545_000000000.proto.txt");
+            "sol_initial_state_jd_2451545_000000000.proto.txt");
     ephemeris_ = solar_system_2000_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(

@@ -10,9 +10,9 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/rigid_motion.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
-#include "rigid_motion.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -33,6 +33,11 @@ using geometry::Vector;
 using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
+using physics::DegreesOfFreedom;
+using physics::Ephemeris;
+using physics::KeplerianElements;
+using physics::MassiveBody;
+using physics::SolarSystem;
 using quantities::GravitationalParameter;
 using quantities::Infinity;
 using quantities::Mass;
@@ -51,7 +56,7 @@ using testing_utilities::RelativeError;
 using ::testing::Eq;
 using ::testing::Lt;
 
-namespace physics {
+namespace astronomy {
 
 namespace {
 constexpr Time Δt = 45 * Minute;
@@ -71,8 +76,8 @@ class ResonanceTest : public ::testing::Test {
     google::LogToStderr();
 
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
   }
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {
@@ -383,5 +388,5 @@ TEST_F(ResonanceTest, Corrected) {
 
 #endif
 
-}  // namespace physics
+}  // namespace astronomy
 }  // namespace principia

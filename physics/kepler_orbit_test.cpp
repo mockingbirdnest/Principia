@@ -57,9 +57,9 @@ class KeplerOrbitTest : public ::testing::Test {};
 TEST_F(KeplerOrbitTest, EarthMoon) {
   SolarSystem<ICRFJ2000Equator> solar_system;
   solar_system.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
   auto const earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
                          solar_system.gravity_model_message("Earth"));
   auto const moon = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
