@@ -121,12 +121,12 @@ TEST_F(SolarSystemTest, KSPSystem) {
                                 "Ike",
                                 "Jool",
                                 "Kerbin",
-                                "Kerbol",
                                 "Laythe",
                                 "Minmus",
                                 "Moho",
                                 "Mun",
                                 "Pol",
+                                "Sun",
                                 "Tylo",
                                 "Vall"}));
   EXPECT_EQ(1, solar_system_.index("Dres"));

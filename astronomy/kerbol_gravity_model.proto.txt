@@ -1,7 +1,7 @@
 # This system is for KSP 1.2.2.
 gravity_model {
   body {
-    name : "Kerbol"
+    name : "Sun"
     gravitational_parameter : "1.17233279483249e+18 m^3/s^2"
     reference_instant       : 2451545.000000000
     mean_radius             : "261600000 m"

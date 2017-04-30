@@ -86,7 +86,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
             Ephemeris<KSP>::FixedStepParameters(
                 McLachlanAtela1992Order5Optimal<Position<KSP>>(),
                 /*step=*/45 * Minute))),
-        kerbol_(solar_system_.massive_body(*ephemeris_, "Kerbol")),
+        sun_(solar_system_.massive_body(*ephemeris_, "Sun")),
         eeloo_(solar_system_.massive_body(*ephemeris_, "Eeloo")),
         jool_(solar_system_.massive_body(*ephemeris_, "Jool")),
         pol_(solar_system_.massive_body(*ephemeris_, "Pol")),
@@ -103,7 +103,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
         eve_(solar_system_.massive_body(*ephemeris_, "Eve")),
         gilly_(solar_system_.massive_body(*ephemeris_, "Gilly")),
         moho_(solar_system_.massive_body(*ephemeris_, "Moho")),
-        all_bodies_{kerbol_,
+        all_bodies_{sun_,
                     eeloo_,
                     jool_,
                     pol_,
@@ -166,7 +166,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> ephemeris_;
 
-  not_null<MassiveBody const*> const kerbol_;
+  not_null<MassiveBody const*> const sun_;
   not_null<MassiveBody const*> const eeloo_;
   not_null<MassiveBody const*> const jool_;
   not_null<MassiveBody const*> const pol_;
