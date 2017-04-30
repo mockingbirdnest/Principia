@@ -2,11 +2,10 @@
 
 #include "astronomy/ksp_stabilizer.hpp"
 
-#include <cmath>
-
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -44,7 +43,6 @@ void KSPStabilizer(SolarSystem<Frame>& solar_system) {
 
   // Instead of putting the moons in a 1:2:4 resonance, put them in a
   // 1:4/φ:16/φ^2 dissonance.
-  constexpr double φ = (1.0 + std::sqrt(5.0)) / 2.0;
   vall_elements.mean_motion = *laythe_elements.mean_motion / (4.0 / φ);
   *tylo_elements.mean_motion =
       *laythe_elements.mean_motion / (16.0 / (φ * φ));
