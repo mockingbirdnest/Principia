@@ -313,6 +313,53 @@ SolarSystem<Frame>::MakeOblateBody(
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<HierarchicalSystem<Frame>>>
+SolarSystem<Frame>::MakeHierarchicalSystem() {
+  // First, construct all the bodies and find the primary body of the system.
+  std::string primary;
+  std::map<std::string,
+            not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
+  std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
+  for (auto const& pair : keplerian_initial_state_map_) {
+    const auto& name = pair.first;
+    serialization::InitialState::Keplerian::Body* const body = pair.second;
+    CHECK_EQ(body->has_parent(), body->has_elements()) << name;
+    if (!body->has_parent()) {
+      CHECK(primary.empty()) << name;
+      primary = name;
+    }
+    auto owned_body = MakeMassiveBody(gravity_model_message(name));
+    unowned_bodies.emplace(name, owned_body.get());
+    owned_bodies.emplace(name, std::move(owned_body));
+  }
+
+  // Construct a hierarchical system rooted at the primary and add the other
+  // bodies layer by layer.
+  auto hierarchical_system = make_not_null_unique<HierarchicalSystem<Frame>>(
+      std::move(FindOrDie(owned_bodies, primary)));
+  std::set<std::string> previous_layer = {primary};
+  std::set<std::string> current_layer;
+  do {
+    for (auto const& pair : keplerian_initial_state_map_) {
+      const auto& name = pair.first;
+      serialization::InitialState::Keplerian::Body* const body = pair.second;
+      if (Contains(previous_layer, body->parent())) {
+        current_layer.insert(name);
+        KeplerianElements<Frame> const elements =
+            MakeKeplerianElements(body->elements());
+        hierarchical_system->Add(std::move(FindOrDie(owned_bodies, name)),
+                                 FindOrDie(unowned_bodies, body->parent()),
+                                 elements);
+      }
+    }
+    previous_layer = current_layer;
+    current_layer.clear();
+  } while (!previous_layer.empty());
+
+  return hierarchical_system;
+}
+
+template<typename Frame>
 void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   for (int i = 0; i < names_.size(); ++i) {
     if (names_[i] == name) {
@@ -485,53 +532,6 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     }
   }
   return degrees_of_freedom;
-}
-
-template<typename Frame>
-not_null<std::unique_ptr<HierarchicalSystem<Frame>>>
-SolarSystem<Frame>::MakeHierarchicalSystem() {
-  // First, construct all the bodies and find the primary body of the system.
-  std::string primary;
-  std::map<std::string,
-            not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
-  std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
-  for (auto const& pair : keplerian_initial_state_map_) {
-    const auto& name = pair.first;
-    serialization::InitialState::Keplerian::Body* const body = pair.second;
-    CHECK_EQ(body->has_parent(), body->has_elements()) << name;
-    if (!body->has_parent()) {
-      CHECK(primary.empty()) << name;
-      primary = name;
-    }
-    auto owned_body = MakeMassiveBody(gravity_model_message(name));
-    unowned_bodies.emplace(name, owned_body.get());
-    owned_bodies.emplace(name, std::move(owned_body));
-  }
-
-  // Construct a hierarchical system rooted at the primary and add the other
-  // bodies layer by layer.
-  auto hierarchical_system = make_not_null_unique<HierarchicalSystem<Frame>>(
-      std::move(FindOrDie(owned_bodies, primary)));
-  std::set<std::string> previous_layer = {primary};
-  std::set<std::string> current_layer;
-  do {
-    for (auto const& pair : keplerian_initial_state_map_) {
-      const auto& name = pair.first;
-      serialization::InitialState::Keplerian::Body* const body = pair.second;
-      if (Contains(previous_layer, body->parent())) {
-        current_layer.insert(name);
-        KeplerianElements<Frame> const elements =
-            MakeKeplerianElements(body->elements());
-        hierarchical_system->Add(std::move(FindOrDie(owned_bodies, name)),
-                                 FindOrDie(unowned_bodies, body->parent()),
-                                 elements);
-      }
-    }
-    previous_layer = current_layer;
-    current_layer.clear();
-  } while (!previous_layer.empty());
-
-  return hierarchical_system;
 }
 
 }  // namespace internal_solar_system

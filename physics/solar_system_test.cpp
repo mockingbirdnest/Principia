@@ -31,11 +31,6 @@ using ::testing::ElementsAreArray;
 
 class SolarSystemTest : public ::testing::Test {
  protected:
-  not_null<std::unique_ptr<HierarchicalSystem<ICRFJ2000Equator>>>
-  MakeHierarchicalSystem() {
-    return solar_system_.MakeHierarchicalSystem();
-  }
-
   SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
@@ -206,20 +201,6 @@ TEST_F(SolarSystemTest, Clear) {
   auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
   EXPECT_FALSE(sun_gravity_model.has_j2());
   EXPECT_FALSE(sun_gravity_model.has_reference_radius());
-}
-
-TEST_F(SolarSystemTest, Fingerprints) {
-  google::LogToStderr();
-  solar_system_.Initialize(
-      SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
-      SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
-  auto const hierarchical_system = MakeHierarchicalSystem();
-  serialization::HierarchicalSystem message;
-  hierarchical_system->WriteToMessage(&message);
-  std::string const serialized_message = message.SerializeAsString();
-  LOG(INFO) << "Stock KSP fingerprint is " << std::hex << std::uppercase
-            << Fingerprint2011(serialized_message.c_str(),
-                               serialized_message.size());
 }
 
 }  // namespace internal_solar_system

@@ -92,8 +92,11 @@ class SolarSystem final {
   static not_null<std::unique_ptr<OblateBody<Frame>>> MakeOblateBody(
       serialization::GravityModel::Body const& body);
 
+  // Constructs a hierarchical system for a solar system defined by keplerian
+  // elements.
+  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
+
   // Utilities for patching the internal protocol buffers after initialization.
-  // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
   void ReplaceElements(std::string const& name,
@@ -115,8 +118,6 @@ class SolarSystem final {
   MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
-  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
-
   // Note that the maps below hold pointers into these protocol buffers.
   serialization::SolarSystemFile gravity_model_;
   serialization::SolarSystemFile initial_state_;
@@ -131,8 +132,6 @@ class SolarSystem final {
   std::map<std::string,
            serialization::InitialState::Keplerian::Body*>
       keplerian_initial_state_map_;
-
-  friend class SolarSystemTest;
 };
 
 }  // namespace internal_solar_system
