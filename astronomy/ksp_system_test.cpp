@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-#include "astronomy/ksp_stabilizer.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -71,7 +71,7 @@ class KSPSystem {
     solar_system_.Initialize(
         SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
         SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
-    KSPStabilizer(solar_system_);
+    StabilizeKSP(solar_system_);
   }
 
   SolarSystem<KSP> solar_system_;
