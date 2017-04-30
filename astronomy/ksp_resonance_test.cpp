@@ -63,7 +63,7 @@ namespace {
 constexpr Time Δt = 45 * Minute;
 }  // namespace
 
-class ResonanceTest : public ::testing::Test {
+class KSPResonanceTest : public ::testing::Test {
  protected:
   using KSP = Frame<serialization::Frame::TestTag,
                     serialization::Frame::TEST,
@@ -71,7 +71,7 @@ class ResonanceTest : public ::testing::Test {
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 
-  ResonanceTest() {
+  KSPResonanceTest() {
     // This test is mostly a tool for investigating orbit stability, so we want
     // logging.
     google::LogToStderr();
@@ -244,7 +244,7 @@ class ResonanceTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(ResonanceTest, Stock) {
+TEST_F(KSPResonanceTest, Stock) {
   auto const ephemeris = MakeEphemeris();
   ephemeris->Prolong(short_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
@@ -295,7 +295,7 @@ TEST_F(ResonanceTest, Stock) {
                "stock");
 }
 
-TEST_F(ResonanceTest, Corrected) {
+TEST_F(KSPResonanceTest, Corrected) {
   KSPStabilizer(solar_system_);
 
   auto const ephemeris = MakeEphemeris();

@@ -11,6 +11,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/astronomy.pb.h"
@@ -114,6 +115,8 @@ class SolarSystem final {
   MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
+  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
+
   // Note that the maps below hold pointers into these protocol buffers.
   serialization::SolarSystemFile gravity_model_;
   serialization::SolarSystemFile initial_state_;
@@ -128,6 +131,8 @@ class SolarSystem final {
   std::map<std::string,
            serialization::InitialState::Keplerian::Body*>
       keplerian_initial_state_map_;
+
+  friend class SolarSystemTest;
 };
 
 }  // namespace internal_solar_system

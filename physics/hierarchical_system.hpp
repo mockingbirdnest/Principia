@@ -11,6 +11,7 @@
 #include "physics/jacobi_coordinates.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "serialization/physics.pb.h"
 
 namespace principia {
 namespace physics {
@@ -41,6 +42,9 @@ class HierarchicalSystem final {
   // a body are ordered by increasing semimajor axis.
   // |*this| is invalid after a call to |ConsumeBarycentricSystem()|.
   BarycentricSystem ConsumeBarycentricSystem();
+
+  void WriteToMessage(
+      not_null<serialization::HierarchicalSystem*> message) const;
 
  private:
   struct Subsystem;
@@ -80,8 +84,13 @@ class HierarchicalSystem final {
   // Invalidates its argument.
   static BarycentricSubsystem ToBarycentric(System& system);
 
+  static void WriteToMessage(
+      std::vector<not_null<std::unique_ptr<Subsystem>>> const& subsystems,
+      google::protobuf::RepeatedPtrField<
+          serialization::HierarchicalSystem::Subsystem>* messages);
+
   System system_;
-  // Invariant: |subsystems_[p]->primary.get() == p|.
+  // Invariant: |systems_[p]->primary.get() == p|.
   // None of these pointers should be null, but I want to use operator[].
   std::map<not_null<MassiveBody const*>, System*> systems_;
 };

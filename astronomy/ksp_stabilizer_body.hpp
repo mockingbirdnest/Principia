@@ -2,8 +2,6 @@
 
 #include "astronomy/ksp_stabilizer.hpp"
 
-#include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
-#include "geometry/named_quantities.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/si.hpp"
@@ -13,18 +11,10 @@ namespace astronomy {
 namespace ksp_stabilizer_internal {
 
 using geometry::Position;
-using integrators::McLachlanAtela1992Order5Optimal;
-using quantities::si::Metre;
-using quantities::si::Milli;
-using quantities::si::Minute;
+using quantities::si::Degree;
 
 template<typename Frame>
 void KSPStabilizer(SolarSystem<Frame>& solar_system) {
-  auto ephemeris = solar_system.MakeEphemeris(
-      /*fitting_tolerance=*/1 * Milli(Metre),
-      Ephemeris<Frame>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<Frame>>(),
-          /*step=*/45 * Minute));
   KeplerianElements<Frame> laythe_elements =
       solar_system.MakeKeplerianElements(
           solar_system.keplerian_initial_state_message("Laythe").elements());

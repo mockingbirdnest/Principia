@@ -7,6 +7,8 @@
 #include <iterator>
 #include <vector>
 
+#include "google/protobuf/repeated_field.h"
+
 namespace principia {
 namespace physics {
 namespace internal_hierarchical_system {
@@ -53,6 +55,14 @@ HierarchicalSystem<Frame>::ConsumeBarycentricSystem() {
     result.degrees_of_freedom.emplace_back(system_barycentre + barycentric_dof);
   }
   return std::move(result);
+}
+
+template<typename Frame>
+void HierarchicalSystem<Frame>::WriteToMessage(
+    not_null<serialization::HierarchicalSystem*> const message) const {
+  system_.primary->WriteToMessage(message->mutable_system()->mutable_primary());
+  WriteToMessage(system_.satellites,
+                 message->mutable_system()->mutable_satellites());
 }
 
 template<typename Frame>
@@ -156,6 +166,32 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
   result.equivalent_body =
       std::make_unique<MassiveBody>(jacobi_coordinates.System());
   return std::move(result);
+}
+
+template<typename Frame>
+void HierarchicalSystem<Frame>::WriteToMessage(
+    std::vector<not_null<std::unique_ptr<Subsystem>>> const& subsystems,
+    google::protobuf::RepeatedPtrField<
+        serialization::HierarchicalSystem::Subsystem>* const messages) {
+  // Sort the subsystems by name to ensure stability of the serialization.
+  std::vector<Subsystem const*> sorted_subsystems;
+  for (auto const& subsystem : subsystems) {
+    sorted_subsystems.push_back(subsystem.get());
+  }
+  std::sort(sorted_subsystems.begin(),
+            sorted_subsystems.end(),
+            [](Subsystem const* const lhs, Subsystem const* const rhs) {
+              return lhs->primary->name() < rhs->primary->name();
+            });
+
+  for (auto const& subsystem : sorted_subsystems) {
+    serialization::HierarchicalSystem::Subsystem* const message =
+        messages->Add();
+    subsystem->primary->WriteToMessage(message->mutable_primary());
+    subsystem->jacobi_osculating_elements.WriteToMessage(
+        message->mutable_jacobi_osculating_elements());
+    WriteToMessage(subsystem->satellites, message->mutable_satellites());
+  }
 }
 
 }  // namespace internal_hierarchical_system
