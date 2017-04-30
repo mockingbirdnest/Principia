@@ -27,6 +27,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
 using numerics::Bisect;
+using quantities::Abs;
 using quantities::ArcCos;
 using quantities::ArcSin;
 using quantities::ArcTan;
@@ -242,6 +243,28 @@ KeplerOrbit<Frame>::KeplerOrbit(
       SpecificAngularMomentum const& h = *specific_angular_momentum;
       semilatus_rectum = Pow<2>(h * Radian) / μ;
     }
+  }
+
+  if (eccentricity_specifications && semimajor_axis_specifications) {
+    double const& e = *eccentricity;
+    Length const& a = *semimajor_axis;
+    semiminor_axis = a * Sqrt(Abs(1 - Pow<2>(e)));
+    semilatus_rectum = a * (1 - Pow<2>(e));
+    periapsis_distance = a * (1 - e);
+    apoapsis_distance = a * e;
+  }
+  if (eccentricity_specifications && semiminor_axis_specifications) {
+    double const& e = *eccentricity;
+    Length const& b = *semiminor_axis;
+    semimajor_axis = b / Sqrt(Abs(1 - Pow<2>(e)));
+    semilatus_rectum = Abs(b) * Sqrt(Abs(1 - Pow<2>(e)));
+    periapsis_distance = *semimajor_axis * (1 - e);
+    periapsis_distance = *semimajor_axis * e;
+  }
+  if (eccentricity_specifications && semilatus_rectum_specifications) {
+    double const& e = *eccentricity;
+    Length const& p = *semilatus_rectum;
+    semimajor_axis = p / (1 - Pow<2>(e));
   }
 }
 
