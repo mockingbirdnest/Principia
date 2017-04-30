@@ -19,8 +19,8 @@
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/astronomy.hpp"
-#include "rigid_motion.hpp"
 
 namespace principia {
 
@@ -38,6 +38,14 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order10;
 using integrators::QuinlanTremaine1990Order12;
+using physics::DegreesOfFreedom;
+using physics::Ephemeris;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
+using physics::MassiveBody;
+using physics::MasslessBody;
+using physics::RelativeDegreesOfFreedom;
+using physics::SolarSystem;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Time;
@@ -50,7 +58,7 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using ::testing::Lt;
 
-namespace physics {
+namespace astronomy {
 
 using KSP = Frame<serialization::Frame::TestTag,
                   serialization::Frame::TEST,
@@ -528,5 +536,5 @@ INSTANTIATE_TEST_CASE_P(
             /*iterations=*/5,
             /*first_step_in_seconds=*/75}));
 
-}  // namespace physics
+}  // namespace astronomy
 }  // namespace principia
