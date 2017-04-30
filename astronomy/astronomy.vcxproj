@@ -208,6 +208,8 @@
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />
     <ClInclude Include="date_time_body.hpp" />
+    <ClInclude Include="stabilize_ksp.hpp" />
+    <ClInclude Include="stabilize_ksp_body.hpp" />
     <ClInclude Include="time_scales.hpp" />
     <ClInclude Include="time_scales_body.hpp" />
     <ClInclude Include="eop_c04.generated.h" />

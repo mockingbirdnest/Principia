@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -295,29 +296,9 @@ TEST_F(ResonanceTest, Stock) {
 }
 
 TEST_F(ResonanceTest, Corrected) {
-  // Create a first ephemeris to obtain the elements of the stock game.
-  auto ephemeris = MakeEphemeris();
+  StabilizeKSP(solar_system_);
 
-  // TODO(phl): Move the patching to a common place.
-
-  // Instead of putting the moons in a 1:2:4 resonance, put them in a
-  // 1:4/φ:16/φ^2 dissonance.
-  constexpr double φ = 1.61803398875;
-  elements_[vall_].mean_motion =
-      *elements_[laythe_].mean_motion / (4.0 / φ);
-  *elements_[tylo_].mean_motion =
-      *elements_[laythe_].mean_motion / (16.0 / (φ * φ));
-
-  // All hail Retrobop!
-  elements_[bop_].inclination = 180 * Degree - elements_[bop_].inclination;
-  *elements_[bop_].mean_motion = *elements_[pol_].mean_motion / 0.7;
-
-  solar_system_.ReplaceElements("Vall", elements_[vall_]);
-  solar_system_.ReplaceElements("Tylo", elements_[tylo_]);
-  solar_system_.ReplaceElements("Bop", elements_[bop_]);
-
-  // Recreate the ephemeris to use the corrected system.
-  ephemeris = MakeEphemeris();
+  auto const ephemeris = MakeEphemeris();
   ephemeris->Prolong(short_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
 
@@ -374,11 +355,11 @@ TEST_F(ResonanceTest, Corrected) {
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
                             expected_periods_.at(vall_)), Lt(10.0e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), Lt(0.7e-3));
+                            expected_periods_.at(tylo_)), Lt(0.8e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), Lt(7.7e-3));
+                            expected_periods_.at(bop_)), Lt(41.2e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), Lt(4.8e-3));
+                            expected_periods_.at(pol_)), Lt(23.2e-3));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 10 * longest_joolian_period_,

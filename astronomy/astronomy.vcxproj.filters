@@ -120,6 +120,12 @@
     <ClInclude Include="epoch_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="stabilize_ksp.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stabilize_ksp_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">
