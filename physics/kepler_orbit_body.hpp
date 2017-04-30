@@ -245,6 +245,9 @@ KeplerOrbit<Frame>::KeplerOrbit(
     }
   }
 
+  // TODO(egg): I am not sure how the sign of the semiminor axis should work.
+  // Here I am using the same sign as the semimajor axis, negative for
+  // hyperbolic orbits.
   if (eccentricity_specifications && semimajor_axis_specifications) {
     double const& e = *eccentricity;
     Length const& a = *semimajor_axis;
@@ -259,12 +262,31 @@ KeplerOrbit<Frame>::KeplerOrbit(
     semimajor_axis = b / Sqrt(Abs(1 - Pow<2>(e)));
     semilatus_rectum = Abs(b) * Sqrt(Abs(1 - Pow<2>(e)));
     periapsis_distance = *semimajor_axis * (1 - e);
-    periapsis_distance = *semimajor_axis * e;
+    apoapsis_distance = *semimajor_axis * e;
   }
   if (eccentricity_specifications && semilatus_rectum_specifications) {
     double const& e = *eccentricity;
     Length const& p = *semilatus_rectum;
     semimajor_axis = p / (1 - Pow<2>(e));
+    semiminor_axis = *semimajor_axis * Sqrt(Abs(1 - Pow<2>(e)));
+    periapsis_distance = p / (1 + e);
+    apoapsis_distance = *semimajor_axis * e;
+  }
+  if (eccentricity_specifications && periapsis_distance_specifications) {
+    double const& e = *eccentricity;
+    Length const& r_pe = *periapsis_distance;
+    semimajor_axis = r_pe / (1 - e);
+    semiminor_axis = *semimajor_axis * Sqrt(Abs(1 - Pow<2>(e)));
+    semilatus_rectum = r_pe * (1 + e);
+    apoapsis_distance = *semimajor_axis * e;
+  }
+  if (eccentricity_specifications && apoapsis_distance_specifications) {
+    double const& e = *eccentricity;
+    Length const& r_ap = *apoapsis_distance;
+    semimajor_axis = r_ap / (1 - e);
+    semiminor_axis = *semimajor_axis * Sqrt(Abs(1 - Pow<2>(e)));
+    semilatus_rectum = r_ap / e - e * r_ap;
+    periapsis_distance = (1 / e - 1) * r_ap;
   }
 }
 
