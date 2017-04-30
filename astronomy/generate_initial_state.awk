@@ -41,6 +41,7 @@ END {
   print "  # The time of the initial state, as a TDB Julian date."
   print "  # This is " humandate " TDB."
   print "  epoch : " juliandate
+  print "  cartesian {"
 
   # The year is 2015 and I am writing a Bubble Sort.  I kid you not.
   do {
@@ -63,16 +64,17 @@ END {
     sub(/E/, "e", vx[b])
     sub(/E/, "e", vy[b])
     sub(/E/, "e", vz[b])
-    print "  body {"
-    print "    name : \"" b "\""
-    print "    x    : \"" x[b] " km\""
-    print "    y    : \"" y[b] " km\""
-    print "    z    : \"" z[b] " km\""
-    print "    vx   : \"" vx[b] " km/s\""
-    print "    vy   : \"" vy[b] " km/s\""
-    print "    vz   : \"" vz[b] " km/s\""
-    print "  }"
+    print "    body {"
+    print "      name : \"" b "\""
+    print "      x    : \"" x[b] " km\""
+    print "      y    : \"" y[b] " km\""
+    print "      z    : \"" z[b] " km\""
+    print "      vx   : \"" vx[b] " km/s\""
+    print "      vy   : \"" vy[b] " km/s\""
+    print "      vz   : \"" vz[b] " km/s\""
+    print "    }"
   }
 
+  print "  }"
   print "}"
 }

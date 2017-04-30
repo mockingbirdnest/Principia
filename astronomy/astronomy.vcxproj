@@ -183,27 +183,27 @@
     <None Include="generate_eop_headers.sh" />
     <None Include="generate_initial_state.awk" />
     <None Include="generate_initial_state.sh" />
-    <None Include="gravity_model.cfg" />
-    <None Include="initial_state_jd_2433282_500000000.cfg" />
     <None Include="query.f" />
+    <None Include="sol_gravity_model.cfg" />
+    <None Include="sol_initial_state_jd_2433282_500000000.cfg" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="gravity_model.proto.txt" />
-    <Text Include="gravity_model_two_bodies_test.proto.txt" />
-    <Text Include="initial_state_jd_2433282_500000000.proto.txt" />
-    <Text Include="initial_state_jd_2433292_500000000.proto.txt" />
-    <Text Include="initial_state_jd_2433374_257884090.proto.txt" />
-    <Text Include="initial_state_jd_2433374_470754460.proto.txt" />
-    <Text Include="initial_state_jd_2436116_311504629.proto.txt" />
-    <Text Include="initial_state_jd_2436145_604166667.proto.txt" />
-    <Text Include="initial_state_jd_2451545_000000000.proto.txt" />
-    <Text Include="initial_state_jd_2451564_587154910.proto.txt" />
-    <Text Include="initial_state_jd_2451564_808127140.proto.txt" />
-    <Text Include="initial_state_jd_2455200_500000000.proto.txt" />
-    <Text Include="initial_state_two_bodies_circular_test.proto.txt" />
-    <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
-    <Text Include="ksp_gravity_model.proto.txt" />
-    <Text Include="ksp_initial_state_0_0.proto.txt" />
+    <Text Include="kerbol_gravity_model.proto.txt" />
+    <Text Include="kerbol_initial_state_0_0.proto.txt" />
+    <Text Include="sol_gravity_model.proto.txt" />
+    <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt" />
+    <Text Include="sol_initial_state_jd_2433292_500000000.proto.txt" />
+    <Text Include="sol_initial_state_jd_2433374_257884090.proto.txt" />
+    <Text Include="sol_initial_state_jd_2433374_470754460.proto.txt" />
+    <Text Include="sol_initial_state_jd_2436116_311504629.proto.txt" />
+    <Text Include="sol_initial_state_jd_2436145_604166667.proto.txt" />
+    <Text Include="sol_initial_state_jd_2451545_000000000.proto.txt" />
+    <Text Include="sol_initial_state_jd_2451564_587154910.proto.txt" />
+    <Text Include="sol_initial_state_jd_2451564_808127140.proto.txt" />
+    <Text Include="sol_initial_state_jd_2455200_500000000.proto.txt" />
+    <Text Include="test_gravity_model_two_bodies.proto.txt" />
+    <Text Include="test_initial_state_two_bodies_circular.proto.txt" />
+    <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />

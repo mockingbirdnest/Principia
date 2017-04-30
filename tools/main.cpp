@@ -20,7 +20,7 @@ int main(int argc, char const* argv[]) {
   if (command == "generate_configuration") {
     if (argc != 5) {
       // tools.exe generate_configuration \
-      //     2433647.5 gravity_model initial_state_jd_2433282_500000000
+      //     2433647.5 sol_gravity_model sol_initial_state_jd_2433282_500000000
       std::cerr << "Usage: " << argv[0] << " " << argv[1] << " "
                 << "game_epoch_jd gravity_model_stem initial_state_stem\n";
       return 2;

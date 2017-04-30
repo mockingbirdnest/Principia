@@ -68,8 +68,8 @@ class KSPSystem {
  protected:
   KSPSystem() {
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
 
     // TODO(phl): Move the patching to a common place.
 

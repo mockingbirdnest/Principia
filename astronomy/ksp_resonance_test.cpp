@@ -76,8 +76,8 @@ class ResonanceTest : public ::testing::Test {
     google::LogToStderr();
 
     solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
   }
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {

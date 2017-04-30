@@ -129,9 +129,9 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
 
   SolarSystem<ICRFJ2000Equator> solar_system;
   solar_system.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
@@ -177,9 +177,9 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
 
   SolarSystem<ICRFJ2000Equator> solar_system;
   solar_system.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
