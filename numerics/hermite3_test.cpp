@@ -13,6 +13,7 @@ namespace principia {
 
 using geometry::Frame;
 using geometry::Instant;
+using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
 using quantities::Length;
@@ -62,6 +63,23 @@ TEST_F(Hermite3Test, Typed) {
 
   EXPECT_EQ(World::origin, h.Evaluate(t0_ + 1.3 * Second));
   EXPECT_EQ(Velocity<World>(), h.EvaluateDerivative(t0_ + 1.7 * Second));
+}
+
+// A test that shows a poorly-conditioned case where the computed position at
+// the end of the interpolation interval is different from the expected one.
+// In particular, the computed position is negative at both ends.
+TEST_F(Hermite3Test, Conditioning) {
+  Hermite3<Instant, Length> h(
+      {t0_ + 19418861.806896236 * Second, t0_ + 19418869.842261545 * Second},
+      {-2.1383610158805017e-12 * Metre, 0 * Metre},
+      {2.3308208035605881e-12 * Metre / Second,
+       -1.6875631840376598e-12 * Metre / Second});
+
+  EXPECT_EQ(-2.1383610158805017e-12 * Metre,
+            h.Evaluate(t0_ + 19418861.806896236 * Second));
+  EXPECT_GT(0 * Metre, h.Evaluate(t0_ + 19418869.842261545 * Second));
+  EXPECT_EQ(2.3308208035605881e-12 * Metre / Second,
+            h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
 }
 
 }  // namespace numerics

@@ -202,6 +202,8 @@
     <Text Include="initial_state_jd_2455200_500000000.proto.txt" />
     <Text Include="initial_state_two_bodies_circular_test.proto.txt" />
     <Text Include="initial_state_two_bodies_elliptical_test.proto.txt" />
+    <Text Include="ksp_gravity_model.proto.txt" />
+    <Text Include="ksp_initial_state_0_0.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />
@@ -226,6 +228,7 @@
     <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
+    <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

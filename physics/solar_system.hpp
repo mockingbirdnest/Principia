@@ -11,6 +11,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/astronomy.pb.h"
 
@@ -72,13 +73,17 @@ class SolarSystem final {
   // The configuration protocol buffers for the body named |name|.
   serialization::GravityModel::Body const& gravity_model_message(
       std::string const& name) const;
-  serialization::InitialState::Body const& initial_state_message(
-      std::string const& name) const;
+  serialization::InitialState::Cartesian::Body const&
+  cartesian_initial_state_message(std::string const& name) const;
+  serialization::InitialState::Keplerian::Body const&
+  keplerian_initial_state_message(std::string const& name) const;
 
   // Factory functions for converting configuration protocol buffers into
   // structured objects.
   static DegreesOfFreedom<Frame> MakeDegreesOfFreedom(
-      serialization::InitialState::Body const& body);
+      serialization::InitialState::Cartesian::Body const& body);
+  static KeplerianElements<Frame> MakeKeplerianElements(
+      serialization::InitialState::Keplerian::Body::Elements const& elements);
   static not_null<std::unique_ptr<MassiveBody>> MakeMassiveBody(
       serialization::GravityModel::Body const& body);
   static not_null<std::unique_ptr<RotatingBody<Frame>>> MakeRotatingBody(
@@ -90,6 +95,8 @@ class SolarSystem final {
   // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
+  void ReplaceElements(std::string const& name,
+                       KeplerianElements<Frame> const& elements);
 
  private:
   // Fails if the given |body| doesn't have a consistent set of fields.
@@ -116,7 +123,11 @@ class SolarSystem final {
   std::map<std::string,
            serialization::GravityModel::Body*> gravity_model_map_;
   std::map<std::string,
-           serialization::InitialState::Body const*> initial_state_map_;
+           serialization::InitialState::Cartesian::Body const*>
+      cartesian_initial_state_map_;
+  std::map<std::string,
+           serialization::InitialState::Keplerian::Body*>
+      keplerian_initial_state_map_;
 };
 
 }  // namespace internal_solar_system

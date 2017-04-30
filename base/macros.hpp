@@ -159,6 +159,13 @@ inline void noreturn() { std::exit(0); }
     return value__;                                                \
   } while (false)
 
+// Unicode.
+#if OS_WIN
+#  define UNICODE_PATH(x) u ## x
+#else
+#  define UNICODE_PATH(x) u8 ## x
+#endif
+
 #define NAMED(expression) #expression << ": " << (expression)
 
 // A macro to allow glog checking within C++11 constexpr code.  If |condition|

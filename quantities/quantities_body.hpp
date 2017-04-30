@@ -3,9 +3,11 @@
 
 #include <cmath>
 #include <cstdio>
+#include <limits>
 #include <string>
 
 #include "base/macros.hpp"
+#include "quantities.hpp"
 
 namespace principia {
 namespace quantities {
@@ -375,6 +377,26 @@ FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
 template<typename D>
 bool IsFinite(Quantity<D> const& x) {
   return std::isfinite(x.magnitude_);
+}
+
+template<typename Q>
+constexpr Q Infinity() {
+  return Q(std::numeric_limits<double>::infinity());
+}
+
+template<>
+constexpr double Infinity<double>() {
+  return std::numeric_limits<double>::infinity();
+}
+
+template<typename Q>
+constexpr Q NaN() {
+  return Q(std::numeric_limits<double>::quiet_NaN());
+}
+
+template<>
+constexpr double NaN<double>() {
+  return std::numeric_limits<double>::quiet_NaN();
 }
 
 template<typename Q>

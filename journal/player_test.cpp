@@ -21,7 +21,7 @@ namespace journal {
 void BM_PlayForReal(benchmark::State& state) {
   while (state.KeepRunning()) {
     Player player(
-        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170322-175914)");
+        R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170422-143027)");
     int count = 0;
     while (player.Play()) {
       ++count;
@@ -92,7 +92,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170409-123223)";
+      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170422-143027)";
   Player player(path);
   int count = 0;
   while (player.Play()) {
@@ -108,19 +108,28 @@ TEST_F(PlayerTest, DISABLED_Debug) {
 
 #if 0
   serialization::Method method_in;
-  auto* extension = method_in.MutableExtension(
-      serialization::AdvanceTime::extension);
-  auto* in = extension->mutable_in();
-  in->set_plugin(1359274544);
-  in->set_t(2133783009.4294326);
-  in->set_planetarium_rotation(263.85613126498265);
+  {
+    auto* extension = method_in.MutableExtension(
+        serialization::RenderedPredictionNodes::extension);
+    auto* in = extension->mutable_in();
+    in->set_plugin(3220795440);
+    in->set_vessel_guid("cf6715cb-8780-4c39-8c01-3cc0cf35683b");
+    in->mutable_sun_world_position()->set_x(-3412377724.9237709);
+    in->mutable_sun_world_position()->set_y(5875636073.1931963);
+    in->mutable_sun_world_position()->set_z(-11782002982.199373);
+  }
   serialization::Method method_out_return;
-  method_out_return.MutableExtension(
-      serialization::AdvanceTime::extension);
+  {
+    auto* extension = method_out_return.MutableExtension(
+        serialization::RenderedPredictionNodes::extension);
+    auto* out = extension->mutable_out();
+    out->set_ascending(1);
+    out->set_descending(2);
+  }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<AdvanceTime>(method_in,
-                                      method_out_return,
-                                      player));
+  CHECK(RunIfAppropriate<RenderedPredictionNodes>(method_in,
+                                                  method_out_return,
+                                                  player));
 #endif
 }
 

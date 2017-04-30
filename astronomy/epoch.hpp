@@ -16,8 +16,9 @@ namespace astronomy {
 namespace internal_epoch {
 
 using geometry::Instant;
+using quantities::Infinity;
+using quantities::Time;
 using quantities::si::Second;
-
 
 // |J2000| represents to the standard epoch J2000.0.
 // According to Resolution B1 (On the Use of Julian Dates) of the XXIIIrd IAU
@@ -29,10 +30,8 @@ using quantities::si::Second;
 // "2000-01-01T11:58:55,816"_UTC
 constexpr Instant J2000;
 
-CONSTEXPR_INFINITY Instant InfinitePast =
-    J2000 - std::numeric_limits<double>::infinity() * Second;
-CONSTEXPR_INFINITY Instant InfiniteFuture =
-    J2000 + std::numeric_limits<double>::infinity() * Second;
+CONSTEXPR_INFINITY Instant InfinitePast = J2000 - Infinity<Time>();
+CONSTEXPR_INFINITY Instant InfiniteFuture = J2000 + Infinity<Time>();
 
 // The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
 // days since -4712-01-01T12:00:00,000 (Terrestrial Time, Julian calendar).

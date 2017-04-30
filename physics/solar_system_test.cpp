@@ -22,6 +22,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Second;
 using quantities::si::Yotta;
+using quantities::si::Zetta;
 using testing_utilities::RelativeError;
 using ::testing::ElementsAreArray;
 
@@ -87,12 +88,65 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   EXPECT_TRUE(earth_trajectory.empty());
   EXPECT_EQ("Earth", earth->name());
 
-  auto const& sun_initial_state = solar_system_.initial_state_message("Sun");
+  auto const& sun_initial_state =
+      solar_system_.cartesian_initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264e+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354e-03 km/s", sun_initial_state.vx());
   auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");
   EXPECT_EQ("286.13 deg", sun_gravity_model.axis_right_ascension());
   EXPECT_EQ("63.87 deg", sun_gravity_model.axis_declination());
+}
+
+TEST_F(SolarSystemTest, KSPSystem) {
+  solar_system_.Initialize(
+      SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
+
+  EXPECT_EQ(Instant{}, solar_system_.epoch());
+  EXPECT_THAT(solar_system_.names(),
+              ElementsAreArray({"Bop",
+                                "Dres",
+                                "Duna",
+                                "Eeloo",
+                                "Eve",
+                                "Gilly",
+                                "Ike",
+                                "Jool",
+                                "Kerbin",
+                                "Kerbol",
+                                "Laythe",
+                                "Minmus",
+                                "Moho",
+                                "Mun",
+                                "Pol",
+                                "Tylo",
+                                "Vall"}));
+  EXPECT_EQ(1, solar_system_.index("Dres"));
+  EXPECT_EQ(8, solar_system_.index("Kerbin"));
+
+  auto const ephemeris = solar_system_.MakeEphemeris(
+      /*fitting_tolerance=*/1 * Metre,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          integrators::McLachlanAtela1992Order4Optimal<
+              Position<ICRFJ2000Equator>>(),
+          /*step=*/1 * Second));
+  auto const kerbin = solar_system_.massive_body(*ephemeris, "Kerbin");
+  EXPECT_LT(RelativeError(52.917061 * Zetta(Kilogram), kerbin->mass()), 6e-9);
+  auto const& kerbin_trajectory =
+      solar_system_.trajectory(*ephemeris, "Kerbin");
+  EXPECT_TRUE(kerbin_trajectory.empty());
+  EXPECT_EQ("Kerbin", kerbin->name());
+
+  auto const& eeloo_initial_state =
+      solar_system_.keplerian_initial_state_message("Eeloo");
+  EXPECT_EQ(2.60000000000000009e-01,
+            eeloo_initial_state.elements().eccentricity());
+  EXPECT_EQ("4.00223155970063943e-08 rad /s",
+            eeloo_initial_state.elements().mean_motion());
+  auto const& eeloo_gravity_model =
+      solar_system_.gravity_model_message("Eeloo");
+  EXPECT_EQ("74410814527.0496 m^3/s^2",
+            eeloo_gravity_model.gravitational_parameter());
 }
 
 TEST_F(SolarSystemTest, Clear) {
@@ -137,7 +191,8 @@ TEST_F(SolarSystemTest, Clear) {
                                 "Venus",
                                 "Vesta"}));
 
-  auto const& sun_initial_state = solar_system_.initial_state_message("Sun");
+  auto const& sun_initial_state =
+      solar_system_.cartesian_initial_state_message("Sun");
   EXPECT_EQ("+1.309126697236264e+05 km", sun_initial_state.x());
   EXPECT_EQ("-7.799754996220354e-03 km/s", sun_initial_state.vx());
   auto const& sun_gravity_model = solar_system_.gravity_model_message("Sun");

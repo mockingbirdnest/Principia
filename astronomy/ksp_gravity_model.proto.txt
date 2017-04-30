@@ -1,0 +1,173 @@
+# This system is for KSP 1.2.2.
+gravity_model {
+  body {
+    name : "Kerbol"
+    gravitational_parameter : "1.17233279483249e+18 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "261600000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "1.45444104332861e-05 rad/s"
+  }
+  body {
+    name : "Eeloo"
+    gravitational_parameter : "74410814527.0496 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "210000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "25 deg"
+    angular_frequency       : "0.000322876942814984 rad/s"
+  }
+  body {
+    name : "Jool"
+    gravitational_parameter : "282528004209995 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "6000000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "0.000174532925199433 rad/s"
+  }
+  body {
+    name : "Pol"
+    gravitational_parameter : "721702080 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "44000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "25 deg"
+    angular_frequency       : "6.96658945572123e-06 rad/s"
+  }
+  body {
+    name : "Bop"
+    gravitational_parameter : "2486834944.41491 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "65000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "230 deg"
+    angular_frequency       : "1.15392095279512e-05 rad/s"
+  }
+  body {
+    name : "Tylo"
+    gravitational_parameter : "2825280042099.95 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "600000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "2.96479652925011e-05 rad/s"
+  }
+  body {
+    name : "Vall"
+    gravitational_parameter : "207481499473.751 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "300000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "5.92965406096283e-05 rad/s"
+  }
+  body {
+    name : "Laythe"
+    gravitational_parameter : "1962000029236.08 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "500000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "90 deg"
+    angular_frequency       : "0.000118593451424948 rad/s"
+  }
+  body {
+    name : "Dres"
+    gravitational_parameter : "21484488600 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "138000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "25 deg"
+    angular_frequency       : "0.000180551301930448 rad/s"
+  }
+  body {
+    name : "Duna"
+    gravitational_parameter : "301363211975.098 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "320000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "90 deg"
+    angular_frequency       : "9.59003448390607e-05 rad/s"
+  }
+  body {
+    name : "Ike"
+    gravitational_parameter : "18568368573.144 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "130000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "9.59003407994517e-05 rad/s"
+  }
+  body {
+    name : "Kerbin"
+    gravitational_parameter : "3531600000000 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "600000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "90 deg"
+    angular_frequency       : "0.000291570900559802 rad/s"
+  }
+  body {
+    name : "Minmus"
+    gravitational_parameter : "1765800026.31247 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "60000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "230 deg"
+    angular_frequency       : "0.000155524388791574 rad/s"
+  }
+  body {
+    name : "Mun"
+    gravitational_parameter : "65138397520.7807 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "200000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "230 deg"
+    angular_frequency       : "4.52078533000628e-05 rad/s"
+  }
+  body {
+    name : "Eve"
+    gravitational_parameter : "8171730229210.87 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "700000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "0 deg"
+    angular_frequency       : "7.80519913935352e-05 rad/s"
+  }
+  body {
+    name : "Gilly"
+    gravitational_parameter : "8289449.81471635 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "13000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "5 deg"
+    angular_frequency       : "0.00022237428091239 rad/s"
+  }
+  body {
+    name : "Moho"
+    gravitational_parameter : "168609378654.509 m^3/s^2"
+    reference_instant       : 2451545.000000000
+    mean_radius             : "250000 m"
+    axis_right_ascension    : "-90 deg"
+    axis_declination        : "90 deg"
+    reference_angle         : "190 deg"
+    angular_frequency       : "5.19271512990048e-06 rad/s"
+  }
+}
