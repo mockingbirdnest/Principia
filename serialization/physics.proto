@@ -104,6 +104,16 @@ message Ephemeris {
   reserved "planetary_integrator", "step";
 }
 
+message HierarchicalSystem {
+  message Subsystem {
+    required MassiveBody primary = 1;
+    // For stability, the satellites are sorted by name.
+    repeated Subsystem satellites = 2;
+    optional KeplerianElements jacobi_osculating_elements = 3;
+  }
+  required Subsystem system = 1;
+}
+
 message KeplerianElements {
   required Frame frame = 1;
   required double eccentricity = 2;

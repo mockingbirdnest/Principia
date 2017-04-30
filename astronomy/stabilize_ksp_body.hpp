@@ -11,6 +11,7 @@ namespace astronomy {
 namespace stabilize_ksp_internal {
 
 using geometry::Position;
+using physics::KeplerianElements;
 using quantities::si::Degree;
 
 template<typename Frame>

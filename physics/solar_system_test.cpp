@@ -2,8 +2,10 @@
 #include "physics/solar_system.hpp"
 
 #include <experimental/filesystem>
+#include <ios>
 
 #include "astronomy/frames.hpp"
+#include "base/fingerprint2011.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -15,6 +17,7 @@ namespace physics {
 namespace internal_solar_system {
 
 using astronomy::ICRFJ2000Equator;
+using base::Fingerprint2011;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
@@ -113,12 +116,12 @@ TEST_F(SolarSystemTest, KSPSystem) {
                                 "Ike",
                                 "Jool",
                                 "Kerbin",
-                                "Kerbol",
                                 "Laythe",
                                 "Minmus",
                                 "Moho",
                                 "Mun",
                                 "Pol",
+                                "Sun",
                                 "Tylo",
                                 "Vall"}));
   EXPECT_EQ(1, solar_system_.index("Dres"));

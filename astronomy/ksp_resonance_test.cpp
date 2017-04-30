@@ -63,7 +63,7 @@ namespace {
 constexpr Time Δt = 45 * Minute;
 }  // namespace
 
-class ResonanceTest : public ::testing::Test {
+class KSPResonanceTest : public ::testing::Test {
  protected:
   using KSP = Frame<serialization::Frame::TestTag,
                     serialization::Frame::TEST,
@@ -71,7 +71,7 @@ class ResonanceTest : public ::testing::Test {
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 
-  ResonanceTest() {
+  KSPResonanceTest() {
     // This test is mostly a tool for investigating orbit stability, so we want
     // logging.
     google::LogToStderr();
@@ -98,11 +98,11 @@ class ResonanceTest : public ::testing::Test {
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
     for (auto const moon : joolian_moons_) {
-      elements_[moon] = solar_system_.MakeKeplerianElements(
+      auto const elements = solar_system_.MakeKeplerianElements(
           solar_system_.keplerian_initial_state_message(moon->name()).
               elements());
-      expected_periods_[moon] =
-          (2 * π * Radian) / *elements_[moon].mean_motion;
+      CHECK(elements.mean_motion) << moon->name();
+      expected_periods_[moon] = (2 * π * Radian) / *elements.mean_motion;
       longest_joolian_period_ =
           std::max(longest_joolian_period_, expected_periods_[moon]);
     }
@@ -110,7 +110,7 @@ class ResonanceTest : public ::testing::Test {
               << " days";
 
     short_term_ = solar_system_.epoch() + 30 * Day;
-    mid_term_ = solar_system_.epoch() + 1 * JulianYear;
+    mid_term_ = solar_system_.epoch() + 60 * Day;
     long_term_ = solar_system_.epoch() + 100 * JulianYear;
 
     return std::move(ephemeris);
@@ -231,7 +231,6 @@ class ResonanceTest : public ::testing::Test {
   MassiveBody const* pol_;
   std::vector<not_null<MassiveBody const*>> jool_system_;
   std::vector<not_null<MassiveBody const*>> joolian_moons_;
-  std::map<not_null<MassiveBody const*>, KeplerianElements<KSP>> elements_;
   Time longest_joolian_period_;
   Periods expected_periods_;
   // TODO(egg): Frame::unmoving_origin, I have to do this in several places.
@@ -244,7 +243,7 @@ class ResonanceTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(ResonanceTest, Stock) {
+TEST_F(KSPResonanceTest, Stock) {
   auto const ephemeris = MakeEphemeris();
   ephemeris->Prolong(short_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
@@ -285,17 +284,17 @@ TEST_F(ResonanceTest, Stock) {
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
   EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>()));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
-                            expected_periods_.at(bop_)), Lt(92.5e-3));
+                            expected_periods_.at(bop_)), Lt(303.8e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
-                            expected_periods_.at(pol_)), Lt(31.4e-3));
+                            expected_periods_.at(pol_)), Lt(14.6e-3));
 
   LogEphemeris(*ephemeris,
-               ephemeris->t_max() - 10 * longest_joolian_period_,
+               ephemeris->t_max() - 5 * longest_joolian_period_,
                ephemeris->t_max(),
                "stock");
 }
 
-TEST_F(ResonanceTest, Corrected) {
+TEST_F(KSPResonanceTest, Corrected) {
   StabilizeKSP(solar_system_);
 
   auto const ephemeris = MakeEphemeris();
@@ -335,15 +334,15 @@ TEST_F(ResonanceTest, Corrected) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
-                            expected_periods_.at(laythe_)), Lt(3.8e-3));
+                            expected_periods_.at(laythe_)), Lt(5.6e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(vall_),
-                            expected_periods_.at(vall_)), Lt(1.2e-3));
+                            expected_periods_.at(vall_)), Lt(3.0e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(tylo_),
                             expected_periods_.at(tylo_)), Lt(0.8e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
-                            expected_periods_.at(bop_)), Lt(59.8e-3));
+                            expected_periods_.at(bop_)), Lt(14.9e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
-                            expected_periods_.at(pol_)), Lt(19.1e-3));
+                            expected_periods_.at(pol_)), Lt(9.5e-3));
 
   ephemeris->Prolong(long_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
@@ -351,18 +350,18 @@ TEST_F(ResonanceTest, Corrected) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
-                            expected_periods_.at(laythe_)), Lt(5.2e-3));
+                            expected_periods_.at(laythe_)), Lt(4.8e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
-                            expected_periods_.at(vall_)), Lt(10.0e-3));
+                            expected_periods_.at(vall_)), Lt(7.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), Lt(0.8e-3));
+                            expected_periods_.at(tylo_)), Lt(0.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), Lt(41.2e-3));
+                            expected_periods_.at(bop_)), Lt(11.6e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), Lt(23.2e-3));
+                            expected_periods_.at(pol_)), Lt(6.5e-3));
 
   LogEphemeris(*ephemeris,
-               ephemeris->t_max() - 10 * longest_joolian_period_,
+               ephemeris->t_max() - 5 * longest_joolian_period_,
                ephemeris->t_max(),
                "corrected");
 }

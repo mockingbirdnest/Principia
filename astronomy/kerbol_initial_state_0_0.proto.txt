@@ -3,11 +3,11 @@ initial_state {
   epoch : 2451545.000000000  # J2000, corresponds to Instant{}.
   keplerian {
     body {
-      name : "Kerbol"
+      name : "Sun"
     }
     body {
       name                          : "Eeloo"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 2.60000000000000009e-01
         mean_motion                 : "4.00223155970063943e-08 rad /s"
@@ -19,7 +19,7 @@ initial_state {
     }
     body {
       name                          : "Jool"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 5.00000007450581013e-02
         mean_motion                 : "6.00334352457231813e-08 rad / s"
@@ -91,7 +91,7 @@ initial_state {
     }
     body {
       name                          : "Dres"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 1.44999999999999990e-01
         mean_motion                 : "1.31191970097992552e-07 rad / s"
@@ -103,7 +103,7 @@ initial_state {
     }
     body {
       name                          : "Duna"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 5.09999990463256975e-02
         mean_motion                 : "3.62866884706431082e-07 rad / s"
@@ -127,7 +127,7 @@ initial_state {
     }
     body {
       name                          : "Kerbin"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 0.00000000000000000e+00
         mean_motion                 : "6.82691894080842805e-07 rad / s"
@@ -163,7 +163,7 @@ initial_state {
     }
     body {
       name                          : "Eve"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 9.99999977648258036e-03
         mean_motion                 : "1.11049676511037010e-06 rad / s"
@@ -187,7 +187,7 @@ initial_state {
     }
     body {
       name                          : "Moho"
-      parent                        : "Kerbol"
+      parent                        : "Sun"
       elements {
         eccentricity                : 2.00000002980231989e-01
         mean_motion                 : "2.83568694188236796e-06 rad / s"

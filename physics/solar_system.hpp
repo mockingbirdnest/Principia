@@ -11,6 +11,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/astronomy.pb.h"
@@ -91,8 +92,11 @@ class SolarSystem final {
   static not_null<std::unique_ptr<OblateBody<Frame>>> MakeOblateBody(
       serialization::GravityModel::Body const& body);
 
+  // Constructs a hierarchical system for a solar system defined by keplerian
+  // elements.
+  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
+
   // Utilities for patching the internal protocol buffers after initialization.
-  // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
   void ReplaceElements(std::string const& name,
