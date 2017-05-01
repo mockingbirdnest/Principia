@@ -64,11 +64,15 @@ struct KeplerianElements final {
 
   // III. These elements determine a point on the conic.  One is needed.
   std::experimental::optional<Angle> true_anomaly;
+#if NOT_YET_IMPLEMENTED
   std::experimental::optional<Angle> true_longitude;
   std::experimental::optional<Time> time_since_periapsis;
+#endif
   // The mean anomaly and mean longitude are NaN for hyperbolic orbits.
   std::experimental::optional<Angle> mean_anomaly;
+#if NOT_YET_IMPLEMENTED
   std::experimental::optional<Angle> mean_longitude;
+#endif
   // The hyperbolic mean anomaly is NaN for elliptic orbits:
   // |hyperbolic_mean_anomaly = i * mean_anomaly|.
   std::experimental::optional<Angle> hyperbolic_mean_anomaly;
