@@ -164,10 +164,23 @@ class TestablePlugin : public Plugin {
   // |MockEphemeris| rather than an |Ephemeris|.
   virtual void EndInitialization() override {
     Plugin::EndInitialization();
-    // Construct continuous trajectories for the bodies with some data
+    // Fill the continuous trajectories of the ephemeris with some data
     for (auto const& body : ephemeris_->bodies()) {
-      auto const trajectory = ephemeris_->trajectory(body);
+      ContinuousTrajectory<Barycentric>* const trajectory =
+          const_cast<ContinuousTrajectory<Barycentric>*>(
+              &*ephemeris_->trajectory(body));
+      for (int i = 1; i < 10; ++i) {
+        trajectory->Append(
+            current_time_ + i * 10 * Minute,
+            {Barycentric::origin +
+                 Displacement<Barycentric>(
+                     {i * 1 * Metre, i * 2 * Metre, i * 3 * Metre}),
+             Velocity<Barycentric>({i * 10 * Metre / Second,
+                                    i * 20 * Metre / Second,
+                                    i * 30 * Metre / Second})});
+      }
       trajectories_.emplace(name_to_index_[body->name()], trajectory);
+
       // Make sure that the |trajectory| member does the right thing.  Note that
       // the implicit conversion doesn't work too well in the matcher.
       ON_CALL(*mock_ephemeris_, trajectory(body))
@@ -199,7 +212,7 @@ class PluginTest : public testing::Test {
                        /*declination_of_pole=*/90 * Degree),
         solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
-        initial_time_(Instant() + 42 * Second),
+        initial_time_(Instant() + 5400 * Second),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
@@ -702,7 +715,7 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
               SolarSystemFactory::name(SolarSystemFactory::Sun)),
           solar_system_->cartesian_initial_state_message(
               SolarSystemFactory::name(SolarSystemFactory::Earth)));
-  }, ".bool.parent_index == .bool.hierarchical_initialization");
+  }, "gravity_model.name.. == initial_state.name..");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
