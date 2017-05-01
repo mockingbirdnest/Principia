@@ -36,8 +36,7 @@ void GenerateConfiguration(Instant const& game_epoch,
                            std::string const& initial_state_stem) {
   std::experimental::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<ICRFJ2000Equator> solar_system;
-  solar_system.Initialize(
+  SolarSystem<ICRFJ2000Equator> solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt));
 

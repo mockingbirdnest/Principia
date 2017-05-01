@@ -28,9 +28,9 @@ using quantities::Length;
 template<typename Frame>
 class SolarSystem final {
  public:
-  // Initializes this object from the given files, which must contain text
+  // Constructs a solar system from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  void Initialize(
+  SolarSystem(
       std::experimental::filesystem::path const& gravity_model_filename,
       std::experimental::filesystem::path const& initial_state_filename);
 

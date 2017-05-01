@@ -53,7 +53,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 
 template<typename Frame>
-void SolarSystem<Frame>::Initialize(
+SolarSystem<Frame>::SolarSystem(
     std::experimental::filesystem::path const& gravity_model_filename,
     std::experimental::filesystem::path const& initial_state_filename) {
   // Parse the files.

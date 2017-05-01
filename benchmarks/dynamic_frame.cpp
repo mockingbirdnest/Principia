@@ -127,8 +127,7 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ICRFJ2000Equator> solar_system;
-  solar_system.Initialize(
+  SolarSystem<ICRFJ2000Equator> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -175,8 +174,7 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ICRFJ2000Equator> solar_system;
-  solar_system.Initialize(
+  SolarSystem<ICRFJ2000Equator> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");

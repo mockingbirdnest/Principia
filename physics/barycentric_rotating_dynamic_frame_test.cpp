@@ -70,76 +70,66 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
 
   BarycentricRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
-        centre_of_mass_initial_state_(Position<ICRFJ2000Equator>(),
-                                      Velocity<ICRFJ2000Equator>()),
-        big_initial_state_(Position<ICRFJ2000Equator>(),
-                           Velocity<ICRFJ2000Equator>()),
-        small_initial_state_(Position<ICRFJ2000Equator>(),
-                             Velocity<ICRFJ2000Equator>()) {
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "test_gravity_model_two_bodies.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "test_initial_state_two_bodies_circular.proto.txt");
-    t0_ = solar_system_.epoch();
-    ephemeris_ = solar_system_.MakeEphemeris(
-                    /*fitting_tolerance=*/1 * Milli(Metre),
-                    Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                        integrators::McLachlanAtela1992Order4Optimal<
-                            Position<ICRFJ2000Equator>>(),
-                        /*step=*/10 * Milli(Second)));
-    big_ = solar_system_.massive_body(*ephemeris_, big);
-    small_ = solar_system_.massive_body(*ephemeris_, small);
+        solar_system_(SOLUTION_DIR / "astronomy" /
+                          "test_gravity_model_two_bodies.proto.txt",
+                      SOLUTION_DIR / "astronomy" /
+                          "test_initial_state_two_bodies_circular.proto.txt"),
+        t0_(solar_system_.epoch()),
+        ephemeris_(solar_system_.MakeEphemeris(
+            /*fitting_tolerance=*/1 * Milli(Metre),
+            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+                integrators::McLachlanAtela1992Order4Optimal<
+                    Position<ICRFJ2000Equator>>(),
+                /*step=*/10 * Milli(Second)))),
+        big_(solar_system_.massive_body(*ephemeris_, big)),
+        big_initial_state_(solar_system_.initial_state(big)),
+        big_gravitational_parameter_(
+            solar_system_.gravitational_parameter(big)),
+        small_(solar_system_.massive_body(*ephemeris_, small)),
+        small_initial_state_(solar_system_.initial_state(small)),
+        small_gravitational_parameter_(
+            solar_system_.gravitational_parameter(small)),
+        centre_of_mass_initial_state_(
+            Barycentre<DegreesOfFreedom<ICRFJ2000Equator>,
+                       GravitationalParameter>(
+                {big_initial_state_, small_initial_state_},
+                {big_gravitational_parameter_,
+                 small_gravitational_parameter_})),
+        mock_frame_(&mock_ephemeris_, big_, small_) {
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_initial_state_ = solar_system_.initial_state(big);
-    big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);
-    small_initial_state_ = solar_system_.initial_state(small);
-    small_gravitational_parameter_ =
-        solar_system_.gravitational_parameter(small);
-    centre_of_mass_initial_state_ =
-        Barycentre<DegreesOfFreedom<ICRFJ2000Equator>, GravitationalParameter>(
-            {big_initial_state_, small_initial_state_},
-            {big_gravitational_parameter_, small_gravitational_parameter_});
     big_small_frame_ =
         std::make_unique<
             BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
                 ephemeris_.get(), big_, small_);
 
-    mock_ephemeris_ =
-       std::make_unique<StrictMock<MockEphemeris<ICRFJ2000Equator>>>();
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, big)))
         .WillOnce(Return(&mock_big_trajectory_));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, small)))
         .WillOnce(Return(&mock_small_trajectory_));
-    mock_frame_ =
-        std::make_unique<
-            StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator,
-                       MockFrame>>>(
-                mock_ephemeris_.get(), big_, small_);
   }
 
   Time const period_;
-  Instant t0_;
-  MassiveBody const* big_;
-  MassiveBody const* small_;
-  DegreesOfFreedom<ICRFJ2000Equator> centre_of_mass_initial_state_;
-  DegreesOfFreedom<ICRFJ2000Equator> big_initial_state_;
-  DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
-  GravitationalParameter big_gravitational_parameter_;
-  GravitationalParameter small_gravitational_parameter_;
+  SolarSystem<ICRFJ2000Equator> solar_system_;
+  Instant const t0_;
+  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> const ephemeris_;
+  MassiveBody const* const big_;
+  DegreesOfFreedom<ICRFJ2000Equator> const big_initial_state_;
+  GravitationalParameter const big_gravitational_parameter_;
+  MassiveBody const* const small_;
+  DegreesOfFreedom<ICRFJ2000Equator> const small_initial_state_;
+  GravitationalParameter const small_gravitational_parameter_;
+  DegreesOfFreedom<ICRFJ2000Equator> const centre_of_mass_initial_state_;
+  StrictMock<MockEphemeris<ICRFJ2000Equator>> mock_ephemeris_;
+  StrictMock<BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>
+      mock_frame_;
+
   std::unique_ptr<
       BarycentricRotatingDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>
           big_small_frame_;
-  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
-  SolarSystem<ICRFJ2000Equator> solar_system_;
-
   StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_big_trajectory_;
   StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>> mock_small_trajectory_;
-  std::unique_ptr<StrictMock<
-      BarycentricRotatingDynamicFrame<ICRFJ2000Equator, MockFrame>>>
-          mock_frame_;
-  std::unique_ptr<StrictMock<MockEphemeris<ICRFJ2000Equator>>> mock_ephemeris_;
 };
 
 
@@ -252,27 +242,27 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
       .WillRepeatedly(Return(small_dof));
   {
     InSequence s;
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
   // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (-1200 - 800) * Metre / Pow<2>(Second),
                                (-1600 + 600) * Metre / Pow<2>(Second),
@@ -318,26 +308,26 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
       .WillRepeatedly(Return(small_dof));
   {
     InSequence s;
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              120 * Metre / Pow<2>(Second),
                              160 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              -300 * Metre / Pow<2>(Second),
                              -400 * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1e3 * Metre / Pow<2>(Second),
                                2e3 * Metre / Pow<2>(Second),
@@ -385,27 +375,27 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
   {
     // The acceleration is centripetal + tangential.
     InSequence s;
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (120 - 160) * Metre / Pow<2>(Second),
                              (160 + 120) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-300 + 400) * Metre / Pow<2>(Second),
                              (-400 - 300) * Metre / Pow<2>(Second),
                              0 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
   // The acceleration is centrifugal + Euler.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (1e3 + 2e3) * Metre / Pow<2>(Second),
                                (2e3 - 1e3) * Metre / Pow<2>(Second),
@@ -453,27 +443,27 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
   {
     // The acceleration is linear + centripetal.
     InSequence s;
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(big_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 + 120) * Metre / Pow<2>(Second),
                              (120 + 160) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>({
                              (-160 - 300) * Metre / Pow<2>(Second),
                              (120 - 400) * Metre / Pow<2>(Second),
                              300 * Metre / Pow<2>(Second)})));
-    EXPECT_CALL(*mock_ephemeris_,
+    EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
   // The acceleration is linear + centrifugal.
-  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1e3 * Metre / Pow<2>(Second),
                                (200 + 2e3) * Metre / Pow<2>(Second),

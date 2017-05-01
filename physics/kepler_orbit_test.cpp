@@ -55,8 +55,7 @@ class KeplerOrbitTest : public ::testing::Test {};
 //   PR     Sidereal orbit period (sec)
 
 TEST_F(KeplerOrbitTest, EarthMoon) {
-  SolarSystem<ICRFJ2000Equator> solar_system;
-  solar_system.Initialize(
+  SolarSystem<ICRFJ2000Equator> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
