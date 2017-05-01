@@ -183,9 +183,7 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Angle const true_anomaly =
       positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
 
-  SpecificEnergy const ε = InnerProduct(v, v) / 2 - μ / r.Norm();
-
-  elements_at_epoch_.specific_energy             = ε;
+  elements_at_epoch_.eccentricity                = eccentricity_vector.Norm();
   elements_at_epoch_.specific_angular_momentum   = h.Norm();
   elements_at_epoch_.inclination                 = i;
   elements_at_epoch_.longitude_of_ascending_node = Ω;
@@ -226,7 +224,7 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
       Ω, i, ω,
       EulerAngles::ZXZ,
       DefinesFrame<OrbitPlane>{});
-  Length const r = p / (1 + Cos(ν));
+  Length const r = p / (1 + e * Cos(ν));
   Displacement<Frame> const displacement =
       r * from_orbit_plane(Vector<double, OrbitPlane>({Cos(ν), Sin(ν), 0}));
   // Flight path angle.
@@ -283,18 +281,24 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
   CHECK_LE(semilatus_rectum_specifications, 1);
   CHECK_LE(periapsis_distance_specifications, 1);
   CHECK_LE(apoapsis_distance_specifications, 1);
-  CHECK_EQ(eccentricity_specifications + semimajor_axis_specifications +
-           semiminor_axis_specifications + semilatus_rectum_specifications +
-           periapsis_distance_specifications + apoapsis_distance_specifications,
+  bool const eccentricity_specified = eccentricity_specifications;
+  bool const semimajor_axis_specified = semimajor_axis_specifications;
+  bool const semiminor_axis_specified = semiminor_axis_specifications;
+  bool const semilatus_rectum_specified = semilatus_rectum_specifications;
+  bool const periapsis_distance_specified = periapsis_distance_specifications;
+  bool const apoapsis_distance_specified = apoapsis_distance_specifications;
+  CHECK_EQ(eccentricity_specified + semimajor_axis_specified +
+           semiminor_axis_specified + semilatus_rectum_specified +
+           periapsis_distance_specified + apoapsis_distance_specified,
            2);
   // In the first pass, we fill all the parameters within the categories that
   // are specified.  We then specify one parameter each remaining category, and
   // in a second pass, we fill those categories.
-  // NOTE(egg): implicit capture because we want all of the 22 local variables
-  // above.
-  auto const complete_conic_parameters = [&](int const pass) {
+  // NOTE(egg): implicit capture because we want all of the renamings and
+  // booleans above.
+  auto const complete_conic_parameters = [&](bool const first_pass) {
     // The conic shape and size is neither over- nor underspecified.
-    if (eccentricity_specifications == pass) {
+    if (eccentricity_specified == first_pass) {
       if (eccentricity) {
         double const& e = *eccentricity;
         turning_angle = 2 * ArcSin(1 / e);
@@ -312,7 +316,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     // TODO(egg): range checks.  What do we do with normalizable oddities
     // (negative n, T)? What about parabolae? (n = 0, a infinite, and the
     // equivalents provide an eccentricity specification...).
-    if (semimajor_axis_specifications == pass) {
+    if (semimajor_axis_specified == first_pass) {
       if (semimajor_axis) {
         Length const& a = *semimajor_axis;
         specific_energy = -μ / (2 * a);
@@ -377,14 +381,14 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     }
     // Because they differ by a factor of i, we fill both of those between the
     // first and the second pass, thus this is only needed in the first pass.
-    if(semiminor_axis_specifications && pass) {
+    if(semiminor_axis_specified && first_pass) {
       if (semiminor_axis) {
         impact_parameter = Sqrt(-Pow<2>(*semiminor_axis));
       } else if (impact_parameter) {
         semiminor_axis = Sqrt(-Pow<2>(*impact_parameter));
       }
     }
-    if (semilatus_rectum_specifications == pass) {
+    if (semilatus_rectum_specified == first_pass) {
       if (semilatus_rectum) {
         specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
       } else if (specific_angular_momentum) {
@@ -394,13 +398,11 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     }
   };
 
-  LOG(ERROR)<<elements;
-  complete_conic_parameters(/*pass=*/1);
-  LOG(ERROR)<<elements;
+  complete_conic_parameters(/*first_pass=*/true);
 
   // TODO(egg): some of these formulae are very ill-conditioned near the
   // parabolic case, and can be easily rewritten.  Investigate.
-  if (eccentricity_specifications && semimajor_axis_specifications) {
+  if (eccentricity_specified && semimajor_axis_specified) {
     double const& e = *eccentricity;
     Length const& a = *semimajor_axis;
     semiminor_axis = a * Sqrt(1 - Pow<2>(e));
@@ -409,7 +411,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = a * (1 - e);
     apoapsis_distance = a * (1 + e);
   }
-  if (eccentricity_specifications && semiminor_axis_specifications) {
+  if (eccentricity_specified && semiminor_axis_specified) {
     double const& e = *eccentricity;
     Length const& abs_b = e > 1 ? *impact_parameter : *semiminor_axis;
     semilatus_rectum = abs_b * Sqrt(Abs(1 - Pow<2>(e)));
@@ -417,7 +419,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = *semimajor_axis * (1 - e);
     apoapsis_distance = *semimajor_axis * (1 + e);
   }
-  if (eccentricity_specifications && semilatus_rectum_specifications) {
+  if (eccentricity_specified && semilatus_rectum_specified) {
     double const& e = *eccentricity;
     Length const& p = *semilatus_rectum;
     semimajor_axis = p / (1 - Pow<2>(e));
@@ -426,7 +428,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   }
-  if (eccentricity_specifications && periapsis_distance_specifications) {
+  if (eccentricity_specified && periapsis_distance_specified) {
     double const& e = *eccentricity;
     Length const& r_pe = *periapsis_distance;
     semimajor_axis = r_pe / (1 - e);
@@ -435,7 +437,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = r_pe * (1 + e);
     apoapsis_distance = *semimajor_axis * (1 - e);
   }
-  if (eccentricity_specifications && apoapsis_distance_specifications) {
+  if (eccentricity_specified && apoapsis_distance_specified) {
     double const& e = *eccentricity;
     Length const& r_ap = *apoapsis_distance;
     semimajor_axis = r_ap / (1 + e);
@@ -444,7 +446,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = r_ap * (1 - e);
     periapsis_distance = *semimajor_axis * (1 - e);
   }
-  if (semimajor_axis_specifications && semiminor_axis_specifications) {
+  if (semimajor_axis_specified && semiminor_axis_specified) {
     Length const& a = *semimajor_axis;
     auto const& b² = *semiminor_axis != *semiminor_axis
                            ? -Pow<2>(*impact_parameter)
@@ -454,7 +456,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = a - Sqrt(Pow<2>(a) - b²);
     apoapsis_distance = a + Sqrt(Pow<2>(a) - b²);
   }
-  if (semimajor_axis_specifications && semilatus_rectum_specifications) {
+  if (semimajor_axis_specified && semilatus_rectum_specified) {
     Length const& a = *semimajor_axis;
     Length const& p = *semilatus_rectum;
     eccentricity = Sqrt(1 - p / a);
@@ -464,7 +466,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   }
-  if (semimajor_axis_specifications && periapsis_distance_specifications) {
+  if (semimajor_axis_specified && periapsis_distance_specified) {
     Length const& a = *semimajor_axis;
     Length const& r_pe = *periapsis_distance;
     eccentricity = 1 - r_pe / a;
@@ -473,7 +475,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = r_pe * (2 - r_pe / a);
     apoapsis_distance = 2 * a - r_pe;
   }
-  if (semimajor_axis_specifications && apoapsis_distance_specifications) {
+  if (semimajor_axis_specified && apoapsis_distance_specified) {
     Length const& a = *semimajor_axis;
     Length const& r_ap = *apoapsis_distance;
     eccentricity = r_ap / a - 1;
@@ -482,7 +484,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = r_ap * (2 - r_ap / a);
     periapsis_distance = 2 * a - r_ap;
   }
-  if (semiminor_axis_specifications && semilatus_rectum_specifications) {
+  if (semiminor_axis_specified && semilatus_rectum_specified) {
     auto const& b² = *semiminor_axis != *semiminor_axis
                            ? -Pow<2>(*impact_parameter)
                            : Pow<2>(*semiminor_axis);
@@ -493,7 +495,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   }
-  if (semiminor_axis_specifications && periapsis_distance_specifications) {
+  if (semiminor_axis_specified && periapsis_distance_specified) {
     auto const& b² = *semiminor_axis != *semiminor_axis
                            ? -Pow<2>(*impact_parameter)
                            : Pow<2>(*semiminor_axis);
@@ -503,7 +505,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = 2 * b² * r_pe / (b² + Pow<2>(r_pe));
     apoapsis_distance = b² / r_pe;
   }
-  if (semiminor_axis_specifications && apoapsis_distance_specifications) {
+  if (semiminor_axis_specified && apoapsis_distance_specified) {
     auto const& b² = *semiminor_axis != *semiminor_axis
                            ? -Pow<2>(*impact_parameter)
                            : Pow<2>(*semiminor_axis);
@@ -513,7 +515,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = 2 * b² * r_ap / (b² + Pow<2>(r_ap));
     periapsis_distance = b² / r_ap;
   }
-  if (semilatus_rectum_specifications && periapsis_distance_specifications) {
+  if (semilatus_rectum_specified && periapsis_distance_specified) {
     Length const& p = *semilatus_rectum;
     Length const& r_pe = *periapsis_distance;
     eccentricity = p / r_pe - 1;
@@ -523,7 +525,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     impact_parameter = Sqrt(-p * a);
     apoapsis_distance = p * r_pe / (2 * r_pe - p);
   }
-  if (semilatus_rectum_specifications && apoapsis_distance_specifications) {
+  if (semilatus_rectum_specified && apoapsis_distance_specified) {
     Length const& p = *semilatus_rectum;
     Length const& r_ap = *apoapsis_distance;
     eccentricity = 1 - p / r_ap;
@@ -533,7 +535,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     impact_parameter = Sqrt(-p * a);
     periapsis_distance = p * r_ap / (2 * r_ap - p);
   }
-  if (periapsis_distance_specifications && periapsis_distance_specifications) {
+  if (periapsis_distance_specified && periapsis_distance_specified) {
     Length const& r_pe = *periapsis_distance;
     Length const& r_ap = *apoapsis_distance;
     eccentricity = (r_ap - r_pe) / (r_ap + r_pe);
@@ -543,9 +545,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = (2 * r_ap * r_pe) / (r_ap + r_pe);
   }
 
-  LOG(ERROR)<<elements;
-  complete_conic_parameters(/*pass=*/2);
-  LOG(ERROR)<<elements;
+  complete_conic_parameters(/*first_pass=*/false);
 
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;
@@ -563,9 +563,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     argument_of_periapsis = ϖ - Ω;
   }
 
-  LOG(ERROR)<<elements;
   CompleteAnomalies(elements);
-  LOG(ERROR)<<elements;
 }
 
 template<typename Frame>
