@@ -34,6 +34,7 @@ namespace internal_solar_system {
 using astronomy::J2000;
 using astronomy::JulianDate;
 using base::Contains;
+using base::dynamic_cast_not_null;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::Bivector;
@@ -203,6 +204,15 @@ not_null<MassiveBody const*> SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
   return ephemeris.bodies()[index(name)];
+}
+
+template<typename Frame>
+not_null<RotatingBody<Frame> const*> SolarSystem<Frame>::rotating_body(
+    Ephemeris<Frame> const& ephemeris,
+    std::string const& name) const {
+  CHECK(gravity_model_message(name).has_mean_radius());
+  return dynamic_cast_not_null<RotatingBody<Frame> const*>(
+      massive_body(ephemeris, name));
 }
 
 template<typename Frame>

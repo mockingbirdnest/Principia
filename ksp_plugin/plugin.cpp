@@ -146,7 +146,12 @@ void Plugin::InsertCelestialJacobiKeplerian(
   InitializeIndices(gravity_model.name(), celestial_index, parent_index);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
-  *initial_state_.mutable_keplerian()->add_body() = initial_state;
+  serialization::InitialState::Keplerian::Body* const body =
+      initial_state_.mutable_keplerian()->add_body();
+  if (parent_index) {
+    body->set_parent(FindOrDie(index_to_name_, *parent_index));
+  }
+  *body = initial_state;
 }
 
 void Plugin::EndInitialization() {
@@ -196,7 +201,7 @@ void Plugin::EndInitialization() {
   // Construct the celestials using the bodies from the ephemeris.
   for (std::string const& name : solar_system.names()) {
     auto const rotating_body = solar_system.rotating_body(*ephemeris_, name);
-    Index const celestial_index = FindOrDie(indices_, name);
+    Index const celestial_index = FindOrDie(name_to_index_, name);
     IndexToOwnedCelestial::iterator it;
     bool inserted;
     std::tie(it, inserted) =
@@ -1203,8 +1208,12 @@ void Plugin::InitializeIndices(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index) {
   bool inserted;
-  std::tie(std::ignore, inserted) = indices_.emplace(name, celestial_index);
+  std::tie(std::ignore, inserted) =
+      name_to_index_.emplace(name, celestial_index);
   CHECK(inserted) << name;
+  std::tie(std::ignore, inserted) =
+      index_to_name_.emplace(celestial_index, name);
+  CHECK(inserted) << celestial_index;
   std::tie(std::ignore, inserted) =
       parents_.emplace(celestial_index, parent_index);
   CHECK(inserted) << celestial_index;

@@ -505,6 +505,7 @@ void principia__InsertCelestialAbsoluteCartesian(
        vx, vy, vz});
   CHECK_NOTNULL(plugin);
   serialization::InitialState::Cartesian::Body initial_state;
+  initial_state.set_name(body_parameters.name);
   initial_state.set_x(x);
   initial_state.set_y(y);
   initial_state.set_z(z);
@@ -534,6 +535,7 @@ void principia__InsertCelestialJacobiKeplerian(
        keplerian_elements});
   CHECK_NOTNULL(plugin);
   serialization::InitialState::Keplerian::Body initial_state;
+  initial_state.set_name(body_parameters.name);
   if (keplerian_elements != nullptr) {
     serialization::InitialState::Keplerian::Body::Elements* elements =
         initial_state.mutable_elements();

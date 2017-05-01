@@ -455,7 +455,8 @@ class Plugin {
   base::Monostable initializing_;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
-  std::map<std::string, Index> indices_;
+  std::map<std::string, Index> name_to_index_;
+  std::map<Index, std::string> index_to_name_;
   std::map<Index, std::experimental::optional<Index>> parents_;
 
   GUIDToOwnedVessel vessels_;
