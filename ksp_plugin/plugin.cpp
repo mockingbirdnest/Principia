@@ -148,10 +148,10 @@ void Plugin::InsertCelestialJacobiKeplerian(
   CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
   serialization::InitialState::Keplerian::Body* const body =
       initial_state_.mutable_keplerian()->add_body();
+  *body = initial_state;
   if (parent_index) {
     body->set_parent(FindOrDie(index_to_name_, *parent_index));
   }
-  *body = initial_state;
 }
 
 void Plugin::EndInitialization() {
