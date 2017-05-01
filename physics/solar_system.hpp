@@ -28,11 +28,15 @@ using quantities::Length;
 template<typename Frame>
 class SolarSystem final {
  public:
-  // Initializes this object from the given files, which must contain text
+  // Constructs a solar system from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  void Initialize(
+  SolarSystem(
       std::experimental::filesystem::path const& gravity_model_filename,
       std::experimental::filesystem::path const& initial_state_filename);
+
+  // Construct a solar system from the given messages.
+  SolarSystem(serialization::GravityModel const& gravity_model,
+              serialization::InitialState const& initial_state);
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
@@ -119,8 +123,8 @@ class SolarSystem final {
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
   // Note that the maps below hold pointers into these protocol buffers.
-  serialization::SolarSystemFile gravity_model_;
-  serialization::SolarSystemFile initial_state_;
+  serialization::GravityModel gravity_model_;
+  serialization::InitialState initial_state_;
 
   Instant epoch_;
   std::vector<std::string> names_;

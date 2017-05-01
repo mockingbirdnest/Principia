@@ -71,14 +71,13 @@ class KSPResonanceTest : public ::testing::Test {
 
   using Periods = std::map<not_null<MassiveBody const*>, Time>;
 
-  KSPResonanceTest() {
+  KSPResonanceTest()
+      : solar_system_(
+            SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt") {
     // This test is mostly a tool for investigating orbit stability, so we want
     // logging.
     google::LogToStderr();
-
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
   }
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> MakeEphemeris() {

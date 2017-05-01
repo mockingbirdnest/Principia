@@ -67,10 +67,10 @@ using KSP = Frame<serialization::Frame::TestTag,
 
 class KSPSystem {
  protected:
-  KSPSystem() {
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
+  KSPSystem()
+      : solar_system_(
+            SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt") {
     StabilizeKSP(solar_system_);
   }
 

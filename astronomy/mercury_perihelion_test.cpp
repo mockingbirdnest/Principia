@@ -58,10 +58,6 @@ class MercuryPerihelionTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
     google::LogToStderr();
-    solar_system_1950_.Initialize(
-        SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "sol_initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
@@ -125,7 +121,10 @@ class MercuryPerihelionTest : public testing::Test {
   KeplerianElements<ICRFJ2000Equator> keplerian_elements_2050_;
 };
 
-SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_;
+SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_(
+    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+    SOLUTION_DIR / "astronomy" /
+        "sol_initial_state_jd_2433282_500000000.proto.txt");
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> MercuryPerihelionTest::ephemeris_;
 
 TEST_F(MercuryPerihelionTest, Year1950) {
