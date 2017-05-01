@@ -339,7 +339,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
 TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   serialization::GravityModel::Body gravity_model;
   CHECK(google::protobuf::TextFormat::ParseFromString(
-      R"(name                    : "that is called Brian"
+      u8R"(name                    : "that is called Brian"
          gravitational_parameter : "1.2345e6  km^3 / s^2"
          reference_instant       : 999.0
          mean_radius             : "666 km"
