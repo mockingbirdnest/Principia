@@ -42,8 +42,10 @@ struct KeplerianElements final {
   // The following two elements are NaN for elliptic orbits.
   std::experimental::optional<AngularFrequency> hyperbolic_mean_motion;
   std::experimental::optional<Speed> hyperbolic_excess_velocity;
-  // 3. semiminor axis.
+  // 3. semiminor axis.  The |semiminor_axis| is NaN for hyperbolic orbits, the
+  // |impact_parameter| is NaN for elliptic orbits.
   std::experimental::optional<Length> semiminor_axis;
+  std::experimental::optional<Length> impact_parameter;
   // 4. semilatus rectum.
   std::experimental::optional<Length> semilatus_rectum;
   std::experimental::optional<SpecificAngularMomentum>
@@ -67,7 +69,8 @@ struct KeplerianElements final {
   // The mean anomaly and mean longitude are NaN for hyperbolic orbits.
   std::experimental::optional<Angle> mean_anomaly;
   std::experimental::optional<Angle> mean_longitude;
-  // The hyperbolic mean anomaly is NaN for elliptic orbits.
+  // The hyperbolic mean anomaly is NaN for elliptic orbits:
+  // |hyperbolic_mean_anomaly = i * mean_anomaly|.
   std::experimental::optional<Angle> hyperbolic_mean_anomaly;
 
   void WriteToMessage(
