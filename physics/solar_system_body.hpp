@@ -52,46 +52,67 @@ using quantities::Speed;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-template<typename Frame>
-SolarSystem<Frame>::SolarSystem(
-    std::experimental::filesystem::path const& gravity_model_filename,
-    std::experimental::filesystem::path const& initial_state_filename) {
-  // Parse the files.
+inline serialization::GravityModel ParseGravityModel(
+    std::experimental::filesystem::path const& gravity_model_filename) {
+  serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
   google::protobuf::io::IstreamInputStream gravity_model_zcs(
                                                &gravity_model_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&gravity_model_zcs,
-                                            &gravity_model_));
-  CHECK(gravity_model_.has_gravity_model());
+                                            &gravity_model));
+  CHECK(gravity_model.has_gravity_model());
+  return gravity_model.gravity_model();
+}
 
+inline serialization::InitialState ParseInitialState(
+    std::experimental::filesystem::path const& initial_state_filename) {
+  serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
   google::protobuf::io::IstreamInputStream initial_state_zcs(
                                                &initial_state_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
-                                            &initial_state_));
-  CHECK(initial_state_.has_initial_state());
+                                            &initial_state));
+  CHECK(initial_state.has_initial_state());
+  return initial_state.initial_state();
+}
+
+template<typename Frame>
+SolarSystem<Frame>::SolarSystem(
+    std::experimental::filesystem::path const& gravity_model_filename,
+    std::experimental::filesystem::path const& initial_state_filename)
+    : SolarSystem(ParseGravityModel(gravity_model_filename),
+                  ParseInitialState(initial_state_filename)) {}
+
+template<typename Frame>
+SolarSystem<Frame>::SolarSystem(
+    serialization::GravityModel const& gravity_model,
+    serialization::InitialState const& initial_state)
+    : gravity_model_(gravity_model),
+      initial_state_(initial_state) {
+  gravity_model_.CheckInitialized();
+  initial_state_.CheckInitialized();
 
   // If a frame is specified in the files it must match the frame of this
   // instance.  Otherwise the frame of the instance is used.  This is convenient
   // for tests.
-  if (initial_state_.initial_state().has_frame()) {
-    CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
+  if (initial_state_.has_frame()) {
+    CHECK_EQ(Frame::tag, initial_state_.frame());
   }
-  if (gravity_model_.gravity_model().has_frame()) {
-    CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
+  if (gravity_model_.has_frame()) {
+    CHECK_EQ(Frame::tag, gravity_model_.frame());
   }
 
   // Store the data in maps keyed by body name.
-  for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
+  for (auto& body : *gravity_model_.mutable_body()) {
     bool inserted;
     std::tie(std::ignore, inserted) =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted) << body.name();
   }
-  if (initial_state_.initial_state().has_cartesian()) {
-    for (auto const& body : initial_state_.initial_state().cartesian().body()) {
+  if (initial_state_.has_cartesian()) {
+    for (auto const& body : initial_state_.cartesian().body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =
           cartesian_initial_state_map_.emplace(body.name(), &body);
@@ -110,8 +131,7 @@ SolarSystem<Frame>::SolarSystem(
     CHECK(it1 == gravity_model_map_.end()) << it1->first;
     CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
   } else {
-    for (auto& body : *initial_state_.mutable_initial_state()->
-                          mutable_keplerian()->mutable_body()) {
+    for (auto& body : *initial_state_.mutable_keplerian()->mutable_body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =
           keplerian_initial_state_map_.emplace(body.name(), &body);
@@ -131,7 +151,7 @@ SolarSystem<Frame>::SolarSystem(
     CHECK(it2 == keplerian_initial_state_map_.end()) << it2->first;
   }
 
-  epoch_ = JulianDate(initial_state_.initial_state().epoch());
+  epoch_ = JulianDate(initial_state_.epoch());
 
   // Call these two functions to parse all the data, so that errors are detected
   // at initialization.  Drop their results on the floor.
