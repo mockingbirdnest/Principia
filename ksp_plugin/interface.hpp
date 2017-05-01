@@ -141,9 +141,6 @@ physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
 
-physics::KeplerianElements<Barycentric> FromKeplerianElements(
-    KeplerianElements const& keplerian_elements);
-
 template<typename T>
 T FromQP(QP const& qp);
 template<>

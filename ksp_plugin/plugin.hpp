@@ -91,29 +91,17 @@ class Plugin {
          Instant const& solar_system_epoch,
          Angle const& planetarium_rotation);
 
-  // Inserts a celestial body with index |celestial_index| body |body|,
-  // giving it the initial state |initial_state|.
+  // Inserts a celestial body with index |celestial_index| and the given
+  // |gravity_model| and |initial_state|.
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
-  // inserted.  Hierarchical initialization must not be ongoing.
-  virtual void InsertCelestialAbsoluteCartesian0(
-      Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
-      DegreesOfFreedom<Barycentric> const& initial_state,
-      not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body);
+  // inserted.
+  // All the bodies must be inserted using the same method.
   virtual void InsertCelestialAbsoluteCartesian(
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Cartesian::Body const& initial_state);
-
-  // Hierarchical initialization must be ongoing.
-  virtual void InsertCelestialJacobiKeplerian0(
-      Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
-      std::experimental::optional<
-          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
-      not_null<std::unique_ptr<RotatingBody<Barycentric>>> body);
   virtual void InsertCelestialJacobiKeplerian(
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
@@ -121,7 +109,6 @@ class Plugin {
       serialization::InitialState::Keplerian::Body const& initial_state);
 
   // Ends initialization.  The sun must have been inserted.
-  virtual void EndInitialization0();
   virtual void EndInitialization();
 
   // Returns true iff this is the unstable KSP stock system.  Must be called
@@ -377,16 +364,6 @@ class Plugin {
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
 
- protected:
-  // May be overriden in tests to inject a mock.
-  virtual std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>&&
-          bodies,
-      std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
-      Instant const& initial_time,
-      Length const& fitting_tolerance,
-      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
-
  private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
   using IndexToOwnedCelestial =
@@ -411,10 +388,6 @@ class Plugin {
       std::string const& name,
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index);
-
-  // We virtualize this function for testing purposes.
-  // Requires |absolute_initialization_| and consumes it.
-  virtual void InitializeEphemerisAndSetCelestialTrajectories();
 
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
@@ -490,20 +463,6 @@ class Plugin {
   // to be in the parts() map of the vessel, and owned by it.
   std::map<PartId, not_null<Vessel*>> part_id_to_vessel_;
   IndexToOwnedCelestial celestials_;
-
-  struct AbsoluteInitializationObjects final{
-    IndexToRotatingBody bodies;
-    IndexToDegreesOfFreedom initial_state;
-  };
-
-  struct HierarchicalInitializationObjects final {
-    HierarchicalInitializationObjects(
-        not_null<std::unique_ptr<RotatingBody<Barycentric> const>> sun)
-        : system(std::move(sun)) {}
-    HierarchicalSystem<Barycentric> system;
-    std::map<Index, RotatingBody<Barycentric> const*> indices_to_bodies;
-    std::map<Index, std::experimental::optional<Index>> parents;
-  };
 
   // Not null after initialization.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;

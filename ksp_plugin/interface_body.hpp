@@ -252,31 +252,6 @@ FromAdaptiveStepParameters(
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
 }
 
-inline physics::KeplerianElements<Barycentric> FromKeplerianElements(
-    KeplerianElements const& keplerian_elements) {
-  physics::KeplerianElements<Barycentric> barycentric_keplerian_elements;
-  barycentric_keplerian_elements.eccentricity = keplerian_elements.eccentricity;
-  barycentric_keplerian_elements.semimajor_axis =
-      std::isnan(keplerian_elements.semimajor_axis)
-          ? std::experimental::nullopt
-          : std::experimental::make_optional(keplerian_elements.semimajor_axis *
-                                             Metre);
-  barycentric_keplerian_elements.mean_motion =
-      std::isnan(keplerian_elements.mean_motion)
-          ? std::experimental::nullopt
-          : std::experimental::make_optional(keplerian_elements.mean_motion *
-                                             Radian / Second);
-  barycentric_keplerian_elements.inclination =
-      keplerian_elements.inclination_in_degrees * Degree;
-  barycentric_keplerian_elements.longitude_of_ascending_node =
-      keplerian_elements.longitude_of_ascending_node_in_degrees * Degree;
-  barycentric_keplerian_elements.argument_of_periapsis =
-      keplerian_elements.argument_of_periapsis_in_degrees * Degree;
-  barycentric_keplerian_elements.mean_anomaly =
-      keplerian_elements.mean_anomaly * Radian;
-  return barycentric_keplerian_elements;
-}
-
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
