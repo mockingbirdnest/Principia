@@ -256,9 +256,8 @@ KeplerOrbit<Frame>::KeplerOrbit(
     }
   }
 
-  // TODO(egg): I am not sure how the sign of the semiminor axis should work.
-  // Here I am using the same sign as the semimajor axis, negative for
-  // hyperbolic orbits.  I think "logically" it might have to be imaginary...
+  // TODO(egg): some of these formulae are very ill-conditioned near the
+  // parabolic case, and can be easily rewritten.  Investigate.
   if (eccentricity_specifications && semimajor_axis_specifications) {
     double const& e = *eccentricity;
     Length const& a = *semimajor_axis;
@@ -306,7 +305,7 @@ KeplerOrbit<Frame>::KeplerOrbit(
   }
   if (semimajor_axis_specifications && semiminor_axis_specifications) {
     Length const& a = *semimajor_axis;
-    Length const& b² = *semiminor_axis != *semiminor_axis
+    auto const& b² = *semiminor_axis != *semiminor_axis
                            ? -Pow<2>(*impact_parameter)
                            : Pow<2>(*semiminor_axis);
     eccentricity = Sqrt(1 - b² / Pow<2>(a));
@@ -317,11 +316,90 @@ KeplerOrbit<Frame>::KeplerOrbit(
   if (semimajor_axis_specifications && semilatus_rectum_specifications) {
     Length const& a = *semimajor_axis;
     Length const& p = *semilatus_rectum;
-    eccentricity = Sqrt((a - p) / a);
+    eccentricity = Sqrt(1 - p / a);
     semiminor_axis = Sqrt(a * p);
     impact_parameter = Sqrt(-a * p);
-    periapsis_distance = a - Sqrt(Pow<2>(a) - b * Abs(b));
-    apoapsis_distance = a + Sqrt(Pow<2>(a) - b * Abs(b));
+    Length const& e = *eccentricity;
+    periapsis_distance = p / (1 + e);
+    apoapsis_distance = p / (1 - e);
+  }
+  if (semimajor_axis_specifications && periapsis_distance_specifications) {
+    Length const& a = *semimajor_axis;
+    Length const& r_pe = *periapsis_distance;
+    eccentricity = 1 - r_pe / a;
+    semiminor_axis = Sqrt((2 * a - r_pe) * r_pe);
+    impact_parameter = Sqrt((r_pe - 2 * a) * r_pe);
+    semilatus_rectum = r_pe * (2 - r_pe / a);
+    apoapsis_distance = 2 * a - r_pe;
+  }
+  if (semimajor_axis_specifications && apoapsis_distance_specifications) {
+    Length const& a = *semimajor_axis;
+    Length const& r_ap = *apoapsis_distance;
+    eccentricity = r_ap / a - 1;
+    semiminor_axis = Sqrt((2 * a - r_ap) * r_ap);
+    impact_parameter = Sqrt((r_ap - 2 * a) * r_ap);
+    semilatus_rectum = r_ap * (2 - r_ap / a);
+    periapsis_distance = 2 * a - r_ap;
+  }
+  if (semiminor_axis_specifications && semilatus_rectum_specifications) {
+    auto const& b² = *semiminor_axis != *semiminor_axis
+                           ? -Pow<2>(*impact_parameter)
+                           : Pow<2>(*semiminor_axis);
+    Length const& p = *semilatus_rectum;
+    eccentricity = Sqrt(1 - Pow<2>(p) / b²);
+    semimajor_axis = b² / p;
+    Length const& e = *eccentricity;
+    periapsis_distance = p / (1 + e);
+    apoapsis_distance = p / (1 - e);
+  }
+  if (semiminor_axis_specifications && periapsis_distance_specifications) {
+    auto const& b² = *semiminor_axis != *semiminor_axis
+                           ? -Pow<2>(*impact_parameter)
+                           : Pow<2>(*semiminor_axis);
+    Length const& r_pe = *periapsis_distance;
+    eccentricity = (b² - Pow<2>(r_pe)) / (b² + Pow<2>(r_pe));
+    semimajor_axis = (b² + Pow<2>(r_pe)) / (2 * r_pe);
+    semilatus_rectum = 2 * b² * r_pe / (b² + Pow<2>(r_pe));
+    apoapsis_distance = b² / r_pe;
+  }
+  if (semiminor_axis_specifications && apoapsis_distance_specifications) {
+    auto const& b² = *semiminor_axis != *semiminor_axis
+                           ? -Pow<2>(*impact_parameter)
+                           : Pow<2>(*semiminor_axis);
+    Length const& r_ap = *apoapsis_distance;
+    eccentricity = (Pow<2>(r_ap) - b²) / (b² + Pow<2>(r_ap));
+    semimajor_axis = (b² + Pow<2>(r_ap)) / (2 * r_ap);
+    semilatus_rectum = 2 * b² * r_ap / (b² + Pow<2>(r_ap));
+    periapsis_distance = b² / r_ap;
+  }
+  if (semilatus_rectum_specifications && periapsis_distance_specifications) {
+    Length const& p = *semilatus_rectum;
+    Length const& r_pe = *periapsis_distance;
+    eccentricity = p / r_pe - 1;
+    semimajor_axis = Pow<2>(r_pe) / (2 * r_pe - p);
+    Length const& a = *semimajor_axis;
+    semiminor_axis = Sqrt(p * a);
+    impact_parameter = Sqrt(-p * a);
+    apoapsis_distance = p * r_pe / (2 * r_pe - p);
+  }
+  if (semilatus_rectum_specifications && apoapsis_distance_specifications) {
+    Length const& p = *semilatus_rectum;
+    Length const& r_ap = *apoapsis_distance;
+    eccentricity = 1 - p / r_ap;
+    a = Pow<2>(r_ap) / (2 * r_ap - p);
+    Length const& a = *semimajor_axis;
+    semiminor_axis = Sqrt(p * a);
+    impact_parameter = Sqrt(-p * a);
+    periapsis_distance = p * r_ap / (2 * r_ap - p);
+  }
+  if (periapsis_distance_specifications && periapsis_distance_specifications) {
+    Length const& r_pe = *periapsis_distance;
+    Length const& r_ap = *apoapsis_distance;
+    eccentricity = (r_ap - r_pe) / (r_ap + r_pe);
+    semimajor_axis = (r_ap + r_pe) / 2;
+    semiminor_axis = Sqrt(r_ap * r_pe);
+    impact_parameter = Sqrt(-r_ap * r_pe);
+    semilatus_rectum = (2 * r_ap * r_pe) / (r_ap + r_pe);
   }
 }
 
