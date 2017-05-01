@@ -15,6 +15,7 @@
 #include <set>
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
@@ -39,12 +40,14 @@
 #include "physics/dynamic_frame.hpp"
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/solar_system.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
 using astronomy::JulianDayNumber;
+using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
 using base::Error;
@@ -78,6 +81,7 @@ using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::RigidMotion;
 using physics::RigidTransformation;
+using physics::SolarSystem;
 using quantities::Force;
 using quantities::Length;
 using quantities::si::Kilogram;
@@ -90,8 +94,8 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-std::uint64_t const ksp_stock_system_fingerprint = 0x025779971BA2BFD7u;
-std::uint64_t const ksp_fixed_system_fingerprint = 0x1248ADFCBD8BCE64u;
+std::uint64_t const ksp_stock_system_fingerprint = 0xC47BBFA5DC3FCA82u;
+std::uint64_t const ksp_stabilized_system_fingerprint = 0x71754DD18A8F8123u;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
@@ -108,9 +112,9 @@ Plugin::Plugin(Instant const& game_epoch,
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
       current_time_(solar_system_epoch) {
-  gravity_model_.set_frame(serialization::Frame::BARYCENTRIC);
-  initial_state_.set_epoch(JulianDayNumber(game_epoch_));
-  initial_state_.set_frame(serialization::Frame::BARYCENTRIC);
+  gravity_model_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
+  initial_state_.set_epoch(JulianDayNumber(solar_system_epoch));
+  initial_state_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
 }
 
 Plugin::~Plugin() {
@@ -121,181 +125,251 @@ Plugin::~Plugin() {
   vessels_.clear();
 }
 
-void Plugin::InsertCelestialAbsoluteCartesian0(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    DegreesOfFreedom<Barycentric> const& initial_state,
-    not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body) {
-  LOG(INFO) << __FUNCTION__ << "\n"
-            << NAMED(celestial_index) << "\n"
-            << NAMED(parent_index) << "\n"
-            << NAMED(initial_state) << "\n"
-            << NAMED(body);
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!hierarchical_initialization_);
-  if (!absolute_initialization_) {
-    absolute_initialization_.emplace();
-  }
-  auto const inserted = celestials_.emplace(
-      celestial_index,
-      std::make_unique<Celestial>(body.get()));
-  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
-  not_null<Celestial*> const celestial = inserted.first->second.get();
-  absolute_initialization_->bodies.emplace(celestial_index, std::move(body));
-  if (parent_index) {
-    not_null<Celestial const*> parent =
-        FindOrDie(celestials_, *parent_index).get();
-    celestial->set_parent(parent);
-  } else {
-    CHECK(sun_ == nullptr);
-    sun_ = celestial;
-  }
-  absolute_initialization_->initial_state.emplace(celestial_index,
-                                                  initial_state);
-}
+//void Plugin::InsertCelestialAbsoluteCartesian0(
+//    Index const celestial_index,
+//    std::experimental::optional<Index> const& parent_index,
+//    DegreesOfFreedom<Barycentric> const& initial_state,
+//    not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body) {
+//  LOG(INFO) << __FUNCTION__ << "\n"
+//            << NAMED(celestial_index) << "\n"
+//            << NAMED(parent_index) << "\n"
+//            << NAMED(initial_state) << "\n"
+//            << NAMED(body);
+//  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+//                       << "of initialization";
+//  CHECK(!hierarchical_initialization_);
+//  if (!absolute_initialization_) {
+//    absolute_initialization_.emplace();
+//  }
+//  auto const inserted = celestials_.emplace(
+//      celestial_index,
+//      std::make_unique<Celestial>(body.get()));
+//  CHECK(inserted.second) << "Body already exists at index " << celestial_index;
+//  not_null<Celestial*> const celestial = inserted.first->second.get();
+//  absolute_initialization_->bodies.emplace(celestial_index, std::move(body));
+//  if (parent_index) {
+//    not_null<Celestial const*> parent =
+//        FindOrDie(celestials_, *parent_index).get();
+//    celestial->set_parent(parent);
+//  } else {
+//    CHECK(sun_ == nullptr);
+//    sun_ = celestial;
+//  }
+//  absolute_initialization_->initial_state.emplace(celestial_index,
+//                                                  initial_state);
+//}
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Cartesian::Body const& initial_state) {
+  CHECK_EQ(gravity_model.name(), initial_state.name());
+  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_keplerian()) << initial_state_.DebugString();
   *initial_state_.mutable_cartesian()->add_body() = initial_state;
 }
 
-void Plugin::InsertCelestialJacobiKeplerian0(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    std::experimental::optional<KeplerianElements<Barycentric>> const&
-        keplerian_elements,
-    not_null<std::unique_ptr<RotatingBody<Barycentric>>> body) {
-  LOG(INFO) << __FUNCTION__ << "\n"
-            << NAMED(celestial_index) << "\n"
-            << NAMED(parent_index) << "\n"
-            << NAMED(keplerian_elements) << "\n"
-            << NAMED(body);
-  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
-                       << "of initialization";
-  CHECK(!absolute_initialization_);
-  CHECK_EQ((bool)parent_index, (bool)keplerian_elements);
-  CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
-  RotatingBody<Barycentric>* const unowned_body = body.get();
-  if (hierarchical_initialization_) {
-    hierarchical_initialization_->system.Add(
-        std::move(body),
-        hierarchical_initialization_->indices_to_bodies[*parent_index],
-        *keplerian_elements);
-  } else {
-    hierarchical_initialization_.emplace(std::move(body));
-  }
-  bool inserted =
-      hierarchical_initialization_->parents.emplace(celestial_index,
-                                                    parent_index).second;
-  inserted &=
-      hierarchical_initialization_->
-          indices_to_bodies.emplace(celestial_index, unowned_body).second;
-  CHECK(inserted);
-
-  // Record the fingerprints of the parameters to detect if we are in KSP stock.
-  CHECK(celestial_jacobi_keplerian_fingerprints_.insert(
-            FingerprintCelestialJacobiKeplerian(celestial_index,
-                                                parent_index,
-                                                keplerian_elements,
-                                                *unowned_body)).second);
-}
+//void Plugin::InsertCelestialJacobiKeplerian0(
+//    Index const celestial_index,
+//    std::experimental::optional<Index> const& parent_index,
+//    std::experimental::optional<KeplerianElements<Barycentric>> const&
+//        keplerian_elements,
+//    not_null<std::unique_ptr<RotatingBody<Barycentric>>> body) {
+//  LOG(INFO) << __FUNCTION__ << "\n"
+//            << NAMED(celestial_index) << "\n"
+//            << NAMED(parent_index) << "\n"
+//            << NAMED(keplerian_elements) << "\n"
+//            << NAMED(body);
+//  CHECK(initializing_) << "Celestial bodies should be inserted before the end "
+//                       << "of initialization";
+//  CHECK(!absolute_initialization_);
+//  CHECK_EQ((bool)parent_index, (bool)keplerian_elements);
+//  CHECK_EQ((bool)parent_index, (bool)hierarchical_initialization_);
+//  RotatingBody<Barycentric>* const unowned_body = body.get();
+//  if (hierarchical_initialization_) {
+//    hierarchical_initialization_->system.Add(
+//        std::move(body),
+//        hierarchical_initialization_->indices_to_bodies[*parent_index],
+//        *keplerian_elements);
+//  } else {
+//    hierarchical_initialization_.emplace(std::move(body));
+//  }
+//  bool inserted =
+//      hierarchical_initialization_->parents.emplace(celestial_index,
+//                                                    parent_index).second;
+//  inserted &=
+//      hierarchical_initialization_->
+//          indices_to_bodies.emplace(celestial_index, unowned_body).second;
+//  CHECK(inserted);
+//
+//  // Record the fingerprints of the parameters to detect if we are in KSP stock.
+//  CHECK(celestial_jacobi_keplerian_fingerprints_.insert(
+//            FingerprintCelestialJacobiKeplerian(celestial_index,
+//                                                parent_index,
+//                                                keplerian_elements,
+//                                                *unowned_body)).second);
+//}
 
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Keplerian::Body const& initial_state) {
+  CHECK_EQ(gravity_model.name(), initial_state.name());
+  InitializeIndices(gravity_model.name(), celestial_index, parent_index);
   *gravity_model_.add_body() = gravity_model;
   CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
   *initial_state_.mutable_keplerian()->add_body() = initial_state;
 }
 
-void Plugin::EndInitialization0() {
-  CHECK(initializing_);
-  if (hierarchical_initialization_) {
-    std::uint64_t system_fingerprint = 0;
-    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
-      system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
-    }
-    LOG(INFO) << "System fingerprint is " << std::hex << system_fingerprint;
-    if (system_fingerprint == ksp_stock_system_fingerprint) {
-      is_ksp_stock_system_ = true;
-      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
-    } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
-      LOG(INFO) << "This is the fixed KSP system, all hail retrobop!";
-    }
+//void Plugin::EndInitialization0() {
+//  CHECK(initializing_);
+//  if (hierarchical_initialization_) {
+//    std::uint64_t system_fingerprint = 0;
+//    for (std::uint64_t fingerprint : celestial_jacobi_keplerian_fingerprints_) {
+//      system_fingerprint = FingerprintCat2011(system_fingerprint, fingerprint);
+//    }
+//    LOG(INFO) << "System fingerprint is " << std::hex << system_fingerprint;
+//    if (system_fingerprint == ksp_stock_system_fingerprint) {
+//      is_ksp_stock_system_ = true;
+//      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+//    } else if (system_fingerprint == ksp_stabilized_system_fingerprint) {
+//      LOG(INFO) << "This is the fixed KSP system, all hail retrobop!";
+//    }
+//
+//    HierarchicalSystem<Barycentric>::BarycentricSystem system =
+//        hierarchical_initialization_->system.ConsumeBarycentricSystem();
+//    std::map<not_null<RotatingBody<Barycentric> const*>,
+//             Index> bodies_to_indices;
+//    for (auto const& index_body :
+//             hierarchical_initialization_->indices_to_bodies) {
+//      bodies_to_indices[index_body.second] = index_body.first;
+//    }
+//    auto const parents = std::move(hierarchical_initialization_->parents);
+//    hierarchical_initialization_ = std::experimental::nullopt;
+//    for (int i = 0; i < system.bodies.size(); ++i) {
+//      auto rotating_body = dynamic_cast_not_null<
+//          std::unique_ptr<RotatingBody<Barycentric> const>>(
+//              std::move(system.bodies[i]));
+//      Index const celestial_index = bodies_to_indices[rotating_body.get()];
+//      InsertCelestialAbsoluteCartesian(
+//          celestial_index,
+//          FindOrDie(parents, celestial_index),
+//          system.degrees_of_freedom[i],
+//          std::move(rotating_body));
+//    }
+//  }
+//  CHECK(absolute_initialization_);
+//  CHECK_NOTNULL(sun_);
+//  main_body_ = sun_->body();
+//  UpdatePlanetariumRotation();
+//  initializing_.Flop();
+//
+//  InitializeEphemerisAndSetCelestialTrajectories();
+//
+//  // Log the serialized ephemeris.
+//  serialization::Ephemeris ephemeris_message;
+//  ephemeris_->WriteToMessage(&ephemeris_message);
+//  std::string const bytes = ephemeris_message.SerializeAsString();
+//  base::UniqueArray<std::uint8_t> const hex((bytes.size() << 1) + 1);
+//  base::HexadecimalEncode(
+//      base::Array<std::uint8_t const>(
+//          reinterpret_cast<std::uint8_t const*>(bytes.data()), bytes.size()),
+//      hex.get());
+//  hex.data[hex.size - 1] = 0;
+//  // Begin and end markers to make sure the hex did not get clipped (this might
+//  // happen if the message is very big).
+//  LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
+//            << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+//}
 
-    HierarchicalSystem<Barycentric>::BarycentricSystem system =
-        hierarchical_initialization_->system.ConsumeBarycentricSystem();
-    std::map<not_null<RotatingBody<Barycentric> const*>,
-             Index> bodies_to_indices;
-    for (auto const& index_body :
-             hierarchical_initialization_->indices_to_bodies) {
-      bodies_to_indices[index_body.second] = index_body.first;
-    }
-    auto const parents = std::move(hierarchical_initialization_->parents);
-    hierarchical_initialization_ = std::experimental::nullopt;
-#if LOG_KSP_SYSTEM
-    OFStream file;
+void Plugin::EndInitialization() {
+  CHECK(initializing_);
+  SolarSystem<Barycentric> solar_system(gravity_model_, initial_state_);
+
+  // If the system was constructed using keplerian elements, it may be the
+  // stock KSP system in which case it needs to be stabilized.
+  if (initial_state_.has_keplerian()) {
+    auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
+    serialization::HierarchicalSystem message;
+    hierarchical_system->WriteToMessage(&message);
+    std::string const serialized_message = message.SerializeAsString();
+    uint64_t const system_fingerprint =
+        Fingerprint2011(serialized_message.c_str(), serialized_message.size());
+    LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
+              << system_fingerprint;
+
     if (system_fingerprint == ksp_stock_system_fingerprint) {
-      file = OFStream(TEMP_DIR / "ksp_stock_system.proto.hex");
-    } else if (system_fingerprint == ksp_fixed_system_fingerprint) {
-      file = OFStream(TEMP_DIR / "ksp_fixed_system.proto.hex");
+      LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
+      StabilizeKSP(solar_system);
+      auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
+      serialization::HierarchicalSystem message;
+      hierarchical_system->WriteToMessage(&message);
+      std::string const serialized_message = message.SerializeAsString();
+      uint64_t const system_fingerprint = Fingerprint2011(
+          serialized_message.c_str(), serialized_message.size());
+      LOG(INFO) << "System fingerprint after stabilization is " << std::hex
+                << std::uppercase << system_fingerprint;
+      CHECK_EQ(ksp_stabilized_system_fingerprint, system_fingerprint)
+          << "Attempt at stabilizing the KSP system failed!\n"
+          << gravity_model_.DebugString() << "\n"
+          << initial_state_.DebugString();
+      LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
     } else {
-      file = OFStream(TEMP_DIR / "unknown_system.proto.hex");
-    }
-    std::string bytes;
-    base::UniqueArray<std::uint8_t> hex;
-#endif
-    for (int i = 0; i < system.bodies.size(); ++i) {
-#if LOG_KSP_SYSTEM
-      serialization::MassiveBody body_message;
-      serialization::Pair degrees_of_freedom_message;
-      system.bodies[i]->WriteToMessage(&body_message);
-      system.degrees_of_freedom[i].WriteToMessage(&degrees_of_freedom_message);
-      body_message.SerializeToString(&bytes);
-      hex = base::UniqueArray<std::uint8_t>((bytes.size() << 1) + 1);
-      base::HexadecimalEncode(
-          base::Array<std::uint8_t const>(
-              reinterpret_cast<std::uint8_t const*>(bytes.data()),
-              bytes.size()),
-          hex.get());
-      hex.data[hex.size - 1] = 0;
-      file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
-      degrees_of_freedom_message.SerializeToString(&bytes);
-      hex = base::UniqueArray<std::uint8_t>((bytes.size() << 1) + 1);
-      base::HexadecimalEncode(
-          base::Array<std::uint8_t const>(
-              reinterpret_cast<std::uint8_t const*>(bytes.data()),
-              bytes.size()),
-          hex.get());
-      hex.data[hex.size - 1] = 0;
-      file << reinterpret_cast<char const*>(hex.data.get()) << "\n";
-#endif
-      auto rotating_body = dynamic_cast_not_null<
-          std::unique_ptr<RotatingBody<Barycentric> const>>(
-              std::move(system.bodies[i]));
-      Index const celestial_index = bodies_to_indices[rotating_body.get()];
-      InsertCelestialAbsoluteCartesian(
-          celestial_index,
-          FindOrDie(parents, celestial_index),
-          system.degrees_of_freedom[i],
-          std::move(rotating_body));
+      LOG(WARNING) << "This is an unknown system, we don't know anything about "
+                   << "its stability:\n"
+                   << gravity_model_.DebugString() << "\n"
+                   << initial_state_.DebugString();
     }
   }
-  CHECK(absolute_initialization_);
+
+  // Construct the ephemeris.
+  ephemeris_ = solar_system.MakeEphemeris(default_ephemeris_fitting_tolerance,
+                                          DefaultEphemerisParameters());
+
+  // Construct the celestials using the bodies from the ephemeris.
+  for (std::string const& name : solar_system.names()) {
+    auto const rotating_body = solar_system.rotating_body(*ephemeris_, name);
+    Index const celestial_index = FindOrDie(indices_, name);
+    IndexToOwnedCelestial::iterator it;
+    bool inserted;
+    std::tie(it, inserted) =
+        celestials_.emplace(celestial_index,
+                            std::make_unique<Celestial>(rotating_body));
+    CHECK(inserted) << "Body already exists at index " << celestial_index;
+    it->second->set_trajectory(ephemeris_->trajectory(rotating_body));
+  }
+
+  // Establish the parent relationships between the celestials.
+  for (auto const& pair : celestials_) {
+    Index const celestial_index = pair.first;
+    auto const& celestial = pair.second;
+    auto const& parent_index = FindOrDie(parents_, celestial_index);
+    if (parent_index) {
+      not_null<Celestial const*> parent =
+          FindOrDie(celestials_, *parent_index).get();
+      celestial->set_parent(parent);
+    } else {
+      CHECK(sun_ == nullptr);
+      sun_ = celestial.get();
+    }
+  }
   CHECK_NOTNULL(sun_);
   main_body_ = sun_->body();
-  UpdatePlanetariumRotation();
-  initializing_.Flop();
 
-  InitializeEphemerisAndSetCelestialTrajectories();
+  UpdatePlanetariumRotation();
+
+  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
+  // the sun's index at hand.
+  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
+  // then export |FindOrDie(celestials_, _)|.
+  SetPlottingFrame(
+      make_not_null_unique<
+          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+              ephemeris_.get(),
+              sun_->body()));
 
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
@@ -311,6 +385,8 @@ void Plugin::EndInitialization0() {
   // happen if the message is very big).
   LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
             << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+
+  initializing_.Flop();
 }
 
 bool Plugin::IsKspStockSystem() const {
@@ -1276,39 +1352,51 @@ Plugin::Plugin(
       prolongation_parameters_(prolongation_parameters),
       prediction_parameters_(prediction_parameters) {}
 
-void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
-  std::vector<
-      not_null<std::unique_ptr<RotatingBody<Barycentric> const>>> bodies;
-  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
-  for (auto& pair : absolute_initialization_->bodies) {
-    auto& body = pair.second;
-    bodies.emplace_back(std::move(body));
-  }
-  for (auto const& pair : absolute_initialization_->initial_state) {
-    auto const& degrees_of_freedom = pair.second;
-    initial_state.emplace_back(degrees_of_freedom);
-  }
-  absolute_initialization_ = std::experimental::nullopt;
-  ephemeris_ = NewEphemeris(std::move(bodies),
-                            initial_state,
-                            current_time_,
-                            default_ephemeris_fitting_tolerance,
-                            DefaultEphemerisParameters());
-  for (auto const& pair : celestials_) {
-    auto& celestial = *pair.second;
-    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
-  }
-
-  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
-  // the sun's index at hand.
-  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
-  // then export |FindOrDie(celestials_, _)|.
-  SetPlottingFrame(
-      make_not_null_unique<
-          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-              ephemeris_.get(),
-              sun_->body()));
+void Plugin::InitializeIndices(
+    std::string const& name,
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index) {
+  bool inserted;
+  std::tie(std::ignore, inserted) = indices_.emplace(name, celestial_index);
+  CHECK(inserted) << name;
+  std::tie(std::ignore, inserted) =
+      parents_.emplace(celestial_index, parent_index);
+  CHECK(inserted) << celestial_index;
 }
+
+//void Plugin::InitializeEphemerisAndSetCelestialTrajectories() {
+//  std::vector<
+//      not_null<std::unique_ptr<RotatingBody<Barycentric> const>>> bodies;
+//  std::vector<DegreesOfFreedom<Barycentric>> initial_state;
+//  for (auto& pair : absolute_initialization_->bodies) {
+//    auto& body = pair.second;
+//    bodies.emplace_back(std::move(body));
+//  }
+//  for (auto const& pair : absolute_initialization_->initial_state) {
+//    auto const& degrees_of_freedom = pair.second;
+//    initial_state.emplace_back(degrees_of_freedom);
+//  }
+//  absolute_initialization_ = std::experimental::nullopt;
+//  ephemeris_ = NewEphemeris(std::move(bodies),
+//                            initial_state,
+//                            current_time_,
+//                            default_ephemeris_fitting_tolerance,
+//                            DefaultEphemerisParameters());
+//  for (auto const& pair : celestials_) {
+//    auto& celestial = *pair.second;
+//    celestial.set_trajectory(ephemeris_->trajectory(celestial.body()));
+//  }
+//
+//  // This would use NewBodyCentredNonRotatingNavigationFrame, but we don't have
+//  // the sun's index at hand.
+//  // TODO(egg): maybe these functions should take |Celestial*|s, and we should
+//  // then export |FindOrDie(celestials_, _)|.
+//  SetPlottingFrame(
+//      make_not_null_unique<
+//          BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
+//              ephemeris_.get(),
+//              sun_->body()));
+//}
 
 not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
     GUID const& vessel_guid) const {

@@ -69,6 +69,11 @@ class SolarSystem final {
   not_null<MassiveBody const*> massive_body(Ephemeris<Frame> const& ephemeris,
                                             std::string const& name) const;
 
+  // Same as above, but checks that the body is a rotating body.
+  not_null<RotatingBody<Frame> const*> rotating_body(
+      Ephemeris<Frame> const& ephemeris,
+      std::string const& name) const;
+
   // The |ContinuousTrajectory| for the body named |name|, extracted from the
   // given |ephemeris|.
   ContinuousTrajectory<Frame> const& trajectory(

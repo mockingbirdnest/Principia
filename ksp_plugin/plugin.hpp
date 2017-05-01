@@ -407,6 +407,11 @@ class Plugin {
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_parameters);
 
+  void InitializeIndices(
+      std::string const& name,
+      Index celestial_index,
+      std::experimental::optional<Index> const& parent_index);
+
   // We virtualize this function for testing purposes.
   // Requires |absolute_initialization_| and consumes it.
   virtual void InitializeEphemerisAndSetCelestialTrajectories();
@@ -474,8 +479,11 @@ class Plugin {
   bool is_loaded(not_null<Vessel*> vessel) const;
 
   // Initialization objects.
+  base::Monostable initializing_;
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;
+  std::map<std::string, Index> indices_;
+  std::map<Index, std::experimental::optional<Index>> parents_;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
@@ -487,8 +495,6 @@ class Plugin {
     IndexToRotatingBody bodies;
     IndexToDegreesOfFreedom initial_state;
   };
-  std::experimental::optional<AbsoluteInitializationObjects>
-      absolute_initialization_;
 
   struct HierarchicalInitializationObjects final {
     HierarchicalInitializationObjects(
@@ -498,10 +504,8 @@ class Plugin {
     std::map<Index, RotatingBody<Barycentric> const*> indices_to_bodies;
     std::map<Index, std::experimental::optional<Index>> parents;
   };
-  std::experimental::optional<HierarchicalInitializationObjects>
-      hierarchical_initialization_;
 
-  // Null if and only if |initializing_|.
+  // Not null after initialization.
   std::unique_ptr<Ephemeris<Barycentric>> ephemeris_;
 
   // The parameters for computing the various trajectories.
@@ -509,9 +513,6 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
   Time prediction_length_ = 1 * Hour;
-
-  // Whether initialization is ongoing.
-  base::Monostable initializing_;
 
   Angle planetarium_rotation_;
   std::experimental::optional<Rotation<Barycentric, AliceSun>>
@@ -521,7 +522,7 @@ class Plugin {
   // The current in-game universal time.
   Instant current_time_;
 
-  Celestial* sun_ = nullptr;  // Not owning, not null after InsertSun is called.
+  Celestial* sun_ = nullptr;  // Not owning, not null after initialization.
 
   // Not null after initialization. |EndInitialization| sets it to the
   // heliocentric frame.
