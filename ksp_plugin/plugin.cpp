@@ -14,6 +14,7 @@
 #include <vector>
 #include <set>
 
+#include "astronomy/epoch.hpp"
 #include "base/file.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
@@ -43,6 +44,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
+using astronomy::JulianDayNumber;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
 using base::Error;
@@ -105,9 +107,21 @@ Plugin::Plugin(Instant const& game_epoch,
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(game_epoch),
-      current_time_(solar_system_epoch) {}
+      current_time_(solar_system_epoch) {
+  gravity_model_.set_frame(serialization::Frame::BARYCENTRIC);
+  initial_state_.set_epoch(JulianDayNumber(game_epoch_));
+  initial_state_.set_frame(serialization::Frame::BARYCENTRIC);
+}
 
-void Plugin::InsertCelestialAbsoluteCartesian(
+Plugin::~Plugin() {
+  // We must manually destroy the vessels, triggering the destruction of the
+  // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
+  // which must therefore still exist.  This also removes the parts from the
+  // pile-ups, which also exist.
+  vessels_.clear();
+}
+
+void Plugin::InsertCelestialAbsoluteCartesian0(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     DegreesOfFreedom<Barycentric> const& initial_state,
@@ -141,15 +155,17 @@ void Plugin::InsertCelestialAbsoluteCartesian(
                                                   initial_state);
 }
 
-Plugin::~Plugin() {
-  // We must manually destroy the vessels, triggering the destruction of the
-  // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.  This also removes the parts from the
-  // pile-ups, which also exist.
-  vessels_.clear();
+void Plugin::InsertCelestialAbsoluteCartesian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    serialization::GravityModel::Body const& gravity_model,
+    serialization::InitialState::Cartesian::Body const& initial_state) {
+  *gravity_model_.add_body() = gravity_model;
+  CHECK(!initial_state_.has_keplerian()) << initial_state_.DebugString();
+  *initial_state_.mutable_cartesian()->add_body() = initial_state;
 }
 
-void Plugin::InsertCelestialJacobiKeplerian(
+void Plugin::InsertCelestialJacobiKeplerian0(
     Index const celestial_index,
     std::experimental::optional<Index> const& parent_index,
     std::experimental::optional<KeplerianElements<Barycentric>> const&
@@ -190,7 +206,17 @@ void Plugin::InsertCelestialJacobiKeplerian(
                                                 *unowned_body)).second);
 }
 
-void Plugin::EndInitialization() {
+void Plugin::InsertCelestialJacobiKeplerian(
+    Index const celestial_index,
+    std::experimental::optional<Index> const& parent_index,
+    serialization::GravityModel::Body const& gravity_model,
+    serialization::InitialState::Keplerian::Body const& initial_state) {
+  *gravity_model_.add_body() = gravity_model;
+  CHECK(!initial_state_.has_cartesian()) << initial_state_.DebugString();
+  *initial_state_.mutable_keplerian()->add_body() = initial_state;
+}
+
+void Plugin::EndInitialization0() {
   CHECK(initializing_);
   if (hierarchical_initialization_) {
     std::uint64_t system_fingerprint = 0;

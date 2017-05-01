@@ -31,6 +31,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/astronomy.pb.h"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -95,21 +96,32 @@ class Plugin {
   // If |parent_index| is null, inserts the sun, otherwise the parent of the new
   // body is the body with index |*parent_index|, which must already have been
   // inserted.  Hierarchical initialization must not be ongoing.
-  virtual void InsertCelestialAbsoluteCartesian(
+  virtual void InsertCelestialAbsoluteCartesian0(
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       DegreesOfFreedom<Barycentric> const& initial_state,
       not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body);
+  virtual void InsertCelestialAbsoluteCartesian(
+      Index celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      serialization::GravityModel::Body const& gravity_model,
+      serialization::InitialState::Cartesian::Body const& initial_state);
 
   // Hierarchical initialization must be ongoing.
-  virtual void InsertCelestialJacobiKeplerian(
+  virtual void InsertCelestialJacobiKeplerian0(
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index,
       std::experimental::optional<
           physics::KeplerianElements<Barycentric>> const& keplerian_elements,
       not_null<std::unique_ptr<RotatingBody<Barycentric>>> body);
+  virtual void InsertCelestialJacobiKeplerian(
+      Index celestial_index,
+      std::experimental::optional<Index> const& parent_index,
+      serialization::GravityModel::Body const& gravity_model,
+      serialization::InitialState::Keplerian::Body const& initial_state);
 
   // Ends initialization.  The sun must have been inserted.
+  virtual void EndInitialization0();
   virtual void EndInitialization();
 
   // Returns true iff this is the unstable KSP stock system.  Must be called
@@ -460,6 +472,10 @@ class Plugin {
 
   // Whether |loaded_vessels_| contains |vessel|.
   bool is_loaded(not_null<Vessel*> vessel) const;
+
+  // Initialization objects.
+  serialization::GravityModel gravity_model_;
+  serialization::InitialState initial_state_;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
