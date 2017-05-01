@@ -110,6 +110,14 @@ class KeplerOrbit final {
   KeplerianElements<Frame> const& elements_at_epoch() const;
 
  private:
+  // |elements| must be minimally specified.  Fills all |optional|s in
+  // |elements|.
+  static void CompleteElements(KeplerianElements<Frame>& elements,
+                               GravitationalParameter const& μ);
+  // Sections I and II of |elements| must be filled; section III must be
+  // minimally specified.  Fills section III.
+  static void CompleteAnomalies(KeplerianElements<Frame>& elements);
+
   GravitationalParameter const gravitational_parameter_;
   KeplerianElements<Frame> elements_at_epoch_;
   Instant const epoch_;
