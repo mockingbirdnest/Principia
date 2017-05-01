@@ -107,8 +107,8 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       *moon,
       {expected_displacement, expected_velocity},
       date);
-  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().eccentricity,
-              AlmostEquals(moon_orbit.elements_at_epoch().eccentricity, 8));
+  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().eccentricity,
+              AlmostEquals(*moon_orbit.elements_at_epoch().eccentricity, 8));
   EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().semimajor_axis,
               AlmostEquals(*moon_orbit.elements_at_epoch().semimajor_axis, 1));
   EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().mean_motion,
