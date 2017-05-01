@@ -91,19 +91,21 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
         small_(solar_system_.massive_body(*ephemeris_, small)),
         small_initial_state_(solar_system_.initial_state(small)),
         small_gravitational_parameter_(
-            solar_system_.gravitational_parameter(small)),
-        mock_frame_(&mock_ephemeris_, big_, small_) {
-    ephemeris_->Prolong(t0_ + 2 * period_);
-    big_small_frame_ = std::make_unique<
-        BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
-        ephemeris_.get(), big_, small_);
-
+            solar_system_.gravitational_parameter(small)) {
     EXPECT_CALL(mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, big)))
         .WillOnce(Return(&mock_big_trajectory_));
     EXPECT_CALL(mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, small)))
         .WillOnce(Return(&mock_small_trajectory_));
+    mock_frame_ = std::make_unique<
+        BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, MockFrame>>(
+        &mock_ephemeris_, big_, small_);
+
+    ephemeris_->Prolong(t0_ + 2 * period_);
+    big_small_frame_ = std::make_unique<
+        BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
+        ephemeris_.get(), big_, small_);
   }
 
   Time const period_;
@@ -117,9 +119,10 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
   DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
   GravitationalParameter small_gravitational_parameter_;
   StrictMock<MockEphemeris<ICRFJ2000Equator>> mock_ephemeris_;
-  StrictMock<BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, MockFrame>>
-      mock_frame_;
 
+  std::unique_ptr<
+      BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, MockFrame>>
+      mock_frame_;
   std::unique_ptr<
       BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>
           big_small_frame_;
@@ -234,7 +237,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
   }
 
   // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                400 * Metre / Pow<2>(Second),
                                -200 * Metre / Pow<2>(Second),
@@ -290,7 +293,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1e3 * Metre / Pow<2>(Second),
                                2e3 * Metre / Pow<2>(Second),
@@ -349,7 +352,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
   }
 
   // The acceleration is centrifugal + Euler.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (1e3 + 2e3) * Metre / Pow<2>(Second),
                                (2e3 - 1e3) * Metre / Pow<2>(Second),
@@ -408,7 +411,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
   }
 
   // The acceleration is linear + centrifugal.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                1e3 * Metre / Pow<2>(Second),
                                (200 + 2e3) * Metre / Pow<2>(Second),

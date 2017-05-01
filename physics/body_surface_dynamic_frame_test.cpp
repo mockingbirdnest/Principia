@@ -108,15 +108,17 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                     /*angular_frequency=*/10 * Radian / Second,
                     /*ascension_of_pole=*/0 * Radian,
                     /*declination_of_pole=*/π / 2 * Radian)),
-        massive_centre_(&centre_),
-        mock_frame_(&mock_ephemeris_, &centre_) {
+        massive_centre_(&centre_) {
+    EXPECT_CALL(mock_ephemeris_, trajectory(_))
+        .WillOnce(Return(&mock_centre_trajectory_));
+    mock_frame_ =
+        std::make_unique<BodySurfaceDynamicFrame<ICRFJ2000Equator, MockFrame>>(
+            &mock_ephemeris_, &centre_);
+
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_frame_ = std::make_unique<
         BodySurfaceDynamicFrame<ICRFJ2000Equator, BigSmallFrame>>(
         ephemeris_.get(), big_);
-
-    EXPECT_CALL(mock_ephemeris_, trajectory(_))
-        .WillOnce(Return(&mock_centre_trajectory_));
   }
 
   Time const period_;
@@ -131,8 +133,9 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
   RotatingBody<ICRFJ2000Equator> const centre_;
   not_null<MassiveBody const*> const massive_centre_;
   StrictMock<MockEphemeris<ICRFJ2000Equator>> mock_ephemeris_;
-  StrictMock<BodySurfaceDynamicFrame<ICRFJ2000Equator, MockFrame>> mock_frame_;
 
+  std::unique_ptr<BodySurfaceDynamicFrame<ICRFJ2000Equator, MockFrame>>
+      mock_frame_;
   std::unique_ptr<
       BodySurfaceDynamicFrame<ICRFJ2000Equator, BigSmallFrame>> big_frame_;
   StrictMock<MockContinuousTrajectory<ICRFJ2000Equator>>
@@ -231,7 +234,7 @@ TEST_F(BodySurfaceDynamicFrameTest, CoriolisAcceleration) {
   }
 
   // The Coriolis acceleration is towards the centre and opposed to the motion.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof).coordinates(),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof).coordinates(),
               Componentwise(AlmostEquals(400 * Metre / Pow<2>(Second), 1),
                             AlmostEquals(-200 * Metre / Pow<2>(Second), 0),
                             VanishesBefore(1 * Metre / Pow<2>(Second), 110)));
@@ -269,7 +272,7 @@ TEST_F(BodySurfaceDynamicFrameTest, CentrifugalAcceleration) {
         .WillOnce(Return(Vector<Acceleration, ICRFJ2000Equator>()));
   }
 
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof).coordinates(),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof).coordinates(),
               Componentwise(AlmostEquals(1e3 * Metre / Pow<2>(Second), 0),
                             AlmostEquals(2e3 * Metre / Pow<2>(Second), 1),
                             VanishesBefore(1 * Metre / Pow<2>(Second), 552)));
@@ -313,7 +316,7 @@ TEST_F(BodySurfaceDynamicFrameTest, LinearAcceleration) {
   }
 
   // The acceleration is linear + centrifugal.
-  EXPECT_THAT(mock_frame_.GeometricAcceleration(t, point_dof),
+  EXPECT_THAT(mock_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, MockFrame>({
                                (-120 + 1e3) * Metre / Pow<2>(Second),
                                (-160 + 2e3) * Metre / Pow<2>(Second),
