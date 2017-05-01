@@ -72,11 +72,12 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
                                               auto const& value) {
     result += (first_entry ? "" : ", ") + symbol + " = " +
               quantities::DebugString(value);
+    first_entry = false;
   };
   auto const append_optional = [&append](std::string const& symbol,
                                          auto const& value) {
     if (value) {
-      append(symbol, value, end);
+      append(symbol, *value);
     }
   };
   append_optional("e", elements.eccentricity);
@@ -84,12 +85,12 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
   append_optional(u8"δ", elements.turning_angle);
 
   append_optional("a", elements.semimajor_axis);
-  append_optional("ε", elements.specific_energy);
-  append_optional("C₃", elements.characteristic_energy);
+  append_optional(u8"ε", elements.specific_energy);
+  append_optional(u8"C₃", elements.characteristic_energy);
   append_optional("n", elements.mean_motion);
   append_optional("T", elements.period);
   append_optional("n/i", elements.hyperbolic_mean_motion);
-  append_optional("v∞", elements.hyperbolic_excess_velocity);
+  append_optional(u8"v∞", elements.hyperbolic_excess_velocity);
 
   append_optional("b", elements.semiminor_axis);
   append_optional("b/i", elements.impact_parameter);
@@ -106,7 +107,7 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
   append_optional(u8"ω", elements.argument_of_periapsis);
   append_optional(u8"ϖ", elements.longitude_of_periapsis);
 
-  append_optional("ν", elements.true_anomaly);
+  append_optional(u8"ν", elements.true_anomaly);
   append_optional("M", elements.mean_anomaly);
   append_optional("M/i", elements.hyperbolic_mean_anomaly);
   result += "}";
@@ -298,13 +299,11 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         double const& e = *eccentricity;
         turning_angle = 2 * ArcSin(1 / e);
         asymptotic_true_anomaly = ArcCos(1 / e);
-      }
-      if (turning_angle) {
+      } else if (turning_angle) {
         Angle const& δ = *turning_angle;
         eccentricity = 1 / Sin(δ / 2);
         asymptotic_true_anomaly = δ / 2 + π * Radian;
-      }
-      if (asymptotic_true_anomaly) {
+      } else if (asymptotic_true_anomaly) {
         Angle const& ν_inf = *asymptotic_true_anomaly;
         eccentricity = -1 / Cos(ν_inf);
         turning_angle = 2 * (ν_inf - π * Radian);
@@ -322,8 +321,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         period = 2 * π * Sqrt(Pow<3>(a) / μ);
         hyperbolic_mean_motion = Sqrt(μ / Pow<3>(-a)) * Radian;
         hyperbolic_excess_velocity = Sqrt(-μ / a);
-      }
-      if (specific_energy) {
+      } else if (specific_energy) {
         SpecificEnergy const& ε = *specific_energy;
         semimajor_axis = -μ / (2 * ε);
         characteristic_energy = 2 * ε;
@@ -331,8 +329,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         period = π * Sqrt(-Pow<2>(μ) / (2 * Pow<3>(ε)));
         hyperbolic_mean_motion = 2 * Sqrt(2 * Pow<3>(ε) / Pow<2>(μ)) * Radian;
         hyperbolic_excess_velocity = Sqrt(2 * ε);
-      }
-      if (characteristic_energy) {
+      } else if (characteristic_energy) {
         SpecificEnergy const& c3 = *characteristic_energy;
         semimajor_axis = -μ / c3;
         specific_energy = c3 / 2;
@@ -340,8 +337,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         period = 2 * π * Sqrt(-Pow<2>(μ) / Pow<3>(c3));
         hyperbolic_mean_motion = Sqrt(Pow<3>(c3) / Pow<2>(μ)) * Radian;
         hyperbolic_excess_velocity = Sqrt(c3);
-      }
-      if (mean_motion) {
+      } else if (mean_motion) {
         AngularFrequency const& n = *mean_motion;
         semimajor_axis = Cbrt(μ / Pow<2>(n / Radian));
         specific_energy = -Pow<2>(Cbrt(μ * n / Radian)) / 2;
@@ -350,8 +346,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         // The following two are NaN.
         hyperbolic_mean_motion = Sqrt(-Pow<2>(n));
         hyperbolic_excess_velocity = Sqrt(-Pow<2>(Cbrt(μ * n / Radian)));
-      }
-      if (period) {
+      } else if (period) {
         Time const& T = *period;
         semimajor_axis = Cbrt(μ * Pow<2>(T / (2 * π)));
         specific_energy = -Cbrt(Pow<2>(π * μ / T) / 2);
@@ -360,8 +355,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         // The following two are NaN.
         hyperbolic_mean_motion = 2 * π * Radian * Sqrt(-1 / Pow<2>(T));
         hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
-      }
-      if (hyperbolic_mean_motion) {
+      } else if (hyperbolic_mean_motion) {
         AngularFrequency const& n_over_i = *hyperbolic_mean_motion;
         semimajor_axis = -Cbrt(μ / Pow<2>(n_over_i / Radian));
         specific_energy = Pow<2>(Cbrt(μ * n_over_i / Radian)) / 2;
@@ -370,8 +364,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         period = 2 * π * Radian / Sqrt(-Pow<2>(n_over_i));
         mean_motion = Sqrt(-Pow<2>(n_over_i));
         hyperbolic_excess_velocity = Sqrt(Pow<2>(Cbrt(μ * n_over_i / Radian)));
-      }
-      if (hyperbolic_excess_velocity) {
+      } else if (hyperbolic_excess_velocity) {
         Speed const& v_inf = *hyperbolic_excess_velocity;
         semimajor_axis = -μ / Pow<2>(v_inf);
         specific_energy = Pow<2>(v_inf) / 2;
@@ -387,16 +380,14 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     if(semiminor_axis_specifications && pass) {
       if (semiminor_axis) {
         impact_parameter = Sqrt(-Pow<2>(*semiminor_axis));
-      }
-      if (impact_parameter) {
+      } else if (impact_parameter) {
         semiminor_axis = Sqrt(-Pow<2>(*impact_parameter));
       }
     }
     if (semilatus_rectum_specifications == pass) {
       if (semilatus_rectum) {
         specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
-      }
-      if (specific_angular_momentum) {
+      } else if (specific_angular_momentum) {
         SpecificAngularMomentum const& h = *specific_angular_momentum;
         semilatus_rectum = Pow<2>(h * Radian) / μ;
       }
@@ -567,8 +558,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
   if (argument_of_periapsis) {
     auto const& ω = *argument_of_periapsis;
     longitude_of_periapsis = Ω + ω;
-  }
-  if (longitude_of_periapsis) {
+  } else if (longitude_of_periapsis) {
     auto const& ϖ = *longitude_of_periapsis;
     argument_of_periapsis = ϖ - Ω;
   }
@@ -596,8 +586,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
         ArcCosh((Cos(ν) - e) / (1 - e * Cos(ν)));
     hyperbolic_mean_anomaly = e * Sinh(hyperbolic_eccentric_anomaly) * Radian -
                               hyperbolic_eccentric_anomaly;
-  }
-  if (mean_anomaly) {
+  } else if (mean_anomaly) {
     auto const kepler_equation =
         [e, mean_anomaly](Angle const& eccentric_anomaly) -> Angle {
       return *mean_anomaly -
@@ -610,8 +599,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
     true_anomaly = 2 * ArcTan(Sqrt(1 + e) * Sin(eccentric_anomaly / 2),
                               Sqrt(1 - e) * Cos(eccentric_anomaly / 2));
     hyperbolic_mean_anomaly = NaN<Angle>();
-  }
-  if (hyperbolic_mean_anomaly) {
+  } else if (hyperbolic_mean_anomaly) {
     auto const hyperbolic_kepler_equation =
         [e, hyperbolic_mean_anomaly](
             Angle const& hyperbolic_eccentric_anomaly) -> Angle {
