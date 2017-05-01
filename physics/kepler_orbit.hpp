@@ -73,8 +73,7 @@ struct KeplerianElements final {
 #if NOT_YET_IMPLEMENTED
   std::experimental::optional<Angle> mean_longitude;
 #endif
-  // The hyperbolic mean anomaly is NaN for elliptic orbits:
-  // |hyperbolic_mean_anomaly = i * mean_anomaly|.
+  // The hyperbolic mean anomaly is NaN for elliptic orbits.
   std::experimental::optional<Angle> hyperbolic_mean_anomaly;
 
   void WriteToMessage(
