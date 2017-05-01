@@ -67,24 +67,49 @@ void KeplerianElements<Frame>::WriteToMessage(
 template<typename Frame>
 std::string DebugString(KeplerianElements<Frame> const& elements) {
   std::string result = "{";
-  auto const append = [&result](
-      std::string const& symbol,
-      auto const& value,
-      bool end = false) {
-    result += symbol + " = " + quantities::DebugString(value) +
-              (end ? "}" : ", ");
+  bool first_entry = true;
+  auto const append = [&result, &first_entry](std::string const& symbol,
+                                              auto const& value) {
+    result += (first_entry ? "" : ", ") + symbol + " = " +
+              quantities::DebugString(value);
   };
-  append("e", elements.eccentricity);
-  if (elements.semimajor_axis) {
-    append("a", *elements.semimajor_axis);
-  }
-  if (elements.mean_motion) {
-    append("n", *elements.mean_motion);
-  }
+  auto const append_optional = [&append](std::string const& symbol,
+                                         auto const& value) {
+    if (value) {
+      append(symbol, value, end);
+    }
+  };
+  append_optional("e", elements.eccentricity);
+  append_optional(u8"ν∞", elements.asymptotic_true_anomaly);
+  append_optional(u8"δ", elements.turning_angle);
+
+  append_optional("a", elements.semimajor_axis);
+  append_optional("ε", elements.specific_energy);
+  append_optional("C₃", elements.characteristic_energy);
+  append_optional("n", elements.mean_motion);
+  append_optional("T", elements.period);
+  append_optional("n/i", elements.hyperbolic_mean_motion);
+  append_optional("v∞", elements.hyperbolic_excess_velocity);
+
+  append_optional("b", elements.semiminor_axis);
+  append_optional("b/i", elements.impact_parameter);
+
+  append_optional("p", elements.semilatus_rectum);
+  append_optional("h", elements.specific_angular_momentum);
+
+  append_optional("r_pe", elements.periapsis_distance);
+
+  append_optional("r_ap", elements.apoapsis_distance);
+
   append("i", elements.inclination);
   append(u8"Ω", elements.longitude_of_ascending_node);
-  append(u8"ω", elements.argument_of_periapsis);
-  append("M", elements.mean_anomaly, /*end=*/true);
+  append_optional(u8"ω", elements.argument_of_periapsis);
+  append_optional(u8"ϖ", elements.longitude_of_periapsis);
+
+  append_optional("ν", elements.true_anomaly);
+  append_optional("M", elements.mean_anomaly);
+  append_optional("M/i", elements.hyperbolic_mean_anomaly);
+  result += "}";
   return result;
 }
 
@@ -280,9 +305,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         asymptotic_true_anomaly = δ / 2 + π * Radian;
       }
       if (asymptotic_true_anomaly) {
-        Angle const& θ_inf = *asymptotic_true_anomaly;
-        eccentricity = -1 / Cos(θ_inf);
-        turning_angle = 2 * (θ_inf - π * Radian);
+        Angle const& ν_inf = *asymptotic_true_anomaly;
+        eccentricity = -1 / Cos(ν_inf);
+        turning_angle = 2 * (ν_inf - π * Radian);
       }
     }
     // TODO(egg): range checks.  What do we do with normalizable oddities
@@ -378,7 +403,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     }
   };
 
+  LOG(ERROR)<<elements;
   complete_conic_parameters(/*pass=*/1);
+  LOG(ERROR)<<elements;
 
   // TODO(egg): some of these formulae are very ill-conditioned near the
   // parabolic case, and can be easily rewritten.  Investigate.
@@ -525,7 +552,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = (2 * r_ap * r_pe) / (r_ap + r_pe);
   }
 
+  LOG(ERROR)<<elements;
   complete_conic_parameters(/*pass=*/2);
+  LOG(ERROR)<<elements;
 
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;
@@ -544,7 +573,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     argument_of_periapsis = ϖ - Ω;
   }
 
+  LOG(ERROR)<<elements;
   CompleteAnomalies(elements);
+  LOG(ERROR)<<elements;
 }
 
 template<typename Frame>

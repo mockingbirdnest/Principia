@@ -120,10 +120,10 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       AlmostEquals(moon_orbit.elements_at_epoch().longitude_of_ascending_node,
                    28));
   EXPECT_THAT(
-      moon_orbit_from_state_vectors.elements_at_epoch().argument_of_periapsis,
-      AlmostEquals(moon_orbit.elements_at_epoch().argument_of_periapsis, 6));
-  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().mean_anomaly,
-              AlmostEquals(moon_orbit.elements_at_epoch().mean_anomaly, 6));
+      *moon_orbit_from_state_vectors.elements_at_epoch().argument_of_periapsis,
+      AlmostEquals(*moon_orbit.elements_at_epoch().argument_of_periapsis, 6));
+  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().mean_anomaly,
+              AlmostEquals(*moon_orbit.elements_at_epoch().mean_anomaly, 6));
 }
 
 }  // namespace internal_kepler_orbit
