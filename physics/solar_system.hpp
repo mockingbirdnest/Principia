@@ -122,6 +122,12 @@ class SolarSystem final {
   MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
+  // If a frame is specified in a message it must match the frame of this
+  // instance.  Otherwise the frame of the instance is used.  This is convenient
+  // for tests.
+  template<typename Message>
+  static void CheckFrame(Message const& message);
+
   // Note that the maps below hold pointers into these protocol buffers.
   serialization::GravityModel gravity_model_;
   serialization::InitialState initial_state_;

@@ -94,15 +94,8 @@ SolarSystem<Frame>::SolarSystem(
   gravity_model_.CheckInitialized();
   initial_state_.CheckInitialized();
 
-  // If a frame is specified in the files it must match the frame of this
-  // instance.  Otherwise the frame of the instance is used.  This is convenient
-  // for tests.
-  if (initial_state_.has_frame()) {
-    CHECK_EQ(Frame::tag, initial_state_.frame());
-  }
-  if (gravity_model_.has_frame()) {
-    CHECK_EQ(Frame::tag, gravity_model_.frame());
-  }
+  CheckFrame(gravity_model_);
+  CheckFrame(initial_state_);
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_body()) {
@@ -513,6 +506,17 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     }
   }
   return degrees_of_freedom;
+}
+
+template<typename Frame>
+template<typename Message>
+void SolarSystem<Frame>::CheckFrame(Message const& message) {
+  if (message.has_solar_system_frame()) {
+    CHECK_EQ(Frame::tag, message.solar_system_frame());
+  }
+  if (message.has_plugin_frame()) {
+    CHECK_EQ(Frame::tag, message.plugin_frame());
+  }
 }
 
 }  // namespace internal_solar_system
