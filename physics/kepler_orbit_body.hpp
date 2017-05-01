@@ -172,10 +172,10 @@ template<typename Frame>
 RelativeDegreesOfFreedom<Frame>
 KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   GravitationalParameter const& μ = gravitational_parameter_;
-  double const& e = elements_at_epoch_.eccentricity;
+  double const& e = *elements_at_epoch_.eccentricity;
   Angle const& i = elements_at_epoch_.inclination;
   Angle const& Ω = elements_at_epoch_.longitude_of_ascending_node;
-  Angle const& ω = elements_at_epoch_.argument_of_periapsis;
+  Angle const& ω = *elements_at_epoch_.argument_of_periapsis;
   Length const& p = *elements_at_epoch_.semilatus_rectum;
   SpecificEnergy const& ε = *elements_at_epoch_.specific_energy;
   KeplerianElements<Frame> elements = elements_at_epoch_;
@@ -183,14 +183,14 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   elements.mean_anomaly.reset();
   elements.hyperbolic_mean_anomaly.reset();
   if (e < 1) {
-    elements.mean_anomaly = elements_at_epoch_.mean_anomaly +
+    elements.mean_anomaly = *elements_at_epoch_.mean_anomaly +
                             *elements_at_epoch_.mean_motion * (t - epoch_);
   } else if (e == 1) {
     // Parabolic case.
     LOG(FATAL) << "not yet implemented";
   } else {
     elements.hyperbolic_mean_anomaly =
-        elements_at_epoch_.hyperbolic_mean_anomaly +
+        *elements_at_epoch_.hyperbolic_mean_anomaly +
         *elements_at_epoch_.hyperbolic_mean_motion * (t - epoch_);
   }
   CompleteAnomalies(elements);
@@ -266,9 +266,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
   // in a second pass, we fill those categories.
   // NOTE(egg): implicit capture because we want all of the 22 local variables
   // above.
-  complete_conic_parameters = [&](bool first_pass) {
+  auto const complete_conic_parameters = [&](int const pass) {
     // The conic shape and size is neither over- nor underspecified.
-    if (eccentricity_specifications == first_pass) {
+    if (eccentricity_specifications == pass) {
       if (eccentricity) {
         double const& e = *eccentricity;
         turning_angle = 2 * ArcSin(1 / e);
@@ -288,7 +288,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     // TODO(egg): range checks.  What do we do with normalizable oddities
     // (negative n, T)? What about parabolae? (n = 0, a infinite, and the
     // equivalents provide an eccentricity specification...).
-    if (semimajor_axis_specifications == first_pass) {
+    if (semimajor_axis_specifications == pass) {
       if (semimajor_axis) {
         Length const& a = *semimajor_axis;
         specific_energy = -μ / (2 * a);
@@ -359,7 +359,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     }
     // Because they differ by a factor of i, we fill both of those between the
     // first and the second pass, thus this is only needed in the first pass.
-    if(semiminor_axis_specifications && first_pass) {
+    if(semiminor_axis_specifications && pass) {
       if (semiminor_axis) {
         impact_parameter = Sqrt(-Pow<2>(*semiminor_axis));
       }
@@ -367,7 +367,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         semiminor_axis = Sqrt(-Pow<2>(*impact_parameter));
       }
     }
-    if (semilatus_rectum_specifications == first_pass) {
+    if (semilatus_rectum_specifications == pass) {
       if (semilatus_rectum) {
         specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
       }
@@ -376,9 +376,9 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
         semilatus_rectum = Pow<2>(h * Radian) / μ;
       }
     }
-  }
+  };
 
-  complete_conic_parameters(/*first_pass=*/true);
+  complete_conic_parameters(/*pass=*/1);
 
   // TODO(egg): some of these formulae are very ill-conditioned near the
   // parabolic case, and can be easily rewritten.  Investigate.
@@ -393,8 +393,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
   }
   if (eccentricity_specifications && semiminor_axis_specifications) {
     double const& e = *eccentricity;
-    Length const& abs_b =
-        eccentricity > 1 ? *impact_parameter : *semiminor_axis;
+    Length const& abs_b = e > 1 ? *impact_parameter : *semiminor_axis;
     semilatus_rectum = abs_b * Sqrt(Abs(1 - Pow<2>(e)));
     semimajor_axis = *semilatus_rectum / (Pow<2>(e) - 1);
     periapsis_distance = *semimajor_axis * (1 - e);
@@ -443,7 +442,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     eccentricity = Sqrt(1 - p / a);
     semiminor_axis = Sqrt(a * p);
     impact_parameter = Sqrt(-a * p);
-    Length const& e = *eccentricity;
+    double const& e = *eccentricity;
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   }
@@ -472,7 +471,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     Length const& p = *semilatus_rectum;
     eccentricity = Sqrt(1 - Pow<2>(p) / b²);
     semimajor_axis = b² / p;
-    Length const& e = *eccentricity;
+    double const& e = *eccentricity;
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   }
@@ -510,7 +509,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     Length const& p = *semilatus_rectum;
     Length const& r_ap = *apoapsis_distance;
     eccentricity = 1 - p / r_ap;
-    a = Pow<2>(r_ap) / (2 * r_ap - p);
+    semimajor_axis = Pow<2>(r_ap) / (2 * r_ap - p);
     Length const& a = *semimajor_axis;
     semiminor_axis = Sqrt(p * a);
     impact_parameter = Sqrt(-p * a);
@@ -526,7 +525,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
     semilatus_rectum = (2 * r_ap * r_pe) / (r_ap + r_pe);
   }
 
-  complete_conic_parameters(/*first_pass=*/false);
+  complete_conic_parameters(/*pass=*/2);
 
   auto& argument_of_periapsis = elements.argument_of_periapsis;
   auto& longitude_of_periapsis = elements.longitude_of_periapsis;
@@ -550,6 +549,7 @@ void KeplerOrbit<Frame>::CompleteElements(KeplerianElements<Frame>& elements,
 
 template<typename Frame>
 void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
+  auto const& e = *elements.eccentricity;
   auto& true_anomaly = elements.true_anomaly;
   auto& mean_anomaly = elements.mean_anomaly;
   auto& hyperbolic_mean_anomaly = elements.hyperbolic_mean_anomaly;
@@ -558,7 +558,6 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
            1);
   if (true_anomaly) {
     auto const& ν = *true_anomaly;
-    auto const& e = *eccentricity;
     Angle const eccentric_anomaly =
         ArcTan(Sqrt(1 - Pow<2>(e)) * Sin(ν), e + Cos(ν));
     mean_anomaly = eccentric_anomaly - e * Sin(eccentric_anomaly) * Radian;
@@ -568,7 +567,6 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
                               hyperbolic_eccentric_anomaly;
   }
   if (mean_anomaly) {
-    auto const& e = *eccentricity;
     auto const kepler_equation =
         [e, mean_anomaly](Angle const& eccentric_anomaly) -> Angle {
       return *mean_anomaly -
@@ -583,7 +581,6 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
     hyperbolic_mean_anomaly = NaN<Angle>();
   }
   if (hyperbolic_mean_anomaly) {
-    auto const& e = *eccentricity;
     auto const hyperbolic_kepler_equation =
         [e, hyperbolic_mean_anomaly](
             Angle const& hyperbolic_eccentric_anomaly) -> Angle {
