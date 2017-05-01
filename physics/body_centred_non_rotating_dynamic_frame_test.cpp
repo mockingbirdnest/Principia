@@ -68,31 +68,28 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
 
   BodyCentredNonRotatingDynamicFrameTest()
       : period_(10 * π * sqrt(5.0 / 7.0) * Second),
-        big_initial_state_(Position<ICRFJ2000Equator>(),
-                           Velocity<ICRFJ2000Equator>()),
-        small_initial_state_(Position<ICRFJ2000Equator>(),
-                             Velocity<ICRFJ2000Equator>()) {
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_two_bodies_circular_test.proto.txt");
-    t0_ = solar_system_.epoch();
-    ephemeris_ = solar_system_.MakeEphemeris(
-                    /*fitting_tolerance=*/1 * Milli(Metre),
-                    Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                        integrators::McLachlanAtela1992Order4Optimal<
-                            Position<ICRFJ2000Equator>>(),
-                        /*step=*/10 * Milli(Second)));
+        solar_system_(SOLUTION_DIR / "astronomy" /
+                          "test_gravity_model_two_bodies.proto.txt",
+                      SOLUTION_DIR / "astronomy" /
+                          "test_initial_state_two_bodies_circular.proto.txt"),
+        t0_(solar_system_.epoch()),
+        ephemeris_(solar_system_.MakeEphemeris(
+            /*fitting_tolerance=*/1 * Milli(Metre),
+            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+                integrators::McLachlanAtela1992Order4Optimal<
+                    Position<ICRFJ2000Equator>>(),
+                /*step=*/10 * Milli(Second)))),
+        big_initial_state_(solar_system_.initial_state(big)),
+        big_gravitational_parameter_(
+            solar_system_.gravitational_parameter(big)),
+        small_initial_state_(solar_system_.initial_state(small)),
+        small_gravitational_parameter_(
+            solar_system_.gravitational_parameter(small)) {
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_initial_state_ = solar_system_.initial_state(big);
-    big_gravitational_parameter_ = solar_system_.gravitational_parameter(big);
     big_frame_ = std::make_unique<
                      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>>(
                          ephemeris_.get(),
                          solar_system_.massive_body(*ephemeris_, big));
-    small_initial_state_ = solar_system_.initial_state(small);
-    small_gravitational_parameter_ =
-        solar_system_.gravitational_parameter(small);
     small_frame_ = std::make_unique<
                      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator,
                                                         Small>>(
@@ -101,17 +98,17 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
   }
 
   Time const period_;
-  Instant t0_;
-  DegreesOfFreedom<ICRFJ2000Equator> big_initial_state_;
-  DegreesOfFreedom<ICRFJ2000Equator> small_initial_state_;
-  GravitationalParameter big_gravitational_parameter_;
-  GravitationalParameter small_gravitational_parameter_;
+  SolarSystem<ICRFJ2000Equator> solar_system_;
+  Instant const t0_;
+  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> const ephemeris_;
+  DegreesOfFreedom<ICRFJ2000Equator> const big_initial_state_;
+  GravitationalParameter const big_gravitational_parameter_;
+  DegreesOfFreedom<ICRFJ2000Equator> const small_initial_state_;
+  GravitationalParameter const small_gravitational_parameter_;
   std::unique_ptr<
       BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>> big_frame_;
   std::unique_ptr<
       BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Small>> small_frame_;
-  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
-  SolarSystem<ICRFJ2000Equator> solar_system_;
 };
 
 

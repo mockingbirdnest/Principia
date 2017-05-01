@@ -11,6 +11,7 @@
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
 #include "serialization/astronomy.pb.h"
@@ -27,11 +28,15 @@ using quantities::Length;
 template<typename Frame>
 class SolarSystem final {
  public:
-  // Initializes this object from the given files, which must contain text
+  // Constructs a solar system from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  void Initialize(
+  SolarSystem(
       std::experimental::filesystem::path const& gravity_model_filename,
       std::experimental::filesystem::path const& initial_state_filename);
+
+  // Construct a solar system from the given messages.
+  SolarSystem(serialization::GravityModel const& gravity_model,
+              serialization::InitialState const& initial_state);
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
@@ -91,8 +96,11 @@ class SolarSystem final {
   static not_null<std::unique_ptr<OblateBody<Frame>>> MakeOblateBody(
       serialization::GravityModel::Body const& body);
 
+  // Constructs a hierarchical system for a solar system defined by keplerian
+  // elements.
+  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
+
   // Utilities for patching the internal protocol buffers after initialization.
-  // Should only be used in tests.
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
   void ReplaceElements(std::string const& name,
@@ -114,9 +122,15 @@ class SolarSystem final {
   MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
+  // If a frame is specified in a message it must match the frame of this
+  // instance.  Otherwise the frame of the instance is used.  This is convenient
+  // for tests.
+  template<typename Message>
+  static void CheckFrame(Message const& message);
+
   // Note that the maps below hold pointers into these protocol buffers.
-  serialization::SolarSystemFile gravity_model_;
-  serialization::SolarSystemFile initial_state_;
+  serialization::GravityModel gravity_model_;
+  serialization::InitialState initial_state_;
 
   Instant epoch_;
   std::vector<std::string> names_;

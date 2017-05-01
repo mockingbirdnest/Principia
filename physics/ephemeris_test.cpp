@@ -92,13 +92,12 @@ class EphemerisTest
           FixedStepSizeIntegrator<
               Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const*> {
  protected:
-  EphemerisTest() {
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433282_500000000.proto.txt");
-    t0_ = solar_system_.epoch();
-  }
+  EphemerisTest()
+      : solar_system_(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2433282_500000000.proto.txt"),
+        t0_(solar_system_.epoch()) {}
 
   FixedStepSizeIntegrator<
       Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
@@ -924,11 +923,10 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
 }
 
 TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
-  SolarSystem<ICRFJ2000Equator> solar_system;
-  solar_system.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model_two_bodies_test.proto.txt",
+  SolarSystem<ICRFJ2000Equator> solar_system(
+      SOLUTION_DIR / "astronomy" / "test_gravity_model_two_bodies.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_two_bodies_elliptical_test.proto.txt");
+          "test_initial_state_two_bodies_elliptical.proto.txt");
 
   Length const fitting_tolerance = 1 * Milli(Metre);
   Instant const t0 = solar_system.epoch();

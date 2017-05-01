@@ -52,46 +52,60 @@ using quantities::Speed;
 using quantities::si::Radian;
 using quantities::si::Second;
 
-template<typename Frame>
-void SolarSystem<Frame>::Initialize(
-    std::experimental::filesystem::path const& gravity_model_filename,
-    std::experimental::filesystem::path const& initial_state_filename) {
-  // Parse the files.
+inline serialization::GravityModel ParseGravityModel(
+    std::experimental::filesystem::path const& gravity_model_filename) {
+  serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
   google::protobuf::io::IstreamInputStream gravity_model_zcs(
                                                &gravity_model_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&gravity_model_zcs,
-                                            &gravity_model_));
-  CHECK(gravity_model_.has_gravity_model());
+                                            &gravity_model));
+  CHECK(gravity_model.has_gravity_model());
+  return gravity_model.gravity_model();
+}
 
+inline serialization::InitialState ParseInitialState(
+    std::experimental::filesystem::path const& initial_state_filename) {
+  serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
   google::protobuf::io::IstreamInputStream initial_state_zcs(
                                                &initial_state_ifstream);
   CHECK(google::protobuf::TextFormat::Parse(&initial_state_zcs,
-                                            &initial_state_));
-  CHECK(initial_state_.has_initial_state());
+                                            &initial_state));
+  CHECK(initial_state.has_initial_state());
+  return initial_state.initial_state();
+}
 
-  // If a frame is specified in the files it must match the frame of this
-  // instance.  Otherwise the frame of the instance is used.  This is convenient
-  // for tests.
-  if (initial_state_.initial_state().has_frame()) {
-    CHECK_EQ(Frame::tag, initial_state_.initial_state().frame());
-  }
-  if (gravity_model_.gravity_model().has_frame()) {
-    CHECK_EQ(Frame::tag, gravity_model_.gravity_model().frame());
-  }
+template<typename Frame>
+SolarSystem<Frame>::SolarSystem(
+    std::experimental::filesystem::path const& gravity_model_filename,
+    std::experimental::filesystem::path const& initial_state_filename)
+    : SolarSystem(ParseGravityModel(gravity_model_filename),
+                  ParseInitialState(initial_state_filename)) {}
+
+template<typename Frame>
+SolarSystem<Frame>::SolarSystem(
+    serialization::GravityModel const& gravity_model,
+    serialization::InitialState const& initial_state)
+    : gravity_model_(gravity_model),
+      initial_state_(initial_state) {
+  gravity_model_.CheckInitialized();
+  initial_state_.CheckInitialized();
+
+  CheckFrame(gravity_model_);
+  CheckFrame(initial_state_);
 
   // Store the data in maps keyed by body name.
-  for (auto& body : *gravity_model_.mutable_gravity_model()->mutable_body()) {
+  for (auto& body : *gravity_model_.mutable_body()) {
     bool inserted;
     std::tie(std::ignore, inserted) =
         gravity_model_map_.insert(std::make_pair(body.name(), &body));
     CHECK(inserted) << body.name();
   }
-  if (initial_state_.initial_state().has_cartesian()) {
-    for (auto const& body : initial_state_.initial_state().cartesian().body()) {
+  if (initial_state_.has_cartesian()) {
+    for (auto const& body : initial_state_.cartesian().body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =
           cartesian_initial_state_map_.emplace(body.name(), &body);
@@ -110,8 +124,7 @@ void SolarSystem<Frame>::Initialize(
     CHECK(it1 == gravity_model_map_.end()) << it1->first;
     CHECK(it2 == cartesian_initial_state_map_.end()) << it2->first;
   } else {
-    for (auto& body : *initial_state_.mutable_initial_state()->
-                          mutable_keplerian()->mutable_body()) {
+    for (auto& body : *initial_state_.mutable_keplerian()->mutable_body()) {
       bool inserted;
       std::tie(std::ignore, inserted) =
           keplerian_initial_state_map_.emplace(body.name(), &body);
@@ -131,7 +144,7 @@ void SolarSystem<Frame>::Initialize(
     CHECK(it2 == keplerian_initial_state_map_.end()) << it2->first;
   }
 
-  epoch_ = JulianDate(initial_state_.initial_state().epoch());
+  epoch_ = JulianDate(initial_state_.epoch());
 
   // Call these two functions to parse all the data, so that errors are detected
   // at initialization.  Drop their results on the floor.
@@ -313,6 +326,53 @@ SolarSystem<Frame>::MakeOblateBody(
 }
 
 template<typename Frame>
+not_null<std::unique_ptr<HierarchicalSystem<Frame>>>
+SolarSystem<Frame>::MakeHierarchicalSystem() {
+  // First, construct all the bodies and find the primary body of the system.
+  std::string primary;
+  std::map<std::string,
+            not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
+  std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
+  for (auto const& pair : keplerian_initial_state_map_) {
+    const auto& name = pair.first;
+    serialization::InitialState::Keplerian::Body* const body = pair.second;
+    CHECK_EQ(body->has_parent(), body->has_elements()) << name;
+    if (!body->has_parent()) {
+      CHECK(primary.empty()) << name;
+      primary = name;
+    }
+    auto owned_body = MakeMassiveBody(gravity_model_message(name));
+    unowned_bodies.emplace(name, owned_body.get());
+    owned_bodies.emplace(name, std::move(owned_body));
+  }
+
+  // Construct a hierarchical system rooted at the primary and add the other
+  // bodies layer by layer.
+  auto hierarchical_system = make_not_null_unique<HierarchicalSystem<Frame>>(
+      std::move(FindOrDie(owned_bodies, primary)));
+  std::set<std::string> previous_layer = {primary};
+  std::set<std::string> current_layer;
+  do {
+    for (auto const& pair : keplerian_initial_state_map_) {
+      const auto& name = pair.first;
+      serialization::InitialState::Keplerian::Body* const body = pair.second;
+      if (Contains(previous_layer, body->parent())) {
+        current_layer.insert(name);
+        KeplerianElements<Frame> const elements =
+            MakeKeplerianElements(body->elements());
+        hierarchical_system->Add(std::move(FindOrDie(owned_bodies, name)),
+                                 FindOrDie(unowned_bodies, body->parent()),
+                                 elements);
+      }
+    }
+    previous_layer = current_layer;
+    current_layer.clear();
+  } while (!previous_layer.empty());
+
+  return hierarchical_system;
+}
+
+template<typename Frame>
 void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   for (int i = 0; i < names_.size(); ++i) {
     if (names_[i] == name) {
@@ -427,51 +487,12 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     }
   }
   if (!keplerian_initial_state_map_.empty()) {
-    // First, construct all the bodies and find the primary body of the system.
-    std::string primary;
-    std::map<std::string,
-             not_null<std::unique_ptr<MassiveBody const>>> owned_bodies;
-    std::map<std::string, not_null<MassiveBody const*>> unowned_bodies;
-    for (auto const& pair : keplerian_initial_state_map_) {
-      const auto& name = pair.first;
-      serialization::InitialState::Keplerian::Body* const body = pair.second;
-      CHECK_EQ(body->has_parent(), body->has_elements()) << name;
-      if (!body->has_parent()) {
-        CHECK(primary.empty()) << name;
-        primary = name;
-      }
-      auto owned_body = MakeMassiveBody(gravity_model_message(name));
-      unowned_bodies.emplace(name, owned_body.get());
-      owned_bodies.emplace(name, std::move(owned_body));
-    }
+    auto const hierarchical_system = MakeHierarchicalSystem();
 
-    // Construct a hierarchical system rooted at the primary and add the other
-    // bodies layer by layer.
-    HierarchicalSystem<Frame> hierarchical_system(
-        std::move(FindOrDie(owned_bodies, primary)));
-    std::set<std::string> previous_layer = {primary};
-    std::set<std::string> current_layer;
-    do {
-      for (auto const& pair : keplerian_initial_state_map_) {
-        const auto& name = pair.first;
-        serialization::InitialState::Keplerian::Body* const body = pair.second;
-        if (Contains(previous_layer, body->parent())) {
-          current_layer.insert(name);
-          KeplerianElements<Frame> const elements =
-              MakeKeplerianElements(body->elements());
-          hierarchical_system.Add(std::move(FindOrDie(owned_bodies, name)),
-                                  FindOrDie(unowned_bodies, body->parent()),
-                                  elements);
-        }
-      }
-      previous_layer = current_layer;
-      current_layer.clear();
-    } while (!previous_layer.empty());
-
-    // Construct a barycentric system out of this and fill a map from body name
-    // to degrees of freedom.
+    // Construct a barycentric system and fill a map from body name to degrees
+    // of freedom.
     typename HierarchicalSystem<Frame>::BarycentricSystem const
-        barycentric_system = hierarchical_system.ConsumeBarycentricSystem();
+        barycentric_system = hierarchical_system->ConsumeBarycentricSystem();
     std::map<std::string, DegreesOfFreedom<Frame>> name_to_degrees_of_freedom;
     for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
       auto const& body = barycentric_system.bodies[i];
@@ -485,6 +506,17 @@ SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
     }
   }
   return degrees_of_freedom;
+}
+
+template<typename Frame>
+template<typename Message>
+void SolarSystem<Frame>::CheckFrame(Message const& message) {
+  if (message.has_solar_system_frame()) {
+    CHECK_EQ(Frame::tag, message.solar_system_frame());
+  }
+  if (message.has_plugin_frame()) {
+    CHECK_EQ(Frame::tag, message.plugin_frame());
+  }
 }
 
 }  // namespace internal_solar_system

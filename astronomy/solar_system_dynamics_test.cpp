@@ -264,17 +264,15 @@ class SolarSystemDynamicsTest : public testing::Test {
 
 // This takes a minute to run.
 TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
-  solar_system_at_j2000.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2451545_000000000.proto.txt");
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
 
-  SolarSystem<ICRFJ2000Equator> ten_years_later;
-  ten_years_later.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+  SolarSystem<ICRFJ2000Equator> ten_years_later(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2455200_500000000.proto.txt");
+          "sol_initial_state_jd_2455200_500000000.proto.txt");
 
   auto const ephemeris =
       solar_system_at_j2000.MakeEphemeris(
@@ -389,11 +387,10 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
-  solar_system_at_j2000.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2451545_000000000.proto.txt");
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto const ephemeris =
       solar_system_at_j2000.MakeEphemeris(
           /*fitting_tolerance=*/5 * Milli(Metre),
@@ -480,11 +477,10 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
 
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000;
-  solar_system_at_j2000.Initialize(
-      SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
+  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "initial_state_jd_2451545_000000000.proto.txt");
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
   std::vector<std::string> const& body_names = solar_system_at_j2000.names();
 
   std::map<std::string, std::vector<DegreesOfFreedom<ICRFJ2000Equator>>>

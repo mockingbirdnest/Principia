@@ -59,10 +59,6 @@ class LunarEclipseTest : public ::testing::Test {
  protected:
   static void SetUpTestCase() {
     google::LogToStderr();
-    solar_system_1950_.Initialize(
-        SOLUTION_DIR / "astronomy" / "gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" /
-            "initial_state_jd_2433282_500000000.proto.txt");
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
@@ -223,7 +219,10 @@ class LunarEclipseTest : public ::testing::Test {
   static Length atmospheric_depth_;
 };
 
-SolarSystem<ICRFJ2000Equator> LunarEclipseTest::solar_system_1950_;
+SolarSystem<ICRFJ2000Equator> LunarEclipseTest::solar_system_1950_(
+    SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+    SOLUTION_DIR / "astronomy" /
+        "sol_initial_state_jd_2433282_500000000.proto.txt");
 std::unique_ptr<Ephemeris<ICRFJ2000Equator>> LunarEclipseTest::ephemeris_;
 Length LunarEclipseTest::r_sun_;
 Length LunarEclipseTest::r_earth_;

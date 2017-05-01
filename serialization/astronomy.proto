@@ -20,7 +20,10 @@ message GravityModel {
     optional string j2 = 5;
     optional string reference_radius = 6;
   }
-  optional Frame.SolarSystemTag frame = 1;
+  oneof frame {
+    Frame.SolarSystemTag solar_system_frame = 1;
+    Frame.PluginTag plugin_frame = 3;
+  }
   repeated Body body = 2;
 }
 
@@ -55,7 +58,10 @@ message InitialState {
     }
     repeated Body body = 1;
   }
-  optional Frame.SolarSystemTag frame = 1;
+  oneof frame {
+    Frame.SolarSystemTag solar_system_frame = 1;
+    Frame.PluginTag plugin_frame = 6;
+  }
   required double epoch = 2;  // Julian date.
   oneof coordinates {
     Cartesian cartesian = 4;

@@ -199,16 +199,10 @@
     <ClCompile Include="kepler_orbit_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="resonance_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="jacobi_coordinates_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="hierarchical_system_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ksp_system_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp">

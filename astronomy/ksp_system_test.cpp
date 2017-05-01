@@ -8,6 +8,7 @@
 #include <tuple>
 #include <vector>
 
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -19,8 +20,8 @@
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/astronomy.hpp"
-#include "rigid_motion.hpp"
 
 namespace principia {
 
@@ -38,6 +39,14 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order10;
 using integrators::QuinlanTremaine1990Order12;
+using physics::DegreesOfFreedom;
+using physics::Ephemeris;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
+using physics::MassiveBody;
+using physics::MasslessBody;
+using physics::RelativeDegreesOfFreedom;
+using physics::SolarSystem;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Time;
@@ -50,7 +59,7 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using ::testing::Lt;
 
-namespace physics {
+namespace astronomy {
 
 using KSP = Frame<serialization::Frame::TestTag,
                   serialization::Frame::TEST,
@@ -58,48 +67,11 @@ using KSP = Frame<serialization::Frame::TestTag,
 
 class KSPSystem {
  protected:
-  KSPSystem() {
-    solar_system_.Initialize(
-        SOLUTION_DIR / "astronomy" / "ksp_gravity_model.proto.txt",
-        SOLUTION_DIR / "astronomy" / "ksp_initial_state_0_0.proto.txt");
-
-    // TODO(phl): Move the patching to a common place.
-
-    auto ephemeris = solar_system_.MakeEphemeris(
-        /*fitting_tolerance=*/1 * Milli(Metre),
-        Ephemeris<KSP>::FixedStepParameters(
-            McLachlanAtela1992Order5Optimal<Position<KSP>>(),
-            /*step=*/45 * Minute));
-    KeplerianElements<KSP> laythe_elements =
-        solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message("Laythe").elements());
-    KeplerianElements<KSP> vall_elements =
-        solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message("Vall").elements());
-    KeplerianElements<KSP> tylo_elements =
-        solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message("Tylo").elements());
-    KeplerianElements<KSP> bop_elements =
-        solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message("Bop").elements());
-    KeplerianElements<KSP> pol_elements =
-        solar_system_.MakeKeplerianElements(
-            solar_system_.keplerian_initial_state_message("Pol").elements());
-
-    // Instead of putting the moons in a 1:2:4 resonance, put them in a
-    // 1:4/φ:16/φ^2 dissonance.
-    constexpr double φ = 1.61803398875;
-    vall_elements.mean_motion = *laythe_elements.mean_motion / (4.0 / φ);
-    *tylo_elements.mean_motion =
-        *laythe_elements.mean_motion / (16.0 / (φ * φ));
-
-    // All hail Retrobop!
-    bop_elements.inclination = 180 * Degree - bop_elements.inclination;
-    *bop_elements.mean_motion = *pol_elements.mean_motion / 0.7;
-
-    solar_system_.ReplaceElements("Vall", vall_elements);
-    solar_system_.ReplaceElements("Tylo", tylo_elements);
-    solar_system_.ReplaceElements("Bop", bop_elements);
+  KSPSystem()
+      : solar_system_(
+            SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt") {
+    StabilizeKSP(solar_system_);
   }
 
   SolarSystem<KSP> solar_system_;
@@ -114,7 +86,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
             Ephemeris<KSP>::FixedStepParameters(
                 McLachlanAtela1992Order5Optimal<Position<KSP>>(),
                 /*step=*/45 * Minute))),
-        kerbol_(solar_system_.massive_body(*ephemeris_, "Kerbol")),
+        sun_(solar_system_.massive_body(*ephemeris_, "Sun")),
         eeloo_(solar_system_.massive_body(*ephemeris_, "Eeloo")),
         jool_(solar_system_.massive_body(*ephemeris_, "Jool")),
         pol_(solar_system_.massive_body(*ephemeris_, "Pol")),
@@ -131,7 +103,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
         eve_(solar_system_.massive_body(*ephemeris_, "Eve")),
         gilly_(solar_system_.massive_body(*ephemeris_, "Gilly")),
         moho_(solar_system_.massive_body(*ephemeris_, "Moho")),
-        all_bodies_{kerbol_,
+        all_bodies_{sun_,
                     eeloo_,
                     jool_,
                     pol_,
@@ -194,7 +166,7 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
 
   not_null<std::unique_ptr<Ephemeris<KSP>>> ephemeris_;
 
-  not_null<MassiveBody const*> const kerbol_;
+  not_null<MassiveBody const*> const sun_;
   not_null<MassiveBody const*> const eeloo_;
   not_null<MassiveBody const*> const jool_;
   not_null<MassiveBody const*> const pol_;
@@ -528,5 +500,5 @@ INSTANTIATE_TEST_CASE_P(
             /*iterations=*/5,
             /*first_step_in_seconds=*/75}));
 
-}  // namespace physics
+}  // namespace astronomy
 }  // namespace principia
