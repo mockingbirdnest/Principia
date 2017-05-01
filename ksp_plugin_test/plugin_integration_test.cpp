@@ -117,27 +117,13 @@ class PluginIntegrationTest : public testing::Test {
               ? std::experimental::nullopt
               : std::experimental::make_optional(
                     SolarSystemFactory::parent(index));
-      DegreesOfFreedom<Barycentric> const initial_state =
-          ICRFToBarycentric(
-              solar_system_->initial_state(SolarSystemFactory::name(index)));
-      // |MakeMassiveBody| will return a pointer to a
-      // |RotatingBody<ICRFJ2000Equator>| as a pointer to a |MassiveBody|.
-      // The plugin wants a |RotatingBody<Barycentric>| and will |dynamic_cast|
-      // to check, so we reinterpret (which has no effect, and thus wouldn't
-      // make the |dynamic_cast| work), then copy into a properly-constructed
-      // |RotatingBody<Barycentric>|.  This is horribly UB in a way that
-      // actually matters (aliasing rules can lead to unpredictable
-      // optimizations).
-      // I threw up in my mouth a little bit.
       plugin_->InsertCelestialAbsoluteCartesian(
           index,
           parent_index,
-          initial_state,
-          std::make_unique<RotatingBody<Barycentric>>(
-              reinterpret_cast<RotatingBody<Barycentric> const&>(
-                  *SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
-                      solar_system_->gravity_model_message(
-                          SolarSystemFactory::name(index))))));
+          solar_system_->gravity_model_message(
+              SolarSystemFactory::name(index)),
+          solar_system_->cartesian_initial_state_message(
+              SolarSystemFactory::name(index)));
     }
   }
 
@@ -658,20 +644,26 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 TEST_F(PluginIntegrationTest, Prediction) {
   Index const celestial = 0;
   Plugin plugin(Instant(), Instant(), 0 * Radian);
-  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
-      MassiveBody::Parameters(1 * SIUnit<GravitationalParameter>()),
-      RotatingBody<Barycentric>::Parameters(
-          /*mean_radius=*/1 * Metre,
-          /*reference_angle=*/1 * Radian,
-          /*reference_instant=*/astronomy::J2000,
-          /*angular_frequency=*/1 * Radian / Second,
-          /*right_ascension_of_pole=*/0 * Degree,
-          /*declination_of_pole=*/90 * Degree));
+  serialization::GravityModel::Body gravity_model;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "Celestial"
+         gravitational_parameter : "2 m^3/s^2"
+         reference_instant       : 2451545.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "1 rad"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  serialization::InitialState::Keplerian::Body initial_state;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "Celestial")",
+      &initial_state));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
       /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
-      std::move(sun_body));
+      gravity_model,
+      initial_state);
   plugin.EndInitialization();
 
   bool inserted;

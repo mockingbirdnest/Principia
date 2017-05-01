@@ -18,20 +18,12 @@ class MockPlugin : public Plugin {
   MockPlugin(MockPlugin const&) = delete;
   MockPlugin(MockPlugin&&) = delete;
 
-  void InsertCelestialAbsoluteCartesian(
-      Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
-      DegreesOfFreedom<Barycentric> const& initial_state,
-      base::not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body)
-      override;
-
   MOCK_METHOD4(
-      InsertCelestialAbsoluteCartesianConstRef,
+      InsertCelestialAbsoluteCartesian,
       void(Index celestial_index,
            std::experimental::optional<Index> const& parent_index,
-           DegreesOfFreedom<Barycentric> const& initial_state,
-           base::not_null<
-               std::unique_ptr<RotatingBody<Barycentric> const>> const& body));
+           serialization::GravityModel::Body const& gravity_model,
+           serialization::InitialState::Cartesian::Body const& initial_state));
 
   MOCK_METHOD0(EndInitialization,
                void());

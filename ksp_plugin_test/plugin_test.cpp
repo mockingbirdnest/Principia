@@ -26,6 +26,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
@@ -66,6 +67,7 @@ using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::DebugString;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Sin;
@@ -155,60 +157,34 @@ class TestablePlugin : public Plugin {
 
   not_null<ContinuousTrajectory<Barycentric> const*> trajectory(
       Index const index) const {
-    return trajectories_.at(index).get();
+    return trajectories_.at(index);
   }
 
- protected:
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|.
-  std::unique_ptr<Ephemeris<Barycentric>> NewEphemeris(
-      std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>&&
-          bodies,
-      std::vector<DegreesOfFreedom<Barycentric>> const& initial_state,
-      Instant const& initial_time,
-      Length const& fitting_tolerance,
-      Ephemeris<Barycentric>::FixedStepParameters const& parameters) override {
-    // Own the bodies.
-    bodies_ = std::move(bodies);
-
+  virtual void EndInitialization() override {
+    Plugin::EndInitialization();
     // Construct continuous trajectories for the bodies with some data
-    Index index = 0;
-    for (auto const& degrees_of_freedom : initial_state) {
-      trajectories_.push_back(
-          base::make_not_null_unique<ContinuousTrajectory<Barycentric>>(
-              45 * Minute, 1 * Milli(Metre)));
-      auto const& trajectory = trajectories_.back();
-      for (int i = 0; i < 9; ++i) {
-        trajectory->Append(
-            current_time_ + i * 45 * Minute,
-            {degrees_of_freedom.position() +
-                 i * 45 * Minute * degrees_of_freedom.velocity(),
-             degrees_of_freedom.velocity()});
-      }
-
+    for (auto const& body : ephemeris_->bodies()) {
+      auto const trajectory = ephemeris_->trajectory(body);
+      trajectories_.emplace(name_to_index_[body->name()], trajectory);
       // Make sure that the |trajectory| member does the right thing.  Note that
       // the implicit conversion doesn't work too well in the matcher.
-      not_null<MassiveBody const*> body = bodies_[index].get();
       ON_CALL(*mock_ephemeris_, trajectory(body))
-          .WillByDefault(Return(trajectory.get()));
-
-      ++index;
+          .WillByDefault(Return(trajectory));
     }
 
-    // Return the mock ephemeris.  We squirelled away a pointer in
-    // |mock_ephemeris_|.
-    return std::move(owned_mock_ephemeris_);
+    // Replace the ephemeris with our mock, but keep the real thing as it owns
+    // the bodies.  We squirelled away a pointer in |mock_ephemeris_|.
+    owned_real_ephemeris_ = std::move(ephemeris_);
+    ephemeris_ = std::move(owned_mock_ephemeris_);
   }
 
  private:
-  // Someone has to own the bodies; normally it would be the ephemeris, but
-  // since we mock it, we keep them here instead.  Similarly for the
-  // trajectories.
-  std::vector<not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>
-      bodies_;
-  std::vector<not_null<std::unique_ptr<ContinuousTrajectory<Barycentric>>>>
+  std::map<Index, not_null<ContinuousTrajectory<Barycentric> const*>>
       trajectories_;
   std::unique_ptr<MockEphemeris<Barycentric>> owned_mock_ephemeris_;
+  std::unique_ptr<Ephemeris<Barycentric>> owned_real_ephemeris_;
   MockEphemeris<Barycentric>* mock_ephemeris_;
 };
 
@@ -224,10 +200,6 @@ class PluginTest : public testing::Test {
         solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
         initial_time_(Instant() + 42 * Second),
-        sun_body_(make_not_null_unique<RotatingBody<Barycentric>>(
-            MassiveBody::Parameters(solar_system_->gravitational_parameter(
-                SolarSystemFactory::name(SolarSystemFactory::Sun))),
-            body_rotation_)),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
@@ -277,10 +249,8 @@ class PluginTest : public testing::Test {
       plugin_->InsertCelestialAbsoluteCartesian(
           index,
           parent_index,
-          id_icrf_barycentric_(
-              solar_system_->initial_state(SolarSystemFactory::name(index))),
-          SolarSystem<Barycentric>::MakeRotatingBody(
-              solar_system_->gravity_model_message(name)));
+          solar_system_->gravity_model_message(name),
+          solar_system_->cartesian_initial_state_message(name));
     }
   }
 
@@ -363,7 +333,6 @@ class PluginTest : public testing::Test {
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
   Instant const initial_time_;
-  not_null<std::unique_ptr<RotatingBody<Barycentric>>> sun_body_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<TestablePlugin>> plugin_;
@@ -408,11 +377,14 @@ TEST_F(PluginTest, Serialization) {
                     initial_time_,
                     initial_time_,
                     planetarium_rotation_);
+  serialization::InitialState::Keplerian::Body keplerian_sun;
+  keplerian_sun.set_name(SolarSystemFactory::name(SolarSystemFactory::Sun));
   plugin->InsertCelestialJacobiKeplerian(
       SolarSystemFactory::Sun,
       /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
-      std::move(sun_body_));
+      solar_system_->gravity_model_message(
+          SolarSystemFactory::name(SolarSystemFactory::Sun)),
+      keplerian_sun);
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
@@ -427,17 +399,35 @@ TEST_F(PluginTest, Serialization) {
     auto body = make_not_null_unique<RotatingBody<Barycentric>>(
         solar_system_->gravitational_parameter(name),
         body_rotation_);
-    KeplerianElements<Barycentric> elements = KeplerOrbit<Barycentric>(
-        /*primary=*/MassiveBody(
-            solar_system_->gravitational_parameter(parent_name)),
-        /*secondary=*/*body,
-        state_vectors,
-        /*epoch=*/t).elements_at_epoch();
-    elements.semimajor_axis = std::experimental::nullopt;
-    plugin->InsertCelestialJacobiKeplerian(index,
-                                           parent_index,
-                                           elements,
-                                           std::move(body));
+    KeplerianElements<Barycentric> keplerian_elements =
+        KeplerOrbit<Barycentric>(
+            /*primary=*/MassiveBody(
+                solar_system_->gravitational_parameter(parent_name)),
+            /*secondary=*/*body,
+            state_vectors,
+            /*epoch=*/t)
+            .elements_at_epoch();
+    serialization::InitialState::Keplerian::Body keplerian_body;
+    keplerian_body.set_name(name);
+    keplerian_body.set_parent(parent_name);
+    serialization::InitialState::Keplerian::Body::Elements* elements =
+        keplerian_body.mutable_elements();
+    elements->set_eccentricity(keplerian_elements.eccentricity);
+    // s^-1 rad is inconvenient to parse.
+    elements->set_mean_motion(
+        DebugString(*keplerian_elements.mean_motion / (Radian / Second)) +
+        "rad/s");
+    elements->set_inclination(DebugString(keplerian_elements.inclination));
+    elements->set_longitude_of_ascending_node(
+        DebugString(keplerian_elements.longitude_of_ascending_node));
+    elements->set_argument_of_periapsis(
+        DebugString(keplerian_elements.argument_of_periapsis));
+    elements->set_mean_anomaly(DebugString(keplerian_elements.mean_anomaly));
+    plugin->InsertCelestialJacobiKeplerian(
+        index,
+        parent_index,
+        solar_system_->gravity_model_message(name),
+        keplerian_body);
   }
   plugin->EndInitialization();
   bool inserted;
@@ -585,38 +575,112 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
-  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
-      MassiveBody::Parameters(2 * SIUnit<GravitationalParameter>()),
-      body_rotation_);
+  serialization::GravityModel::Body gravity_model;
+  serialization::InitialState::Keplerian::Body initial_state;
+
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "S0"
+         gravitational_parameter : "2 m^3/s^2"
+         reference_instant       : 2451545.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "S0")",
+      &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       0,
       /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
-      std::move(sun_body));
-  elements.semimajor_axis = 7.0 / 3.0 * Metre;
+      gravity_model,
+      initial_state);
+
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "P1"
+         gravitational_parameter : "2 m^3/s^2"
+         reference_instant       : 2451545.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "P1"
+         elements {
+           eccentricity                : 0
+           mean_motion                 : "0 rad / s"
+           semimajor_axis              " "2.3333333333333333333 m"
+           inclination                 : "0 rad"
+           longitude_of_ascending_node : "0 rad"
+           argument_of_periapsis       : "0 rad"
+           mean_anomaly                : "0 rad"
+         })",
+      &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/1,
       /*parent_index=*/0,
-      elements,
-      make_not_null_unique<RotatingBody<Barycentric>>(
-          2 * SIUnit<GravitationalParameter>(),
-          body_rotation_));
-  elements.semimajor_axis = 1 * Metre;
+      gravity_model,
+      initial_state);
+
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "P2"
+         gravitational_parameter : "1 m^3/s^2"
+         reference_instant       : 2451545.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "P2"
+         elements {
+           eccentricity                : 0
+           mean_motion                 : "0 rad / s"
+           semimajor_axis              " "1 m"
+           inclination                 : "0 rad"
+           longitude_of_ascending_node : "0 rad"
+           argument_of_periapsis       : "0 rad"
+           mean_anomaly                : "0 rad"
+         })",
+      &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/2,
       /*parent_index=*/0,
-      elements,
-      make_not_null_unique<RotatingBody<Barycentric>>(
-          1 * SIUnit<GravitationalParameter>(),
-          body_rotation_));
-  elements.mean_anomaly = π * Radian;
+      gravity_model,
+      initial_state);
+
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "M3"
+         gravitational_parameter : "1 m^3/s^2"
+         reference_instant       : 2451545.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "M3"
+         elements {
+           eccentricity                : 0
+           mean_motion                 : "0 rad / s"
+           semimajor_axis              " "1 m"
+           inclination                 : "0 rad"
+           longitude_of_ascending_node : "0 rad"
+           argument_of_periapsis       : "0 rad"
+           mean_anomaly                : "3.14159265358979323846 rad"
+         })",
+      &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       /*celestial_index=*/3,
       /*parent_index=*/1,
-      elements,
-      make_not_null_unique<RotatingBody<Barycentric>>(
-          1 * SIUnit<GravitationalParameter>(),
-          body_rotation_));
+      gravity_model,
+      initial_state);
+
   EXPECT_CALL(plugin_->mock_ephemeris(), WriteToMessage(_))
       .WillOnce(SetArgPointee<0>(valid_ephemeris_message_));
   plugin_->EndInitialization();
@@ -629,28 +693,16 @@ TEST_F(PluginTest, HierarchicalInitialization) {
               AlmostEquals(1 * Metre, 2, 3));
 }
 
-TEST_F(PluginDeathTest, SunError) {
+TEST_F(PluginDeathTest, InsertCelestialError) {
   EXPECT_DEATH({
-      plugin_->InsertCelestialJacobiKeplerian(
+      plugin_->InsertCelestialAbsoluteCartesian(
           42,
           /*parent_index=*/std::experimental::nullopt,
-          /*keplerian_elements=*/std::experimental::nullopt,
-          std::move(sun_body_));
-      plugin_->InsertCelestialJacobiKeplerian(
-          43,
-          /*parent_index=*/std::experimental::nullopt,
-          /*keplerian_elements=*/std::experimental::nullopt,
-          std::move(sun_body_));
+          solar_system_->gravity_model_message(
+              SolarSystemFactory::name(SolarSystemFactory::Sun)),
+          solar_system_->cartesian_initial_state_message(
+              SolarSystemFactory::name(SolarSystemFactory::Earth)));
   }, ".bool.parent_index == .bool.hierarchical_initialization");
-  EXPECT_DEATH({
-    KeplerianElements<Barycentric> sun_keplerian_elements;
-    sun_keplerian_elements.mean_motion = AngularFrequency();
-    plugin_->InsertCelestialJacobiKeplerian(
-        43,
-        /*parent_index=*/std::experimental::nullopt,
-        sun_keplerian_elements,
-        std::move(sun_body_));
-  }, ".bool.parent_index == .bool.keplerian_elements");
 }
 
 TEST_F(PluginDeathTest, UpdateCelestialHierarchyError) {
@@ -1071,11 +1123,13 @@ TEST_F(PluginTest, Navball) {
   Plugin plugin(initial_time_,
                 initial_time_,
                 0 * Radian);
-  plugin.InsertCelestialJacobiKeplerian(
+  plugin.InsertCelestialAbsoluteCartesian(
       SolarSystemFactory::Sun,
       /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
-      std::move(sun_body_));
+      solar_system_->gravity_model_message(
+          SolarSystemFactory::name(SolarSystemFactory::Sun)),
+      solar_system_->cartesian_initial_state_message(
+          SolarSystemFactory::name(SolarSystemFactory::Sun)));
   plugin.EndInitialization();
   not_null<std::unique_ptr<NavigationFrame>> navigation_frame =
       plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::Sun);
@@ -1106,15 +1160,13 @@ TEST_F(PluginTest, Frenet) {
   Plugin plugin(initial_time_,
                 initial_time_,
                 0 * Radian);
-  auto sun_body = make_not_null_unique<RotatingBody<Barycentric>>(
-      MassiveBody::Parameters(solar_system_->gravitational_parameter(
-          SolarSystemFactory::name(SolarSystemFactory::Earth))),
-      body_rotation_);
-  plugin.InsertCelestialJacobiKeplerian(
+  plugin.InsertCelestialAbsoluteCartesian(
       SolarSystemFactory::Earth,
       /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
-      std::move(sun_body));
+      solar_system_->gravity_model_message(
+          SolarSystemFactory::name(SolarSystemFactory::Earth)),
+      solar_system_->cartesian_initial_state_message(
+          SolarSystemFactory::name(SolarSystemFactory::Earth)));
   plugin.EndInitialization();
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
