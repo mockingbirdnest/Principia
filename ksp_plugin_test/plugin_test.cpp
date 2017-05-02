@@ -1034,38 +1034,21 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
        ++index) {
     auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
                          plugin_->InversePlanetariumRotation().Forget();
-    RelativeDegreesOfFreedom<ICRFJ2000Equator> const from_parent =
+    RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_from_parent =
         solar_system_->initial_state(SolarSystemFactory::name(index)) -
         solar_system_->initial_state(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
-    // All these worlds are fine -- except Triton.
-    // Attempt no computation there.
-    //TODO(phl): Check the time.
-    if (index == SolarSystemFactory::Triton) {
-      EXPECT_THAT(
-          from_parent,
-          Componentwise(
-              AlmostEquals(
-                  to_icrf(plugin_->CelestialFromParent(index).displacement()),
-                  2),
-              AlmostEquals(
-                  to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                  572584856)))
-          << SolarSystemFactory::name(index);
-    } else {
-      // TODO(egg): I'm not sure that's really fine, this seems to be 21 bits?
-      // and 29 on Triton.  What's going on?
-      EXPECT_THAT(
-          from_parent,
-          Componentwise(
-              AlmostEquals(
-                  to_icrf(plugin_->CelestialFromParent(index).displacement()),
-                  0, 50),
-              AlmostEquals(
-                  to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                  74, 2781963)))
-          << SolarSystemFactory::name(index);
-    }
+    RelativeDegreesOfFreedom<ICRFJ2000Equator> const computed_from_parent(
+        to_icrf(plugin_->CelestialFromParent(index).displacement()),
+        to_icrf(plugin_->CelestialFromParent(index).velocity()));
+    EXPECT_THAT(
+        (initial_from_parent.displacement() -
+         computed_from_parent.displacement()).Norm(),
+        VanishesBefore(initial_from_parent.displacement().Norm(), 1, 4));
+    EXPECT_THAT(
+        (initial_from_parent.velocity() -
+         computed_from_parent.velocity()).Norm(),
+        VanishesBefore(initial_from_parent.velocity().Norm(), 718, 422847));
   }
 }
 TEST_F(PluginTest, Navball) {
