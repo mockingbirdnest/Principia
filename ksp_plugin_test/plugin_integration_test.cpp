@@ -78,7 +78,7 @@ class PluginIntegrationTest : public testing::Test {
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
-        initial_time_(Instant() + 42 * Second),
+        initial_time_(Instant() + 5400 * Second),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              initial_time_,
