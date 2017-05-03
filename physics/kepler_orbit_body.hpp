@@ -183,6 +183,11 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Angle const true_anomaly =
       positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
 
+  // TODO(egg): it is easy to obtain the energy directly from the cartesian
+  // coordinates; it may be wiser to use the combination of (a, e, p) in clever
+  // ways to compute (b, r_pe, r_ap) than to do it all from a and e.
+  // Investigate condition numbers.
+
   elements_at_epoch_.eccentricity                = eccentricity_vector.Norm();
   elements_at_epoch_.specific_angular_momentum   = h.Norm();
   elements_at_epoch_.inclination                 = i;
