@@ -183,13 +183,23 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Angle const true_anomaly =
       positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
 
-  // TODO(egg): it is easy to obtain the energy directly from the cartesian
-  // coordinates; it may be wiser to use the combination of (a, e, p) in clever
-  // ways to compute (b, r_pe, r_ap) than to do it all from a and e.
-  // Investigate condition numbers.
+  SpecificEnergy const ε = InnerProduct(v, v) / 2 - μ / r.Norm();
+  double e = eccentricity_vector.Norm();
 
-  elements_at_epoch_.eccentricity                = eccentricity_vector.Norm();
+  // We have h, e, and ε.  There are three ways of computing each of b, r_pe,
+  // and r_ap from that (from any two of the elements we have), but only one is
+  // well-conditioned for all eccentricities.
+  Length const b = Sqrt(-InnerProduct(h, h) / (2 * ε));
+  Length const impact_parameter = Sqrt(InnerProduct(h, h) / (2 * ε));
+  Length const r_pe = InnerProduct(h, h) / ((1 + e) * μ);
+  Length const r_ap = - μ * (1 + e) / (2 * ε);
+
+  elements_at_epoch_.eccentricity                = e;
   elements_at_epoch_.specific_angular_momentum   = h.Norm();
+  elements_at_epoch_.semiminor_axis              = b;
+  elements_at_epoch_.impact_parameter            = impact_parameter;
+  elements_at_epoch_.periapsis_distance          = r_pe;
+  elements_at_epoch_.apoapsis_distance           = r_ap;
   elements_at_epoch_.inclination                 = i;
   elements_at_epoch_.longitude_of_ascending_node = Ω;
   elements_at_epoch_.argument_of_periapsis       = ω;
