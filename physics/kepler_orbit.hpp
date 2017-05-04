@@ -114,6 +114,19 @@ class KeplerOrbit final {
   // |elements|.
   static void CompleteElements(KeplerianElements<Frame>& elements,
                                GravitationalParameter const& μ);
+  // For each category in section I of |elements|, either one, none, or all of
+  // the |optional|s must be filled.  If one is filled, fills the others in that
+  // category.  If |check_minimally_specified|, checks that exactly two
+  // optionals are filled, and that they are from different categories.
+  static void CompleteConicParametersByCategory(
+      KeplerianElements<Frame>& elements,
+      GravitationalParameter const& μ,
+      bool check_minimally_specified);
+  // Section I of |elements| must be minimally specified.  Fills it.
+  static void CompleteConicParameters(KeplerianElements<Frame>& elements,
+                                      GravitationalParameter const& μ);
+  // Section II of |elements| must be minimally specified.  Fills it.
+  static void CompleteOrientationParameters(KeplerianElements<Frame>& elements);
   // Sections I and II of |elements| must be filled; section III must be
   // minimally specified.  Fills section III.
   static void CompleteAnomalies(KeplerianElements<Frame>& elements);
