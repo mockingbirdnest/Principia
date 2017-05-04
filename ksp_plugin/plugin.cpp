@@ -1057,6 +1057,8 @@ void Plugin::WriteToMessage(
           FindOrDie(celestial_to_index, owned_celestial->parent());
       celestial_message->set_parent_index(parent_index);
     }
+    celestial_message->set_ephemeris_index(
+        ephemeris_->serialization_index_for_body(owned_celestial->body()));
   }
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& pair : vessels_) {
@@ -1282,18 +1284,20 @@ void Plugin::ReadCelestialsFromMessages(
   google::protobuf::RepeatedPtrField<T> const& celestial_messages,
   IndexToOwnedCelestial& celestials) {
   auto const& bodies = ephemeris.bodies();
-  auto bodies_it = bodies.begin();
+  int index = 0;
   for (auto const& celestial_message : celestial_messages) {
+    bool const is_pre_catalan = !celestial_message.has_ephemeris_index();
+    auto const& body = is_pre_catalan
+                           ? bodies[index++]
+                           : bodies[celestial_message.ephemeris_index()];
     auto const inserted = celestials.emplace(
         celestial_message.index(),
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
-                *bodies_it)));
+                body)));
     CHECK(inserted.second);
-    inserted.first->second->set_trajectory(ephemeris.trajectory(*bodies_it));
-    ++bodies_it;
+    inserted.first->second->set_trajectory(ephemeris.trajectory(body));
   }
-  CHECK_EQ(bodies.end() - bodies.begin(), bodies_it - bodies.begin());
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
       not_null<std::unique_ptr<Celestial>> const& celestial =

@@ -83,6 +83,8 @@ message Plugin {
   message CelestialParenthood {
     required int32 index = 1;
     optional int32 parent_index = 2;
+    // Added in Catalan.
+    optional int32 ephemeris_index = 3;
   }
   repeated VesselAndProperties vessel = 1;
   map<fixed32, string> part_id_to_vessel = 16;
