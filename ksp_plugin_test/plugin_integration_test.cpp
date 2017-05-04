@@ -647,7 +647,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   serialization::GravityModel::Body gravity_model;
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "Celestial"
-         gravitational_parameter : "2 m^3/s^2"
+         gravitational_parameter : "1 m^3/s^2"
          reference_instant       : 2451545.0
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"

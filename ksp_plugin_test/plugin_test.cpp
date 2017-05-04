@@ -456,7 +456,7 @@ TEST_F(PluginTest, Serialization) {
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
   plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
-      SolarSystemFactory::Sun + 1));
+      SolarSystemFactory::Venus));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -514,7 +514,7 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.has_plotting_frame());
   EXPECT_TRUE(message.plotting_frame().HasExtension(
       serialization::BodyCentredNonRotatingDynamicFrame::extension));
-  EXPECT_EQ(SolarSystemFactory::Sun + 1,
+  EXPECT_EQ(message.celestial(SolarSystemFactory::Venus).ephemeris_index(),
             message.plotting_frame().GetExtension(
                 serialization::BodyCentredNonRotatingDynamicFrame::extension).
                     centre());
