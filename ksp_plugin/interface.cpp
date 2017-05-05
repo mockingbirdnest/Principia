@@ -102,7 +102,7 @@ serialization::GravityModel::Body MakeGravityModel(
       << NAMED(make_optional_c_string(body_parameters.reference_angle)) << "\n"
       << NAMED(make_optional_c_string(body_parameters.angular_frequency))
       << "\n"
-      << NAMED(make_optional_c_string(body_parameters.j2)) << "\n"
+      << NAMED(body_parameters.j2) << "\n"
       << NAMED(make_optional_c_string(body_parameters.reference_radius));
   serialization::GravityModel::Body gravity_model;
   gravity_model.set_name(body_parameters.name);
@@ -128,7 +128,7 @@ serialization::GravityModel::Body MakeGravityModel(
     gravity_model.set_angular_frequency(
         body_parameters.angular_frequency);
   }
-  if (body_parameters.j2 != nullptr) {
+  if (!std::isnan(body_parameters.j2)) {
     gravity_model.set_j2(body_parameters.j2);
   }
   if (body_parameters.reference_radius != nullptr) {

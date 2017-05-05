@@ -322,7 +322,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*axis_declination=*/"90 deg",
       /*reference_angle=*/"0 deg",
       /*angular_velocity=*/"1 rad/s",
-      /*j2=*/nullptr,
+      /*j2=*/std::nan(""),
       /*reference_radius=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
@@ -347,7 +347,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
          axis_declination        : "8°"
          reference_angle         : "2 rad"
          angular_frequency       : "0.3 rad / d"
-         j2                      : "123e-6"
+         j2                      : 123e-6
          reference_radius        : "1000 km")",
       &gravity_model));
   serialization::InitialState::Cartesian::Body initial_state;
@@ -375,7 +375,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           u8"8°",
                                           "2 rad",
                                           "0.3 rad / d",
-                                          "123e-6",
+                                          123e-6,
                                           "1000 km"};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,

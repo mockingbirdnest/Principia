@@ -17,8 +17,9 @@ message GravityModel {
     optional string reference_angle = 8;
     optional string angular_frequency = 9;
     // Oblate body.
-    optional string j2 = 5;  // TODO(phl): Change to a double.
+    optional float j2 = 11;
     optional string reference_radius = 6;
+    reserved 5;
   }
   oneof frame {
     Frame.SolarSystemTag solar_system_frame = 1;
