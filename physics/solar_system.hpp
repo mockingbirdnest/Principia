@@ -56,8 +56,7 @@ class SolarSystem final {
   int index(std::string const& name) const;
 
   // The initial state of the body named |name|.
-  //TODO(phl):rename
-  DegreesOfFreedom<Frame> initial_state(std::string const& name) const;
+  DegreesOfFreedom<Frame> degrees_of_freedom(std::string const& name) const;
 
   // The gravitational parameter of the body named |name|.
   GravitationalParameter gravitational_parameter(std::string const& name) const;

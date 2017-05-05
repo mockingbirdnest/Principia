@@ -79,10 +79,10 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                 integrators::McLachlanAtela1992Order4Optimal<
                     Position<ICRFJ2000Equator>>(),
                 /*step=*/10 * Milli(Second)))),
-        big_initial_state_(solar_system_.initial_state(big)),
+        big_initial_state_(solar_system_.degrees_of_freedom(big)),
         big_gravitational_parameter_(
             solar_system_.gravitational_parameter(big)),
-        small_initial_state_(solar_system_.initial_state(small)),
+        small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
     ephemeris_->Prolong(t0_ + 2 * period_);

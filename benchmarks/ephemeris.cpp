@@ -142,10 +142,10 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     MasslessBody probe;
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
     DegreesOfFreedom<ICRFJ2000Equator> const sun_degrees_of_freedom =
-        at_спутник_1_launch->initial_state(
+        at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
     DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
-        at_спутник_1_launch->initial_state(
+        at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
         ICRFJ200EquatorialToEcliptic(earth_degrees_of_freedom.position() -
@@ -220,7 +220,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     MasslessBody probe;
     DiscreteTrajectory<ICRFJ2000Equator> trajectory;
     DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
-        at_спутник_1_launch->initial_state(
+        at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
     Displacement<ICRFJ2000Equator> const earth_probe_displacement(
         {6371 * Kilo(Metre) + 100 * NauticalMile, 0 * Metre, 0 * Metre});

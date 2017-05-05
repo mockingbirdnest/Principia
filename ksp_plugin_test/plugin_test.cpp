@@ -162,7 +162,7 @@ class TestablePlugin : public Plugin {
 
   // We override this part of initialization in order to create a
   // |MockEphemeris| rather than an |Ephemeris|.
-  virtual void EndInitialization() override {
+  void EndInitialization() override {
     Plugin::EndInitialization();
     // Extend the continuous trajectories of the ephemeri.
     ephemeris_->Prolong(current_time_ + 10 * Hour);
@@ -376,8 +376,8 @@ TEST_F(PluginTest, Serialization) {
     std::string const parent_name = SolarSystemFactory::name(parent_index);
     RelativeDegreesOfFreedom<Barycentric> const state_vectors =
         Identity<ICRFJ2000Equator, Barycentric>()(
-            solar_system_->initial_state(name) -
-            solar_system_->initial_state(parent_name));
+            solar_system_->degrees_of_freedom(name) -
+            solar_system_->degrees_of_freedom(parent_name));
     Instant const t;
     auto const body = make_not_null_unique<MassiveBody>(
         solar_system_->gravitational_parameter(name));
@@ -531,8 +531,9 @@ TEST_F(PluginTest, Initialization) {
                          plugin_->InversePlanetariumRotation().Forget();
     Index const parent_index = SolarSystemFactory::parent(index);
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const from_parent =
-        solar_system_->initial_state(SolarSystemFactory::name(index)) -
-        solar_system_->initial_state(SolarSystemFactory::name(parent_index));
+        solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
+        solar_system_->degrees_of_freedom(
+            SolarSystemFactory::name(parent_index));
     EXPECT_THAT(from_parent,
                 Componentwise(
                     AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
@@ -1035,8 +1036,8 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
     auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
                          plugin_->InversePlanetariumRotation().Forget();
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_from_parent =
-        solar_system_->initial_state(SolarSystemFactory::name(index)) -
-        solar_system_->initial_state(
+        solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
+        solar_system_->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const computed_from_parent(
         to_icrf(plugin_->CelestialFromParent(index).displacement()),

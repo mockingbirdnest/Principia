@@ -182,7 +182,7 @@ int SolarSystem<Frame>::index(std::string const& name) const {
 
 
 template<typename Frame>
-DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
+DegreesOfFreedom<Frame> SolarSystem<Frame>::degrees_of_freedom(
     std::string const& name) const {
   return MakeDegreesOfFreedom(*cartesian_initial_state_map_.at(name));
 }
