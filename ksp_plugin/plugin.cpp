@@ -53,7 +53,6 @@ using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
-using base::FingerprintCat2011;
 using base::make_not_null_unique;
 using base::OFStream;
 using base::not_null;
@@ -94,8 +93,8 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-std::uint64_t const ksp_stock_system_fingerprint = 0xC47BBFA5DC3FCA82u;
-std::uint64_t const ksp_stabilized_system_fingerprint = 0x71754DD18A8F8123u;
+std::uint64_t const ksp_stock_system_fingerprint = 0x54B6323B3376D6F3u;
+std::uint64_t const ksp_stabilized_system_fingerprint = 0xB57B58F9CF757C62u;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
