@@ -35,14 +35,6 @@ class Date final {
 
   constexpr Date next_day() const;
 
-  constexpr bool operator==(Date const& other) const;
-  constexpr bool operator!=(Date const& other) const;
-
-  constexpr bool operator<(Date const& other) const;
-  constexpr bool operator>(Date const& other) const;
-  constexpr bool operator<=(Date const& other) const;
-  constexpr bool operator>=(Date const& other) const;
-
  private:
   constexpr Date(int year, int month, int day);
 
@@ -103,8 +95,20 @@ class DateTime final {
                                                 std::size_t size);
 };
 
+constexpr bool operator==(Date const& left, Date const& right);
+constexpr bool operator!=(Date const& left, Date const& right);
+constexpr bool operator<(Date const& left, Date const& right);
+constexpr bool operator>(Date const& left, Date const& right);
+constexpr bool operator<=(Date const& left, Date const& right);
+constexpr bool operator>=(Date const& left, Date const& right);
 constexpr Date operator""_Date(char const* str, std::size_t size);
+
+constexpr bool operator==(Time const& left, Time const& right);
+constexpr bool operator!=(Time const& left, Time const& right);
 constexpr Time operator""_Time(char const* str, std::size_t size);
+
+constexpr bool operator==(DateTime const& left, DateTime const& right);
+constexpr bool operator!=(DateTime const& left, DateTime const& right);
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
 
 }  // namespace internal_date_time

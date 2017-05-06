@@ -227,33 +227,6 @@ constexpr Date Date::next_day() const {
              : Date(year_, month_, day_ + 1);
 }
 
-constexpr bool Date::operator==(Date const& other) const {
-  return year_ == other.year_ && month_ == other.month_ && day_ == other.day_;
-}
-
-constexpr bool Date::operator!=(Date const& other) const {
-  return !(*this == other);
-}
-
-constexpr bool Date::operator<(Date const& other) const {
-  return year_ < other.year_ ||
-         (year_ == other.year_ &&
-          (month_ < other.month_ ||
-           (month_ == other.month_ && day_ < other.day_)));
-}
-
-constexpr bool Date::operator>(Date const& other) const {
-  return other < *this;
-}
-
-constexpr bool Date::operator<=(Date const& other) const {
-  return !(*this > other);
-}
-
-constexpr bool Date::operator>=(Date const& other) const {
-  return !(*this < other);
-}
-
 constexpr Date::Date(int const year,
                      int const month,
                      int const day)
@@ -619,10 +592,6 @@ class TimeParser final {
   int const decimal_mark_index_;
 };
 
-constexpr Time TimeParser::Parse(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).ToTime();
-}
-
 constexpr TimeParser::TimeParser(std::int64_t const digits,
                                  int const digit_count,
                                  int const colons,
@@ -722,11 +691,66 @@ constexpr Time TimeParser::ToTime() const {
                                 3 - (digit_count_ - 6))));
 }
 
+constexpr bool operator==(Date const& left, Date const& right) {
+  return left.year() == right.year() &&
+         left.month() == right.month() &&
+         left.day() == right.day();
+}
+
+constexpr bool operator!=(Date const& left, Date const& right) {
+  return !(left == right);
+}
+
+constexpr bool operator<(Date const& left, Date const& right) {
+  return left.year() < right.year() ||
+         (left.year() == right.year() &&
+          (left.month() < right.month() ||
+           (left.month() == right.month() && left.day() < right.day())));
+}
+
+constexpr bool operator>(Date const& left, Date const& right) {
+  return right < left;
+}
+
+constexpr bool operator<=(Date const& left, Date const& right) {
+  return !(right < left);
+}
+
+constexpr bool operator>=(Date const& left, Date const& right) {
+  return !(left < right);
+}
+
+constexpr Time TimeParser::Parse(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).ToTime();
+}
+
+constexpr bool operator==(Time const& left, Time const& right) {
+  return left.hour() == right.hour() &&
+         left.minute() == right.minute() &&
+         left.second() == right.second() &&
+         left.millisecond() == right.millisecond();
+}
+
+constexpr bool operator!=(Time const& left, Time const& right) {
+  return !(left == right);
+}
+
 constexpr Time operator""_Time(char const* str, std::size_t size) {
   return TimeParser::Parse(str, size);
 }
 
 // DateTime parsing.
+
+constexpr bool operator==(DateTime const& left, DateTime const& right) {
+  return left.normalized_end_of_day().date() ==
+             right.normalized_end_of_day().date() &&
+         left.normalized_end_of_day().time() ==
+             right.normalized_end_of_day().time();
+}
+
+constexpr bool operator!=(DateTime const& left, DateTime const& right) {
+  return !(left == right);
+}
 
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
   // Given correctness of the date and time parts of the string, this check
