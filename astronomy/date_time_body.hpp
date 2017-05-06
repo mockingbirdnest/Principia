@@ -18,6 +18,9 @@ using base::mod;
 
 // Arithmetico-calendrical utility functions.
 
+constexpr int mjd0_yyyy = 1858;
+constexpr int mjd0_yyyymmdd = 1858'11'17;
+
 constexpr std::array<int, 12> non_leap_year_month_lengths{
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
 
@@ -121,8 +124,13 @@ constexpr std::int64_t digit_range(std::int64_t const digits,
 }
 
 // Returns x * 10 ** count.
-constexpr std::int64_t append_0s(std::int64_t const x, int const count) {
-  return CHECKING(count >= 0, count == 0 ? x : append_0s(x * 10, count - 1));
+constexpr std::int64_t shift_left(std::int64_t const x, int const count) {
+  return CHECKING(count >= 0, count == 0 ? x : shift_left(x * 10, count - 1));
+}
+
+// Returns x / 10 ** count.
+constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
+  return CHECKING(count >= 0, count == 0 ? x : shift_right(x / 10, count - 1));
 }
 
 // Returns |date| advanced by the specified number of |days|. The result must be
@@ -217,8 +225,8 @@ constexpr int Date::ordinal() const {
 
 constexpr int Date::mjd() const {
   return gregorian_days_from_0000_01_01_at_start_of_year(year_) + ordinal() -
-         (gregorian_days_from_0000_01_01_at_start_of_year(1858) +
-          Date::YYYYMMDD(1858'11'17).ordinal());
+         (gregorian_days_from_0000_01_01_at_start_of_year(mjd0_yyyy) +
+          Date::YYYYMMDD(mjd0_yyyymmdd).ordinal());
 }
 
 constexpr Date Date::next_day() const {
@@ -384,7 +392,10 @@ class DateParser final {
   static constexpr Date Parse(char const* str, std::size_t size);
 
   //TODO(phl):comment
-  static constexpr Data ParseJD(char const* str, std::size_t size);
+  static constexpr Date ParseJD(char const* str, std::size_t size);
+
+  //TODO(phl):comment
+  static constexpr Date ParseMJD(char const* str, std::size_t size);
 
  private:
   constexpr DateParser(std::int64_t digits,
@@ -416,6 +427,12 @@ class DateParser final {
   // Fails if the format is invalid or the string represents an invalid date.
   constexpr Date ToDate() const;
 
+  //TODO(phl):comment
+  constexpr Date JDToDate() const;
+
+  //TODO(phl):comment
+  constexpr Date MJDToDate() const;
+
   // The number formed by all digits in the string.
   std::int64_t const digits_;
   // The number of digits.
@@ -439,7 +456,11 @@ constexpr Date DateParser::Parse(char const* str, std::size_t size) {
 }
 
 constexpr Date DateParser::ParseJD(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).ToDate();
+  return ReadToEnd(str, size).JDToDate();
+}
+
+constexpr Date DateParser::ParseMJD(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).MJDToDate();
 }
 
 constexpr DateParser::DateParser(std::int64_t const digits,
@@ -523,7 +544,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                             /*has_w=*/true,
                                             /*w_index=*/str.index()))
                         : *str == '.'
-                              ? CHECKING(period_index_ == -1,
+                              ? CHECKING(period_index == -1,
                                          ReadToEnd(str.next(),
                                                    digits,
                                                    digit_count,
@@ -546,36 +567,37 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
 }
 
 constexpr Date DateParser::ToDate() const {
-  return period_index_ > 0 
-             ? CHECKING(hyphens == 0 &&
-                        !has_w &&
-                        period_index_ == digit_count - 1,
-                        *str >= '5'
-                            ?
-                            :)
-             : digit_count_ == 8
-                   ? CHECKING(hyphens_ == 0 ||
-                                  (hyphens_ == 2 && first_hyphen_index_ == 4 &&
-                                   second_hyphen_index_ == 7),
-                              Date::YYYYMMDD(digits_))
-                   : CHECKING(
-                         digit_count_ == 7,
-                         has_w_
-                             ? CHECKING(
-                                   (hyphens_ == 0 && w_index_ == 4) ||
-                                       (hyphens_ == 2 &&
-                                        first_hyphen_index_ == 4 &&
-                                        w_index_ == 5 &&
-                                        second_hyphen_index_ == 8),
-                                   Date::YYYYwwD(digits_))
-                             : CHECKING(hyphens_ == 0 ||
-                                        (hyphens_ == 1 &&
-                                         first_hyphen_index_ == 4),
-                                        Date::YYYYDDD(digits_)));
+  return digit_count_ == 8
+             ? CHECKING(hyphens_ == 0 ||
+                            (hyphens_ == 2 && first_hyphen_index_ == 4 &&
+                             second_hyphen_index_ == 7),
+                        Date::YYYYMMDD(digits_))
+             : CHECKING(
+                   digit_count_ == 7,
+                   has_w_
+                       ? CHECKING(
+                             (hyphens_ == 0 && w_index_ == 4) ||
+                                 (hyphens_ == 2 && first_hyphen_index_ == 4 &&
+                                  w_index_ == 5 && second_hyphen_index_ == 8),
+                             Date::YYYYwwD(digits_))
+                       : CHECKING(hyphens_ == 0 || (hyphens_ == 1 &&
+                                                    first_hyphen_index_ == 4),
+                                  Date::YYYYDDD(digits_)));
 }
 
-constexpr Date operator""_Date(char const* str, std::size_t size) {
-  return DateParser::Parse(str, size);
+constexpr Date DateParser::JDToDate() const {
+  return CHECKING(hyphens_ == 0 &&
+                  !has_w_ &&
+                  period_index_ == digit_count_ - 1,
+                  (digits_ % 10) >= '5' ? Date::YYYYMMDD(19991111) : Date::
+                  YYYYMMDD(19991111));
+}
+
+constexpr Date DateParser::MJDToDate() const {
+  return CHECKING(period_index_ == -1 && hyphens_ == 0 && !has_w_,
+                  arbitrary_ordinal(
+                      mjd0_yyyy,
+                      Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + digits_));
 }
 
 // Time parsing.
@@ -589,6 +611,9 @@ class TimeParser final {
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
   static constexpr Time Parse(char const* str, std::size_t size);
+
+  //TODO(phl):comment
+  static constexpr Time ParseMJD(char const* str, std::size_t size);
 
  private:
   constexpr TimeParser(std::int64_t digits,
@@ -619,6 +644,9 @@ class TimeParser final {
   // Fails if the format is invalid or the string represents an invalid time.
   constexpr Time ToTime() const;
 
+  //TODO(phl):comment
+  constexpr Time MJDToTime() const;
+
   // The number formed by all digits in the string.
   std::int64_t const digits_;
   // The number of digits.
@@ -634,6 +662,14 @@ class TimeParser final {
   // The index of the decimal mark.
   int const decimal_mark_index_;
 };
+
+constexpr Time TimeParser::Parse(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).ToTime();
+}
+
+constexpr Time TimeParser::ParseMJD(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).MJDToTime();
+}
 
 constexpr TimeParser::TimeParser(std::int64_t const digits,
                                  int const digit_count,
@@ -730,9 +766,27 @@ constexpr Time TimeParser::ToTime() const {
              (colons_ != 0 && decimal_mark_index_ == 8)))) &&
           digit_count_ <= 15,
       Time::hhmmss_ms(digit_range(digits_, digit_count_ - 6, digit_count_),
-                      append_0s(digit_range(digits_, 0, digit_count_ - 6),
+                      shift_left(digit_range(digits_, 0, digit_count_ - 6),
                                 3 - (digit_count_ - 6))));
 }
+
+constexpr Time TimeParser::MJDToTime() const {
+  return CHECKING(
+      colons_ == 0 && !has_decimal_mark_,
+      Time::hhmmss_ms(
+          shift_left(
+              digit_range(24 * digits_, digit_count_, digit_count_ + 2), 4) +
+          shift_left(
+              digit_range(
+                  60 * digit_range(24 * digits_, 0, digit_count_),
+                  digit_count_, digit_count_ + 2), 2) +
+          digit_range(
+              60 * digit_range(1440 * digits_, 0, digit_count_),
+              digit_count_, digit_count_ + 2),
+          0));
+}
+
+// Operators.
 
 constexpr bool operator==(Date const& left, Date const& right) {
   return left.year() == right.year() &&
@@ -763,8 +817,8 @@ constexpr bool operator>=(Date const& left, Date const& right) {
   return !(left < right);
 }
 
-constexpr Time TimeParser::Parse(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).ToTime();
+constexpr Date operator""_Date(char const* str, std::size_t size) {
+  return DateParser::Parse(str, size);
 }
 
 constexpr bool operator==(Time const& left, Time const& right) {
@@ -781,8 +835,6 @@ constexpr bool operator!=(Time const& left, Time const& right) {
 constexpr Time operator""_Time(char const* str, std::size_t size) {
   return TimeParser::Parse(str, size);
 }
-
-// DateTime parsing.
 
 constexpr bool operator==(DateTime const& left, DateTime const& right) {
   return left.normalized_end_of_day().date() ==
@@ -801,10 +853,12 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
   // format.
   return CHECKING(
       contains(str, size, '-') == contains(str, size, ':'),
-      size >= 2 && str[0] == 'J' && str[1] == 'D'
-          ? DateTime(DateParser::ParseJD(str, index_of(str, size, '.') + 1),
-                     JulianDayOffset(str + index_of(str, size, '.') + 1,
-                                     str + size))
+      size >= 3 && str[0] == 'M' && str[1] == 'J' && str[2] == 'D'
+          ? DateTime(DateParser::ParseMJD(str + 3,
+                                          index_of(str + 3, size - 3, '.')),
+                     TimeParser::ParseMJD(
+                         str + index_of(str, size, '.') + 1,
+                         size - (index_of(str, size, '.') + 1)))
           : DateTime(operator""_Date(str, index_of(str, size, 'T')),
                      operator""_Time(str + index_of(str, size, 'T') + 1,
                                      size - (index_of(str, size, 'T') + 1)))

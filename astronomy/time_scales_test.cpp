@@ -360,6 +360,13 @@ TEST_F(TimeScalesTest, LunarEclipses) {
               AlmostEquals(91.2 * Second, 3e6, 4e6));
 }
 
+TEST_F(TimeScalesTest, ModifiedJulianDate) {
+  LOG(ERROR)<<"2010-01-04T00:00:00.000"_TT;
+  LOG(ERROR)<<"MJD55200.0000"_TT;
+  LOG(ERROR)<<"2010-01-04T00:00:00.123"_TT;
+  LOG(ERROR)<<"MJD55200.00000142361"_TT;
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia
