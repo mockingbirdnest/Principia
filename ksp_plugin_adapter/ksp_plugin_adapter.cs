@@ -1917,8 +1917,7 @@ public partial class PrincipiaPluginAdapter
                   gravity_model.GetValue("reference_angle"),
               angular_frequency       =
                   gravity_model.GetValue("angular_frequency"),
-              j2                      =
-                  double.Parse(gravity_model.GetValue("j2")),
+              j2                      = gravity_model.GetValue("j2"),
               reference_radius        =
                   gravity_model.GetValue("reference_radius")};
           plugin_.InsertCelestialAbsoluteCartesian(
@@ -1982,8 +1981,7 @@ public partial class PrincipiaPluginAdapter
             angular_frequency    =
                 (gravity_model?.GetValue("angular_frequency")).
                     GetValueOrDefault(body.angularV.ToString() + " rad/s"),
-            j2                   =
-                double.Parse(gravity_model?.GetValue("j2")),
+            j2                   = gravity_model?.GetValue("j2"),
             reference_radius     =
                 gravity_model?.GetValue("reference_radius")};
         plugin_.InsertCelestialJacobiKeplerian(

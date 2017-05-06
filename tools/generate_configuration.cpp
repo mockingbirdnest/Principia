@@ -53,9 +53,10 @@ void GenerateConfiguration(Instant const& game_epoch,
     gravity_model_cfg << "    gravitational_parameter = "
                       << body.gravitational_parameter() << "\n";
     if (body.has_reference_instant()) {
-      gravity_model_cfg << "    reference_instant       = " << std::fixed
+      gravity_model_cfg << "    reference_instant       = "
+                        << std::fixed
                         << std::setprecision(
-                               std::numeric_limits<long double>::digits10 + 1)
+                               std::numeric_limits<double>::digits10 + 1)
                         << body.reference_instant() << "\n";
     }
     if (body.has_mean_radius()) {
@@ -80,6 +81,9 @@ void GenerateConfiguration(Instant const& game_epoch,
     }
     if (body.has_j2()) {
       gravity_model_cfg << "    j2                      = "
+                        << std::scientific
+                        << std::setprecision(
+                               std::numeric_limits<double>::digits10 + 1)
                         << body.j2() << "\n";
     }
     if (body.has_reference_radius()) {
