@@ -2023,9 +2023,9 @@ public partial class PrincipiaPluginAdapter
         body => {
           double timewarp_limit = body.timeWarpAltitudeLimits[1];
           if (timewarp_limit == 0) {
-            Log.Warning("The timewarp limit for " + body.theName + " vanishes");
+            Log.Error("The timewarp limit for " + body.theName + " vanishes");
             if (body.atmosphereDepth == 0) {
-              Log.Warning(
+              Log.Error(
                   body.theName + " is airless, setting the manageability" +
                   " threshold to 10 km to allow landings");
               timewarp_limit = 10e3;
