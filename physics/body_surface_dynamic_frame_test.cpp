@@ -91,10 +91,10 @@ class BodySurfaceDynamicFrameTest : public ::testing::Test {
                 /*step=*/10 * Milli(Second)))),
         big_(dynamic_cast_not_null<RotatingBody<ICRFJ2000Equator> const*>(
             solar_system_.massive_body(*ephemeris_, big))),
-        big_initial_state_(solar_system_.initial_state(big)),
+        big_initial_state_(solar_system_.degrees_of_freedom(big)),
         big_gravitational_parameter_(
             solar_system_.gravitational_parameter(big)),
-        small_initial_state_(solar_system_.initial_state(small)),
+        small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)),
         // A body that rotates at the same speed as the one in

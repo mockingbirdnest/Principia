@@ -11,15 +11,6 @@ namespace internal_plugin {
 
 MockPlugin::MockPlugin() : Plugin(Instant(), Instant(), Angle()) {}
 
-void MockPlugin::InsertCelestialAbsoluteCartesian(
-      Index const celestial_index,
-      std::experimental::optional<Index> const& parent_index,
-      DegreesOfFreedom<Barycentric> const& initial_state,
-      base::not_null<std::unique_ptr<RotatingBody<Barycentric> const>> body) {
-  InsertCelestialAbsoluteCartesianConstRef(
-      celestial_index, parent_index, initial_state, body);
-}
-
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 MockPlugin::RenderBarycentricTrajectoryInWorld(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,

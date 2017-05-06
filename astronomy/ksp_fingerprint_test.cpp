@@ -17,12 +17,12 @@ using base::Fingerprint2011;
 using geometry::Frame;
 using physics::SolarSystem;
 
-using KSP = Frame<serialization::Frame::TestTag,
-                  serialization::Frame::TEST,
-                  /*frame_is_inertial=*/true>;
-
 class KSPFingerprintTest : public ::testing::Test {
  protected:
+  using Barycentric = Frame<serialization::Frame::PluginTag,
+                            serialization::Frame::BARYCENTRIC,
+                            true>;
+
   KSPFingerprintTest()
       : solar_system_(
             SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
@@ -30,7 +30,7 @@ class KSPFingerprintTest : public ::testing::Test {
     google::LogToStderr();
   }
 
-  SolarSystem<KSP> solar_system_;
+  SolarSystem<Barycentric> solar_system_;
 };
 
 TEST_F(KSPFingerprintTest, Stock) {
@@ -42,7 +42,7 @@ TEST_F(KSPFingerprintTest, Stock) {
                                serialized_message.size());
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_EQ(0xC47BBFA5DC3FCA82, fingerprint);
+  EXPECT_EQ(0x54B6323B3376D6F3u, fingerprint);
 }
 
 TEST_F(KSPFingerprintTest, Corrected) {
@@ -55,7 +55,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
                                serialized_message.size());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_EQ(0x71754DD18A8F8123, fingerprint);
+  EXPECT_EQ(0xB57B58F9CF757C62u, fingerprint);
 }
 
 }  // namespace astronomy
