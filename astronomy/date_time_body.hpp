@@ -380,7 +380,11 @@ class DateParser final {
   // Returns a |Date| corresponding to the representation |str|.
   // Fails unless |str| is a date representation of one of the following forms:
   // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD].
+  //TODO(phl):rename
   static constexpr Date Parse(char const* str, std::size_t size);
+
+  //TODO(phl):comment
+  static constexpr Data ParseJD(char const* str, std::size_t size);
 
  private:
   constexpr DateParser(std::int64_t digits,
@@ -388,6 +392,7 @@ class DateParser final {
                        int hyphens,
                        int first_hyphen_index,
                        int second_hyphen_index,
+                       int period_index,
                        bool has_w,
                        int w_index);
 
@@ -403,6 +408,7 @@ class DateParser final {
                                         int colons,
                                         int first_hyphen_index,
                                         int second_hyphen_index,
+                                        int period_index,
                                         bool has_w,
                                         int w_index);
 
@@ -420,6 +426,8 @@ class DateParser final {
   int const first_hyphen_index_;
   // The index of the second hyphen.
   int const second_hyphen_index_;
+  // The index of the period.
+  int const period_index_;
   // Whether the string contains a W.
   bool const has_w_;
   // The index of the W.
@@ -430,11 +438,16 @@ constexpr Date DateParser::Parse(char const* str, std::size_t size) {
   return ReadToEnd(str, size).ToDate();
 }
 
+constexpr Date DateParser::ParseJD(char const* str, std::size_t size) {
+  return ReadToEnd(str, size).ToDate();
+}
+
 constexpr DateParser::DateParser(std::int64_t const digits,
                                  int const digit_count,
                                  int const hyphens,
                                  int const first_hyphen_index,
                                  int const second_hyphen_index,
+                                 int const period_index,
                                  bool const has_w,
                                  int const w_index)
     : digits_(digits),
@@ -442,6 +455,7 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       hyphens_(hyphens),
       first_hyphen_index_(first_hyphen_index),
       second_hyphen_index_(second_hyphen_index),
+      period_index_(period_index),
       has_w_(has_w),
       w_index_(w_index) {}
 
@@ -452,6 +466,7 @@ constexpr DateParser DateParser::ReadToEnd(char const* str, std::size_t size) {
                    /*hyphens=*/0,
                    /*first_hyphen_index=*/-1,
                    /*second_hyphen_index=*/-1,
+                   /*period_index=*/-1,
                    /*has_w=*/false,
                    /*w_index=*/-1);
 }
@@ -462,6 +477,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                            int const hyphens,
                                            int const first_hyphen_index,
                                            int const second_hyphen_index,
+                                           int const period_index,
                                            bool const has_w,
                                            int const w_index) {
   return str.at_end()
@@ -470,6 +486,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                           hyphens,
                           first_hyphen_index,
                           second_hyphen_index,
+                          period_index,
                           has_w,
                           w_index}
              : *str == '-'
@@ -482,6 +499,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                          hyphens + 1,
                                          /*first_hyphen_index=*/str.index(),
                                          second_hyphen_index,
+                                         period_index,
                                          has_w,
                                          w_index)
                              : ReadToEnd(str.next(),
@@ -490,45 +508,70 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                          hyphens + 1,
                                          first_hyphen_index,
                                          /*second_hyphen_index=*/str.index(),
+                                         period_index,
                                          has_w,
                                          w_index))
-                   : *str == 'W' ? CHECKING(!has_w,
-                                            ReadToEnd(str.next(),
-                                                      digits,
-                                                      digit_count,
-                                                      hyphens,
-                                                      first_hyphen_index,
-                                                      second_hyphen_index,
-                                                      /*has_w=*/true,
-                                                      /*w_index=*/str.index()))
-                                 : CHECKING(*str >= '0' && *str <= '9',
-                                            ReadToEnd(str.next(),
-                                                      digits * 10 + *str - '0',
-                                                      digit_count + 1,
-                                                      hyphens,
-                                                      first_hyphen_index,
-                                                      second_hyphen_index,
-                                                      has_w,
-                                                      w_index));
+                   : *str == 'W' ?
+                         CHECKING(!has_w,
+                                  ReadToEnd(str.next(),
+                                            digits,
+                                            digit_count,
+                                            hyphens,
+                                            first_hyphen_index,
+                                            second_hyphen_index,
+                                            period_index,
+                                            /*has_w=*/true,
+                                            /*w_index=*/str.index()))
+                        : *str == '.'
+                              ? CHECKING(period_index_ == -1,
+                                         ReadToEnd(str.next(),
+                                                   digits,
+                                                   digit_count,
+                                                   hyphens,
+                                                   first_hyphen_index,
+                                                   second_hyphen_index,
+                                                   /*period_index=*/str.index(),
+                                                   has_w,
+                                                   w_index))
+                              : CHECKING(*str >= '0' && *str <= '9',
+                                         ReadToEnd(str.next(),
+                                                   digits * 10 + *str - '0',
+                                                   digit_count + 1,
+                                                   hyphens,
+                                                   first_hyphen_index,
+                                                   second_hyphen_index,
+                                                   period_index,
+                                                   has_w,
+                                                   w_index));
 }
 
 constexpr Date DateParser::ToDate() const {
-  return digit_count_ == 8
-             ? CHECKING(hyphens_ == 0 ||
-                            (hyphens_ == 2 && first_hyphen_index_ == 4 &&
-                             second_hyphen_index_ == 7),
-                        Date::YYYYMMDD(digits_))
-             : CHECKING(
-                   digit_count_ == 7,
-                   has_w_
-                       ? CHECKING(
-                             (hyphens_ == 0 && w_index_ == 4) ||
-                                 (hyphens_ == 2 && first_hyphen_index_ == 4 &&
-                                  w_index_ == 5 && second_hyphen_index_ == 8),
-                             Date::YYYYwwD(digits_))
-                       : CHECKING(hyphens_ == 0 || (hyphens_ == 1 &&
-                                                    first_hyphen_index_ == 4),
-                                  Date::YYYYDDD(digits_)));
+  return period_index_ > 0 
+             ? CHECKING(hyphens == 0 &&
+                        !has_w &&
+                        period_index_ == digit_count - 1,
+                        *str >= '5'
+                            ?
+                            :)
+             : digit_count_ == 8
+                   ? CHECKING(hyphens_ == 0 ||
+                                  (hyphens_ == 2 && first_hyphen_index_ == 4 &&
+                                   second_hyphen_index_ == 7),
+                              Date::YYYYMMDD(digits_))
+                   : CHECKING(
+                         digit_count_ == 7,
+                         has_w_
+                             ? CHECKING(
+                                   (hyphens_ == 0 && w_index_ == 4) ||
+                                       (hyphens_ == 2 &&
+                                        first_hyphen_index_ == 4 &&
+                                        w_index_ == 5 &&
+                                        second_hyphen_index_ == 8),
+                                   Date::YYYYwwD(digits_))
+                             : CHECKING(hyphens_ == 0 ||
+                                        (hyphens_ == 1 &&
+                                         first_hyphen_index_ == 4),
+                                        Date::YYYYDDD(digits_)));
 }
 
 constexpr Date operator""_Date(char const* str, std::size_t size) {
@@ -758,10 +801,14 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
   // format.
   return CHECKING(
       contains(str, size, '-') == contains(str, size, ':'),
-      DateTime(
-          operator""_Date(str, index_of(str, size, 'T')),
-          operator""_Time(str + index_of(str, size, 'T') + 1,
-                          size - (index_of(str, size, 'T') + 1))).checked());
+      size >= 2 && str[0] == 'J' && str[1] == 'D'
+          ? DateTime(DateParser::ParseJD(str, index_of(str, size, '.') + 1),
+                     JulianDayOffset(str + index_of(str, size, '.') + 1,
+                                     str + size))
+          : DateTime(operator""_Date(str, index_of(str, size, 'T')),
+                     operator""_Time(str + index_of(str, size, 'T') + 1,
+                                     size - (index_of(str, size, 'T') + 1)))
+                .checked());
 }
 
 }  // namespace internal_date_time
