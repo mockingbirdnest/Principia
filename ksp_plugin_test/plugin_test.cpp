@@ -662,11 +662,11 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3 * Metre, 1214));
+              AlmostEquals(3 * Metre, 1214, 1217));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Metre, 3838));
+              AlmostEquals(1 * Metre, 3838, 3844));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Metre, 30716));
+              AlmostEquals(1 * Metre, 30716, 30722));
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
@@ -1141,8 +1141,8 @@ TEST_F(PluginTest, Frenet) {
       plugin.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth);
   EXPECT_THAT(plugin.VesselTangent(satellite), AlmostEquals(t, 5, 17));
-  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 4, 11));
-  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 6));
+  EXPECT_THAT(plugin.VesselNormal(satellite), AlmostEquals(n, 3, 11));
+  EXPECT_THAT(plugin.VesselBinormal(satellite), AlmostEquals(b, 0, 7));
   EXPECT_THAT(
       plugin.VesselVelocity(satellite),
       AlmostEquals(alice_sun_to_world(satellite_initial_velocity_), 7, 19));
