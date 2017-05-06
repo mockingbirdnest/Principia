@@ -185,6 +185,9 @@ void Plugin::EndInitialization() {
           << gravity_model_.DebugString() << "\n"
           << initial_state_.DebugString();
       LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
+    } else if (system_fingerprint == ksp_stabilized_system_fingerprint) {
+      LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
+                << "stabilize it ourselves.  All hail retrobop anyway!";
     } else {
       LOG(WARNING) << "This is an unknown system, we don't know anything about "
                    << "its stability:\n"
