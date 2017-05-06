@@ -111,10 +111,6 @@ class Plugin {
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
 
-  // Returns true iff this is the unstable KSP stock system.  Must be called
-  // after initialization.
-  virtual bool IsKspStockSystem() const;
-
   // And there shall, in that time, be rumors of things going astray, and there
   // will be a great confusion as to where things really are, and nobody will
   // really know where lieth those little things with the sort of raffia work
@@ -414,15 +410,6 @@ class Plugin {
       Ephemeris<Barycentric> const& ephemeris,
       google::protobuf::RepeatedPtrField<T> const& celestial_messages,
       IndexToOwnedCelestial& celestials);
-
-  // Computes a fingerprint for the parameters passed to
-  // |InsertCelestialJacobiKeplerian|.
-  static std::uint64_t FingerprintCelestialJacobiKeplerian(
-      Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
-      std::experimental::optional<
-          physics::KeplerianElements<Barycentric>> const& keplerian_elements,
-      RotatingBody<Barycentric> const& body);
 
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
