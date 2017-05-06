@@ -347,7 +347,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
          axis_declination        : "8°"
          reference_angle         : "2 rad"
          angular_frequency       : "0.3 rad / d"
-         j2                      : "123e-6"
+         j2                      : 123e-6
          reference_radius        : "1000 km")",
       &gravity_model));
   serialization::InitialState::Cartesian::Body initial_state;

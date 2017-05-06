@@ -470,7 +470,7 @@ not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
   return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-      ParseQuantity<double>(body.j2()),
+      body.j2(),
       ParseQuantity<Length>(body.reference_radius()));
 }
 

@@ -129,7 +129,7 @@ serialization::GravityModel::Body MakeGravityModel(
         body_parameters.angular_frequency);
   }
   if (body_parameters.j2 != nullptr) {
-    gravity_model.set_j2(body_parameters.j2);
+    gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
   if (body_parameters.reference_radius != nullptr) {
     gravity_model.set_reference_radius(body_parameters.reference_radius);
