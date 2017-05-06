@@ -2019,9 +2019,27 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetRotatingFrameThresholds() {
-    ApplyToBodyTree(body => body.inverseRotThresholdAltitude =
-                                (float)Math.Max(body.timeWarpAltitudeLimits[1],
-                                                body.atmosphereDepth));
+    ApplyToBodyTree(
+        body => {
+          double timewarp_limit = body.timeWarpAltitudeLimits[1];
+          if (timewarp_limit == 0) {
+            Log.Warning("The timewarp limit for " + body.theName + " vanishes");
+            if (body.atmosphereDepth == 0) {
+              Log.Warning(
+                  body.theName + " is airless, setting the manageability" +
+                  " threshold to 10 km to allow landings");
+              timewarp_limit = 10e3;
+            }
+          }
+          body.inverseRotThresholdAltitude =
+                (float)Math.Max(timewarp_limit,
+                                body.atmosphereDepth);
+          Log.Info("Set manageability threshold for " + body.theName + " to " +
+                   body.inverseRotThresholdAltitude +
+                   " m; its atmosphere extends to " + body.atmosphereDepth +
+                   " m and timewarp is allowed above " +
+                   body.timeWarpAltitudeLimits[1] + " m");
+        });
   }
 
   private void RemoveBuggyTidalLocking() {
