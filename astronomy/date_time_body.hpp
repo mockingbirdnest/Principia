@@ -569,11 +569,11 @@ constexpr Date DateParser::JDToDate(char const ffd) const {
                   ffd >= '5'
                       ? arbitrary_ordinal(
                             mjd0_yyyy,
-                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + 
+                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
                                 (digits_ - mjd0_jd0_offset))
                       : arbitrary_ordinal(
                             mjd0_yyyy,
-                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + 
+                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
                                 (digits_ - mjd0_jd0_offset - 1)));
 }
 
