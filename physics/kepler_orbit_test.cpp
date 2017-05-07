@@ -25,8 +25,6 @@ using ::testing::AllOf;
 using ::testing::Gt;
 using ::testing::Lt;
 
-class KeplerOrbitTest : public ::testing::Test {};
-
 // Target body name : Moon(301) { source: DE431mx }
 // Centre body name : Earth(399) { source: DE431mx }
 // Output units    : KM-S, deg, Julian day number (Tp)
@@ -54,6 +52,25 @@ class KeplerOrbitTest : public ::testing::Test {};
 //   AD     Apoapsis distance (km)
 //   PR     Sidereal orbit period (sec)
 
+class KeplerOrbitTest : public ::testing::Test {
+  KeplerianElements<ICRFJ2000Equator> GeocentricMoonElementsOn20160110() const {
+    KeplerianElements<ICRFJ2000Equator> elements;
+    elements.eccentricity                = 4.772161502830355e-02;
+    elements.semimajor_axis              = 3.870051955415476e+05 * Kilo(Metre);
+    elements.mean_motion                 = 1.511718576836574e-04 * (Degree /
+                                                                    Second);
+    elements.period                      = 2.381395621619845e+06 * Second;
+    elements.periapsis_distance          = 3.685366825859605e+05 * Kilo(Metre);
+    elements.apoapsis_distance           = 4.054737084971346e+05 * Kilo(Metre);
+    elements.inclination                 = 1.842335956339145e+01 * Degree;
+    elements.longitude_of_ascending_node = 1.752118723367974e+00 * Degree;
+    elements.argument_of_periapsis       = 3.551364385683149e+02 * Degree;
+    elements.mean_anomaly                = 2.963020996150547e+02 * Degree;
+    elements.true_anomaly                = 2.912732951134421e+02 * Degree;
+    return elements;
+  }
+};
+
 TEST_F(KeplerOrbitTest, EarthMoon) {
   SolarSystem<ICRFJ2000Equator> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -70,14 +87,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       AlmostEquals(
           4.0350323550225975e+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
   Instant const date = JulianDate(2457397.500000000);
-  KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity                = 4.772161502830355e-02;
-  elements.semimajor_axis              = 3.870051955415476e+05 * Kilo(Metre);
-  elements.inclination                 = 1.842335956339145e+01 * Degree;
-  elements.longitude_of_ascending_node = 1.752118723367974e+00 * Degree;
-  elements.argument_of_periapsis       = 3.551364385683149e+02 * Degree;
-  elements.mean_anomaly                = 2.963020996150547e+02 * Degree;
-  KeplerOrbit<ICRFJ2000Equator> moon_orbit(*earth, *moon, elements, date);
+
   Displacement<ICRFJ2000Equator> const expected_displacement(
       { 1.177367562036580e+05 * Kilo(Metre),
        -3.419908628150604e+05 * Kilo(Metre),
@@ -86,6 +96,15 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       {9.745048087261129e-01 * (Kilo(Metre) / Second),
        3.500672337210811e-01 * (Kilo(Metre) / Second),
        1.066306010215636e-01 * (Kilo(Metre) / Second)});
+
+  auto partial_elements = GeocentricMoonElementsOn20160110();
+  partial_elements.mean_motion.reset();
+  partial_elements.period.reset();
+  partial_elements.periapsis_distance.reset();
+  partial_elements.apoapsis_distance.reset();
+  partial_elements.true_anomaly.reset();
+  KeplerOrbit<ICRFJ2000Equator> moon_orbit(
+      *earth, *moon, partial_elements, date);
   EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 13));
   EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
@@ -93,8 +112,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_motion,
               AlmostEquals(1.511718576836574e-04 * (Degree / Second), 2));
 
-  elements.semimajor_axis = std::experimental::nullopt;
-  elements.mean_motion = 1.511718576836574e-04 * (Degree / Second);
+  partial_elements.semimajor_axis.reset();
+  partial_elements.periapsis_distance =
+      GeocentricMoonElementsOn20160110().periapsis_distance;
   KeplerOrbit<ICRFJ2000Equator> moon_orbit_n(*earth, *moon, elements, date);
   EXPECT_THAT(moon_orbit_n.StateVectors(date).displacement(),
               AlmostEquals(expected_displacement, 13, 15));
