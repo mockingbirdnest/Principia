@@ -771,19 +771,32 @@ constexpr Time TimeParser::ToTime() const {
 }
 
 constexpr Time TimeParser::MJDToTime() const {
+  // Computation example: MJD55200.1234567
+  //   digits_ = 1'234'567, digit_count_ = 7
+  //   24 * digits_ = 29'629'608
+  //   digit_range(29'629'608, 7, 9) = 2
+  //   digit_range(29'629'608, 0, 7) = 9'629'608
+  //   60 * 9'629'608 = 577'776'480
+  //   digit_range(577'776'480, 7, 9) = 57
+  //   digit_range(577'776'480, 0, 7) = 7'776'480
+  //   60 * 24 * digits_ = 1'777'776'480
+  //   digit_range(1'777'776'480, 0, 7) = 7'776'480
+  //   60 * 7'776'480 = 466'588'800
+  //   digit_range(466'588'800, 7, 9) = 46
+  //   60 * 60 * 24 * digits_ = 106'666'588'800
+  //   digit_range(106'666'588'800, 3, 7) = 6588
+  //   (6588 + 5) / 10 = 659
+  // Note that this results in rounding to the nearest millisecond.
   return CHECKING(
       colons_ == 0 && !has_decimal_mark_,
       Time::hhmmss_ms(
-          shift_left(
-              digit_range(24 * digits_, digit_count_, digit_count_ + 2), 4) +
-          shift_left(
-              digit_range(
-                  60 * digit_range(24 * digits_, 0, digit_count_),
-                  digit_count_, digit_count_ + 2), 2) +
-          digit_range(
-              60 * digit_range(1440 * digits_, 0, digit_count_),
-              digit_count_, digit_count_ + 2),
-          0));
+          1'00'00 * digit_range(24 * digits_, digit_count_, digit_count_ + 2) +
+          1'00 * digit_range(60 * digit_range(24 * digits_, 0, digit_count_),
+                             digit_count_, digit_count_ + 2) +
+          digit_range(60 * digit_range(60 * 24 * digits_, 0, digit_count_),
+                      digit_count_, digit_count_ + 2),
+          (digit_range(60 * 60 * 24 * digits_,
+                       digit_count_ - 4, digit_count_) + 5) / 10));
 }
 
 // Operators.

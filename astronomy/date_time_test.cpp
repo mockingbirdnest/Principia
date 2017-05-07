@@ -39,16 +39,16 @@ TEST_F(CalendarDeathTest, InvalidDateTime) {
 }
 
 TEST_F(CalendarTest, ModifiedJulianDate) {
-  //static_assert("2010-01-04T00:00:00.123"_DateTime ==
-  //              "JD2455200.50000142361"_DateTime, "");
-  //static_assert("2010-01-04T00:00:00.123"_DateTime ==
-  //              "MJD55200.00000142361"_DateTime, "Dates differ");
+  static_assert("2010-01-04T00:00:00.123"_DateTime ==
+                "MJD55200.00000142361"_DateTime, "Dates differ");
   static_assert("2010-01-04T00:00:00.000"_DateTime ==
                 "MJD55200.00000"_DateTime, "Dates differ");
   static_assert("2010-01-04T12:00:00.000"_DateTime ==
                 "MJD55200.50000"_DateTime, "Dates differ");
   static_assert("2010-01-04T18:00:00.000"_DateTime ==
                 "MJD55200.75000"_DateTime, "Dates differ");
+  static_assert("2010-01-04T02:57:46.659"_DateTime ==
+                "MJD55200.1234567"_DateTime, "Dates differ");
 }
 
 }  // namespace internal_date_time
