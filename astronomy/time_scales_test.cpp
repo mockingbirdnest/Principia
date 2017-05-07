@@ -371,6 +371,11 @@ TEST_F(TimeScalesTest, ModifiedJulianDate) {
   EXPECT_THAT("MJD55200.00000142361"_TT, Eq("2010-01-04T00:00:00.123"_TT));
 }
 
+TEST_F(TimeScalesDeathTest, JulianDateUTC) {
+  EXPECT_DEATH("JD2451545"_UTC, "utc.iso");
+  EXPECT_DEATH("MJD55200.123"_UTC, "utc.iso");
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia
