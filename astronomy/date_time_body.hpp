@@ -523,25 +523,24 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                          /*second_hyphen_index=*/str.index(),
                                          has_w,
                                          w_index))
-                   : *str == 'W' ?
-                         CHECKING(!has_w,
-                                  ReadToEnd(str.next(),
-                                            digits,
-                                            digit_count,
-                                            hyphens,
-                                            first_hyphen_index,
-                                            second_hyphen_index,
-                                            /*has_w=*/true,
-                                            /*w_index=*/str.index()))
-                        : CHECKING(*str >= '0' && *str <= '9',
-                                   ReadToEnd(str.next(),
-                                             digits * 10 + *str - '0',
-                                             digit_count + 1,
-                                             hyphens,
-                                             first_hyphen_index,
-                                             second_hyphen_index,
-                                             has_w,
-                                             w_index));
+                   : *str == 'W' ? CHECKING(!has_w,
+                                            ReadToEnd(str.next(),
+                                                      digits,
+                                                      digit_count,
+                                                      hyphens,
+                                                      first_hyphen_index,
+                                                      second_hyphen_index,
+                                                      /*has_w=*/true,
+                                                      /*w_index=*/str.index()))
+                                 : CHECKING(*str >= '0' && *str <= '9',
+                                            ReadToEnd(str.next(),
+                                                      digits * 10 + *str - '0',
+                                                      digit_count + 1,
+                                                      hyphens,
+                                                      first_hyphen_index,
+                                                      second_hyphen_index,
+                                                      has_w,
+                                                      w_index));
 }
 
 constexpr Date DateParser::ISOToDate() const {
@@ -763,7 +762,7 @@ constexpr Time TimeParser::ISOToTime() const {
           digit_count_ <= 15,
       Time::hhmmss_ms(digit_range(digits_, digit_count_ - 6, digit_count_),
                       shift_left(digit_range(digits_, 0, digit_count_ - 6),
-                                3 - (digit_count_ - 6))));
+                                 3 - (digit_count_ - 6))));
 }
 
 constexpr Time TimeParser::JDToTime() const {
