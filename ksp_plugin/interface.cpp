@@ -634,12 +634,6 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
   return m.Return();
 }
 
-bool principia__IsKspStockSystem(Plugin* const plugin) {
-  journal::Method<journal::IsKspStockSystem> m({plugin});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->IsKspStockSystem());
-}
-
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.
 // This will always evaluate its argument even if the corresponding log severity
 // is disabled, so it is less efficient than LOG(INFO).  It will not report the

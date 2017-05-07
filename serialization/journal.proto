@@ -873,20 +873,6 @@ message InsertUnloadedPart {
   optional In in = 1;
 }
 
-message IsKspStockSystem {
-  extend Method {
-    optional IsKspStockSystem extension = 5096;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-  }
-  message Return {
-    required bool result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
 message IteratorAtEnd {
   extend Method {
     optional IteratorAtEnd extension = 5083;

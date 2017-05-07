@@ -1942,66 +1942,58 @@ public partial class PrincipiaPluginAdapter
       // We create the plugin at time 0, rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
-      for(;;) {
-        plugin_ = Interface.NewPlugin("0 s", "0 s",
-                                      Planetarium.InverseRotAngle);
-        BodyProcessor insert_body = body => {
-          Log.Info("Inserting " + body.name + "...");
-          ConfigNode gravity_model = null;
-          if (name_to_gravity_model?.TryGetValue(body.name,
-                                                 out gravity_model) == true) {
-            Log.Info("using custom gravity model");
-          }
-          Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
-          var body_parameters = new BodyParameters{
-              name = body.name,
-              gravitational_parameter =
-                  (gravity_model?.GetValue("gravitational_parameter")).
-                      GetValueOrDefault(body.gravParameter + " m^3/s^2"),
-              // J2000, because that's when we start non-config games.  We
-              // should really parse real-life dates from strings.
-              // The origin of rotation in KSP is the x of Barycentric, rather
-              // than the y axis as is the case for Earth, so the right
-              // ascension is -90 deg.
-              reference_instant    = double.Parse(
-                  (gravity_model?.GetValue("reference_instant")).
-                      GetValueOrDefault("2451545.0")),
-              mean_radius          =
-                  (gravity_model?.GetValue("mean_radius")).
-                      GetValueOrDefault(body.Radius + " m"),
-              axis_right_ascension =
-                  (gravity_model?.GetValue("axis_right_ascension")).
-                      GetValueOrDefault("-90 deg"),
-              axis_declination     =
-                  (gravity_model?.GetValue("axis_declination")).
-                      GetValueOrDefault("90 deg"),
-              reference_angle      =
-                  (gravity_model?.GetValue("reference_angle")).
-                      GetValueOrDefault(body.initialRotation.ToString() +
-                                        " deg"),
-              angular_frequency    =
-                  (gravity_model?.GetValue("angular_frequency")).
-                      GetValueOrDefault(body.angularV.ToString() + " rad/s"),
-              j2                   = gravity_model?.GetValue("j2"),
-              reference_radius     =
-                  gravity_model?.GetValue("reference_radius")};
-          plugin_.InsertCelestialJacobiKeplerian(
-              celestial_index             : body.flightGlobalsIndex,
-              parent_index                :
-                  orbit?.referenceBody.flightGlobalsIndex,
-              body_parameters             : body_parameters,
-              keplerian_elements          : orbit?.Elements());
-        };
-        insert_body(Planetarium.fetch.Sun);
-        ApplyToBodyTree(insert_body);
-        plugin_.EndInitialization();
-        if (plugin_.IsKspStockSystem()) {
-          Interface.DeletePlugin(ref plugin_);
-          Fix631();
-        } else {
-          break;
+      plugin_ = Interface.NewPlugin("0 s", "0 s",
+                                    Planetarium.InverseRotAngle);
+      BodyProcessor insert_body = body => {
+        Log.Info("Inserting " + body.name + "...");
+        ConfigNode gravity_model = null;
+        if (name_to_gravity_model?.TryGetValue(body.name,
+                                                out gravity_model) == true) {
+          Log.Info("using custom gravity model");
         }
-      }
+        Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
+        var body_parameters = new BodyParameters{
+            name = body.name,
+            gravitational_parameter =
+                (gravity_model?.GetValue("gravitational_parameter")).
+                    GetValueOrDefault(body.gravParameter + " m^3/s^2"),
+            // J2000, because that's when we start non-config games.  We
+            // should really parse real-life dates from strings.
+            // The origin of rotation in KSP is the x of Barycentric, rather
+            // than the y axis as is the case for Earth, so the right
+            // ascension is -90 deg.
+            reference_instant    = double.Parse(
+                (gravity_model?.GetValue("reference_instant")).
+                    GetValueOrDefault("2451545.0")),
+            mean_radius          =
+                (gravity_model?.GetValue("mean_radius")).
+                    GetValueOrDefault(body.Radius + " m"),
+            axis_right_ascension =
+                (gravity_model?.GetValue("axis_right_ascension")).
+                    GetValueOrDefault("-90 deg"),
+            axis_declination     =
+                (gravity_model?.GetValue("axis_declination")).
+                    GetValueOrDefault("90 deg"),
+            reference_angle      =
+                (gravity_model?.GetValue("reference_angle")).
+                    GetValueOrDefault(body.initialRotation.ToString() +
+                                      " deg"),
+            angular_frequency    =
+                (gravity_model?.GetValue("angular_frequency")).
+                    GetValueOrDefault(body.angularV.ToString() + " rad/s"),
+            j2                   = gravity_model?.GetValue("j2"),
+            reference_radius     =
+                gravity_model?.GetValue("reference_radius")};
+        plugin_.InsertCelestialJacobiKeplerian(
+            celestial_index             : body.flightGlobalsIndex,
+            parent_index                :
+                orbit?.referenceBody.flightGlobalsIndex,
+            body_parameters             : body_parameters,
+            keplerian_elements          : orbit?.Elements());
+      };
+      insert_body(Planetarium.fetch.Sun);
+      ApplyToBodyTree(insert_body);
+      plugin_.EndInitialization();
     }
     if (Planetarium.GetUniversalTime() > plugin_.CurrentTime()) {
       // Make sure that the plugin has caught up with the game before existing
@@ -2027,77 +2019,6 @@ public partial class PrincipiaPluginAdapter
   private void RemoveBuggyTidalLocking() {
     ApplyToBodyTree(body => body.tidallyLocked = false);
   }
-
-  // Deals with issue #631, unstability of the Jool system's resonance.
-  private void Fix631() {
-    CelestialBody jool = FlightGlobals.Bodies[8];
-    CelestialBody laythe = FlightGlobals.Bodies[9];
-    CelestialBody vall = FlightGlobals.Bodies[10];
-    CelestialBody bop = FlightGlobals.Bodies[11];
-    CelestialBody tylo = FlightGlobals.Bodies[12];
-    CelestialBody pol = FlightGlobals.Bodies[14];
-    const double φ = 1.61803398875;
-    // The |unmodified_orbits_| are unmodified in the sense that they are
-    // unaffected by the plugin's computation; they are the orbits from which
-    // we can reproducibly construct a fresh plugin.  In stock we modify them
-    // from their stock values for stability reasons.
-    unmodified_orbits_[vall] = new Orbit(
-        vall.orbit.inclination,
-        vall.orbit.eccentricity,
-        laythe.orbit.semiMajorAxis * Math.Pow(4 / φ, 2.0 / 3.0),
-        vall.orbit.LAN,
-        vall.orbit.argumentOfPeriapsis,
-        vall.orbit.meanAnomalyAtEpoch,
-        vall.orbit.epoch,
-        jool);
-    unmodified_orbits_[tylo] = new Orbit(
-        tylo.orbit.inclination,
-        tylo.orbit.eccentricity,
-        laythe.orbit.semiMajorAxis *
-            Math.Pow(16 / (φ * φ), 2.0 / 3.0),
-        tylo.orbit.LAN,
-        tylo.orbit.argumentOfPeriapsis,
-        tylo.orbit.meanAnomalyAtEpoch,
-        tylo.orbit.epoch,
-        jool);
-    unmodified_orbits_[bop] =
-        new Orbit(180.0 - bop.orbit.inclination,
-                  bop.orbit.eccentricity,
-                  pol.orbit.semiMajorAxis * Math.Pow(0.7, 2.0 / 3.0),
-                  bop.orbit.LAN,
-                  bop.orbit.argumentOfPeriapsis,
-                  bop.orbit.meanAnomalyAtEpoch,
-                  bop.orbit.epoch,
-                  jool);
-    // Vall and Tylo are tidally locked, so KSP will set their rotation period
-    // to their orbital period.  Since we disable tidal locking before starting
-    // the plugin (because tidal locking is buggy), we set their orbits here
-    // to set their rotation period to their orbital period, so that they still
-    // appear tidally locked (note that since we set the rotation to the Jacobi
-    // osculating orbital period, there remains some noticeable drift; it may be
-    // a good idea to compute the mean orbital period offline instead).  We do
-    // not do that for Bop (which is tidally locked in stock) to make it look
-    // like a more irregular satellite (in any case, Bop orbits retrograde, and
-    // it is not clear whether the game supports retrograde rotation).
-    foreach (CelestialBody body in new CelestialBody[]{vall, tylo}) {
-      body.orbit.inclination = unmodified_orbits_[body].inclination;
-      body.orbit.eccentricity = unmodified_orbits_[body].eccentricity;
-      body.orbit.semiMajorAxis = unmodified_orbits_[body].semiMajorAxis;
-      body.orbit.LAN = unmodified_orbits_[body].LAN;
-      body.orbit.argumentOfPeriapsis =
-          unmodified_orbits_[body].argumentOfPeriapsis;
-      body.orbit.meanAnomalyAtEpoch =
-          unmodified_orbits_[body].meanAnomalyAtEpoch;
-      body.orbit.epoch = unmodified_orbits_[body].epoch;
-      body.orbit.referenceBody = unmodified_orbits_[body].referenceBody;
-      body.orbit.Init();
-      body.orbit.UpdateFromUT(Planetarium.GetUniversalTime());
-      body.tidallyLocked = true;
-      body.CBUpdate();
-    }
-    RemoveBuggyTidalLocking();
-  }
-
 }
 
 }  // namespace ksp_plugin_adapter

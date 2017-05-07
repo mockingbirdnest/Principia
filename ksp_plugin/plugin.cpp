@@ -260,11 +260,6 @@ void Plugin::EndInitialization() {
   initializing_.Flop();
 }
 
-bool Plugin::IsKspStockSystem() const {
-  CHECK(!initializing_);
-  return is_ksp_stock_system_;
-}
-
 bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
   CHECK_NOTNULL(details);
   auto const status = ephemeris_->last_severe_integration_status();
@@ -1309,26 +1304,6 @@ void Plugin::ReadCelestialsFromMessages(
       celestial->set_parent(parent);
     }
   }
-}
-
-std::uint64_t Plugin::FingerprintCelestialJacobiKeplerian(
-    Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
-    std::experimental::optional<physics::KeplerianElements<Barycentric>> const&
-        keplerian_elements,
-    RotatingBody<Barycentric> const& body) {
-  serialization::CelestialJacobiKeplerian message;
-  message.set_celestial_index(celestial_index);
-  if (parent_index) {
-    message.set_parent_index(*parent_index);
-  }
-  if (keplerian_elements) {
-    keplerian_elements->WriteToMessage(message.mutable_keplerian_elements());
-  }
-  body.WriteToMessage(message.mutable_body());
-
-  const std::string serialized = message.SerializeAsString();
-  return Fingerprint2011(serialized.c_str(), serialized.size());
 }
 
 not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
