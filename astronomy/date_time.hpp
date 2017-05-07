@@ -76,6 +76,7 @@ class DateTime final {
 
   constexpr Date const& date() const;
   constexpr Time const& time() const;
+  // Returns true iff the object was constructed from an ISO 8601 string.
   constexpr bool iso() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is

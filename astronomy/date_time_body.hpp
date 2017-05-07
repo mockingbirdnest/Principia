@@ -914,7 +914,7 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
   // format.
   return CHECKING(
       contains(str, size, '-') == contains(str, size, ':'),
-      size >= 2 && str[0] == 'J' && str[1]
+      size >= 2 && str[0] == 'J' && str[1] == 'D'
           ? contains(str, size - 1, '.')
                 ? DateTime(DateParser::ParseJD(
                                str + 2,
