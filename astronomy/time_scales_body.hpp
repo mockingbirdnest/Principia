@@ -364,15 +364,17 @@ constexpr Instant DateTimeAsTAI(DateTime const& tai) {
 }
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
-  return utc.time().is_end_of_day()
-             ? DateTimeAsUTC(utc.normalized_end_of_day())
-             : utc.date().year() < 1972
-                   ? CHECKING(
-                         IsValidStretchyUTC(utc),
-                         FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc)))
-                   : CHECKING(IsValidModernUTC(utc),
-                              FromTAI(TimeScale(utc) -
-                                      ModernUTCMinusTAI(utc.date())));
+  return CHECKING(
+      !utc.jd(),
+      utc.time().is_end_of_day()
+      ? DateTimeAsUTC(utc.normalized_end_of_day())
+      : utc.date().year() < 1972
+            ? CHECKING(
+                  IsValidStretchyUTC(utc),
+                  FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc)))
+            : CHECKING(IsValidModernUTC(utc),
+                      FromTAI(TimeScale(utc) -
+                              ModernUTCMinusTAI(utc.date()))));
 }
 
 constexpr Instant DateTimeAsUT1(DateTime const& ut1) {

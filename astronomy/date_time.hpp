@@ -35,14 +35,6 @@ class Date final {
 
   constexpr Date next_day() const;
 
-  constexpr bool operator==(Date const& other) const;
-  constexpr bool operator!=(Date const& other) const;
-
-  constexpr bool operator<(Date const& other) const;
-  constexpr bool operator>(Date const& other) const;
-  constexpr bool operator<=(Date const& other) const;
-  constexpr bool operator>=(Date const& other) const;
-
  private:
   constexpr Date(int year, int month, int day);
 
@@ -84,13 +76,15 @@ class DateTime final {
 
   constexpr Date const& date() const;
   constexpr Time const& time() const;
+  // Returns true iff the object was constructed from a JD or MJD string.
+  constexpr bool jd() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
   // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  constexpr DateTime(Date date, Time time);
+  constexpr DateTime(Date date, Time time, bool jd);
 
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.
@@ -98,13 +92,35 @@ class DateTime final {
 
   Date const date_;
   Time const time_;
+  bool const jd_;
 
   friend constexpr DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);
 };
 
+constexpr bool operator==(Date const& left, Date const& right);
+constexpr bool operator!=(Date const& left, Date const& right);
+constexpr bool operator<(Date const& left, Date const& right);
+constexpr bool operator>(Date const& left, Date const& right);
+constexpr bool operator<=(Date const& left, Date const& right);
+constexpr bool operator>=(Date const& left, Date const& right);
 constexpr Date operator""_Date(char const* str, std::size_t size);
+
+constexpr bool operator==(Time const& left, Time const& right);
+constexpr bool operator!=(Time const& left, Time const& right);
 constexpr Time operator""_Time(char const* str, std::size_t size);
+
+constexpr bool operator==(DateTime const& left, DateTime const& right);
+constexpr bool operator!=(DateTime const& left, DateTime const& right);
+
+// In addition to ISO 8601, this operator also supports julian dates and
+// modified julian dates according to the following formats:
+//   JDiiii.ffff
+//   JDiiii
+//   MJDiiii.ffff
+//   MJDiiii
+// The fractional part ffff must have at most 14 digits.  The final result is
+// rounded to the nearest millisecond.
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
 
 }  // namespace internal_date_time
