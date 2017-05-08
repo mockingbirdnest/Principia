@@ -365,7 +365,7 @@ constexpr Instant DateTimeAsTAI(DateTime const& tai) {
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
   return CHECKING(
-      utc.iso(),
+      !utc.jd(),
       utc.time().is_end_of_day()
       ? DateTimeAsUTC(utc.normalized_end_of_day())
       : utc.date().year() < 1972

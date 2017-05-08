@@ -76,15 +76,15 @@ class DateTime final {
 
   constexpr Date const& date() const;
   constexpr Time const& time() const;
-  // Returns true iff the object was constructed from an ISO 8601 string.
-  constexpr bool iso() const;
+  // Returns true iff the object was constructed from a JD or MJD string.
+  constexpr bool jd() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
   // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  constexpr DateTime(Date date, Time time, bool iso);
+  constexpr DateTime(Date date, Time time, bool jd);
 
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.
@@ -92,7 +92,7 @@ class DateTime final {
 
   Date const date_;
   Time const time_;
-  bool const iso_;
+  bool const jd_;
 
   friend constexpr DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);

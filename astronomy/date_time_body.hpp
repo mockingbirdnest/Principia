@@ -299,7 +299,7 @@ constexpr Time const& Time::checked() const {
 // Implementation of class DateTime.
 
 constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
-  return DateTime(date, Time::hhmmss_ms(00'00'00, 0), /*iso=*/true);
+  return DateTime(date, Time::hhmmss_ms(00'00'00, 0), /*jd=*/false);
 }
 
 constexpr Date const& DateTime::date() const {
@@ -310,18 +310,18 @@ constexpr Time const& DateTime::time() const {
   return time_;
 }
 
-constexpr bool DateTime::iso() const {
-  return iso_;
+constexpr bool DateTime::jd() const {
+  return jd_;
 }
 
 constexpr DateTime DateTime::normalized_end_of_day() const {
   return time_.is_end_of_day() ? BeginningOfDay(date_.next_day()) : *this;
 }
 
-constexpr DateTime::DateTime(Date const date, Time const time, bool const iso)
+constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
     : date_(date),
       time_(time),
-      iso_(iso) {}
+      jd_(jd) {}
 
 constexpr DateTime const& DateTime::checked() const {
   return CHECKING(!time_.is_leap_second() ||
@@ -923,10 +923,10 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                            TimeParser::ParseJD(
                                str + index_of(str, size, '.') + 1,
                                size - (index_of(str, size, '.') + 1)),
-                           /*iso=*/false)
+                           /*jd=*/true)
                 : DateTime(DateParser::ParseJD(str + 2, '0', size - 2),
                            TimeParser::ParseJD("0", 1),
-                           /*iso=*/false)
+                           /*jd=*/true)
           : size >= 3 && str[0] == 'M' && str[1] == 'J' && str[2] == 'D'
                 ? contains(str, size - 1, '.')
                       ? DateTime(DateParser::ParseMJD(
@@ -935,15 +935,15 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                                  TimeParser::ParseMJD(
                                      str + index_of(str, size, '.') + 1,
                                      size - (index_of(str, size, '.') + 1)),
-                                 /*iso=*/false)
+                                 /*jd=*/true)
                       : DateTime(DateParser::ParseMJD(str + 3, size - 3),
                                  TimeParser::ParseMJD("0", 1),
-                                 /*iso=*/false)
+                                 /*jd=*/true)
                 : DateTime(DateParser::ParseISO(str, index_of(str, size, 'T')),
                            TimeParser::ParseISO(
                                str + index_of(str, size, 'T') + 1,
                                size - (index_of(str, size, 'T') + 1)),
-                           /*iso=*/true)
+                           /*jd=*/false)
                       .checked());
 }
 

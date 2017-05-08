@@ -372,8 +372,8 @@ TEST_F(TimeScalesTest, ModifiedJulianDate) {
 }
 
 TEST_F(TimeScalesDeathTest, JulianDateUTC) {
-  EXPECT_DEATH("JD2451545"_UTC, "utc.iso");
-  EXPECT_DEATH("MJD55200.123"_UTC, "utc.iso");
+  EXPECT_DEATH("JD2451545"_UTC, "utc.jd");
+  EXPECT_DEATH("MJD55200.123"_UTC, "utc.jd");
 }
 
 }  // namespace internal_time_scales
