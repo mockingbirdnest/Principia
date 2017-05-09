@@ -1,6 +1,6 @@
 # This system is for KSP 1.2.2.
 initial_state {
-  epoch : 2451545.000000000  # J2000, corresponds to Instant{}.
+  epoch : "JD2451545.000000000"  # J2000, corresponds to Instant{}.
   keplerian {
     body {
       name : "Sun"
