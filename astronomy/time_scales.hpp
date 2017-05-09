@@ -34,12 +34,21 @@ constexpr Instant operator""_UTC(char const* str, std::size_t size);
 constexpr Instant operator""_UT1(char const* str, std::size_t size);
 #endif
 
+Instant ParseTAI(std::string const& s);
+Instant ParseTT(std::string const& s);
+Instant ParseUTC(std::string const& s);
+Instant ParseUT1(std::string const& s);
+
 }  // namespace internal_time_scales
 
 using internal_time_scales::operator""_TAI;
 using internal_time_scales::operator""_TT;
 using internal_time_scales::operator""_UTC;
 using internal_time_scales::operator""_UT1;
+using internal_time_scales::ParseTAI;
+using internal_time_scales::ParseTT;
+using internal_time_scales::ParseUTC;
+using internal_time_scales::ParseUT1;
 
 }  // namespace astronomy
 }  // namespace principia

@@ -289,7 +289,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "Brian"
          gravitational_parameter : "1.2345e6  m^3/s^2"
-         reference_instant       : 0.0
+         reference_instant       : "JD2451545"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
@@ -316,7 +316,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   BodyParameters const body_parameters = {
       "Brian",
       "1.2345e6  m^3/s^2",
-      /*reference_instant=*/0.0,
+      /*reference_instant=*/"JD2451545",
       /*mean_radius=*/"1 m",
       /*axis_right_ascension=*/"0 deg",
       /*axis_declination=*/"90 deg",
@@ -341,7 +341,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       u8R"(name                    : "that is called Brian"
          gravitational_parameter : "1.2345e6  km^3 / s^2"
-         reference_instant       : 999.0
+         reference_instant       : "JD2452545"
          mean_radius             : "666 km"
          axis_right_ascension    : "42 deg"
          axis_declination        : "8°"
@@ -369,7 +369,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
 
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
-                                          999.0,
+                                          "JD2452545",
                                           "666 km",
                                           "42 deg",
                                           u8"8°",

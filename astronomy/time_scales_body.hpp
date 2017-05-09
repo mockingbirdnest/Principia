@@ -453,6 +453,22 @@ constexpr Instant operator""_UT1(char const* str, std::size_t size) {
 }
 #endif
 
+inline Instant ParseTAI(std::string const& s) {
+  return operator""_TAI(s.c_str(), s.size());
+}
+
+inline Instant ParseTT(std::string const& s) {
+  return operator""_TT(s.c_str(), s.size());
+}
+
+inline Instant ParseUTC(std::string const& s) {
+  return operator""_UTC(s.c_str(), s.size());
+}
+
+inline Instant ParseUT1(std::string const& s) {
+  return operator""_UT1(s.c_str(), s.size());
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia

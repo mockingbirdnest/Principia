@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
@@ -40,6 +41,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using astronomy::ICRFJ2000Equator;
+using astronomy::ParseTT;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
@@ -133,8 +135,8 @@ MATCHER_P(HasNonvanishingIntrinsicAccelerationAt, t, "") {
 
 class TestablePlugin : public Plugin {
  public:
-  TestablePlugin(Instant const& game_epoch,
-                 Instant const& solar_system_epoch,
+  TestablePlugin(std::string const& game_epoch,
+                 std::string const& solar_system_epoch,
                  Angle const& planetarium_rotation)
       : Plugin(game_epoch, solar_system_epoch, planetarium_rotation),
         // The |mock_ephemeris_| has to be created early so that we can write
@@ -197,7 +199,7 @@ class PluginTest : public testing::Test {
   PluginTest()
       : solar_system_(SolarSystemFactory::AtСпутник1Launch(
             SolarSystemFactory::Accuracy::MajorBodiesOnly)),
-        initial_time_(Instant() + 5400 * Second),
+        initial_time_("JD2451545.0625"),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<TestablePlugin>(
                     initial_time_,
@@ -316,7 +318,7 @@ class PluginTest : public testing::Test {
 
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
-  Instant const initial_time_;
+  std::string const initial_time_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<TestablePlugin>> plugin_;
@@ -428,7 +430,7 @@ TEST_F(PluginTest, Serialization) {
   plugin->FreeVesselsAndPartsAndCollectPileUps();
 
   Time const shift = 1 * Second;
-  Instant const time = initial_time_ + shift;
+  Instant const time = ParseTT(initial_time_) + shift;
   plugin->AdvanceTime(time, Angle());
 
 #if 0
@@ -759,7 +761,8 @@ TEST_F(PluginDeathTest, InsertUnloadedPartError) {
                                 SolarSystemFactory::Sun,
                                 /*loaded=*/false,
                                 inserted);
-    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_));
+    Instant const initial_time = ParseTT(initial_time_);
+    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time));
     plugin_->InsertUnloadedPart(
         part_id,
         "part",
@@ -838,7 +841,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
   auto const satellite = plugin_->GetVessel(guid);
 
-  Instant const& time = initial_time_ + 1 * Second;
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant const& time = initial_time + 1 * Second;
   plugin_->AdvanceTime(time, Angle());
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
@@ -925,7 +929,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
-  Instant const& time = initial_time_ + 1 * Second;
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant const& time = initial_time + 1 * Second;
   EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
       .Times(1);
   plugin_->AdvanceTime(time, Angle());
@@ -1005,7 +1010,8 @@ TEST_F(PluginTest, VesselInsertionAtInitialization) {
                               /*loaded=*/false,
                               inserted);
   EXPECT_TRUE(inserted);
-  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time_))
+  Instant const initial_time = ParseTT(initial_time_);
+  EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(initial_time))
       .Times(AnyNumber());
   plugin_->InsertUnloadedPart(
       part_id,
@@ -1062,7 +1068,7 @@ TEST_F(PluginTest, Navball) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "Sun"
          gravitational_parameter : "1 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"

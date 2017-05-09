@@ -87,8 +87,9 @@ class Plugin {
   // Constructs a |Plugin|. The current time of that instance is
   // |solar_system_epoch|.  The angle between the axes of |World| and
   // |Barycentric| at |solar_system_epoch| is set to |planetarium_rotation|.
-  Plugin(Instant const& game_epoch,
-         Instant const& solar_system_epoch,
+  // The epochs must be given in a format parseable by ParseTT.
+  Plugin(std::string const& game_epoch,
+         std::string const& solar_system_epoch,
          Angle const& planetarium_rotation);
 
   // Inserts a celestial body with index |celestial_index| and the given

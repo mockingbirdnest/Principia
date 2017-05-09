@@ -15,6 +15,7 @@
 #endif
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
@@ -38,6 +39,7 @@ namespace principia {
 namespace interface {
 
 using astronomy::J2000;
+using astronomy::ParseTT;
 using base::Bytes;
 using base::check_not_null;
 using base::HexadecimalDecode;
@@ -108,7 +110,7 @@ serialization::GravityModel::Body MakeGravityModel(
   gravity_model.set_name(body_parameters.name);
   gravity_model.set_gravitational_parameter(
       body_parameters.gravitational_parameter);
-  if (!std::isnan(body_parameters.reference_instant)) {
+  if (body_parameters.reference_instant != nullptr) {
     gravity_model.set_reference_instant(body_parameters.reference_instant);
   }
   if (body_parameters.mean_radius != nullptr) {
@@ -695,10 +697,10 @@ Plugin* principia__NewPlugin(char const* const game_epoch,
                                          solar_system_epoch,
                                          planetarium_rotation_in_degrees});
   LOG(INFO) << "Constructing Principia plugin";
-  not_null<std::unique_ptr<Plugin>> result = make_not_null_unique<Plugin>(
-      J2000 + ParseQuantity<Time>(game_epoch),
-      J2000 + ParseQuantity<Time>(solar_system_epoch),
-      planetarium_rotation_in_degrees * Degree);
+  not_null<std::unique_ptr<Plugin>> result =
+      make_not_null_unique<Plugin>(game_epoch,
+                                   solar_system_epoch,
+                                   planetarium_rotation_in_degrees * Degree);
   LOG(INFO) << "Plugin constructed";
   return m.Return(result.release());
 }

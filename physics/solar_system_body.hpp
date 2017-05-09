@@ -11,6 +11,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/map_util.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -32,7 +33,7 @@ namespace physics {
 namespace internal_solar_system {
 
 using astronomy::J2000;
-using astronomy::JulianDate;
+using astronomy::ParseTT;
 using base::Contains;
 using base::dynamic_cast_not_null;
 using base::FindOrDie;
@@ -145,7 +146,7 @@ SolarSystem<Frame>::SolarSystem(
     CHECK(it2 == keplerian_initial_state_map_.end()) << it2->first;
   }
 
-  epoch_ = JulianDate(initial_state_.epoch());
+  epoch_ = ParseTT(initial_state_.epoch());
 
   // Call these two functions to parse all the data, so that errors are detected
   // at initialization.  Drop their results on the floor.
@@ -459,7 +460,7 @@ SolarSystem<Frame>::MakeRotatingBodyParameters(
   return make_not_null_unique<typename RotatingBody<Frame>::Parameters>(
       ParseQuantity<Length>(body.mean_radius()),
       ParseQuantity<Angle>(body.reference_angle()),
-      JulianDate(body.reference_instant()),
+      ParseTT(body.reference_instant()),
       ParseQuantity<AngularFrequency>(body.angular_frequency()),
       ParseQuantity<Angle>(body.axis_right_ascension()),
       ParseQuantity<Angle>(body.axis_declination()));

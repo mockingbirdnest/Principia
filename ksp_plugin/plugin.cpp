@@ -16,6 +16,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/stabilize_ksp.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/map_util.hpp"
@@ -46,7 +47,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::JulianDayNumber;
+using astronomy::ParseTT;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
@@ -102,17 +103,17 @@ Permutation<WorldSun, AliceSun> const sun_looking_glass(
 
 }  // namespace
 
-Plugin::Plugin(Instant const& game_epoch,
-               Instant const& solar_system_epoch,
+Plugin::Plugin(std::string const& game_epoch,
+               std::string const& solar_system_epoch,
                Angle const& planetarium_rotation)
     : history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       planetarium_rotation_(planetarium_rotation),
-      game_epoch_(game_epoch),
-      current_time_(solar_system_epoch) {
+      game_epoch_(ParseTT(game_epoch)),
+      current_time_(ParseTT(solar_system_epoch)) {
   gravity_model_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
-  initial_state_.set_epoch(JulianDayNumber(solar_system_epoch));
+  initial_state_.set_epoch(solar_system_epoch);
   initial_state_.set_plugin_frame(serialization::Frame::BARYCENTRIC);
 }
 
