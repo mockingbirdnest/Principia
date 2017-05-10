@@ -20,14 +20,14 @@ int main(int argc, char const* argv[]) {
   if (command == "generate_configuration") {
     if (argc != 5) {
       // tools.exe generate_configuration \
-      //     2433647.5 sol_gravity_model sol_initial_state_jd_2433282_500000000
+      //     JD2433647.5 \
+      //     sol_gravity_model \
+      //     sol_initial_state_jd_2433282_500000000
       std::cerr << "Usage: " << argv[0] << " " << argv[1] << " "
                 << "game_epoch_jd gravity_model_stem initial_state_stem\n";
       return 2;
     }
-    principia::geometry::Instant game_epoch =
-        principia::astronomy::JulianDate(
-            principia::quantities::ParseQuantity<double>(argv[2]));
+    std::string const game_epoch = argv[2];
     std::string const gravity_model_stem = argv[3];
     std::string const initial_state_stem = argv[4];
     principia::tools::GenerateConfiguration(game_epoch,

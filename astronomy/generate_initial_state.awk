@@ -40,7 +40,7 @@ BEGIN {
 END {
   print "  # The time of the initial state, as a TDB Julian date."
   print "  # This is " humandate " TDB."
-  print "  epoch : " juliandate
+  print "  epoch : \"JD" juliandate "\""
   print "  cartesian {"
 
   # The year is 2015 and I am writing a Bubble Sort.  I kid you not.
