@@ -272,8 +272,8 @@ TEST_F(InterfaceTest, Log) {
 
 TEST_F(InterfaceTest, NewPlugin) {
   std::unique_ptr<Plugin> plugin(principia__NewPlugin(
-                                     "1 s",
-                                     "2 s",
+                                     "MJD1",
+                                     "MJD2",
                                      planetarium_rotation));
   EXPECT_THAT(plugin, Not(IsNull()));
 }

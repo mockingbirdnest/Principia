@@ -564,7 +564,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "S0"
          gravitational_parameter : "2 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
@@ -583,7 +583,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "P1"
          gravitational_parameter : "2 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
@@ -610,7 +610,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "P2"
          gravitational_parameter : "1 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"
@@ -637,7 +637,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "M3"
          gravitational_parameter : "1 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"

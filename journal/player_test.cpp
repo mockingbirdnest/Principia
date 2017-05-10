@@ -39,7 +39,7 @@ class PlayerTest : public ::testing::Test {
       : test_info_(testing::UnitTest::GetInstance()->current_test_info()),
         test_case_name_(test_info_->test_case_name()),
         test_name_(test_info_->name()),
-        plugin_(interface::principia__NewPlugin("0 s", "0 s", 0)) {}
+        plugin_(interface::principia__NewPlugin("MJD0", "MJD0", 0)) {}
 
   template<typename Profile>
   bool RunIfAppropriate(serialization::Method const& method_in,
@@ -62,7 +62,7 @@ TEST_F(PlayerTest, PlayTiny) {
     Recorder::Activate(r);
 
     {
-      Method<NewPlugin> m({"1 s", "2 s", 3});
+      Method<NewPlugin> m({"MJD1", "MJD2", 3});
       m.Return(plugin_.get());
     }
     {
