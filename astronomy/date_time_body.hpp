@@ -253,26 +253,6 @@ constexpr Time Time::hhmmss_ms(int const hhmmss, int ms) {
                        ms).checked());
 }
 
-// Note that millisecond == 1000 can happen for JD and MJD because of rounding.
-constexpr Time::Time(int const hour,
-                     int const minute,
-                     int const second,
-                     int const millisecond)
-    : hour_(millisecond == 1000 && second == 59 && minute == 59
-                ? hour + 1
-                : hour),
-      minute_(millisecond == 1000 && second == 59
-                  ? minute == 59
-                        ? 0
-                        : minute + 1
-                  : minute),
-      second_(millisecond == 1000
-                  ? second == 59
-                        ? 0
-                        : second + 1
-                  : second),
-      millisecond_(millisecond % 1000) {}
-
 constexpr int Time::hour() const {
   return hour_;
 }
@@ -296,6 +276,26 @@ constexpr bool Time::is_leap_second() const {
 constexpr bool Time::is_end_of_day() const {
   return hour_ == 24;
 }
+
+// Note that millisecond == 1000 can happen for JD and MJD because of rounding.
+constexpr Time::Time(int const hour,
+                     int const minute,
+                     int const second,
+                     int const millisecond)
+    : hour_(millisecond == 1000 && second == 59 && minute == 59
+                ? hour + 1
+                : hour),
+      minute_(millisecond == 1000 && second == 59
+                  ? minute == 59
+                        ? 0
+                        : minute + 1
+                  : minute),
+      second_(millisecond == 1000
+                  ? second == 59
+                        ? 0
+                        : second + 1
+                  : second),
+      millisecond_(millisecond % 1000) {}
 
 constexpr Time const& Time::checked() const {
   return CHECKING(

@@ -69,7 +69,7 @@ class Time final {
   int const second_;
   int const millisecond_;
 
-  friend class TimeParser
+  friend class TimeParser;
 };
 
 class DateTime final {
