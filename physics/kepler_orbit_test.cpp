@@ -73,6 +73,42 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.true_anomaly                = 2.912732951134421e+02 * Degree;
     return elements;
   }
+
+  KeplerianElements<ICRFJ2000Equator> SimpleEllipse() const {
+    KeplerianElements<ICRFJ2000Equator> elements;
+    elements.eccentricity = 0.5;
+    elements.asymptotic_true_anomaly = NaN<Angle>();
+    elements.turning_angle = NaN<Angle>();
+    elements.semimajor_axis = 1 * AstronomicalUnit;
+    elements.specific_energy =
+        -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+    elements.characteristic_energy =
+        -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+    elements.period = 2 * π * JulianYear;
+    elements.mean_anomaly = 1 * Radian / JulianYear;
+    elements.hyperbolic_mean_anomaly = NaN<AngularFrequency>();
+    elements.hyperbolic_excess_velocity = NaN<Speed>();
+    elements.semiminor_axis = Sqrt(3) / 2 * AstronomicalUnit;
+    elements.impact_parameter = NaN<Length>();
+    elements.semilatus_rectum = 0.75 * AstronomicalUnit;
+    elements.specific_angular_momentum =
+        Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+    elements.periapsis_distance = 0.5 * AstronomicalUnit;
+    elements.apoapsis_distance = 1.5 * AstronomicalUnit;
+
+    elements.inclination = 1 * Degree;
+    elements.longitude_of_ascending_node = 0.5 * Radian;
+    elements.argument_of_periapsis = 0.5 * Radian;
+    elements.longitude_of_periapsis = 1 * Radian;
+
+    elements.true_anomaly = π / 2;
+    elements.mean_anomaly = (π / 3 - Sqrt(3) / 4) * Radian;
+    elements.hyperbolic_mean_anomaly = NaN<Angle>();
+    return elements;
+  }
+
+  GravitationalParameter const μ_ =
+      1 * Pow<3>(AstronomicalUnit) / Pow<2>(JulianYear);
 };
 
 TEST_F(KeplerOrbitTest, EarthMoon) {
@@ -159,31 +195,6 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
 }
 
 TEST_F(KeplerOrbitTest, CombinatorialExplosion) {
-  GravitationalParameter const μ =
-      1 * Pow<3>(AstronomicalUnit) / Pow<2>(JulianYear);
-  KeplerianElements<ICRFJ2000Equator> simple_ellipse;
-  simple_ellipse.eccentricity = 0.5;
-  simple_ellipse.asymptotic_true_anomaly = NaN<Angle>();
-  simple_ellipse.turning_angle = NaN<Angle>();
-  simple_ellipse.semimajor_axis = 1 * AstronomicalUnit;
-  simple_ellipse.specific_energy =
-      -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
-  simple_ellipse.characteristic_energy =
-      -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
-  simple_ellipse.period = 2 * π * JulianYear;
-  simple_ellipse.mean_anomaly = 1 * Radian / JulianYear;
-  simple_ellipse.hyperbolic_mean_anomaly = NaN<AngularFrequency>();
-  simple_ellipse.hyperbolic_excess_velocity = NaN<Speed>();
-  simple_ellipse.semiminor_axis = Sqrt(3) / 2 * AstronomicalUnit;
-  simple_ellipse.impact_parameter = NaN<Length>();
-  simple_ellipse.semilatus_rectum = 0.75 * AstronomicalUnit;
-  simple_ellipse.specific_angular_momentum =
-      Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
-  simple_ellipse.periapsis_distance = 0.5 * AstronomicalUnit;
-  simple_ellipse.apoapsis_distance = 1.5 * AstronomicalUnit;
-
-  simple_ellipse.inclination = 1 * Radian;
-  simple_ellipse.
 }
 
 }  // namespace internal_kepler_orbit
