@@ -307,38 +307,25 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemiminorAxis) {
   // The inputs must not change.
   EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
   EXPECT_THAT(*elements.semiminor_axis, Eq(*SimpleEllipse().semiminor_axis));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 0));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 1));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 2));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 2));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 3));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 3));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 1));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
-  EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 1));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 2));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/1,
+                                   /*specific_energy_ulps=*/2,
+                                   /*characteristic_energy_ulps=*/2,
+                                   /*mean_motion_ulps=*/3,
+                                   /*period_ulps=*/3,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/1,
+                                   /*apoapsis_distance_ulps=*/2);
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemilatusRectum) {
@@ -357,38 +344,25 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemilatusRectum) {
   EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
   EXPECT_THAT(*elements.semilatus_rectum,
               Eq(*SimpleEllipse().semilatus_rectum));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 0));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 1));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 1));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 0));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
-  EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 0));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriapsisDistance) {
@@ -407,38 +381,25 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriapsisDistance) {
   EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
   EXPECT_THAT(*elements.periapsis_distance,
               Eq(*SimpleEllipse().periapsis_distance));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 0));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 1));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 1));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 0));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
-  EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 0));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndApoapsisDistance) {
@@ -457,38 +418,25 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndApoapsisDistance) {
   EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
   EXPECT_THAT(*elements.apoapsis_distance,
               Eq(*SimpleEllipse().apoapsis_distance));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 0));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 1));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 1));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 0));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
-  EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 0));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemiminorAxis) {
@@ -506,38 +454,25 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemiminorAxis) {
   // The inputs must not change.
   EXPECT_THAT(*elements.semimajor_axis, Eq(*SimpleEllipse().semimajor_axis));
   EXPECT_THAT(*elements.semiminor_axis, Eq(*SimpleEllipse().semiminor_axis));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 2));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 1));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 1));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 1));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
-  EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 2));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 1));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/2,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/2,
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemilatusRectum) {
@@ -556,38 +491,62 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemilatusRectum) {
   EXPECT_THAT(*elements.semimajor_axis, Eq(*SimpleEllipse().semimajor_axis));
   EXPECT_THAT(*elements.semilatus_rectum,
               Eq(*SimpleEllipse().semilatus_rectum));
-  // Test the conic parameters.
-  EXPECT_THAT(*elements.eccentricity,
-              AlmostEquals(*SimpleEllipse().eccentricity, 2));
-  EXPECT_THAT(*elements.asymptotic_true_anomaly,
-              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
-  EXPECT_THAT(*elements.turning_angle,
-              AlmostEquals(*SimpleEllipse().turning_angle, 0));
-  EXPECT_THAT(*elements.semimajor_axis,
-              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
-  EXPECT_THAT(*elements.specific_energy,
-              AlmostEquals(*SimpleEllipse().specific_energy, 1));
-  EXPECT_THAT(*elements.characteristic_energy,
-              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
-  EXPECT_THAT(*elements.mean_motion,
-              AlmostEquals(*SimpleEllipse().mean_motion, 1));
-  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
-  EXPECT_THAT(*elements.hyperbolic_mean_motion,
-              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
-              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
-  EXPECT_THAT(*elements.semiminor_axis,
-              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
-  EXPECT_THAT(*elements.impact_parameter,
-              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
-  EXPECT_THAT(*elements.semilatus_rectum,
-              AlmostEquals(*SimpleEllipse().semilatus_rectum, 0));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
+}
+
+TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semimajor_axis = SimpleEllipse().semimajor_axis;
+  elements.periapsis_distance = SimpleEllipse().periapsis_distance;
+  // Leaving the orientation parameters and anomalies to their default values.
+  // This test does not exercise them.
+  elements.argument_of_periapsis.emplace();
+  elements.mean_anomaly.emplace();
+  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
+                                           MasslessBody{},
+                                           elements,
+                                           J2000).elements_at_epoch();
+  // The inputs must not change.
+  EXPECT_THAT(*elements.semimajor_axis, Eq(*SimpleEllipse().semimajor_axis));
   EXPECT_THAT(*elements.periapsis_distance,
-              AlmostEquals(*SimpleEllipse().periapsis_distance, 0));
-  EXPECT_THAT(*elements.apoapsis_distance,
-              AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
+              Eq(*SimpleEllipse().periapsis_distance));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 
