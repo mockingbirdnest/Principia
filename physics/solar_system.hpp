@@ -56,7 +56,7 @@ class SolarSystem final {
   int index(std::string const& name) const;
 
   // The initial state of the body named |name|.
-  DegreesOfFreedom<Frame> initial_state(std::string const& name) const;
+  DegreesOfFreedom<Frame> degrees_of_freedom(std::string const& name) const;
 
   // The gravitational parameter of the body named |name|.
   GravitationalParameter gravitational_parameter(std::string const& name) const;
@@ -68,6 +68,11 @@ class SolarSystem final {
   // |ephemeris|.
   not_null<MassiveBody const*> massive_body(Ephemeris<Frame> const& ephemeris,
                                             std::string const& name) const;
+
+  // Same as above, but checks that the body is a rotating body.
+  not_null<RotatingBody<Frame> const*> rotating_body(
+      Ephemeris<Frame> const& ephemeris,
+      std::string const& name) const;
 
   // The |ContinuousTrajectory| for the body named |name|, extracted from the
   // given |ephemeris|.

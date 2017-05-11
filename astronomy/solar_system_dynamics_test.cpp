@@ -131,7 +131,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     actual_subsystem_barycentre.Add(
         ephemeris.trajectory(body)->EvaluateDegreesOfFreedom(epoch),
         body->gravitational_parameter());
-    expected_subsystem_barycentre.Add(expected_system.initial_state(name),
+    expected_subsystem_barycentre.Add(expected_system.degrees_of_freedom(name),
                                       body->gravitational_parameter());
     for (int const moon_index : bodies_orbiting_[index]) {
       std::string  moon_name = SolarSystemFactory::name(moon_index);
@@ -140,7 +140,7 @@ class SolarSystemDynamicsTest : public testing::Test {
           ephemeris.trajectory(moon)->EvaluateDegreesOfFreedom(epoch),
           moon->gravitational_parameter());
       expected_subsystem_barycentre.Add(
-          expected_system.initial_state(moon_name),
+          expected_system.degrees_of_freedom(moon_name),
           moon->gravitational_parameter());
     }
 
@@ -150,7 +150,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     auto const actual_parent_dof =
         ephemeris.trajectory(parent)->EvaluateDegreesOfFreedom(epoch);
     auto const expected_parent_dof =
-        expected_system.initial_state(parent_name);
+        expected_system.degrees_of_freedom(parent_name);
 
     // We transform to a frame in which |parent| has the z-axis as its rotation
     // axis by rotating around the normal to Earth's and |parent|'s rotation
@@ -175,7 +175,7 @@ class SolarSystemDynamicsTest : public testing::Test {
         auto const body = system.massive_body(ephemeris, body_name);
         RelativeDegreesOfFreedom<ICRFJ2000Equator> const
             from_solar_system_barycentre =
-                expected_system.initial_state(body_name) -
+                expected_system.degrees_of_freedom(body_name) -
                 DegreesOfFreedom<ICRFJ2000Equator>(ICRFJ2000Equator::origin,
                                                    {});
         solar_system_angular_momentum +=

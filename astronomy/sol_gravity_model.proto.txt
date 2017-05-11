@@ -28,7 +28,7 @@ gravity_model {
     axis_declination        : "63.87 deg"
     reference_angle         : "84.176 deg"
     angular_frequency       : "14.1844000 deg / d"
-    j2                      : "2.1106088532726840e-07"
+    j2                      : 2.1106088532726840e-07
     reference_radius        : "696000.0 km"
   }
 
@@ -42,7 +42,7 @@ gravity_model {
     axis_declination        : "64.495303 deg"
     reference_angle         : "284.95 deg"
     angular_frequency       : "870.5360000 deg / d"
-    j2                      : "14695.62e-6"
+    j2                      : 14695.62e-6
     reference_radius        : "71492 km"
   }
   body {
@@ -54,7 +54,7 @@ gravity_model {
     axis_declination        : "83.537 deg"
     reference_angle         : "38.90 deg"
     angular_frequency       : "810.7939024 deg / d"
-    j2                      : "16290.71e-6"
+    j2                      : 16290.71e-6
     reference_radius        : "60330 km"
   }
   body {
@@ -66,7 +66,7 @@ gravity_model {
     axis_declination        : "43.46 deg"
     reference_angle         : "253.18 deg"
     angular_frequency       : "536.3128492 deg / d"
-    j2                      : "3408.43e-6"
+    j2                      : 3408.43e-6
     reference_radius        : "25225 km"
   }
   body {
@@ -78,7 +78,7 @@ gravity_model {
     axis_declination        : "-15.175 deg"
     reference_angle         : "203.81 deg"
     angular_frequency       : "-501.1600928 deg / d"
-    j2                      : "3510.68e-6"
+    j2                      : 3510.68e-6
     reference_radius        : "25559 km"
   }
 
@@ -94,7 +94,7 @@ gravity_model {
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
-    j2                      : "0.00108262545"
+    j2                      : 0.00108262545
     reference_radius        : "6378.1363 km"
   }
   body {
@@ -108,7 +108,7 @@ gravity_model {
     axis_declination        : "67.16 deg"
     reference_angle         : "160.20 deg"
     angular_frequency       : "-1.4813688 deg / d"
-    j2                      : "4.4044353248204983e-6"
+    j2                      : 4.4044353248204983e-6
     reference_radius        : "6.05100000000000e+06 m"
   }
   body {
@@ -122,7 +122,7 @@ gravity_model {
     axis_declination        : "52.88650 deg"
     reference_angle         : "176.630 deg"
     angular_frequency       : "350.89198226 deg / d"
-    j2                      : "0.0019566091594086663"
+    j2                      : 0.0019566091594086663
     reference_radius        : "0.3396000000000000e+04 km"
   }
   body {
@@ -136,7 +136,7 @@ gravity_model {
     axis_declination        : "61.4143 deg"
     reference_angle         : "329.5469 deg"
     angular_frequency       : "6.1385025 deg / d"
-    j2                      : "4.4044353248204983e-6"
+    j2                      : 4.4044353248204983e-6
     reference_radius        : "2.4400000000000000e+03 km"
   }
 
@@ -194,7 +194,7 @@ gravity_model {
     axis_declination        : "66.5392 deg"
     reference_angle         : "38.3213 deg"
     angular_frequency       : "13.17635815 deg / d"
-    j2                      : "2.0321568464952570e-04"
+    j2                      : 2.0321568464952570e-04
     reference_radius        : "1738.0 km"
   }
   body {
@@ -370,7 +370,7 @@ gravity_model {
     axis_declination        : "42.23190 deg"
     reference_angle         : "284.59521 deg"
     angular_frequency       : "1617.3331279 deg / d"
-    j2                      : "0.071060891954441914"
+    j2                      : 0.071060891954441914
     reference_radius        : "0.2650000000000000e+03 km"
   }
   body {

@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <cctype>
+#include <cmath>
 #include <cstring>
 #include <iomanip>
 #include <string>
@@ -29,6 +30,7 @@
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
+#include "quantities/quantities.hpp"
 #include "serialization/astronomy.pb.h"
 #include "serialization/ksp_plugin.pb.h"
 
@@ -61,6 +63,7 @@ using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using physics::SolarSystem;
 using quantities::Acceleration;
+using quantities::DebugString;
 using quantities::Force;
 using quantities::ParseQuantity;
 using quantities::Pow;
@@ -80,7 +83,7 @@ namespace {
 int const chunk_size = 64 << 10;
 int const number_of_chunks = 8;
 
-base::not_null<std::unique_ptr<RotatingBody<Barycentric>>> MakeRotatingBody(
+serialization::GravityModel::Body MakeGravityModel(
     BodyParameters const& body_parameters) {
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
@@ -126,12 +129,12 @@ base::not_null<std::unique_ptr<RotatingBody<Barycentric>>> MakeRotatingBody(
         body_parameters.angular_frequency);
   }
   if (body_parameters.j2 != nullptr) {
-    gravity_model.set_j2(body_parameters.j2);
+    gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
   if (body_parameters.reference_radius != nullptr) {
     gravity_model.set_reference_radius(body_parameters.reference_radius);
   }
-  return SolarSystem<Barycentric>::MakeRotatingBody(gravity_model);
+  return gravity_model;
 }
 
 }  // namespace
@@ -502,6 +505,7 @@ void principia__InsertCelestialAbsoluteCartesian(
        vx, vy, vz});
   CHECK_NOTNULL(plugin);
   serialization::InitialState::Cartesian::Body initial_state;
+  initial_state.set_name(body_parameters.name);
   initial_state.set_x(x);
   initial_state.set_y(y);
   initial_state.set_z(z);
@@ -512,8 +516,8 @@ void principia__InsertCelestialAbsoluteCartesian(
       celestial_index,
       parent_index == nullptr ? std::experimental::nullopt
                               : std::experimental::make_optional(*parent_index),
-      SolarSystem<Barycentric>::MakeDegreesOfFreedom(initial_state),
-      MakeRotatingBody(body_parameters));
+      MakeGravityModel(body_parameters),
+      initial_state);
   return m.Return();
 }
 
@@ -530,15 +534,36 @@ void principia__InsertCelestialJacobiKeplerian(
        body_parameters,
        keplerian_elements});
   CHECK_NOTNULL(plugin);
+  serialization::InitialState::Keplerian::Body initial_state;
+  initial_state.set_name(body_parameters.name);
+  if (keplerian_elements != nullptr) {
+    serialization::InitialState::Keplerian::Body::Elements* elements =
+        initial_state.mutable_elements();
+    elements->set_eccentricity(keplerian_elements->eccentricity);
+    if (!std::isnan(keplerian_elements->semimajor_axis)) {
+      elements->set_semimajor_axis(
+          DebugString(keplerian_elements->semimajor_axis * Metre));
+    }
+    if (!std::isnan(keplerian_elements->mean_motion)) {
+      // s^-1 rad is inconvenient to parse.
+      elements->set_mean_motion(
+          DebugString(keplerian_elements->mean_motion * Radian) + "/s");
+    }
+    elements->set_inclination(
+        DebugString(keplerian_elements->inclination_in_degrees * Degree));
+    elements->set_longitude_of_ascending_node(DebugString(
+        keplerian_elements->longitude_of_ascending_node_in_degrees * Degree));
+    elements->set_argument_of_periapsis(DebugString(
+        keplerian_elements->argument_of_periapsis_in_degrees * Degree));
+    elements->set_mean_anomaly(
+        DebugString(keplerian_elements->mean_anomaly * Radian));
+  }
   plugin->InsertCelestialJacobiKeplerian(
       celestial_index,
       parent_index == nullptr ? std::experimental::nullopt
                               : std::experimental::make_optional(*parent_index),
-      keplerian_elements == nullptr
-          ? std::experimental::nullopt
-          : std::experimental::make_optional(
-                FromKeplerianElements(*keplerian_elements)),
-      MakeRotatingBody(body_parameters));
+      MakeGravityModel(body_parameters),
+      initial_state);
   return m.Return();
 }
 
@@ -607,12 +632,6 @@ void principia__InsertUnloadedPart(Plugin* const plugin,
       vessel_guid,
       FromQP<RelativeDegreesOfFreedom<AliceSun>>(from_parent));
   return m.Return();
-}
-
-bool principia__IsKspStockSystem(Plugin* const plugin) {
-  journal::Method<journal::IsKspStockSystem> m({plugin});
-  CHECK_NOTNULL(plugin);
-  return m.Return(plugin->IsKspStockSystem());
 }
 
 // Exports |LOG(SEVERITY) << text| for fast logging from the C# adapter.

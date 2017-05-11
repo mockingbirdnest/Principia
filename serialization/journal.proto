@@ -36,7 +36,7 @@ message BodyParameters {
   optional string axis_declination = 4;
   optional string reference_angle = 8;
   optional string angular_frequency = 9;
-  optional string j2 = 5;
+  optional string j2 = 5;  // No parsing in C#.
   optional string reference_radius = 6;
 }
 
@@ -871,20 +871,6 @@ message InsertUnloadedPart {
     required QP from_parent = 4;
   }
   optional In in = 1;
-}
-
-message IsKspStockSystem {
-  extend Method {
-    optional IsKspStockSystem extension = 5096;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-  }
-  message Return {
-    required bool result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
 }
 
 message IteratorAtEnd {

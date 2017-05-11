@@ -146,7 +146,7 @@ class SolarSystemFactoryTest : public testing::Test {
          i <= SolarSystemFactory::LastBody;
          ++i) {
       degrees_of_freedom.emplace_back(
-          solar_system.initial_state(SolarSystemFactory::name(i)));
+          solar_system.degrees_of_freedom(SolarSystemFactory::name(i)));
     }
     return degrees_of_freedom;
   }

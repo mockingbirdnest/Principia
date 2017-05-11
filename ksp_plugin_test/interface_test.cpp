@@ -9,6 +9,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "geometry/named_quantities.hpp"
+#include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -130,6 +131,10 @@ MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
          arg.specific_impulse == specific_impulse &&
          arg.initial_time == initial_time &&
          arg.Δv == Δv;
+}
+
+MATCHER_P(ProtoMatches, expected, "") {
+  return arg.SerializeAsString() == expected.SerializeAsString();
 }
 
 class InterfaceTest : public testing::Test {
@@ -280,25 +285,34 @@ TEST_F(InterfaceTest, DeletePlugin) {
 }
 
 TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
-  EXPECT_CALL(
-      *plugin_,
-      InsertCelestialAbsoluteCartesianConstRef(
-          celestial_index,
-          std::experimental::make_optional(parent_index),
-          DegreesOfFreedom<Barycentric>(
-              Barycentric::origin +
-              Displacement<Barycentric>(
-                  {0 * Metre,
-                   23.456e-7 * Kilo(Metre),
-                   -1 * AstronomicalUnit}),
-              Velocity<Barycentric>(
-                  {1 * AstronomicalUnit / Day,
-                   1 * Kilo(Metre) / Second,
-                   1 * Metre / Second})),
-          Pointee(
-              AllOf(Property(&MassiveBody::is_oblate, false),
-                    Property(&MassiveBody::gravitational_parameter,
-                             1.2345e6 * SIUnit<GravitationalParameter>())))));
+  serialization::GravityModel::Body gravity_model;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "Brian"
+         gravitational_parameter : "1.2345e6  m^3/s^2"
+         reference_instant       : 0.0
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  serialization::InitialState::Cartesian::Body initial_state;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "Brian"
+         x    : "0 m"
+         y    : "23.456e-7 km"
+         z    : "-1 au"
+         vx   : "1 au / d"
+         vy   : "  1 km/s"
+         vz   : "1  m / s")",
+      &initial_state));
+  EXPECT_CALL(*plugin_,
+              InsertCelestialAbsoluteCartesian(
+                  celestial_index,
+                  std::experimental::make_optional(parent_index),
+                  ProtoMatches(gravity_model),
+                  ProtoMatches(initial_state)));
+
   BodyParameters const body_parameters = {
       "Brian",
       "1.2345e6  m^3/s^2",
@@ -323,28 +337,36 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
 }
 
 TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
-  EXPECT_CALL(
-      *plugin_,
-      InsertCelestialAbsoluteCartesianConstRef(
-          celestial_index,
-          std::experimental::make_optional(parent_index),
-          DegreesOfFreedom<Barycentric>(
-              Barycentric::origin +
-              Displacement<Barycentric>(
-                  {0 * Metre,
-                   23.456e-7 * Kilo(Metre),
-                   -1 * AstronomicalUnit}),
-              Velocity<Barycentric>(
-                  {1 * AstronomicalUnit / Day,
-                   1 * Kilo(Metre) / Second,
-                   1 * Metre / Second})),
-          Pointee(
-              AllOf(Property(&MassiveBody::is_oblate, true),
-                    Property(&MassiveBody::gravitational_parameter,
-                             1.2345e6 *
-                                 Pow<3>(Kilo(Metre)) / Pow<2>(Second)),
-                    Property(&MassiveBody::mean_radius,
-                             666 * Kilo(Metre))))));
+  serialization::GravityModel::Body gravity_model;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      u8R"(name                    : "that is called Brian"
+         gravitational_parameter : "1.2345e6  km^3 / s^2"
+         reference_instant       : 999.0
+         mean_radius             : "666 km"
+         axis_right_ascension    : "42 deg"
+         axis_declination        : "8°"
+         reference_angle         : "2 rad"
+         angular_frequency       : "0.3 rad / d"
+         j2                      : 123e-6
+         reference_radius        : "1000 km")",
+      &gravity_model));
+  serialization::InitialState::Cartesian::Body initial_state;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "that is called Brian"
+         x    : "0 m",
+         y    : "23.456e-7 km"
+         z    : "-1 au"
+         vx   : "1 au / d"
+         vy   : "  1 km/s"
+         vz   : "1  m / s")",
+      &initial_state));
+  EXPECT_CALL(*plugin_,
+              InsertCelestialAbsoluteCartesian(
+                  celestial_index,
+                  std::experimental::make_optional(parent_index),
+                  ProtoMatches(gravity_model),
+                  ProtoMatches(initial_state)));
+
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",
                                           999.0,

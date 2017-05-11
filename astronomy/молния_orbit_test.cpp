@@ -91,7 +91,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
       dynamic_cast_not_null<OblateBody<ICRFJ2000Equator> const*>(
           solar_system_2000_.massive_body(*ephemeris_, "Earth"));
   auto const earth_degrees_of_freedom =
-      solar_system_2000_.initial_state("Earth");
+      solar_system_2000_.degrees_of_freedom("Earth");
 
   Time const integration_duration = 1.0 * JulianYear;
   Time const integration_step = 10 * Second;

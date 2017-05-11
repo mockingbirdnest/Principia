@@ -82,11 +82,11 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
                     Position<ICRFJ2000Equator>>(),
                 /*step=*/10 * Milli(Second)))),
         big_(solar_system_.massive_body(*ephemeris_, big)),
-        big_initial_state_(solar_system_.initial_state(big)),
+        big_initial_state_(solar_system_.degrees_of_freedom(big)),
         big_gravitational_parameter_(
             solar_system_.gravitational_parameter(big)),
         small_(solar_system_.massive_body(*ephemeris_, small)),
-        small_initial_state_(solar_system_.initial_state(small)),
+        small_initial_state_(solar_system_.degrees_of_freedom(small)),
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)),
         centre_of_mass_initial_state_(

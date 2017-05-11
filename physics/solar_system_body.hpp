@@ -34,6 +34,7 @@ namespace internal_solar_system {
 using astronomy::J2000;
 using astronomy::JulianDate;
 using base::Contains;
+using base::dynamic_cast_not_null;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::Bivector;
@@ -181,7 +182,7 @@ int SolarSystem<Frame>::index(std::string const& name) const {
 
 
 template<typename Frame>
-DegreesOfFreedom<Frame> SolarSystem<Frame>::initial_state(
+DegreesOfFreedom<Frame> SolarSystem<Frame>::degrees_of_freedom(
     std::string const& name) const {
   return MakeDegreesOfFreedom(*cartesian_initial_state_map_.at(name));
 }
@@ -203,6 +204,15 @@ not_null<MassiveBody const*> SolarSystem<Frame>::massive_body(
     Ephemeris<Frame> const & ephemeris,
     std::string const & name) const {
   return ephemeris.bodies()[index(name)];
+}
+
+template<typename Frame>
+not_null<RotatingBody<Frame> const*> SolarSystem<Frame>::rotating_body(
+    Ephemeris<Frame> const& ephemeris,
+    std::string const& name) const {
+  CHECK(gravity_model_message(name).has_mean_radius());
+  return dynamic_cast_not_null<RotatingBody<Frame> const*>(
+      massive_body(ephemeris, name));
 }
 
 template<typename Frame>
@@ -460,7 +470,7 @@ not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
   return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-      ParseQuantity<double>(body.j2()),
+      body.j2(),
       ParseQuantity<Length>(body.reference_radius()));
 }
 
