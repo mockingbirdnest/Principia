@@ -52,6 +52,24 @@ class Renderer {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Position<World> const& sun_world_position) const;
 
+  // Converts a trajectory from |Barycentric| to |Navigation|.
+  not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+  RenderBarycentricTrajectoryInNavigation(
+      Instant const& time,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
+
+  // Converts a trajectory from |Navigation| to |World|.  |sun_world_position|
+  // is the current position of the sun in |World| space as returned by
+  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
+  // between |WorldSun| and |World|.
+  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  RenderNavigationTrajectoryInWorld(
+      Instant const& time,
+      DiscreteTrajectory<Navigation>::Iterator const& begin,
+      DiscreteTrajectory<Navigation>::Iterator const& end,
+      Position<World> const& sun_world_position) const;
+
   // Computes the apsides of the trajectory defined by |begin| and |end| with
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
@@ -94,24 +112,6 @@ class Renderer {
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
 
  private:
-  // Converts a trajectory from |Barycentric| to |Navigation|.
-  not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-  RenderBarycentricTrajectoryInNavigation(
-      Instant const& time,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
-
-  // Converts a trajectory from |Navigation| to |World|.  |sun_world_position|
-  // is the current position of the sun in |World| space as returned by
-  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderNavigationTrajectoryInWorld(
-      Instant const& time,
-      DiscreteTrajectory<Navigation>::Iterator const& begin,
-      DiscreteTrajectory<Navigation>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
-
   not_null<Celestial const*> const sun_;
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;

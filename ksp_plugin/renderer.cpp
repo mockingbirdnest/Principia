@@ -70,6 +70,71 @@ Renderer::RenderBarycentricTrajectoryInWorld(
   return trajectory_in_world;
 }
 
+not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+Renderer::RenderBarycentricTrajectoryInNavigation(
+    Instant const& time,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+
+  NavigationFrame const& plotting_frame = *GetPlottingFrame();
+
+  if (target_ && !begin.trajectory()->Empty() &&
+      (target_->vessel->prediction().Empty() ||
+       begin.trajectory()->last().time() >
+           target_->vessel->prediction().last().time())) {
+    // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
+    // while retaining a timeout.
+    auto parameters = target_->vessel->prediction_adaptive_step_parameters();
+    parameters.set_max_steps(begin.trajectory()->Size());
+    target_->vessel->set_prediction_adaptive_step_parameters(parameters);
+    target_->vessel->UpdatePrediction(time + prediction_length_);
+  }
+
+  for (auto it = begin; it != end; ++it) {
+    if (target_) {
+      if (it.time() < target_->vessel->prediction().t_min()) {
+        continue;
+      } else if (it.time() > target_->vessel->prediction().t_max()) {
+        break;
+      }
+    }
+    trajectory->Append(
+        it.time(),
+        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
+}
+
+not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+Renderer::RenderNavigationTrajectoryInWorld(
+    Instant const& time,
+    DiscreteTrajectory<Navigation>::Iterator const& begin,
+    DiscreteTrajectory<Navigation>::Iterator const& end,
+    Position<World> const& sun_world_position) const {
+  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
+
+  NavigationFrame const& plotting_frame = *GetPlottingFrame();
+
+  RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
+      /*rigid_transformation=*/
+          BarycentricToWorld(time, sun_world_position) *
+          plotting_frame.FromThisFrameAtTime(time).rigid_transformation(),
+      AngularVelocity<Navigation>{},
+      Velocity<Navigation>{});
+  for (auto it = begin; it != end; ++it) {
+    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
+        it.degrees_of_freedom();
+    DegreesOfFreedom<World> const world_degrees_of_freedom =
+        from_navigation_frame_to_world_at_current_time(
+            navigation_degrees_of_freedom);
+    trajectory->Append(it.time(), world_degrees_of_freedom);
+  }
+  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
+  return trajectory;
+}
+
 void Renderer::ComputeAndRenderApsides(
     Instant const& time,
     Celestial const& celestial,
@@ -175,71 +240,6 @@ Renderer::WorldToBarycentric(Instant const& time,
 
 OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric() const {
   return BarycentricToWorld().Inverse();
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-Renderer::RenderBarycentricTrajectoryInNavigation(
-    Instant const& time,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
-
-  NavigationFrame const& plotting_frame = *GetPlottingFrame();
-
-  if (target_ && !begin.trajectory()->Empty() &&
-      (target_->vessel->prediction().Empty() ||
-       begin.trajectory()->last().time() >
-           target_->vessel->prediction().last().time())) {
-    // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
-    // while retaining a timeout.
-    auto parameters = target_->vessel->prediction_adaptive_step_parameters();
-    parameters.set_max_steps(begin.trajectory()->Size());
-    target_->vessel->set_prediction_adaptive_step_parameters(parameters);
-    target_->vessel->UpdatePrediction(time + prediction_length_);
-  }
-
-  for (auto it = begin; it != end; ++it) {
-    if (target_) {
-      if (it.time() < target_->vessel->prediction().t_min()) {
-        continue;
-      } else if (it.time() > target_->vessel->prediction().t_max()) {
-        break;
-      }
-    }
-    trajectory->Append(
-        it.time(),
-        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
-  }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
-  return trajectory;
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Renderer::RenderNavigationTrajectoryInWorld(
-    Instant const& time,
-    DiscreteTrajectory<Navigation>::Iterator const& begin,
-    DiscreteTrajectory<Navigation>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-
-  NavigationFrame const& plotting_frame = *GetPlottingFrame();
-
-  RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
-      /*rigid_transformation=*/
-          BarycentricToWorld(time, sun_world_position) *
-          plotting_frame.FromThisFrameAtTime(time).rigid_transformation(),
-      AngularVelocity<Navigation>{},
-      Velocity<Navigation>{});
-  for (auto it = begin; it != end; ++it) {
-    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
-        it.degrees_of_freedom();
-    DegreesOfFreedom<World> const world_degrees_of_freedom =
-        from_navigation_frame_to_world_at_current_time(
-            navigation_degrees_of_freedom);
-    trajectory->Append(it.time(), world_degrees_of_freedom);
-  }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
-  return trajectory;
 }
 
 Renderer::Target::Target(
