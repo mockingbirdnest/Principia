@@ -50,7 +50,6 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Celestial const& sun,
       Position<World> const& sun_world_position) const;
 
   // Computes the apsides of the trajectory defined by |begin| and |end| with
@@ -60,7 +59,6 @@ class Renderer {
       Celestial const& celestial,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
       std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
@@ -71,7 +69,6 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
 
@@ -81,7 +78,6 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
@@ -89,13 +85,11 @@ class Renderer {
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
   BarycentricToWorld(Instant const& time,
-                     Celestial const& sun,
                      Position<World> const& sun_world_position) const;
   virtual OrthogonalMap<Barycentric, World> BarycentricToWorld() const;
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
   virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
   WorldToBarycentric(Instant const& time,
-                     Celestial const& sun,
                      Position<World> const& sun_world_position) const;
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
 
@@ -116,10 +110,9 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
-      Celestial const& sun,
       Position<World> const& sun_world_position) const;
 
-  not_null<Celestial const*> const sun_
+  not_null<Celestial const*> const sun_;
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;
 
