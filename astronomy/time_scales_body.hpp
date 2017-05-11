@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <string>
 
 #include "astronomy/date_time.hpp"
 #include "astronomy/epoch.hpp"
