@@ -343,6 +343,56 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemilatusRectum) {
               AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
 }
 
+TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.eccentricity = SimpleEllipse().eccentricity;
+  elements.periapsis_distance = SimpleEllipse().periapsis_distance;
+  // Leaving the orientation parameters and anomalies to their default values.
+  // This test does not exercise them.
+  elements.argument_of_periapsis.emplace();
+  elements.mean_anomaly.emplace();
+  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
+                                           MasslessBody{},
+                                           elements,
+                                           J2000).elements_at_epoch();
+  // The inputs must not change.
+  EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
+  EXPECT_THAT(*elements.periapsis_distance,
+              Eq(*SimpleEllipse().periapsis_distance));
+  // Test the conic parameters.
+  EXPECT_THAT(*elements.eccentricity,
+              AlmostEquals(*SimpleEllipse().eccentricity, 0));
+  EXPECT_THAT(*elements.asymptotic_true_anomaly,
+              AlmostEquals(*SimpleEllipse().asymptotic_true_anomaly, 0));
+  EXPECT_THAT(*elements.turning_angle,
+              AlmostEquals(*SimpleEllipse().turning_angle, 0));
+  EXPECT_THAT(*elements.semimajor_axis,
+              AlmostEquals(*SimpleEllipse().semimajor_axis, 0));
+  EXPECT_THAT(*elements.specific_energy,
+              AlmostEquals(*SimpleEllipse().specific_energy, 1));
+  EXPECT_THAT(*elements.characteristic_energy,
+              AlmostEquals(*SimpleEllipse().characteristic_energy, 1));
+  EXPECT_THAT(*elements.mean_motion,
+              AlmostEquals(*SimpleEllipse().mean_motion, 1));
+  EXPECT_THAT(*elements.period, AlmostEquals(*SimpleEllipse().period, 0));
+  EXPECT_THAT(*elements.hyperbolic_mean_motion,
+              AlmostEquals(*SimpleEllipse().hyperbolic_mean_motion, 0));
+  EXPECT_THAT(*elements.hyperbolic_excess_velocity,
+              AlmostEquals(*SimpleEllipse().hyperbolic_excess_velocity, 0));
+  EXPECT_THAT(*elements.semiminor_axis,
+              AlmostEquals(*SimpleEllipse().semiminor_axis, 0));
+  EXPECT_THAT(*elements.impact_parameter,
+              AlmostEquals(*SimpleEllipse().impact_parameter, 0));
+  EXPECT_THAT(*elements.semilatus_rectum,
+              AlmostEquals(*SimpleEllipse().semilatus_rectum, 0));
+  EXPECT_THAT(*elements.specific_angular_momentum,
+              AlmostEquals(*SimpleEllipse().specific_angular_momentum, 0));
+  EXPECT_THAT(*elements.periapsis_distance,
+              AlmostEquals(*SimpleEllipse().periapsis_distance, 0));
+  EXPECT_THAT(*elements.apoapsis_distance,
+              AlmostEquals(*SimpleEllipse().apoapsis_distance, 0));
+}
+
 }  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia
