@@ -1939,10 +1939,10 @@ public partial class PrincipiaPluginAdapter
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
-      // We create the plugin at time 0, rather than
+      // We create the plugin at J2000 (a.k.a. Instant{}, rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
-      plugin_ = Interface.NewPlugin("0 s", "0 s",
+      plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
