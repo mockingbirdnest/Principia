@@ -20,6 +20,7 @@ namespace internal_renderer {
 
 using base::not_null;
 using geometry::AffineMap;
+using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
 using physics::DiscreteTrajectory;
@@ -28,11 +29,15 @@ using quantities::Length;
 
 class Renderer {
  public:
+  Renderer(not_null<Celestial const*> sun,
+           not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
   virtual void SetTargetVessel(
+      Instant const& time,
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> const ephemeris);
@@ -42,16 +47,20 @@ class Renderer {
   // |begin| and |end|, as seen in the current |plotting_frame_|.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
   RenderBarycentricTrajectoryInWorld(
+      Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Celestial const& sun,
       Position<World> const& sun_world_position) const;
 
   // Computes the apsides of the trajectory defined by |begin| and |end| with
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
+      Instant const& time,
       Celestial const& celestial,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
       std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
@@ -59,33 +68,42 @@ class Renderer {
   // Computes the closest approaches of the trajectory defined by |begin| and
   // |end| with respect to the trajectory of the targetted vessel.
   virtual void ComputeAndRenderClosestApproaches(
+      Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
 
   // Computes the nodes of the trajectory defined by |begin| and |end| with
   // respect to plane of the trajectory of the targetted vessel.
   virtual void ComputeAndRenderNodes(
+      Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Celestial const& sun,
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
 
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
-  BarycentricToWorld(Position<World> const& sun_world_position) const;
+  BarycentricToWorld(Instant const& time,
+                     Celestial const& sun,
+                     Position<World> const& sun_world_position) const;
   virtual OrthogonalMap<Barycentric, World> BarycentricToWorld() const;
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
   virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
-  WorldToBarycentric(Position<World> const& sun_world_position) const;
+  WorldToBarycentric(Instant const& time,
+                     Celestial const& sun,
+                     Position<World> const& sun_world_position) const;
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
 
  private:
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
   RenderBarycentricTrajectoryInNavigation(
+      Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
@@ -95,9 +113,13 @@ class Renderer {
   // between |WorldSun| and |World|.
   not_null<std::unique_ptr<DiscreteTrajectory<World>>>
   RenderNavigationTrajectoryInWorld(
+      Instant const& time,
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
+      Celestial const& sun,
       Position<World> const& sun_world_position) const;
+
+  not_null<Celestial const*> const sun_
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;
 
