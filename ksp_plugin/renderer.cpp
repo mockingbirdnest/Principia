@@ -68,14 +68,16 @@ Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_navigation =
       RenderBarycentricTrajectoryInNavigation(time, begin, end);
   auto trajectory_in_world =
       RenderNavigationTrajectoryInWorld(time,
                                         trajectory_in_navigation->Begin(),
                                         trajectory_in_navigation->End(),
-                                        sun_world_position);
+                                        sun_world_position,
+                                        planetarium_rotation);
   return trajectory_in_world;
 }
 
@@ -121,14 +123,15 @@ Renderer::RenderNavigationTrajectoryInWorld(
     Instant const& time,
     DiscreteTrajectory<Navigation>::Iterator const& begin,
     DiscreteTrajectory<Navigation>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
 
   NavigationFrame const& plotting_frame = *GetPlottingFrame();
 
   RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
       /*rigid_transformation=*/
-          BarycentricToWorld(time, sun_world_position) *
+          BarycentricToWorld(time, sun_world_position, planetarium_rotation) *
           plotting_frame.FromThisFrameAtTime(time).rigid_transformation(),
       AngularVelocity<Navigation>{},
       Velocity<Navigation>{});
@@ -145,33 +148,41 @@ Renderer::RenderNavigationTrajectoryInWorld(
 }
 
 AffineMap<Barycentric, World, Length, OrthogonalMap>
-Renderer::BarycentricToWorld(Instant const& time,
-                             Position<World> const& sun_world_position) const {
+Renderer::BarycentricToWorld(
+    Instant const& time,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return AffineMap<Barycentric, World, Length, OrthogonalMap>(
       sun_->current_position(time),
       sun_world_position,
-      BarycentricToWorld());
+      BarycentricToWorld(planetarium_rotation));
 }
 
-OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld() const {
-  return OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
+OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  return OrthogonalMap<WorldSun, World>::Identity() *
+         BarycentricToWorldSun(planetarium_rotation);
 }
 
-OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun() const {
-  return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
+OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  return sun_looking_glass.Inverse().Forget() * planetarium_rotation.Forget();
 }
 
 AffineMap<World, Barycentric, Length, OrthogonalMap>
-Renderer::WorldToBarycentric(Instant const& time,
-                             Position<World> const& sun_world_position) const {
+Renderer::WorldToBarycentric(
+    Instant const& time,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return AffineMap<World, Barycentric, Length, OrthogonalMap>(
       sun_world_position,
       sun_->current_position(time),
-      WorldToBarycentric());
+      WorldToBarycentric(planetarium_rotation));
 }
 
-OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric() const {
-  return BarycentricToWorld().Inverse();
+OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric(
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  return BarycentricToWorld(planetarium_rotation).Inverse();
 }
 
 Renderer::Target::Target(

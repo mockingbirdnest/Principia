@@ -7,6 +7,7 @@
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
@@ -23,6 +24,7 @@ using geometry::AffineMap;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::Rotation;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using quantities::Length;
@@ -52,7 +54,8 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
@@ -70,18 +73,31 @@ class Renderer {
       Instant const& time,
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   // Coordinate transforms.
+
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
-  BarycentricToWorld(Instant const& time,
-                     Position<World> const& sun_world_position) const;
-  virtual OrthogonalMap<Barycentric, World> BarycentricToWorld() const;
-  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
+  BarycentricToWorld(
+      Instant const& time,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual OrthogonalMap<Barycentric, World> BarycentricToWorld(
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun(
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
   virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
-  WorldToBarycentric(Instant const& time,
-                     Position<World> const& sun_world_position) const;
-  virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
+  WorldToBarycentric(
+      Instant const& time,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual OrthogonalMap<World, Barycentric> WorldToBarycentric(
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
  private:
   not_null<Celestial const*> const sun_;
