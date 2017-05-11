@@ -47,8 +47,6 @@ class Time final {
  public:
   static constexpr Time hhmmss_ms(int hhmmss, int ms);
 
-  constexpr Time(int hour, int minute, int second, int millisecond);
-
   constexpr int hour() const;
   constexpr int minute() const;
   constexpr int second() const;
@@ -58,16 +56,20 @@ class Time final {
   // Whether |*this| is 24:00:00.
   constexpr bool is_end_of_day() const;
 
+ private:
+  constexpr Time(int hour, int minute, int second, int millisecond);
+
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
   // a time in a leap second, or that it represents the end of the day.
   constexpr Time const& checked() const;
 
- private:
   int const hour_;
   int const minute_;
   int const second_;
   int const millisecond_;
+
+  friend class TimeParser
 };
 
 class DateTime final {
