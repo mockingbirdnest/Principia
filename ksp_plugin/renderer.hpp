@@ -42,6 +42,8 @@ class Renderer {
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> const ephemeris);
   virtual void ClearTargetVessel();
+  virtual bool HasTargetVessel() const;
+  virtual Vessel const& GetTargetVessel() const;
 
   // Returns a |Trajectory| object corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current |plotting_frame_|.
@@ -69,36 +71,6 @@ class Renderer {
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
       Position<World> const& sun_world_position) const;
-
-  // Computes the apsides of the trajectory defined by |begin| and |end| with
-  // respect to the celestial with index |celestial_index|.
-  virtual void ComputeAndRenderApsides(
-      Instant const& time,
-      Celestial const& celestial,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position,
-      std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
-      std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const;
-
-  // Computes the closest approaches of the trajectory defined by |begin| and
-  // |end| with respect to the trajectory of the targetted vessel.
-  virtual void ComputeAndRenderClosestApproaches(
-      Instant const& time,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position,
-      std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const;
-
-  // Computes the nodes of the trajectory defined by |begin| and |end| with
-  // respect to plane of the trajectory of the targetted vessel.
-  virtual void ComputeAndRenderNodes(
-      Instant const& time,
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position,
-      std::unique_ptr<DiscreteTrajectory<World>>& ascending,
-      std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
 
   // Coordinate transforms.
   virtual AffineMap<Barycentric, World, Length, OrthogonalMap>

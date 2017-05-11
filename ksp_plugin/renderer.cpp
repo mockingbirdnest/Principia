@@ -54,6 +54,15 @@ void Renderer::ClearTargetVessel() {
   target_ = std::experimental::nullopt;
 }
 
+bool Renderer::HasTargetVessel() const {
+  return (bool)target_;
+}
+
+Vessel const & Renderer::GetTargetVessel() const {
+  CHECK(target_);
+  return *target_->vessel;
+}
+
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
@@ -133,83 +142,6 @@ Renderer::RenderNavigationTrajectoryInWorld(
   }
   VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
   return trajectory;
-}
-
-void Renderer::ComputeAndRenderApsides(
-    Instant const& time,
-    Celestial const& celestial,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position,
-    std::unique_ptr<DiscreteTrajectory<World>>& apoapsides,
-    std::unique_ptr<DiscreteTrajectory<World>>& periapsides) const {
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ComputeApsides(celestial.trajectory(),
-                 begin,
-                 end,
-                 apoapsides_trajectory,
-                 periapsides_trajectory);
-  apoapsides =
-      RenderBarycentricTrajectoryInWorld(time,
-                                         apoapsides_trajectory.Begin(),
-                                         apoapsides_trajectory.End(),
-                                         sun_world_position);
-  periapsides =
-      RenderBarycentricTrajectoryInWorld(time,
-                                         periapsides_trajectory.Begin(),
-                                         periapsides_trajectory.End(),
-                                         sun_world_position);
-}
-
-void Renderer::ComputeAndRenderClosestApproaches(
-    Instant const& time,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position,
-    std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
-  CHECK(target_);
-
-  DiscreteTrajectory<Barycentric> apoapsides_trajectory;
-  DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ComputeApsides(target_->vessel->prediction(),
-                 begin,
-                 end,
-                 apoapsides_trajectory,
-                 periapsides_trajectory);
-  closest_approaches =
-      RenderBarycentricTrajectoryInWorld(time,
-                                         periapsides_trajectory.Begin(),
-                                         periapsides_trajectory.End(),
-                                         sun_world_position);
-}
-
-void Renderer::ComputeAndRenderNodes(
-    Instant const& time,
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position,
-    std::unique_ptr<DiscreteTrajectory<World>>& ascending,
-    std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
-  CHECK(target_);
-  auto const trajectory_in_navigation =
-      RenderBarycentricTrajectoryInNavigation(time, begin, end);
-  DiscreteTrajectory<Navigation> ascending_trajectory;
-  DiscreteTrajectory<Navigation> descending_trajectory;
-  // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_navigation->Begin(),
-               trajectory_in_navigation->End(),
-               Vector<double, Navigation>({0, 0, 1}),
-               ascending_trajectory,
-               descending_trajectory);
-  ascending = RenderNavigationTrajectoryInWorld(time,
-                                                ascending_trajectory.Begin(),
-                                                ascending_trajectory.End(),
-                                                sun_world_position);
-  descending = RenderNavigationTrajectoryInWorld(time,
-                                                 descending_trajectory.Begin(),
-                                                 descending_trajectory.End(),
-                                                 sun_world_position);
 }
 
 AffineMap<Barycentric, World, Length, OrthogonalMap>
