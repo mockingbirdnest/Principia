@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -15,6 +16,8 @@ namespace internal_kepler_orbit {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::JulianDate;
+using quantities::astronomy::JulianYear;
+using quantities::si::AstronomicalUnit;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -153,6 +156,34 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(*MoonElements().mean_anomaly, 6));
   EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().true_anomaly,
               AlmostEquals(*MoonElements().true_anomaly, 1));
+}
+
+TEST_F(KeplerOrbitTest, CombinatorialExplosion) {
+  GravitationalParameter const μ =
+      1 * Pow<3>(AstronomicalUnit) / Pow<2>(JulianYear);
+  KeplerianElements<ICRFJ2000Equator> simple_ellipse;
+  simple_ellipse.eccentricity = 0.5;
+  simple_ellipse.asymptotic_true_anomaly = NaN<Angle>();
+  simple_ellipse.turning_angle = NaN<Angle>();
+  simple_ellipse.semimajor_axis = 1 * AstronomicalUnit;
+  simple_ellipse.specific_energy =
+      -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+  simple_ellipse.characteristic_energy =
+      -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+  simple_ellipse.period = 2 * π * JulianYear;
+  simple_ellipse.mean_anomaly = 1 * Radian / JulianYear;
+  simple_ellipse.hyperbolic_mean_anomaly = NaN<AngularFrequency>();
+  simple_ellipse.hyperbolic_excess_velocity = NaN<Speed>();
+  simple_ellipse.semiminor_axis = Sqrt(3) / 2 * AstronomicalUnit;
+  simple_ellipse.impact_parameter = NaN<Length>();
+  simple_ellipse.semilatus_rectum = 0.75 * AstronomicalUnit;
+  simple_ellipse.specific_angular_momentum =
+      Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+  simple_ellipse.periapsis_distance = 0.5 * AstronomicalUnit;
+  simple_ellipse.apoapsis_distance = 1.5 * AstronomicalUnit;
+
+  simple_ellipse.inclination = 1 * Radian;
+  simple_ellipse.
 }
 
 }  // namespace internal_kepler_orbit
