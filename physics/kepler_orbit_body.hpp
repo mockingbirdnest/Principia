@@ -460,7 +460,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     double const& e = *eccentricity;
     Length const& abs_b = e > 1 ? *impact_parameter : *semiminor_axis;
     semilatus_rectum = abs_b * Sqrt(Abs(1 - Pow<2>(e)));
-    semimajor_axis = *semilatus_rectum / (Pow<2>(e) - 1);
+    semimajor_axis = *semilatus_rectum / (1 - Pow<2>(e));
     periapsis_distance = *semimajor_axis * (1 - e);
     apoapsis_distance = *semimajor_axis * (1 + e);
   } else if (eccentricity && semilatus_rectum) {
@@ -558,8 +558,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     semiminor_axis = Sqrt(p * a);
     impact_parameter = Sqrt(-p * a);
     apoapsis_distance = p * r_pe / (2 * r_pe - p);
-  }
-  if (semilatus_rectum && apoapsis_distance) {
+  } else if (semilatus_rectum && apoapsis_distance) {
     Length const& p = *semilatus_rectum;
     Length const& r_ap = *apoapsis_distance;
     eccentricity = 1 - p / r_ap;
