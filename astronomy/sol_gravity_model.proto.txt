@@ -22,7 +22,7 @@ gravity_model {
     # Interesting analysis of the Sun radius at http://www.icra.it/solar/Sole2.pdf.
     name                    : "Sun"
     gravitational_parameter : "1.3271244004193938e+11 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "696000.0 km"
     axis_right_ascension    : "286.13 deg"
     axis_declination        : "63.87 deg"
@@ -36,7 +36,7 @@ gravity_model {
   body {
     name                    : "Jupiter"
     gravitational_parameter : "1.266865349218008e+08 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "69911 km"
     axis_right_ascension    : "268.056595 deg"
     axis_declination        : "64.495303 deg"
@@ -48,7 +48,7 @@ gravity_model {
   body {
     name                    : "Saturn"
     gravitational_parameter : "3.793120749865224e+07 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "58232 km"
     axis_right_ascension    : "40.589 deg"
     axis_declination        : "83.537 deg"
@@ -60,7 +60,7 @@ gravity_model {
   body {
     name                    : "Neptune"
     gravitational_parameter : "6.835099502439672e+06 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "24622 km"
     axis_right_ascension    : "299.36 deg"
     axis_declination        : "43.46 deg"
@@ -72,7 +72,7 @@ gravity_model {
   body {
     name                    : "Uranus"
     gravitational_parameter : "5.793951322279009e+06 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "25362 km"
     axis_right_ascension    : "257.311 deg"
     axis_declination        : "-15.175 deg"
@@ -88,7 +88,7 @@ gravity_model {
     # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
     name                    : "Earth"
     gravitational_parameter : "3.9860043543609598e+05 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "6371.0084 km"
     axis_right_ascension    : "0.0 deg"
     axis_declination        : "90.0 deg"
@@ -102,7 +102,7 @@ gravity_model {
     # https://github.com/haisamido/GMAT/blob/master/gmat/application/data/gravity/venus/MGNP180U.cof.
     name                    : "Venus"
     gravitational_parameter : "3.2485859200000006e+05 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "6051.8 km"
     axis_right_ascension    : "272.76 deg"
     axis_declination        : "67.16 deg"
@@ -116,7 +116,7 @@ gravity_model {
     # http://pds-geosciences.wustl.edu/mro/mro-m-rss-5-sdp-v1/mrors_1xxx/data/shadr/jgmro_110c_sha.tab.
     name                    : "Mars"
     gravitational_parameter : "4.282837362069909e+04 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "3389.50 km"
     axis_right_ascension    : "317.68143 deg"
     axis_declination        : "52.88650 deg"
@@ -130,7 +130,7 @@ gravity_model {
     # http://pds-geosciences.wustl.edu/messenger/mess-h-rss_mla-5-sdp-v1/messrs_1001/data/shadr/ggmes_50v06_sha.tab.
     name                    : "Mercury"
     gravitational_parameter : "2.2031780000000021e+04 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "2439.7 km"
     axis_right_ascension    : "281.0097 deg"
     axis_declination        : "61.4143 deg"
@@ -144,7 +144,7 @@ gravity_model {
   body {
     name                    : "Ganymede"
     gravitational_parameter : "9.887834453334144e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "2631.2 km"
     axis_right_ascension    : "268.20 deg"
     axis_declination        : "64.57 deg"
@@ -156,7 +156,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Titan"
     gravitational_parameter : "+8.978138376543e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "2574.73 km"
     axis_right_ascension    : "39.4827 deg"
     axis_declination        : "83.4279 deg"
@@ -166,7 +166,7 @@ gravity_model {
   body {
     name                    : "Callisto"
     gravitational_parameter : "7.179289361397270e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "2410.3 km"
     axis_right_ascension    : "268.72 deg"
     axis_declination        : "64.83 deg"
@@ -176,7 +176,7 @@ gravity_model {
   body {
     name                    : "Io"
     gravitational_parameter : "5.959916033410404e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1821.49 km"
     axis_right_ascension    : "268.05 deg"
     axis_declination        : "64.50 deg"
@@ -188,7 +188,7 @@ gravity_model {
     # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
     name                    : "Moon"
     gravitational_parameter : "4.9028000661637961e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1737.4 km"
     axis_right_ascension    : "269.9949 deg"
     axis_declination        : "66.5392 deg"
@@ -200,7 +200,7 @@ gravity_model {
   body {
     name                    : "Europa"
     gravitational_parameter : "3.202738774922892e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1560.8 km"
     axis_right_ascension    : "268.08 deg"
     axis_declination        : "64.51 deg"
@@ -210,7 +210,7 @@ gravity_model {
   body {
     name                    : "Triton"
     gravitational_parameter : "1.427598140725034e+03 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1352.6 km"
     axis_right_ascension    : "299.36 deg"
     axis_declination        : "41.17 deg"
@@ -225,7 +225,7 @@ gravity_model {
     # detection of the rotation of Eris".
     name                    : "Eris"
     gravitational_parameter : "1108 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1163 km"
     axis_right_ascension    : "0 deg"  # Unknown.
     axis_declination        : "0 deg"  # Unknown.
@@ -237,7 +237,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/pds/data/nh-j_p_ss-spice-6-v1.0/nhsp_1000/data/pck/pck00010.tpc
     name                    : "Pluto"
     gravitational_parameter : "8.696138177608748e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "1195 km"
     axis_right_ascension    : "132.993 deg"
     axis_declination        : "-6.163 deg"
@@ -247,7 +247,7 @@ gravity_model {
   body {
     name                    : "Titania"
     gravitational_parameter : "2.269437003741248e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "788.9 km"
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
@@ -257,7 +257,7 @@ gravity_model {
   body {
     name                    : "Oberon"
     gravitational_parameter : "2.053234302535623e+02  km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "761.4 km"
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
@@ -269,7 +269,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Rhea"
     gravitational_parameter : "+1.539424643535e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "763.5 km"
     axis_right_ascension    : "40.38 deg"
     axis_declination        : "83.55 deg"
@@ -281,7 +281,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Iapetus"
     gravitational_parameter : "+1.205120887033e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "734.3 km"
     axis_right_ascension    : "318.16 deg"
     axis_declination        : "75.03 deg"
@@ -291,7 +291,7 @@ gravity_model {
   body {
     name                    : "Charon"
     gravitational_parameter : "1.058799888601881e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "605 km"
     axis_right_ascension    : "132.993 deg"
     axis_declination        : "-6.163 deg"
@@ -301,7 +301,7 @@ gravity_model {
   body {
     name                    : "Umbriel"
     gravitational_parameter : "8.509338094489388e+01 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "584.7 km"
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
@@ -311,7 +311,7 @@ gravity_model {
   body {
     name                    : "Ariel"
     gravitational_parameter : "8.346344431770477e+01 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "578.9 km"
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.10 deg"
@@ -323,7 +323,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Dione"
     gravitational_parameter : "+7.311636648732e+01 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "561.4 km"
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
@@ -335,7 +335,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/DAWN/kernels/pck/dawn_ceres_v05.tpc
     name                    : "Ceres"
     gravitational_parameter : "6.26325000000000e+01 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "476.2 km"
     axis_right_ascension    : "291.418 deg"
     axis_declination        : "66.764 deg"
@@ -347,7 +347,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Tethys"
     gravitational_parameter : "+4.121107782641e+01 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "531.0 km"
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
@@ -364,7 +364,7 @@ gravity_model {
     # For the mean radius we compute the mean of the radii given by the IAU.
     name                    : "Vesta"
     gravitational_parameter : "0.1728824496930000e+02 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "266 km"
     axis_right_ascension    : "309.05870 deg"
     axis_declination        : "42.23190 deg"
@@ -378,7 +378,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Enceladus"
     gravitational_parameter : "+7.211454165826e+00 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "252.1 km"
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
@@ -388,7 +388,7 @@ gravity_model {
   body {
     name                    : "Miranda"
     gravitational_parameter : "4.319516899232100e+00 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "235.8 km"
     axis_right_ascension    : "257.43 deg"
     axis_declination        : "-15.08 deg"
@@ -400,7 +400,7 @@ gravity_model {
     # http://naif.jpl.nasa.gov/pub/naif/CASSINI/kernels/pck/cpck10Jun2015.tpc.
     name                    : "Mimas"
     gravitational_parameter : "+2.503524000000e+00 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "198.2 km"
     axis_right_ascension    : "40.66 deg"
     axis_declination        : "83.52 deg"
@@ -410,7 +410,7 @@ gravity_model {
   body {
     name                    : "Phobos"
     gravitational_parameter : "7.087546066894452e-04 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "11.08 km"
     axis_right_ascension    : "317.68 deg"
     axis_declination        : "52.90 deg"
@@ -420,7 +420,7 @@ gravity_model {
   body {
     name                    : "Deimos"
     gravitational_parameter : "9.615569648120313e-05 km^3/s^2"
-    reference_instant       : 2451545.000000000
+    reference_instant       : "JD2451545.000000000"
     mean_radius             : "6.2 km"
     axis_right_ascension    : "316.65 deg"
     axis_declination        : "53.52 deg"

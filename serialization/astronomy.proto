@@ -10,7 +10,7 @@ message GravityModel {
     // Massive body.
     required string gravitational_parameter = 2;
     // Rotating body.
-    optional double reference_instant = 10;  // Julian date.
+    optional string reference_instant = 12;  // Terrestrial time.
     optional string mean_radius = 7;
     optional string axis_right_ascension = 3;
     optional string axis_declination = 4;
@@ -19,7 +19,7 @@ message GravityModel {
     // Oblate body.
     optional double j2 = 11;
     optional string reference_radius = 6;
-    reserved 5;
+    reserved 5, 10;
   }
   oneof frame {
     Frame.SolarSystemTag solar_system_frame = 1;
@@ -63,12 +63,12 @@ message InitialState {
     Frame.SolarSystemTag solar_system_frame = 1;
     Frame.PluginTag plugin_frame = 6;
   }
-  required double epoch = 2;  // Julian date.
+  required string epoch = 7;  // Terrestrial time.
   oneof coordinates {
     Cartesian cartesian = 4;
     Keplerian keplerian = 5;
   }
-  reserved 3;
+  reserved 2, 3;
   reserved "body";
 }
 
