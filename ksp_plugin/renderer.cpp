@@ -35,12 +35,10 @@ not_null<NavigationFrame const*> Renderer::GetPlottingFrame() const {
 }
 
 void Renderer::SetTargetVessel(
-    Instant const& time,
     not_null<Vessel*> const vessel,
     not_null<Celestial const*> const celestial,
     not_null<Ephemeris<Barycentric> const*> const ephemeris) {
   CHECK(!vessel->prediction().Empty());
-  CHECK_LE(time, vessel->prediction().t_max());
   if (!target_ ||
       target_->vessel != vessel ||
       target_->celestial != celestial) {
@@ -69,7 +67,7 @@ Renderer::RenderBarycentricTrajectoryInWorld(
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const trajectory_in_navigation =
-      RenderBarycentricTrajectoryInNavigation(time, begin, end);
+      RenderBarycentricTrajectoryInNavigation(begin, end);
   auto trajectory_in_world =
       RenderNavigationTrajectoryInWorld(time,
                                         trajectory_in_navigation->Begin(),
@@ -81,7 +79,6 @@ Renderer::RenderBarycentricTrajectoryInWorld(
 
 not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
 Renderer::RenderBarycentricTrajectoryInNavigation(
-    Instant const& time,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   CHECK(!target_ || begin == end ||

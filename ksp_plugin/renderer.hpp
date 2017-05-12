@@ -38,22 +38,31 @@ class Renderer {
   Renderer(not_null<Celestial const*> sun,
            not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
 
+  // Changes the plotting frame of the renderer.
   virtual void SetPlottingFrame(
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
+
+  // Returns the current plotting frame.  This may not be the last set by
+  // |SetPlottingFrame| if it was overridden by a target vessel.
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
-  // The given |time| must be covered by the vessel's prediction.
+  // Overrides the current plotting frame with one that is centred on the given
+  // |vessel|.  When using the operations below with a target vessel, the client
+  // must ensure that the |time| is covered by the vessel's prediction.
   virtual void SetTargetVessel(
-      Instant const& time,
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> const ephemeris);
+
+  // Reverts to the previously active plotting frame.
   virtual void ClearTargetVessel();
+
+  // Determines if there is a target vessel and returns it.
   virtual bool HasTargetVessel() const;
   virtual Vessel const& GetTargetVessel() const;
 
-  // Returns a |Trajectory| object corresponding to the trajectory defined by
-  // |begin| and |end|, as seen in the current |plotting_frame_|.
+  // Returns a trajectory in |World| corresponding to the trajectory defined by
+  // |begin| and |end|, as seen in the current plotting frame.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
   RenderBarycentricTrajectoryInWorld(
       Instant const& time,
@@ -62,12 +71,11 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  // Converts a trajectory from |Barycentric| to the current plotting frame.
-  // If there is a target vessel, its prediction must cover the time defined by
-  // |end|.
+  // Returns a trajectory in the current plotting frame corresponding to the
+  // trajectory defined by |begin| and |end|.  If there is a target vessel, its
+  // prediction must cover the time corresponding to |end|.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
   RenderBarycentricTrajectoryInNavigation(
-      Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
