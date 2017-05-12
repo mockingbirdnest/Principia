@@ -697,6 +697,45 @@ TEST_F(KeplerOrbitTest, ConicFromSemiminorAxisAndApoapsisDistance) {
                                    /*apoapsis_distance_ulps=*/0);
 }
 
+TEST_F(KeplerOrbitTest, ConicFromSemilatusRectumAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semilatus_rectum = SimpleEllipse().semilatus_rectum;
+  elements.periapsis_distance = SimpleEllipse().periapsis_distance;
+  // Leaving the orientation parameters and anomalies to their default values.
+  // This test does not exercise them.
+  elements.argument_of_periapsis.emplace();
+  elements.mean_anomaly.emplace();
+  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
+                                           MasslessBody{},
+                                           elements,
+                                           J2000).elements_at_epoch();
+  // The inputs must not change.
+  EXPECT_THAT(*elements.semilatus_rectum,
+              Eq(*SimpleEllipse().semilatus_rectum));
+  EXPECT_THAT(*elements.periapsis_distance,
+              Eq(*SimpleEllipse().periapsis_distance));
+
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
+}
+
+
 }  // namespace internal_kepler_orbit
 }  // namespace physics
 }  // namespace principia
