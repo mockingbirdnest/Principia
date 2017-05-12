@@ -12,7 +12,9 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -27,6 +29,8 @@ using geometry::Position;
 using geometry::Rotation;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
+using physics::Frenet;
+using physics::RigidMotion;
 using quantities::Length;
 
 class Renderer {
@@ -38,6 +42,7 @@ class Renderer {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
+  // The given |time| must be covered by the vessel's prediction.
   virtual void SetTargetVessel(
       Instant const& time,
       not_null<Vessel*> vessel,
@@ -57,8 +62,10 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  // Converts a trajectory from |Barycentric| to |Navigation|.
-  not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
+  // Converts a trajectory from |Barycentric| to the current plotting frame.
+  // If there is a target vessel, its prediction must cover the time defined by
+  // |end|.
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
   RenderBarycentricTrajectoryInNavigation(
       Instant const& time,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
@@ -68,7 +75,7 @@ class Renderer {
   // is the current position of the sun in |World| space as returned by
   // |Planetarium.fetch.Sun.position|.  It is used to define the relation
   // between |WorldSun| and |World|.
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
+  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
   RenderNavigationTrajectoryInWorld(
       Instant const& time,
       DiscreteTrajectory<Navigation>::Iterator const& begin,
@@ -78,8 +85,10 @@ class Renderer {
 
   // Coordinate transforms.
 
-  virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
-  BarycentricToWorld(
+  virtual RigidMotion<Barycentric, Navigation> BarycentricToNavigation(
+      Instant const& time) const;
+
+  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -90,8 +99,25 @@ class Renderer {
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
-  WorldToBarycentric(
+  // Converts from the Frenet frame of the vessel's free-falling trajectory in
+  // the plotted frame to the |World| coordinates.
+  virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
+      Vessel const& vessel,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual OrthogonalMap<Navigation, Barycentric> NavigationToBarycentric(
+      Instant const& time) const;
+
+  virtual RigidMotion<Navigation, World> NavigationToWorld(
+      Instant const& time,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual OrthogonalMap<Navigation, World> NavigationToWorld(
+      Instant const& time,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  virtual RigidMotion<World, Barycentric> WorldToBarycentric(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;

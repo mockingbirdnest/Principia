@@ -97,10 +97,6 @@ Length const fitting_tolerance = 1 * Milli(Metre);
 std::uint64_t const ksp_stock_system_fingerprint = 0x54B6323B3376D6F3u;
 std::uint64_t const ksp_stabilized_system_fingerprint = 0xB57B58F9CF757C62u;
 
-// The map between the vector spaces of |WorldSun| and |AliceSun|.
-Permutation<WorldSun, AliceSun> const sun_looking_glass(
-    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
-
 }  // namespace
 
 Plugin::Plugin(std::string const& game_epoch,
@@ -993,9 +989,9 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
       GetPlottingFrame()->ToThisFrameAtTime(time)(
           barycentric_degrees_of_freedom);
-  return Identity<WorldSun, World>()(BarycentricToWorldSun()(
+  return BarycentricToWorld()(
       GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
-          plotting_frame_degrees_of_freedom.velocity())));
+          plotting_frame_degrees_of_freedom.velocity()));
 }
 
 AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
@@ -1270,10 +1266,9 @@ Vector<double, World> Plugin::FromVesselFrenetFrame(
   // The given |vector| in the Frenet frame of the vessel's free-falling
   // trajectory in the given |navigation_frame|, converted to |WorldSun|
   // coordinates.
-  return Identity<WorldSun, World>()(
-      BarycentricToWorldSun()(
-          GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
-              from_frenet_frame_to_navigation_frame(vector))));
+  return BarycentricToWorld()(
+      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
+          from_frenet_frame_to_navigation_frame(vector)));
 }
 
 template<typename T>
