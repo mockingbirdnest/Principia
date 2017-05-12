@@ -281,7 +281,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemimajorAxis) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, semimajor_axis, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -306,7 +305,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemiminorAxis) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, semiminor_axis, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -331,7 +329,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSemilatusRectum) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, semilatus_rectum, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -356,7 +353,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, periapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -381,7 +377,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, apoapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -406,7 +401,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemiminorAxis) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semimajor_axis, semiminor_axis, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -431,7 +425,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndSemilatusRectum) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semimajor_axis, semilatus_rectum, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -456,7 +449,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndPeriapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semimajor_axis, periapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -481,7 +473,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemimajorAxisAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semimajor_axis, apoapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -506,7 +497,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemiminorAxisAndSemilatusRectum) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semiminor_axis, semilatus_rectum, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -531,7 +521,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemiminorAxisAndPeriapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semiminor_axis, periapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -556,7 +545,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemiminorAxisAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semiminor_axis, apoapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/1,
@@ -581,7 +569,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemilatusRectumAndPeriapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semilatus_rectum, periapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -606,7 +593,6 @@ TEST_F(KeplerOrbitTest, ConicFromSemilatusRectumAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           semilatus_rectum, apoapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -631,7 +617,6 @@ TEST_F(KeplerOrbitTest, ConicFromPeriapsisDistanceAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           periapsis_distance, apoapsis_distance, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -659,7 +644,6 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSpecificEnergy) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
           eccentricity, specific_energy, SimpleEllipse());
-
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -681,22 +665,9 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSpecificEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndCharacteristicEnergy) {
-  KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity = SimpleEllipse().eccentricity;
-  elements.characteristic_energy = SimpleEllipse().characteristic_energy;
-  // Leaving the orientation parameters and anomalies to their default values.
-  // This test does not exercise them.
-  elements.argument_of_periapsis.emplace();
-  elements.mean_anomaly.emplace();
-  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
-                                           MasslessBody{},
-                                           elements,
-                                           J2000).elements_at_epoch();
- // The inputs must not change.
-  EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
-  EXPECT_THAT(*elements.characteristic_energy,
-              Eq(*SimpleEllipse().characteristic_energy));
-
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, characteristic_energy, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -718,21 +689,9 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndCharacteristicEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndMeanMotion) {
-  KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity = SimpleEllipse().eccentricity;
-  elements.mean_motion = SimpleEllipse().mean_motion;
-  // Leaving the orientation parameters and anomalies to their default values.
-  // This test does not exercise them.
-  elements.argument_of_periapsis.emplace();
-  elements.mean_anomaly.emplace();
-  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
-                                           MasslessBody{},
-                                           elements,
-                                           J2000).elements_at_epoch();
- // The inputs must not change.
-  EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
-  EXPECT_THAT(*elements.mean_motion, Eq(*SimpleEllipse().mean_motion));
-
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, mean_motion, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -754,21 +713,8 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndMeanMotion) {
 }
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriod) {
-  KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity = SimpleEllipse().eccentricity;
-  elements.period = SimpleEllipse().period;
-  // Leaving the orientation parameters and anomalies to their default values.
-  // This test does not exercise them.
-  elements.argument_of_periapsis.emplace();
-  elements.mean_anomaly.emplace();
-  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
-                                           MasslessBody{},
-                                           elements,
-                                           J2000).elements_at_epoch();
- // The inputs must not change.
-  EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
-  EXPECT_THAT(*elements.period, Eq(*SimpleEllipse().period));
-
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(eccentricity, period, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -793,23 +739,9 @@ TEST_F(KeplerOrbitTest, ConicFromEccentricityAndPeriod) {
 // itself is already tested above).
 
 TEST_F(KeplerOrbitTest, ConicFromEccentricityAndSpecificAngularMomentum) {
-  KeplerianElements<ICRFJ2000Equator> elements;
-  elements.eccentricity = SimpleEllipse().eccentricity;
-  elements.specific_angular_momentum =
-      SimpleEllipse().specific_angular_momentum;
-  // Leaving the orientation parameters and anomalies to their default values.
-  // This test does not exercise them.
-  elements.argument_of_periapsis.emplace();
-  elements.mean_anomaly.emplace();
-  elements = KeplerOrbit<ICRFJ2000Equator>(body_,
-                                           MasslessBody{},
-                                           elements,
-                                           J2000).elements_at_epoch();
- // The inputs must not change.
-  EXPECT_THAT(*elements.eccentricity, Eq(*SimpleEllipse().eccentricity));
-  EXPECT_THAT(*elements.specific_angular_momentum,
-              Eq(*SimpleEllipse().specific_angular_momentum));
-
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, specific_angular_momentum, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
