@@ -328,7 +328,7 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
     if (eccentricity) {
       double const& e = *eccentricity;
       turning_angle = 2 * ArcSin(1 / e);
-      asymptotic_true_anomaly = ArcCos(1 / e);
+      asymptotic_true_anomaly = ArcCos(-1 / e);
     } else if (turning_angle) {
       Angle const& δ = *turning_angle;
       eccentricity = 1 / Sin(δ / 2);
@@ -468,7 +468,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     Length const& p = *semilatus_rectum;
     semimajor_axis = p / (1 - Pow<2>(e));
     semiminor_axis = *semimajor_axis * Sqrt(1 - Pow<2>(e));
-    impact_parameter = *semimajor_axis * Sqrt(Pow<2>(e) - 1);
+    impact_parameter = -*semimajor_axis * Sqrt(Pow<2>(e) - 1);
     periapsis_distance = p / (1 + e);
     apoapsis_distance = p / (1 - e);
   } else if (eccentricity && periapsis_distance) {
@@ -476,7 +476,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     Length const& r_pe = *periapsis_distance;
     semimajor_axis = r_pe / (1 - e);
     semiminor_axis = *semimajor_axis * Sqrt(1 - Pow<2>(e));
-    impact_parameter = *semimajor_axis * Sqrt(Pow<2>(e) - 1);
+    impact_parameter = -*semimajor_axis * Sqrt(Pow<2>(e) - 1);
     semilatus_rectum = r_pe * (1 + e);
     apoapsis_distance = *semimajor_axis * (1 + e);
   } else if (eccentricity && apoapsis_distance) {
@@ -484,7 +484,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     Length const& r_ap = *apoapsis_distance;
     semimajor_axis = r_ap / (1 + e);
     semiminor_axis = *semimajor_axis * Sqrt(1 - Pow<2>(e));
-    impact_parameter = *semimajor_axis * Sqrt(Pow<2>(e) - 1);
+    impact_parameter = -*semimajor_axis * Sqrt(Pow<2>(e) - 1);
     semilatus_rectum = r_ap * (1 - e);
     periapsis_distance = *semimajor_axis * (1 - e);
   } else if (semimajor_axis && semiminor_axis) {

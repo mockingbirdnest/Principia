@@ -826,10 +826,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemimajorAxis) {
                                    /*apoapsis_distance_ulps=*/0);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemiminorAxis) {
+TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndImpactParameter) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semiminor_axis, SimpleHyperbola());
+          eccentricity, impact_parameter, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -922,10 +922,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndApoapsisDistance) {
                                    /*apoapsis_distance_ulps=*/0);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndSemiminorAxis) {
+TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndImpactParameter) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, semiminor_axis, SimpleHyperbola());
+          semimajor_axis, impact_parameter, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/2,
@@ -1018,10 +1018,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndApoapsisDistance) {
                                    /*apoapsis_distance_ulps=*/0);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromSemiminorAxisAndSemilatusRectum) {
+TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndSemilatusRectum) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, semilatus_rectum, SimpleHyperbola());
+          impact_parameter, semilatus_rectum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/2,
@@ -1042,10 +1042,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemiminorAxisAndSemilatusRectum) {
                                    /*apoapsis_distance_ulps=*/2);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromSemiminorAxisAndPeriapsisDistance) {
+TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, periapsis_distance, SimpleHyperbola());
+          impact_parameter, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/2,
@@ -1066,10 +1066,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemiminorAxisAndPeriapsisDistance) {
                                    /*apoapsis_distance_ulps=*/1);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromSemiminorAxisAndApoapsisDistance) {
+TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndApoapsisDistance) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, apoapsis_distance, SimpleHyperbola());
+          impact_parameter, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/1,
