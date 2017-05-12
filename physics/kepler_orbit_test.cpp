@@ -1162,6 +1162,58 @@ TEST_F(KeplerOrbitTest, HyperbolaFromPeriapsisDistanceAndApoapsisDistance) {
                                    /*apoapsis_distance_ulps=*/0);
 }
 
+// Test all alternative eccentricity specifications (the eccentricity itself is
+// already tested above).
+
+TEST_F(KeplerOrbitTest,
+       HyperbolaFromAsymptoticTrueAnomalyAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          asymptotic_true_anomaly, periapsis_distance, SimpleHyperbola());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleHyperbola(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/1,
+                                   /*specific_energy_ulps=*/0,
+                                   /*characteristic_energy_ulps=*/0,
+                                   /*mean_motion_ulps=*/0,
+                                   /*period_ulps=*/1,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/2,
+                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*periapsis_distance_ulps=*/1,
+                                   /*apoapsis_distance_ulps=*/2);
+}
+
+TEST_F(KeplerOrbitTest, HyperbolaFromTurningAngleAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          turning_angle, periapsis_distance, SimpleHyperbola());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/SimpleHyperbola(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/1,
+                                   /*specific_energy_ulps=*/0,
+                                   /*characteristic_energy_ulps=*/0,
+                                   /*mean_motion_ulps=*/0,
+                                   /*period_ulps=*/1,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/2,
+                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*periapsis_distance_ulps=*/1,
+                                   /*apoapsis_distance_ulps=*/2);
+}
+
 // Test all alternative semimajor axis specifications (the semimajor axis itself
 // is already tested above).
 
@@ -1213,10 +1265,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndCharacteristicEnergy) {
                                    /*apoapsis_distance_ulps=*/2);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndMeanMotion) {
+TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
   KeplerianElements<ICRFJ2000Equator> const elements =
       CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, mean_motion, SimpleHyperbola());
+          eccentricity, hyperbolic_mean_motion, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1237,9 +1289,10 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndMeanMotion) {
                                    /*apoapsis_distance_ulps=*/2);
 }
 
-TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndPeriod) {
+TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
   KeplerianElements<ICRFJ2000Equator> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(eccentricity, period, SimpleHyperbola());
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, hyperbolic_excess_velocity, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,

@@ -332,11 +332,11 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
     } else if (turning_angle) {
       Angle const& δ = *turning_angle;
       eccentricity = 1 / Sin(δ / 2);
-      asymptotic_true_anomaly = δ / 2 + π * Radian;
+      asymptotic_true_anomaly = (δ + π * Radian) / 2;
     } else if (asymptotic_true_anomaly) {
       Angle const& ν_inf = *asymptotic_true_anomaly;
       eccentricity = -1 / Cos(ν_inf);
-      turning_angle = 2 * (ν_inf - π * Radian);
+      turning_angle = 2 * ν_inf - π * Radian;
     }
   }
   // TODO(egg): range checks.  What do we do with normalizable oddities
