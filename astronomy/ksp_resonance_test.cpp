@@ -279,9 +279,13 @@ TEST_F(KSPResonanceTest, Stock) {
   auto const periods_at_mid_term =
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
-  EXPECT_THAT(periods_at_mid_term.at(laythe_), Eq(Infinity<Time>()));
+  EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
+                            expected_periods_.at(laythe_)),
+              Lt(0));
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
-  EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>()));
+  EXPECT_THAT(
+      RelativeError(periods_at_mid_term.at(tylo_), expected_periods_.at(tylo_)),
+      Lt(0));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
                             expected_periods_.at(bop_)), Lt(303.8e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
