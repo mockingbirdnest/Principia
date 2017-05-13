@@ -836,18 +836,18 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndImpactParameter) {
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
                                    /*semimajor_axis_ulps=*/1,
-                                   /*specific_energy_ulps=*/2,
-                                   /*characteristic_energy_ulps=*/2,
+                                   /*specific_energy_ulps=*/0,
+                                   /*characteristic_energy_ulps=*/0,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/1,
                                    /*specific_angular_momentum_ulps=*/0,
                                    /*periapsis_distance_ulps=*/1,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemilatusRectum) {
@@ -864,12 +864,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemilatusRectum) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -888,12 +888,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndPeriapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -912,12 +912,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndApoapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -928,7 +928,7 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndImpactParameter) {
           semimajor_axis, impact_parameter, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
-                                   /*eccentrity_ulps=*/2,
+                                   /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
                                    /*semimajor_axis_ulps=*/0,
@@ -936,14 +936,14 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndImpactParameter) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/1,
                                    /*specific_angular_momentum_ulps=*/0,
-                                   /*periapsis_distance_ulps=*/2,
-                                   /*apoapsis_distance_ulps=*/1);
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndSemilatusRectum) {
@@ -960,12 +960,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndSemilatusRectum) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -984,12 +984,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndPeriapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -1008,12 +1008,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndApoapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -1024,22 +1024,22 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndSemilatusRectum) {
           impact_parameter, semilatus_rectum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
-                                   /*eccentrity_ulps=*/2,
+                                   /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
-                                   /*semimajor_axis_ulps=*/1,
-                                   /*specific_energy_ulps=*/2,
-                                   /*characteristic_energy_ulps=*/2,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
@@ -1048,7 +1048,7 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
           impact_parameter, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
-                                   /*eccentrity_ulps=*/2,
+                                   /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
                                    /*semimajor_axis_ulps=*/0,
@@ -1056,12 +1056,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/1);
 }
@@ -1072,7 +1072,7 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndApoapsisDistance) {
           impact_parameter, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
-                                   /*eccentrity_ulps=*/1,
+                                   /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
                                    /*semimajor_axis_ulps=*/0,
@@ -1080,13 +1080,13 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndApoapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/1,
                                    /*specific_angular_momentum_ulps=*/0,
-                                   /*periapsis_distance_ulps=*/1,
+                                   /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
 
@@ -1104,12 +1104,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndPeriapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -1128,12 +1128,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndApoapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -1152,12 +1152,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromPeriapsisDistanceAndApoapsisDistance) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
@@ -1172,21 +1172,21 @@ TEST_F(KeplerOrbitTest,
           asymptotic_true_anomaly, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
-                                   /*eccentrity_ulps=*/0,
+                                   /*eccentrity_ulps=*/1,
                                    /*asymptotic_true_anomaly_ulps=*/0,
-                                   /*turning_angle_ulps=*/0,
-                                   /*semimajor_axis_ulps=*/1,
-                                   /*specific_energy_ulps=*/0,
-                                   /*characteristic_energy_ulps=*/0,
+                                   /*turning_angle_ulps=*/2,
+                                   /*semimajor_axis_ulps=*/2,
+                                   /*specific_energy_ulps=*/2,
+                                   /*characteristic_energy_ulps=*/2,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/2,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/2,
+                                   /*impact_parameter_ulps=*/1,
+                                   /*semilatus_rectum_ulps=*/0,
                                    /*specific_angular_momentum_ulps=*/1,
-                                   /*periapsis_distance_ulps=*/1,
+                                   /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/2);
 }
 
@@ -1199,19 +1199,19 @@ TEST_F(KeplerOrbitTest, HyperbolaFromTurningAngleAndPeriapsisDistance) {
                                    /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
-                                   /*semimajor_axis_ulps=*/1,
-                                   /*specific_energy_ulps=*/0,
-                                   /*characteristic_energy_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/2,
+                                   /*semilatus_rectum_ulps=*/0,
                                    /*specific_angular_momentum_ulps=*/1,
-                                   /*periapsis_distance_ulps=*/1,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 // Test all alternative semimajor axis specifications (the semimajor axis itself
@@ -1234,11 +1234,11 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificEnergy) {
                                    /*hyperbolic_mean_motion_ulps=*/0,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/2,
-                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*impact_parameter_ulps=*/1,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/0,
                                    /*periapsis_distance_ulps=*/1,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndCharacteristicEnergy) {
@@ -1258,11 +1258,11 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndCharacteristicEnergy) {
                                    /*hyperbolic_mean_motion_ulps=*/0,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/2,
-                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*impact_parameter_ulps=*/1,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/0,
                                    /*periapsis_distance_ulps=*/1,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
@@ -1280,13 +1280,13 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
                                    /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/2,
-                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*impact_parameter_ulps=*/1,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/0,
                                    /*periapsis_distance_ulps=*/1,
-                                   /*apoapsis_distance_ulps=*/2);
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
@@ -1298,19 +1298,19 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
                                    /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
-                                   /*semimajor_axis_ulps=*/0,
-                                   /*specific_energy_ulps=*/0,
-                                   /*characteristic_energy_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/2,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/0,
+                                   /*impact_parameter_ulps=*/2,
+                                   /*semilatus_rectum_ulps=*/2,
                                    /*specific_angular_momentum_ulps=*/0,
-                                   /*periapsis_distance_ulps=*/0,
-                                   /*apoapsis_distance_ulps=*/0);
+                                   /*periapsis_distance_ulps=*/2,
+                                   /*apoapsis_distance_ulps=*/2);
 }
 
 // Test all alternative semilatus rectum specifications (the semilatus rectum
@@ -1325,19 +1325,19 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificAngularMomentum) {
                                    /*eccentrity_ulps=*/0,
                                    /*asymptotic_true_anomaly_ulps=*/0,
                                    /*turning_angle_ulps=*/0,
-                                   /*semimajor_axis_ulps=*/0,
-                                   /*specific_energy_ulps=*/1,
-                                   /*characteristic_energy_ulps=*/1,
+                                   /*semimajor_axis_ulps=*/1,
+                                   /*specific_energy_ulps=*/0,
+                                   /*characteristic_energy_ulps=*/0,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
                                    /*hyperbolic_excess_velocity_ulps=*/0,
                                    /*semiminor_axis_ulps=*/0,
-                                   /*impact_parameter_ulps=*/0,
-                                   /*semilatus_rectum_ulps=*/0,
+                                   /*impact_parameter_ulps=*/1,
+                                   /*semilatus_rectum_ulps=*/1,
                                    /*specific_angular_momentum_ulps=*/0,
-                                   /*periapsis_distance_ulps=*/0,
-                                   /*apoapsis_distance_ulps=*/0);
+                                   /*periapsis_distance_ulps=*/1,
+                                   /*apoapsis_distance_ulps=*/1);
 }
 
 }  // namespace internal_kepler_orbit

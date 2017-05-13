@@ -90,8 +90,12 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
 }
 
 TEST_F(HierarchicalSystemTest, FromMeanMotions) {
-  // e, i, Ω, ω, and mean anomaly are 0.
+  // i, and Ω are 0 by default.
   KeplerianElements<Frame> elements;
+  elements.eccentricity = 0;
+  elements.argument_of_periapsis = 0 * Radian;
+  elements.mean_anomaly = 0 * Radian;
+
 
   // Invariant: |body_indices[bodies[i]] == i| for all |i|.
   std::map<not_null<MassiveBody const*>, int> body_indices;
