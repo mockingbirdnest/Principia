@@ -353,7 +353,7 @@ TEST_F(BodySurfaceDynamicFrameTest, Serialization) {
 
   auto const read_big_frame =
       DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
-          ephemeris_.get(), message);
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
