@@ -816,12 +816,12 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemimajorAxis) {
                                    /*characteristic_energy_ulps=*/1,
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
-                                   /*hyperbolic_mean_motion_ulps=*/0,
-                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/1,
+                                   /*hyperbolic_excess_velocity_ulps=*/1,
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/0,
                                    /*semilatus_rectum_ulps=*/0,
-                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/1,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
 }
