@@ -233,11 +233,11 @@ void Plugin::EndInitialization() {
   // the sun's index at hand.
   // TODO(egg): maybe these functions should take |Celestial*|s, and we should
   // then export |FindOrDie(celestials_, _)|.
-  SetPlottingFrame(
+  renderer_ = std::make_unique<Renderer>(
+      sun_,
       make_not_null_unique<
           BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-              ephemeris_.get(),
-              sun_->body()));
+          ephemeris_.get(), sun_->body()));
 
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
@@ -420,7 +420,7 @@ void Plugin::InsertOrKeepLoadedPart(
             main_body_degrees_of_freedom.position(),
             MainBodyCentred::origin,
             main_body_frame.ToThisFrameAtTime(current_time_).orthogonal_map() *
-                WorldToBarycentric()},
+                renderer_->WorldToBarycentric(PlanetariumRotation())},
         AngularVelocity<World>(),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric =
@@ -443,7 +443,8 @@ void Plugin::IncrementPartIntrinsicForce(PartId const part_id,
   CHECK(!initializing_);
   not_null<Vessel*> const vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
-  vessel->part(part_id)->increment_intrinsic_force(WorldToBarycentric()(force));
+  vessel->part(part_id)->increment_intrinsic_force(
+      renderer_->WorldToBarycentric(PlanetariumRotation())(force));
 }
 
 void Plugin::PrepareToReportCollisions() {
@@ -474,9 +475,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     } else {
       CHECK(!is_loaded(vessel));
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
-      if (target_ && target_->vessel == vessel) {
-        target_ = std::experimental::nullopt;
-      }
+      renderer_->ClearTargetVesselIf(vessel);
       it = vessels_.erase(it);
     }
   }
@@ -521,7 +520,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
           World::origin,
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
-              WorldToBarycentric()},
+              renderer_->WorldToBarycentric(PlanetariumRotation())},
       AngularVelocity<World>{},
       Velocity<World>{}};
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
@@ -554,7 +553,9 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
                                 degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
-          world_origin.position(), World::origin, BarycentricToWorld()},
+          world_origin.position(),
+          World::origin,
+          renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
   return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)->
@@ -570,7 +571,8 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
                                 degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
-          world_origin.position(), World::origin, BarycentricToWorld()},
+          world_origin.position(), World::origin, 
+            renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
   return barycentric_to_world(
@@ -677,20 +679,6 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
       prediction_parameters_);
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderBarycentricTrajectoryInWorld(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
-  auto const trajectory_in_navigation =
-      RenderBarycentricTrajectoryInNavigation(begin, end);
-  auto trajectory_in_world =
-      RenderNavigationTrajectoryInWorld(trajectory_in_navigation->Begin(),
-                                        trajectory_in_navigation->End(),
-                                        sun_world_position);
-  return trajectory_in_world;
-}
-
 void Plugin::ComputeAndRenderApsides(
     Index const celestial_index,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
@@ -705,14 +693,18 @@ void Plugin::ComputeAndRenderApsides(
                  end,
                  apoapsides_trajectory,
                  periapsides_trajectory);
-  apoapsides =
-      RenderBarycentricTrajectoryInWorld(apoapsides_trajectory.Begin(),
-                                         apoapsides_trajectory.End(),
-                                         sun_world_position);
-  periapsides =
-      RenderBarycentricTrajectoryInWorld(periapsides_trajectory.Begin(),
-                                         periapsides_trajectory.End(),
-                                         sun_world_position);
+  apoapsides = renderer_->RenderBarycentricTrajectoryInWorld(
+                   current_time_,
+                   apoapsides_trajectory.Begin(),
+                   apoapsides_trajectory.End(),
+                   sun_world_position,
+                   PlanetariumRotation());
+  periapsides = renderer_->RenderBarycentricTrajectoryInWorld(
+                    current_time_,
+                    periapsides_trajectory.Begin(),
+                    periapsides_trajectory.End(),
+                    sun_world_position,
+                    PlanetariumRotation());
 }
 
 void Plugin::ComputeAndRenderClosestApproaches(
@@ -720,19 +712,22 @@ void Plugin::ComputeAndRenderClosestApproaches(
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
-  CHECK(target_);
+  CHECK(renderer_->HasTargetVessel());
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ComputeApsides(target_->vessel->prediction(),
+  ComputeApsides(renderer_->GetTargetVessel().prediction(),
                  begin,
                  end,
                  apoapsides_trajectory,
                  periapsides_trajectory);
   closest_approaches =
-      RenderBarycentricTrajectoryInWorld(periapsides_trajectory.Begin(),
-                                         periapsides_trajectory.End(),
-                                         sun_world_position);
+      renderer_->RenderBarycentricTrajectoryInWorld(
+          current_time_,
+          periapsides_trajectory.Begin(),
+          periapsides_trajectory.End(),
+          sun_world_position,
+          PlanetariumRotation());
 }
 
 void Plugin::ComputeAndRenderNodes(
@@ -741,23 +736,30 @@ void Plugin::ComputeAndRenderNodes(
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& ascending,
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
-  CHECK(target_);
-  auto const trajectory_in_navigation =
-      RenderBarycentricTrajectoryInNavigation(begin, end);
+  CHECK(renderer_->HasTargetVessel());
+
+  auto const trajectory_in_plotting =
+      renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
   DiscreteTrajectory<Navigation> ascending_trajectory;
   DiscreteTrajectory<Navigation> descending_trajectory;
   // The so-called North is orthogonal to the plane of the trajectory.
-  ComputeNodes(trajectory_in_navigation->Begin(),
-               trajectory_in_navigation->End(),
+  ComputeNodes(trajectory_in_plotting->Begin(),
+               trajectory_in_plotting->End(),
                Vector<double, Navigation>({0, 0, 1}),
                ascending_trajectory,
                descending_trajectory);
-  ascending = RenderNavigationTrajectoryInWorld(ascending_trajectory.Begin(),
-                                                ascending_trajectory.End(),
-                                                sun_world_position);
-  descending = RenderNavigationTrajectoryInWorld(descending_trajectory.Begin(),
-                                                 descending_trajectory.End(),
-                                                 sun_world_position);
+  ascending = renderer_->RenderPlottingTrajectoryInWorld(
+                  current_time_,
+                  ascending_trajectory.Begin(),
+                  ascending_trajectory.End(),
+                  sun_world_position,
+                  PlanetariumRotation());
+  descending = renderer_->RenderPlottingTrajectoryInWorld(
+                   current_time_,
+                   descending_trajectory.Begin(),
+                   descending_trajectory.End(),
+                   sun_world_position,
+                   PlanetariumRotation());
 }
 
 void Plugin::SetPredictionLength(Time const& t) {
@@ -836,34 +838,18 @@ Plugin::NewBodySurfaceNavigationFrame(
       reference_body.body());
 }
 
-void Plugin::SetPlottingFrame(
-    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
-  plotting_frame_ = std::move(plotting_frame);
-}
-
-not_null<NavigationFrame const*> Plugin::GetPlottingFrame() const {
-  return target_ ? target_->target_frame.get()
-                 : check_not_null(plotting_frame_.get());
-}
-
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
   not_null<Celestial const*> celestial =
       FindOrDie(celestials_, reference_body_index).get();
-  if (!target_ || target_->vessel->guid() != vessel_guid ||
-      target_->celestial != celestial) {
-    target_.emplace(find_vessel_by_guid_or_die(vessel_guid).get(),
-                    ephemeris_.get(),
-                    celestial);
-  }
+  not_null<Vessel*> vessel =
+      find_vessel_by_guid_or_die(vessel_guid).get();
   // Make sure that the current time is covered by the prediction.
-  if (current_time_ > target_->vessel->prediction().t_max()) {
-    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
+  if (current_time_ > vessel->prediction().t_max()) {
+    vessel->UpdatePrediction(current_time_ + prediction_length_);
   }
-}
 
-void Plugin::ClearTargetVessel() {
-  target_ = std::experimental::nullopt;
+  renderer_->SetTargetVessel(vessel, celestial, ephemeris_.get());
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
@@ -897,34 +883,33 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
     Rotation<Navball, World> FromThisFrame(
         Position<World> const& q) const override {
       Instant const& current_time = plugin_->current_time_;
+      auto const& planetarium_rotation = plugin_->PlanetariumRotation();
+      auto const& renderer = plugin_->renderer();
       plugin_->ephemeris_->Prolong(current_time);
 
-      AffineMap<Barycentric, Navigation, Length, OrthogonalMap> const
-          barycentric_to_navigation =
-              plugin_->GetPlottingFrame()->ToThisFrameAtTime(current_time)
-                  .rigid_transformation();
-      Position<Navigation> const q_in_navigation =
-          (barycentric_to_navigation *
-           plugin_->WorldToBarycentric(sun_world_position_))(q);
+      Position<Navigation> const q_in_plotting =
+          renderer.WorldToPlotting(current_time,
+                                   sun_world_position_,
+                                   planetarium_rotation).
+              rigid_transformation()(q);
 
-      OrthogonalMap<RightHandedNavball, Barycentric>
+      OrthogonalMap<RightHandedNavball, Barycentric> const
           right_handed_navball_to_barycentric =
               barycentric_right_handed_field_ == nullptr
-                  ? plugin_->GetPlottingFrame()
-                            ->FromThisFrameAtTime(current_time)
-                            .orthogonal_map() *
-                        navigation_right_handed_field_
-                            ->FromThisFrame(q_in_navigation)
-                            .Forget()
-                  : barycentric_right_handed_field_
-                        ->FromThisFrame(
-                            plugin_->WorldToBarycentric(sun_world_position_)(q))
-                        .Forget();
+                  ? renderer.PlottingToBarycentric(current_time) *
+                        navigation_right_handed_field_->
+                            FromThisFrame(q_in_plotting).Forget()
+                  : barycentric_right_handed_field_->FromThisFrame(
+                        renderer.WorldToBarycentric(current_time,
+                                                    sun_world_position_,
+                                                    planetarium_rotation).
+                            rigid_transformation()(q)).Forget();
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
       OrthogonalMap<Navball, World> const orthogonal_map =
-          plugin_->BarycentricToWorld() * right_handed_navball_to_barycentric *
+          renderer.BarycentricToWorld(planetarium_rotation) *
+          right_handed_navball_to_barycentric *
           Permutation<World, RightHandedNavball>(
               Permutation<World, RightHandedNavball>::XZY).Forget() *
           Rotation<Navball, World>(π / 2 * Radian,
@@ -946,7 +931,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
   std::unique_ptr<FrameField<Navigation, RightHandedNavball>> frame_field;
   auto* const plotting_frame_as_body_surface_dynamic_frame =
       dynamic_cast<BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
-          &*GetPlottingFrame());
+          &*renderer_->GetPlottingFrame());
   if (plotting_frame_as_body_surface_dynamic_frame == nullptr) {
     return std::make_unique<NavballFrameField>(
         this,
@@ -966,18 +951,21 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 }
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
-  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
-                               Vector<double, Frenet<Navigation>>({1, 0, 0}));
+  return renderer_->FrenetToWorld(
+      *find_vessel_by_guid_or_die(vessel_guid),
+      PlanetariumRotation())(Vector<double, Frenet<Navigation>>({1, 0, 0}));
 }
 
 Vector<double, World> Plugin::VesselNormal(GUID const& vessel_guid) const {
-  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
-                               Vector<double, Frenet<Navigation>>({0, 1, 0}));
+  return renderer_->FrenetToWorld(
+      *find_vessel_by_guid_or_die(vessel_guid),
+      PlanetariumRotation())(Vector<double, Frenet<Navigation>>({0, 1, 0}));
 }
 
 Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
-  return FromVesselFrenetFrame(*find_vessel_by_guid_or_die(vessel_guid),
-                               Vector<double, Frenet<Navigation>>({0, 0, 1}));
+  return renderer_->FrenetToWorld(
+      *find_vessel_by_guid_or_die(vessel_guid),
+      PlanetariumRotation())(Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
@@ -987,39 +975,9 @@ Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
       last.degrees_of_freedom();
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
-      GetPlottingFrame()->ToThisFrameAtTime(time)(
-          barycentric_degrees_of_freedom);
-  return BarycentricToWorld()(
-      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
-          plotting_frame_degrees_of_freedom.velocity()));
-}
-
-AffineMap<Barycentric, World, Length, OrthogonalMap> Plugin::BarycentricToWorld(
-    Position<World> const& sun_world_position) const {
-  return AffineMap<Barycentric, World, Length, OrthogonalMap>(
-      sun_->current_position(current_time_),
-      sun_world_position,
-      BarycentricToWorld());
-}
-
-OrthogonalMap<Barycentric, World> Plugin::BarycentricToWorld() const {
-  return OrthogonalMap<WorldSun, World>::Identity() * BarycentricToWorldSun();
-}
-
-OrthogonalMap<Barycentric, WorldSun> Plugin::BarycentricToWorldSun() const {
-  return sun_looking_glass.Inverse().Forget() * PlanetariumRotation().Forget();
-}
-
-AffineMap<World, Barycentric, Length, OrthogonalMap> Plugin::WorldToBarycentric(
-    Position<World> const& sun_world_position) const {
-  return AffineMap<World, Barycentric, Length, OrthogonalMap>(
-      sun_world_position,
-      sun_->current_position(current_time_),
-      WorldToBarycentric());
-}
-
-OrthogonalMap<World, Barycentric> Plugin::WorldToBarycentric() const {
-  return BarycentricToWorld().Inverse();
+      renderer_->BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
+  return renderer_->PlottingToWorld(time, PlanetariumRotation())(
+             plotting_frame_degrees_of_freedom.velocity());
 }
 
 Instant Plugin::GameEpoch() const {
@@ -1028,6 +986,14 @@ Instant Plugin::GameEpoch() const {
 
 Instant Plugin::CurrentTime() const {
   return current_time_;
+}
+
+Renderer& Plugin::renderer() {
+  return *renderer_;
+}
+
+Renderer const& Plugin::renderer() const {
+  return *renderer_;
 }
 
 void Plugin::WriteToMessage(
@@ -1251,26 +1217,6 @@ void Plugin::UpdatePlanetariumRotation() {
       to_planetarium;
 }
 
-Vector<double, World> Plugin::FromVesselFrenetFrame(
-    Vessel const& vessel,
-    Vector<double, Frenet<Navigation>> const& vector) const {
-  auto const& last = vessel.psychohistory().last();
-  Instant const& time = last.time();
-  DegreesOfFreedom<Barycentric> const& degrees_of_freedom =
-      last.degrees_of_freedom();
-  auto const from_frenet_frame_to_navigation_frame =
-      GetPlottingFrame()->FrenetFrame(
-          time,
-          GetPlottingFrame()->ToThisFrameAtTime(time)(degrees_of_freedom));
-
-  // The given |vector| in the Frenet frame of the vessel's free-falling
-  // trajectory in the given |navigation_frame|, converted to |WorldSun|
-  // coordinates.
-  return BarycentricToWorld()(
-      GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map()(
-          from_frenet_frame_to_navigation_frame(vector)));
-}
-
 template<typename T>
 void Plugin::ReadCelestialsFromMessages(
   Ephemeris<Barycentric> const& ephemeris,
@@ -1302,69 +1248,6 @@ void Plugin::ReadCelestialsFromMessages(
   }
 }
 
-not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-Plugin::RenderBarycentricTrajectoryInNavigation(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
-
-  NavigationFrame const& plotting_frame = *GetPlottingFrame();
-
-  if (target_ && !begin.trajectory()->Empty() &&
-      (target_->vessel->prediction().Empty() ||
-       begin.trajectory()->last().time() >
-           target_->vessel->prediction().last().time())) {
-    // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
-    // while retaining a timeout.
-    auto parameters = target_->vessel->prediction_adaptive_step_parameters();
-    parameters.set_max_steps(begin.trajectory()->Size());
-    target_->vessel->set_prediction_adaptive_step_parameters(parameters);
-    target_->vessel->UpdatePrediction(current_time_ + prediction_length_);
-  }
-
-  for (auto it = begin; it != end; ++it) {
-    if (target_) {
-      if (it.time() < target_->vessel->prediction().t_min()) {
-        continue;
-      } else if (it.time() > target_->vessel->prediction().t_max()) {
-        break;
-      }
-    }
-    trajectory->Append(
-        it.time(),
-        plotting_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
-  }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
-  return trajectory;
-}
-
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-Plugin::RenderNavigationTrajectoryInWorld(
-    DiscreteTrajectory<Navigation>::Iterator const& begin,
-    DiscreteTrajectory<Navigation>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
-  auto trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-
-  NavigationFrame const& plotting_frame = *GetPlottingFrame();
-
-  RigidMotion<Navigation, World> from_navigation_frame_to_world_at_current_time(
-      /*rigid_transformation=*/BarycentricToWorld(sun_world_position) *
-          plotting_frame.FromThisFrameAtTime(current_time_)
-              .rigid_transformation(),
-      AngularVelocity<Navigation>{},
-      Velocity<Navigation>{});
-  for (auto it = begin; it != end; ++it) {
-    DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
-        it.degrees_of_freedom();
-    DegreesOfFreedom<World> const world_degrees_of_freedom =
-        from_navigation_frame_to_world_at_current_time(
-            navigation_degrees_of_freedom);
-    trajectory->Append(it.time(), world_degrees_of_freedom);
-  }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
-  return trajectory;
-}
-
 void Plugin::AddPart(not_null<Vessel*> const vessel,
                      PartId const part_id,
                      std::string const& name,
@@ -1388,18 +1271,6 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
 bool Plugin::is_loaded(not_null<Vessel*> vessel) const {
   return Contains(loaded_vessels_, vessel);
 }
-
-Plugin::Target::Target(not_null<Vessel*> vessel,
-                       not_null<Ephemeris<Barycentric> const*> ephemeris,
-                       not_null<Celestial const*> const celestial)
-    : vessel(vessel),
-      celestial(celestial),
-      target_frame(
-          make_not_null_unique<
-              BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
-              ephemeris,
-              [this]() -> auto& { return this->vessel->prediction(); },
-              celestial->body())) {}
 
 }  // namespace internal_plugin
 }  // namespace ksp_plugin

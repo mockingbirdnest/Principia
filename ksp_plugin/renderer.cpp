@@ -50,6 +50,12 @@ void Renderer::ClearTargetVessel() {
   target_ = std::experimental::nullopt;
 }
 
+void Renderer::ClearTargetVesselIf(not_null<Vessel*> const vessel) {
+  if (target_ && target_->vessel == vessel) {
+    target_ = std::experimental::nullopt;
+  }
+}
+
 bool Renderer::HasTargetVessel() const {
   return (bool)target_;
 }
@@ -204,6 +210,14 @@ RigidMotion<World, Barycentric> Renderer::WorldToBarycentric(
 OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return BarycentricToWorld(planetarium_rotation).Inverse();
+}
+
+RigidMotion<World, Navigation> Renderer::WorldToPlotting(
+    Instant const& time,
+    Position<World> const& sun_world_position,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  return BarycentricToPlotting(time) *
+         WorldToBarycentric(time, sun_world_position, planetarium_rotation);
 }
 
 Renderer::Target::Target(

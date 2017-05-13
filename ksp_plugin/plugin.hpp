@@ -17,6 +17,7 @@
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
+#include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/body.hpp"
@@ -265,14 +266,6 @@ class Plugin {
                                 Instant const& final_time,
                                 Mass const& initial_mass) const;
 
-  // Returns a |Trajectory| object corresponding to the trajectory defined by
-  // |begin| and |end|, as seen in the current |plotting_frame_|.
-  virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderBarycentricTrajectoryInWorld(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
-
   // Computes the apsides of the trajectory defined by |begin| and |end| with
   // respect to the celestial with index |celestial_index|.
   virtual void ComputeAndRenderApsides(
@@ -323,15 +316,10 @@ class Plugin {
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodySurfaceNavigationFrame(Index reference_body_index) const;
 
-  virtual void SetPlottingFrame(
-      not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
-  virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
+   virtual void SetTargetVessel(GUID const& vessel_guid,
+                                Index reference_body_index);
 
-  virtual void SetTargetVessel(GUID const& vessel_guid,
-                               Index reference_body_index);
-  virtual void ClearTargetVessel();
-
-  // The navball field at |current_time| for the current |plotting_frame_|.
+   // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
       Position<World> const& sun_world_position) const;
 
@@ -343,18 +331,12 @@ class Plugin {
 
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
-  // Coordinate transforms.
-  virtual AffineMap<Barycentric, World, Length, OrthogonalMap>
-  BarycentricToWorld(Position<World> const& sun_world_position) const;
-  virtual OrthogonalMap<Barycentric, World> BarycentricToWorld() const;
-  virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun() const;
-  virtual AffineMap<World, Barycentric, Length, OrthogonalMap>
-  WorldToBarycentric(Position<World> const& sun_world_position) const;
-  virtual OrthogonalMap<World, Barycentric> WorldToBarycentric() const;
-
   virtual Instant GameEpoch() const;
 
   virtual Instant CurrentTime() const;
+
+  virtual Renderer& renderer();
+  virtual Renderer const& renderer() const;
 
   // Must be called after initialization.
   virtual void WriteToMessage(not_null<serialization::Plugin*> message) const;
@@ -398,12 +380,6 @@ class Plugin {
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();
 
-  // Utilities for |AdvanceTime|.
-
-  Vector<double, World> FromVesselFrenetFrame(
-      Vessel const& vessel,
-      Vector<double, Frenet<Navigation>> const& vector) const;
-
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages|.
   template<typename T>
@@ -411,22 +387,6 @@ class Plugin {
       Ephemeris<Barycentric> const& ephemeris,
       google::protobuf::RepeatedPtrField<T> const& celestial_messages,
       IndexToOwnedCelestial& celestials);
-
-  // Converts a trajectory from |Barycentric| to |Navigation|.
-  not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-  RenderBarycentricTrajectoryInNavigation(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
-
-  // Converts a trajectory from |Navigation| to |World|.  |sun_world_position|
-  // is the current position of the sun in |World| space as returned by
-  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderNavigationTrajectoryInWorld(
-      DiscreteTrajectory<Navigation>::Iterator const& begin,
-      DiscreteTrajectory<Navigation>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
 
   // Adds a part to a vessel, recording it in the appropriate map and setting up
   // a deletion callback.
@@ -472,19 +432,8 @@ class Plugin {
 
   Celestial* sun_ = nullptr;  // Not owning, not null after initialization.
 
-  // Not null after initialization. |EndInitialization| sets it to the
-  // heliocentric frame.
-  std::unique_ptr<NavigationFrame> plotting_frame_;
-
-  struct Target {
-    Target(not_null<Vessel*> vessel,
-           not_null<Ephemeris<Barycentric> const*> ephemeris,
-           not_null<Celestial const*> celestial);
-    not_null<Vessel*> const vessel;
-    not_null<Celestial const*> const celestial;
-    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
-  };
-  std::experimental::optional<Target> target_;
+  // Not null after initialization.
+  std::unique_ptr<Renderer> renderer_;
 
   // Used for detecting and patching the stock system.
   std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;

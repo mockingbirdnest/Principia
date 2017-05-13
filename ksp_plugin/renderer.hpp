@@ -54,8 +54,10 @@ class Renderer {
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> const ephemeris);
 
-  // Reverts to the previously active plotting frame.
+  // Reverts to the previously active plotting frame.  The second version only
+  // has an effect if the given |vessel| is the current target vessel.
   virtual void ClearTargetVessel();
+  virtual void ClearTargetVesselIf(not_null<Vessel*> vessel);
 
   // Determines if there is a target vessel and returns it.
   virtual bool HasTargetVessel() const;
@@ -134,6 +136,11 @@ class Renderer {
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  virtual RigidMotion<World, Navigation> WorldToPlotting(
+      Instant const& time,
+      Position<World> const& sun_world_position,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
  private:
   not_null<Celestial const*> const sun_;
 
@@ -151,5 +158,8 @@ class Renderer {
 };
 
 }  // namespace internal_renderer
+
+using internal_renderer::Renderer;
+
 }  // namespace ksp_plugin
 }  // namespace principia
