@@ -105,7 +105,7 @@ class KeplerOrbitTest : public ::testing::Test {
 
     elements.true_anomaly = π / 2 * Radian;
     elements.mean_anomaly = (π / 3 - Sqrt(3) / 4) * Radian;
-    elements.hyperbolic_mean_anomaly = -NaN<Angle>();
+    elements.hyperbolic_mean_anomaly = +NaN<Angle>();
     return elements;
   }
 
@@ -137,8 +137,9 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.longitude_of_periapsis = 1 * Radian;
 
     elements.true_anomaly = π / 2 * Radian;
-    elements.mean_anomaly = (π / 3 - Sqrt(3) / 4) * Radian;
-    elements.hyperbolic_mean_anomaly = -NaN<Angle>();
+    elements.mean_anomaly = -NaN<Angle>();
+    elements.hyperbolic_mean_anomaly =
+        (3 * Sqrt(5) / 4) * Radian - ArcCosh(1.5);
     return elements;
   }
 
@@ -289,6 +290,71 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(*MoonElements().true_anomaly, 1));
 }
 
+TEST_F(KeplerOrbitTest, TrueAnomalyToEllipticMeanAnomaly) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semilatus_rectum = SimpleEllipse().semilatus_rectum;
+  elements.periapsis_distance = SimpleEllipse().periapsis_distance;
+  elements.argument_of_periapsis.emplace();
+  elements.true_anomaly = SimpleEllipse().true_anomaly;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.true_anomaly, Eq(*SimpleEllipse().true_anomaly));
+  EXPECT_THAT(*elements.mean_anomaly,
+              AlmostEquals(*SimpleEllipse().mean_anomaly, 0));
+  EXPECT_THAT(*elements.hyperbolic_mean_anomaly,
+              AlmostEquals(*SimpleEllipse().hyperbolic_mean_anomaly, 0));
+}
+
+TEST_F(KeplerOrbitTest, TrueAnomalyToHyperbolicMeanAnomaly) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semilatus_rectum = SimpleHyperbola().semilatus_rectum;
+  elements.periapsis_distance = SimpleHyperbola().periapsis_distance;
+  elements.argument_of_periapsis.emplace();
+  elements.true_anomaly = SimpleHyperbola().true_anomaly;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.true_anomaly, Eq(*SimpleHyperbola().true_anomaly));
+  EXPECT_THAT(*elements.mean_anomaly,
+              AlmostEquals(*SimpleHyperbola().mean_anomaly, 0));
+  EXPECT_THAT(*elements.hyperbolic_mean_anomaly,
+              AlmostEquals(*SimpleHyperbola().hyperbolic_mean_anomaly, 0));
+}
+
+TEST_F(KeplerOrbitTest, EllipticMeanAnomalyToTrueAnomaly) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semilatus_rectum = SimpleEllipse().semilatus_rectum;
+  elements.periapsis_distance = SimpleEllipse().periapsis_distance;
+  elements.argument_of_periapsis.emplace();
+  elements.mean_anomaly = SimpleEllipse().mean_anomaly;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.mean_anomaly, Eq(*SimpleEllipse().mean_anomaly));
+  EXPECT_THAT(*elements.true_anomaly,
+              AlmostEquals(*SimpleEllipse().true_anomaly, 1));
+  EXPECT_THAT(*elements.hyperbolic_mean_anomaly,
+              AlmostEquals(*SimpleEllipse().hyperbolic_mean_anomaly, 0));
+}
+
+TEST_F(KeplerOrbitTest, HyperbolicMeanAnomalyToTrueAnomaly) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.semilatus_rectum = SimpleHyperbola().semilatus_rectum;
+  elements.periapsis_distance = SimpleHyperbola().periapsis_distance;
+  elements.argument_of_periapsis.emplace();
+  elements.hyperbolic_mean_anomaly = SimpleHyperbola().hyperbolic_mean_anomaly;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.hyperbolic_mean_anomaly,
+              Eq(*SimpleHyperbola().hyperbolic_mean_anomaly));
+  EXPECT_THAT(*elements.true_anomaly,
+              AlmostEquals(*SimpleHyperbola().true_anomaly, 0));
+  EXPECT_THAT(*elements.mean_anomaly,
+              AlmostEquals(*SimpleHyperbola().mean_anomaly, 0));
+}
+
 TEST_F(KeplerOrbitTest, OrientationFromLongitudeOfPeriapsis) {
   KeplerianElements<ICRFJ2000Equator> elements;
   elements.eccentricity = 0;
@@ -331,7 +397,7 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
     KeplerianElements<ICRFJ2000Equator> elements;                             \
     elements.element1 = (reference).element1;                                 \
     elements.element2 = (reference).element2;                                 \
-    /* Leaving the orientation parameters and anomalies to their default \                                                                            \
+    /* Leaving the orientation parameters and anomalies to their default      \
      values.  This test does not exercise them. */                            \
     elements.argument_of_periapsis.emplace();                                 \
     elements.mean_anomaly.emplace();                                          \

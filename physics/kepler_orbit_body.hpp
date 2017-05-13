@@ -630,7 +630,7 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
     mean_anomaly =
         positive_angle(eccentric_anomaly - e * Sin(eccentric_anomaly) * Radian);
     Angle const hyperbolic_eccentric_anomaly =
-        ArcCosh((Cos(ν) - e) / (1 - e * Cos(ν)));
+        ArcCosh((e + Cos(ν)) / (1 + e * Cos(ν)));
     hyperbolic_mean_anomaly =
         positive_angle(e * Sinh(hyperbolic_eccentric_anomaly) * Radian -
                        hyperbolic_eccentric_anomaly);
@@ -660,9 +660,9 @@ void KeplerOrbit<Frame>::CompleteAnomalies(KeplerianElements<Frame>& elements) {
                *hyperbolic_mean_anomaly - e * Radian,
                *hyperbolic_mean_anomaly + e * Radian);
     true_anomaly =
-        2 * ArcTan(Sqrt(1 + e) * Sinh(hyperbolic_eccentric_anomaly / 2),
-                   Sqrt(1 - e) * Cosh(hyperbolic_eccentric_anomaly / 2));
-    mean_anomaly = NaN<Angle>();
+        2 * ArcTan(Sqrt(e + 1) * Sinh(hyperbolic_eccentric_anomaly / 2),
+                   Sqrt(e - 1) * Cosh(hyperbolic_eccentric_anomaly / 2));
+    mean_anomaly = -NaN<Angle>();
   }
 }
 
