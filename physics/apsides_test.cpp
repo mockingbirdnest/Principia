@@ -168,6 +168,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
   elements.inclination = 10 * Degree;
   elements.longitude_of_ascending_node = 42 * Degree;
   elements.argument_of_periapsis = 100 * Degree;
+  elements.mean_anomaly = 0 * Degree;
   KeplerOrbit<World> const orbit{
       *ephemeris.bodies()[0], MasslessBody{}, elements, t0};
   elements = orbit.elements_at_epoch();
