@@ -281,11 +281,11 @@ TEST_F(KSPResonanceTest, Stock) {
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(laythe_),
                             expected_periods_.at(laythe_)),
-              Lt(0));
+              Lt(0.069));
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
   EXPECT_THAT(
       RelativeError(periods_at_mid_term.at(tylo_), expected_periods_.at(tylo_)),
-      Lt(0));
+      Lt(0.24));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
                             expected_periods_.at(bop_)), Lt(303.8e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
@@ -357,11 +357,11 @@ TEST_F(KSPResonanceTest, Corrected) {
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
                             expected_periods_.at(vall_)), Lt(7.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), Lt(0.7e-3));
+                            expected_periods_.at(tylo_)), Lt(0.9e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), Lt(11.6e-3));
+                            expected_periods_.at(bop_)), Lt(16.0e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), Lt(6.5e-3));
+                            expected_periods_.at(pol_)), Lt(17.8e-3));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
