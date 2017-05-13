@@ -104,8 +104,8 @@ DynamicFrame<InertialFrame, ThisFrame>::FrenetFrame(
 template<typename InertialFrame, typename ThisFrame>
 not_null<std::unique_ptr<DynamicFrame<InertialFrame, ThisFrame>>>
 DynamicFrame<InertialFrame, ThisFrame>::ReadFromMessage(
-    not_null<Ephemeris<InertialFrame> const*> const ephemeris,
-    serialization::DynamicFrame const& message) {
+    serialization::DynamicFrame const& message,
+    not_null<Ephemeris<InertialFrame> const*> const ephemeris) {
   std::unique_ptr<DynamicFrame> result;
   int extensions_found = 0;
   // NOTE(egg): the |static_cast|ing below is needed on MSVC, because the silly

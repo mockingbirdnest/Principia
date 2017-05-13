@@ -97,8 +97,9 @@ message Plugin {
   required Point game_epoch = 15;
   required Point current_time = 5;
   required int32 sun_index = 6;
-  required DynamicFrame plotting_frame = 11;
+  required DynamicFrame pre_catalan_plotting_frame = 11;
   repeated PileUp pile_up = 17;
+  optional Renderer renderer = 18;  // Added in Catalan.
 
   // Pre-Cardano.
   reserved 3;
@@ -109,6 +110,11 @@ message Plugin {
   // Pre-Bourbaki.
   reserved 2;
   reserved "/*celestial*/";
+}
+
+// Added in Catalan.
+message Renderer {
+  required DynamicFrame plotting_frame = 1;
 }
 
 message Vessel {

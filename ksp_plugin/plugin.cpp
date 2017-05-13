@@ -1056,7 +1056,7 @@ void Plugin::WriteToMessage(
   current_time_.WriteToMessage(message->mutable_current_time());
   Index const sun_index = FindOrDie(celestial_to_index, sun_);
   message->set_sun_index(sun_index);
-  plotting_frame_->WriteToMessage(message->mutable_plotting_frame());
+  renderer_->WriteToMessage(message->mutable_renderer());
 
   for (auto const& pile_up : pile_ups_) {
     pile_up.WriteToMessage(message->add_pile_up());
@@ -1129,10 +1129,19 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->main_body_ = plugin->sun_->body();
   plugin->UpdatePlanetariumRotation();
 
-  std::unique_ptr<NavigationFrame> plotting_frame =
-      NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
-                                       message.plotting_frame());
-  plugin->SetPlottingFrame(std::move(plotting_frame));
+  bool const is_pre_catalan = message.has_pre_catalan_plotting_frame();
+  if (is_pre_catalan) {
+    plugin->renderer_ =
+        std::make_unique<Renderer>(
+            plugin->sun_,
+            NavigationFrame::ReadFromMessage(
+                message.pre_catalan_plotting_frame(),
+                plugin->ephemeris_.get()));
+  } else {
+    plugin->renderer_ = Renderer::ReadFromMessage(message.renderer(),
+                                                  plugin->sun_,
+                                                  plugin->ephemeris_.get());
+  }
 
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.

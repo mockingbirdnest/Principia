@@ -148,6 +148,13 @@ class Renderer {
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  virtual void WriteToMessage(not_null<serialization::Renderer*> message) const;
+
+  static not_null<std::unique_ptr<Renderer>> ReadFromMessage(
+      serialization::Renderer const& message,
+      not_null<Celestial const*> sun,
+      not_null<Ephemeris<Barycentric> const*> const ephemeris);
+
  private:
   not_null<Celestial const*> const sun_;
 

@@ -233,6 +233,21 @@ RigidMotion<World, Navigation> Renderer::WorldToPlotting(
          WorldToBarycentric(time, sun_world_position, planetarium_rotation);
 }
 
+void Renderer::WriteToMessage(
+    not_null<serialization::Renderer*> message) const {
+  plotting_frame_->WriteToMessage(message->mutable_plotting_frame());
+  // No serialization of the |target_|.
+}
+
+not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(
+    serialization::Renderer const& message,
+    not_null<Celestial const*> sun,
+    not_null<Ephemeris<Barycentric> const*> const ephemeris) {
+  return make_not_null_unique<Renderer>(
+      sun,
+      NavigationFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
+}
+
 Renderer::Target::Target(
     not_null<Vessel*> const vessel,
     not_null<Celestial const*> const celestial,
