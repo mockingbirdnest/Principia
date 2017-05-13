@@ -238,8 +238,7 @@ KeplerOrbit<Frame>::KeplerOrbit(
   elements_at_epoch_.longitude_of_ascending_node = Ω;
   elements_at_epoch_.argument_of_periapsis       = ω;
   elements_at_epoch_.true_anomaly                = true_anomaly;
-  CompleteConicParametersByCategory(elements_at_epoch_, μ,
-                                    /*check_minimally_specified=*/false);
+  CompleteConicParametersByCategory(elements_at_epoch_, μ);
   CompleteOrientationParameters(elements_at_epoch_);
   CompleteAnomalies(elements_at_epoch_);
 }
@@ -297,8 +296,7 @@ KeplerianElements<Frame> const& KeplerOrbit<Frame>::elements_at_epoch() const {
 template<typename Frame>
 void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
     KeplerianElements<Frame>& elements,
-    GravitationalParameter const& μ,
-    bool check_minimally_specified) {
+    GravitationalParameter const& μ) {
   auto& eccentricity = elements.eccentricity;
   auto& asymptotic_true_anomaly = elements.asymptotic_true_anomaly;
   auto& turning_angle = elements.turning_angle;
@@ -329,35 +327,26 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       semilatus_rectum.has_value() + specific_angular_momentum.has_value();
   int const periapsis_distance_specifications = periapsis_distance.has_value();
   int const apoapsis_distance_specifications = apoapsis_distance.has_value();
-  CHECK(eccentricity_specifications <= 1 ||
-        (eccentricity_specifications == 3 && !check_minimally_specified))
+  CHECK(eccentricity_specifications <= 1 || eccentricity_specifications == 3)
       << eccentricity_specifications;
   CHECK(semimajor_axis_specifications <= 1 ||
-        (semimajor_axis_specifications == 7 && !check_minimally_specified))
+        semimajor_axis_specifications == 7)
       << semimajor_axis_specifications;
   CHECK(semiminor_axis_specifications <= 1 ||
-        (semiminor_axis_specifications == 2 && !check_minimally_specified))
+        semiminor_axis_specifications == 2)
       << semiminor_axis_specifications;
   CHECK(semilatus_rectum_specifications <= 1 ||
-        (semilatus_rectum_specifications == 2 && !check_minimally_specified))
+        semilatus_rectum_specifications == 2)
       << semilatus_rectum_specifications;
   CHECK_LE(periapsis_distance_specifications, 1);
   CHECK_LE(apoapsis_distance_specifications, 1);
-  bool const eccentricity_specified = eccentricity_specifications == 1;
-  bool const semimajor_axis_specified = semimajor_axis_specifications == 1;
-  bool const semiminor_axis_specified = semiminor_axis_specifications == 1;
-  bool const semilatus_rectum_specified = semilatus_rectum_specifications == 1;
-  bool const periapsis_distance_specified =
-      periapsis_distance_specifications == 1;
-  bool const apoapsis_distance_specified =
-      apoapsis_distance_specifications == 1;
-  if (check_minimally_specified) {
-    CHECK_EQ(eccentricity_specified + semimajor_axis_specified +
-                 semiminor_axis_specified + semilatus_rectum_specified +
-                 periapsis_distance_specified + apoapsis_distance_specified,
-             2);
-  }
-  if (eccentricity_specified) {
+  bool const must_complete_eccentricity = eccentricity_specifications == 1;
+  bool const must_complete_semimajor_axis = semimajor_axis_specifications == 1;
+  bool const must_complete_semiminor_axis = semiminor_axis_specifications == 1;
+  bool const must_complete_semilatus_rectum =
+      semilatus_rectum_specifications == 1;
+
+  if (must_complete_eccentricity) {
     if (eccentricity) {
       double const& e = *eccentricity;
       turning_angle = 2 * ArcSin(1 / e);
@@ -375,7 +364,7 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
   // TODO(egg): range checks.  What do we do with normalizable oddities
   // (negative n, T)? What about parabolae? (n = 0, a infinite, and the
   // equivalents provide an eccentricity specification...).
-  if (semimajor_axis_specified) {
+  if (must_complete_semimajor_axis) {
     if (semimajor_axis) {
       Length const& a = *semimajor_axis;
       specific_energy = -μ / (2 * a);
@@ -438,14 +427,14 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       hyperbolic_mean_motion = Sqrt(Pow<6>(v_inf) / Pow<2>(μ)) * Radian;
     }
   }
-  if(semiminor_axis_specified) {
+  if(must_complete_semiminor_axis) {
     if (semiminor_axis) {
       impact_parameter = Sqrt(-Pow<2>(*semiminor_axis));
     } else if (impact_parameter) {
       semiminor_axis = Sqrt(-Pow<2>(*impact_parameter));
     }
   }
-  if (semilatus_rectum_specified) {
+  if (must_complete_semilatus_rectum) {
     if (semilatus_rectum) {
       specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
     } else if (specific_angular_momentum) {
@@ -476,8 +465,12 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
   auto& periapsis_distance = elements.periapsis_distance;
   auto& apoapsis_distance = elements.apoapsis_distance;
 
-  CompleteConicParametersByCategory(elements, μ,
-                                    /*check_minimally_specified=*/true);
+  CompleteConicParametersByCategory(elements, μ);
+
+  CHECK_EQ(eccentricity.has_value() + semimajor_axis.has_value() +
+               semiminor_axis.has_value() + semilatus_rectum.has_value() +
+               periapsis_distance.has_value() + apoapsis_distance.has_value(),
+           2) << elements;
 
   // TODO(egg): some of these formulae are very ill-conditioned near the
   // parabolic case, and can be easily rewritten.  Investigate.
@@ -611,8 +604,7 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     semilatus_rectum = (2 * r_ap * r_pe) / (r_ap + r_pe);
   }
 
-  CompleteConicParametersByCategory(elements, μ,
-                                    /*check_minimally=*/false);
+  CompleteConicParametersByCategory(elements, μ);
 }
 
 template<typename Frame>
