@@ -48,6 +48,7 @@ using quantities::AngularFrequency;
 using quantities::ArcSin;
 using quantities::Cos;
 using quantities::Length;
+using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
@@ -165,14 +166,14 @@ TEST_F(МолнияOrbitTest, Satellite) {
 
     // Check that the argument of the perigee remains roughly constant (modulo
     // the influence of the Moon).
-    EXPECT_LT(
-        RelativeError(2.0 * π * Radian + initial_elements.argument_of_periapsis,
-                      actual_elements.argument_of_periapsis),
-        0.0026);
+    EXPECT_LT(RelativeError(
+                  2.0 * π * Radian + *initial_elements.argument_of_periapsis,
+                  *actual_elements.argument_of_periapsis),
+              0.0026);
 
     mma_displacements.push_back(relative_dof.displacement() / Metre);
     mma_arguments_of_periapsis.push_back(
-        actual_elements.argument_of_periapsis / Radian);
+        *actual_elements.argument_of_periapsis / Radian);
     mma_longitudes_of_ascending_nodes.push_back(
         actual_elements.longitude_of_ascending_node / Radian);
   }
@@ -189,7 +190,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
       Slope(times, longitudes_of_ascending_nodes);
   Length const semilatus_rectum =
       *initial_orbit.elements_at_epoch().semimajor_axis *
-      (1.0 - initial_elements.eccentricity * initial_elements.eccentricity);
+      (1.0 - Pow<2>(*initial_elements.eccentricity));
   Angle const ΔΩ_per_period = -2.0 * π * Radian * earth_body->j2_over_μ() /
                               (semilatus_rectum * semilatus_rectum) *
                               (3.0 / 2.0) * Cos(initial_elements.inclination);

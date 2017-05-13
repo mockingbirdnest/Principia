@@ -125,6 +125,12 @@
     <ClInclude Include="file_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="optional_serialization.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="optional_serialization_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">

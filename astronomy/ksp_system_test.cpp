@@ -267,13 +267,13 @@ TEST_F(KSPSystemTest, KerbalSystem) {
                            MasslessBody(),
                            degrees_of_freedom(bop_) - degrees_of_freedom(jool_),
                            t).elements_at_epoch();
-      bop_eccentricities.emplace_back(bop_elements.eccentricity);
+      bop_eccentricities.emplace_back(*bop_elements.eccentricity);
       bop_inclinations_in_degrees.emplace_back(bop_elements.inclination /
                                                Degree);
       bop_nodes_in_degrees.emplace_back(
           bop_elements.longitude_of_ascending_node / Degree);
       bop_arguments_of_periapsis_in_degrees.emplace_back(
-          bop_elements.argument_of_periapsis / Degree);
+          *bop_elements.argument_of_periapsis / Degree);
     }
 
     {
@@ -289,13 +289,13 @@ TEST_F(KSPSystemTest, KerbalSystem) {
               *bop_,
               degrees_of_freedom(bop_) - innermost_jool_system.Get(),
               t).elements_at_epoch();
-      bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
+      bop_jacobi_eccentricities.emplace_back(*bop_jacobi_elements.eccentricity);
       bop_jacobi_inclinations_in_degrees.emplace_back(
           bop_jacobi_elements.inclination / Degree);
       bop_jacobi_nodes_in_degrees.emplace_back(
           bop_jacobi_elements.longitude_of_ascending_node / Degree);
       bop_jacobi_arguments_of_periapsis_in_degrees.emplace_back(
-          bop_jacobi_elements.argument_of_periapsis / Degree);
+          *bop_jacobi_elements.argument_of_periapsis / Degree);
     }
   }
 

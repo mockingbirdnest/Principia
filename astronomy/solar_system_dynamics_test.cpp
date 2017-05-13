@@ -252,8 +252,8 @@ class SolarSystemDynamicsTest : public testing::Test {
 
       if (actual_elements.eccentricity > 0.1) {
         result.argument_of_periapsis_drift_per_orbit =
-            AbsoluteError(expected_elements.argument_of_periapsis,
-                          actual_elements.argument_of_periapsis) / orbits;
+            AbsoluteError(*expected_elements.argument_of_periapsis,
+                          *actual_elements.argument_of_periapsis) / orbits;
       }
     }
     return result;
