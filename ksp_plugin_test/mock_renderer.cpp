@@ -30,6 +30,12 @@ MockRenderer::MockRenderer()
     : Renderer(&sun,
                std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()) {}
 
+void MockRenderer::SetPlottingFrame(
+    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
+  SetPlottingFrameConstRef(*plotting_frame);
+  plotting_frame.release();
+}
+
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 MockRenderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,

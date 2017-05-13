@@ -12,6 +12,12 @@ class MockRenderer : public Renderer {
  public:
   MockRenderer();
 
+  // NOTE(phl): Needed because gMock wants to copy the unique_ptr<>.
+  void SetPlottingFrame(
+      not_null<std::unique_ptr<NavigationFrame>> plotting_frame) override;
+  MOCK_METHOD1(SetPlottingFrameConstRef,
+               void(NavigationFrame const& plotting_frame));
+
   MOCK_CONST_METHOD0(GetPlottingFrame, not_null<NavigationFrame const*> ());
 
   not_null<std::unique_ptr<DiscreteTrajectory<World>>>

@@ -6,6 +6,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "gmock/gmock.h"
+#include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -61,8 +62,12 @@ using ::testing::SetArgReferee;
 using ::testing::StrictMock;
 using ::testing::_;
 
+namespace {
+
 char const vessel_guid[] = "123-456";
 Index const celestial_index = 1;
+
+}  // namespace
 
 MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
   return arg.thrust == thrust &&
@@ -202,8 +207,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       AngularVelocity<Barycentric>(),
       Velocity<Barycentric>());
   MockRenderer renderer;
-  EXPECT_CALL(*plugin_, renderer())
-      .WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
