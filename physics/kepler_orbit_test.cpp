@@ -289,6 +289,42 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(*MoonElements().true_anomaly, 1));
 }
 
+TEST_F(KeplerOrbitTest, OrientationFromLongitudeOfPeriapsis) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.eccentricity = 0;
+  elements.semimajor_axis = 1 * Metre;
+  elements.mean_anomaly.emplace();
+  elements.inclination = SimpleEllipse().inclination;
+  elements.longitude_of_ascending_node =
+      SimpleEllipse().longitude_of_ascending_node;
+  elements.longitude_of_periapsis = SimpleEllipse().longitude_of_periapsis;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.longitude_of_periapsis,
+              Eq(*SimpleEllipse().longitude_of_periapsis));
+  EXPECT_THAT(*elements.argument_of_periapsis,
+              AlmostEquals(*SimpleEllipse().argument_of_periapsis, 0));
+}
+
+TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
+  KeplerianElements<ICRFJ2000Equator> elements;
+  elements.eccentricity = 0;
+  elements.semimajor_axis = 1 * Metre;
+  elements.mean_anomaly.emplace();
+  elements.inclination = SimpleEllipse().inclination;
+  elements.longitude_of_ascending_node =
+      SimpleEllipse().longitude_of_ascending_node;
+  elements.argument_of_periapsis = SimpleEllipse().argument_of_periapsis;
+  elements =
+      KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)
+          .elements_at_epoch();
+  EXPECT_THAT(*elements.argument_of_periapsis,
+              Eq(*SimpleEllipse().argument_of_periapsis));
+  EXPECT_THAT(*elements.longitude_of_periapsis,
+              AlmostEquals(*SimpleEllipse().longitude_of_periapsis, 0));
+}
+
 #define CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(element1, element2, reference)      \
   \
 [&]() {                                                                       \
