@@ -335,6 +335,12 @@ class Plugin {
 
   virtual Instant CurrentTime() const;
 
+  // The rotation between the |AliceWorld| basis at |current_time_| and the
+  // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
+  // this change of basis is all that's required to convert relative velocities
+  // or displacements between simultaneous events.
+  Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
+
   virtual Renderer& renderer();
   virtual Renderer const& renderer() const;
 
@@ -371,11 +377,6 @@ class Plugin {
   not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
       GUID const& vessel_guid) const;
 
-  // The rotation between the |AliceWorld| basis at |current_time_| and the
-  // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
-  // this change of basis is all that's required to convert relative velocities
-  // or displacements between simultaneous events.
-  Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
   // Computes the value returned by |PlanetariumRotation|.  Must be called
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();

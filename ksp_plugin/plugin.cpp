@@ -988,6 +988,10 @@ Instant Plugin::CurrentTime() const {
   return current_time_;
 }
 
+Rotation<Barycentric, AliceSun> const& Plugin::PlanetariumRotation() const {
+  return *cached_planetarium_rotation_;
+}
+
 Renderer& Plugin::renderer() {
   return *renderer_;
 }
@@ -1185,12 +1189,6 @@ not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
     GUID const& vessel_guid) const {
   VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid);
   VLOG_AND_RETURN(1, FindOrDie(vessels_, vessel_guid));
-}
-
-// The map between the vector spaces of |Barycentric| and |AliceSun| at
-// |current_time_|.
-Rotation<Barycentric, AliceSun> const& Plugin::PlanetariumRotation() const {
-  return *cached_planetarium_rotation_;
 }
 
 void Plugin::UpdatePlanetariumRotation() {
