@@ -114,6 +114,7 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD0(PlanetariumRotation,
                      Rotation<Barycentric, AliceSun> const&());
 
+  MOCK_METHOD0(renderer, Renderer&());
   MOCK_CONST_METHOD0(renderer, Renderer const&());
 
   MOCK_CONST_METHOD1(WriteToMessage,

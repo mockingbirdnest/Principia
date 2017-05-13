@@ -79,9 +79,11 @@ MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
 class InterfaceFlightPlanTest : public ::testing::Test {
  protected:
   InterfaceFlightPlanTest()
-    : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+    : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+      const_plugin_(plugin_.get()) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> const plugin_;
+  StrictMock<MockPlugin> const* const const_plugin_;
   Instant const t0_;
 };
 
@@ -208,6 +210,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       Velocity<Barycentric>());
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
@@ -240,7 +243,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
+  EXPECT_CALL(*plugin_, CurrentTime())
+      .WillRepeatedly(Return(Instant() - 4 * Second));
   EXPECT_CALL(renderer, GetPlottingFrame())
       .WillOnce(Return(plotting_frame.get()));
   EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))

@@ -51,9 +51,11 @@ XYZ parent_position = {4, 5, 6};
 class InterfaceRendererTest : public ::testing::Test {
  protected:
   InterfaceRendererTest()
-    : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()) {}
+    : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
+      const_plugin_(plugin_.get()) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> const plugin_;
+  StrictMock<MockPlugin> const* const const_plugin_;
   Instant const t0_;
 };
 
@@ -76,6 +78,7 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
@@ -104,6 +107,7 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
@@ -182,6 +186,8 @@ TEST_F(InterfaceRendererTest, Iterator) {
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
