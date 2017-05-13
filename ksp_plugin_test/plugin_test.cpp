@@ -457,8 +457,9 @@ TEST_F(PluginTest, Serialization) {
   plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
-  plugin->SetPlottingFrame(plugin->NewBodyCentredNonRotatingNavigationFrame(
-      SolarSystemFactory::Venus));
+  plugin->renderer().SetPlottingFrame(
+      plugin->NewBodyCentredNonRotatingNavigationFrame(
+          SolarSystemFactory::Venus));
 
   serialization::Plugin message;
   plugin->WriteToMessage(&message);
@@ -513,11 +514,12 @@ TEST_F(PluginTest, Serialization) {
           Second;
   EXPECT_EQ((HistoryTime(time, 4), t0);
 #endif
-  EXPECT_TRUE(message.has_plotting_frame());
-  EXPECT_TRUE(message.plotting_frame().HasExtension(
+  EXPECT_TRUE(message.has_renderer());
+  EXPECT_TRUE(message.renderer().has_plotting_frame());
+  EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(
       serialization::BodyCentredNonRotatingDynamicFrame::extension));
   EXPECT_EQ(message.celestial(SolarSystemFactory::Venus).ephemeris_index(),
-            message.plotting_frame().GetExtension(
+            message.renderer().plotting_frame().GetExtension(
                 serialization::BodyCentredNonRotatingDynamicFrame::extension).
                     centre());
 }
@@ -912,8 +914,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillRepeatedly(
           ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
 
-  plugin_->SetPlottingFrame(plugin_->NewBodyCentredNonRotatingNavigationFrame(
-      SolarSystemFactory::Sun));
+  plugin_->renderer().SetPlottingFrame(
+      plugin_->NewBodyCentredNonRotatingNavigationFrame(
+          SolarSystemFactory::Sun));
   bool inserted;
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
@@ -950,9 +953,12 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =
-      plugin_->RenderBarycentricTrajectoryInWorld(prediction.Begin(),
-                                                  prediction.End(),
-                                                  World::origin);
+      plugin_->renderer().RenderBarycentricTrajectoryInWorld(
+          plugin_->CurrentTime(),
+          prediction.Begin(),
+          prediction.End(),
+          World::origin,
+          plugin_->PlanetariumRotation());
 }
 
 TEST_F(PluginDeathTest, VesselFromParentError) {
@@ -1086,8 +1092,8 @@ TEST_F(PluginTest, Navball) {
       plugin.NewBodyCentredNonRotatingNavigationFrame(SolarSystemFactory::Sun);
   not_null<const NavigationFrame*> const navigation_frame_copy =
       navigation_frame.get();
-  plugin.SetPlottingFrame(std::move(navigation_frame));
-  EXPECT_EQ(navigation_frame_copy, plugin.GetPlottingFrame());
+  plugin.renderer().SetPlottingFrame(std::move(navigation_frame));
+  EXPECT_EQ(navigation_frame_copy, plugin.renderer().GetPlottingFrame());
   Vector<double, Navball> x_navball({1, 0, 0});
   Vector<double, Navball> y_navball({0, 1, 0});
   Vector<double, Navball> z_navball({0, 0, 1});

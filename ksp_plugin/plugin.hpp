@@ -436,10 +436,6 @@ class Plugin {
   // Not null after initialization.
   std::unique_ptr<Renderer> renderer_;
 
-  // Used for detecting and patching the stock system.
-  std::set<std::uint64_t> celestial_jacobi_keplerian_fingerprints_;
-  bool is_ksp_stock_system_ = false;
-
   RotatingBody<Barycentric> const* main_body_ = nullptr;
 
   // Do not |erase| from this list, use |Part::clear_pile_up| instead.

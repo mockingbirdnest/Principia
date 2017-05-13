@@ -46,10 +46,12 @@
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
+    <ClCompile Include="interface_flight_plan_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="mock_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
+    <ClCompile Include="mock_renderer.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
@@ -68,6 +70,7 @@
     <ClInclude Include="mock_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="mock_renderer.hpp" />
     <ClInclude Include="mock_vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
