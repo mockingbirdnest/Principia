@@ -162,6 +162,19 @@ OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
+    Instant const& time,
+    NavigationManœuvre const& manœuvre,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  Instant const initial_time = manœuvre.initial_time();
+  NavigationFrame const& plotting_frame = *GetPlottingFrame();
+  return
+      BarycentricToWorld(planetarium_rotation) *
+      plotting_frame.FromThisFrameAtTime(time).orthogonal_map() *
+      plotting_frame.ToThisFrameAtTime(initial_time).orthogonal_map() *
+      manœuvre.FrenetFrame();
+}
+
+OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Vessel const& vessel,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   auto const last = vessel.psychohistory().last();
@@ -171,12 +184,12 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
   DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
       BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
   Rotation<Frenet<Navigation>, Navigation> const
-      from_frenet_frame_to_plotting_frame =
+      frenet_frame_to_plotting_frame =
           GetPlottingFrame()->FrenetFrame(time,
                                           plotting_frame_degrees_of_freedom);
 
   return PlottingToWorld(time, planetarium_rotation) *
-         from_frenet_frame_to_plotting_frame.Forget();
+         frenet_frame_to_plotting_frame.Forget();
 }
 
 OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(

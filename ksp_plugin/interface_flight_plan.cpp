@@ -127,9 +127,6 @@ Burn GetBurn(Plugin const& plugin,
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
     Plugin const& plugin,
     NavigationManœuvre const& manœuvre) {
-  OrthogonalMap<Barycentric, World> const barycentric_to_world =
-      OrthogonalMap<WorldSun, World>::Identity() *
-      plugin.BarycentricToWorldSun();
   NavigationManoeuvre result;
   result.burn = GetBurn(plugin, manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
@@ -142,7 +139,8 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
   Vector<double, Barycentric> const barycentric_inertial_direction =
       manœuvre.InertialDirection();
   Vector<double, World> const world_inertial_direction =
-      barycentric_to_world(barycentric_inertial_direction);
+      plugin.renderer().BarycentricToWorld(plugin.PlanetariumRotation())(
+          barycentric_inertial_direction);
   result.inertial_direction = ToXYZ(world_inertial_direction);
   return result;
 }
@@ -247,22 +245,14 @@ principia__FlightPlanGetManoeuvreFrenetTrihedron(Plugin const* const plugin,
   journal::Method<journal::FlightPlanGetManoeuvreFrenetTrihedron> m(
       {plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
-  NavigationManoeuvreFrenetTrihedron result;
 
   NavigationManœuvre const& manœuvre =
       GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
-  OrthogonalMap<Barycentric, World> const barycentric_to_world =
-      plugin->BarycentricToWorld();
-  OrthogonalMap<Frenet<Navigation>, Barycentric> frenet_to_barycentric =
-      manœuvre.FrenetFrame();
-  Instant const current_time = plugin->CurrentTime();
-  Instant const initial_time = manœuvre.initial_time();
-  auto const plotting_frame = plugin->GetPlottingFrame();
-  OrthogonalMap<Frenet<Navigation>, World> frenet_to_plotted_world =
-      barycentric_to_world *
-      plotting_frame->FromThisFrameAtTime(current_time).orthogonal_map() *
-      plotting_frame->ToThisFrameAtTime(initial_time).orthogonal_map() *
-      frenet_to_barycentric;
+  OrthogonalMap<Frenet<Navigation>, World> const frenet_to_plotted_world =
+      plugin->renderer().FrenetToWorld(plugin->CurrentTime(),
+                                       manœuvre,
+                                       plugin->PlanetariumRotation());
+  NavigationManoeuvreFrenetTrihedron result;
   result.tangent = ToXYZ(
       frenet_to_plotted_world(Vector<double, Frenet<Navigation>>({1, 0, 0})));
   result.normal = ToXYZ(
@@ -389,10 +379,13 @@ Iterator* principia__FlightPlanRenderedSegment(
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   GetFlightPlan(*plugin, vessel_guid).GetSegment(index, begin, end);
-  auto rendered_trajectory = CHECK_NOTNULL(plugin)->
-      RenderBarycentricTrajectoryInWorld(
-          begin, end,
-          FromXYZ<Position<World>>(sun_world_position));
+  auto rendered_trajectory =
+      plugin->renderer().RenderBarycentricTrajectoryInWorld(
+          plugin->CurrentTime(),
+          begin,
+          end,
+          FromXYZ<Position<World>>(sun_world_position),
+          plugin->PlanetariumRotation());
   if (index % 2 == 1 && !rendered_trajectory->Empty() &&
       rendered_trajectory->Begin().time() != begin.time()) {
     // TODO(egg): this is ugly; we should centralize rendering.

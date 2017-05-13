@@ -110,6 +110,13 @@ class Renderer {
   virtual OrthogonalMap<Barycentric, WorldSun> BarycentricToWorldSun(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  // Converts from the Frenet frame of the manœuvre's initial time in the
+  // plotted frame to the |World| coordinates.
+  virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
+      Instant const& time,
+      NavigationManœuvre const& manœuvre,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
   // Converts from the Frenet frame of the vessel's free-falling trajectory in
   // the plotted frame to the |World| coordinates.
   virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
