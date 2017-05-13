@@ -1907,7 +1907,7 @@ public partial class PrincipiaPluginAdapter
               gravitational_parameter =
                   gravity_model.GetValue("gravitational_parameter"),
               reference_instant       =
-                  double.Parse(gravity_model.GetValue("reference_instant")),
+                  gravity_model.GetValue("reference_instant"),
               mean_radius             = gravity_model.GetValue("mean_radius"),
               axis_right_ascension    =
                   gravity_model.GetValue("axis_right_ascension"),
@@ -1939,10 +1939,10 @@ public partial class PrincipiaPluginAdapter
       }
     } else {
       plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
-      // We create the plugin at time 0, rather than
+      // We create the plugin at J2000 (a.k.a. Instant{}), rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
-      plugin_ = Interface.NewPlugin("0 s", "0 s",
+      plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
@@ -1957,14 +1957,12 @@ public partial class PrincipiaPluginAdapter
             gravitational_parameter =
                 (gravity_model?.GetValue("gravitational_parameter")).
                     GetValueOrDefault(body.gravParameter + " m^3/s^2"),
-            // J2000, because that's when we start non-config games.  We
-            // should really parse real-life dates from strings.
             // The origin of rotation in KSP is the x of Barycentric, rather
             // than the y axis as is the case for Earth, so the right
             // ascension is -90 deg.
-            reference_instant    = double.Parse(
+            reference_instant    = 
                 (gravity_model?.GetValue("reference_instant")).
-                    GetValueOrDefault("2451545.0")),
+                    GetValueOrDefault("JD2451545.0"),
             mean_radius          =
                 (gravity_model?.GetValue("mean_radius")).
                     GetValueOrDefault(body.Radius + " m"),

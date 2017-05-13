@@ -31,7 +31,7 @@ constexpr char proto_txt[] = "proto.txt";
 namespace tools {
 namespace internal_generate_configuration {
 
-void GenerateConfiguration(Instant const& game_epoch,
+void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& gravity_model_stem,
                            std::string const& initial_state_stem) {
   std::experimental::filesystem::path const directory =
@@ -54,9 +54,6 @@ void GenerateConfiguration(Instant const& game_epoch,
                       << body.gravitational_parameter() << "\n";
     if (body.has_reference_instant()) {
       gravity_model_cfg << "    reference_instant       = "
-                        << std::fixed
-                        << std::setprecision(
-                               std::numeric_limits<double>::max_digits10)
                         << body.reference_instant() << "\n";
     }
     if (body.has_mean_radius()) {
@@ -98,10 +95,9 @@ void GenerateConfiguration(Instant const& game_epoch,
       (directory / initial_state_stem).replace_extension(cfg));
   CHECK(initial_state_cfg.good());
   initial_state_cfg << "principia_initial_state:NEEDS[RealSolarSystem] {\n";
-  initial_state_cfg << "  game_epoch = "
-                    << game_epoch - J2000 << "\n";
+  initial_state_cfg << "  game_epoch = " << game_epoch << "\n";
   initial_state_cfg << "  solar_system_epoch = "
-                    << solar_system.epoch() - J2000 << "\n";
+                    << solar_system.epoch() << "\n";
   for (std::string const& name : solar_system.names()) {
     serialization::InitialState::Cartesian::Body const& body =
         solar_system.cartesian_initial_state_message(name);

@@ -277,14 +277,25 @@ constexpr bool Time::is_end_of_day() const {
   return hour_ == 24;
 }
 
+// Note that millisecond == 1000 can happen for JD and MJD because of rounding.
 constexpr Time::Time(int const hour,
                      int const minute,
                      int const second,
                      int const millisecond)
-    : hour_(hour),
-      minute_(minute),
-      second_(second),
-      millisecond_(millisecond) {}
+    : hour_(millisecond == 1000 && second == 59 && minute == 59
+                ? hour + 1
+                : hour),
+      minute_(millisecond == 1000 && second == 59
+                  ? minute == 59
+                        ? 0
+                        : minute + 1
+                  : minute),
+      second_(millisecond == 1000
+                  ? second == 59
+                        ? 0
+                        : second + 1
+                  : second),
+      millisecond_(millisecond % 1000) {}
 
 constexpr Time const& Time::checked() const {
   return CHECKING(
@@ -825,13 +836,12 @@ constexpr Time TimeParser::JDFractionToTime(std::int64_t const digits,
   // Note that this results in rounding to the nearest millisecond.
   return CHECKING(
       digit_count <= 14,
-      Time::hhmmss_ms(
-          1'00'00 * digit_range(24 * digits, digit_count, digit_count + 2) +
-          1'00 * digit_range(60 * digit_range(24 * digits, 0, digit_count),
-                             digit_count, digit_count + 2) +
-          digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
-                      digit_count, digit_count + 2),
-          JDRoundedMilliseconds(digits, digit_count)));
+      Time(digit_range(24 * digits, digit_count, digit_count + 2),
+           digit_range(60 * digit_range(24 * digits, 0, digit_count),
+                       digit_count, digit_count + 2),
+           digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
+                       digit_count, digit_count + 2),
+           JDRoundedMilliseconds(digits, digit_count)).checked());
 }
 
 constexpr int TimeParser::JDRoundedMilliseconds(std::int64_t const digits,

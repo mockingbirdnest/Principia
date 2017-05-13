@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
@@ -20,6 +21,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using astronomy::ICRFJ2000Equator;
+using astronomy::ParseTT;
 using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::Bivector;
@@ -78,7 +80,7 @@ class PluginIntegrationTest : public testing::Test {
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
-        initial_time_(Instant() + 5400 * Second),
+        initial_time_("JD2451545.0625"),
         planetarium_rotation_(1 * Radian),
         plugin_(make_not_null_unique<Plugin>(initial_time_,
                                              initial_time_,
@@ -134,7 +136,7 @@ class PluginIntegrationTest : public testing::Test {
             Identity> icrf_to_barycentric_positions_;
   Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
-  Instant initial_time_;
+  std::string initial_time_;
   Angle planetarium_rotation_;
 
   not_null<std::unique_ptr<Plugin>> plugin_;
@@ -154,8 +156,9 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
 #endif
   Angle const planetarium_rotation = 42 * Radian;
   // We step for long enough that we will find a new segment.
-  Instant t = initial_time_;
-  for (t += δt; t < initial_time_ + 10 * 45 * Minute; t += δt) {
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant t = initial_time;
+  for (t += δt; t < initial_time + 10 * 45 * Minute; t += δt) {
     plugin_->AdvanceTime(t, planetarium_rotation);
   }
   EXPECT_THAT(
@@ -169,7 +172,7 @@ TEST_F(PluginIntegrationTest, AdvanceTimeWithCelestialsOnly) {
   plugin_ = Plugin::ReadFromMessage(plugin_message);
   // Having saved and loaded, we compute a new segment again, this probably
   // exercises apocalypse-type bugs.
-  for (; t < initial_time_ + 20 * 45 * Minute; t += δt) {
+  for (; t < initial_time + 20 * 45 * Minute; t += δt) {
     plugin_->AdvanceTime(t, planetarium_rotation);
   }
   EXPECT_THAT(
@@ -214,23 +217,24 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
 #else
   Time const δt_short = 0.02 * Second;
 #endif
-  Instant t = initial_time_ + δt_short;
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant t = initial_time + δt_short;
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth.
-  for (; t < initial_time_ + δt_long; t += δt_short) {
+  for (; t < initial_time + δt_long; t += δt_short) {
     plugin_->AdvanceTime(
         t,
-        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
   }
-  for (; t < initial_time_ + 12 * Hour; t += δt_long) {
+  for (; t < initial_time + 12 * Hour; t += δt_long) {
     plugin_->AdvanceTime(
         t,
-        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
@@ -241,7 +245,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
         World::origin + Velocity<World>(
             { 0.1 * AstronomicalUnit / Hour,
              -1.0 * AstronomicalUnit / Hour,
-              0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
+              0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
     auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
@@ -307,23 +311,24 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   Time const duration = 20 * Day;
   Time const δt_short = 0.02 * Second;
 #endif
-  Instant t = initial_time_ + δt_short;
+  Instant const initial_time = ParseTT(initial_time_);
+  Instant t = initial_time + δt_short;
   // Exercise #267 by having small time steps at the beginning of the trajectory
   // that are not synchronized with those of the Earth and Moon.
-  for (; t < initial_time_ + δt_long; t += δt_short) {
+  for (; t < initial_time + δt_long; t += δt_short) {
     plugin_->AdvanceTime(
         t,
-        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
   }
-  for (; t < initial_time_ + duration; t += δt_long) {
+  for (; t < initial_time + duration; t += δt_long) {
     plugin_->AdvanceTime(
         t,
-        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
@@ -331,7 +336,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                                 inserted);
   }
   plugin_->AdvanceTime(t,
-                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time_));
+                       1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
   plugin_->InsertOrKeepVessel(vessel_guid,
                               vessel_name,
                               SolarSystemFactory::Earth,
@@ -342,7 +347,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
       World::origin + Velocity<World>(
           { 0.1 * AstronomicalUnit / Hour,
            -1.0 * AstronomicalUnit / Hour,
-            0.0 * AstronomicalUnit / Hour}) * (t - initial_time_);
+            0.0 * AstronomicalUnit / Hour}) * (t - initial_time);
     auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
@@ -643,12 +648,12 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
 // only computed on |AdvanceTime()|, we advance time by a small amount.
 TEST_F(PluginIntegrationTest, Prediction) {
   Index const celestial = 0;
-  Plugin plugin(Instant(), Instant(), 0 * Radian);
+  Plugin plugin("JD2451545.0", "JD2451545.0", 0 * Radian);
   serialization::GravityModel::Body gravity_model;
   CHECK(google::protobuf::TextFormat::ParseFromString(
       R"(name                    : "Celestial"
          gravitational_parameter : "1 m^3/s^2"
-         reference_instant       : 2451545.0
+         reference_instant       : "JD2451545.0"
          mean_radius             : "1 m"
          axis_right_ascension    : "0 deg"
          axis_declination        : "90 deg"

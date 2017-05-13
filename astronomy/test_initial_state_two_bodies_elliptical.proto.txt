@@ -1,7 +1,7 @@
 initial_state {
   # The time of the initial state, as a TDB Julian date.
   # This is 1950-Jan-01 00:00:00.0000 TDB.
-  epoch : 2433282.500000000
+  epoch : "JD2433282.500000000"
 
   # The two bodies are on elliptical orbits around their centre of mass.  The
   # centre of mass is located at {0 km, 10/7 km, 0 km}.  The common orbital

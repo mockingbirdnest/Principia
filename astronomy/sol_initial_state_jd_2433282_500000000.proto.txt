@@ -2,7 +2,7 @@ initial_state {
   solar_system_frame : ICRF_J2000_EQUATOR
   # The time of the initial state, as a TDB Julian date.
   # This is 1950-Jan-01 00:00:00.0000 TDB.
-  epoch : 2433282.500000000
+  epoch : "JD2433282.500000000"
   cartesian {
     body {
       name : "Ariel"

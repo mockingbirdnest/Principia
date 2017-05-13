@@ -9,7 +9,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-MockPlugin::MockPlugin() : Plugin(Instant(), Instant(), Angle()) {}
+MockPlugin::MockPlugin() : Plugin("JD2451545", "JD2451545", Angle()) {}
 
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 MockPlugin::RenderBarycentricTrajectoryInWorld(
