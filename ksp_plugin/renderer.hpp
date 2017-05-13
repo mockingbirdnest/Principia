@@ -62,7 +62,10 @@ class Renderer {
   virtual Vessel const& GetTargetVessel() const;
 
   // Returns a trajectory in |World| corresponding to the trajectory defined by
-  // |begin| and |end|, as seen in the current plotting frame.
+  // |begin| and |end|, as seen in the current plotting frame.  In this function
+  // and others in this class, |sun_world_position| is the current position of
+  // the sun in |World| space as returned by |Planetarium.fetch.Sun.position|;
+  // it is used to define the relation between |WorldSun| and |World|.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
   RenderBarycentricTrajectoryInWorld(
       Instant const& time,
@@ -75,16 +78,14 @@ class Renderer {
   // trajectory defined by |begin| and |end|.  If there is a target vessel, its
   // prediction must cover the time corresponding to |end|.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
-  RenderBarycentricTrajectoryInNavigation(
+  RenderBarycentricTrajectoryInPlotting(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
-  // Converts a trajectory from |Navigation| to |World|.  |sun_world_position|
-  // is the current position of the sun in |World| space as returned by
-  // |Planetarium.fetch.Sun.position|.  It is used to define the relation
-  // between |WorldSun| and |World|.
+  // Returns a trajectory in |World| corresponding to the trajectory defined by
+  // |begin| and |end| in the current plotting frame.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderNavigationTrajectoryInWorld(
+  RenderPlottingTrajectoryInWorld(
       Instant const& time,
       DiscreteTrajectory<Navigation>::Iterator const& begin,
       DiscreteTrajectory<Navigation>::Iterator const& end,
@@ -93,7 +94,7 @@ class Renderer {
 
   // Coordinate transforms.
 
-  virtual RigidMotion<Barycentric, Navigation> BarycentricToNavigation(
+  virtual RigidMotion<Barycentric, Navigation> BarycentricToPlotting(
       Instant const& time) const;
 
   virtual RigidMotion<Barycentric, World> BarycentricToWorld(
@@ -113,15 +114,15 @@ class Renderer {
       Vessel const& vessel,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual OrthogonalMap<Navigation, Barycentric> NavigationToBarycentric(
+  virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
-  virtual RigidMotion<Navigation, World> NavigationToWorld(
+  virtual RigidMotion<Navigation, World> PlottingToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual OrthogonalMap<Navigation, World> NavigationToWorld(
+  virtual OrthogonalMap<Navigation, World> PlottingToWorld(
       Instant const& time,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
