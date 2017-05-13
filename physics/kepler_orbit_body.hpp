@@ -23,6 +23,7 @@ using geometry::InnerProduct;
 using geometry::Normalize;
 using geometry::OrientedAngleBetween;
 using geometry::Rotation;
+using geometry::Sign;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
@@ -494,8 +495,9 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
                            : Pow<2>(*semiminor_axis);
     eccentricity = Sqrt(1 - b² / Pow<2>(a));
     semilatus_rectum = b² / a;
-    periapsis_distance = a - Sqrt(Pow<2>(a) - b²);
-    apoapsis_distance = a + Sqrt(Pow<2>(a) - b²);
+    auto const sgn_a_sqrt_a²_minus_b² = Sign(a) * Sqrt(Pow<2>(a) - b²);
+    periapsis_distance = a - sgn_a_sqrt_a²_minus_b²;
+    apoapsis_distance = a + sgn_a_sqrt_a²_minus_b²;
   } else if (semimajor_axis && semilatus_rectum) {
     Length const& a = *semimajor_axis;
     Length const& p = *semilatus_rectum;
