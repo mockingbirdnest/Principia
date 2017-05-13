@@ -423,8 +423,8 @@ void SolarSystem<Frame>::ReplaceElements(
   body_elements->set_longitude_of_ascending_node(
       DebugString(elements.longitude_of_ascending_node));
   body_elements->set_argument_of_periapsis(
-      DebugString(elements.argument_of_periapsis));
-  body_elements->set_mean_anomaly(DebugString(elements.mean_anomaly));
+      DebugString(*elements.argument_of_periapsis));
+  body_elements->set_mean_anomaly(DebugString(*elements.mean_anomaly));
 }
 
 template<typename Frame>
