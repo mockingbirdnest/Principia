@@ -395,7 +395,6 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       specific_energy = -Pow<2>(Cbrt(μ * n / Radian)) / 2;
       characteristic_energy =  -Pow<2>(Cbrt(μ * n / Radian));
       period = 2 * π * Radian / n;
-      // The following two are NaN.
       hyperbolic_mean_motion = Sqrt(-Pow<2>(n));
       hyperbolic_excess_velocity = Sqrt(-Pow<2>(Cbrt(μ * n / Radian)));
     } else if (period) {
@@ -404,7 +403,6 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       specific_energy = -Cbrt(Pow<2>(π * μ / T) / 2);
       characteristic_energy = -Cbrt(Pow<2>(2 * π * μ / T));
       mean_motion = 2 * π * Radian / T;
-      // The following two are NaN.
       hyperbolic_mean_motion = 2 * π * Radian * Sqrt(-1 / Pow<2>(T));
       hyperbolic_excess_velocity = Cbrt(2 * π * Sqrt(-Pow<2>(μ / T)));
     } else if (hyperbolic_mean_motion) {
@@ -412,7 +410,6 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       semimajor_axis = -Cbrt(μ / Pow<2>(n_over_i / Radian));
       specific_energy = Pow<2>(Cbrt(μ * n_over_i / Radian)) / 2;
       characteristic_energy =  Pow<2>(Cbrt(μ * n_over_i / Radian));
-      // The following two are NaN.
       period = 2 * π * Radian / Sqrt(-Pow<2>(n_over_i));
       mean_motion = Sqrt(-Pow<2>(n_over_i));
       hyperbolic_excess_velocity = Sqrt(Pow<2>(Cbrt(μ * n_over_i / Radian)));
@@ -421,7 +418,6 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       semimajor_axis = -μ / Pow<2>(v_inf);
       specific_energy = Pow<2>(v_inf) / 2;
       characteristic_energy =  Pow<2>(v_inf);
-      // The following two are NaN.
       period = 2 * π * Sqrt(-Pow<2>(μ) / Pow<6>(v_inf));
       mean_motion = Sqrt(-Pow<6>(v_inf) / Pow<2>(μ)) * Radian;
       hyperbolic_mean_motion = Sqrt(Pow<6>(v_inf) / Pow<2>(μ)) * Radian;

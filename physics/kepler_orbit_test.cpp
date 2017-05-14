@@ -353,7 +353,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
                 AlmostEquals(expected_velocity, 26));
     EXPECT_THAT(*voyager_orbit.elements_at_epoch().hyperbolic_mean_motion,
-                AlmostEquals(*VoyagerElements().mean_motion, 2));
+                AlmostEquals(*VoyagerElements().hyperbolic_mean_motion, 4));
   }
 
   partial_elements.semimajor_axis.reset();
