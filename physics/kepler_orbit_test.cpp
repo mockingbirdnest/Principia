@@ -391,23 +391,23 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
               AlmostEquals(*SimpleEllipse().longitude_of_periapsis, 0));
 }
 
-#define CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(element1, element2, reference)      \
+#define CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(element1, element2, reference)       \
   \
-[&]() {                                                                       \
-    KeplerianElements<ICRFJ2000Equator> elements;                             \
-    elements.element1 = (reference).element1;                                 \
-    elements.element2 = (reference).element2;                                 \
-    /* Leaving the orientation parameters and anomalies to their default      \
-     values.  This test does not exercise them. */                            \
-    elements.argument_of_periapsis.emplace();                                 \
-    elements.mean_anomaly.emplace();                                          \
-    elements =                                                                \
-        KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000) \
-            .elements_at_epoch();                                             \
-    /* The inputs must not change. */                                         \
-    EXPECT_THAT(*elements.element1, Eq(*(reference).element1));               \
-    EXPECT_THAT(*elements.element2, Eq(*(reference).element2));               \
-    return elements;                                                          \
+[&]() {                                                                        \
+    KeplerianElements<ICRFJ2000Equator> elements;                              \
+    elements.element1 = (reference).element1;                                  \
+    elements.element2 = (reference).element2;                                  \
+    /* Leaving the orientation parameters and anomalies to their default    */ \
+    /* values.  This test does not exercise them.                           */ \
+    elements.argument_of_periapsis.emplace();                                  \
+    elements.mean_anomaly.emplace();                                           \
+    elements =                                                                 \
+        KeplerOrbit<ICRFJ2000Equator>(body_, MasslessBody{}, elements, J2000)  \
+            .elements_at_epoch();                                              \
+    /* The inputs must not change.                                          */ \
+    EXPECT_THAT(*elements.element1, Eq(*(reference).element1));                \
+    EXPECT_THAT(*elements.element2, Eq(*(reference).element2));                \
+    return elements;                                                           \
   }()
 
 // Test all code paths for completing the conic parameters, first with an

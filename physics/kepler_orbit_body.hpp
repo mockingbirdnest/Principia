@@ -427,7 +427,7 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
       hyperbolic_mean_motion = Sqrt(Pow<6>(v_inf) / Pow<2>(μ)) * Radian;
     }
   }
-  if(must_complete_semiminor_axis) {
+  if (must_complete_semiminor_axis) {
     if (semiminor_axis) {
       impact_parameter = Sqrt(-Pow<2>(*semiminor_axis));
     } else if (impact_parameter) {
