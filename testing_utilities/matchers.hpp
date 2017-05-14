@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "gmock/gmock.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"
