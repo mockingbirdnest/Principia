@@ -739,11 +739,18 @@ public partial class PrincipiaPluginAdapter
             case VesselAutopilot.AutopilotMode.Retrograde:
               rsas_target_ = -prograde;
               break;
+            // NOTE(egg): For reasons that are unlikely to become clear again,
+            // the button labeled with the radial in icon sets the autopilot
+            // mode to |RadialOut|, and vice-versa.  As a result, we must set
+            // the target to the outwards radial (negative normal) vector if the
+            // mode is |RadialIn|.  Contrast with the navball vectors above,
+            // which do not exhibit this inconsistency (thus where
+            // |radialInVector| is set to |radial|).
             case VesselAutopilot.AutopilotMode.RadialIn:
-              rsas_target_ = radial;
+              rsas_target_ = -radial;
               break;
             case VesselAutopilot.AutopilotMode.RadialOut:
-              rsas_target_ = -radial;
+              rsas_target_ = radial;
               break;
             case VesselAutopilot.AutopilotMode.Normal:
               rsas_target_ = normal;
