@@ -5,6 +5,7 @@
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -31,6 +32,7 @@ using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Identity;
 using geometry::OrthogonalMap;
+using geometry::Rotation;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
@@ -210,6 +212,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       Velocity<Barycentric>());
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));

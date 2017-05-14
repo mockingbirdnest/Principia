@@ -339,7 +339,7 @@ class Plugin {
   // |Barycentric| axes. Since |AliceSun| is not a rotating reference frame,
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
-  Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
+  virtual Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
 
   virtual Renderer& renderer();
   virtual Renderer const& renderer() const;
