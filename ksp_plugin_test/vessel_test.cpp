@@ -16,6 +16,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -35,6 +36,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Return;
@@ -349,7 +351,7 @@ TEST_F(VesselTest, SerializationSuccess) {
 
   serialization::Vessel second_message;
   v->WriteToMessage(&second_message);
-  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 }  // namespace internal_vessel

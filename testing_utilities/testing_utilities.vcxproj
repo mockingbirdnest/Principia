@@ -37,6 +37,7 @@
     <ClInclude Include="integration_body.hpp" />
     <ClInclude Include="make_not_null.hpp" />
     <ClInclude Include="make_not_null_body.hpp" />
+    <ClInclude Include="matchers.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
     <ClInclude Include="solar_system_factory.hpp" />

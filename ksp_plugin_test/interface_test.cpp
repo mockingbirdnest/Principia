@@ -24,6 +24,7 @@
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace interface {
@@ -81,6 +82,7 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
+using testing_utilities::EqualsProto;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -131,10 +133,6 @@ MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
          arg.specific_impulse == specific_impulse &&
          arg.initial_time == initial_time &&
          arg.Δv == Δv;
-}
-
-MATCHER_P(ProtoMatches, expected, "") {
-  return arg.SerializeAsString() == expected.SerializeAsString();
 }
 
 class InterfaceTest : public testing::Test {
@@ -310,8 +308,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
               InsertCelestialAbsoluteCartesian(
                   celestial_index,
                   std::experimental::make_optional(parent_index),
-                  ProtoMatches(gravity_model),
-                  ProtoMatches(initial_state)));
+                  EqualsProto(gravity_model),
+                  EqualsProto(initial_state)));
 
   BodyParameters const body_parameters = {
       "Brian",
@@ -364,8 +362,8 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
               InsertCelestialAbsoluteCartesian(
                   celestial_index,
                   std::experimental::make_optional(parent_index),
-                  ProtoMatches(gravity_model),
-                  ProtoMatches(initial_state)));
+                  EqualsProto(gravity_model),
+                  EqualsProto(initial_state)));
 
   BodyParameters const body_parameters = {"that is called Brian",
                                           "1.2345e6  km^3 / s^2",

@@ -12,6 +12,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -36,6 +37,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::EqualsProto;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -470,7 +472,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
           tolerance_to_error_ratio);
   serialization::IntegratorInstance message2;
   instance2->WriteToMessage(&message2);
-  EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());
+  EXPECT_THAT(message1, EqualsProto(message2));
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
