@@ -125,6 +125,9 @@
     <ClInclude Include="file_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="version.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -159,6 +162,9 @@
     </ClCompile>
     <ClCompile Include="function_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="version.generated.cc">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
