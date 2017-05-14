@@ -289,36 +289,29 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
                 AlmostEquals(expected_velocity, 23));
   }
 
-  KeplerOrbit<ICRFJ2000Equator> moon_orbit_from_state_vectors(
-      *earth,
-      *moon,
-      {expected_displacement, expected_velocity},
-      date);
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().eccentricity,
+  KeplerOrbit<ICRFJ2000Equator> moon_orbit(
+      *earth, *moon, {expected_displacement, expected_velocity}, date);
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().eccentricity,
               AlmostEquals(*MoonElements().eccentricity, 8));
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().semimajor_axis,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().semimajor_axis,
               AlmostEquals(*MoonElements().semimajor_axis, 1));
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().mean_motion,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_motion,
               AlmostEquals(*MoonElements().mean_motion, 0));
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().period,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().period,
               AlmostEquals(*MoonElements().period, 0));
-  EXPECT_THAT(
-      *moon_orbit_from_state_vectors.elements_at_epoch().periapsis_distance,
-      AlmostEquals(*MoonElements().periapsis_distance, 2));
-  EXPECT_THAT(
-      *moon_orbit_from_state_vectors.elements_at_epoch().apoapsis_distance,
-      AlmostEquals(*MoonElements().apoapsis_distance, 1));
-  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch().inclination,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().periapsis_distance,
+              AlmostEquals(*MoonElements().periapsis_distance, 2));
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().apoapsis_distance,
+              AlmostEquals(*MoonElements().apoapsis_distance, 1));
+  EXPECT_THAT(moon_orbit.elements_at_epoch().inclination,
               AlmostEquals(MoonElements().inclination, 1));
-  EXPECT_THAT(moon_orbit_from_state_vectors.elements_at_epoch()
-                  .longitude_of_ascending_node,
+  EXPECT_THAT(moon_orbit.elements_at_epoch().longitude_of_ascending_node,
               AlmostEquals(MoonElements().longitude_of_ascending_node, 28));
-  EXPECT_THAT(
-      *moon_orbit_from_state_vectors.elements_at_epoch().argument_of_periapsis,
-      AlmostEquals(*MoonElements().argument_of_periapsis, 6));
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().mean_anomaly,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().argument_of_periapsis,
+              AlmostEquals(*MoonElements().argument_of_periapsis, 6));
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_anomaly,
               AlmostEquals(*MoonElements().mean_anomaly, 6));
-  EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().true_anomaly,
+  EXPECT_THAT(*moon_orbit.elements_at_epoch().true_anomaly,
               AlmostEquals(*MoonElements().true_anomaly, 5));
 }
 
@@ -367,34 +360,26 @@ TEST_F(KeplerOrbitTest, Voyager1) {
                 AlmostEquals(expected_velocity, 28));
   }
 
-  KeplerOrbit<ICRFJ2000Equator> voyager_orbit_from_state_vectors(
+  KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
       *sun, voyager1, {expected_displacement, expected_velocity}, date);
-  EXPECT_THAT(
-      *voyager_orbit_from_state_vectors.elements_at_epoch().eccentricity,
-      AlmostEquals(*VoyagerElements().eccentricity, 2));
-  EXPECT_THAT(
-      *voyager_orbit_from_state_vectors.elements_at_epoch().semimajor_axis,
-      AlmostEquals(*VoyagerElements().semimajor_axis, 3));
-  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
-                   .hyperbolic_mean_motion,
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().eccentricity,
+              AlmostEquals(*VoyagerElements().eccentricity, 2));
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().semimajor_axis,
+              AlmostEquals(*VoyagerElements().semimajor_axis, 3));
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().hyperbolic_mean_motion,
               AlmostEquals(*VoyagerElements().hyperbolic_mean_motion, 0));
-  EXPECT_THAT(
-      *voyager_orbit_from_state_vectors.elements_at_epoch().periapsis_distance,
-      AlmostEquals(*VoyagerElements().periapsis_distance, 4));
-  EXPECT_THAT(voyager_orbit_from_state_vectors.elements_at_epoch().inclination,
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().periapsis_distance,
+              AlmostEquals(*VoyagerElements().periapsis_distance, 4));
+  EXPECT_THAT(voyager_orbit.elements_at_epoch().inclination,
               AlmostEquals(VoyagerElements().inclination, 10));
-  EXPECT_THAT(voyager_orbit_from_state_vectors.elements_at_epoch()
-                  .longitude_of_ascending_node,
+  EXPECT_THAT(voyager_orbit.elements_at_epoch().longitude_of_ascending_node,
               AlmostEquals(VoyagerElements().longitude_of_ascending_node, 9));
-  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
-                   .argument_of_periapsis,
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().argument_of_periapsis,
               AlmostEquals(*VoyagerElements().argument_of_periapsis, 5));
-  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
-                   .hyperbolic_mean_anomaly,
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().hyperbolic_mean_anomaly,
               AlmostEquals(*VoyagerElements().hyperbolic_mean_anomaly, 0));
-  EXPECT_THAT(
-      *voyager_orbit_from_state_vectors.elements_at_epoch().true_anomaly,
-      AlmostEquals(*VoyagerElements().true_anomaly, 3));
+  EXPECT_THAT(*voyager_orbit.elements_at_epoch().true_anomaly,
+              AlmostEquals(*VoyagerElements().true_anomaly, 3));
 }
 
 TEST_F(KeplerOrbitTest, TrueAnomalyToEllipticMeanAnomaly) {
