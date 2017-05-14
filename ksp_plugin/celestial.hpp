@@ -40,10 +40,12 @@ class Celestial {
   void set_trajectory(
       not_null<ContinuousTrajectory<Barycentric> const*> trajectory);
   ContinuousTrajectory<Barycentric> const& trajectory() const;
-  DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
+  virtual DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
       Instant const& current_time) const;
-  Position<Barycentric> current_position(Instant const& current_time) const;
-  Velocity<Barycentric> current_velocity(Instant const& current_time) const;
+  virtual Position<Barycentric> current_position(
+      Instant const& current_time) const;
+  virtual Velocity<Barycentric> current_velocity(
+      Instant const& current_time) const;
 
   not_null<RotatingBody<Barycentric> const*> body() const;
   bool has_parent() const;

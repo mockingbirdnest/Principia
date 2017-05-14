@@ -2,6 +2,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "base/not_null.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -24,6 +25,8 @@ namespace internal_renderer {
 
 using base::not_null;
 using geometry::AngularVelocity;
+using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
@@ -35,6 +38,7 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
@@ -53,20 +57,19 @@ class RendererTest : public ::testing::Test {
 
   // TODO(phl): There is a similar function in ContinuousTrajectoryTest and
   // possibly in other places.  It would be good to factor this out.
+  template<typename Frame>
   void FillTrajectory(
       Instant const& time,
       Time const& step,
       int const number_of_steps,
-      std::function<Position<Barycentric>(Instant const& t)> const&
-          position_function,
-      std::function<Velocity<Barycentric>(Instant const& t)> const&
-          velocity_function,
-      DiscreteTrajectory<Barycentric>& trajectory) {
+      std::function<Position<Frame>(Instant const& t)> const& position_function,
+      std::function<Velocity<Frame>(Instant const& t)> const& velocity_function,
+      DiscreteTrajectory<Frame>& trajectory) {
     for (int i = 0; i < number_of_steps; ++i) {
       Instant const ti = time + i * step;
       trajectory.Append(ti,
-                        DegreesOfFreedom<Barycentric>(position_function(ti),
-                                                      velocity_function(ti)));
+                        DegreesOfFreedom<Frame>(position_function(ti),
+                                                velocity_function(ti)));
     }
   }
 
@@ -85,7 +88,7 @@ TEST_F(RendererTest, TargetVessel) {
 
   MockVessel vessel;
   DiscreteTrajectory<Barycentric> vessel_trajectory;
-  FillTrajectory(
+  FillTrajectory<Barycentric>(
       /*time=*/t0_,
       /*step=*/1 * Second,
       /*number_of_steps=*/1,
@@ -112,7 +115,7 @@ TEST_F(RendererTest, TargetVessel) {
 
 TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
   DiscreteTrajectory<Barycentric> trajectory_to_render;
-  FillTrajectory(
+  FillTrajectory<Barycentric>(
       /*time=*/t0_,
       /*step=*/1 * Second,
       /*number_of_steps=*/10,
@@ -173,7 +176,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
       .WillRepeatedly(Return(&celestial_trajectory));
 
   DiscreteTrajectory<Barycentric> trajectory_to_render;
-  FillTrajectory(
+  FillTrajectory<Barycentric>(
       /*time=*/t0_,
       /*step=*/1 * Second,
       /*number_of_steps=*/10,
@@ -194,7 +197,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   // The prediction is shorter than the |trajectory_to_render|.
   MockVessel vessel;
   DiscreteTrajectory<Barycentric> vessel_trajectory;
-  FillTrajectory(
+  FillTrajectory<Barycentric>(
       /*time=*/t0_ + 3 * Second,
       /*step=*/1 * Second,
       /*number_of_steps=*/5,
@@ -240,6 +243,66 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
     EXPECT_LT((it.degrees_of_freedom().position() - Navigation::origin).Norm(),
               42 * Metre);
     EXPECT_LT(it.degrees_of_freedom().velocity().Norm(), 6 * Metre / Second);
+    ++index;
+  }
+}
+
+TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
+  DiscreteTrajectory<Navigation> trajectory_to_render;
+  FillTrajectory<Navigation>(
+      /*time=*/t0_,
+      /*step=*/1 * Second,
+      /*number_of_steps=*/10,
+      /*position_function=*/
+          [this](Instant const& t) {
+            return Navigation::origin +
+                   (t - t0_) * Velocity<Navigation>({6 * Metre / Second,
+                                                     5 * Metre / Second,
+                                                     4 * Metre / Second});
+          },
+      /*velocity_function=*/
+          [](Instant const& t) {
+            return Velocity<Navigation>(
+                {6 * Metre / Second, 5 * Metre / Second, 4 * Metre / Second});
+          },
+      trajectory_to_render);
+
+  Instant const rendering_time = t0_ + 5 * Second;
+  Position<World> const sun_world_position =
+      World::origin +
+      Displacement<World>({300 * Metre, 200 * Metre, 100 * Metre});
+  Rotation<Barycentric, AliceSun> const planetarium_rotation(
+      1 * Radian,
+      Bivector<double, Barycentric>({1.0, 1.1, 1.2}),
+      DefinesFrame<AliceSun>{});
+  RigidMotion<Navigation, Barycentric> rigid_motion(
+      RigidTransformation<Navigation, Barycentric>::Identity(),
+      AngularVelocity<Navigation>(),
+      Velocity<Navigation>());
+  EXPECT_CALL(*dynamic_frame_, FromThisFrameAtTime(rendering_time))
+      .WillOnce(Return(rigid_motion));
+  EXPECT_CALL(celestial_, current_position(rendering_time))
+      .WillOnce(Return(Barycentric::origin));
+
+  auto const rendered_trajectory =
+      renderer_.RenderPlottingTrajectoryInWorld(rendering_time,
+                                                trajectory_to_render.Begin(),
+                                                trajectory_to_render.End(),
+                                                sun_world_position,
+                                                planetarium_rotation);
+
+  EXPECT_EQ(10, rendered_trajectory->Size());
+  int index = 0;
+  for (auto it = rendered_trajectory->Begin();
+       it != rendered_trajectory->End();
+       ++it) {
+    EXPECT_EQ(Instant{} + index * Second, it.time());
+    // The degrees of freedom are computed using real geometrical transforms.
+    // No point in re-doing the computation here, we just check that the numbers
+    // are reasonable.
+    EXPECT_LT((it.degrees_of_freedom().position() - World::origin).Norm(),
+              452 * Metre);
+    EXPECT_LT(it.degrees_of_freedom().velocity().Norm(), 9 * Metre / Second);
     ++index;
   }
 }
