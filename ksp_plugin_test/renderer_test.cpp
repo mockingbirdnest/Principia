@@ -307,6 +307,13 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
   }
 }
 
+TEST_F(RendererTest, Serialization) {
+  serialization::Renderer message;
+  EXPECT_CALL(*dynamic_frame_, WriteToMessage(_));
+  renderer_.WriteToMessage(&message);
+  EXPECT_TRUE(message.has_plotting_frame());
+}
+
 }  // namespace internal_renderer
 }  // namespace ksp_plugin
 }  // namespace principia
