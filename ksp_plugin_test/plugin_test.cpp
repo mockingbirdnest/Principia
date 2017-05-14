@@ -396,7 +396,7 @@ TEST_F(PluginTest, Serialization) {
     keplerian_body.set_parent(parent_name);
     serialization::InitialState::Keplerian::Body::Elements* elements =
         keplerian_body.mutable_elements();
-    elements->set_eccentricity(keplerian_elements.eccentricity);
+    elements->set_eccentricity(*keplerian_elements.eccentricity);
     // s^-1 rad is inconvenient to parse.
     elements->set_mean_motion(
         DebugString(*keplerian_elements.mean_motion / (Radian / Second)) +
@@ -405,8 +405,8 @@ TEST_F(PluginTest, Serialization) {
     elements->set_longitude_of_ascending_node(
         DebugString(keplerian_elements.longitude_of_ascending_node));
     elements->set_argument_of_periapsis(
-        DebugString(keplerian_elements.argument_of_periapsis));
-    elements->set_mean_anomaly(DebugString(keplerian_elements.mean_anomaly));
+        DebugString(*keplerian_elements.argument_of_periapsis));
+    elements->set_mean_anomaly(DebugString(*keplerian_elements.mean_anomaly));
     plugin->InsertCelestialJacobiKeplerian(
         index,
         parent_index,
