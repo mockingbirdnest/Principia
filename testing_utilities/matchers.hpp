@@ -12,7 +12,7 @@ namespace testing_utilities {
 
 MATCHER_P(EqualsProto,
           expected,
-          std::string(negation ? "isn't" : "is") + " equal to:\n" +
+          std::string(negation ? "is not" : "is") + " equal to:\n" +
               expected.ShortDebugString()) {
   std::string result;
   ::google::protobuf::util::MessageDifferencer differencer;
