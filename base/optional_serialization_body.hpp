@@ -6,11 +6,13 @@
 namespace principia {
 namespace base {
 
-template<typename T, typename MessagePtr>
-void WriteOptionalToMessage(MessagePtr message,
-                            std::experimental::optional<T> value) {
+template<typename T, typename Message>
+void WriteToOptional(OptionalField<Message> field,
+                     std::experimental::optional<T> const& value) {
   if (value) {
-    value->WriteToMessage(message);
+    value->WriteToMessage(field.mutable_field());
+  } else {
+    field.clear_field();
   }
 }
 

@@ -14,7 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
-using base::WriteOptionalToMessage;
+using base::WriteToOptional;
 using geometry::AngleBetween;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -55,46 +55,46 @@ void KeplerianElements<Frame>::WriteToMessage(
   if (eccentricity) {
     message->set_eccentricity(*eccentricity);
   }
-  WriteOptionalToMessage(message->mutable_asymptotic_true_anomaly(),
-                         asymptotic_true_anomaly);
-  WriteOptionalToMessage(message->mutable_turning_angle(), turning_angle);
+  WriteToOptional(OPTIONAL_FIELD(message, asymptotic_true_anomaly),
+                  asymptotic_true_anomaly);
+  WriteToOptional(OPTIONAL_FIELD(message, turning_angle), turning_angle);
 
-  WriteOptionalToMessage(message->mutable_semimajor_axis(), semimajor_axis);
-  WriteOptionalToMessage(message->mutable_specific_energy(), specific_energy);
-  WriteOptionalToMessage(message->mutable_characteristic_energy(),
-                         characteristic_energy);
-  WriteOptionalToMessage(message->mutable_mean_motion(), mean_motion);
-  WriteOptionalToMessage(message->mutable_period(), period);
-  WriteOptionalToMessage(message->mutable_hyperbolic_mean_motion(),
-                         hyperbolic_mean_motion);
-  WriteOptionalToMessage(message->mutable_hyperbolic_excess_velocity(),
-                         hyperbolic_excess_velocity);
+  WriteToOptional(OPTIONAL_FIELD(message, semimajor_axis), semimajor_axis);
+  WriteToOptional(OPTIONAL_FIELD(message, specific_energy), specific_energy);
+  WriteToOptional(OPTIONAL_FIELD(message, characteristic_energy),
+                  characteristic_energy);
+  WriteToOptional(OPTIONAL_FIELD(message, mean_motion), mean_motion);
+  WriteToOptional(OPTIONAL_FIELD(message, period), period);
+  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_mean_motion),
+                  hyperbolic_mean_motion);
+  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_excess_velocity),
+                  hyperbolic_excess_velocity);
 
-  WriteOptionalToMessage(message->mutable_semiminor_axis(), semiminor_axis);
-  WriteOptionalToMessage(message->mutable_impact_parameter(), impact_parameter);
+  WriteToOptional(OPTIONAL_FIELD(message, semiminor_axis), semiminor_axis);
+  WriteToOptional(OPTIONAL_FIELD(message, impact_parameter), impact_parameter);
 
-  WriteOptionalToMessage(message->mutable_semilatus_rectum(), semilatus_rectum);
-  WriteOptionalToMessage(message->mutable_specific_angular_momentum(),
-                         specific_angular_momentum);
+  WriteToOptional(OPTIONAL_FIELD(message, semilatus_rectum), semilatus_rectum);
+  WriteToOptional(OPTIONAL_FIELD(message, specific_angular_momentum),
+                  specific_angular_momentum);
 
-  WriteOptionalToMessage(message->mutable_periapsis_distance(),
-                         periapsis_distance);
+  WriteToOptional(OPTIONAL_FIELD(message, periapsis_distance),
+                  periapsis_distance);
 
-  WriteOptionalToMessage(message->mutable_apoapsis_distance(),
-                         apoapsis_distance);
+  WriteToOptional(OPTIONAL_FIELD(message, apoapsis_distance),
+                  apoapsis_distance);
 
   inclination.WriteToMessage(message->mutable_inclination());
   longitude_of_ascending_node.WriteToMessage(
       message->mutable_longitude_of_ascending_node());
-  WriteOptionalToMessage(message->mutable_argument_of_periapsis(),
-                         argument_of_periapsis);
-  WriteOptionalToMessage(message->mutable_longitude_of_periapsis(),
-                         longitude_of_periapsis);
+  WriteToOptional(OPTIONAL_FIELD(message, argument_of_periapsis),
+                  argument_of_periapsis);
+  WriteToOptional(OPTIONAL_FIELD(message, longitude_of_periapsis),
+                  longitude_of_periapsis);
 
-  WriteOptionalToMessage(message->mutable_true_anomaly(), true_anomaly);
-  WriteOptionalToMessage(message->mutable_mean_anomaly(), mean_anomaly);
-  WriteOptionalToMessage(message->mutable_hyperbolic_mean_anomaly(),
-                         hyperbolic_mean_anomaly);
+  WriteToOptional(OPTIONAL_FIELD(message, true_anomaly), true_anomaly);
+  WriteToOptional(OPTIONAL_FIELD(message, mean_anomaly), mean_anomaly);
+  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_mean_anomaly),
+                  hyperbolic_mean_anomaly);
 }
 
 template<typename Frame>
