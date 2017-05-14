@@ -172,28 +172,6 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   EXPECT_CALL(ephemeris, trajectory(_))
       .WillRepeatedly(Return(&celestial_trajectory));
 
-  MockVessel vessel;
-  DiscreteTrajectory<Barycentric> vessel_trajectory;
-  FillTrajectory(
-      /*time=*/t0_ + 3 * Second,
-      /*step=*/1 * Second,
-      /*number_of_steps=*/5,
-      /*position_function=*/
-          [this](Instant const& t) {
-            return Barycentric::origin +
-                   (t - t0_) * Velocity<Barycentric>({1 * Metre / Second,
-                                                      2 * Metre / Second,
-                                                      3 * Metre / Second});
-          },
-      /*velocity_function=*/
-          [](Instant const& t) {
-            return Velocity<Barycentric>(
-                {1 * Metre / Second, 2 * Metre / Second, 3 * Metre / Second});
-          },
-      vessel_trajectory);
-  EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(vessel_trajectory));
-
   DiscreteTrajectory<Barycentric> trajectory_to_render;
   FillTrajectory(
       /*time=*/t0_,
@@ -213,13 +191,35 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
           },
       trajectory_to_render);
 
-  RigidMotion<Barycentric, Navigation> rigid_motion(
-      RigidTransformation<Barycentric, Navigation>::Identity(),
-      AngularVelocity<Barycentric>(),
-      Velocity<Barycentric>());
+  // The prediction is shorter than the |trajectory_to_render|.
+  MockVessel vessel;
+  DiscreteTrajectory<Barycentric> vessel_trajectory;
+  FillTrajectory(
+      /*time=*/t0_ + 3 * Second,
+      /*step=*/1 * Second,
+      /*number_of_steps=*/5,
+      /*position_function=*/
+      [this](Instant const& t) {
+        return Barycentric::origin +
+               (t - t0_) * Velocity<Barycentric>({1 * Metre / Second,
+                                                  2 * Metre / Second,
+                                                  3 * Metre / Second});
+      },
+      /*velocity_function=*/
+      [](Instant const& t) {
+        return Velocity<Barycentric>(
+            {1 * Metre / Second, 2 * Metre / Second, 3 * Metre / Second});
+      },
+      vessel_trajectory);
+  EXPECT_CALL(vessel, prediction())
+      .WillRepeatedly(ReturnRef(vessel_trajectory));
+
   for (Instant t = t0_ + 3 * Second; t < t0_ + 8 * Second; t += 1 * Second) {
-    EXPECT_CALL(*dynamic_frame_, ToThisFrameAtTime(t))
-        .WillOnce(Return(rigid_motion));
+    EXPECT_CALL(celestial_trajectory, EvaluateDegreesOfFreedom(t))
+        .WillOnce(Return(DegreesOfFreedom<Barycentric>(
+            Barycentric::origin + Displacement<Barycentric>(
+                                      {300 * Metre, 200 * Metre, 100 * Metre}),
+            Velocity<Barycentric>())));
   }
 
   renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
@@ -233,19 +233,13 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   for (auto it = rendered_trajectory->Begin();
        it != rendered_trajectory->End();
        ++it) {
-    EXPECT_EQ(Instant{} + 3 * Second, it.time());
-    EXPECT_THAT(
-        it.degrees_of_freedom(),
-        Componentwise(
-            AlmostEquals(Navigation::origin +
-                             Displacement<Navigation>({6 * index * Metre,
-                                                       5 * index * Metre,
-                                                       4 * index * Metre}),
-                         0),
-            AlmostEquals(Velocity<Navigation>({6 * Metre / Second,
-                                               5 * Metre / Second,
-                                               4 * Metre / Second}),
-                         0)));
+    EXPECT_EQ(Instant{} + index * Second, it.time());
+    // The degrees of freedom are computed using a real dynamic frame, not a
+    // mock.  No point in re-doing the computation here, we just check that the
+    // numbers are reasonable.
+    EXPECT_LT((it.degrees_of_freedom().position() - Navigation::origin).Norm(),
+              42 * Metre);
+    EXPECT_LT(it.degrees_of_freedom().velocity().Norm(), 6 * Metre / Second);
     ++index;
   }
 }

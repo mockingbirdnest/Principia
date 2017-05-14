@@ -87,9 +87,7 @@ not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
 Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  CHECK(!target_ || begin == end ||
-        (!target_->vessel->prediction().Empty() &&
-         end.time() <= target_->vessel->prediction().last().time()));
+  CHECK(!target_ || !target_->vessel->prediction().Empty());
 
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
   for (auto it = begin; it != end; ++it) {

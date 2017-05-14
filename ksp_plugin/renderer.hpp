@@ -78,7 +78,7 @@ class Renderer {
 
   // Returns a trajectory in the current plotting frame corresponding to the
   // trajectory defined by |begin| and |end|.  If there is a target vessel, its
-  // prediction must cover the time corresponding to |end|.
+  // prediction must not be empty.
   virtual not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
   RenderBarycentricTrajectoryInPlotting(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
