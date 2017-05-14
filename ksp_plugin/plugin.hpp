@@ -316,10 +316,10 @@ class Plugin {
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBodySurfaceNavigationFrame(Index reference_body_index) const;
 
-   virtual void SetTargetVessel(GUID const& vessel_guid,
-                                Index reference_body_index);
+  virtual void SetTargetVessel(GUID const& vessel_guid,
+                               Index reference_body_index);
 
-   // The navball field at |current_time| for the current |plotting_frame_|.
+  // The navball field at |current_time| for the current |plotting_frame_|.
   virtual std::unique_ptr<FrameField<World, Navball>> NavballFrameField(
       Position<World> const& sun_world_position) const;
 

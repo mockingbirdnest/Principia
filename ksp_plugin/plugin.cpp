@@ -571,7 +571,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
                                 degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
-          world_origin.position(), World::origin, 
+          world_origin.position(), World::origin,
             renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};

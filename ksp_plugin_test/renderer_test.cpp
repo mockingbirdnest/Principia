@@ -152,7 +152,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithoutTargetVessel) {
   for (auto it = rendered_trajectory->Begin();
        it != rendered_trajectory->End();
        ++it) {
-    EXPECT_EQ(Instant{} + index * Second, it.time());
+    EXPECT_EQ(t0_ + index * Second, it.time());
     EXPECT_THAT(
         it.degrees_of_freedom(),
         Componentwise(
@@ -236,7 +236,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
   for (auto it = rendered_trajectory->Begin();
        it != rendered_trajectory->End();
        ++it) {
-    EXPECT_EQ(Instant{} + index * Second, it.time());
+    EXPECT_EQ(t0_ + index * Second, it.time());
     // The degrees of freedom are computed using a real dynamic frame, not a
     // mock.  No point in re-doing the computation here, we just check that the
     // numbers are reasonable.
@@ -296,7 +296,7 @@ TEST_F(RendererTest, RenderPlottingTrajectoryInWorldWithoutTargetVessel) {
   for (auto it = rendered_trajectory->Begin();
        it != rendered_trajectory->End();
        ++it) {
-    EXPECT_EQ(Instant{} + index * Second, it.time());
+    EXPECT_EQ(t0_ + index * Second, it.time());
     // The degrees of freedom are computed using real geometrical transforms.
     // No point in re-doing the computation here, we just check that the numbers
     // are reasonable.

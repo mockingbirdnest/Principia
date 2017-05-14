@@ -1,3 +1,4 @@
+Ôªø
 #include "ksp_plugin/renderer.hpp"
 
 #include "geometry/grassmann.hpp"
@@ -57,7 +58,7 @@ void Renderer::ClearTargetVesselIf(not_null<Vessel*> const vessel) {
 }
 
 bool Renderer::HasTargetVessel() const {
-  return (bool)target_;
+  return static_cast<bool>(target_);
 }
 
 Vessel const & Renderer::GetTargetVessel() const {
@@ -161,15 +162,15 @@ OrthogonalMap<Barycentric, WorldSun> Renderer::BarycentricToWorldSun(
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Instant const& time,
-    NavigationManúuvre const& manúuvre,
+    NavigationMan≈ìuvre const& man≈ìuvre,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  Instant const initial_time = manúuvre.initial_time();
+  Instant const initial_time = man≈ìuvre.initial_time();
   NavigationFrame const& plotting_frame = *GetPlottingFrame();
   return
       BarycentricToWorld(planetarium_rotation) *
       plotting_frame.FromThisFrameAtTime(time).orthogonal_map() *
       plotting_frame.ToThisFrameAtTime(initial_time).orthogonal_map() *
-      manúuvre.FrenetFrame();
+      man≈ìuvre.FrenetFrame();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
