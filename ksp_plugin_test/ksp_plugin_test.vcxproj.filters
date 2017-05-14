@@ -133,6 +133,9 @@
     <ClInclude Include="mock_renderer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="mock_celestial.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_vessel.hpp">

@@ -3,6 +3,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "gmock/gmock.h"
+#include "ksp_plugin_test/mock_celestial.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -10,6 +11,8 @@ namespace internal_renderer {
 
 class MockRenderer : public Renderer {
  public:
+  static MockCelestial* const sun;
+
   MockRenderer();
 
   // NOTE(phl): Needed because gMock wants to copy the unique_ptr<>.
