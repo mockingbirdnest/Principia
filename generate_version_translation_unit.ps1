@@ -2,11 +2,11 @@ $solutiondir = resolve-path $args[0]
 $env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
 $newdate = [DateTime](git log -1 --format=%cd --date=iso-strict)
 $newversion = (git describe --tags --always --dirty --abbrev=40 --long)
-$headerpath = (join-path $solutiondir "base/version.generated.h")
+$headerpath = (join-path $solutiondir "base/version.generated.cc")
 
 $versionheadertext = [string]::format(
     "`n"                                                                   +
-    "#pragma once`n"                                                       +
+    "#include `"base/version.hpp`"`n"                                      +
     "`n"                                                                   +
     "namespace principia {{`n"                                             +
     "namespace base {{`n"                                                  +
@@ -24,7 +24,7 @@ for(;;) {
   try {
     if ((test-path -path $headerpath) -and
         [system.io.file]::readalltext($headerpath).equals($versionheadertext)) {
-      echo "No change to git describe, leaving base/version.generated.h untouched"
+      echo "No change to git describe, leaving base/version.generated.cc untouched"
       return
     }
     break
@@ -35,7 +35,7 @@ for(;;) {
 
 for(;;) {
   try {
-    echo "Updating base/version.generated.h, version is $newversion"
+    echo "Updating base/version.generated.cc, version is $newversion"
     [system.io.file]::writealltext(
           $headerpath,
           $versionheadertext,
