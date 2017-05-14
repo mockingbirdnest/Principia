@@ -1,7 +1,7 @@
 #!/bin/bash
 TEMPORARY_FILE="/tmp/${RANDOM}"
 VERSION_TEMPLATE="\xef\xbb\xbf
-#include "base/version.hpp"
+#include \"base/version.hpp\"
 
 namespace principia {
 namespace base {
