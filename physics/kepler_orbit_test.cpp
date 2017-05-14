@@ -3,6 +3,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "mathematica/mathematica.hpp"
@@ -17,6 +18,7 @@ namespace internal_kepler_orbit {
 using astronomy::ICRFJ2000Equator;
 using astronomy::J2000;
 using astronomy::JulianDate;
+using astronomy::operator""_TT;
 using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Degree;
@@ -57,6 +59,17 @@ using ::testing::Lt;
 //   AD     Apoapsis distance (km)
 //   PR     Sidereal orbit period (sec)
 
+// Target body name: Voyager 1 (spacecraft) (-31)    {source: Voyager_1}
+// Center body name: Sun (10)                        {source: Voyager_1}
+// 2457899.322222222 = A.D. 2017-May-25 19:44:00.0000 TDB 
+// EC= 3.754904752975423e+00 QR= 1.324687933572433e+09 IN= 1.231535474702641e+01
+// OM= 1.762814430848047e+02 W = 3.412521452280985e+02 Tp=  2444230.840535562020
+// N = 1.979556771581467e-06 MA= 2.337771065477673e+03 TA= 1.006849541017370e+02
+// A =-4.808470899553643e+08 AD= 9.999999000000000e+99 PR= 9.999999000000000e+99
+// X =-4.202547896125371e+09 Y =-1.982453908150731e+10 Z = 4.378406169173994e+09
+// VX=-2.067668772297011e+00 VY=-1.647515322877371e+01 VZ= 3.618493348898172e+00
+
+
 class KeplerOrbitTest : public ::testing::Test {
  protected:
   KeplerianElements<ICRFJ2000Equator> MoonElements() const {
@@ -73,6 +86,21 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.argument_of_periapsis       = 3.551364385683149e+02 * Degree;
     elements.mean_anomaly                = 2.963020996150547e+02 * Degree;
     elements.true_anomaly                = 2.912732951134421e+02 * Degree;
+    return elements;
+  }
+
+  KeplerianElements<ICRFJ2000Equator> VoyagerElements() const {
+    KeplerianElements<ICRFJ2000Equator> elements;
+    elements.eccentricity                =  3.754904752975423e+00;
+    elements.semimajor_axis              = -4.808470899553643e+08 * Kilo(Metre);
+    elements.hyperbolic_mean_motion      =  1.979556771581467e-06 * (Degree /
+                                                                     Second);
+    elements.periapsis_distance          =  1.324687933572433e+09 * Kilo(Metre);
+    elements.inclination                 =  1.231535474702641e+01 * Degree;
+    elements.longitude_of_ascending_node =  1.762814430848047e+02 * Degree;
+    elements.argument_of_periapsis       =  3.412521452280985e+02 * Degree;
+    elements.hyperbolic_mean_anomaly     =  2.337771065477673e+03 * Degree;
+    elements.true_anomaly                =  1.006849541017370e+02 * Degree;
     return elements;
   }
 
@@ -239,23 +267,27 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   partial_elements.periapsis_distance.reset();
   partial_elements.apoapsis_distance.reset();
   partial_elements.true_anomaly.reset();
-  KeplerOrbit<ICRFJ2000Equator> moon_orbit(
-      *earth, *moon, partial_elements, date);
-  EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
-              AlmostEquals(expected_displacement, 15));
-  EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
-              AlmostEquals(expected_velocity, 21));
-  EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_motion,
-              AlmostEquals(*MoonElements().mean_motion, 2));
+  {
+    KeplerOrbit<ICRFJ2000Equator> moon_orbit(
+        *earth, *moon, partial_elements, date);
+    EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
+                AlmostEquals(expected_displacement, 15));
+    EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
+                AlmostEquals(expected_velocity, 21));
+    EXPECT_THAT(*moon_orbit.elements_at_epoch().mean_motion,
+                AlmostEquals(*MoonElements().mean_motion, 2));
+  }
 
   partial_elements.semimajor_axis.reset();
   partial_elements.periapsis_distance = MoonElements().periapsis_distance;
-  KeplerOrbit<ICRFJ2000Equator> moon_orbit_n(
-      *earth, *moon, partial_elements, date);
-  EXPECT_THAT(moon_orbit_n.StateVectors(date).displacement(),
-              AlmostEquals(expected_displacement, 13, 15));
-  EXPECT_THAT(moon_orbit_n.StateVectors(date).velocity(),
-              AlmostEquals(expected_velocity, 23));
+  {
+    KeplerOrbit<ICRFJ2000Equator> moon_orbit(
+        *earth, *moon, partial_elements, date);
+    EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
+                AlmostEquals(expected_displacement, 13, 15));
+    EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
+                AlmostEquals(expected_velocity, 23));
+  }
 
   KeplerOrbit<ICRFJ2000Equator> moon_orbit_from_state_vectors(
       *earth,
@@ -288,6 +320,81 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
               AlmostEquals(*MoonElements().mean_anomaly, 6));
   EXPECT_THAT(*moon_orbit_from_state_vectors.elements_at_epoch().true_anomaly,
               AlmostEquals(*MoonElements().true_anomaly, 5));
+}
+
+TEST_F(KeplerOrbitTest, Voyager1) {
+  SolarSystem<ICRFJ2000Equator> solar_system(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2433282_500000000.proto.txt");
+  auto const sun = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+                         solar_system.gravity_model_message("Sun"));
+  MasslessBody const voyager1{};
+  constexpr Instant date = "2017-05-25T19:44:00,000"_TT;
+
+  Displacement<ICRFJ2000Equator> const expected_displacement(
+      {-4.202547896125371e+09 * Kilo(Metre),
+       -1.982453908150731e+10 * Kilo(Metre),
+        4.378406169173994e+09 * Kilo(Metre)});
+  Velocity<ICRFJ2000Equator> const expected_velocity(
+      {-2.067668772297011e+00 * (Kilo(Metre) / Second),
+       -1.647515322877371e+01 * (Kilo(Metre) / Second),
+        3.618493348898172e+00 * (Kilo(Metre) / Second)});
+
+  auto partial_elements = VoyagerElements();
+  partial_elements.hyperbolic_mean_motion.reset();
+  partial_elements.periapsis_distance.reset();
+  partial_elements.true_anomaly.reset();
+  {
+    KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
+        *sun, voyager1, partial_elements, date);
+    EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
+                AlmostEquals(expected_displacement, 37));
+    EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
+                AlmostEquals(expected_velocity, 26));
+    EXPECT_THAT(*voyager_orbit.elements_at_epoch().hyperbolic_mean_motion,
+                AlmostEquals(*VoyagerElements().mean_motion, 2));
+  }
+
+  partial_elements.semimajor_axis.reset();
+  partial_elements.periapsis_distance = VoyagerElements().periapsis_distance;
+  {
+    KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
+        *sun, voyager1, partial_elements, date);
+    EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
+                AlmostEquals(expected_displacement, 31));
+    EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
+                AlmostEquals(expected_velocity, 28));
+  }
+
+  KeplerOrbit<ICRFJ2000Equator> voyager_orbit_from_state_vectors(
+      *sun, voyager1, {expected_displacement, expected_velocity}, date);
+  EXPECT_THAT(
+      *voyager_orbit_from_state_vectors.elements_at_epoch().eccentricity,
+      AlmostEquals(*VoyagerElements().eccentricity, 2));
+  EXPECT_THAT(
+      *voyager_orbit_from_state_vectors.elements_at_epoch().semimajor_axis,
+      AlmostEquals(*VoyagerElements().semimajor_axis, 3));
+  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
+                   .hyperbolic_mean_motion,
+              AlmostEquals(*VoyagerElements().hyperbolic_mean_motion, 0));
+  EXPECT_THAT(
+      *voyager_orbit_from_state_vectors.elements_at_epoch().periapsis_distance,
+      AlmostEquals(*VoyagerElements().periapsis_distance, 4));
+  EXPECT_THAT(voyager_orbit_from_state_vectors.elements_at_epoch().inclination,
+              AlmostEquals(VoyagerElements().inclination, 10));
+  EXPECT_THAT(voyager_orbit_from_state_vectors.elements_at_epoch()
+                  .longitude_of_ascending_node,
+              AlmostEquals(VoyagerElements().longitude_of_ascending_node, 9));
+  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
+                   .argument_of_periapsis,
+              AlmostEquals(*VoyagerElements().argument_of_periapsis, 5));
+  EXPECT_THAT(*voyager_orbit_from_state_vectors.elements_at_epoch()
+                   .hyperbolic_mean_anomaly,
+              AlmostEquals(*VoyagerElements().hyperbolic_mean_anomaly, 0));
+  EXPECT_THAT(
+      *voyager_orbit_from_state_vectors.elements_at_epoch().true_anomaly,
+      AlmostEquals(*VoyagerElements().true_anomaly, 3));
 }
 
 TEST_F(KeplerOrbitTest, TrueAnomalyToEllipticMeanAnomaly) {
