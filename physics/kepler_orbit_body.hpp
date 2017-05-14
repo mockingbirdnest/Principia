@@ -128,7 +128,7 @@ std::string DebugString(KeplerianElements<Frame> const& elements) {
   append_optional("b", elements.semiminor_axis);
   append_optional("b/i", elements.impact_parameter);
 
-  append_optional("ℓ", elements.semilatus_rectum);
+  append_optional(u8"ℓ", elements.semilatus_rectum);
   append_optional("h", elements.specific_angular_momentum);
 
   append_optional("r_pe", elements.periapsis_distance);
@@ -582,8 +582,8 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     eccentricity = ℓ / r_pe - 1;
     semimajor_axis = Pow<2>(r_pe) / (2 * r_pe - ℓ);
     Length const& a = *semimajor_axis;
-    semiminor_axis = Sqrt(ℓ * a);
-    impact_parameter = Sqrt(-ℓ * a);
+    semiminor_axis = Sqrt(a * ℓ);
+    impact_parameter = Sqrt(-a * ℓ);
     apoapsis_distance = ℓ * r_pe / (2 * r_pe - ℓ);
   } else if (semilatus_rectum && apoapsis_distance) {
     Length const& ℓ = *semilatus_rectum;
@@ -591,8 +591,8 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     eccentricity = 1 - ℓ / r_ap;
     semimajor_axis = Pow<2>(r_ap) / (2 * r_ap - ℓ);
     Length const& a = *semimajor_axis;
-    semiminor_axis = Sqrt(ℓ * a);
-    impact_parameter = Sqrt(-ℓ * a);
+    semiminor_axis = Sqrt(a * ℓ);
+    impact_parameter = Sqrt(-a * ℓ);
     periapsis_distance = ℓ * r_ap / (2 * r_ap - ℓ);
   } else if (periapsis_distance && periapsis_distance) {
     Length const& r_pe = *periapsis_distance;
