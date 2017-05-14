@@ -5,6 +5,8 @@ CXX := clang++
 
 # TODO(egg): build benchmarks
 
+VERSION_TRANSLATION_UNIT := base/version.generated.cc
+
 PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
@@ -31,8 +33,6 @@ GMOCK_TRANSLATION_UNITS := \
 	$(DEP_DIR)googletest/googlemock/src/gmock-all.cc  \
 	$(DEP_DIR)googletest/googlemock/src/gmock_main.cc \
 	$(DEP_DIR)googletest/googletest/src/gtest-all.cc
-
-VERSION_HEADER := base/version.generated.h
 
 GENERATED_PROFILES := \
 	journal/profiles.generated.h     \
@@ -105,13 +105,13 @@ $(PLUGIN_DEPENDENCIES)              : | $(GENERATED_PROFILES)
 $(PLUGIN_TEST_DEPENDENCIES)         : | $(GENERATED_PROFILES)
 $(JOURNAL_DEPENDENCIES)             : | $(GENERATED_PROFILES)
 
-$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
+$(LIBRARY_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
 	rm -f $@.temp
 
-$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS) $(VERSION_HEADER)
+$(TEST_OR_MOCK_DEPENDENCIES): $(BUILD_DIRECTORY)%.d: %.cpp | $(PROTO_HEADERS)
 	@mkdir -p $(@D)
 	$(CXX) -M $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< > $@.temp
 	sed 's!.*\.o[ :]*!$(OBJ_DIRECTORY)$*.o $@ : !g' < $@.temp > $@
@@ -126,8 +126,8 @@ endif
 
 ##### C# and C++ code generation
 
-$(VERSION_HEADER): .git
-	./generate_version_header.sh
+$(VERSION_TRANSLATION_UNIT): .git
+	./generate_version_translation_unit.sh
 
 # We don't do dependency resolution on the protos; we compile them all at once.
 $(PROTO_HEADERS) $(PROTO_TRANSLATION_UNITS): $(PROTO_FILES)
@@ -145,7 +145,8 @@ GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:
 TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
 PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
 JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
-BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o))
+VERSION_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLATION_UNIT:.cc=.o))
+BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(MOCK_TRANSLATION_UNITS:.cpp=.o))
 
@@ -158,6 +159,10 @@ $(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
 $(LIBRARY_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $< -o $@
+
+$(VERSION_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $< -o $@
 
@@ -242,7 +247,7 @@ release: $(ADAPTER) $(KSP_PLUGIN)
 
 clean:
 	rm -rf $(BUILD_DIRECTORY) $(OBJ_DIRECTORY) $(BIN_DIRECTORY) $(ADAPTER_BUILD_DIR) $(FINAL_PRODUCTS_DIR)
-	rm -f $(VERSION_HEADER) $(PROTO_TRANSLATION_UNITS) $(PROTO_HEADERS) $(GENERATED_PROFILES)
+	rm -f $(VERSION_TRANSLATION_UNIT) $(PROTO_TRANSLATION_UNITS) $(PROTO_HEADERS) $(GENERATED_PROFILES)
 
 REMOVE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^\xef\xbb\xbf/,"")}1' $$f | awk NF{p=1}p > $$f.nobom; mv $$f.nobom $$f; done
 RESTORE_BOM := for f in `ls */*.hpp && ls */*.cpp`; do awk 'NR==1{sub(/^/,"\xef\xbb\xbf\n")}1' $$f > $$f.withbom; mv $$f.withbom $$f; done

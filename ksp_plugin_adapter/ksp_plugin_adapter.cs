@@ -309,6 +309,9 @@ public partial class PrincipiaPluginAdapter
                   ", below the threshold of " +
                   vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
+    if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
+      reasons.Add("vessel is unpacked and frame is rotating");
+    }
     if (reasons.Count == 0) {
       return null;
     } else {

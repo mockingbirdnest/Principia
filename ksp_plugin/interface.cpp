@@ -23,7 +23,7 @@
 #include "base/optional_logging.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "base/version.generated.h"
+#include "base/version.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
