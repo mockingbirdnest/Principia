@@ -11,6 +11,7 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -40,6 +41,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::EqualsProto;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
@@ -431,7 +433,7 @@ void TestSerialization(Integrator const& integrator) {
           ReadFromMessage(message1, harmonic_oscillator, append_state);
   serialization::IntegratorInstance message2;
   instance2->WriteToMessage(&message2);
-  EXPECT_EQ(message1.SerializeAsString(), message2.SerializeAsString());
+  EXPECT_THAT(message1, EqualsProto(message2));
 }
 
 class SimpleHarmonicMotionTestInstance final {

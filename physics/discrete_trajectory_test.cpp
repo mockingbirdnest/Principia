@@ -17,6 +17,7 @@
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -38,6 +39,7 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::EqualsProto;
 using testing_utilities::RelativeError;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -708,7 +710,7 @@ TEST_F(DiscreteTrajectoryTest, TrajectorySerializationSuccess) {
                                           {deserialized_fork1,
                                            deserialized_fork3,
                                            deserialized_fork2});
-  EXPECT_EQ(reference_message.SerializeAsString(), message.SerializeAsString());
+  EXPECT_THAT(reference_message, EqualsProto(message));
   EXPECT_THAT(message.children_size(), Eq(2));
   EXPECT_THAT(message.timeline_size(), Eq(3));
   EXPECT_THAT(Instant::ReadFromMessage(message.timeline(0).instant()), Eq(t1_));
