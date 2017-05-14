@@ -8,6 +8,8 @@ namespace internal_renderer {
 
 using physics::MockDynamicFrame;
 
+MockCelestial* const sun = new MockCelestial;
+
 MockRenderer::MockRenderer()
     : Renderer(sun,
                std::make_unique<MockDynamicFrame<Barycentric, Navigation>>()) {}
@@ -36,8 +38,6 @@ MockRenderer::RenderBarycentricTrajectoryInWorld(
       &rendered_barycentric_trajectory_in_world);
   return std::move(rendered_barycentric_trajectory_in_world);
 }
-
-MockCelestial* const MockRenderer::sun = new MockCelestial;
 
 }  // namespace internal_renderer
 }  // namespace ksp_plugin

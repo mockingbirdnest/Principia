@@ -257,9 +257,9 @@ Renderer::Target::Target(
       target_frame(
           make_not_null_unique<
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
-              ephemeris,
-              [this]() -> auto& { return this->vessel->prediction(); },
-              celestial->body())) {}
+                  ephemeris,
+                  [this]() -> auto& { return this->vessel->prediction(); },
+                  celestial->body())) {}
 
 }  // namespace internal_renderer
 }  // namespace ksp_plugin

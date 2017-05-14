@@ -11,8 +11,6 @@ namespace internal_renderer {
 
 class MockRenderer : public Renderer {
  public:
-  static MockCelestial* const sun;
-
   MockRenderer();
 
   // NOTE(phl): Needed because gMock wants to copy the unique_ptr<>.
