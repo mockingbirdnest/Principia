@@ -253,6 +253,7 @@ public partial class PrincipiaPluginAdapter
                                       (Vector3d)from_parent.p,
                                       copy.referenceBody,
                                       universal_time);
+    body.CBUpdate();
   }
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
