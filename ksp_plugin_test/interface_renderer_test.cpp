@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include "base/not_null.hpp"
+#include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
@@ -18,6 +19,7 @@ namespace interface {
 
 using base::make_not_null_unique;
 using base::not_null;
+using geometry::Rotation;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockPlugin;
@@ -107,6 +109,8 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
@@ -187,6 +191,8 @@ TEST_F(InterfaceRendererTest, Iterator) {
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
