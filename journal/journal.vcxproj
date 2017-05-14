@@ -95,7 +95,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -115,7 +115,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -135,7 +135,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
     <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
@@ -156,7 +156,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
     <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
@@ -177,7 +177,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -197,7 +197,7 @@
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\google_benchmark.props" />
-    <Import Project="..\generate_version_header.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
