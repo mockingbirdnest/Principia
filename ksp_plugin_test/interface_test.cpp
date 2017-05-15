@@ -125,13 +125,6 @@ QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 }  // namespace
 
-MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
-  return arg.thrust == thrust &&
-         arg.specific_impulse == specific_impulse &&
-         arg.initial_time == initial_time &&
-         arg.Δv == Δv;
-}
-
 class InterfaceTest : public testing::Test {
  protected:
   static void SetUpTestCase() {
