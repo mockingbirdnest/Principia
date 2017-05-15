@@ -32,6 +32,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/make_not_null.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -88,6 +89,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::EqualsProto;
 using testing_utilities::make_not_null;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
@@ -466,9 +468,7 @@ TEST_F(PluginTest, Serialization) {
   plugin = Plugin::ReadFromMessage(message);
   serialization::Plugin second_message;
   plugin->WriteToMessage(&second_message);
-  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
-      << "FIRST\n" << message.DebugString()
-      << "SECOND\n" << second_message.DebugString();
+  EXPECT_THAT(message, EqualsProto(second_message));
   EXPECT_EQ(SolarSystemFactory::LastMajorBody - SolarSystemFactory::Sun + 1,
             message.celestial_size());
 

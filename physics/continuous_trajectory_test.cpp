@@ -18,6 +18,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -40,6 +41,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::EqualsProto;
 
 class ContinuousTrajectoryTest : public testing::Test {
  public:
@@ -456,9 +458,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
 
   serialization::ContinuousTrajectory second_message;
   trajectory->WriteToMessage(&second_message);
-  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
-      << "FIRST\n" << message.DebugString()
-      << "SECOND\n" << second_message.DebugString();
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 TEST_F(ContinuousTrajectoryTest, Checkpoint) {

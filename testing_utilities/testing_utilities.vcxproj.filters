@@ -68,6 +68,9 @@
     <ClInclude Include="make_not_null_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="matchers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="actions.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

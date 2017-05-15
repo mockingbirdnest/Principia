@@ -27,6 +27,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
@@ -69,6 +70,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
+using testing_utilities::EqualsProto;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
@@ -710,9 +712,7 @@ TEST_P(EphemerisTest, Serialization) {
 
   serialization::Ephemeris second_message;
   ephemeris_read->WriteToMessage(&second_message);
-  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString())
-      << "FIRST\n" << message.DebugString()
-      << "SECOND\n" << second_message.DebugString();
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 // The gravitational acceleration on an elephant located at the pole.
