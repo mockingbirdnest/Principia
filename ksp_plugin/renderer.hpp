@@ -43,7 +43,7 @@ class Renderer {
       not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
 
   // Returns the current plotting frame.  This may not be the last set by
-  // |SetPlottingFrame| if it was overridden by a target vessel.
+  // |SetPlottingFrame| if it is overridden by a target vessel.
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
   // Overrides the current plotting frame with one that is centred on the given
@@ -54,7 +54,7 @@ class Renderer {
       not_null<Celestial const*> celestial,
       not_null<Ephemeris<Barycentric> const*> const ephemeris);
 
-  // Reverts to the previously active plotting frame.  The second version only
+  // Reverts to frame last set by |SetPlottingFrame|.  The second version only
   // has an effect if the given |vessel| is the current target vessel.
   virtual void ClearTargetVessel();
   virtual void ClearTargetVesselIf(not_null<Vessel*> vessel);
