@@ -253,6 +253,7 @@ public partial class PrincipiaPluginAdapter
                                       (Vector3d)from_parent.p,
                                       copy.referenceBody,
                                       universal_time);
+    body.CBUpdate();
   }
 
   private void UpdateVessel(Vessel vessel, double universal_time) {
@@ -739,11 +740,18 @@ public partial class PrincipiaPluginAdapter
             case VesselAutopilot.AutopilotMode.Retrograde:
               rsas_target_ = -prograde;
               break;
+            // NOTE(egg): For reasons that are unlikely to become clear again,
+            // the button labeled with the radial in icon sets the autopilot
+            // mode to |RadialOut|, and vice-versa.  As a result, we must set
+            // the target to the outwards radial (negative normal) vector if the
+            // mode is |RadialIn|.  Contrast with the navball vectors above,
+            // which do not exhibit this inconsistency (thus where
+            // |radialInVector| is set to |radial|).
             case VesselAutopilot.AutopilotMode.RadialIn:
-              rsas_target_ = radial;
+              rsas_target_ = -radial;
               break;
             case VesselAutopilot.AutopilotMode.RadialOut:
-              rsas_target_ = -radial;
+              rsas_target_ = radial;
               break;
             case VesselAutopilot.AutopilotMode.Normal:
               rsas_target_ = normal;
@@ -775,8 +783,8 @@ public partial class PrincipiaPluginAdapter
       double universal_time = Planetarium.GetUniversalTime();
 
       plugin_.SetMainBody(
-          FlightGlobals.currentMainBody.GetValueOrDefault(
-              FlightGlobals.GetHomeBody()).flightGlobalsIndex);
+          (FlightGlobals.currentMainBody
+               ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
       Vessel active_vessel = FlightGlobals.ActiveVessel;
       bool ready_to_draw_active_vessel_trajectory =
@@ -1958,33 +1966,27 @@ public partial class PrincipiaPluginAdapter
         var body_parameters = new BodyParameters{
             name = body.name,
             gravitational_parameter =
-                (gravity_model?.GetValue("gravitational_parameter")).
-                    GetValueOrDefault(body.gravParameter + " m^3/s^2"),
+                gravity_model?.GetValue("gravitational_parameter")
+                     ?? (body.gravParameter + " m^3/s^2"),
             // The origin of rotation in KSP is the x of Barycentric, rather
             // than the y axis as is the case for Earth, so the right
             // ascension is -90 deg.
             reference_instant    = 
-                (gravity_model?.GetValue("reference_instant")).
-                    GetValueOrDefault("JD2451545.0"),
+                gravity_model?.GetValue("reference_instant") ?? "JD2451545.0",
             mean_radius          =
-                (gravity_model?.GetValue("mean_radius")).
-                    GetValueOrDefault(body.Radius + " m"),
+                gravity_model?.GetValue("mean_radius") ?? (body.Radius + " m"),
             axis_right_ascension =
-                (gravity_model?.GetValue("axis_right_ascension")).
-                    GetValueOrDefault("-90 deg"),
+                gravity_model?.GetValue("axis_right_ascension") ?? "-90 deg",
             axis_declination     =
-                (gravity_model?.GetValue("axis_declination")).
-                    GetValueOrDefault("90 deg"),
+                gravity_model?.GetValue("axis_declination") ?? "90 deg",
             reference_angle      =
-                (gravity_model?.GetValue("reference_angle")).
-                    GetValueOrDefault(body.initialRotation.ToString() +
-                                      " deg"),
+                gravity_model?.GetValue("reference_angle")
+                    ?? (body.initialRotation.ToString() + " deg"),
             angular_frequency    =
-                (gravity_model?.GetValue("angular_frequency")).
-                    GetValueOrDefault(body.angularV.ToString() + " rad/s"),
+                gravity_model?.GetValue("angular_frequency")
+                    ??  (body.angularV.ToString() + " rad/s"),
             j2                   = gravity_model?.GetValue("j2"),
-            reference_radius     =
-                gravity_model?.GetValue("reference_radius")};
+            reference_radius     = gravity_model?.GetValue("reference_radius")};
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                :

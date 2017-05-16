@@ -4,6 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/frames.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -15,6 +16,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
+using testing_utilities::EqualsProto;
 
 class PartTest : public testing::Test {
  protected:
@@ -85,7 +87,7 @@ TEST_F(PartTest, Serialization) {
 
   serialization::Part second_message;
   p->WriteToMessage(&second_message);
-  EXPECT_EQ(message.SerializeAsString(), second_message.SerializeAsString());
+  EXPECT_THAT(message, EqualsProto(second_message));
 }
 
 }  // namespace internal_part
