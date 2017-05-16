@@ -188,7 +188,7 @@ class KeplerOrbitTest : public ::testing::Test {
       std::int64_t const semilatus_rectum_ulps,
       std::int64_t const specific_angular_momentum_ulps,
       std::int64_t const periapsis_distance_ulps,
-      std::int64_t const apoapsis_distance_ulps) const {
+      std::int64_t const apoapsis_distance_ulps) {
     EXPECT_THAT(*actual.eccentricity,
                 AlmostEquals(*expected.eccentricity, eccentrity_ulps));
     EXPECT_THAT(*actual.asymptotic_true_anomaly,
