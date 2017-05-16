@@ -713,6 +713,7 @@ void Plugin::ComputeAndRenderClosestApproaches(
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
+  UpdatePredictionForRendering(begin.trajectory()->Size());
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
@@ -737,6 +738,7 @@ void Plugin::ComputeAndRenderNodes(
     std::unique_ptr<DiscreteTrajectory<World>>& ascending,
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
   CHECK(renderer_->HasTargetVessel());
+  UpdatePredictionForRendering(begin.trajectory()->Size());
 
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
@@ -1222,6 +1224,14 @@ void Plugin::UpdatePlanetariumRotation() {
           Bivector<double, PlanetariumFrame>({0, 0, 1}),
           DefinesFrame<AliceSun>{}) *
       to_planetarium;
+}
+
+void Plugin::UpdatePredictionForRendering(std::int64_t const size) const {
+  auto& vessel = renderer_->GetTargetVessel();
+  auto parameters = vessel.prediction_adaptive_step_parameters();
+  parameters.set_max_steps(size);
+  vessel.set_prediction_adaptive_step_parameters(parameters);
+  vessel.UpdatePrediction(current_time_ + prediction_length_);
 }
 
 template<typename T>

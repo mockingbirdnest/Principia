@@ -61,6 +61,11 @@ bool Renderer::HasTargetVessel() const {
   return static_cast<bool>(target_);
 }
 
+Vessel& Renderer::GetTargetVessel() {
+  CHECK(target_);
+  return *target_->vessel;
+}
+
 Vessel const & Renderer::GetTargetVessel() const {
   CHECK(target_);
   return *target_->vessel;

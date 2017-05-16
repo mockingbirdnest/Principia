@@ -381,6 +381,10 @@ class Plugin {
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();
 
+  // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
+  // while retaining a timeout.
+  void UpdatePredictionForRendering(std::int64_t size) const;
+
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages|.
   template<typename T>

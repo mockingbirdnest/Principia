@@ -61,6 +61,7 @@ class Renderer {
 
   // Determines if there is a target vessel and returns it.
   virtual bool HasTargetVessel() const;
+  virtual Vessel& GetTargetVessel();
   virtual Vessel const& GetTargetVessel() const;
 
   // Returns a trajectory in |World| corresponding to the trajectory defined by
