@@ -17,7 +17,6 @@ namespace internal_kepler_orbit {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::J2000;
-using astronomy::JulianDate;
 using astronomy::operator""_TT;
 using quantities::astronomy::JulianYear;
 using quantities::si::AstronomicalUnit;
@@ -72,7 +71,7 @@ using ::testing::Lt;
 
 class KeplerOrbitTest : public ::testing::Test {
  protected:
-  KeplerianElements<ICRFJ2000Equator> MoonElements() const {
+  static KeplerianElements<ICRFJ2000Equator> MoonElements() const {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity                = 4.772161502830355e-02;
     elements.semimajor_axis              = 3.870051955415476e+05 * Kilo(Metre);
@@ -89,7 +88,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  KeplerianElements<ICRFJ2000Equator> VoyagerElements() const {
+  static KeplerianElements<ICRFJ2000Equator> VoyagerElements() const {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity                =  3.754904752975423e+00;
     elements.semimajor_axis              = -4.808470899553643e+08 * Kilo(Metre);
@@ -104,7 +103,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  KeplerianElements<ICRFJ2000Equator> SimpleEllipse() const {
+  static KeplerianElements<ICRFJ2000Equator> SimpleEllipse() const {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity = 0.5;
     elements.asymptotic_true_anomaly = -NaN<Angle>();
@@ -137,7 +136,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  KeplerianElements<ICRFJ2000Equator> SimpleHyperbola() const {
+  static KeplerianElements<ICRFJ2000Equator> SimpleHyperbola() const {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity = 1.5;
     elements.asymptotic_true_anomaly = ArcCos(-1 / 1.5);
@@ -250,7 +249,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       earth->gravitational_parameter() + moon->gravitational_parameter(),
       AlmostEquals(
           4.0350323550225975e+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
-  Instant const date = JulianDate(2457397.500000000);
+  Instant const date = "2457397.500000000"_TT;
 
   Displacement<ICRFJ2000Equator> const expected_displacement(
       { 1.177367562036580e+05 * Kilo(Metre),

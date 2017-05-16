@@ -8,24 +8,23 @@
 namespace principia {
 namespace base {
 
-template<typename Message>
-struct OptionalField {
-  std::function<Message*()> mutable_field;
-  std::function<void()> clear_field;
-};
+#define SET_OPTIONAL(message_expression, value_identifier)        \
+  [&value = (value_identifier), message = (message_expression)] { \
+    if (value) {                                                  \
+      message->set_##value_identifier(*value);                    \
+    } else {                                                      \
+      message->clear_##value_identifier();                        \
+    }                                                             \
+  }()
 
-#define OPTIONAL_FIELD(message, field)                      \
-  (::principia::base::OptionalField<                        \
-       std::remove_cv_t<std::remove_reference_t<            \
-           decltype(message->field())>>> {                  \
-       [m = (message)]() { return m->mutable_##field(); },  \
-       [m = (message)]() { m->clear_##field(); }})
-
-template<typename T, typename Message>
-void WriteToOptional(OptionalField<Message> field,
-                     std::experimental::optional<T> const& value);
+#define WRITE_TO_OPTIONAL(message_expression, value_identifier)     \
+  [&value = (value_identifier), message = (message_expression)]  {  \
+    if (value) {                                                    \
+      value->WriteToMessage(message->mutable_##value_identifier()); \
+    } else {                                                        \
+      message->clear_##value_identifier();                          \
+    }                                                               \
+  }()
 
 }  // namespace base
 }  // namespace principia
-
-#include "base/optional_serialization_body.hpp"

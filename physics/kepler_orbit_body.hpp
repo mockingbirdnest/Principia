@@ -14,7 +14,6 @@ namespace principia {
 namespace physics {
 namespace internal_kepler_orbit {
 
-using base::WriteToOptional;
 using geometry::AngleBetween;
 using geometry::Bivector;
 using geometry::Commutator;
@@ -52,49 +51,36 @@ template<typename Frame>
 void KeplerianElements<Frame>::WriteToMessage(
     not_null<serialization::KeplerianElements*> const message) const {
   Frame::WriteToMessage(message->mutable_frame());
-  if (eccentricity) {
-    message->set_eccentricity(*eccentricity);
-  }
-  WriteToOptional(OPTIONAL_FIELD(message, asymptotic_true_anomaly),
-                  asymptotic_true_anomaly);
-  WriteToOptional(OPTIONAL_FIELD(message, turning_angle), turning_angle);
+  SET_OPTIONAL(message, eccentricity);
+  WRITE_TO_OPTIONAL(message, asymptotic_true_anomaly);
+  WRITE_TO_OPTIONAL(message, turning_angle);
 
-  WriteToOptional(OPTIONAL_FIELD(message, semimajor_axis), semimajor_axis);
-  WriteToOptional(OPTIONAL_FIELD(message, specific_energy), specific_energy);
-  WriteToOptional(OPTIONAL_FIELD(message, characteristic_energy),
-                  characteristic_energy);
-  WriteToOptional(OPTIONAL_FIELD(message, mean_motion), mean_motion);
-  WriteToOptional(OPTIONAL_FIELD(message, period), period);
-  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_mean_motion),
-                  hyperbolic_mean_motion);
-  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_excess_velocity),
-                  hyperbolic_excess_velocity);
+  WRITE_TO_OPTIONAL(message, semimajor_axis);
+  WRITE_TO_OPTIONAL(message, specific_energy);
+  WRITE_TO_OPTIONAL(message, characteristic_energy);
+  WRITE_TO_OPTIONAL(message, mean_motion);
+  WRITE_TO_OPTIONAL(message, period);
+  WRITE_TO_OPTIONAL(message, hyperbolic_mean_motion);
+  WRITE_TO_OPTIONAL(message, hyperbolic_excess_velocity);
+  WRITE_TO_OPTIONAL(message, semiminor_axis);
+  WRITE_TO_OPTIONAL(message, impact_parameter);
 
-  WriteToOptional(OPTIONAL_FIELD(message, semiminor_axis), semiminor_axis);
-  WriteToOptional(OPTIONAL_FIELD(message, impact_parameter), impact_parameter);
+  WRITE_TO_OPTIONAL(message, semilatus_rectum);
+  WRITE_TO_OPTIONAL(message, specific_angular_momentum);
 
-  WriteToOptional(OPTIONAL_FIELD(message, semilatus_rectum), semilatus_rectum);
-  WriteToOptional(OPTIONAL_FIELD(message, specific_angular_momentum),
-                  specific_angular_momentum);
+  WRITE_TO_OPTIONAL(message, periapsis_distance);
 
-  WriteToOptional(OPTIONAL_FIELD(message, periapsis_distance),
-                  periapsis_distance);
-
-  WriteToOptional(OPTIONAL_FIELD(message, apoapsis_distance),
-                  apoapsis_distance);
+  WRITE_TO_OPTIONAL(message, apoapsis_distance);
 
   inclination.WriteToMessage(message->mutable_inclination());
   longitude_of_ascending_node.WriteToMessage(
       message->mutable_longitude_of_ascending_node());
-  WriteToOptional(OPTIONAL_FIELD(message, argument_of_periapsis),
-                  argument_of_periapsis);
-  WriteToOptional(OPTIONAL_FIELD(message, longitude_of_periapsis),
-                  longitude_of_periapsis);
+  WRITE_TO_OPTIONAL(message, argument_of_periapsis);
+  WRITE_TO_OPTIONAL(message, longitude_of_periapsis);
 
-  WriteToOptional(OPTIONAL_FIELD(message, true_anomaly), true_anomaly);
-  WriteToOptional(OPTIONAL_FIELD(message, mean_anomaly), mean_anomaly);
-  WriteToOptional(OPTIONAL_FIELD(message, hyperbolic_mean_anomaly),
-                  hyperbolic_mean_anomaly);
+  WRITE_TO_OPTIONAL(message, true_anomaly);
+  WRITE_TO_OPTIONAL(message, mean_anomaly);
+  WRITE_TO_OPTIONAL(message, hyperbolic_mean_anomaly);
 }
 
 template<typename Frame>
@@ -258,12 +244,14 @@ KeplerOrbit<Frame>::StateVectors(Instant const& t) const {
   elements.mean_anomaly.reset();
   elements.hyperbolic_mean_anomaly.reset();
   if (e < 1) {
+    // Elliptic case.
     elements.mean_anomaly = *elements_at_epoch_.mean_anomaly +
                             *elements_at_epoch_.mean_motion * (t - epoch_);
   } else if (e == 1) {
     // Parabolic case.
     LOG(FATAL) << "not yet implemented";
   } else {
+    // Hyperbolic case.
     elements.hyperbolic_mean_anomaly =
         *elements_at_epoch_.hyperbolic_mean_anomaly +
         *elements_at_epoch_.hyperbolic_mean_motion * (t - epoch_);
@@ -511,9 +499,9 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     periapsis_distance = *semimajor_axis * (1 - e);
   } else if (semimajor_axis && semiminor_axis) {
     Length const& a = *semimajor_axis;
-    auto const& b² = *semiminor_axis != *semiminor_axis
-                           ? -Pow<2>(*impact_parameter)
-                           : Pow<2>(*semiminor_axis);
+    auto const b² = *semiminor_axis != *semiminor_axis
+                        ? -Pow<2>(*impact_parameter)
+                        : Pow<2>(*semiminor_axis);
     eccentricity = Sqrt(1 - b² / Pow<2>(a));
     semilatus_rectum = b² / a;
     auto const sgn_a_sqrt_a²_minus_b² = Sign(a) * Sqrt(Pow<2>(a) - b²);
@@ -545,9 +533,9 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     semilatus_rectum = r_ap * (2 - r_ap / a);
     periapsis_distance = 2 * a - r_ap;
   } else if (semiminor_axis && semilatus_rectum) {
-    auto const& b² = *semiminor_axis != *semiminor_axis
-                           ? -Pow<2>(*impact_parameter)
-                           : Pow<2>(*semiminor_axis);
+    auto const b² = *semiminor_axis != *semiminor_axis
+                        ? -Pow<2>(*impact_parameter)
+                        : Pow<2>(*semiminor_axis);
     Length const& ℓ = *semilatus_rectum;
     eccentricity = Sqrt(1 - Pow<2>(ℓ) / b²);
     semimajor_axis = b² / ℓ;
@@ -555,18 +543,18 @@ void KeplerOrbit<Frame>::CompleteConicParameters(
     periapsis_distance = ℓ / (1 + e);
     apoapsis_distance = ℓ / (1 - e);
   } else if (semiminor_axis && periapsis_distance) {
-    auto const& b² = *semiminor_axis != *semiminor_axis
-                           ? -Pow<2>(*impact_parameter)
-                           : Pow<2>(*semiminor_axis);
+    auto const b² = *semiminor_axis != *semiminor_axis
+                        ? -Pow<2>(*impact_parameter)
+                        : Pow<2>(*semiminor_axis);
     Length const& r_pe = *periapsis_distance;
     eccentricity = (b² - Pow<2>(r_pe)) / (b² + Pow<2>(r_pe));
     semimajor_axis = (b² + Pow<2>(r_pe)) / (2 * r_pe);
     semilatus_rectum = 2 * b² * r_pe / (b² + Pow<2>(r_pe));
     apoapsis_distance = b² / r_pe;
   } else if (semiminor_axis && apoapsis_distance) {
-    auto const& b² = *semiminor_axis != *semiminor_axis
-                           ? -Pow<2>(*impact_parameter)
-                           : Pow<2>(*semiminor_axis);
+    auto const b² = *semiminor_axis != *semiminor_axis
+                        ? -Pow<2>(*impact_parameter)
+                        : Pow<2>(*semiminor_axis);
     Length const& r_ap = *apoapsis_distance;
     eccentricity = (Pow<2>(r_ap) - b²) / (b² + Pow<2>(r_ap));
     semimajor_axis = (b² + Pow<2>(r_ap)) / (2 * r_ap);

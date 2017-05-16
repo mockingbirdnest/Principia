@@ -288,7 +288,6 @@
     <ClInclude Include="optional_logging.hpp" />
     <ClInclude Include="optional_logging_body.hpp" />
     <ClInclude Include="optional_serialization.hpp" />
-    <ClInclude Include="optional_serialization_body.hpp" />
     <ClInclude Include="pull_serializer.hpp" />
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
