@@ -71,7 +71,7 @@ using ::testing::Lt;
 
 class KeplerOrbitTest : public ::testing::Test {
  protected:
-  static KeplerianElements<ICRFJ2000Equator> MoonElements() const {
+  static KeplerianElements<ICRFJ2000Equator> MoonElements() {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity                = 4.772161502830355e-02;
     elements.semimajor_axis              = 3.870051955415476e+05 * Kilo(Metre);
@@ -88,7 +88,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  static KeplerianElements<ICRFJ2000Equator> VoyagerElements() const {
+  static KeplerianElements<ICRFJ2000Equator> VoyagerElements() {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity                =  3.754904752975423e+00;
     elements.semimajor_axis              = -4.808470899553643e+08 * Kilo(Metre);
@@ -103,7 +103,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  static KeplerianElements<ICRFJ2000Equator> SimpleEllipse() const {
+  static KeplerianElements<ICRFJ2000Equator> SimpleEllipse() {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity = 0.5;
     elements.asymptotic_true_anomaly = -NaN<Angle>();
@@ -136,7 +136,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  static KeplerianElements<ICRFJ2000Equator> SimpleHyperbola() const {
+  static KeplerianElements<ICRFJ2000Equator> SimpleHyperbola() {
     KeplerianElements<ICRFJ2000Equator> elements;
     elements.eccentricity = 1.5;
     elements.asymptotic_true_anomaly = ArcCos(-1 / 1.5);
@@ -170,7 +170,7 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
-  void ExpectConicParametersAlmostEqual(
+  static void ExpectConicParametersAlmostEqual(
       KeplerianElements<ICRFJ2000Equator> const& actual,
       KeplerianElements<ICRFJ2000Equator> const& expected,
       std::int64_t const eccentrity_ulps,
