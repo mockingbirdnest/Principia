@@ -341,11 +341,11 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
               EvaluateDegreesOfFreedom(ephemeris, Bop, t) -
                   EvaluateDegreesOfFreedom(ephemeris, Jool, t), t)
               .elements_at_epoch();
-      bop_eccentricities.emplace_back(bop_elements.eccentricity);
+      bop_eccentricities.emplace_back(*bop_elements.eccentricity);
       bop_inclinations.emplace_back(bop_elements.inclination);
       bop_nodes.emplace_back(bop_elements.longitude_of_ascending_node);
       bop_arguments_of_periapsis.emplace_back(
-          bop_elements.argument_of_periapsis);
+          *bop_elements.argument_of_periapsis);
     }
 
     {
@@ -363,12 +363,12 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
                                    EvaluateDegreesOfFreedom(ephemeris, Bop, t) -
                                        innermost_jool_system.Get(),
                                    t).elements_at_epoch();
-      bop_jacobi_eccentricities.emplace_back(bop_jacobi_elements.eccentricity);
+      bop_jacobi_eccentricities.emplace_back(*bop_jacobi_elements.eccentricity);
       bop_jacobi_inclinations.emplace_back(bop_jacobi_elements.inclination);
       bop_jacobi_nodes.emplace_back(
           bop_jacobi_elements.longitude_of_ascending_node);
       bop_jacobi_arguments_of_periapsis.emplace_back(
-          bop_jacobi_elements.argument_of_periapsis);
+          *bop_jacobi_elements.argument_of_periapsis);
     }
   }
 

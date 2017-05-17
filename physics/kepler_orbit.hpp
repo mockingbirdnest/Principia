@@ -18,16 +18,63 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::GravitationalParameter;
 using quantities::Length;
+using quantities::SpecificAngularMomentum;
+using quantities::SpecificEnergy;
+using quantities::Speed;
+using quantities::Time;
 
 template<typename Frame>
 struct KeplerianElements final {
-  double eccentricity{};
+  // I. These elements determine the shape and size of the conic.  Two are
+  // needed, from two different numbered categories below.
+  // 1. eccentricity.
+  std::experimental::optional<double> eccentricity;
+  // The following two elements are NaN for elliptic orbits.
+  std::experimental::optional<Angle> asymptotic_true_anomaly;
+  std::experimental::optional<Angle> turning_angle;
+  // 2. semimajor axis.
   std::experimental::optional<Length> semimajor_axis;
+  std::experimental::optional<SpecificEnergy> specific_energy;
+  std::experimental::optional<SpecificEnergy> characteristic_energy;
+  // The following two elements are NaN for hyperbolic orbits.
   std::experimental::optional<AngularFrequency> mean_motion;
+  std::experimental::optional<Time> period;
+  // The following two elements are NaN for elliptic orbits.
+  std::experimental::optional<AngularFrequency> hyperbolic_mean_motion;
+  std::experimental::optional<Speed> hyperbolic_excess_velocity;
+  // 3. semiminor axis.  The |semiminor_axis| is NaN for hyperbolic orbits, the
+  // |impact_parameter| is NaN for elliptic orbits.
+  std::experimental::optional<Length> semiminor_axis;
+  std::experimental::optional<Length> impact_parameter;
+  // 4. semilatus rectum.
+  std::experimental::optional<Length> semilatus_rectum;
+  std::experimental::optional<SpecificAngularMomentum>
+      specific_angular_momentum;
+  // 5. periapsis distance.
+  std::experimental::optional<Length> periapsis_distance;
+  // 6. apoapsis distance.
+  std::experimental::optional<Length> apoapsis_distance;
+
+  // II. These elements determine the orientation of the conic.  Three are
+  // needed.
   Angle inclination;
   Angle longitude_of_ascending_node;
-  Angle argument_of_periapsis;
-  Angle mean_anomaly;
+  std::experimental::optional<Angle> argument_of_periapsis;
+  std::experimental::optional<Angle> longitude_of_periapsis;
+
+  // III. These elements determine a point on the conic.  One is needed.
+  std::experimental::optional<Angle> true_anomaly;
+#if NOT_YET_IMPLEMENTED
+  std::experimental::optional<Angle> true_longitude;
+  std::experimental::optional<Time> time_since_periapsis;
+#endif
+  // The mean anomaly and mean longitude are NaN for hyperbolic orbits.
+  std::experimental::optional<Angle> mean_anomaly;
+#if NOT_YET_IMPLEMENTED
+  std::experimental::optional<Angle> mean_longitude;
+#endif
+  // The hyperbolic mean anomaly is NaN for elliptic orbits.
+  std::experimental::optional<Angle> hyperbolic_mean_anomaly;
 
   void WriteToMessage(
       not_null<serialization::KeplerianElements*> message) const;
@@ -63,6 +110,25 @@ class KeplerOrbit final {
   KeplerianElements<Frame> const& elements_at_epoch() const;
 
  private:
+  // |elements| must be minimally specified.  Fills all |optional|s in
+  // |elements|.
+  static void CompleteElements(KeplerianElements<Frame>& elements,
+                               GravitationalParameter const& μ);
+  // For each category in section I of |elements|, either one, none, or all of
+  // the |optional|s must be filled.  If one is filled, fills the others in that
+  // category.
+  static void CompleteConicParametersByCategory(
+      KeplerianElements<Frame>& elements,
+      GravitationalParameter const& μ);
+  // Section I of |elements| must be minimally specified.  Fills it.
+  static void CompleteConicParameters(KeplerianElements<Frame>& elements,
+                                      GravitationalParameter const& μ);
+  // Section II of |elements| must be minimally specified.  Fills it.
+  static void CompleteOrientationParameters(KeplerianElements<Frame>& elements);
+  // Sections I and II of |elements| must be filled; section III must be
+  // minimally specified.  Fills section III.
+  static void CompleteAnomalies(KeplerianElements<Frame>& elements);
+
   GravitationalParameter const gravitational_parameter_;
   KeplerianElements<Frame> elements_at_epoch_;
   Instant const epoch_;

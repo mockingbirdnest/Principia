@@ -17,6 +17,7 @@ namespace internal_jacobi_coordinates {
 using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::ElementsAre;
@@ -44,8 +45,11 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
     return result;
   };
 
-  // e, i, Ω, ω, and mean anomaly are 0.
+  // i, and Ω are 0 by default.
   KeplerianElements<Frame> elements;
+  elements.eccentricity = 0;
+  elements.argument_of_periapsis = 0 * Radian;
+  elements.mean_anomaly = 0 * Radian;
 
   JacobiCoordinates<Frame> system(m2_);
   EXPECT_EQ(2 * Kilogram, system.System().mass());

@@ -1,10 +1,12 @@
 #include <experimental/filesystem>
 #include <string>
 
+#include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/fingerprint2011.hpp"
 #include "geometry/frame.hpp"
 #include "glog/logging.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/solar_system.hpp"
 #include "serialization/geometry.pb.h"
@@ -16,6 +18,7 @@ namespace astronomy {
 using base::Fingerprint2011;
 using geometry::Frame;
 using physics::SolarSystem;
+using ::testing::Eq;
 
 class KSPFingerprintTest : public ::testing::Test {
  protected:
@@ -42,7 +45,7 @@ TEST_F(KSPFingerprintTest, Stock) {
                                serialized_message.size());
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_EQ(0x54B6323B3376D6F3u, fingerprint);
+  EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprint));
 }
 
 TEST_F(KSPFingerprintTest, Corrected) {
@@ -55,7 +58,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
                                serialized_message.size());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
-  EXPECT_EQ(0xB57B58F9CF757C62u, fingerprint);
+  EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprint));
 }
 
 }  // namespace astronomy

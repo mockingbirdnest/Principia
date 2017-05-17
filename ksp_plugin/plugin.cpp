@@ -15,6 +15,7 @@
 #include <set>
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
@@ -48,6 +49,8 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using astronomy::ParseTT;
+using astronomy::KSPStockSystemFingerprint;
+using astronomy::KSPStabilizedSystemFingerprint;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
@@ -93,9 +96,6 @@ using ::operator<<;
 namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
-
-std::uint64_t const ksp_stock_system_fingerprint = 0x54B6323B3376D6F3u;
-std::uint64_t const ksp_stabilized_system_fingerprint = 0xB57B58F9CF757C62u;
 
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
@@ -170,7 +170,7 @@ void Plugin::EndInitialization() {
     LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
               << system_fingerprint;
 
-    if (system_fingerprint == ksp_stock_system_fingerprint) {
+    if (system_fingerprint == KSPStockSystemFingerprint) {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
       auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
@@ -181,12 +181,12 @@ void Plugin::EndInitialization() {
           serialized_message.c_str(), serialized_message.size());
       LOG(INFO) << "System fingerprint after stabilization is " << std::hex
                 << std::uppercase << system_fingerprint;
-      CHECK_EQ(ksp_stabilized_system_fingerprint, system_fingerprint)
+      CHECK_EQ(KSPStabilizedSystemFingerprint, system_fingerprint)
           << "Attempt at stabilizing the KSP system failed!\n"
           << gravity_model_.DebugString() << "\n"
           << initial_state_.DebugString();
       LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
-    } else if (system_fingerprint == ksp_stabilized_system_fingerprint) {
+    } else if (system_fingerprint == KSPStabilizedSystemFingerprint) {
       LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
                 << "stabilize it ourselves.  All hail retrobop anyway!";
     } else {
