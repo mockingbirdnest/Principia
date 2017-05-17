@@ -249,7 +249,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       earth->gravitational_parameter() + moon->gravitational_parameter(),
       AlmostEquals(
           4.0350323550225975e+05 * (Pow<3>(Kilo(Metre)) / Pow<2>(Second)), 1));
-  Instant const date = "2457397.500000000"_TT;
+  constexpr Instant date = "JD2457397.500000000"_TT;
 
   Displacement<ICRFJ2000Equator> const expected_displacement(
       { 1.177367562036580e+05 * Kilo(Metre),
