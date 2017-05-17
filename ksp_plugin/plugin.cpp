@@ -331,6 +331,10 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
+Index Plugin::CelestialIndexOfBody(MassiveBody const& body) const {
+  return FindOrDie(name_to_index_, body.name());
+}
+
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 std::string const& vessel_name,
                                 Index const parent_index,

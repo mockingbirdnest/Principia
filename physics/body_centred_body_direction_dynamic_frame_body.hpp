@@ -62,6 +62,20 @@ BodyCentredBodyDirectionDynamicFrame(
       secondary_trajectory_(ephemeris_->trajectory(secondary_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
+not_null<MassiveBody const*>
+BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::primary()
+    const {
+  return primary_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
+not_null<MassiveBody const*>
+BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::secondary()
+    const {
+  return secondary_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodyCentredBodyDirectionDynamicFrame<InertialFrame, ThisFrame>::
     ToThisFrameAtTime(Instant const& t) const {

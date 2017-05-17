@@ -40,6 +40,8 @@ class BodyCentredNonRotatingDynamicFrame
       not_null<Ephemeris<InertialFrame> const*> ephemeris,
       not_null<MassiveBody const*> centre);
 
+  not_null<MassiveBody const*> centre() const;
+
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
