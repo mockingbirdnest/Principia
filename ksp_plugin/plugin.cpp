@@ -237,7 +237,8 @@ void Plugin::EndInitialization() {
       sun_,
       make_not_null_unique<
           BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>>(
-          ephemeris_.get(), sun_->body()));
+              ephemeris_.get(),
+              sun_->body()));
 
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
@@ -571,8 +572,9 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
                                 degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
-          world_origin.position(), World::origin,
-            renderer_->BarycentricToWorld(PlanetariumRotation())},
+          world_origin.position(),
+          World::origin,
+          renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
   return barycentric_to_world(
@@ -842,9 +844,9 @@ Plugin::NewBodySurfaceNavigationFrame(
 
 void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
-  not_null<Celestial const*> celestial =
+  not_null<Celestial const*> const celestial =
       FindOrDie(celestials_, reference_body_index).get();
-  not_null<Vessel*> vessel =
+  not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
   // Make sure that the current time is covered by the prediction.
   if (current_time_ > vessel->prediction().t_max()) {

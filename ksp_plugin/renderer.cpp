@@ -171,11 +171,9 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   Instant const initial_time = manœuvre.initial_time();
   NavigationFrame const& plotting_frame = *GetPlottingFrame();
-  return
-      BarycentricToWorld(planetarium_rotation) *
-      plotting_frame.FromThisFrameAtTime(time).orthogonal_map() *
-      plotting_frame.ToThisFrameAtTime(initial_time).orthogonal_map() *
-      manœuvre.FrenetFrame();
+  return PlottingToWorld(time, planetarium_rotation) *
+         BarycentricToPlotting(initial_time).orthogonal_map() *
+         manœuvre.FrenetFrame();
 }
 
 OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
