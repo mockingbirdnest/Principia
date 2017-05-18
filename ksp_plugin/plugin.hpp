@@ -408,7 +408,8 @@ class Plugin {
   static void ReadCelestialsFromMessages(
       Ephemeris<Barycentric> const& ephemeris,
       google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-      IndexToOwnedCelestial& celestials);
+      IndexToOwnedCelestial& celestials,
+      std::map<std::string, Index>& name_to_index);
 
   // Converts a trajectory from |Barycentric| to |Navigation|.
   not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
