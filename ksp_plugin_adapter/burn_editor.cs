@@ -60,60 +60,60 @@ class BurnEditor {
   public bool Render(bool enabled) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    UnityEngine.GUILayout.BeginVertical();
-    var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
-    warning_style.normal.textColor = XKCDColors.Orange;
     bool changed = false;
-    // When we are first rendered, the |initial_mass_in_tonnes_| will just have
-    // been set.  If we have fallen back to instant impulse, we should use this
-    // mass to set the thrust.
-    if (first_time_rendering) {
-      first_time_rendering = false;
-      changed = true;
-      engine_warning_ = "";
-      ComputeEngineCharacteristics();
-    }
-    if (enabled) {
-      UnityEngine.GUILayout.BeginHorizontal();
-      if (UnityEngine.GUILayout.Button("Active Engines")) {
+    using (new VerticalLayout()) {
+      var warning_style = new UnityEngine.GUIStyle(UnityEngine.GUI.skin.textArea);
+      warning_style.normal.textColor = XKCDColors.Orange;
+      // When we are first rendered, the |initial_mass_in_tonnes_| will just have
+      // been set.  If we have fallen back to instant impulse, we should use this
+      // mass to set the thrust.
+      if (first_time_rendering) {
+        first_time_rendering = false;
+        changed = true;
         engine_warning_ = "";
         ComputeEngineCharacteristics();
-        changed = true;
-      } else if (UnityEngine.GUILayout.Button("Active RCS")) {
-        engine_warning_ = "";
-        ComputeRCSCharacteristics();
-        changed = true;
-      } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
-        engine_warning_ = "";
-        UseTheForceLuke();
-        changed = true;
       }
-      UnityEngine.GUILayout.EndHorizontal();
-      UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
-      reference_frame_selector_.RenderButton();
-    } else {
-      reference_frame_selector_.Hide();
+      if (enabled) {
+        using (new HorizontalLayout()) {
+          if (UnityEngine.GUILayout.Button("Active Engines")) {
+            engine_warning_ = "";
+            ComputeEngineCharacteristics();
+            changed = true;
+          } else if (UnityEngine.GUILayout.Button("Active RCS")) {
+            engine_warning_ = "";
+            ComputeRCSCharacteristics();
+            changed = true;
+          } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
+            engine_warning_ = "";
+            UseTheForceLuke();
+            changed = true;
+          }
+        }
+        UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
+        reference_frame_selector_.RenderButton();
+      } else {
+        reference_frame_selector_.Hide();
+      }
+      string frame_warning = "";
+      if (!reference_frame_selector_.FrameParameters().Equals(
+              adapter_.plotting_frame_selector_.get().FrameParameters())) {
+        frame_warning = "Manœuvre frame differs from plotting frame";
+      }
+      UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
+      changed |= Δv_tangent_.Render(enabled);
+      changed |= Δv_normal_.Render(enabled);
+      changed |= Δv_binormal_.Render(enabled);
+      changed |= initial_time_.Render(enabled);
+      changed |= changed_reference_frame_;
+      using (new HorizontalLayout()) {
+        UnityEngine.GUILayout.Label(
+            "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
+            UnityEngine.GUILayout.Width(200));
+        UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
+                                    " s");
+      }
+      changed_reference_frame_ = false;
     }
-    string frame_warning = "";
-    if (!reference_frame_selector_.FrameParameters().Equals(
-            adapter_.plotting_frame_selector_.get().FrameParameters())) {
-      frame_warning = "Manœuvre frame differs from plotting frame";
-    }
-    UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
-    changed |= Δv_tangent_.Render(enabled);
-    changed |= Δv_normal_.Render(enabled);
-    changed |= Δv_binormal_.Render(enabled);
-    changed |= initial_time_.Render(enabled);
-    changed |= changed_reference_frame_;
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(
-        "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
-        UnityEngine.GUILayout.Width(200));
-    UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
-                                " s");
-    UnityEngine.GUILayout.EndHorizontal();
-    changed_reference_frame_ = false;
-    UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;
     return changed && enabled;
   }
