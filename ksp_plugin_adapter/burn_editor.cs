@@ -74,21 +74,21 @@ class BurnEditor {
       ComputeEngineCharacteristics();
     }
     if (enabled) {
-      UnityEngine.GUILayout.BeginHorizontal();
-      if (UnityEngine.GUILayout.Button("Active Engines")) {
-        engine_warning_ = "";
-        ComputeEngineCharacteristics();
-        changed = true;
-      } else if (UnityEngine.GUILayout.Button("Active RCS")) {
-        engine_warning_ = "";
-        ComputeRCSCharacteristics();
-        changed = true;
-      } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
-        engine_warning_ = "";
-        UseTheForceLuke();
-        changed = true;
+      using (new HorizontalLayout()) {
+        if (UnityEngine.GUILayout.Button("Active Engines")) {
+          engine_warning_ = "";
+          ComputeEngineCharacteristics();
+          changed = true;
+        } else if (UnityEngine.GUILayout.Button("Active RCS")) {
+          engine_warning_ = "";
+          ComputeRCSCharacteristics();
+          changed = true;
+        } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
+          engine_warning_ = "";
+          UseTheForceLuke();
+          changed = true;
+        }
       }
-      UnityEngine.GUILayout.EndHorizontal();
       UnityEngine.GUILayout.TextArea(engine_warning_, warning_style);
       reference_frame_selector_.RenderButton();
     } else {
@@ -105,13 +105,13 @@ class BurnEditor {
     changed |= Δv_binormal_.Render(enabled);
     changed |= initial_time_.Render(enabled);
     changed |= changed_reference_frame_;
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(
-        "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
-        UnityEngine.GUILayout.Width(200));
-    UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
-                                " s");
-    UnityEngine.GUILayout.EndHorizontal();
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Label(
+          "Manœuvre Δv : " + Δv().ToString("0.000") + " m/s",
+          UnityEngine.GUILayout.Width(200));
+      UnityEngine.GUILayout.Label("Duration : " + duration_.ToString("0.0") +
+                                  " s");
+    }
     changed_reference_frame_ = false;
     UnityEngine.GUILayout.EndVertical();
     UnityEngine.GUI.skin = old_skin;

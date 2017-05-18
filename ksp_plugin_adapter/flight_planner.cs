@@ -119,48 +119,53 @@ class FlightPlanner : WindowRenderer {
         AdaptiveStepParameters parameters =
             plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
-        UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Max. steps per segment:",
-                                    UnityEngine.GUILayout.Width(150));
-        const int factor = 4;
-        if (parameters.max_steps <= 100) {
-          UnityEngine.GUILayout.Button("min");
-        } else if (UnityEngine.GUILayout.Button("-")) {
-          parameters.max_steps /= factor;
-          plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
+        using (new HorizontalLayout()) {
+          using (new HorizontalLayout()) {
+            UnityEngine.GUILayout.Label("Max. steps per segment:",
+                                        UnityEngine.GUILayout.Width(150));
+            const int factor = 4;
+            if (parameters.max_steps <= 100) {
+              UnityEngine.GUILayout.Button("min");
+            } else if (UnityEngine.GUILayout.Button("-")) {
+              parameters.max_steps /= factor;
+              plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                          parameters);
+            }
+            UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
+                                           UnityEngine.GUILayout.Width(75));
+            if (parameters.max_steps >= Int64.MaxValue / factor) {
+              UnityEngine.GUILayout.Button("max");
+            } else if (UnityEngine.GUILayout.Button("+")) {
+              parameters.max_steps *= factor;
+              plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                          parameters);
+            }
+          }
+          using (new HorizontalLayout()) {
+            UnityEngine.GUILayout.Label("Tolerance:",
+                                        UnityEngine.GUILayout.Width(75));
+            if (parameters.length_integration_tolerance <= 1e-6) {
+              UnityEngine.GUILayout.Button("min");
+            } else if (UnityEngine.GUILayout.Button("-")) {
+              parameters.length_integration_tolerance /= 2;
+              parameters.speed_integration_tolerance /= 2;
+              plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                          parameters);
+            }
+            UnityEngine.GUILayout.TextArea(
+                parameters.length_integration_tolerance.ToString("0.0e0") +
+                    " m",
+                UnityEngine.GUILayout.Width(75));
+            if (parameters.length_integration_tolerance >= 1e6) {
+              UnityEngine.GUILayout.Button("max");
+            } else if (UnityEngine.GUILayout.Button("+")) {
+              parameters.length_integration_tolerance *= 2;
+              parameters.speed_integration_tolerance *= 2;
+              plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                                                          parameters);
+            }
+          }
         }
-        UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
-                                       UnityEngine.GUILayout.Width(75));
-        if (parameters.max_steps >= Int64.MaxValue / factor) {
-          UnityEngine.GUILayout.Button("max");
-        } else if (UnityEngine.GUILayout.Button("+")) {
-          parameters.max_steps *= factor;
-          plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
-        }
-        UnityEngine.GUILayout.EndHorizontal();
-        UnityEngine.GUILayout.BeginHorizontal();
-        UnityEngine.GUILayout.Label("Tolerance:",
-                                    UnityEngine.GUILayout.Width(75));
-        if (parameters.length_integration_tolerance <= 1e-6) {
-          UnityEngine.GUILayout.Button("min");
-        } else if (UnityEngine.GUILayout.Button("-")) {
-          parameters.length_integration_tolerance /= 2;
-          parameters.speed_integration_tolerance /= 2;
-          plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
-        }
-        UnityEngine.GUILayout.TextArea(
-            parameters.length_integration_tolerance.ToString("0.0e0") + " m",
-            UnityEngine.GUILayout.Width(75));
-        if (parameters.length_integration_tolerance >= 1e6) {
-          UnityEngine.GUILayout.Button("max");
-        } else if (UnityEngine.GUILayout.Button("+")) {
-          parameters.length_integration_tolerance *= 2;
-          parameters.speed_integration_tolerance *= 2;
-          plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
-        }
-        UnityEngine.GUILayout.EndHorizontal();
-        UnityEngine.GUILayout.EndHorizontal();
 
         double Δv = (from burn_editor in burn_editors_
                      select burn_editor.Δv()).Sum();
@@ -261,13 +266,13 @@ class FlightPlanner : WindowRenderer {
         // TODO(egg): We may want to consider setting the burn vector directly
         // rather than going through the solver.
         if (vessel_.patchedConicSolver != null) {
-          UnityEngine.GUILayout.BeginHorizontal();
-          show_guidance_ =
-              UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
-          if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-            TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+          using (new HorizontalLayout()) {
+            show_guidance_ =
+                UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
+            if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
+              TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+            }
           }
-          UnityEngine.GUILayout.EndHorizontal();
           if (show_guidance_ &&
               !double.IsNaN(manoeuvre.inertial_direction.x +
                             manoeuvre.inertial_direction.y +
