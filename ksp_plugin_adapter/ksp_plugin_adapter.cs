@@ -519,12 +519,17 @@ public partial class PrincipiaPluginAdapter
       apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
       apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
       apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : this.GetHashCode(),
+          id         : this.GetHashCode() + 1,
           screenRect : apocalypse_window_rectangle_,
           func       : (int id) => {
               using (new VerticalLayout()) {
                 UnityEngine.GUILayout.TextArea(revelation_);
               }
+              UnityEngine.GUI.DragWindow(
+                  position : new UnityEngine.Rect(x      : 0f,
+                                                  y      : 0f,
+                                                  width  : 10000f,
+                                                  height : 10000f));
             },
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
@@ -1074,8 +1079,10 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = time_is_advancing(universal_time);
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        is_post_apocalyptic_ |=
-            plugin_.HasEncounteredApocalypse(out revelation_);
+        if (!is_post_apocalyptic_) {
+          is_post_apocalyptic_ |=
+              plugin_.HasEncounteredApocalypse(out revelation_);
+        }
       }
     }
     SetBodyFrames();
