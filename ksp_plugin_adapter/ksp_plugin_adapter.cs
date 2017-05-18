@@ -522,9 +522,9 @@ public partial class PrincipiaPluginAdapter
           id         : this.GetHashCode(),
           screenRect : apocalypse_window_rectangle_,
           func       : (int id) => {
-              UnityEngine.GUILayout.BeginVertical();
-              UnityEngine.GUILayout.TextArea(revelation_);
-              UnityEngine.GUILayout.EndVertical();
+              using (new VerticalLayout()) {
+                UnityEngine.GUILayout.TextArea(revelation_);
+              }
             },
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
@@ -1538,96 +1538,96 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void DrawMainWindow(int window_id) {
-    UnityEngine.GUILayout.BeginVertical();
-    String plugin_state;
-    if (!PluginRunning()) {
-      plugin_state = "not started";
-    } else if (!time_is_advancing_) {
-      plugin_state = "holding";
-    } else {
-      plugin_state = "running";
-    }
-    UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-    String last_reset_information;
-    if (!PluginRunning()) {
-      last_reset_information = "";
-    } else {
-      String plugin_source = "";
-      switch (plugin_source_) {
-        case (PluginSource.SAVED_STATE):
-           plugin_source = "a saved state";
-          break;
-        case (PluginSource.ORBITAL_ELEMENTS):
-           plugin_source = "KSP orbital elements";
-          break;
-        case (PluginSource.CARTESIAN_CONFIG):
-           plugin_source = "a cartesian configuration file";
-          break;
+    using (new VerticalLayout()) {
+      String plugin_state;
+      if (!PluginRunning()) {
+        plugin_state = "not started";
+      } else if (!time_is_advancing_) {
+        plugin_state = "holding";
+      } else {
+        plugin_state = "running";
       }
-      last_reset_information =
-          "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") + " from " +
-          plugin_source;
-    }
-    UnityEngine.GUILayout.TextArea(last_reset_information);
-    String version;
-    String build_date;
-    Interface.GetVersion(build_date: out build_date, version: out version);
-    UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
-    bool changed_history_length = false;
-    Selector(history_lengths_,
-             ref history_length_index_,
-             "Max history length",
-             ref changed_history_length,
-             "{0:0.00e00} s");
-    if (MapView.MapIsEnabled &&
-        FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-      using (new HorizontalLayout()) {
-        selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-            selecting_active_vessel_target_, "Select target vessel...");
-        if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
-          UnityEngine.GUILayout.Label(
-              "Target: " +
-                  FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
-              UnityEngine.GUILayout.ExpandWidth(true));
-          if (UnityEngine.GUILayout.Button("Clear",
-                                           UnityEngine.GUILayout.Width(50))) {
-            selecting_active_vessel_target_ = false;
-            FlightGlobals.fetch.SetVesselTarget(null);
-          }
-          if (UnityEngine.GUILayout.Button("Switch To")) {
-            var focus_object =
-                new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
-                    FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
-            focus_object.onOptionSelected();
+      UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+      String last_reset_information;
+      if (!PluginRunning()) {
+        last_reset_information = "";
+      } else {
+        String plugin_source = "";
+        switch (plugin_source_) {
+          case (PluginSource.SAVED_STATE):
+             plugin_source = "a saved state";
+            break;
+          case (PluginSource.ORBITAL_ELEMENTS):
+             plugin_source = "KSP orbital elements";
+            break;
+          case (PluginSource.CARTESIAN_CONFIG):
+             plugin_source = "a cartesian configuration file";
+            break;
+        }
+        last_reset_information =
+            "Plugin was constructed at " +
+            plugin_construction_.ToUniversalTime().ToString("O") + " from " +
+            plugin_source;
+      }
+      UnityEngine.GUILayout.TextArea(last_reset_information);
+      String version;
+      String build_date;
+      Interface.GetVersion(build_date: out build_date, version: out version);
+      UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
+      bool changed_history_length = false;
+      Selector(history_lengths_,
+               ref history_length_index_,
+               "Max history length",
+               ref changed_history_length,
+               "{0:0.00e00} s");
+      if (MapView.MapIsEnabled &&
+          FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+        using (new HorizontalLayout()) {
+          selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
+              selecting_active_vessel_target_, "Select target vessel...");
+          if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
+            UnityEngine.GUILayout.Label(
+                "Target: " +
+                    FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
+                UnityEngine.GUILayout.ExpandWidth(true));
+            if (UnityEngine.GUILayout.Button("Clear",
+                                             UnityEngine.GUILayout.Width(50))) {
+              selecting_active_vessel_target_ = false;
+              FlightGlobals.fetch.SetVesselTarget(null);
+            }
+            if (UnityEngine.GUILayout.Button("Switch To")) {
+              var focus_object =
+                  new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
+                      FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
+              focus_object.onOptionSelected();
+            }
           }
         }
+      } else {
+        selecting_active_vessel_target_ = false;
       }
-    } else {
-      selecting_active_vessel_target_ = false;
-    }
-    ReferenceFrameSelection();
-    if (PluginRunning()) {
-      flight_planner_.get().RenderButton();
-    }
-    ToggleableSection(name   : "Prediction Settings",
-                      show   : ref show_prediction_settings_,
-                      render : PredictionSettings);
-    ToggleableSection(name   : "KSP features",
-                      show   : ref show_ksp_features_,
-                      render : KSPFeatures);
-    ToggleableSection(name   : "Logging Settings",
-                      show   : ref show_logging_settings_,
-                      render : LoggingSettings);
-    ToggleableSection(name   : "Reset Principia",
-                      show   : ref show_reset_button_,
-                      render : ResetButton);
+      ReferenceFrameSelection();
+      if (PluginRunning()) {
+        flight_planner_.get().RenderButton();
+      }
+      ToggleableSection(name   : "Prediction Settings",
+                        show   : ref show_prediction_settings_,
+                        render : PredictionSettings);
+      ToggleableSection(name   : "KSP features",
+                        show   : ref show_ksp_features_,
+                        render : KSPFeatures);
+      ToggleableSection(name   : "Logging Settings",
+                        show   : ref show_logging_settings_,
+                        render : LoggingSettings);
+      ToggleableSection(name   : "Reset Principia",
+                        show   : ref show_reset_button_,
+                        render : ResetButton);
 #if CRASH_BUTTON
-    ToggleableSection(name   : "CRASH",
-                      show   : ref show_crash_options_,
-                      render : CrashOptions);
+      ToggleableSection(name   : "CRASH",
+                        show   : ref show_crash_options_,
+                        render : CrashOptions);
 #endif
-    UnityEngine.GUILayout.EndVertical();
+    }
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(x      : 0f,
                                         y      : 0f,

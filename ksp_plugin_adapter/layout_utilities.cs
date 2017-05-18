@@ -4,8 +4,8 @@ namespace principia {
 namespace ksp_plugin_adapter {
 
 internal class HorizontalLayout : IDisposable {
-  public HorizontalLayout() {
-    UnityEngine.GUILayout.BeginHorizontal();
+  public HorizontalLayout(params UnityEngine.GUILayoutOption[] options) {
+    UnityEngine.GUILayout.BeginHorizontal(options);
   }
 
   public void Dispose() {
@@ -14,8 +14,8 @@ internal class HorizontalLayout : IDisposable {
 }
 
 internal class VerticalLayout : IDisposable {
-  public VerticalLayout() {
-    UnityEngine.GUILayout.BeginVertical();
+  public VerticalLayout(params UnityEngine.GUILayoutOption[] options) {
+    UnityEngine.GUILayout.BeginVertical(options);
   }
 
   public void Dispose() {

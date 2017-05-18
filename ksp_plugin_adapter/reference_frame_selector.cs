@@ -269,29 +269,29 @@ class ReferenceFrameSelector : WindowRenderer {
 
     using (new HorizontalLayout()) {
       // Left-hand side: tree view for celestial selection.
-      UnityEngine.GUILayout.BeginVertical(UnityEngine.GUILayout.Width(200));
-      RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
-      UnityEngine.GUILayout.EndVertical();
+      using (new VerticalLayout(UnityEngine.GUILayout.Width(200))) {
+        RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
+      }
 
       // Right-hand side: toggles for reference frame type selection.
-      UnityEngine.GUILayout.BeginVertical();
-      if (target_override) {
-        UnityEngine.GUILayout.Label(
-            "Using target-centred frame selected on navball speed display",
-            UnityEngine.GUILayout.Width(150));
-        UnityEngine.GUILayout.Label(
-            Description(frame_type, selected_celestial, target_override),
-            UnityEngine.GUILayout.Width(150));
-      } else {
-        TypeSelector(FrameType.BODY_SURFACE);
-        TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
-        if (!selected_celestial.is_root()) {
-          CelestialBody parent = selected_celestial.orbit.referenceBody;
-          TypeSelector(FrameType.BARYCENTRIC_ROTATING);
-          TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+      using (new VerticalLayout()) {
+        if (target_override) {
+          UnityEngine.GUILayout.Label(
+              "Using target-centred frame selected on navball speed display",
+              UnityEngine.GUILayout.Width(150));
+          UnityEngine.GUILayout.Label(
+              Description(frame_type, selected_celestial, target_override),
+              UnityEngine.GUILayout.Width(150));
+        } else {
+          TypeSelector(FrameType.BODY_SURFACE);
+          TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
+          if (!selected_celestial.is_root()) {
+            CelestialBody parent = selected_celestial.orbit.referenceBody;
+            TypeSelector(FrameType.BARYCENTRIC_ROTATING);
+            TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+          }
         }
       }
-      UnityEngine.GUILayout.EndVertical();
     }
 
     UnityEngine.GUI.DragWindow(
