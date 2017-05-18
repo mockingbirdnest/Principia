@@ -555,9 +555,9 @@ public partial class PrincipiaPluginAdapter
     // Make sure the state of the toolbar button remains consistent with the
     // state of the window.
     if (show_main_window_) {
-      toolbar_button_.SetTrue(makeCall : false);
+      toolbar_button_?.SetTrue(makeCall : false);
     } else {
-      toolbar_button_.SetFalse(makeCall : false);
+      toolbar_button_?.SetFalse(makeCall : false);
     }
 
     if (hide_all_gui_) {
