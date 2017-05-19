@@ -26,6 +26,12 @@ BodySurfaceDynamicFrame(
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
+not_null<RotatingBody<InertialFrame> const*>
+BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::centre() const {
+  return centre_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
@@ -43,12 +49,6 @@ BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
              rigid_transformation,
              angular_velocity,
              centre_degrees_of_freedom.velocity());
-}
-
-template<typename InertialFrame, typename ThisFrame>
-not_null<RotatingBody<InertialFrame> const*>
-BodySurfaceDynamicFrame<InertialFrame, ThisFrame>::centre() const {
-  return centre_;
 }
 
 template<typename InertialFrame, typename ThisFrame>
