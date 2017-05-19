@@ -350,6 +350,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="part.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
+    <ClInclude Include="renderer.hpp" />
     <ClInclude Include="vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -370,6 +371,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="part_subsets.cpp" />
     <ClCompile Include="pile_up.cpp" />
     <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="renderer.cpp" />
     <ClCompile Include="vessel.cpp" />
   </ItemGroup>
   <ItemGroup>

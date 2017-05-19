@@ -247,7 +247,7 @@ not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(
     not_null<Ephemeris<Barycentric> const*> const ephemeris) {
   return make_not_null_unique<Renderer>(
       sun,
-      NavigationFrame::ReadFromMessage(message.plotting_frame(), ephemeris));
+      NavigationFrame::ReadFromMessage(ephemeris, message.plotting_frame()));
 }
 
 Renderer::Target::Target(

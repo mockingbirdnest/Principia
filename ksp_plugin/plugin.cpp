@@ -97,10 +97,6 @@ namespace {
 
 Length const fitting_tolerance = 1 * Milli(Metre);
 
-// The map between the vector spaces of |WorldSun| and |AliceSun|.
-Permutation<WorldSun, AliceSun> const sun_looking_glass(
-    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
-
 }  // namespace
 
 Plugin::Plugin(std::string const& game_epoch,

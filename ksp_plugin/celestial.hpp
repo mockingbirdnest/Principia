@@ -28,21 +28,24 @@ using physics::RotatingBody;
 using quantities::GravitationalParameter;
 
 // Represents a KSP |CelestialBody|.
-class Celestial final {
+class Celestial {
  public:
   explicit Celestial(not_null<RotatingBody<Barycentric> const*> body);
   Celestial(Celestial const&) = delete;
   Celestial(Celestial&&) = delete;
+  virtual ~Celestial() = default;
 
   // True if, and only if, |trajectory_| is not null.
   bool is_initialized() const;
   void set_trajectory(
       not_null<ContinuousTrajectory<Barycentric> const*> trajectory);
   ContinuousTrajectory<Barycentric> const& trajectory() const;
-  DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
+  virtual DegreesOfFreedom<Barycentric> current_degrees_of_freedom(
       Instant const& current_time) const;
-  Position<Barycentric> current_position(Instant const& current_time) const;
-  Velocity<Barycentric> current_velocity(Instant const& current_time) const;
+  virtual Position<Barycentric> current_position(
+      Instant const& current_time) const;
+  virtual Velocity<Barycentric> current_velocity(
+      Instant const& current_time) const;
 
   not_null<RotatingBody<Barycentric> const*> body() const;
   bool has_parent() const;

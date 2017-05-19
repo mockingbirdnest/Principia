@@ -107,6 +107,12 @@
     <ClCompile Include="..\base\version.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
@@ -116,6 +122,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mock_manœuvre.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_celestial.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

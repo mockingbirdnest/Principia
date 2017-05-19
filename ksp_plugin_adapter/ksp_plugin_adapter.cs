@@ -519,12 +519,17 @@ public partial class PrincipiaPluginAdapter
       apocalypse_window_rectangle_.xMin = apocalypse_window_x_;
       apocalypse_window_rectangle_.yMin = apocalypse_window_y_;
       apocalypse_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : this.GetHashCode(),
+          id         : this.GetHashCode() + 1,
           screenRect : apocalypse_window_rectangle_,
           func       : (int id) => {
-              UnityEngine.GUILayout.BeginVertical();
-              UnityEngine.GUILayout.TextArea(revelation_);
-              UnityEngine.GUILayout.EndVertical();
+              using (new VerticalLayout()) {
+                UnityEngine.GUILayout.TextArea(revelation_);
+              }
+              UnityEngine.GUI.DragWindow(
+                  position : new UnityEngine.Rect(x      : 0f,
+                                                  y      : 0f,
+                                                  width  : 10000f,
+                                                  height : 10000f));
             },
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
@@ -550,9 +555,9 @@ public partial class PrincipiaPluginAdapter
     // Make sure the state of the toolbar button remains consistent with the
     // state of the window.
     if (show_main_window_) {
-      toolbar_button_.SetTrue(makeCall : false);
+      toolbar_button_?.SetTrue(makeCall : false);
     } else {
-      toolbar_button_.SetFalse(makeCall : false);
+      toolbar_button_?.SetFalse(makeCall : false);
     }
 
     if (hide_all_gui_) {
@@ -1074,8 +1079,10 @@ public partial class PrincipiaPluginAdapter
       time_is_advancing_ = time_is_advancing(universal_time);
       if (time_is_advancing_) {
         plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        is_post_apocalyptic_ |=
-            plugin_.HasEncounteredApocalypse(out revelation_);
+        if (!is_post_apocalyptic_) {
+          is_post_apocalyptic_ |=
+              plugin_.HasEncounteredApocalypse(out revelation_);
+        }
       }
     }
     SetBodyFrames();
@@ -1538,96 +1545,96 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void DrawMainWindow(int window_id) {
-    UnityEngine.GUILayout.BeginVertical();
-    String plugin_state;
-    if (!PluginRunning()) {
-      plugin_state = "not started";
-    } else if (!time_is_advancing_) {
-      plugin_state = "holding";
-    } else {
-      plugin_state = "running";
-    }
-    UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-    String last_reset_information;
-    if (!PluginRunning()) {
-      last_reset_information = "";
-    } else {
-      String plugin_source = "";
-      switch (plugin_source_) {
-        case (PluginSource.SAVED_STATE):
-           plugin_source = "a saved state";
-          break;
-        case (PluginSource.ORBITAL_ELEMENTS):
-           plugin_source = "KSP orbital elements";
-          break;
-        case (PluginSource.CARTESIAN_CONFIG):
-           plugin_source = "a cartesian configuration file";
-          break;
+    using (new VerticalLayout()) {
+      String plugin_state;
+      if (!PluginRunning()) {
+        plugin_state = "not started";
+      } else if (!time_is_advancing_) {
+        plugin_state = "holding";
+      } else {
+        plugin_state = "running";
       }
-      last_reset_information =
-          "Plugin was constructed at " +
-          plugin_construction_.ToUniversalTime().ToString("O") + " from " +
-          plugin_source;
-    }
-    UnityEngine.GUILayout.TextArea(last_reset_information);
-    String version;
-    String build_date;
-    Interface.GetVersion(build_date: out build_date, version: out version);
-    UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
-    bool changed_history_length = false;
-    Selector(history_lengths_,
-             ref history_length_index_,
-             "Max history length",
-             ref changed_history_length,
-             "{0:0.00e00} s");
-    if (MapView.MapIsEnabled &&
-        FlightGlobals.ActiveVessel?.orbitTargeter != null) {
-      UnityEngine.GUILayout.BeginHorizontal();
-      selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-          selecting_active_vessel_target_, "Select target vessel...");
-      if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
-        UnityEngine.GUILayout.Label(
-            "Target: " +
-                FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
-            UnityEngine.GUILayout.ExpandWidth(true));
-        if (UnityEngine.GUILayout.Button("Clear",
-                                         UnityEngine.GUILayout.Width(50))) {
-          selecting_active_vessel_target_ = false;
-          FlightGlobals.fetch.SetVesselTarget(null);
+      UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
+      String last_reset_information;
+      if (!PluginRunning()) {
+        last_reset_information = "";
+      } else {
+        String plugin_source = "";
+        switch (plugin_source_) {
+          case (PluginSource.SAVED_STATE):
+             plugin_source = "a saved state";
+            break;
+          case (PluginSource.ORBITAL_ELEMENTS):
+             plugin_source = "KSP orbital elements";
+            break;
+          case (PluginSource.CARTESIAN_CONFIG):
+             plugin_source = "a cartesian configuration file";
+            break;
         }
-        if (UnityEngine.GUILayout.Button("Switch To")) {
-          var focus_object =
-              new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
-                  FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
-          focus_object.onOptionSelected();
-        }
+        last_reset_information =
+            "Plugin was constructed at " +
+            plugin_construction_.ToUniversalTime().ToString("O") + " from " +
+            plugin_source;
       }
-      UnityEngine.GUILayout.EndHorizontal();
-    } else {
-      selecting_active_vessel_target_ = false;
-    }
-    ReferenceFrameSelection();
-    if (PluginRunning()) {
-      flight_planner_.get().RenderButton();
-    }
-    ToggleableSection(name   : "Prediction Settings",
-                      show   : ref show_prediction_settings_,
-                      render : PredictionSettings);
-    ToggleableSection(name   : "KSP features",
-                      show   : ref show_ksp_features_,
-                      render : KSPFeatures);
-    ToggleableSection(name   : "Logging Settings",
-                      show   : ref show_logging_settings_,
-                      render : LoggingSettings);
-    ToggleableSection(name   : "Reset Principia",
-                      show   : ref show_reset_button_,
-                      render : ResetButton);
+      UnityEngine.GUILayout.TextArea(last_reset_information);
+      String version;
+      String build_date;
+      Interface.GetVersion(build_date: out build_date, version: out version);
+      UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
+      bool changed_history_length = false;
+      Selector(history_lengths_,
+               ref history_length_index_,
+               "Max history length",
+               ref changed_history_length,
+               "{0:0.00e00} s");
+      if (MapView.MapIsEnabled &&
+          FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+        using (new HorizontalLayout()) {
+          selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
+              selecting_active_vessel_target_, "Select target vessel...");
+          if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
+            UnityEngine.GUILayout.Label(
+                "Target: " +
+                    FlightGlobals.fetch.VesselTarget.GetVessel().vesselName,
+                UnityEngine.GUILayout.ExpandWidth(true));
+            if (UnityEngine.GUILayout.Button("Clear",
+                                             UnityEngine.GUILayout.Width(50))) {
+              selecting_active_vessel_target_ = false;
+              FlightGlobals.fetch.SetVesselTarget(null);
+            }
+            if (UnityEngine.GUILayout.Button("Switch To")) {
+              var focus_object =
+                  new KSP.UI.Screens.Mapview.MapContextMenuOptions.FocusObject(
+                      FlightGlobals.fetch.VesselTarget.GetVessel().orbitDriver);
+              focus_object.onOptionSelected();
+            }
+          }
+        }
+      } else {
+        selecting_active_vessel_target_ = false;
+      }
+      ReferenceFrameSelection();
+      if (PluginRunning()) {
+        flight_planner_.get().RenderButton();
+      }
+      ToggleableSection(name   : "Prediction Settings",
+                        show   : ref show_prediction_settings_,
+                        render : PredictionSettings);
+      ToggleableSection(name   : "KSP features",
+                        show   : ref show_ksp_features_,
+                        render : KSPFeatures);
+      ToggleableSection(name   : "Logging Settings",
+                        show   : ref show_logging_settings_,
+                        render : LoggingSettings);
+      ToggleableSection(name   : "Reset Principia",
+                        show   : ref show_reset_button_,
+                        render : ResetButton);
 #if CRASH_BUTTON
-    ToggleableSection(name   : "CRASH",
-                      show   : ref show_crash_options_,
-                      render : CrashOptions);
+      ToggleableSection(name   : "CRASH",
+                        show   : ref show_crash_options_,
+                        render : CrashOptions);
 #endif
-    UnityEngine.GUILayout.EndVertical();
+    }
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(x      : 0f,
                                         y      : 0f,
@@ -1681,32 +1688,32 @@ public partial class PrincipiaPluginAdapter
       String label,
       ref bool changed,
       String format) {
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text    : label + ":",
-                                options : UnityEngine.GUILayout.Width(150));
-    if (UnityEngine.GUILayout.Button(
-            text    : index == 0 ? "min" : "-",
-            options : UnityEngine.GUILayout.Width(50)) &&
-        index != 0) {
-      --index;
-      changed = true;
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Label(text    : label + ":",
+                                  options : UnityEngine.GUILayout.Width(150));
+      if (UnityEngine.GUILayout.Button(
+              text    : index == 0 ? "min" : "-",
+              options : UnityEngine.GUILayout.Width(50)) &&
+          index != 0) {
+        --index;
+        changed = true;
+      }
+      UnityEngine.TextAnchor old_alignment =
+          UnityEngine.GUI.skin.textArea.alignment;
+      UnityEngine.GUI.skin.textArea.alignment =
+          UnityEngine.TextAnchor.MiddleRight;
+      UnityEngine.GUILayout.TextArea(
+          text    : String.Format(Culture.culture, format, array[index]),
+          options : UnityEngine.GUILayout.Width(75));
+      UnityEngine.GUI.skin.textArea.alignment = old_alignment;
+      if (UnityEngine.GUILayout.Button(
+              text    : index == array.Length - 1 ? "max" : "+",
+              options : UnityEngine.GUILayout.Width(50)) &&
+          index != array.Length - 1) {
+        ++index;
+        changed = true;
+      }
     }
-    UnityEngine.TextAnchor old_alignment =
-        UnityEngine.GUI.skin.textArea.alignment;
-    UnityEngine.GUI.skin.textArea.alignment =
-        UnityEngine.TextAnchor.MiddleRight;
-    UnityEngine.GUILayout.TextArea(
-        text    : String.Format(Culture.culture, format, array[index]),
-        options : UnityEngine.GUILayout.Width(75));
-    UnityEngine.GUI.skin.textArea.alignment = old_alignment;
-    if (UnityEngine.GUILayout.Button(
-            text    : index == array.Length - 1 ? "max" : "+",
-            options : UnityEngine.GUILayout.Width(50)) &&
-        index != array.Length - 1) {
-      ++index;
-      changed = true;
-    }
-    UnityEngine.GUILayout.EndHorizontal();
   }
 
   private void PredictionSettings() {
@@ -1733,98 +1740,98 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LoggingSettings() {
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Label(text : "Verbose level:");
-    if (UnityEngine.GUILayout.Button(
-            text    : "←",
-            options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
-      verbose_logging_ = Log.GetVerboseLogging();
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Label(text : "Verbose level:");
+      if (UnityEngine.GUILayout.Button(
+              text    : "←",
+              options : UnityEngine.GUILayout.Width(50))) {
+        Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
+        verbose_logging_ = Log.GetVerboseLogging();
+      }
+      UnityEngine.GUILayout.TextArea(
+          text    : Log.GetVerboseLogging().ToString(),
+          options : UnityEngine.GUILayout.Width(50));
+      if (UnityEngine.GUILayout.Button(
+              text    : "→",
+              options : UnityEngine.GUILayout.Width(50))) {
+        Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
+        verbose_logging_ = Log.GetVerboseLogging();
+      }
     }
-    UnityEngine.GUILayout.TextArea(
-        text    : Log.GetVerboseLogging().ToString(),
-        options : UnityEngine.GUILayout.Width(50));
-    if (UnityEngine.GUILayout.Button(
-            text    : "→",
-            options : UnityEngine.GUILayout.Width(50))) {
-      Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
-      verbose_logging_ = Log.GetVerboseLogging();
-    }
-    UnityEngine.GUILayout.EndHorizontal();
     int column_width = 75;
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Space(column_width);
-    UnityEngine.GUILayout.Label(
-        text    : "Log",
-        options : UnityEngine.GUILayout.Width(column_width));
-    UnityEngine.GUILayout.Label(
-        text    : "stderr",
-        options : UnityEngine.GUILayout.Width(column_width));
-    UnityEngine.GUILayout.Label(
-        text    : "Flush",
-        options : UnityEngine.GUILayout.Width(column_width));
-    UnityEngine.GUILayout.EndHorizontal();
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Space(column_width);
-    if (UnityEngine.GUILayout.Button(
-            text    : "↑",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
-      suppressed_logging_ = Log.GetSuppressedLogging();
-    }
-    if (UnityEngine.GUILayout.Button(
-            text    : "↑",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
-      stderr_logging_ = Log.GetStderrLogging();
-    }
-    if (UnityEngine.GUILayout.Button(
-            text    : "↑",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
-      buffered_logging_ = Log.GetBufferedLogging();
-    }
-    UnityEngine.GUILayout.EndHorizontal();
-    for (int severity = 0; severity <= 3; ++severity) {
-      UnityEngine.GUILayout.BeginHorizontal();
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Space(column_width);
       UnityEngine.GUILayout.Label(
-          text    : Log.severity_names[severity],
+          text    : "Log",
           options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Toggle(
-          value   : severity >= Log.GetSuppressedLogging(),
-          text    : "",
+      UnityEngine.GUILayout.Label(
+          text    : "stderr",
           options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Toggle(
-          value   : severity >= Log.GetStderrLogging(),
-          text    : "",
+      UnityEngine.GUILayout.Label(
+          text    : "Flush",
           options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.Toggle(
-          value   : severity > Log.GetBufferedLogging(),
-          text    : "",
-          options : UnityEngine.GUILayout.Width(column_width));
-      UnityEngine.GUILayout.EndHorizontal();
     }
-    UnityEngine.GUILayout.BeginHorizontal();
-    UnityEngine.GUILayout.Space(column_width);
-    if (UnityEngine.GUILayout.Button(
-            text    : "↓",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
-      suppressed_logging_ = Log.GetSuppressedLogging();
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Space(column_width);
+      if (UnityEngine.GUILayout.Button(
+              text    : "↑",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
+        suppressed_logging_ = Log.GetSuppressedLogging();
+      }
+      if (UnityEngine.GUILayout.Button(
+              text    : "↑",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
+        stderr_logging_ = Log.GetStderrLogging();
+      }
+      if (UnityEngine.GUILayout.Button(
+              text    : "↑",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
+        buffered_logging_ = Log.GetBufferedLogging();
+      }
     }
-    if (UnityEngine.GUILayout.Button(
-            text    : "↓",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
-      stderr_logging_ = Log.GetStderrLogging();
+    for (int severity = 0; severity <= 3; ++severity) {
+      using (new HorizontalLayout()) {
+        UnityEngine.GUILayout.Label(
+            text    : Log.severity_names[severity],
+            options : UnityEngine.GUILayout.Width(column_width));
+        UnityEngine.GUILayout.Toggle(
+            value   : severity >= Log.GetSuppressedLogging(),
+            text    : "",
+            options : UnityEngine.GUILayout.Width(column_width));
+        UnityEngine.GUILayout.Toggle(
+            value   : severity >= Log.GetStderrLogging(),
+            text    : "",
+            options : UnityEngine.GUILayout.Width(column_width));
+        UnityEngine.GUILayout.Toggle(
+            value   : severity > Log.GetBufferedLogging(),
+            text    : "",
+            options : UnityEngine.GUILayout.Width(column_width));
+      }
     }
-    if (UnityEngine.GUILayout.Button(
-            text    : "↓",
-            options : UnityEngine.GUILayout.Width(column_width))) {
-      Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
-      buffered_logging_ = Log.GetBufferedLogging();
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Space(column_width);
+      if (UnityEngine.GUILayout.Button(
+              text    : "↓",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
+        suppressed_logging_ = Log.GetSuppressedLogging();
+      }
+      if (UnityEngine.GUILayout.Button(
+              text    : "↓",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
+        stderr_logging_ = Log.GetStderrLogging();
+      }
+      if (UnityEngine.GUILayout.Button(
+              text    : "↓",
+              options : UnityEngine.GUILayout.Width(column_width))) {
+        Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
+        buffered_logging_ = Log.GetBufferedLogging();
+      }
     }
-    UnityEngine.GUILayout.EndHorizontal();
     UnityEngine.GUILayout.TextArea("Journalling is " +
                                    (journaling_ ? "ON" : "OFF"));
     must_record_journal_ = UnityEngine.GUILayout.Toggle(

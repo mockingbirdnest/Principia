@@ -5,6 +5,7 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/permutation.hpp"
 #include "ksp_plugin/manœuvre.hpp"
 #include "physics/dynamic_frame.hpp"
 
@@ -13,6 +14,7 @@ namespace ksp_plugin {
 namespace internal_frames {
 
 using geometry::Frame;
+using geometry::Permutation;
 using physics::DynamicFrame;
 
 // Thanks to KSP's madness, the reference frame of the celestial body orbited by
@@ -84,6 +86,10 @@ using WorldSun = Frame<serialization::Frame::PluginTag,
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
+// The map between the vector spaces of |WorldSun| and |AliceSun|.
+Permutation<WorldSun, AliceSun> const sun_looking_glass(
+    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
+
 }  // namespace internal_frames
 
 using internal_frames::AliceSun;
@@ -99,6 +105,7 @@ using internal_frames::NavigationFrame;
 using internal_frames::NavigationManœuvre;
 using internal_frames::World;
 using internal_frames::WorldSun;
+using internal_frames::sun_looking_glass;
 
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -59,6 +59,9 @@
     <ClInclude Include="integrators.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="renderer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">
@@ -113,6 +116,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\base\version.generated.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
