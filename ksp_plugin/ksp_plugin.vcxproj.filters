@@ -115,6 +115,9 @@
     <ClCompile Include="..\base\version.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />
