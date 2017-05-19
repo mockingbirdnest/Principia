@@ -1301,12 +1301,12 @@ void Plugin::ReadCelestialsFromMessages(
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
                 body)));
-    CHECK(inserted);
+    CHECK(inserted) << celestial_message.index();
     it->second->set_trajectory(ephemeris.trajectory(body));
 
     std::tie(std::ignore, inserted) =
         name_to_index.emplace(body->name(), celestial_message.index());
-    CHECK(inserted);
+    CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {
