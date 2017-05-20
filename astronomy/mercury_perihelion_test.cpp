@@ -143,8 +143,8 @@ TEST_F(MercuryPerihelionTest, Year1950) {
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
       orbit.elements_at_epoch();
 
-  EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_1950_.eccentricity), 1.4e-13);
+  EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
+                          *keplerian_elements_1950_.eccentricity), 1.4e-13);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
@@ -154,10 +154,10 @@ TEST_F(MercuryPerihelionTest, Year1950) {
   EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
                           keplerian_elements_1950_.
                               longitude_of_ascending_node), 4.2e-15);
-  EXPECT_LT(RelativeError(keplerian_elements_1950_.argument_of_periapsis,
-                          keplerian_elements.argument_of_periapsis), 8.5e-14);
-  EXPECT_LT(RelativeError(keplerian_elements.mean_anomaly,
-                          keplerian_elements_1950_.mean_anomaly), 1.3e-14);
+  EXPECT_LT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
+                          *keplerian_elements.argument_of_periapsis), 8.5e-14);
+  EXPECT_LT(RelativeError(*keplerian_elements.mean_anomaly,
+                          *keplerian_elements_1950_.mean_anomaly), 1.3e-14);
 }
 
 #if !defined(_DEBUG)
@@ -177,8 +177,8 @@ TEST_F(MercuryPerihelionTest, Year1960) {
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
       orbit.elements_at_epoch();
 
-  EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_1960_.eccentricity), 5.3e-7);
+  EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
+                          *keplerian_elements_1960_.eccentricity), 5.3e-7);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_1960_.semimajor_axis), 1.1e-7);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
@@ -188,11 +188,11 @@ TEST_F(MercuryPerihelionTest, Year1960) {
   EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
                           keplerian_elements_1960_.
                               longitude_of_ascending_node), 1.3e-9);
-  EXPECT_THAT(keplerian_elements_1960_.argument_of_periapsis -
-                  keplerian_elements.argument_of_periapsis,
+  EXPECT_THAT(*keplerian_elements_1960_.argument_of_periapsis -
+                  *keplerian_elements.argument_of_periapsis,
               AllOf(Gt(4.202 * ArcSecond), Lt(4.203 * ArcSecond)));
-  EXPECT_THAT(keplerian_elements.mean_anomaly -
-                  keplerian_elements_1960_.mean_anomaly,
+  EXPECT_THAT(*keplerian_elements.mean_anomaly -
+                  *keplerian_elements_1960_.mean_anomaly,
               AllOf(Gt(17.0 * ArcSecond), Lt(17.1 * ArcSecond)));
 }
 
@@ -212,8 +212,8 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
       orbit.elements_at_epoch();
 
-  EXPECT_LT(RelativeError(keplerian_elements.eccentricity,
-                          keplerian_elements_2050_.eccentricity), 9.8e-8);
+  EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
+                          *keplerian_elements_2050_.eccentricity), 9.8e-8);
   EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
                           *keplerian_elements_2050_.semimajor_axis), 1.9e-8);
   EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
@@ -223,11 +223,11 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
   EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
                           keplerian_elements_2050_.
                               longitude_of_ascending_node), 9.1e-8);
-  EXPECT_THAT(keplerian_elements_2050_.argument_of_periapsis -
-                  keplerian_elements.argument_of_periapsis,
+  EXPECT_THAT(*keplerian_elements_2050_.argument_of_periapsis -
+                  *keplerian_elements.argument_of_periapsis,
               AllOf(Gt(42.83 * ArcSecond), Lt(42.84 * ArcSecond)));
-  EXPECT_THAT(keplerian_elements.mean_anomaly -
-                  keplerian_elements_2050_.mean_anomaly,
+  EXPECT_THAT(*keplerian_elements.mean_anomaly -
+                  *keplerian_elements_2050_.mean_anomaly,
               AllOf(Gt(171 * ArcSecond), Lt(172 * ArcSecond)));
 }
 

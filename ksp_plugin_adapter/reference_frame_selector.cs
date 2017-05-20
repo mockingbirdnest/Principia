@@ -267,33 +267,32 @@ class ReferenceFrameSelector : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
 
-    UnityEngine.GUILayout.BeginHorizontal();
+    using (new HorizontalLayout()) {
+      // Left-hand side: tree view for celestial selection.
+      using (new VerticalLayout(UnityEngine.GUILayout.Width(200))) {
+        RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
+      }
 
-    // Left-hand side: tree view for celestial selection.
-    UnityEngine.GUILayout.BeginVertical(UnityEngine.GUILayout.Width(200));
-    RenderSubtree(celestial : Planetarium.fetch.Sun, depth : 0);
-    UnityEngine.GUILayout.EndVertical();
-
-    // Right-hand side: toggles for reference frame type selection.
-    UnityEngine.GUILayout.BeginVertical();
-    if (target_override) {
-      UnityEngine.GUILayout.Label(
-          "Using target-centred frame selected on navball speed display",
-          UnityEngine.GUILayout.Width(150));
-      UnityEngine.GUILayout.Label(
-          Description(frame_type, selected_celestial, target_override),
-          UnityEngine.GUILayout.Width(150));
-    } else {
-      TypeSelector(FrameType.BODY_SURFACE);
-      TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
-      if (!selected_celestial.is_root()) {
-        CelestialBody parent = selected_celestial.orbit.referenceBody;
-        TypeSelector(FrameType.BARYCENTRIC_ROTATING);
-        TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+      // Right-hand side: toggles for reference frame type selection.
+      using (new VerticalLayout()) {
+        if (target_override) {
+          UnityEngine.GUILayout.Label(
+              "Using target-centred frame selected on navball speed display",
+              UnityEngine.GUILayout.Width(150));
+          UnityEngine.GUILayout.Label(
+              Description(frame_type, selected_celestial, target_override),
+              UnityEngine.GUILayout.Width(150));
+        } else {
+          TypeSelector(FrameType.BODY_SURFACE);
+          TypeSelector(FrameType.BODY_CENTRED_NON_ROTATING);
+          if (!selected_celestial.is_root()) {
+            CelestialBody parent = selected_celestial.orbit.referenceBody;
+            TypeSelector(FrameType.BARYCENTRIC_ROTATING);
+            TypeSelector(FrameType.BODY_CENTRED_PARENT_DIRECTION);
+          }
+        }
       }
     }
-    UnityEngine.GUILayout.EndVertical();
-    UnityEngine.GUILayout.EndHorizontal();
 
     UnityEngine.GUI.DragWindow(
         position : new UnityEngine.Rect(x      : 0f,
@@ -307,36 +306,36 @@ class ReferenceFrameSelector : WindowRenderer {
   private void RenderSubtree(CelestialBody celestial, int depth) {
     // Horizontal offset between a node and its children.
     const int offset = 20;
-    UnityEngine.GUILayout.BeginHorizontal();
-    if (!celestial.is_root()) {
-      UnityEngine.GUILayout.Label(
-          "",
-          UnityEngine.GUILayout.Width(offset * (depth - 1)));
-      string button_text;
-      if (celestial.is_leaf()) {
-        button_text = "";
-      } else if (expanded_[celestial]) {
-        button_text = "-";
-      } else {
-        button_text = "+";
-      }
-      if (UnityEngine.GUILayout.Button(button_text,
-                                       UnityEngine.GUILayout.Width(offset))) {
-        Shrink();
-        expanded_[celestial] = !expanded_[celestial];
-      }
-    }
-    if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
-                                     celestial.name)) {
-      if (selected_celestial != celestial) {
-        selected_celestial = celestial;
-        if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
-          frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+    using (new HorizontalLayout()) {
+      if (!celestial.is_root()) {
+        UnityEngine.GUILayout.Label(
+            "",
+            UnityEngine.GUILayout.Width(offset * (depth - 1)));
+        string button_text;
+        if (celestial.is_leaf()) {
+          button_text = "";
+        } else if (expanded_[celestial]) {
+          button_text = "-";
+        } else {
+          button_text = "+";
         }
-        on_change_(FrameParameters());
+        if (UnityEngine.GUILayout.Button(button_text,
+                                         UnityEngine.GUILayout.Width(offset))) {
+          Shrink();
+          expanded_[celestial] = !expanded_[celestial];
+        }
+      }
+      if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
+                                       celestial.name)) {
+        if (selected_celestial != celestial) {
+          selected_celestial = celestial;
+          if (celestial.is_root() && frame_type != FrameType.BODY_SURFACE) {
+            frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+          }
+          on_change_(FrameParameters());
+        }
       }
     }
-    UnityEngine.GUILayout.EndHorizontal();
     if (celestial.is_root() || (!celestial.is_leaf() && expanded_[celestial])) {
       foreach (CelestialBody child in celestial.orbitingBodies) {
         RenderSubtree(child, depth + 1);

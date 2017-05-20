@@ -116,13 +116,29 @@ message HierarchicalSystem {
 
 message KeplerianElements {
   required Frame frame = 1;
-  required double eccentricity = 2;
+  optional double eccentricity = 2;
+  optional Quantity asymptotic_true_anomaly = 9;
+  optional Quantity turning_angle = 10;
   optional Quantity semimajor_axis = 3;
+  optional Quantity specific_energy = 11;
+  optional Quantity characteristic_energy = 12;
   optional Quantity mean_motion = 4;
+  optional Quantity period = 13;
+  optional Quantity hyperbolic_mean_motion = 14;
+  optional Quantity hyperbolic_excess_velocity = 15;
+  optional Quantity semiminor_axis = 16;
+  optional Quantity impact_parameter = 17;
+  optional Quantity semilatus_rectum = 18;
+  optional Quantity specific_angular_momentum = 19;
+  optional Quantity periapsis_distance = 20;
+  optional Quantity apoapsis_distance = 21;
   required Quantity inclination = 5;
   required Quantity longitude_of_ascending_node = 6;
-  required Quantity argument_of_periapsis = 7;
-  required Quantity mean_anomaly = 8;
+  optional Quantity argument_of_periapsis = 7;
+  optional Quantity longitude_of_periapsis = 22;
+  optional Quantity true_anomaly = 23;
+  optional Quantity mean_anomaly = 8;
+  optional Quantity hyperbolic_mean_anomaly = 24;
 }
 
 message MassiveBody {

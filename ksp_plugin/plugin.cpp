@@ -15,6 +15,7 @@
 #include <set>
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/solar_system_fingerprints.hpp"
 #include "astronomy/stabilize_ksp.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/file.hpp"
@@ -48,6 +49,8 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using astronomy::ParseTT;
+using astronomy::KSPStockSystemFingerprint;
+using astronomy::KSPStabilizedSystemFingerprint;
 using astronomy::StabilizeKSP;
 using base::check_not_null;
 using base::dynamic_cast_not_null;
@@ -96,6 +99,10 @@ Length const fitting_tolerance = 1 * Milli(Metre);
 
 std::uint64_t const ksp_stock_system_fingerprint = 0x54B6323B3376D6F3u;
 std::uint64_t const ksp_stabilized_system_fingerprint = 0xB57B58F9CF757C62u;
+
+// The map between the vector spaces of |WorldSun| and |AliceSun|.
+Permutation<WorldSun, AliceSun> const sun_looking_glass(
+    Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
 
 }  // namespace
 
@@ -166,7 +173,7 @@ void Plugin::EndInitialization() {
     LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
               << system_fingerprint;
 
-    if (system_fingerprint == ksp_stock_system_fingerprint) {
+    if (system_fingerprint == KSPStockSystemFingerprint) {
       LOG(WARNING) << "This appears to be the dreaded KSP stock system!";
       StabilizeKSP(solar_system);
       auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
@@ -177,12 +184,12 @@ void Plugin::EndInitialization() {
           serialized_message.c_str(), serialized_message.size());
       LOG(INFO) << "System fingerprint after stabilization is " << std::hex
                 << std::uppercase << system_fingerprint;
-      CHECK_EQ(ksp_stabilized_system_fingerprint, system_fingerprint)
+      CHECK_EQ(KSPStabilizedSystemFingerprint, system_fingerprint)
           << "Attempt at stabilizing the KSP system failed!\n"
           << gravity_model_.DebugString() << "\n"
           << initial_state_.DebugString();
       LOG(INFO) << "This is the stabilized KSP system, all hail retrobop!";
-    } else if (system_fingerprint == ksp_stabilized_system_fingerprint) {
+    } else if (system_fingerprint == KSPStabilizedSystemFingerprint) {
       LOG(INFO) << "This is the stabilized KSP system, and we didn't have to "
                 << "stabilize it ourselves.  All hail retrobop anyway!";
     } else {
@@ -326,6 +333,10 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   // The result will be negative if the pole is the negative pole
   // (e.g. for Venus).  This is the convention KSP uses for retrograde rotation.
   return 2 * π * Radian / body.angular_frequency();
+}
+
+Index Plugin::CelestialIndexOfBody(MassiveBody const& body) const {
+  return FindOrDie(name_to_index_, body.name());
 }
 
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
@@ -1092,7 +1103,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
-                             plugin->celestials_);
+                             plugin->celestials_,
+                             plugin->name_to_index_);
 
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
@@ -1238,9 +1250,10 @@ void Plugin::UpdatePredictionForRendering(std::int64_t const size) const {
 
 template<typename T>
 void Plugin::ReadCelestialsFromMessages(
-  Ephemeris<Barycentric> const& ephemeris,
-  google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-  IndexToOwnedCelestial& celestials) {
+    Ephemeris<Barycentric> const& ephemeris,
+    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    IndexToOwnedCelestial& celestials,
+    std::map<std::string, Index>& name_to_index) {
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
@@ -1248,13 +1261,19 @@ void Plugin::ReadCelestialsFromMessages(
     auto const& body = is_pre_catalan
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
-    auto const inserted = celestials.emplace(
+    bool inserted;
+    IndexToOwnedCelestial::iterator it;
+    std::tie(it, inserted) = celestials.emplace(
         celestial_message.index(),
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
                 body)));
-    CHECK(inserted.second);
-    inserted.first->second->set_trajectory(ephemeris.trajectory(body));
+    CHECK(inserted) << celestial_message.index();
+    it->second->set_trajectory(ephemeris.trajectory(body));
+
+    std::tie(std::ignore, inserted) =
+        name_to_index.emplace(body->name(), celestial_message.index());
+    CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {

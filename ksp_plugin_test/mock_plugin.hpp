@@ -35,6 +35,8 @@ class MockPlugin : public Plugin {
                      void(Index celestial_index,
                           Index parent_index));
 
+  MOCK_CONST_METHOD1(CelestialIndexOfBody, Index(MassiveBody const& body));
+
   MOCK_METHOD5(InsertOrKeepVessel,
                void(GUID const& vessel_guid,
                     std::string const& vessel_name,

@@ -28,6 +28,7 @@
 #include "physics/frame_field.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/rotating_body.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -60,6 +61,7 @@ using physics::Ephemeris;
 using physics::FrameField;
 using physics::Frenet;
 using physics::HierarchicalSystem;
+using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::RotatingBody;
 using quantities::Angle;
@@ -135,6 +137,8 @@ class Plugin {
 
   virtual Angle CelestialInitialRotation(Index celestial_index) const;
   virtual Time CelestialRotationPeriod(Index celestial_index) const;
+
+  virtual Index CelestialIndexOfBody(MassiveBody const& body) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
   // and flags the vessel with GUID |vessel_guid| so it is kept when calling
@@ -355,12 +359,6 @@ class Plugin {
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
   using NewtonianMotionEquation =
       Ephemeris<Barycentric>::NewtonianMotionEquation;
-  using IndexToRotatingBody =
-      std::map<Index,
-               not_null<std::unique_ptr<RotatingBody<Barycentric> const>>>;
-  using IndexToDegreesOfFreedom =
-      std::map<Index, DegreesOfFreedom<Barycentric>>;
-  using Trajectories = std::vector<not_null<DiscreteTrajectory<Barycentric>*>>;
 
   // This constructor should only be used during deserialization.
   Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
@@ -391,7 +389,8 @@ class Plugin {
   static void ReadCelestialsFromMessages(
       Ephemeris<Barycentric> const& ephemeris,
       google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-      IndexToOwnedCelestial& celestials);
+      IndexToOwnedCelestial& celestials,
+      std::map<std::string, Index>& name_to_index);
 
   // Adds a part to a vessel, recording it in the appropriate map and setting up
   // a deletion callback.

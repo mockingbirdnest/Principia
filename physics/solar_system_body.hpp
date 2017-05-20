@@ -411,7 +411,7 @@ void SolarSystem<Frame>::ReplaceElements(
     KeplerianElements<Frame> const& elements) {
   auto* const body_elements =
       FindOrDie(keplerian_initial_state_map_, name)->mutable_elements();
-  body_elements->set_eccentricity(elements.eccentricity);
+  body_elements->set_eccentricity(*elements.eccentricity);
   if (elements.semimajor_axis) {
     body_elements->set_semimajor_axis(DebugString(*elements.semimajor_axis));
   }
@@ -424,8 +424,8 @@ void SolarSystem<Frame>::ReplaceElements(
   body_elements->set_longitude_of_ascending_node(
       DebugString(elements.longitude_of_ascending_node));
   body_elements->set_argument_of_periapsis(
-      DebugString(elements.argument_of_periapsis));
-  body_elements->set_mean_anomaly(DebugString(elements.mean_anomaly));
+      DebugString(*elements.argument_of_periapsis));
+  body_elements->set_mean_anomaly(DebugString(*elements.mean_anomaly));
 }
 
 template<typename Frame>

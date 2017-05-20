@@ -296,7 +296,7 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
 
 inline KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements) {
-  return {keplerian_elements.eccentricity,
+  return {*keplerian_elements.eccentricity,
           keplerian_elements.semimajor_axis
               ? *keplerian_elements.semimajor_axis / Metre
               : std::numeric_limits<double>::quiet_NaN(),
@@ -305,8 +305,8 @@ inline KeplerianElements ToKeplerianElements(
               : std::numeric_limits<double>::quiet_NaN(),
           keplerian_elements.inclination / Degree,
           keplerian_elements.longitude_of_ascending_node / Degree,
-          keplerian_elements.argument_of_periapsis / Degree,
-          keplerian_elements.mean_anomaly / Radian};
+          *keplerian_elements.argument_of_periapsis / Degree,
+          *keplerian_elements.mean_anomaly / Radian};
 }
 
 inline QP ToQP(DegreesOfFreedom<World> const& dof) {

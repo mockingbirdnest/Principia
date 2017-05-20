@@ -22,6 +22,12 @@ BodyCentredNonRotatingDynamicFrame(
       centre_trajectory_(ephemeris_->trajectory(centre_)) {}
 
 template<typename InertialFrame, typename ThisFrame>
+not_null<MassiveBody const*>
+BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::centre() const {
+  return centre_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {

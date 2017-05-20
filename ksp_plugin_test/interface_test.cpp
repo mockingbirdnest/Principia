@@ -42,6 +42,7 @@ using geometry::OrthogonalMap;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
