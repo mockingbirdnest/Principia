@@ -80,50 +80,51 @@ ParsedUnit ParseUnit(std::string const& s) {
   }
 }
 
-// The patterns that we parse here have the form:
-//    U^n/V^m
-//  when U and V are (final) unit names and n and m are integers.
-
-template<typename T>
-using ParseUnitFunction = T(*)(std::string const& s);
-
-template<typename T, int exponent>
-Exponentiation<T, exponent> ParseExponentiationUnit(std::string const& s) {
-  int const first_carret = s.find('^');
-  int const last_nonblank = s.find_last_not_of(' ', first_carret - 1);
-  CHECK_NE(std::string::npos, last_nonblank);
-
+int ParseExponent(std::string const& s) {
+  // Parse an int.
   char* interpreted_end;
-  const char* interpreted_begin = s.c_str() + first_carret + 1;
-  int const actual_exponent = std::strtol(interpreted_begin,
-                                          &interpreted_end,
-                                          10);
-  int const interpreted = interpreted_end - interpreted_begin;
-  CHECK_LT(0, interpreted) << "invalid exponent " << s;
-  CHECK_EQ(exponent, actual_exponent);
-
-  return Pow<exponent>(ParseUnit<T>(s.substr(0, last_nonblank + 1)));
+  char const* const c_string = s.c_str();
+  double const exponent = std::strtol(c_string, &interpreted_end, /*base=*/10);
+  int const interpreted = interpreted_end - c_string;
+  CHECK_LT(0, interpreted) << "invalid integer number " << s;
+  return exponent;
 }
 
-ParsedUnit ParseQuotientUnit(std::string const& s) {
+ParsedUnit ParseExponentiationUnit(std::string const& s) {
+  int const first_caret = s.find('^');
+  if (first_caret == std::string::npos) {
+    return ParseUnit(s);
+  } else {
+    int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
+    CHECK_NE(std::string::npos, first_nonblank);
+    int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
+    CHECK_NE(std::string::npos, last_nonblank);
+    auto const left = ParseUnit(s.substr(0, last_nonblank + 1));
+    auto const right = ParseExponent(s.substr(first_nonblank));
+  }
+}
+
+ParsedUnit ParseProductUnit(std::string const& s) {
+  // For a product we are looking for a blank character that is not next to a
+  // carret.
   int first_blank;
   int first_nonblank;
   int last_nonblank;
-  do {
+  for (;;) {
     first_blank = s.find(' ');
     if (first_blank == std::string::npos) {
       return ParseExponentiationUnit(s);
     } else {
       first_nonblank = s.find_first_not_of(' ', first_blank + 1);
       last_nonblank = s.find_last_not_of(' ', first_blank + 1);
-      if (first_nonblank != std::string::npos)
+      if ((first_nonblank == std::string::npos || s[first_nonblank] != '^') &&
+          (last_nonblank == std::string::npos || s[last_nonblank] != '^')) {
+        break;
+      }
     }
-  } while (first_blank != std::string::npos && (s[first_nonblank] == '^' ||
-                                                s[last_nonblank == '^'))
-  CHECK_NE(std::string::npos, first_nonblank);
-  int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
-  CHECK_NE(std::string::npos, last_nonblank);
-  if (first_blank == std::string::npos)
+  }
+  auto const left = ParseProductUnit(s.substr(0, last_nonblank + 1));
+  auto const right = ParseProductUnit(s.substr(first_nonblank));
 }
 
 ParsedUnit ParseQuotientUnit(std::string const& s) {
@@ -131,14 +132,15 @@ ParsedUnit ParseQuotientUnit(std::string const& s) {
   int const last_slash = s.rfind('/');
   if (last_slash == std::string::npos) {
     // Not a quotient.
+    return ParseProductUnit(s);
   } else {
     // A quotient.  Parse each half.
     int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
     CHECK_NE(std::string::npos, first_nonblank);
     int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
     CHECK_NE(std::string::npos, last_nonblank);
-    return parse_numerator_unit(s.substr(0, last_nonblank + 1)) /
-           parse_denominator_unit(s.substr(first_nonblank));
+    auto const left = ParseProductUnit(s.substr(0, last_nonblank + 1));
+    auto const right = ParseProductUnit(s.substr(first_nonblank));
   }
 }
 
