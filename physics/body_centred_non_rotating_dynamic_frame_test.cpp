@@ -205,7 +205,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
 
   auto const read_small_frame =
       DynamicFrame<ICRFJ2000Equator, Small>::ReadFromMessage(
-          ephemeris_.get(), message);
+          message, ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
