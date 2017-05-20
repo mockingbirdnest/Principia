@@ -64,6 +64,9 @@ TEST_F(ParserDeathTest, SpacesError) {
   EXPECT_DEATH({
     ParseQuantity<Speed>("1 .23 m/s");
   }, "Unsupported.*length");
+  EXPECT_DEATH({
+    ParseQuantity<Speed>("1.23 m^- 2/s");
+  }, "Unsupported.*length");
 }
 
 TEST_F(ParserDeathTest, UnitError) {
@@ -110,55 +113,21 @@ TEST_F(ParserTest, ParseGravitationalParameter) {
   EXPECT_EQ(1.23 * Pow<3>(Kilo(Metre)) / Pow<2>(Day),
             ParseQuantity<GravitationalParameter>("1.23 km^3/d^2"));
   EXPECT_THAT(ParseQuantity<GravitationalParameter>("1.23 au^3/d^2"),
-              AlmostEquals(1.23 * Pow<3>(AstronomicalUnit) / Pow<2>(Day), 1));
+              AlmostEquals(1.23 * Pow<3>(AstronomicalUnit) / Pow<2>(Day), 2));
+}
+
+TEST_F(ParserTest, ParseAcceleration) {
+  EXPECT_EQ(1.23 * Metre / Second / Second,
+            ParseQuantity<Acceleration>("1.23 m/s/s"));
+  EXPECT_EQ(1.23 * Kilo(Metre) / Second / Second,
+            ParseQuantity<Acceleration>("1.23 km/s^2"));
 }
 
 TEST_F(ParserTest, ParseAngularFrequency) {
   EXPECT_EQ(1.23 * Radian / Second,
             ParseQuantity<AngularFrequency>("1.23 rad/s"));
-}
-
-template<typename Q>
-struct Arr {
-  // constexpr static std::array<std::int64_t, 8> dims = {0,0,0,0,0,0,0,0};
-};
-
-template<std::int64_t LengthExponent,
-         std::int64_t MassExponent,
-         std::int64_t TimeExponent,
-         std::int64_t CurrentExponent,
-         std::int64_t TemperatureExponent,
-         std::int64_t AmountExponent,
-         std::int64_t LuminousIntensityExponent,
-         std::int64_t AngleExponent>
-struct Arr<Quantity<internal_quantities::Dimensions<LengthExponent,
-                                                      MassExponent,
-                                                      TimeExponent,
-                                                      CurrentExponent,
-                                                      TemperatureExponent,
-                                                      AmountExponent,
-                                                      LuminousIntensityExponent,
-                                                      AngleExponent>>> {
-  constexpr static std::array<std::int64_t, 8> dims = {
-      LengthExponent,
-      MassExponent,
-      TimeExponent,
-      CurrentExponent,
-      TemperatureExponent,
-      AmountExponent,
-      LuminousIntensityExponent,
-      AngleExponent};
-};
-
-// template<std::int64_t... d>
-// struct Arr<internal_quantities::Dimensions<d...>> {
-//  constexpr static std::array<std::int64_t, 8> dims = {{d...}};
-//};
-
-TEST_F(ParserTest, XXX) {
-  for (auto const d : Arr<Length>::dims) {
-    LOG(ERROR) << d;
-  }
+  EXPECT_EQ(1.23 * Radian / Second,
+            ParseQuantity<AngularFrequency>("1.23 s^ -1 rad"));
 }
 
 }  // namespace quantities

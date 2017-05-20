@@ -416,9 +416,7 @@ void SolarSystem<Frame>::ReplaceElements(
     body_elements->set_semimajor_axis(DebugString(*elements.semimajor_axis));
   }
   if (elements.mean_motion) {
-    // s^-1 rad is inconvenient to parse.
-    body_elements->set_mean_motion(
-        DebugString(*elements.mean_motion / (Radian / Second)) + " rad/s");
+    body_elements->set_mean_motion(DebugString(*elements.mean_motion));
   }
   body_elements->set_inclination(DebugString(elements.inclination));
   body_elements->set_longitude_of_ascending_node(

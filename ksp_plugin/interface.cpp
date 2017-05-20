@@ -533,9 +533,8 @@ void principia__InsertCelestialJacobiKeplerian(
           DebugString(keplerian_elements->semimajor_axis * Metre));
     }
     if (!std::isnan(keplerian_elements->mean_motion)) {
-      // s^-1 rad is inconvenient to parse.
       elements->set_mean_motion(
-          DebugString(keplerian_elements->mean_motion * Radian) + "/s");
+          DebugString(keplerian_elements->mean_motion * Radian / Second));
     }
     elements->set_inclination(
         DebugString(keplerian_elements->inclination_in_degrees * Degree));
