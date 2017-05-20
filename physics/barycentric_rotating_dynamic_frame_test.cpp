@@ -504,7 +504,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
 
   auto const read_big_small_frame =
       DynamicFrame<ICRFJ2000Equator, BigSmallFrame>::ReadFromMessage(
-          ephemeris_.get(), message);
+          message, ephemeris_.get());
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

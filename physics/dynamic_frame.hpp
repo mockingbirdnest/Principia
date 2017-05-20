@@ -63,8 +63,8 @@ class DynamicFrame {
   // Dispatches to one of the subclasses depending on the contents of the
   // message.
   static not_null<std::unique_ptr<DynamicFrame>>
-      ReadFromMessage(not_null<Ephemeris<InertialFrame> const*> ephemeris,
-                      serialization::DynamicFrame const& message);
+      ReadFromMessage(serialization::DynamicFrame const& message,
+                      not_null<Ephemeris<InertialFrame> const*> ephemeris);
 
  private:
   virtual Vector<Acceleration, InertialFrame> GravitationalAcceleration(
