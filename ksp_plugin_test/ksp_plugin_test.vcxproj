@@ -47,6 +47,7 @@
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
+    <ClCompile Include="interface_flight_plan_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="mock_flight_plan.cpp" />

@@ -107,6 +107,9 @@
     <ClCompile Include="..\base\version.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface_flight_plan_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
