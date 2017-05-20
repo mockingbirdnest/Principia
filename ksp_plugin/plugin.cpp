@@ -1169,8 +1169,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->UpdatePlanetariumRotation();
 
   std::unique_ptr<NavigationFrame> plotting_frame =
-      NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
-                                       message.plotting_frame());
+      NavigationFrame::ReadFromMessage(message.plotting_frame(),
+                                       plugin->ephemeris_.get());
   plugin->SetPlottingFrame(std::move(plotting_frame));
 
   // Note that for proper deserialization of parts this list must be
