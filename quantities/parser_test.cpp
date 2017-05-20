@@ -1,6 +1,8 @@
 ﻿
 #include "quantities/parser.hpp"
 
+#include <array>
+
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
@@ -114,6 +116,49 @@ TEST_F(ParserTest, ParseGravitationalParameter) {
 TEST_F(ParserTest, ParseAngularFrequency) {
   EXPECT_EQ(1.23 * Radian / Second,
             ParseQuantity<AngularFrequency>("1.23 rad/s"));
+}
+
+template<typename Q>
+struct Arr {
+  // constexpr static std::array<std::int64_t, 8> dims = {0,0,0,0,0,0,0,0};
+};
+
+template<std::int64_t LengthExponent,
+         std::int64_t MassExponent,
+         std::int64_t TimeExponent,
+         std::int64_t CurrentExponent,
+         std::int64_t TemperatureExponent,
+         std::int64_t AmountExponent,
+         std::int64_t LuminousIntensityExponent,
+         std::int64_t AngleExponent>
+struct Arr<Quantity<internal_quantities::Dimensions<LengthExponent,
+                                                      MassExponent,
+                                                      TimeExponent,
+                                                      CurrentExponent,
+                                                      TemperatureExponent,
+                                                      AmountExponent,
+                                                      LuminousIntensityExponent,
+                                                      AngleExponent>>> {
+  constexpr static std::array<std::int64_t, 8> dims = {
+      LengthExponent,
+      MassExponent,
+      TimeExponent,
+      CurrentExponent,
+      TemperatureExponent,
+      AmountExponent,
+      LuminousIntensityExponent,
+      AngleExponent};
+};
+
+// template<std::int64_t... d>
+// struct Arr<internal_quantities::Dimensions<d...>> {
+//  constexpr static std::array<std::int64_t, 8> dims = {{d...}};
+//};
+
+TEST_F(ParserTest, XXX) {
+  for (auto const d : Arr<Length>::dims) {
+    LOG(ERROR) << d;
+  }
 }
 
 }  // namespace quantities
