@@ -54,31 +54,31 @@ TEST_F(ParserTest, SpacesSuccess) {
 TEST_F(ParserDeathTest, SpacesError) {
   EXPECT_DEATH({
     ParseQuantity<double>("1. 23");
-  }, "empty");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<double>("1 .23");
-  }, "empty");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<Speed>("1. 23 m/s");
-  }, "Unsupported.*length");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<Speed>("1 .23 m/s");
-  }, "Unsupported.*length");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<Speed>("1.23 m^- 2/s");
-  }, "Unsupported.*length");
+  }, "invalid integer");
 }
 
 TEST_F(ParserDeathTest, UnitError) {
   EXPECT_DEATH({
     ParseQuantity<Length>("1.23 nm");
-  }, "Unsupported.*length");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<Time>("1.23 hr");
-  }, "Unsupported.*time");
+  }, "Unsupported unit");
   EXPECT_DEATH({
     ParseQuantity<Angle>("1.23 grd");
-  }, "Unsupported.*angle");
+  }, "Unsupported unit");
 }
 
 TEST_F(ParserTest, ParseDouble) {
