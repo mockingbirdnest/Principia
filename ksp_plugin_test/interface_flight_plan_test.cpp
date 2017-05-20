@@ -16,8 +16,12 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -27,6 +31,7 @@
 namespace principia {
 namespace interface {
 
+using base::check_not_null;
 using base::make_not_null_unique;
 using base::not_null;
 using geometry::AngularVelocity;
@@ -43,12 +48,17 @@ using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::WorldSun;
+using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DynamicFrame;
+using physics::MassiveBody;
+using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
+using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RigidTransformation;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
+using quantities::si::Kilogram;
 using quantities::si::Newton;
 using quantities::si::Second;
 using quantities::si::Tonne;
@@ -58,6 +68,7 @@ using ::testing::AllOf;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Property;
+using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::SetArgReferee;
@@ -191,9 +202,19 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   auto const plotting_frame =
       make_not_null_unique<MockDynamicFrame<Barycentric, Navigation>>();
-  MockDynamicFrame<Barycentric, Navigation> const* const
+
+  MockEphemeris<Barycentric> ephemeris;
+  MassiveBody const centre(MassiveBody::Parameters("centre", 1 * Kilogram));
+  MockContinuousTrajectory<Barycentric> centre_trajectory;
+  EXPECT_CALL(ephemeris, trajectory(check_not_null(&centre)))
+      .WillOnce(Return(&centre_trajectory));
+  // Cannot use a mock here since we use |dynamic_cast| to find the type of the
+  // actual frame.
+  BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const* const
       navigation_manœuvre_frame =
-          new MockDynamicFrame<Barycentric, Navigation>;
+          new BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation>(
+            &ephemeris,
+            &centre);
   MockManœuvre<Barycentric, Navigation> navigation_manœuvre(
       10 * Kilo(Newton),
       20 * Tonne,
@@ -217,13 +238,10 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
-      .WillOnce(Invoke([](not_null<serialization::DynamicFrame*> message) {
-        message->MutableExtension(
-            serialization::BodyCentredNonRotatingDynamicFrame::extension);
-      }));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
+  EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
+      .WillOnce(Return(celestial_index));
   EXPECT_CALL(renderer, BarycentricToWorldSun(_))
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
@@ -232,6 +250,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                         3);
 
   EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
+  EXPECT_EQ(6000, navigation_manoeuvre.burn.frame.extension);
+  EXPECT_EQ(celestial_index, navigation_manoeuvre.burn.frame.centre_index);
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
@@ -250,7 +270,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(*plugin_, CurrentTime())
       .WillRepeatedly(Return(Instant() - 4 * Second));
   EXPECT_CALL(renderer, GetPlottingFrame())
-      .WillOnce(Return(plotting_frame.get()));
+      .WillRepeatedly(Return(plotting_frame.get()));
   EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
       .WillOnce(Return(barycentric_to_plotting));
   EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
