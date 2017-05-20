@@ -63,7 +63,7 @@ struct Unit {
   double scale;
 };
 
-Unit operator*(Unit const& left, Unit const& right) {
+inline Unit operator*(Unit const& left, Unit const& right) {
   RuntimeDimensions dimensions;
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] + right.dimensions[i];
@@ -71,7 +71,7 @@ Unit operator*(Unit const& left, Unit const& right) {
   return {std::move(dimensions), left.scale * right.scale};
 }
 
-Unit operator/(Unit const& left, Unit const& right) {
+inline Unit operator/(Unit const& left, Unit const& right) {
   RuntimeDimensions dimensions;
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] - right.dimensions[i];
@@ -79,7 +79,7 @@ Unit operator/(Unit const& left, Unit const& right) {
   return {std::move(dimensions), left.scale / right.scale};
 }
 
-Unit operator^(Unit const& left, int const exponent) {
+inline Unit operator^(Unit const& left, int const exponent) {
   RuntimeDimensions dimensions;
   for (std::int64_t i = 0; i < dimensions.size(); ++i) {
     dimensions[i] = left.dimensions[i] * exponent;
@@ -87,7 +87,7 @@ Unit operator^(Unit const& left, int const exponent) {
   return {std::move(dimensions), std::pow(left.scale, exponent)};
 }
 
-Unit ParseUnit(std::string const& s) {
+inline Unit ParseUnit(std::string const& s) {
   // Unitless quantities.
   if (s == "") {
     return {ExtractDimensions<double>::dimensions, 1};
@@ -114,7 +114,7 @@ Unit ParseUnit(std::string const& s) {
   }
 }
 
-int ParseExponent(std::string const& s) {
+inline int ParseExponent(std::string const& s) {
   // Parse an int.
   char* interpreted_end;
   char const* const c_string = s.c_str();
@@ -124,7 +124,7 @@ int ParseExponent(std::string const& s) {
   return exponent;
 }
 
-Unit ParseExponentiationUnit(std::string const& s) {
+inline Unit ParseExponentiationUnit(std::string const& s) {
   int const first_caret = s.find('^');
   if (first_caret == std::string::npos) {
     return ParseUnit(s);
@@ -139,7 +139,7 @@ Unit ParseExponentiationUnit(std::string const& s) {
   }
 }
 
-Unit ParseProductUnit(std::string const& s) {
+inline Unit ParseProductUnit(std::string const& s) {
   // For a product we are looking for a blank character that is not next to a
   // carret.
   int first_blank;
@@ -163,7 +163,7 @@ Unit ParseProductUnit(std::string const& s) {
   return left * right;
 }
 
-Unit ParseQuotientUnit(std::string const& s) {
+inline Unit ParseQuotientUnit(std::string const& s) {
   // Look for the slash from the back to achieve proper associativity.
   int const last_slash = s.rfind('/');
   if (last_slash == std::string::npos) {
