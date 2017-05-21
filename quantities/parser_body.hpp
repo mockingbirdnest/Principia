@@ -13,14 +13,6 @@ namespace principia {
 namespace quantities {
 namespace internal_parser {
 
-using si::AstronomicalUnit;
-using si::Day;
-using si::Degree;
-using si::Kilo;
-using si::Metre;
-using si::Radian;
-using si::Second;
-
 using RuntimeDimensions = std::array<std::int64_t, 8>;
 
 template<typename Q>
@@ -59,9 +51,23 @@ struct ExtractDimensions<
 };
 
 struct Unit {
+  template<typename Q>
+  explicit Unit(Q const& quantity);
+
+  Unit(RuntimeDimensions&& dimensions, double scale);
+
   RuntimeDimensions dimensions;
   double scale;
 };
+
+template<typename Q>
+Unit::Unit(Q const& quantity)
+    : dimensions(ExtractDimensions<Q>::dimensions),
+      scale(quantity / SIUnit<Q>()) {}
+
+inline Unit::Unit(RuntimeDimensions&& dimensions, double const scale)
+    : dimensions(dimensions),
+      scale(scale) {}
 
 inline Unit operator*(Unit const& left, Unit const& right) {
   RuntimeDimensions dimensions;
@@ -90,24 +96,24 @@ inline Unit operator^(Unit const& left, int const exponent) {
 inline Unit ParseUnit(std::string const& s) {
   // Unitless quantities.
   if (s == "") {
-    return {ExtractDimensions<double>::dimensions, 1};
+    return Unit(1.0);
   // Units of length.
   } else if (s == "m") {
-    return {ExtractDimensions<Length>::dimensions, 1};
+    return Unit(si::Metre);
   } else if (s == "km") {
-    return {ExtractDimensions<Length>::dimensions, Kilo(Metre) / Metre};
+    return Unit(si::Kilo(si::Metre));
   } else if (s == "au") {
-    return {ExtractDimensions<Length>::dimensions, AstronomicalUnit / Metre};
+    return Unit(si::AstronomicalUnit);
   // Units of time.
   } else if (s == "s") {
-    return {ExtractDimensions<Time>::dimensions, 1};
+    return Unit(si::Second);
   } else if (s == "d") {
-    return {ExtractDimensions<Time>::dimensions, Day / Second};
+    return Unit(si::Day);
   // Units of angle.
   } else if (s == "deg" || s == u8"°") {
-    return {ExtractDimensions<Angle>::dimensions, Degree / Radian};
+    return Unit(si::Degree);
   } else if (s == "rad") {
-    return {ExtractDimensions<Angle>::dimensions, 1};
+    return Unit(si::Radian);
   } else {
     LOG(FATAL) << "Unsupported unit " << s;
     base::noreturn();

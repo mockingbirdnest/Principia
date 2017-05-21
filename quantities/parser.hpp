@@ -10,11 +10,12 @@ namespace quantities {
 namespace internal_parser {
 
 // This function parses the following grammar:
-//   quantity ::= double quotient_unit
-//   quotient_unit       ::= [quotient_unit /] product_unit
-//   product_unit        ::= [exponentiation_unit blank] product_unit
-//   exponentiation_unit ::= unit [^ exponent]
-//   exponent            ::= signed_integer
+//   quantity            ⩴ double quotient_unit
+//   quotient_unit       ⩴ product_unit [/ denominator_unit]
+//   denominator_unit    ⩴ [denominator_unit /] exponentiation_unit
+//   product_unit        ⩴ [exponentiation_unit blank] product_unit
+//   exponentiation_unit ⩴ unit [^ exponent]
+//   exponent            ⩴ signed_integer
 // Where blank is a space character not next to a caret.
 template<typename Q>
 Q ParseQuantity(std::string const& s);
