@@ -22,6 +22,8 @@ using si::Kilo;
 using si::Metre;
 using si::Radian;
 using si::Second;
+using si::Steradian;
+using si::Watt;
 
 class ParserTest : public ::testing::Test {
 };
@@ -79,6 +81,9 @@ TEST_F(ParserDeathTest, UnitError) {
   EXPECT_DEATH({
     ParseQuantity<Angle>("1.23 grd");
   }, "Unsupported unit");
+  EXPECT_DEATH({
+    ParseQuantity<Radiance>("1.23 W/sr m^2");
+  }, "Unsupported unit sr m");
 }
 
 TEST_F(ParserTest, ParseDouble) {
@@ -128,6 +133,11 @@ TEST_F(ParserTest, ParseAngularFrequency) {
             ParseQuantity<AngularFrequency>("1.23 rad/s"));
   EXPECT_EQ(1.23 * Radian / Second,
             ParseQuantity<AngularFrequency>("1.23 s^ -1 rad"));
+}
+
+TEST_F(ParserTest, ParseRadiance) {
+  EXPECT_EQ(1.23 * Watt / (Steradian * Metre * Metre),
+            ParseQuantity<Radiance>("1.23 W sr^-1 m^-2"));
 }
 
 }  // namespace quantities

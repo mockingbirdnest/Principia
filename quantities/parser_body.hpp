@@ -109,11 +109,17 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Second);
   } else if (s == "d") {
     return Unit(si::Day);
+  // Units of power.
+  } else if (s == "W") {
+    return Unit(si::Watt);
   // Units of angle.
   } else if (s == "deg" || s == u8"°") {
     return Unit(si::Degree);
   } else if (s == "rad") {
     return Unit(si::Radian);
+  // Units of solid angle.
+  } else if (s == "sr") {
+    return Unit(si::Steradian);
   } else {
     LOG(FATAL) << "Unsupported unit " << s;
     base::noreturn();
@@ -182,7 +188,7 @@ inline Unit ParseQuotientUnit(std::string const& s) {
     int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
     CHECK_NE(std::string::npos, last_nonblank);
     auto const left = ParseQuotientUnit(s.substr(0, last_nonblank + 1));
-    auto const right = ParseProductUnit(s.substr(first_nonblank));
+    auto const right = ParseExponentiationUnit(s.substr(first_nonblank));
     return left / right;
   }
 }
