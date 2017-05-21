@@ -399,10 +399,7 @@ TEST_F(PluginTest, Serialization) {
     serialization::InitialState::Keplerian::Body::Elements* elements =
         keplerian_body.mutable_elements();
     elements->set_eccentricity(*keplerian_elements.eccentricity);
-    // s^-1 rad is inconvenient to parse.
-    elements->set_mean_motion(
-        DebugString(*keplerian_elements.mean_motion / (Radian / Second)) +
-        "rad/s");
+    elements->set_mean_motion(DebugString(*keplerian_elements.mean_motion));
     elements->set_inclination(DebugString(keplerian_elements.inclination));
     elements->set_longitude_of_ascending_node(
         DebugString(keplerian_elements.longitude_of_ascending_node));
