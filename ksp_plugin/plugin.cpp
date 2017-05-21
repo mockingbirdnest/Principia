@@ -1138,13 +1138,13 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->main_body_ = plugin->sun_->body();
   plugin->UpdatePlanetariumRotation();
 
-  bool const is_pre_catalan = message.has_pre_catalan_plotting_frame();
-  if (is_pre_catalan) {
+  bool const is_pre_cauchy = message.has_pre_cauchy_plotting_frame();
+  if (is_pre_cauchy) {
     plugin->renderer_ =
         std::make_unique<Renderer>(
             plugin->sun_,
             NavigationFrame::ReadFromMessage(
-                message.pre_catalan_plotting_frame(),
+                message.pre_cauchy_plotting_frame(),
                 plugin->ephemeris_.get()));
   } else {
     plugin->renderer_ = Renderer::ReadFromMessage(message.renderer(),
@@ -1250,8 +1250,8 @@ void Plugin::ReadCelestialsFromMessages(
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
-    bool const is_pre_catalan = !celestial_message.has_ephemeris_index();
-    auto const& body = is_pre_catalan
+    bool const is_pre_cauchy = !celestial_message.has_ephemeris_index();
+    auto const& body = is_pre_cauchy
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
     bool inserted;
