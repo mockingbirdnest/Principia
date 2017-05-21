@@ -66,7 +66,7 @@ Vessel& Renderer::GetTargetVessel() {
   return *target_->vessel;
 }
 
-Vessel const & Renderer::GetTargetVessel() const {
+Vessel const& Renderer::GetTargetVessel() const {
   CHECK(target_);
   return *target_->vessel;
 }

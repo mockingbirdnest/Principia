@@ -111,7 +111,7 @@ message Plugin {
   reserved "/*celestial*/";
 }
 
-// Added in Catalan.
+// Added in Cauchy.
 message Renderer {
   required DynamicFrame plotting_frame = 1;
 }
