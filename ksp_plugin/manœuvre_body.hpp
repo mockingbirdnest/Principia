@@ -209,7 +209,7 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
       SpecificImpulse::ReadFromMessage(message.specific_impulse()),
       Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction()),
       DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
-          ephemeris, message.frame()));
+          message.frame(), ephemeris));
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;

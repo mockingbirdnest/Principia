@@ -327,6 +327,10 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
+Index Plugin::CelestialIndexOfBody(MassiveBody const& body) const {
+  return FindOrDie(name_to_index_, body.name());
+}
+
 void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 std::string const& vessel_name,
                                 Index const parent_index,
@@ -1118,7 +1122,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
       Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
   ReadCelestialsFromMessages(*plugin->ephemeris_,
                              message.celestial(),
-                             plugin->celestials_);
+                             plugin->celestials_,
+                             plugin->name_to_index_);
 
   for (auto const& vessel_message : message.vessel()) {
     not_null<Celestial const*> const parent =
@@ -1160,8 +1165,8 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   plugin->UpdatePlanetariumRotation();
 
   std::unique_ptr<NavigationFrame> plotting_frame =
-      NavigationFrame::ReadFromMessage(plugin->ephemeris_.get(),
-                                       message.plotting_frame());
+      NavigationFrame::ReadFromMessage(message.plotting_frame(),
+                                       plugin->ephemeris_.get());
   plugin->SetPlottingFrame(std::move(plotting_frame));
 
   // Note that for proper deserialization of parts this list must be
@@ -1274,9 +1279,10 @@ Vector<double, World> Plugin::FromVesselFrenetFrame(
 
 template<typename T>
 void Plugin::ReadCelestialsFromMessages(
-  Ephemeris<Barycentric> const& ephemeris,
-  google::protobuf::RepeatedPtrField<T> const& celestial_messages,
-  IndexToOwnedCelestial& celestials) {
+    Ephemeris<Barycentric> const& ephemeris,
+    google::protobuf::RepeatedPtrField<T> const& celestial_messages,
+    IndexToOwnedCelestial& celestials,
+    std::map<std::string, Index>& name_to_index) {
   auto const& bodies = ephemeris.bodies();
   int index = 0;
   for (auto const& celestial_message : celestial_messages) {
@@ -1284,13 +1290,19 @@ void Plugin::ReadCelestialsFromMessages(
     auto const& body = is_pre_catalan
                            ? bodies[index++]
                            : bodies[celestial_message.ephemeris_index()];
-    auto const inserted = celestials.emplace(
+    bool inserted;
+    IndexToOwnedCelestial::iterator it;
+    std::tie(it, inserted) = celestials.emplace(
         celestial_message.index(),
         make_not_null_unique<Celestial>(
             dynamic_cast_not_null<RotatingBody<Barycentric> const*>(
                 body)));
-    CHECK(inserted.second);
-    inserted.first->second->set_trajectory(ephemeris.trajectory(body));
+    CHECK(inserted) << celestial_message.index();
+    it->second->set_trajectory(ephemeris.trajectory(body));
+
+    std::tie(std::ignore, inserted) =
+        name_to_index.emplace(body->name(), celestial_message.index());
+    CHECK(inserted) << body->name();
   }
   for (auto const& celestial_message : celestial_messages) {
     if (celestial_message.has_parent_index()) {

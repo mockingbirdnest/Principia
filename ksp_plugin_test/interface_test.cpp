@@ -16,13 +16,13 @@
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
-#include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/actions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
 
@@ -41,11 +41,11 @@ using geometry::OrthogonalMap;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MakeNavigationManœuvre;
-using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
 using ksp_plugin::MockVessel;
@@ -83,6 +83,7 @@ using quantities::si::Second;
 using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
+using testing_utilities::FillUniquePtr;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -101,6 +102,8 @@ using ::testing::SetArgReferee;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 using ::testing::_;
+
+namespace {
 
 char const part_name[] = "Picard's chair";
 char const vessel_guid[] = "123-456";
@@ -121,19 +124,7 @@ QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
 
 int const trajectory_size = 10;
 
-ACTION_TEMPLATE(FillUniquePtr,
-                // Note the comma between int and k:
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(ptr)) {
-  std::tr1::get<k>(args)->reset(ptr);
-}
-
-MATCHER_P4(BurnMatches, thrust, specific_impulse, initial_time, Δv, "") {
-  return arg.thrust == thrust &&
-         arg.specific_impulse == specific_impulse &&
-         arg.initial_time == initial_time &&
-         arg.Δv == Δv;
-}
+}  // namespace
 
 class InterfaceTest : public testing::Test {
  protected:
@@ -524,184 +515,6 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, SetPlottingFrame) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
-  NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
-      unused,
-      celestial_index,
-      parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
-  EXPECT_CALL(*plugin_, GetPlottingFrame())
-      .WillOnce(Return(mock_navigation_frame));
-  EXPECT_EQ(mock_navigation_frame, principia__GetPlottingFrame(plugin_.get()));
-}
-
-TEST_F(InterfaceTest, RenderedPrediction) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                    parent_index,
-                                                    _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
-  NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
-      unused,
-      celestial_index,
-      parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
-
-  // Construct a test rendered trajectory.
-  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  Position<World> position =
-      World::origin + Displacement<World>({1 * SIUnit<Length>(),
-                                           2 * SIUnit<Length>(),
-                                           3 * SIUnit<Length>()});
-  rendered_trajectory->Append(
-      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
-  for (int i = 1; i < trajectory_size; ++i) {
-    position += Displacement<World>({10 * SIUnit<Length>(),
-                                     20 * SIUnit<Length>(),
-                                     30 * SIUnit<Length>()});
-  rendered_trajectory->Append(
-      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
-  }
-
-  StrictMock<MockVessel> vessel;
-  DiscreteTrajectory<Barycentric> prediction;
-  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
-      .WillRepeatedly(Return(&vessel));
-  EXPECT_CALL(vessel, prediction())
-      .WillRepeatedly(ReturnRef(prediction));
-  EXPECT_CALL(*plugin_,
-              FillRenderedBarycentricTrajectoryInWorld(
-                  _, _,
-                  World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()}),
-                  _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
-  Iterator* iterator =
-      principia__RenderedPrediction(plugin_.get(),
-                                    vessel_guid,
-                                    parent_position);
-  EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
-
-  // Traverse it and check that we get the right data.
-  for (int i = 0; i < trajectory_size; ++i) {
-    EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZ const xyz = principia__IteratorGetXYZ(iterator);
-    EXPECT_EQ(1 + 10 * i, xyz.x);
-    EXPECT_EQ(2 + 20 * i, xyz.y);
-    EXPECT_EQ(3 + 30 * i, xyz.z);
-    principia__IteratorIncrement(iterator);
-  }
-  EXPECT_TRUE(principia__IteratorAtEnd(iterator));
-
-  // Delete it.
-  EXPECT_THAT(iterator, Not(IsNull()));
-  principia__IteratorDelete(&iterator);
-  EXPECT_THAT(iterator, IsNull());
-}
-
-TEST_F(InterfaceTest, Iterator) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
-  NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
-      unused,
-      celestial_index,
-      parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
-
-  // Construct a test rendered trajectory.
-  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  Position<World> position =
-      World::origin + Displacement<World>({1 * SIUnit<Length>(),
-                                           2 * SIUnit<Length>(),
-                                           3 * SIUnit<Length>()});
-  rendered_trajectory->Append(
-      t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
-  for (int i = 1; i < trajectory_size; ++i) {
-    position += Displacement<World>({10 * SIUnit<Length>(),
-                                     20 * SIUnit<Length>(),
-                                     30 * SIUnit<Length>()});
-  rendered_trajectory->Append(
-      t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
-  }
-
-  // Construct a LineAndIterator.
-  StrictMock<MockVessel> vessel;
-  DiscreteTrajectory<Barycentric> psychohistory;
-  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
-      .WillRepeatedly(Return(&vessel));
-  EXPECT_CALL(vessel, psychohistory())
-      .WillRepeatedly(ReturnRef(psychohistory));
-  EXPECT_CALL(*plugin_,
-              FillRenderedBarycentricTrajectoryInWorld(
-                  _, _,
-                  World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()}),
-                  _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
-  Iterator* iterator =
-      principia__RenderedVesselTrajectory(plugin_.get(),
-                                          vessel_guid,
-                                          parent_position);
-  EXPECT_EQ(trajectory_size, principia__IteratorSize(iterator));
-
-  // Traverse it and check that we get the right data.
-  for (int i = 0; i < trajectory_size; ++i) {
-    EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZ const xyz = principia__IteratorGetXYZ(iterator);
-    EXPECT_EQ(1 + 10 * i, xyz.x);
-    EXPECT_EQ(2 + 20 * i, xyz.y);
-    EXPECT_EQ(3 + 30 * i, xyz.z);
-    principia__IteratorIncrement(iterator);
-  }
-  EXPECT_TRUE(principia__IteratorAtEnd(iterator));
-
-  // Delete it.
-  EXPECT_THAT(iterator, Not(IsNull()));
-  principia__IteratorDelete(&iterator);
-  EXPECT_THAT(iterator, IsNull());
-}
-
 TEST_F(InterfaceTest, PredictionGettersAndSetters) {
   EXPECT_CALL(*plugin_, SetPredictionLength(42 * Second));
   principia__SetPredictionLength(plugin_.get(), 42);
@@ -744,65 +557,6 @@ TEST_F(InterfaceTest, NavballOrientation) {
   EXPECT_EQ(q.x, 0);
   EXPECT_EQ(q.y, 0);
   EXPECT_EQ(q.z, 0);
-}
-
-TEST_F(InterfaceTest, Frenet) {
-  StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
-     mock_navigation_frame =
-         new StrictMock<MockDynamicFrame<Barycentric, Navigation>>;
-  EXPECT_CALL(*plugin_,
-              FillBarycentricRotatingNavigationFrame(celestial_index,
-                                                     parent_index,
-                                                     _))
-      .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
-  NavigationFrameParameters parameters = {
-      serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber,
-      unused,
-      celestial_index,
-      parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
-
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
-
-  {
-    auto const tangent = Vector<double, World>({4, 5, 6});
-    EXPECT_CALL(*plugin_, VesselTangent(vessel_guid)).WillOnce(Return(tangent));
-    XYZ t = principia__VesselTangent(plugin_.get(), vessel_guid);
-    EXPECT_EQ(t.x, tangent.coordinates().x);
-    EXPECT_EQ(t.y, tangent.coordinates().y);
-    EXPECT_EQ(t.z, tangent.coordinates().z);
-  }
-  {
-    auto const normal = Vector<double, World>({-13, 7, 5});
-    EXPECT_CALL(*plugin_, VesselNormal(vessel_guid)).WillOnce(Return(normal));
-    XYZ n = principia__VesselNormal(plugin_.get(), vessel_guid);
-    EXPECT_EQ(n.x, normal.coordinates().x);
-    EXPECT_EQ(n.y, normal.coordinates().y);
-    EXPECT_EQ(n.z, normal.coordinates().z);
-  }
-  {
-    auto const binormal = Vector<double, World>({43, 67, 163});
-    EXPECT_CALL(*plugin_, VesselBinormal(vessel_guid))
-        .WillOnce(Return(binormal));
-    XYZ b = principia__VesselBinormal(plugin_.get(), vessel_guid);
-    EXPECT_EQ(b.x, binormal.coordinates().x);
-    EXPECT_EQ(b.y, binormal.coordinates().y);
-    EXPECT_EQ(b.z, binormal.coordinates().z);
-  }
-  {
-    auto const velocity = Velocity<World>(
-        {4 * Metre / Second, 5 * Metre / Second, 6 * Metre / Second});
-    EXPECT_CALL(*plugin_, VesselVelocity(vessel_guid))
-        .WillOnce(Return(velocity));
-    XYZ v = principia__VesselVelocity(plugin_.get(), vessel_guid);
-    EXPECT_EQ(v.x, velocity.coordinates().x / (Metre / Second));
-    EXPECT_EQ(v.y, velocity.coordinates().y / (Metre / Second));
-    EXPECT_EQ(v.z, velocity.coordinates().z / (Metre / Second));
-  }
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
@@ -896,237 +650,6 @@ TEST_F(InterfaceDeathTest, SettersAndGetters) {
     std::cerr << exit_message;
     exit(exit_code);
   }, ExitedWithCode(exit_code), exit_message);
-}
-
-TEST_F(InterfaceTest, FlightPlan) {
-  Burn burn = {/*thrust_in_kilonewtons=*/1,
-               /*specific_impulse_in_seconds_g0=*/2,
-               /*frame=*/{/*extension=*/6000, /*centre=*/celestial_index},
-               /*initial_time=*/3,
-               /*delta_v=*/{4, 5, 6}};
-  StrictMock<MockVessel> vessel;
-  StrictMock<MockFlightPlan> flight_plan;
-
-  EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(*plugin_, GetVessel(vessel_guid))
-      .WillRepeatedly(Return(&vessel));
-  EXPECT_CALL(vessel, has_flight_plan())
-      .WillRepeatedly(Return(true));
-  EXPECT_CALL(vessel, flight_plan())
-      .WillRepeatedly(ReturnRef(flight_plan));
-
-  EXPECT_TRUE(principia__FlightPlanExists(plugin_.get(), vessel_guid));
-
-  EXPECT_CALL(*plugin_, CreateFlightPlan(vessel_guid,
-                                         Instant() + 30 * Second,
-                                         100 * Tonne));
-  principia__FlightPlanCreate(plugin_.get(),
-                              vessel_guid,
-                              /*final_time=*/30,
-                              /*mass_in_tonnes=*/100);
-
-  EXPECT_CALL(flight_plan, SetDesiredFinalTime(Instant() + 60 * Second))
-      .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanSetDesiredFinalTime(plugin_.get(),
-                                                       vessel_guid,
-                                                       60));
-
-  EXPECT_CALL(flight_plan, initial_time())
-      .WillOnce(Return(Instant() + 3 * Second));
-  EXPECT_EQ(3, principia__FlightPlanGetInitialTime(plugin_.get(), vessel_guid));
-
-  EXPECT_CALL(flight_plan, desired_final_time())
-      .WillOnce(Return(Instant() + 4 * Second));
-  EXPECT_EQ(4, principia__FlightPlanGetDesiredFinalTime(plugin_.get(),
-                                                        vessel_guid));
-
-  EXPECT_CALL(
-      flight_plan,
-      SetAdaptiveStepParameters(AllOf(
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
-                   11),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       length_integration_tolerance,
-                   22 * Metre),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       speed_integration_tolerance,
-                   33 * Metre / Second))))
-      .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
-                  plugin_.get(),
-                  vessel_guid,
-                  {/*integrator_kind=*/1,
-                   /*max_step=*/11,
-                   /*length_integration_tolerance=*/22,
-                   /*speed_integration_tolerance=*/33}));
-
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      /*max_steps=*/111,
-      /*length_integration_tolerance=*/222 * Metre,
-      /*speed_integration_tolerance=*/333 * Metre / Second);
-  EXPECT_CALL(flight_plan, adaptive_step_parameters())
-      .WillOnce(ReturnRef(adaptive_step_parameters));
-  AdaptiveStepParameters expected_adaptive_step_parameters = {
-      /*integrator_kind=*/1,
-      /*max_step=*/111,
-      /*length_integration_tolerance=*/222,
-      /*speed_integration_tolerance=*/333};
-  EXPECT_EQ(expected_adaptive_step_parameters,
-            principia__FlightPlanGetAdaptiveStepParameters(
-                plugin_.get(), vessel_guid));
-
-  EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
-      .WillOnce(FillUniquePtr<1>(
-                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
-  EXPECT_CALL(flight_plan,
-              AppendConstRef(
-                  BurnMatches(1 * Kilo(Newton),
-                              2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
-      .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanAppend(plugin_.get(), vessel_guid, burn));
-
-  EXPECT_CALL(flight_plan, number_of_manœuvres())
-      .WillOnce(Return(4));
-  EXPECT_EQ(4, principia__FlightPlanNumberOfManoeuvres(plugin_.get(),
-                                                       vessel_guid));
-
-  auto const plotting_frame =
-      make_not_null_unique<MockDynamicFrame<Barycentric, Navigation>>();
-  MockDynamicFrame<Barycentric, Navigation> const* const
-      navigation_manœuvre_frame =
-          new MockDynamicFrame<Barycentric, Navigation>;
-  MockManœuvre<Barycentric, Navigation> navigation_manœuvre(
-      10 * Kilo(Newton),
-      20 * Tonne,
-      30 * Second * StandardGravity,
-      Vector<double, Frenet<Navigation>>({1, 1, 1}),
-      std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
-          navigation_manœuvre_frame));
-  navigation_manœuvre.set_initial_time(Instant());
-  navigation_manœuvre.set_duration(7 * Second);
-  auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
-      RigidTransformation<Barycentric, Navigation>(
-          Barycentric::origin,
-          Navigation::origin,
-          OrthogonalMap<Barycentric, Navigation>::Identity()),
-      AngularVelocity<Barycentric>(),
-      Velocity<Barycentric>());
-  EXPECT_CALL(flight_plan, GetManœuvre(3))
-      .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*navigation_manœuvre_frame, WriteToMessage(_))
-      .WillOnce(Invoke([](not_null<serialization::DynamicFrame*> message) {
-        message->MutableExtension(
-            serialization::BodyCentredNonRotatingDynamicFrame::extension);
-      }));
-  EXPECT_CALL(navigation_manœuvre, InertialDirection())
-      .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
-  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
-      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
-  auto const navigation_manoeuvre =
-      principia__FlightPlanGetManoeuvre(plugin_.get(),
-                                        vessel_guid,
-                                        3);
-
-  EXPECT_EQ(10, navigation_manoeuvre.burn.thrust_in_kilonewtons);
-  EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
-  EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
-              AlmostEquals(30, 1));
-  EXPECT_EQ(40, navigation_manoeuvre.inertial_direction.x);
-  EXPECT_EQ(50, navigation_manoeuvre.inertial_direction.y);
-  EXPECT_EQ(60, navigation_manoeuvre.inertial_direction.z);
-
-  EXPECT_CALL(flight_plan, GetManœuvre(3))
-      .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
-      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
-  EXPECT_CALL(navigation_manœuvre, FrenetFrame())
-      .WillOnce(
-          Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
-  EXPECT_CALL(*plugin_, GetPlottingFrame())
-      .WillOnce(Return(plotting_frame.get()));
-  EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
-      .WillOnce(Return(barycentric_to_plotting));
-  EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
-      .WillOnce(Return(barycentric_to_plotting.Inverse()));
-  principia__FlightPlanGetManoeuvreFrenetTrihedron(plugin_.get(),
-                                                   vessel_guid,
-                                                   3);
-
-  EXPECT_CALL(flight_plan, number_of_segments())
-      .WillOnce(Return(12));
-  EXPECT_EQ(12, principia__FlightPlanNumberOfSegments(plugin_.get(),
-                                                      vessel_guid));
-
-  auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
-  rendered_trajectory->Append(
-      t0_, DegreesOfFreedom<World>(World::origin, Velocity<World>()));
-  rendered_trajectory->Append(
-      t0_ + 1 * Second,
-      DegreesOfFreedom<World>(
-          World::origin +
-              Displacement<World>({0 * Metre, 1 * Metre, 2 * Metre}),
-          Velocity<World>()));
-  rendered_trajectory->Append(
-      t0_ + 2 * Second,
-      DegreesOfFreedom<World>(
-          World::origin +
-              Displacement<World>({0 * Metre, 2 * Metre, 4 * Metre}),
-          Velocity<World>()));
-  auto segment = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  DegreesOfFreedom<Barycentric> immobile_origin{Barycentric::origin,
-                                                Velocity<Barycentric>{}};
-  segment->Append(t0_, immobile_origin);
-  segment->Append(t0_ + 1 * Second, immobile_origin);
-  segment->Append(t0_ + 2 * Second, immobile_origin);
-  EXPECT_CALL(flight_plan, GetSegment(3, _, _))
-      .WillOnce(DoAll(SetArgReferee<1>(segment->Begin()),
-                      SetArgReferee<2>(segment->End())));
-  EXPECT_CALL(*plugin_, FillRenderedBarycentricTrajectoryInWorld(_, _, _, _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
-  auto* const iterator =
-      principia__FlightPlanRenderedSegment(plugin_.get(),
-                                           vessel_guid,
-                                           {0, 1, 2},
-                                           3);
-  EXPECT_EQ(XYZ({0, 0, 0}), principia__IteratorGetXYZ(iterator));
-  principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 1, 2}), principia__IteratorGetXYZ(iterator));
-  principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
-
-  burn.thrust_in_kilonewtons = 10;
-  EXPECT_CALL(*plugin_,
-              FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
-      .WillOnce(FillUniquePtr<1>(
-                    new StrictMock<MockDynamicFrame<Barycentric, Navigation>>));
-  EXPECT_CALL(flight_plan,
-              ReplaceLastConstRef(
-                  BurnMatches(10 * Kilo(Newton),
-                              2 * Second * StandardGravity,
-                              Instant() + 3 * Second,
-                              Velocity<Frenet<Navigation>>(
-                                  {4 * (Metre / Second),
-                                   5 * (Metre / Second),
-                                   6 * (Metre / Second)}))))
-      .WillOnce(Return(true));
-  EXPECT_TRUE(principia__FlightPlanReplaceLast(plugin_.get(),
-                                               vessel_guid,
-                                               burn));
-
-  EXPECT_CALL(flight_plan, RemoveLast());
-  principia__FlightPlanRemoveLast(plugin_.get(), vessel_guid);
-
-  EXPECT_CALL(vessel, DeleteFlightPlan());
-  principia__FlightPlanDelete(plugin_.get(), vessel_guid);
 }
 
 }  // namespace interface

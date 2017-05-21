@@ -10,6 +10,10 @@
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
 #include "ksp_plugin/vessel.hpp"
+#include "physics/barycentric_rotating_dynamic_frame.hpp"
+#include "physics/body_centred_body_direction_dynamic_frame.hpp"
+#include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -32,6 +36,10 @@ using ksp_plugin::NavigationManœuvre;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
+using physics::BarycentricRotatingDynamicFrame;
+using physics::BodyCentredBodyDirectionDynamicFrame;
+using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::BodySurfaceDynamicFrame;
 using physics::Ephemeris;
 using physics::Frenet;
 using quantities::Speed;
@@ -74,48 +82,65 @@ Burn GetBurn(Plugin const& plugin,
   parameters.primary_index = -1;
   parameters.secondary_index = -1;
 
-  serialization::DynamicFrame message;
-  manœuvre.frame()->WriteToMessage(&message);
-  int number_of_extensions = 0;
-  if (message.HasExtension(
-          serialization::BarycentricRotatingDynamicFrame::extension)) {
-    ++number_of_extensions;
-    auto const& extension = message.GetExtension(
-        serialization::BarycentricRotatingDynamicFrame::extension);
-    parameters.extension =
-        serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
-    parameters.primary_index = extension.primary();
-    parameters.secondary_index = extension.secondary();
+  int number_of_subclasses = 0;
+
+  {
+    auto const* barycentric_rotating_dynamic_frame = dynamic_cast<
+        BarycentricRotatingDynamicFrame<Barycentric, Navigation> const*>(
+            &*manœuvre.frame());
+    if (barycentric_rotating_dynamic_frame != nullptr) {
+      ++number_of_subclasses;
+      parameters.extension =
+          serialization::BarycentricRotatingDynamicFrame::kExtensionFieldNumber;
+      parameters.primary_index = plugin.CelestialIndexOfBody(
+          *barycentric_rotating_dynamic_frame->primary());
+      parameters.secondary_index = plugin.CelestialIndexOfBody(
+          *barycentric_rotating_dynamic_frame->secondary());
+    }
   }
-  if (message.HasExtension(
-          serialization::BodyCentredNonRotatingDynamicFrame::extension)) {
-    ++number_of_extensions;
-    auto const& extension = message.GetExtension(
-        serialization::BodyCentredNonRotatingDynamicFrame::extension);
-    parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
-        kExtensionFieldNumber;
-    parameters.centre_index = extension.centre();
+
+  {
+    auto const* body_centred_body_direction_dynamic_frame = dynamic_cast<
+        BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation> const*>(
+            &*manœuvre.frame());
+    if (body_centred_body_direction_dynamic_frame != nullptr) {
+      ++number_of_subclasses;
+      parameters.extension = serialization::
+          BodyCentredBodyDirectionDynamicFrame::kExtensionFieldNumber;
+      parameters.primary_index = plugin.CelestialIndexOfBody(
+          *body_centred_body_direction_dynamic_frame->primary());
+      parameters.secondary_index = plugin.CelestialIndexOfBody(
+          *body_centred_body_direction_dynamic_frame->secondary());
+    }
   }
-  if (message.HasExtension(
-          serialization::BodyCentredBodyDirectionDynamicFrame::extension)) {
-    ++number_of_extensions;
-    auto const& extension = message.GetExtension(
-        serialization::BodyCentredBodyDirectionDynamicFrame::extension);
-    parameters.extension = serialization::BodyCentredBodyDirectionDynamicFrame::
-        kExtensionFieldNumber;
-    parameters.primary_index = extension.primary();
-    parameters.secondary_index = extension.secondary();
+
+  {
+    auto const* body_centred_non_rotating_dynamic_frame = dynamic_cast<
+        BodyCentredNonRotatingDynamicFrame<Barycentric, Navigation> const*>(
+            &*manœuvre.frame());
+    if (body_centred_non_rotating_dynamic_frame != nullptr) {
+      ++number_of_subclasses;
+      parameters.extension = serialization::BodyCentredNonRotatingDynamicFrame::
+          kExtensionFieldNumber;
+      parameters.centre_index = plugin.CelestialIndexOfBody(
+          *body_centred_non_rotating_dynamic_frame->centre());
+    }
   }
-  if (message.HasExtension(serialization::BodySurfaceDynamicFrame::extension)) {
-    ++number_of_extensions;
-    auto const& extension =
-        message.GetExtension(serialization::BodySurfaceDynamicFrame::extension);
-    parameters.extension =
-        serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber;
-    parameters.centre_index = extension.centre();
+
+  {
+    auto const* body_surface_dynamic_frame = dynamic_cast<
+        BodySurfaceDynamicFrame<Barycentric, Navigation> const*>(
+            &*manœuvre.frame());
+    if (body_surface_dynamic_frame != nullptr) {
+      ++number_of_subclasses;
+      parameters.extension =
+          serialization::BodySurfaceDynamicFrame::kExtensionFieldNumber;
+      parameters.centre_index =
+          plugin.CelestialIndexOfBody(*body_surface_dynamic_frame->centre());
+    }
   }
-  CHECK_EQ(number_of_extensions, 1)
-      << "Could not construct frame parameters from " << message.DebugString();
+
+  CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),

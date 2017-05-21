@@ -47,6 +47,9 @@ class BarycentricRotatingDynamicFrame
       not_null<MassiveBody const*> primary,
       not_null<MassiveBody const*> secondary);
 
+  not_null<MassiveBody const*> primary() const;
+  not_null<MassiveBody const*> secondary() const;
+
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
