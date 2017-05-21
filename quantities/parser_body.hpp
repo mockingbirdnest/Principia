@@ -3,6 +3,7 @@
 
 #include "quantities/parser.hpp"
 
+#include <array>
 #include <string>
 
 #include "quantities/named_quantities.hpp"
@@ -12,47 +13,188 @@ namespace principia {
 namespace quantities {
 namespace internal_parser {
 
-// The patterns that we parse here have the form:
-//    U^n/V^m
-//  when U and V are (final) unit names and n and m are integers.
+using RuntimeDimensions = std::array<std::int64_t, 8>;
 
-template<typename T>
-using ParseUnitFunction = T(*)(std::string const& s);
+template<typename Q>
+struct ExtractDimensions {};
 
-template<typename T, int exponent>
-Exponentiation<T, exponent> ParseExponentiationUnit(std::string const& s) {
-  int const first_carret = s.find('^');
-  int const last_nonblank = s.find_last_not_of(' ', first_carret - 1);
-  CHECK_NE(std::string::npos, last_nonblank);
+template<>
+struct ExtractDimensions<double> {
+  constexpr static RuntimeDimensions dimensions = {0, 0, 0, 0, 0, 0, 0, 0};
+};
 
+template<std::int64_t LengthExponent,
+         std::int64_t MassExponent,
+         std::int64_t TimeExponent,
+         std::int64_t CurrentExponent,
+         std::int64_t TemperatureExponent,
+         std::int64_t AmountExponent,
+         std::int64_t LuminousIntensityExponent,
+         std::int64_t AngleExponent>
+struct ExtractDimensions<
+    Quantity<internal_quantities::Dimensions<LengthExponent,
+                                             MassExponent,
+                                             TimeExponent,
+                                             CurrentExponent,
+                                             TemperatureExponent,
+                                             AmountExponent,
+                                             LuminousIntensityExponent,
+                                             AngleExponent>>> {
+  constexpr static RuntimeDimensions dimensions = {LengthExponent,
+                                                   MassExponent,
+                                                   TimeExponent,
+                                                   CurrentExponent,
+                                                   TemperatureExponent,
+                                                   AmountExponent,
+                                                   LuminousIntensityExponent,
+                                                   AngleExponent};
+};
+
+struct Unit {
+  template<typename Q>
+  explicit Unit(Q const& quantity);
+
+  Unit(RuntimeDimensions&& dimensions, double scale);
+
+  RuntimeDimensions dimensions;
+  double scale;
+};
+
+template<typename Q>
+Unit::Unit(Q const& quantity)
+    : dimensions(ExtractDimensions<Q>::dimensions),
+      scale(quantity / SIUnit<Q>()) {}
+
+inline Unit::Unit(RuntimeDimensions&& dimensions, double const scale)
+    : dimensions(dimensions),
+      scale(scale) {}
+
+inline Unit operator*(Unit const& left, Unit const& right) {
+  RuntimeDimensions dimensions;
+  for (std::int64_t i = 0; i < dimensions.size(); ++i) {
+    dimensions[i] = left.dimensions[i] + right.dimensions[i];
+  }
+  return {std::move(dimensions), left.scale * right.scale};
+}
+
+inline Unit operator/(Unit const& left, Unit const& right) {
+  RuntimeDimensions dimensions;
+  for (std::int64_t i = 0; i < dimensions.size(); ++i) {
+    dimensions[i] = left.dimensions[i] - right.dimensions[i];
+  }
+  return {std::move(dimensions), left.scale / right.scale};
+}
+
+inline Unit operator^(Unit const& left, int const exponent) {
+  RuntimeDimensions dimensions;
+  for (std::int64_t i = 0; i < dimensions.size(); ++i) {
+    dimensions[i] = left.dimensions[i] * exponent;
+  }
+  return {std::move(dimensions), std::pow(left.scale, exponent)};
+}
+
+inline Unit ParseUnit(std::string const& s) {
+  // Unitless quantities.
+  if (s == "") {
+    return Unit(1.0);
+  // Units of length.
+  } else if (s == "m") {
+    return Unit(si::Metre);
+  } else if (s == "km") {
+    return Unit(si::Kilo(si::Metre));
+  } else if (s == "au") {
+    return Unit(si::AstronomicalUnit);
+  // Units of time.
+  } else if (s == "s") {
+    return Unit(si::Second);
+  } else if (s == "d") {
+    return Unit(si::Day);
+  // Units of power.
+  } else if (s == "W") {
+    return Unit(si::Watt);
+  // Units of angle.
+  } else if (s == "deg" || s == u8"°") {
+    return Unit(si::Degree);
+  } else if (s == "rad") {
+    return Unit(si::Radian);
+  // Units of solid angle.
+  } else if (s == "sr") {
+    return Unit(si::Steradian);
+  } else {
+    LOG(FATAL) << "Unsupported unit " << s;
+    base::noreturn();
+  }
+}
+
+inline int ParseExponent(std::string const& s) {
+  // Parse an int.
   char* interpreted_end;
-  const char* interpreted_begin = s.c_str() + first_carret + 1;
-  int const actual_exponent = std::strtol(interpreted_begin,
-                                          &interpreted_end,
-                                          10);
-  int const interpreted = interpreted_end - interpreted_begin;
-  CHECK_LT(0, interpreted) << "invalid exponent " << s;
-  CHECK_EQ(exponent, actual_exponent);
-
-  return Pow<exponent>(ParseUnit<T>(s.substr(0, last_nonblank + 1)));
+  char const* const c_string = s.c_str();
+  double const exponent = std::strtol(c_string, &interpreted_end, /*base=*/10);
+  int const interpreted = interpreted_end - c_string;
+  CHECK_LT(0, interpreted) << "invalid integer number " << s;
+  return exponent;
 }
 
-template<typename TNumerator, typename TDenominator>
-Quotient<TNumerator, TDenominator> ParseQuotientUnit(
-    std::string const& s,
-    ParseUnitFunction<TNumerator> parse_numerator_unit,
-    ParseUnitFunction<TDenominator> parse_denominator_unit) {
-  int const first_slash = s.find('/');
-  int const first_nonblank = s.find_first_not_of(' ', first_slash + 1);
-  CHECK_NE(std::string::npos, first_nonblank);
-  int const last_nonblank = s.find_last_not_of(' ', first_slash - 1);
-  CHECK_NE(std::string::npos, last_nonblank);
-  return parse_numerator_unit(s.substr(0, last_nonblank + 1)) /
-         parse_denominator_unit(s.substr(first_nonblank));
+inline Unit ParseExponentiationUnit(std::string const& s) {
+  int const first_caret = s.find('^');
+  if (first_caret == std::string::npos) {
+    return ParseUnit(s);
+  } else {
+    int const first_nonblank = s.find_first_not_of(' ', first_caret + 1);
+    CHECK_NE(std::string::npos, first_nonblank);
+    int const last_nonblank = s.find_last_not_of(' ', first_caret - 1);
+    CHECK_NE(std::string::npos, last_nonblank);
+    auto const left = ParseUnit(s.substr(0, last_nonblank + 1));
+    auto const right = ParseExponent(s.substr(first_nonblank));
+    return left ^ right;
+  }
 }
 
-template<typename T>
-T ParseQuantity(std::string const& s) {
+inline Unit ParseProductUnit(std::string const& s) {
+  // For a product we are looking for a blank character that is not next to a
+  // carret.
+  int first_blank;
+  int first_nonblank;
+  int last_nonblank;
+  for (int start = 0;; start = first_blank + 1) {
+    first_blank = s.find(' ', start);
+    if (first_blank == std::string::npos) {
+      return ParseExponentiationUnit(s);
+    } else {
+      first_nonblank = s.find_first_not_of(' ', first_blank + 1);
+      last_nonblank = s.find_last_not_of(' ', first_blank - 1);
+      if ((first_nonblank == std::string::npos || s[first_nonblank] != '^') &&
+          (last_nonblank == std::string::npos || s[last_nonblank] != '^')) {
+        break;
+      }
+    }
+  }
+  auto const left = ParseExponentiationUnit(s.substr(0, last_nonblank + 1));
+  auto const right = ParseProductUnit(s.substr(first_nonblank));
+  return left * right;
+}
+
+inline Unit ParseQuotientUnit(std::string const& s) {
+  // Look for the slash from the back to achieve proper associativity.
+  int const last_slash = s.rfind('/');
+  if (last_slash == std::string::npos) {
+    // Not a quotient.
+    return ParseProductUnit(s);
+  } else {
+    // A quotient.  Parse each half.
+    int const first_nonblank = s.find_first_not_of(' ', last_slash + 1);
+    CHECK_NE(std::string::npos, first_nonblank);
+    int const last_nonblank = s.find_last_not_of(' ', last_slash - 1);
+    CHECK_NE(std::string::npos, last_nonblank);
+    auto const left = ParseQuotientUnit(s.substr(0, last_nonblank + 1));
+    auto const right = ParseExponentiationUnit(s.substr(first_nonblank));
+    return left / right;
+  }
+}
+
+template<typename Q>
+Q ParseQuantity(std::string const& s) {
   // Parse a double.
   char* interpreted_end;
   char const* const c_string = s.c_str();
@@ -68,69 +210,9 @@ T ParseQuantity(std::string const& s) {
     unit_string = s.substr(first_nonblank, last_nonblank - first_nonblank + 1);
   }
 
-  T const unit = ParseUnit<T>(unit_string);
-  return magnitude * unit;
-}
-
-template<>
-inline Length ParseUnit(std::string const& s) {
-  if (s == "m") {
-    return si::Metre;
-  } else if (s == "km") {
-    return si::Kilo(si::Metre);
-  } else if (s == "au") {
-    return si::AstronomicalUnit;
-  } else {
-    LOG(FATAL) << "Unsupported unit of length " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-inline Time ParseUnit(std::string const& s) {
-  if (s == "s") {
-    return si::Second;
-  } else if (s == "d") {
-    return si::Day;
-  } else {
-    LOG(FATAL) << "Unsupported unit of time " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-inline Angle ParseUnit(std::string const& s) {
-  if (s == "deg" || s == u8"°") {
-    return si::Degree;
-  } else if (s == "rad") {
-    return si::Radian;
-  } else {
-    LOG(FATAL) << "Unsupported unit of angle " << s;
-    base::noreturn();
-  }
-}
-
-template<>
-inline AngularFrequency ParseUnit(std::string const& s) {
-  return ParseQuotientUnit(s, &ParseUnit<Angle>, &ParseUnit<Time>);
-}
-
-template<>
-inline Speed ParseUnit(std::string const& s) {
-  return ParseQuotientUnit(s, &ParseUnit<Length>, &ParseUnit<Time>);
-}
-
-template<>
-inline GravitationalParameter ParseUnit(std::string const& s) {
-  return ParseQuotientUnit(s,
-                           &ParseExponentiationUnit<Length, 3>,
-                           &ParseExponentiationUnit<Time, 2>);
-}
-
-template<>
-inline double ParseUnit<double>(std::string const& s) {
-  CHECK(s.empty()) << s;
-  return 1;
+  Unit const unit = ParseQuotientUnit(unit_string);
+  CHECK(ExtractDimensions<Q>::dimensions == unit.dimensions);
+  return magnitude * unit.scale * SIUnit<Q>();
 }
 
 }  // namespace internal_parser

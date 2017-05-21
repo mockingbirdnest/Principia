@@ -49,7 +49,7 @@ FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
 PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
 
-TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a
+TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lsupc++
 TEST_INCLUDES := \
