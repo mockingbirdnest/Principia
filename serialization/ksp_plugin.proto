@@ -111,6 +111,11 @@ message Plugin {
   reserved "/*celestial*/";
 }
 
+// Added in Cauchy.
+message Renderer {
+  required DynamicFrame plotting_frame = 1;
+}
+
 message Vessel {
   required string guid = 13;
   required string name = 19;
