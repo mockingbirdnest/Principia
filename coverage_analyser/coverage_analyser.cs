@@ -134,15 +134,15 @@ class CoverageAnalyser {
     File.WriteAllText(
         Path.Combine(coverage_file.Directory.FullName,
                      "jenkins_percent_coverage.csv"),
-        "not covered, partially covered, fully covered\n" +
-            ((double)lines_not_covered / (double)total) * 100.0 + ", " +
-            ((double)lines_partially_covered / (double)total) * 100.0 + ", " +
+        "not covered,partially covered,fully covered\n" +
+            ((double)lines_not_covered / (double)total) * 100.0 + "," +
+            ((double)lines_partially_covered / (double)total) * 100.0 + "," +
             ((double)lines_covered / (double)total) * 100.0);
     File.WriteAllText(Path.Combine(coverage_file.Directory.FullName,
                                    "jenkins_lines_coverage.csv"),
-                      "not covered, partially covered, fully covered\n" +
-                          lines_not_covered + ", " + lines_partially_covered +
-                          ", " + lines_covered);
+                      "not covered,partially covered,fully covered\n" +
+                          lines_not_covered + "," + lines_partially_covered +
+                          "," + lines_covered);
     File.WriteAllText(Path.Combine(coverage_file.Directory.FullName,
                                    "jenkins_lines_coverage_breakdown.csv"),
                       unit_names + "\n" + breakdown_lines_not_covered);
@@ -161,7 +161,7 @@ class CoverageAnalyser {
     if (csv == "") {
       csv = value;
     } else {
-      csv = csv + ", " + value;
+      csv = csv + "," + value;
     }
   }
 }
