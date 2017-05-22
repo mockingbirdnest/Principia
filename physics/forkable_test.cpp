@@ -685,6 +685,11 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   EXPECT_EQ(t1_, *it.current());
   it = fork->LowerBound(t2_);
   EXPECT_EQ(t2_, *it.current());
+  // On the |fork| there is no point at |t3_| so we must land on |t4_|.
+  it = fork->LowerBound(t3_);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork->LowerBound(t3_ + 1 * Second);
+  EXPECT_EQ(t4_, *it.current());
   it = fork->LowerBound(t4_);
   EXPECT_EQ(t4_, *it.current());
   it = fork->LowerBound(t4_ + 1 * Second);
