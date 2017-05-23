@@ -270,8 +270,18 @@ DiscreteTrajectory<Frame>::timeline_find(Instant const& time) const {
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::TimelineConstIterator
-DiscreteTrajectory<Frame>::timeline_lower_bound(Instant const& time) const {
-  return timeline_.lower_bound(time);
+DiscreteTrajectory<Frame>::timeline_lower_bound(
+    TimelineConstIterator const begin,
+    TimelineConstIterator const end,
+    Instant const& time) const {
+  return std::lower_bound(
+      begin,
+      end,
+      time,
+      [](std::pair<Instant, DegreesOfFreedom<Frame>> const& left,
+         Instant const& right) {
+        return left.first < right;
+      });
 }
 
 template<typename Frame>

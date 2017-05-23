@@ -205,22 +205,55 @@ template<typename Tr4jectory, typename It3rator>
 It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
   It3rator iterator;
 
-  // Go up the ancestry chain until we find a timeline that covers |time| (that
-  // is, |time| is after the first time of the timeline).  Set |current_| to
-  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
   Tr4jectory const* ancestor = that();
+  std::experimental::optional<TimelineConstIterator> fork_point;
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
         ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
-      iterator.current_ =
-          ancestor->timeline_lower_bound(time);  // May be at end.
+      TimelineConstIterator const lower_bound_begin =
+          ancestor->timeline_begin();
+      TimelineConstIterator const lower_bound_end =
+          fork_point ? ++*fork_point
+                     : ancestor->timeline_end();
+      iterator.current_ = ancestor->timeline_lower_bound(lower_bound_begin,
+                                                         lower_bound_end,
+                                                         time);
+      if (iterator.current_ == lower_bound_end) {
+        auto ancestry_it = iterator.ancestry_.begin();
+        for (++ancestry_it;
+             ancestry_it != iterator.ancestry_.end();
+             ++ancestry_it) {
+          if (!(*ancestry_it)->timeline_empty()) {
+            iterator.ancestry_.erase(iterator.ancestry_.begin(), ancestry_it);
+            iterator.current_ = (*ancestry_it)->timeline_begin();
+            break;
+          }
+        }
+      }
       break;
     }
+    fork_point = ancestor->position_in_parent_timeline_;
     iterator.current_ = ancestor->timeline_begin();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
+
+  //// Go up the ancestry chain until we find a timeline that covers |time| (that
+  //// is, |time| is after the first time of the timeline).  Set |current_| to
+  //// the location of |time|, which may be |end()|.  The ancestry has |forkable|
+  //// at the back, and the object containing |current_| at the front.
+  //Tr4jectory const* ancestor = that();
+  //do {
+  //  iterator.ancestry_.push_front(ancestor);
+  //  if (!ancestor->timeline_empty() &&
+  //      ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
+  //    iterator.current_ =
+  //        ancestor->timeline_lower_bound(time);  // May be at end.
+  //    break;
+  //  }
+  //  iterator.current_ = ancestor->timeline_begin();
+  //  ancestor = ancestor->parent_;
+  //} while (ancestor != nullptr);
 
   iterator.NormalizeIfEnd();
   return iterator;

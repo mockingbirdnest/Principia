@@ -59,7 +59,9 @@ class FakeTrajectory : public Forkable<FakeTrajectory,
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
   TimelineConstIterator timeline_lower_bound(
-                            Instant const& time) const override;
+      TimelineConstIterator begin,
+      TimelineConstIterator end,
+      Instant const& time) const override;
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
@@ -122,14 +124,16 @@ FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_find(
 }
 
 FakeTrajectory::TimelineConstIterator FakeTrajectory::timeline_lower_bound(
-                                          Instant const& time) const {
+    TimelineConstIterator const begin,
+    TimelineConstIterator const end,
+    Instant const& time) const {
   // Stupid O(N) search.
-  for (auto it = timeline_.begin(); it != timeline_.end(); ++it) {
+  for (auto it = begin; it != end; ++it) {
     if (*it >= time) {
       return it;
     }
   }
-  return timeline_.end();
+  return end;
 }
 
 bool FakeTrajectory::timeline_empty() const {

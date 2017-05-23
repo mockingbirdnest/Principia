@@ -161,6 +161,8 @@ class Forkable {
   virtual TimelineConstIterator timeline_end() const = 0;
   virtual TimelineConstIterator timeline_find(Instant const& time) const = 0;
   virtual TimelineConstIterator timeline_lower_bound(
+                                    TimelineConstIterator begin,
+                                    TimelineConstIterator end,
                                     Instant const& time) const = 0;
   virtual bool timeline_empty() const = 0;
   virtual std::int64_t timeline_size() const = 0;
