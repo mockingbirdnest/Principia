@@ -169,9 +169,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   TimelineConstIterator timeline_end() const override;
   TimelineConstIterator timeline_find(Instant const& time) const override;
   TimelineConstIterator timeline_lower_bound(
-      TimelineConstIterator begin,
-      TimelineConstIterator end,
-      Instant const& time) const override;
+                            Instant const& time) const override;
   bool timeline_empty() const override;
   std::int64_t timeline_size() const override;
 
