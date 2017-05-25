@@ -233,7 +233,7 @@ It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
         // |time| is after the end of this timeline or after the |fork_point|
         // (if any).  We may have to return an |End| iterator, so let's prepare
         // |iterator.current_| for that case.
-        iterator.current_ == ancestor->timeline_end();
+        iterator.current_ = ancestor->timeline_end();
 
         // Check if we have a more nested fork with a point before |time|.  Go
         // down the ancestry looking for a timeline that is nonempty and not
