@@ -68,19 +68,6 @@ class MockPlugin : public Plugin {
                           Instant const& final_time,
                           Mass const& initial_mass));
 
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-  RenderBarycentricTrajectoryInWorld(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Position<World> const& sun_world_position) const;
-  MOCK_CONST_METHOD4(
-      FillRenderedBarycentricTrajectoryInWorld,
-      void(DiscreteTrajectory<Barycentric>::Iterator const& begin,
-           DiscreteTrajectory<Barycentric>::Iterator const& end,
-           Position<World> const& sun_world_position,
-           std::unique_ptr<DiscreteTrajectory<World>>*
-               rendered_barycentric_trajectory_in_world));
-
   MOCK_METHOD1(SetPredictionLength, void(Time const& t));
 
   MOCK_METHOD1(SetPredictionAdaptiveStepParameters,
@@ -108,16 +95,6 @@ class MockPlugin : public Plugin {
            Index secondary_index,
            std::unique_ptr<NavigationFrame>* navigation_frame));
 
-  // NOTE(phl): Needed because gMock 1.7.0 wants to copy the unique_ptr<>.
-  void SetPlottingFrame(
-    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) override;
-
-  MOCK_METHOD1(SetPlottingFrameConstRef,
-               void(NavigationFrame const& plotting_frame));
-
-  MOCK_CONST_METHOD0(GetPlottingFrame,
-                     not_null<NavigationFrame const*>());
-
   MOCK_CONST_METHOD1(NavballFrameField,
                      std::unique_ptr<FrameField<World, Navball>>(
                          Position<World> const& sun_world_position));
@@ -134,10 +111,13 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(VesselVelocity,
                      Velocity<World>(GUID const& vessel_guid));
 
-  MOCK_CONST_METHOD0(BarycentricToWorldSun,
-                     OrthogonalMap<Barycentric, WorldSun>());
-
   MOCK_CONST_METHOD0(CurrentTime, Instant());
+
+  MOCK_CONST_METHOD0(PlanetariumRotation,
+                     Rotation<Barycentric, AliceSun> const&());
+
+  MOCK_METHOD0(renderer, Renderer&());
+  MOCK_CONST_METHOD0(renderer, Renderer const&());
 
   MOCK_CONST_METHOD1(WriteToMessage,
                      void(not_null<serialization::Plugin*> message));

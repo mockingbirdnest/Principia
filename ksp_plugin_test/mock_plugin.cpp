@@ -11,21 +11,6 @@ namespace internal_plugin {
 
 MockPlugin::MockPlugin() : Plugin("JD2451545", "JD2451545", Angle()) {}
 
-not_null<std::unique_ptr<DiscreteTrajectory<World>>>
-MockPlugin::RenderBarycentricTrajectoryInWorld(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Position<World> const& sun_world_position) const {
-  std::unique_ptr<DiscreteTrajectory<World>>
-      rendered_barycentric_trajectory_in_world;
-  FillRenderedBarycentricTrajectoryInWorld(
-      begin,
-      end,
-      sun_world_position,
-      &rendered_barycentric_trajectory_in_world);
-  return std::move(rendered_barycentric_trajectory_in_world);
-}
-
 not_null<std::unique_ptr<NavigationFrame>>
 MockPlugin::NewBodyCentredNonRotatingNavigationFrame(
     Index const reference_body_index) const {
@@ -44,12 +29,6 @@ MockPlugin::NewBarycentricRotatingNavigationFrame(
                                          secondary_index,
                                          &navigation_frame);
   return std::move(navigation_frame);
-}
-
-void MockPlugin::SetPlottingFrame(
-    not_null<std::unique_ptr<NavigationFrame>> plotting_frame) {
-  SetPlottingFrameConstRef(*plotting_frame);
-  plotting_frame.release();
 }
 
 }  // namespace internal_plugin

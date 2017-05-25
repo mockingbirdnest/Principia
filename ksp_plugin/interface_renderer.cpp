@@ -4,14 +4,28 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "ksp_plugin/renderer.hpp"
 
 namespace principia {
 namespace interface {
 
+using ksp_plugin::Renderer;
+
+namespace {
+
+Renderer& GetRenderer(Plugin* const plugin) {
+  return CHECK_NOTNULL(plugin)->renderer();
+}
+
+Renderer const& GetRenderer(Plugin const* const plugin) {
+  return CHECK_NOTNULL(plugin)->renderer();
+}
+
+}  // namespace
+
 void principia__ClearTargetVessel(Plugin* const plugin) {
   journal::Method<journal::ClearTargetVessel> m({plugin});
-  CHECK_NOTNULL(plugin);
-  plugin->ClearTargetVessel();
+  GetRenderer(plugin).ClearTargetVessel();
   return m.Return();
 }
 
@@ -19,7 +33,7 @@ void principia__ClearTargetVessel(Plugin* const plugin) {
 // ownership.  The returned pointer is never null.
 NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
   journal::Method<journal::GetPlottingFrame> m({plugin});
-  return m.Return(CHECK_NOTNULL(plugin)->GetPlottingFrame());
+  return m.Return(GetRenderer(plugin).GetPlottingFrame());
 }
 
 Iterator* principia__RenderedPrediction(Plugin* const plugin,
@@ -30,10 +44,13 @@ Iterator* principia__RenderedPrediction(Plugin* const plugin,
                                                   sun_world_position});
   CHECK_NOTNULL(plugin);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
-                                 prediction.Begin(),
-                                 prediction.End(),
-                                 FromXYZ<Position<World>>(sun_world_position));
+  auto rendered_trajectory =
+      GetRenderer(plugin).RenderBarycentricTrajectoryInWorld(
+          plugin->CurrentTime(),
+          prediction.Begin(),
+          prediction.End(),
+          FromXYZ<Position<World>>(sun_world_position),
+          plugin->PlanetariumRotation());
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
@@ -123,10 +140,13 @@ Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
                                                         sun_world_position});
   CHECK_NOTNULL(plugin);
   auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  auto rendered_trajectory = plugin->RenderBarycentricTrajectoryInWorld(
-                                 psychohistory.Begin(),
-                                 psychohistory.End(),
-                                 FromXYZ<Position<World>>(sun_world_position));
+  auto rendered_trajectory =
+      GetRenderer(plugin).RenderBarycentricTrajectoryInWorld(
+          plugin->CurrentTime(),
+          psychohistory.Begin(),
+          psychohistory.End(),
+          FromXYZ<Position<World>>(sun_world_position),
+          plugin->PlanetariumRotation());
   return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
       std::move(rendered_trajectory),
       plugin));
@@ -139,8 +159,7 @@ void principia__SetPlottingFrame(Plugin* const plugin,
                                  NavigationFrame** const navigation_frame) {
   journal::Method<journal::SetPlottingFrame> m({plugin, navigation_frame},
                                                {navigation_frame});
-  CHECK_NOTNULL(plugin);
-  plugin->SetPlottingFrame(TakeOwnership(navigation_frame));
+  GetRenderer(plugin).SetPlottingFrame(TakeOwnership(navigation_frame));
   return m.Return();
 }
 

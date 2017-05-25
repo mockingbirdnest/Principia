@@ -8,6 +8,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
@@ -22,11 +23,10 @@ using geometry::Rotation;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockPlugin;
+using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using physics::MockDynamicFrame;
-using quantities::Length;
-using quantities::SIUnit;
 using quantities::si::Metre;
 using testing_utilities::FillUniquePtr;
 using ::testing::IsNull;
@@ -78,10 +78,13 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   NavigationFrame* navigation_frame =
       principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
-  EXPECT_CALL(*plugin_, GetPlottingFrame())
+  EXPECT_CALL(renderer, GetPlottingFrame())
       .WillOnce(Return(mock_navigation_frame));
   EXPECT_EQ(mock_navigation_frame, principia__GetPlottingFrame(plugin_.get()));
 }
@@ -104,22 +107,27 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
       principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
   auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
-      World::origin + Displacement<World>({1 * SIUnit<Length>(),
-                                           2 * SIUnit<Length>(),
-                                           3 * SIUnit<Length>()});
+      World::origin + Displacement<World>({1 * Metre,
+                                           2 * Metre,
+                                           3 * Metre});
   rendered_trajectory->Append(
       t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < trajectory_size; ++i) {
-    position += Displacement<World>({10 * SIUnit<Length>(),
-                                     20 * SIUnit<Length>(),
-                                     30 * SIUnit<Length>()});
+    position += Displacement<World>({10 * Metre,
+                                     20 * Metre,
+                                     30 * Metre});
   rendered_trajectory->Append(
       t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
@@ -130,15 +138,15 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
       .WillRepeatedly(Return(&vessel));
   EXPECT_CALL(vessel, prediction())
       .WillRepeatedly(ReturnRef(prediction));
-  EXPECT_CALL(*plugin_,
+  EXPECT_CALL(renderer,
               FillRenderedBarycentricTrajectoryInWorld(
-                  _, _,
+                  _, _, _,
                   World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()}),
-                  _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
+                                      {parent_position.x * Metre,
+                                       parent_position.y * Metre,
+                                       parent_position.z * Metre}),
+                  _, _))
+      .WillOnce(FillUniquePtr<5>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedPrediction(plugin_.get(),
                                     vessel_guid,
@@ -180,22 +188,28 @@ TEST_F(InterfaceRendererTest, Iterator) {
       principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
+  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 
   // Construct a test rendered trajectory.
   auto rendered_trajectory = make_not_null_unique<DiscreteTrajectory<World>>();
   Position<World> position =
-      World::origin + Displacement<World>({1 * SIUnit<Length>(),
-                                           2 * SIUnit<Length>(),
-                                           3 * SIUnit<Length>()});
+      World::origin + Displacement<World>({1 * Metre,
+                                           2 * Metre,
+                                           3 * Metre});
   rendered_trajectory->Append(
       t0_, DegreesOfFreedom<World>(position, Velocity<World>()));
   for (int i = 1; i < trajectory_size; ++i) {
-    position += Displacement<World>({10 * SIUnit<Length>(),
-                                     20 * SIUnit<Length>(),
-                                     30 * SIUnit<Length>()});
+    position += Displacement<World>({10 * Metre,
+                                     20 * Metre,
+                                     30 * Metre});
   rendered_trajectory->Append(
       t0_ + i * Second, DegreesOfFreedom<World>(position, Velocity<World>()));
   }
@@ -207,15 +221,15 @@ TEST_F(InterfaceRendererTest, Iterator) {
       .WillRepeatedly(Return(&vessel));
   EXPECT_CALL(vessel, psychohistory())
       .WillRepeatedly(ReturnRef(psychohistory));
-  EXPECT_CALL(*plugin_,
+  EXPECT_CALL(renderer,
               FillRenderedBarycentricTrajectoryInWorld(
-                  _, _,
+                  _, _, _,
                   World::origin + Displacement<World>(
-                                      {parent_position.x * SIUnit<Length>(),
-                                       parent_position.y * SIUnit<Length>(),
-                                       parent_position.z * SIUnit<Length>()}),
-                  _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
+                                      {parent_position.x * Metre,
+                                       parent_position.y * Metre,
+                                       parent_position.z * Metre}),
+                  _, _))
+      .WillOnce(FillUniquePtr<5>(rendered_trajectory.release()));
   Iterator* iterator =
       principia__RenderedVesselTrajectory(plugin_.get(),
                                           vessel_guid,
@@ -257,7 +271,9 @@ TEST_F(InterfaceRendererTest, Frenet) {
       principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 

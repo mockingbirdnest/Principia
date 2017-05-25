@@ -1,5 +1,7 @@
 # Principia
 
+**Catalan, the May version of Principia with numerous bug fixes, is available.  Download it [here](https://goo.gl/OiSbzK).**
+
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
 N-body gravitation is more complex than the toy physics of the stock game.  Therefore, before using the mod we recommend that you read the [concepts](https://github.com/mockingbirdnest/Principia/wiki/Concepts) document which explains the most important parts of Principia.  In particular, you should learn about the [plotting frame](https://github.com/mockingbirdnest/Principia/wiki/Concepts#plotting-frame) and [flight planning](https://github.com/mockingbirdnest/Principia/wiki/Concepts#flight-planning).
@@ -12,4 +14,4 @@ The [FAQ](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reportin
 
 The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) gives a fairly detailed description of the new features in each release.
 
-Download the binary (Ubuntu and Windows) [here](https://goo.gl/IoYB1F) or, if you don't trust our binary, build the mod from the [Cartan](https://github.com/mockingbirdnest/Principia/releases/tag/2017042612-Cartan) release.
+Download the binary (Ubuntu and Windows) [here](https://goo.gl/OiSbzK) or, if you don't trust our binary, build the mod from the [Catalan](https://github.com/mockingbirdnest/Principia/releases/tag/2017052520-Catalan) release.

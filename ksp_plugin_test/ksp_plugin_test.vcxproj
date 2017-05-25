@@ -55,6 +55,7 @@
     <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="mock_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
+    <ClCompile Include="mock_renderer.cpp" />
     <ClCompile Include="part_test.cpp" />
     <ClCompile Include="pile_up_test.cpp" />
     <ClCompile Include="plugin_compatibility_test.cpp" />
@@ -75,6 +76,7 @@
     <ClInclude Include="mock_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="mock_renderer.hpp" />
     <ClInclude Include="mock_vessel.hpp" />
   </ItemGroup>
   <ItemGroup>

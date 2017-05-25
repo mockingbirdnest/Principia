@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <deque>
 #include <vector>
 
 #include "physics/forkable.hpp"
@@ -204,20 +205,65 @@ It3rator Forkable<Tr4jectory, It3rator>::Find(Instant const& time) const {
 template<typename Tr4jectory, typename It3rator>
 It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
   It3rator iterator;
-
-  // Go up the ancestry chain until we find a timeline that covers |time| (that
-  // is, |time| is after the first time of the timeline).  Set |current_| to
-  // the location of |time|, which may be |end()|.  The ancestry has |forkable|
-  // at the back, and the object containing |current_| at the front.
   Tr4jectory const* ancestor = that();
+
+  // This queue is parallel to |iterator.ancestry_|, and each entry is an
+  // iterator in the corresponding ancestry timeline.  Note that we use a
+  // |nullopt| sentinel for the innermost timeline.
+  std::deque<std::experimental::optional<TimelineConstIterator>> fork_points;
+  fork_points.push_front(std::experimental::nullopt);
+
+  // Go up the ancestry chain until we find a (nonempty) timeline that covers
+  // |time| (that is, |time| is on or after the first time of the timeline).
   do {
     iterator.ancestry_.push_front(ancestor);
     if (!ancestor->timeline_empty() &&
         ForkableTraits<Tr4jectory>::time(ancestor->timeline_begin()) <= time) {
-      iterator.current_ =
-          ancestor->timeline_lower_bound(time);  // May be at end.
+      // We have found a timeline that covers |time|.  Find where |time| falls
+      // in that timeline (that may be after the end).
+      iterator.current_ = ancestor->timeline_lower_bound(time);
+
+      // Check if the returned iterator is directly usable.
+      auto const& fork_point = fork_points.front();
+      if (iterator.current_ == ancestor->timeline_end() ||
+          (fork_point &&
+           *fork_point != ancestor->timeline_end() &&
+           ForkableTraits<Tr4jectory>::time(*fork_point) <
+               ForkableTraits<Tr4jectory>::time(iterator.current_))) {
+        // |time| is after the end of this timeline or after the |fork_point|
+        // (if any).  We may have to return an |End| iterator, so let's prepare
+        // |iterator.current_| for that case.
+        iterator.current_ == ancestor->timeline_end();
+
+        // Check if we have a more nested fork with a point before |time|.  Go
+        // down the ancestry looking for a timeline that is nonempty and not
+        // forked at the same point as its parent.
+        auto ancestry_it = iterator.ancestry_.begin();
+        auto fork_points_it = fork_points.begin();
+        for (;;) {
+          ++ancestry_it;
+          ++fork_points_it;
+          if (ancestry_it == iterator.ancestry_.end()) {
+            // We didn't find an interesting fork in the ancestry, so we stop
+            // here and |NormalizeIfEnd| will return a proper |End|.
+            CHECK(fork_points_it == fork_points.end());
+            break;
+          }
+          if (!(*ancestry_it)->timeline_empty() &&
+                (!*fork_points_it ||
+                 **fork_points_it != (*ancestry_it)->timeline_end())) {
+            // We found an interesting timeline, i.e. one that is nonempty and
+            // not forked at the fork point of its parent.  Cut the ancestry and
+            // return the beginning of that timeline.
+            iterator.ancestry_.erase(iterator.ancestry_.begin(), ancestry_it);
+            iterator.current_ = (*ancestry_it)->timeline_begin();
+            break;
+          }
+        }
+      }
       break;
     }
+    fork_points.push_front(ancestor->position_in_parent_timeline_);
     iterator.current_ = ancestor->timeline_begin();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);

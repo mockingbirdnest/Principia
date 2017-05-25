@@ -115,6 +115,12 @@
     <ClCompile Include="integrators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="interface_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\base\version.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>

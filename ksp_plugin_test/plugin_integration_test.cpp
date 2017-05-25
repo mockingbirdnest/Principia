@@ -202,7 +202,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
-  plugin_->SetPlottingFrame(
+  plugin_->renderer().SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth));
   // We'll check that our orbit is rendered as circular (actually, we only check
@@ -249,9 +249,12 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
     auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
-        plugin_->RenderBarycentricTrajectoryInWorld(psychohistory.Begin(),
-                                                    psychohistory.End(),
-                                                    sun_world_position);
+        plugin_->renderer().RenderBarycentricTrajectoryInWorld(
+            plugin_->CurrentTime(),
+            psychohistory.Begin(),
+            psychohistory.End(),
+            sun_world_position,
+            plugin_->PlanetariumRotation());
     Position<World> const earth_world_position =
         sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
                                  SolarSystemFactory::Earth).displacement());
@@ -297,10 +300,9 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   plugin_->PrepareToReportCollisions();
   plugin_->FreeVesselsAndPartsAndCollectPileUps();
 
-  plugin_->SetPlottingFrame(
-      plugin_->NewBarycentricRotatingNavigationFrame(
-          SolarSystemFactory::Earth,
-          SolarSystemFactory::Moon));
+  plugin_->renderer().SetPlottingFrame(
+      plugin_->NewBarycentricRotatingNavigationFrame(SolarSystemFactory::Earth,
+                                                     SolarSystemFactory::Moon));
   Permutation<AliceSun, World> const alice_sun_to_world =
       Permutation<AliceSun, World>(Permutation<AliceSun, World>::XZY);
   Time const δt_long = 1 * Hour;
@@ -351,25 +353,33 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     auto const& psychohistory =
         plugin_->GetVessel(vessel_guid)->psychohistory();
     auto const rendered_trajectory =
-        plugin_->RenderBarycentricTrajectoryInWorld(psychohistory.Begin(),
-                                                    psychohistory.End(),
-                                                    sun_world_position);
-  Position<World> const earth_world_position =
-      sun_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
-                               SolarSystemFactory::Earth).displacement());
-  Position<World> const moon_world_position =
-      earth_world_position + alice_sun_to_world(plugin_->CelestialFromParent(
-                                 SolarSystemFactory::Moon).displacement());
-  Length const earth_moon = (moon_world_position - earth_world_position).Norm();
-  for (auto it = rendered_trajectory->Begin();
-       it != rendered_trajectory->End();
-       ++it) {
-    Position<World> const position = it.degrees_of_freedom().position();
-    Length const satellite_earth = (position - earth_world_position).Norm();
-    Length const satellite_moon = (position - moon_world_position).Norm();
-    EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
-    EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
-    EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
+        plugin_->renderer().RenderBarycentricTrajectoryInWorld(
+            plugin_->CurrentTime(),
+            psychohistory.Begin(),
+            psychohistory.End(),
+            sun_world_position,
+            plugin_->PlanetariumRotation());
+    Position<World> const earth_world_position =
+        sun_world_position +
+        alice_sun_to_world(
+            plugin_->CelestialFromParent(SolarSystemFactory::Earth)
+                .displacement());
+    Position<World> const moon_world_position =
+        earth_world_position +
+        alice_sun_to_world(
+            plugin_->CelestialFromParent(SolarSystemFactory::Moon)
+                .displacement());
+    Length const earth_moon =
+        (moon_world_position - earth_world_position).Norm();
+    for (auto it = rendered_trajectory->Begin();
+         it != rendered_trajectory->End();
+         ++it) {
+      Position<World> const position = it.degrees_of_freedom().position();
+      Length const satellite_earth = (position - earth_world_position).Norm();
+      Length const satellite_moon = (position - moon_world_position).Norm();
+      EXPECT_THAT(RelativeError(earth_moon, satellite_earth), Lt(0.0907));
+      EXPECT_THAT(RelativeError(earth_moon, satellite_moon), Lt(0.131));
+      EXPECT_THAT(RelativeError(satellite_moon, satellite_earth), Lt(0.148));
   }
   // Check that there are no spikes in the rendered trajectory, i.e., that three
   // consecutive points form a sufficiently flat triangle.  This tests issue
@@ -687,7 +697,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.PrepareToReportCollisions();
   plugin.FreeVesselsAndPartsAndCollectPileUps();
 
-  plugin.SetPlottingFrame(
+  plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   plugin.SetPredictionLength(2 * π * Second);
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
@@ -701,9 +711,12 @@ TEST_F(PluginIntegrationTest, Prediction) {
   auto const& prediction =
       plugin.GetVessel(vessel_guid)->prediction();
   auto const rendered_prediction =
-      plugin.RenderBarycentricTrajectoryInWorld(prediction.Begin(),
-                                                prediction.End(),
-                                                World::origin);
+      plugin.renderer().RenderBarycentricTrajectoryInWorld(
+          plugin.CurrentTime(),
+          prediction.Begin(),
+          prediction.End(),
+          World::origin,
+          plugin.PlanetariumRotation());
   EXPECT_EQ(15, rendered_prediction->Size());
   int index = 0;
   for (auto it = rendered_prediction->Begin();
