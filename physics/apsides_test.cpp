@@ -222,7 +222,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                 .longitude,
         AlmostEquals(elements.longitude_of_ascending_node - π * Radian, 0, 25));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 1, 29));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 29));
     }
     previous_time = time;
   }

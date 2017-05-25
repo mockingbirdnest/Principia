@@ -349,7 +349,7 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник1Launch) {
                          sun, sun_dof,
                          "moon");
   // Using centre: Neptune (body centre) [500@899]
-  TestStronglyBoundOrbit(1.587851e-05, 1e-5,
+  TestStronglyBoundOrbit(1.587851e-05, 1e-6,
                          triton, triton_dof,
                          neptune, neptune_dof,
                          sun, sun_dof,
