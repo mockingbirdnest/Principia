@@ -47,6 +47,7 @@ class SolarSystem final {
 
   // The time origin for the initial state.
   Instant const& epoch() const;
+  std::string const& epoch_literal() const;
 
   // The names of the bodies, sorted alphabetically.
   std::vector<std::string> const& names() const;
