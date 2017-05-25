@@ -356,7 +356,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 31, 44));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
-                AlmostEquals(expected_velocity, 28, 27));
+                AlmostEquals(expected_velocity, 27, 28));
   }
 
   KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
