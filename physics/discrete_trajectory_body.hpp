@@ -318,7 +318,7 @@ template<typename Frame>
 Hermite3<Instant, Position<Frame>> DiscreteTrajectory<Frame>::GetInterpolation(
     Instant const& time) const {
   CHECK_LE(t_min(), time);
-CHECK_GE(t_max(), time);
+  CHECK_GE(t_max(), time);
   // This is the upper bound of the interval upon which we will do the
   // interpolation.
   auto const upper = this->LowerBound(time);
@@ -326,9 +326,9 @@ CHECK_GE(t_max(), time);
   return Hermite3<Instant, Position<Frame>>{
       {lower.time(), upper.time()},
       {lower.degrees_of_freedom().position(),
-        upper.degrees_of_freedom().position()},
+       upper.degrees_of_freedom().position()},
       {lower.degrees_of_freedom().velocity(),
-        upper.degrees_of_freedom().velocity()}};
+       upper.degrees_of_freedom().velocity()}};
 }
 
 }  // namespace internal_discrete_trajectory

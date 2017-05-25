@@ -155,7 +155,8 @@ class ForkableTest : public testing::Test {
     t1_(t0_ + 7 * Second),
     t2_(t0_ + 17 * Second),
     t3_(t0_ + 27 * Second),
-    t4_(t0_ + 37 * Second) {}
+    t4_(t0_ + 37 * Second),
+    t5_(t0_ + 47 * Second) {}
 
   static std::vector<Instant> After(
       not_null<FakeTrajectory const*> const trajectory,
@@ -188,7 +189,7 @@ class ForkableTest : public testing::Test {
   }
 
   FakeTrajectory trajectory_;
-  Instant t0_, t1_, t2_, t3_, t4_;
+  Instant t0_, t1_, t2_, t3_, t4_, t5_;
 };
 
 using ForkableDeathTest = ForkableTest;
@@ -674,21 +675,32 @@ TEST_F(ForkableTest, IteratorLowerBoundSuccess) {
   it = trajectory_.LowerBound(t4_);
   EXPECT_EQ(it, trajectory_.End());
 
-  not_null<FakeTrajectory*> const fork =
+  not_null<FakeTrajectory*> const fork1 =
       trajectory_.NewFork(trajectory_.timeline_find(t2_));
-  fork->push_back(t4_);
+  fork1->push_back(t4_);
 
-  it = fork->LowerBound(t0_);
+  it = fork1->LowerBound(t0_);
   EXPECT_EQ(t1_, *it.current());
-  it = fork->LowerBound(t1_);
-  EXPECT_NE(it, fork->End());
+  it = fork1->LowerBound(t1_);
+  EXPECT_NE(it, fork1->End());
   EXPECT_EQ(t1_, *it.current());
-  it = fork->LowerBound(t2_);
+  it = fork1->LowerBound(t2_);
   EXPECT_EQ(t2_, *it.current());
-  it = fork->LowerBound(t4_);
+  // On the |fork| there is no point at |t3_| so we must land on |t4_|.
+  it = fork1->LowerBound(t3_);
   EXPECT_EQ(t4_, *it.current());
-  it = fork->LowerBound(t4_ + 1 * Second);
-  EXPECT_EQ(it, fork->End());
+  it = fork1->LowerBound(t3_ + 1 * Second);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork1->LowerBound(t4_);
+  EXPECT_EQ(t4_, *it.current());
+  it = fork1->LowerBound(t4_ + 1 * Second);
+  EXPECT_EQ(it, fork1->End());
+
+  not_null<FakeTrajectory*> const fork2 =
+      fork1->NewFork(fork1->timeline_find(t2_));
+  fork2->push_back(t5_);
+  it = fork2->LowerBound(t4_ - 1 * Second);
+  EXPECT_EQ(t5_, *it.current());
 }
 
 }  // namespace internal_forkable
