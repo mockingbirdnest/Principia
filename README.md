@@ -14,4 +14,4 @@ The [FAQ](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reportin
 
 The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) gives a fairly detailed description of the new features in each release.
 
-Download the binary (Ubuntu and Windows) [here](https://goo.gl/IoYB1F) or, if you don't trust our binary, build the mod from the [Cartan](https://github.com/mockingbirdnest/Principia/releases/tag/2017042612-Cartan) release.
+Download the binary (Ubuntu and Windows) [here](https://goo.gl/OiSbzK) or, if you don't trust our binary, build the mod from the [Catalan](https://github.com/mockingbirdnest/Principia/releases/tag/2017052520-Catalan) release.
