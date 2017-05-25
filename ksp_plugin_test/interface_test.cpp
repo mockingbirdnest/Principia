@@ -18,6 +18,7 @@
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/constants.hpp"
@@ -48,6 +49,7 @@ using ksp_plugin::Index;
 using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
+using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navball;
 using ksp_plugin::Navigation;
@@ -121,8 +123,6 @@ double const time = 11;
 XYZ parent_position = {4, 5, 6};
 XYZ parent_velocity = {7, 8, 9};
 QP parent_relative_degrees_of_freedom = {parent_position, parent_velocity};
-
-int const trajectory_size = 10;
 
 }  // namespace
 
@@ -538,7 +538,9 @@ TEST_F(InterfaceTest, NavballOrientation) {
       principia__NewNavigationFrame(plugin_.get(), parameters);
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
-  EXPECT_CALL(*plugin_, SetPlottingFrameConstRef(Ref(*navigation_frame)));
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
 

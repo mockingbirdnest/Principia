@@ -14,6 +14,7 @@
 #include "ksp_plugin_test/mock_flight_plan.hpp"
 #include "ksp_plugin_test/mock_manœuvre.hpp"
 #include "ksp_plugin_test/mock_plugin.hpp"
+#include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/dynamic_frame.hpp"
@@ -43,6 +44,7 @@ using ksp_plugin::Index;
 using ksp_plugin::MockFlightPlan;
 using ksp_plugin::MockManœuvre;
 using ksp_plugin::MockPlugin;
+using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::WorldSun;
@@ -229,13 +231,18 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
           OrthogonalMap<Barycentric, Navigation>::Identity()),
       AngularVelocity<Barycentric>(),
       Velocity<Barycentric>());
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+  EXPECT_CALL(*plugin_, PlanetariumRotation())
+      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())
       .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
   EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
-  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
+  EXPECT_CALL(renderer, BarycentricToWorldSun(_))
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
       principia__FlightPlanGetManoeuvre(plugin_.get(),
@@ -254,14 +261,16 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(*plugin_, BarycentricToWorldSun())
+
+  EXPECT_CALL(renderer, BarycentricToWorldSun(_))
       .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   EXPECT_CALL(navigation_manœuvre, FrenetFrame())
       .WillOnce(
           Return(OrthogonalMap<Frenet<Navigation>, Barycentric>::Identity()));
-  EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(Instant() - 4 * Second));
-  EXPECT_CALL(*plugin_, GetPlottingFrame())
-      .WillOnce(Return(plotting_frame.get()));
+  EXPECT_CALL(*plugin_, CurrentTime())
+      .WillRepeatedly(Return(Instant() - 4 * Second));
+  EXPECT_CALL(renderer, GetPlottingFrame())
+      .WillRepeatedly(Return(plotting_frame.get()));
   EXPECT_CALL(*plotting_frame, ToThisFrameAtTime(Instant()))
       .WillOnce(Return(barycentric_to_plotting));
   EXPECT_CALL(*plotting_frame, FromThisFrameAtTime(Instant() - 4 * Second))
@@ -299,8 +308,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_CALL(flight_plan, GetSegment(3, _, _))
       .WillOnce(DoAll(SetArgReferee<1>(segment->Begin()),
                       SetArgReferee<2>(segment->End())));
-  EXPECT_CALL(*plugin_, FillRenderedBarycentricTrajectoryInWorld(_, _, _, _))
-      .WillOnce(FillUniquePtr<3>(rendered_trajectory.release()));
+  EXPECT_CALL(renderer,
+              FillRenderedBarycentricTrajectoryInWorld(_, _, _, _, _, _))
+      .WillOnce(FillUniquePtr<5>(rendered_trajectory.release()));
   auto* const iterator =
       principia__FlightPlanRenderedSegment(plugin_.get(),
                                            vessel_guid,
