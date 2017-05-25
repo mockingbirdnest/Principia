@@ -205,7 +205,8 @@ template<typename Tr4jectory, typename It3rator>
 It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
   It3rator iterator;
   Tr4jectory const* ancestor = that();
-  std::experimental::optional<TimelineConstIterator> fork_point;
+  std::deque<std::experimental::optional<TimelineConstIterator>> fork_points;
+  fork_points.push_front(std::experimental::nullopt);
 
   // Go up the ancestry chain until we find a (nonempty) timeline that covers
   // |time| (that is, |time| is on or after the first time of the timeline).
@@ -217,31 +218,43 @@ It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
       // in that timeline (that may be after the end).
       iterator.current_ = ancestor->timeline_lower_bound(time);
 
+      auto const& fork_point = fork_points.front();
       if (iterator.current_ == ancestor->timeline_end() ||
           (fork_point &&
+           *fork_point != ancestor->timeline_end() &&
            ForkableTraits<Tr4jectory>::time(*fork_point) <
                ForkableTraits<Tr4jectory>::time(iterator.current_))) {
         // |time| is after the end of this timeline or after the |fork_point|
         // (if any).  This doesn't necessarily means that we should return an
-        // |End| iterator, though, as there may be a more nested nonempty fork,
+        // |End| iterator, though, as there may be a
+        //more nested nonempty fork,
         // in which case we should return the beginning of that fork.  Go down
         // the ancestry looking for such a nonempty fork (skipping the head of
         // the ancestry as it's the current timeline).  If we find one, cut the
         // ancestry and set the iterator.  Otherwise, we are truly at end and
         // |NormalizeIfEnd| will do the right thing.
+        iterator.current_ == ancestor->timeline_end();
         auto ancestry_it = iterator.ancestry_.begin();
-        while (++ancestry_it != iterator.ancestry_.end() &&
-               (*ancestry_it)->timeline_empty()) {}
-        if (ancestry_it == iterator.ancestry_.end()) {
-          iterator.current_ = ancestor->timeline_end();
-        } else {
-          iterator.ancestry_.erase(iterator.ancestry_.begin(), ancestry_it);
-          iterator.current_ = (*ancestry_it)->timeline_begin();
+        auto fork_points_it = fork_points.begin();
+        for (;;) {
+          ++ancestry_it;
+          ++fork_points_it;
+          if (ancestry_it == iterator.ancestry_.end()) {
+            CHECK(fork_points_it == fork_points.end());
+            break;
+          }
+          if (!((*ancestry_it)->timeline_empty() ||
+                (*fork_points_it &&
+                 **fork_points_it == (*ancestry_it)->timeline_end()))) {
+            iterator.ancestry_.erase(iterator.ancestry_.begin(), ancestry_it);
+            iterator.current_ = (*ancestry_it)->timeline_begin();
+            break;
+          }
         }
       }
       break;
     }
-    fork_point = ancestor->position_in_parent_timeline_;
+    fork_points.push_front(ancestor->position_in_parent_timeline_);
     iterator.current_ = ancestor->timeline_begin();
     ancestor = ancestor->parent_;
   } while (ancestor != nullptr);
