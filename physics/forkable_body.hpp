@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <deque>
 #include <vector>
 
 #include "physics/forkable.hpp"
@@ -248,9 +249,9 @@ It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
             CHECK(fork_points_it == fork_points.end());
             break;
           }
-          if (!((*ancestry_it)->timeline_empty() ||
-                (*fork_points_it &&
-                 **fork_points_it == (*ancestry_it)->timeline_end()))) {
+          if (!(*ancestry_it)->timeline_empty() &&
+                (!*fork_points_it ||
+                 **fork_points_it != (*ancestry_it)->timeline_end())) {
             // We found an interesting timeline, i.e. one that is nonempty and
             // not forked at the fork point of its parent.  Cut the ancestry and
             // return the beginning of that timeline.
