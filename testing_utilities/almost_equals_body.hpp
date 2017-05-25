@@ -25,7 +25,7 @@ inline double NormalizeNaN(double const x) {
   return std::isnan(x) ? std::numeric_limits<double>::quiet_NaN() : x;
 }
 
-inline NormalizedNaNULPDistance(double const x, double const y) {
+inline std::int64_t NormalizedNaNULPDistance(double const x, double const y) {
   return numerics::ULPDistance(NormalizeNaN(x), NormalizeNaN(y));
 }
 
