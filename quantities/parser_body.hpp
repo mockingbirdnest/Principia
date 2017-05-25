@@ -20,7 +20,9 @@ struct ExtractDimensions {};
 
 template<>
 struct ExtractDimensions<double> {
-  constexpr static RuntimeDimensions dimensions = {0, 0, 0, 0, 0, 0, 0, 0};
+  static constexpr RuntimeDimensions dimensions() {
+    return {0, 0, 0, 0, 0, 0, 0, 0};
+  }
 };
 
 template<std::int64_t LengthExponent,
@@ -40,14 +42,16 @@ struct ExtractDimensions<
                                              AmountExponent,
                                              LuminousIntensityExponent,
                                              AngleExponent>>> {
-  constexpr static RuntimeDimensions dimensions = {LengthExponent,
-                                                   MassExponent,
-                                                   TimeExponent,
-                                                   CurrentExponent,
-                                                   TemperatureExponent,
-                                                   AmountExponent,
-                                                   LuminousIntensityExponent,
-                                                   AngleExponent};
+  static constexpr RuntimeDimensions dimensions() {
+    return {LengthExponent,
+            MassExponent,
+            TimeExponent,
+            CurrentExponent,
+            TemperatureExponent,
+            AmountExponent,
+            LuminousIntensityExponent,
+            AngleExponent};
+  }
 };
 
 struct Unit {
@@ -62,7 +66,7 @@ struct Unit {
 
 template<typename Q>
 Unit::Unit(Q const& quantity)
-    : dimensions(ExtractDimensions<Q>::dimensions),
+    : dimensions(ExtractDimensions<Q>::dimensions()),
       scale(quantity / SIUnit<Q>()) {}
 
 inline Unit::Unit(RuntimeDimensions&& dimensions, double const scale)
@@ -211,7 +215,7 @@ Q ParseQuantity(std::string const& s) {
   }
 
   Unit const unit = ParseQuotientUnit(unit_string);
-  CHECK(ExtractDimensions<Q>::dimensions == unit.dimensions);
+  CHECK(ExtractDimensions<Q>::dimensions() == unit.dimensions);
   return magnitude * unit.scale * SIUnit<Q>();
 }
 
