@@ -185,7 +185,7 @@ TEST_F(МолнияOrbitTest, Satellite) {
   EXPECT_GT(correlation_coefficients, -0.99999);
   EXPECT_LT(correlation_coefficients, -0.99998);
 
-  // Check that the longitute precesses at the right speed, mostly.
+  // Check that the longitude precesses at the right speed, mostly.
   AngularFrequency const actual_precession_speed =
       Slope(times, longitudes_of_ascending_nodes);
   Length const semilatus_rectum =
