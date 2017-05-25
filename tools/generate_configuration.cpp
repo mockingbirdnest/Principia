@@ -97,7 +97,7 @@ void GenerateConfiguration(std::string const& game_epoch,
   initial_state_cfg << "principia_initial_state:NEEDS[RealSolarSystem] {\n";
   initial_state_cfg << "  game_epoch = " << game_epoch << "\n";
   initial_state_cfg << "  solar_system_epoch = "
-                    << solar_system.epoch() << "\n";
+                    << solar_system.epoch_literal() << "\n";
   for (std::string const& name : solar_system.names()) {
     serialization::InitialState::Cartesian::Body const& body =
         solar_system.cartesian_initial_state_message(name);

@@ -171,6 +171,11 @@ Instant const& SolarSystem<Frame>::epoch() const {
 }
 
 template<typename Frame>
+std::string const& SolarSystem<Frame>::epoch_literal() const {
+  return initial_state_.epoch();
+}
+
+template<typename Frame>
 std::vector<std::string> const& SolarSystem<Frame>::names() const {
   return names_;
 }
