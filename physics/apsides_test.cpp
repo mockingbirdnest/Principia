@@ -207,7 +207,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .longitude,
                 AlmostEquals(elements.longitude_of_ascending_node, 2, 100));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 1, 19));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 19));
     }
     previous_time = time;
   }
