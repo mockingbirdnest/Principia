@@ -27,7 +27,7 @@ class R3Projective {
   double point_at_infinity() const;
 
   // Returns the Euclidean (non-homegeneous) coordinates of the point.  May be
-  // infinities simultaneously.
+  // infinities.
   Scalar const x() const;
   Scalar const y() const;
 
@@ -44,6 +44,8 @@ class R3Projective {
   friend std::string DebugString(R3Projective<Scalar> const& r3_projective);
 };
 
+// TODO(phl): Improve these operators using |std::fma| so that they define a
+// proper equavalence.
 template<typename Scalar>
 bool operator==(R3Projective<Scalar> const& left,
                 R3Projective<Scalar> const& right);
