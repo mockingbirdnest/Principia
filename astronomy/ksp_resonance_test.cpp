@@ -242,7 +242,7 @@ class KSPResonanceTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
-TEST_F(KSPResonanceTest, Stock) {
+TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   auto const ephemeris = MakeEphemeris();
   ephemeris->Prolong(short_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
@@ -297,7 +297,7 @@ TEST_F(KSPResonanceTest, Stock) {
                "stock");
 }
 
-TEST_F(KSPResonanceTest, Corrected) {
+TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   StabilizeKSP(solar_system_);
 
   auto const ephemeris = MakeEphemeris();
