@@ -185,12 +185,11 @@ TEST_F(МолнияOrbitTest, Satellite) {
   EXPECT_GT(correlation_coefficients, -0.99999);
   EXPECT_LT(correlation_coefficients, -0.99998);
 
-  // Check that the longitute precesses at the right speed, mostly.
+  // Check that the longitude precesses at the right speed, mostly.
   AngularFrequency const actual_precession_speed =
       Slope(times, longitudes_of_ascending_nodes);
-  Length const semilatus_rectum =
-      *initial_orbit.elements_at_epoch().semimajor_axis *
-      (1.0 - Pow<2>(*initial_elements.eccentricity));
+  Length const& semilatus_rectum =
+      *initial_orbit.elements_at_epoch().semilatus_rectum;
   Angle const ΔΩ_per_period = -2.0 * π * Radian * earth_body->j2_over_μ() /
                               (semilatus_rectum * semilatus_rectum) *
                               (3.0 / 2.0) * Cos(initial_elements.inclination);
