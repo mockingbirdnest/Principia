@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <limits>
 #include <string>
 
 #include "geometry/grassmann.hpp"
@@ -20,7 +21,14 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_almost_equals {
 
-using numerics::ULPDistance;
+// Make sure that this matcher treats all NaNs as almost equal to 0 ULPs.
+inline double NormalizeNaN(double const x) {
+  return std::isnan(x) ? std::numeric_limits<double>::quiet_NaN() : x;
+}
+
+inline std::int64_t NormalizedNaNULPDistance(double const x, double const y) {
+  return numerics::ULPDistance(NormalizeNaN(x), NormalizeNaN(y));
+}
 
 template<typename T>
 testing::PolymorphicMatcher<AlmostEqualsMatcher<T>> AlmostEquals(
@@ -57,8 +65,8 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  std::int64_t const distance = ULPDistance(DoubleValue(actual),
-                                            DoubleValue(expected_));
+  std::int64_t const distance =
+      NormalizedNaNULPDistance(DoubleValue(actual), DoubleValue(expected_));
   bool const match =  min_ulps_ <= distance && distance <= max_ulps_;
   if (!match) {
     *listener << "the numbers are separated by " << distance << " ULPs";
@@ -74,7 +82,7 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  std::int64_t const distance = ULPDistance(actual, expected_);
+  std::int64_t const distance = NormalizedNaNULPDistance(actual, expected_);
   bool const match =  min_ulps_ <= distance && distance <= max_ulps_;
   if (!match) {
     *listener << "the numbers are separated by " << distance << " ULPs";
@@ -91,12 +99,12 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  std::int64_t const x_distance = ULPDistance(DoubleValue(actual.x),
-                                              DoubleValue(expected_.x));
-  std::int64_t const y_distance = ULPDistance(DoubleValue(actual.y),
-                                              DoubleValue(expected_.y));
-  std::int64_t const z_distance = ULPDistance(DoubleValue(actual.z),
-                                              DoubleValue(expected_.z));
+  std::int64_t const x_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.x), DoubleValue(expected_.x));
+  std::int64_t const y_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.y), DoubleValue(expected_.y));
+  std::int64_t const z_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.z), DoubleValue(expected_.z));
   std::int64_t const max_distance =
       std::max({x_distance, y_distance, z_distance});
   bool const x_is_max = x_distance == max_distance;
@@ -122,18 +130,17 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
   if (actual == expected_) {
     return MatchAndExplainIdentical(listener);
   }
-  std::int64_t const w_distance = ULPDistance(
-      DoubleValue(actual.real_part()),
-      DoubleValue(expected_.real_part()));
-  std::int64_t const x_distance = ULPDistance(
-      DoubleValue(actual.imaginary_part().x),
-      DoubleValue(expected_.imaginary_part().x));
-  std::int64_t const y_distance = ULPDistance(
-      DoubleValue(actual.imaginary_part().y),
-      DoubleValue(expected_.imaginary_part().y));
-  std::int64_t const z_distance = ULPDistance(
-      DoubleValue(actual.imaginary_part().z),
-      DoubleValue(expected_.imaginary_part().z));
+  std::int64_t const w_distance = NormalizedNaNULPDistance(
+      DoubleValue(actual.real_part()), DoubleValue(expected_.real_part()));
+  std::int64_t const x_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.imaginary_part().x),
+                               DoubleValue(expected_.imaginary_part().x));
+  std::int64_t const y_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.imaginary_part().y),
+                               DoubleValue(expected_.imaginary_part().y));
+  std::int64_t const z_distance =
+      NormalizedNaNULPDistance(DoubleValue(actual.imaginary_part().z),
+                               DoubleValue(expected_.imaginary_part().z));
   bool const w_matches = w_distance <= max_ulps_;
   bool const x_matches = x_distance <= max_ulps_;
   bool const y_matches = y_distance <= max_ulps_;
