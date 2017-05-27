@@ -4,9 +4,9 @@
 #include "geometry/r3_projective.hpp"
 
 #include <cmath>
+#include <string>
 
 #include "quantities/quantities.hpp"
-#include "r3_projective.hpp"
 
 namespace principia {
 namespace geometry {
@@ -51,7 +51,7 @@ double R3Projective<Scalar>::point_at_infinity() const {
 
 template<typename Scalar>
 Scalar const R3Projective<Scalar>::x() const {
-  if (coordinates_.x == Scalar{} && coordinates_.z == 0.0) {
+  if (coordinates_.x == Scalar() && coordinates_.z == 0.0) {
     return Infinity<Scalar>();
   } else {
     return coordinates_.x / coordinates_.z;
@@ -60,7 +60,7 @@ Scalar const R3Projective<Scalar>::x() const {
 
 template<typename Scalar>
 Scalar const R3Projective<Scalar>::y() const {
-  if (coordinates_.y == Scalar{} && coordinates_.z == 0.0) {
+  if (coordinates_.y == Scalar() && coordinates_.z == 0.0) {
     return Infinity<Scalar>();
   } else {
     return coordinates_.y / coordinates_.z;

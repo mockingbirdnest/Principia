@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <string>
+
 #include "geometry/r3_element.hpp"
 
 namespace principia {
