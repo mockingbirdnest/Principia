@@ -31,6 +31,7 @@ using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
+using physics::RigidTransformation;
 using quantities::Length;
 
 class Renderer {
@@ -100,7 +101,7 @@ class Renderer {
   virtual RigidMotion<Barycentric, Navigation> BarycentricToPlotting(
       Instant const& time) const;
 
-  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
+  virtual RigidTransformation<Barycentric, World> BarycentricToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -127,7 +128,19 @@ class Renderer {
   virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
-  virtual RigidMotion<Navigation, World> PlottingToWorld(
+  // This function does unnatural things.  It identifies positions in the
+  // plotting frame with those of world using the rigid transformation at the
+  // given |time|, but instead of applying the full rigid motion and
+  // consistently transforming the velocities, it simply applies a linear
+  // transformation to the latter.  The resulting |DegreesOfFreedom| should be
+  // seen as no more than a convenient hack to send a plottable position
+  // together with a velocity in the right coordinates.
+  // TODO(phl): This will no longer be needed once we have support for
+  // projections; instead of these convenient lies we can simply say that the
+  // camera is fixed in the plotting frame and project there; additional data
+  // can be gathered from the velocities as needed and sent directly to be shown
+  // in markers.
+  virtual RigidMotion<Navigation, World> PlottingAsWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -136,7 +149,7 @@ class Renderer {
       Instant const& time,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual RigidMotion<World, Barycentric> WorldToBarycentric(
+  virtual RigidTransformation<World, Barycentric> WorldToBarycentric(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -144,7 +157,7 @@ class Renderer {
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual RigidMotion<World, Navigation> WorldToPlotting(
+  virtual RigidTransformation<World, Navigation> WorldToPlotting(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;

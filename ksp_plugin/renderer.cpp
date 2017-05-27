@@ -123,7 +123,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
 
   RigidMotion<Navigation, World> const
       from_plotting_frame_to_world_at_current_time =
-          PlottingToWorld(time, sun_world_position, planetarium_rotation);
+          PlottingAsWorld(time, sun_world_position, planetarium_rotation);
   for (auto it = begin; it != end; ++it) {
     DegreesOfFreedom<Navigation> const& navigation_degrees_of_freedom =
         it.degrees_of_freedom();
@@ -141,17 +141,14 @@ RigidMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
   return GetPlottingFrame()->ToThisFrameAtTime(time);
 }
 
-RigidMotion<Barycentric, World> Renderer::BarycentricToWorld(
+RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return RigidMotion<Barycentric, World>(
-      RigidTransformation<Barycentric, World>(
-          sun_->current_position(time),
-          sun_world_position,
-          BarycentricToWorld(planetarium_rotation)),
-      AngularVelocity<Barycentric>{},
-      Velocity<Barycentric>{});
+  return RigidTransformation<Barycentric, World>(
+      sun_->current_position(time),
+      sun_world_position,
+      BarycentricToWorld(planetarium_rotation));
 }
 
 OrthogonalMap<Barycentric, World> Renderer::BarycentricToWorld(
@@ -199,12 +196,16 @@ OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(
   return GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map();
 }
 
-RigidMotion<Navigation, World> Renderer::PlottingToWorld(
+RigidMotion<Navigation, World> Renderer::PlottingAsWorld(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return BarycentricToWorld(time, sun_world_position, planetarium_rotation) *
-         GetPlottingFrame()->FromThisFrameAtTime(time);
+  return RigidMotion<Navigation, World>{
+      /*rigid_transformation=*/BarycentricToWorld(
+          time, sun_world_position, planetarium_rotation) *
+          GetPlottingFrame()->FromThisFrameAtTime(time).rigid_transformation(),
+      AngularVelocity<Navigation>{},
+      Velocity<Navigation>{}};
 }
 
 OrthogonalMap<Navigation, World> Renderer::PlottingToWorld(
@@ -214,7 +215,7 @@ OrthogonalMap<Navigation, World> Renderer::PlottingToWorld(
          PlottingToBarycentric(time);
 }
 
-RigidMotion<World, Barycentric> Renderer::WorldToBarycentric(
+RigidTransformation<World, Barycentric> Renderer::WorldToBarycentric(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
@@ -227,11 +228,11 @@ OrthogonalMap<World, Barycentric> Renderer::WorldToBarycentric(
   return BarycentricToWorld(planetarium_rotation).Inverse();
 }
 
-RigidMotion<World, Navigation> Renderer::WorldToPlotting(
+RigidTransformation<World, Navigation> Renderer::WorldToPlotting(
     Instant const& time,
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
-  return BarycentricToPlotting(time) *
+  return BarycentricToPlotting(time).rigid_transformation() *
          WorldToBarycentric(time, sun_world_position, planetarium_rotation);
 }
 
