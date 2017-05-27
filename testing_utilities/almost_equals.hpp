@@ -48,9 +48,10 @@ class AlmostEqualsMatcher final {
                        testing::MatchResultListener* listener) const;
   bool MatchAndExplain(double actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar>
-  bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
-                       testing::MatchResultListener* listener) const;
+  template<typename ScalarX, typename ScalarY, typename ScalarZ>
+  bool MatchAndExplain(
+      geometry::R3Element<ScalarX, ScalarY, ScalarZ> const& actual,
+      testing::MatchResultListener* listener) const;
   bool MatchAndExplain(geometry::Quaternion const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar, typename Frame>

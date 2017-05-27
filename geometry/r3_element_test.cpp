@@ -16,7 +16,12 @@
 
 namespace principia {
 
+using quantities::Amount;
+using quantities::CatalyticActivity;
+using quantities::Energy;
+using quantities::Frequency;
 using quantities::Length;
+using quantities::Power;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
@@ -26,11 +31,16 @@ using quantities::bipm::Knot;
 using quantities::constants::SpeedOfLight;
 using quantities::si::Day;
 using quantities::si::Degree;
+using quantities::si::Hertz;
 using quantities::si::Hour;
+using quantities::si::Joule;
+using quantities::si::Katal;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Minute;
+using quantities::si::Mole;
 using quantities::si::Second;
+using quantities::si::Watt;
 using quantities::uk::Furlong;
 using quantities::uk::Mile;
 using quantities::uk::Rod;
@@ -63,8 +73,8 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
   // Sorry about the preprocessing, the regex are not powerful enough to work in
   // both cases.
 #ifdef PRINCIPIA_COMPILER_MSVC
-  static char const const_method[] =  "\\(int\\) const\\:";
-  static char const non_const_method[] =  "\\(int\\)\\:";
+  static char const const_method[] =  "\\(const int\\) const\\:";
+  static char const non_const_method[] =  "\\(const int\\)\\:";
 #elif PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
   char const const_method[] =  "\\(int\\) const \\[";
   char const non_const_method[] =  "\\(int\\) \\[";
@@ -224,6 +234,18 @@ TEST_F(R3ElementTest, SphericalCoordinates) {
               Componentwise(VanishesBefore(1 * Metre, 0),
                             VanishesBefore(1 * Metre, 0),
                             Eq(1 * Metre)));
+}
+
+TEST_F(R3ElementTest, Nonnormed) {
+  R3Element<double, Energy, Amount> a{1, 1 * Joule, 1 * Mole};
+  a /= 2;
+  EXPECT_THAT(a,
+              AlmostEquals(R3Element<double, Energy, Amount>{
+                               0.5, 0.5 * Joule, 0.5 * Mole}, 0));
+  R3Element<Frequency, Power, CatalyticActivity> b = a / (2 * Second);
+  EXPECT_THAT(b,
+              AlmostEquals(R3Element<Frequency, Power, CatalyticActivity>({
+                               0.25 * Hertz, 0.25 * Watt, 0.25 * Katal}), 0));
 }
 
 }  // namespace geometry

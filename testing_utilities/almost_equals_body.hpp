@@ -83,9 +83,9 @@ bool AlmostEqualsMatcher<T>::MatchAndExplain(
 }
 
 template<typename T>
-template<typename Scalar>
+template<typename ScalarX, typename ScalarY, typename ScalarZ>
 bool AlmostEqualsMatcher<T>::MatchAndExplain(
-    geometry::R3Element<Scalar> const& actual,
+    geometry::R3Element<ScalarX, ScalarY, ScalarZ> const& actual,
     testing::MatchResultListener* listener) const {
   // Check that the types are equality-comparable up to implicit casts.
   if (actual == expected_) {

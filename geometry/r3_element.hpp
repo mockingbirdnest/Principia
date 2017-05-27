@@ -51,9 +51,11 @@ struct R3Element final {
   R3Element();
   R3Element(ScalarX const& x, ScalarY const& y, ScalarZ const& z);
 
-  typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::
-  Scalar&       operator[](int index);
-  typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::
+  template<typename Scalar =
+               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+  Scalar& operator[](int index);
+  template<typename Scalar =
+               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   Scalar const& operator[](int index) const;
 
   R3Element& operator+=(R3Element const& right);
@@ -61,22 +63,24 @@ struct R3Element final {
   R3Element& operator*=(double right);
   R3Element& operator/=(double right);
 
-  typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::
+  template<typename Scalar =
+               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   Scalar Norm() const;
 
   // Returns a vector coplanar to |*this| and |r3_element|, orthogonal to
   // |r3_element|, and on the same side of |r3_element| as |*this|.
   // Uses the modified Gram-Schmidt algorithm.  Fails if |r3_element| is zero.
-  template<typename S>
-  R3Element<
-      typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
-  OrthogonalizationAgainst(R3Element<S> const& r3_element) const;
+  template<typename S,
+           typename Scalar =
+               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+  R3Element<Scalar> OrthogonalizationAgainst(
+      R3Element<S> const& r3_element) const;
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.
-  SphericalCoordinates<typename enable_if_normed<
-      R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
-  ToSpherical() const;
+  template<typename Scalar =
+               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+  SphericalCoordinates<Scalar> ToSpherical() const;
 
   void WriteToMessage(not_null<serialization::R3Element*> message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);

@@ -35,8 +35,8 @@ R3Element<ScalarX, ScalarY, ScalarZ>::R3Element(ScalarX const& x,
     : x(x), y(y), z(z) {}
 
 template<typename ScalarX, typename ScalarY, typename ScalarZ>
-typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar&
-R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) {
+template<typename Scalar>
+Scalar& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) {
   switch (index) {
     case 0:
       return x;
@@ -51,8 +51,9 @@ R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) {
 }
 
 template<typename ScalarX, typename ScalarY, typename ScalarZ>
-typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar const&
-R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) const {
+template<typename Scalar>
+Scalar const& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](
+    int const index) const {
   switch (index) {
     case 0:
       return x;
@@ -103,15 +104,14 @@ operator/=(double const right) {
 }
 
 template<typename ScalarX, typename ScalarY, typename ScalarZ>
-typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar
-R3Element<ScalarX, ScalarY, ScalarZ>::Norm() const {
+template<typename Scalar>
+Scalar R3Element<ScalarX, ScalarY, ScalarZ>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
 }
 
 template<typename ScalarX, typename ScalarY, typename ScalarZ>
-template<typename S>
-R3Element<
-    typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+template<typename S, typename Scalar>
+R3Element<Scalar>
 R3Element<ScalarX, ScalarY, ScalarZ>::OrthogonalizationAgainst(
     R3Element<S> const& r3_element) const {
   R3Element<double> const r3_element_normalized = Normalize(r3_element);
@@ -119,12 +119,10 @@ R3Element<ScalarX, ScalarY, ScalarZ>::OrthogonalizationAgainst(
 }
 
 template<typename ScalarX, typename ScalarY, typename ScalarZ>
-SphericalCoordinates<
-    typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
-R3Element<ScalarX, ScalarY, ScalarZ>::ToSpherical() const {
-  SphericalCoordinates<
-      typename enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
-      result;
+template<typename Scalar>
+SphericalCoordinates<Scalar> R3Element<ScalarX, ScalarY, ScalarZ>::ToSpherical()
+    const {
+  SphericalCoordinates<Scalar> result;
   result.radius = Norm();
   result.latitude = ArcSin(z / result.radius);
   result.longitude = ArcTan(y, x);
