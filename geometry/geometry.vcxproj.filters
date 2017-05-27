@@ -113,16 +113,10 @@
     <ClInclude Include="serialization_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="perspective.hpp">
+    <ClInclude Include="rp2_element.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="r3_projective.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="r3_projective_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="perspective_body.hpp">
+    <ClInclude Include="rp2_element_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -169,7 +163,7 @@
     <ClCompile Include="frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="r3_projective_test.cpp">
+    <ClCompile Include="rp2_element_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

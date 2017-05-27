@@ -1,5 +1,5 @@
 
-#include "geometry/r3_projective.hpp"
+#include "geometry/rp2_element.hpp"
 
 #include <limits>
 
@@ -11,23 +11,22 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_r3_projective {
+namespace internal_rp2_element {
 
 using quantities::Infinity;
 using quantities::Length;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 
-class R3ProjectiveTest : public ::testing::Test {};
+class RP2ElementTest : public ::testing::Test {};
 
-TEST_F(R3ProjectiveTest, Basic) {
-  R3Projective<Length> p1({1.0 * Metre, 2.0 * Metre, 3.0});
-  R3Projective<Length> p2({2.0 * Metre, 4.0 * Metre, 6.0});
-  R3Projective<Length> p3({2.0 * Metre, 4.0 * Metre, 5.0});
-  R3Projective<Length> p4({1.0 * Metre, 2.0 * Metre, 0.0});
-  R3Projective<Length> p5({2.0 * Metre, 4.0 * Metre, 0.0});
-  R3Projective<Length> p6({0.0 * Metre, -4.0 * Metre, 0.0});
-  auto b = p1 == p2;
+TEST_F(RP2ElementTest, Basic) {
+  RP2Element<Length> p1(1.0 * Metre, 2.0 * Metre, 3.0);
+  RP2Element<Length> p2(2.0 * Metre, 4.0 * Metre, 6.0);
+  RP2Element<Length> p3(2.0 * Metre, 4.0 * Metre, 5.0);
+  RP2Element<Length> p4(1.0 * Metre, 2.0 * Metre, 0.0);
+  RP2Element<Length> p5(2.0 * Metre, 4.0 * Metre, 0.0);
+  RP2Element<Length> p6(0.0 * Metre, -4.0 * Metre, 0.0);
 
   // Basic equality.
   EXPECT_EQ(p1, p2);
@@ -42,10 +41,6 @@ TEST_F(R3ProjectiveTest, Basic) {
   EXPECT_TRUE(p4.is_at_infinity());
   EXPECT_TRUE(p5.is_at_infinity());
   EXPECT_TRUE(p6.is_at_infinity());
-  EXPECT_THAT(p4.point_at_infinity(), AlmostEquals(2.0, 0));
-  EXPECT_THAT(p5.point_at_infinity(), AlmostEquals(2.0, 0));
-  EXPECT_THAT(p6.point_at_infinity(),
-              AlmostEquals(std::numeric_limits<double>::infinity(), 0));
 
   // Euclidean coordinates.
   EXPECT_THAT(p1.x(), AlmostEquals(1.0 / 3.0 * Metre, 0));
@@ -62,6 +57,6 @@ TEST_F(R3ProjectiveTest, Basic) {
   EXPECT_THAT(p6.y(), AlmostEquals(-Infinity<Length>(), 0));
 }
 
-}  // namespace internal_r3_projective
+}  // namespace internal_rp2_element
 }  // namespace geometry
 }  // namespace principia
