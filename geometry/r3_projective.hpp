@@ -40,6 +40,8 @@ class R3Projective {
   template<typename S>
   friend bool operator!=(R3Projective<S> const& left,
                          R3Projective<S> const& right);
+  template<typename Scalar>
+  friend std::string DebugString(R3Projective<Scalar> const& r3_projective);
 };
 
 template<typename Scalar>
@@ -48,6 +50,13 @@ bool operator==(R3Projective<Scalar> const& left,
 template<typename Scalar>
 bool operator!=(R3Projective<Scalar> const& left,
                 R3Projective<Scalar> const& right);
+
+template<typename Scalar>
+std::string DebugString(R3Projective<Scalar> const& r3_projective);
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& os,
+                         R3Projective<Scalar> const& r3_projective);
 
 }  // namespace internal_r3_projective
 }  // namespace geometry

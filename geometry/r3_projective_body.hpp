@@ -6,6 +6,7 @@
 #include <cmath>
 
 #include "quantities/quantities.hpp"
+#include "r3_projective.hpp"
 
 namespace principia {
 namespace geometry {
@@ -84,6 +85,18 @@ template<typename Scalar>
 bool operator!=(R3Projective<Scalar> const& left,
                 R3Projective<Scalar> const& right) {
   return !(left == right);
+}
+
+template<typename Scalar>
+std::string DebugString(R3Projective<Scalar> const & r3_projective) {
+  return DebugString(r3_projective.coordinates_);
+}
+
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& os,
+                         R3Projective<Scalar> const& r3_projective) {
+  os << DebugString(r3_projective);
+  return os;
 }
 
 }  // namespace internal_r3_projective
