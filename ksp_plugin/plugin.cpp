@@ -898,8 +898,7 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
       Position<Navigation> const q_in_plotting =
           renderer.WorldToPlotting(current_time,
                                    sun_world_position_,
-                                   planetarium_rotation).
-              rigid_transformation()(q);
+                                   planetarium_rotation)(q);
 
       OrthogonalMap<RightHandedNavball, Barycentric> const
           right_handed_navball_to_barycentric =
@@ -908,10 +907,10 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
                         navigation_right_handed_field_->
                             FromThisFrame(q_in_plotting).Forget()
                   : barycentric_right_handed_field_->FromThisFrame(
-                        renderer.WorldToBarycentric(current_time,
-                                                    sun_world_position_,
-                                                    planetarium_rotation).
-                            rigid_transformation()(q)).Forget();
+                        renderer.WorldToBarycentric(
+                            current_time,
+                            sun_world_position_,
+                            planetarium_rotation)(q)).Forget();
 
       // KSP's navball has x west, y up, z south.
       // We want x north, y east, z down.
@@ -1236,7 +1235,8 @@ void Plugin::UpdatePlanetariumRotation() {
 void Plugin::UpdatePredictionForRendering(std::int64_t const size) const {
   auto& vessel = renderer_->GetTargetVessel();
   auto parameters = vessel.prediction_adaptive_step_parameters();
-  parameters.set_max_steps(size);
+  // Adding one to ensure that we set a strictly positive max_steps.
+  parameters.set_max_steps(size + 1);
   vessel.set_prediction_adaptive_step_parameters(parameters);
   vessel.UpdatePrediction(current_time_ + prediction_length_);
 }
