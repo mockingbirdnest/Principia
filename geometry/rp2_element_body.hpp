@@ -18,7 +18,7 @@ using quantities::Square;
 
 template<typename Scalar>
 RP2Element<Scalar>::RP2Element(
-    Scalar const& x, Scalar const& y, double z)
+    Scalar const& x, Scalar const& y, double const z)
     : x_(x), y_(y), z_(z) {
   // [0:0:0] does not represent any point but we cannot reject it as it may
   // result from an underflow or a cancellation.
