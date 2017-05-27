@@ -160,9 +160,10 @@ internal class MapNodePool {
                                   MapObject.ObjectType.AscendingNode
                               ? "Ascending Node"
                               : "Descending Node";
-            // TODO(egg): We should show some useful information here, perhaps
-            // out-of-plane (z) speed.
             caption.Header = name;
+            caption.captionLine2 =
+                properties_[node].velocity.z.ToString("N0", Culture.culture) +
+                " m/s out of plane";
           } else if (properties_[node].object_type ==
                      MapObject.ObjectType.ApproachIntersect) {
             caption.Header = "Target Approach : <color=" +
