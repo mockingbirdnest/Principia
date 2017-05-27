@@ -52,10 +52,12 @@ struct R3Element final {
   R3Element(ScalarX const& x, ScalarY const& y, ScalarZ const& z);
 
   template<typename Scalar =
-               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+               typename enable_if_normed<
+                   R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   Scalar& operator[](int index);
   template<typename Scalar =
-               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+               typename enable_if_normed<
+                   R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   Scalar const& operator[](int index) const;
 
   R3Element& operator+=(R3Element const& right);
@@ -64,7 +66,8 @@ struct R3Element final {
   R3Element& operator/=(double right);
 
   template<typename Scalar =
-               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+               typename enable_if_normed<
+                   R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   Scalar Norm() const;
 
   // Returns a vector coplanar to |*this| and |r3_element|, orthogonal to
@@ -72,14 +75,16 @@ struct R3Element final {
   // Uses the modified Gram-Schmidt algorithm.  Fails if |r3_element| is zero.
   template<typename S,
            typename Scalar =
-               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+               typename enable_if_normed<
+                   R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   R3Element<Scalar> OrthogonalizationAgainst(
       R3Element<S> const& r3_element) const;
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.
   template<typename Scalar =
-               enable_if_normed<R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
+               typename enable_if_normed<
+                   R3Element<ScalarX, ScalarY, ScalarZ>>::Scalar>
   SphericalCoordinates<Scalar> ToSpherical() const;
 
   void WriteToMessage(not_null<serialization::R3Element*> message) const;

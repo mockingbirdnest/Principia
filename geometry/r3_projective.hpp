@@ -5,6 +5,7 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_r3_projective {
 
 // An |R3Projective| is an element of ℝP², the real projective plane.  |Scalar|
 // must be a 1-dimensional vector space over ℝ, typically represented by
@@ -19,8 +20,10 @@ class R3Projective {
   // Returns true if and only if the point is at infinity.
   bool is_at_infinity() const;
 
-  // If the point is at infinity, returns a value that uniquely identifies it
-  // among all the points at infinity.
+  // If the point is at infinity, returns a value that identifies it among all
+  // the points at infinity.  Note that this identification is not unique, so
+  // the comparison of the values returned by this function is not an
+  // equivalence on the projective plane.
   double point_at_infinity() const;
 
   // Returns the Euclidean (non-homegeneous) coordinates of the point.  May be
@@ -31,10 +34,12 @@ class R3Projective {
  private:
   R3Element<Scalar, Scalar, double> coordinates_;
 
-  friend bool operator==(R3Projective<Scalar> const& left,
-                         R3Projective<Scalar> const& right);
-  friend bool operator!=(R3Projective<Scalar> const& left,
-                         R3Projective<Scalar> const& right);
+  template<typename S>
+  friend bool operator==(R3Projective<S> const& left,
+                         R3Projective<S> const& right);
+  template<typename S>
+  friend bool operator!=(R3Projective<S> const& left,
+                         R3Projective<S> const& right);
 };
 
 template<typename Scalar>
@@ -44,6 +49,7 @@ template<typename Scalar>
 bool operator!=(R3Projective<Scalar> const& left,
                 R3Projective<Scalar> const& right);
 
+}  // namespace internal_r3_projective
 }  // namespace geometry
 }  // namespace principia
 

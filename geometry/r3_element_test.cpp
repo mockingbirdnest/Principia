@@ -4,6 +4,7 @@
 #include <functional>
 
 #include "glog/logging.h"
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
@@ -15,6 +16,7 @@
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
+namespace geometry {
 
 using quantities::Amount;
 using quantities::CatalyticActivity;
@@ -48,8 +50,6 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
-
-namespace geometry {
 
 class R3ElementTest : public testing::Test {
  protected:

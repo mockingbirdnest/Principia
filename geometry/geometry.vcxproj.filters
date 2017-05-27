@@ -169,5 +169,8 @@
     <ClCompile Include="frame_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="r3_projective_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
