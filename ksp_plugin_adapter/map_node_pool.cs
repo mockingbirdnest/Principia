@@ -48,12 +48,13 @@ internal class MapNodePool {
                                      CelestialBody celestial) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
-      Vector3d apsis = (Vector3d)apsis_iterator.IteratorGetXYZ();
+      QP apsis = apsis_iterator.IteratorGetQP();
       MapNodeProperties node_properties;
       node_properties.object_type = type;
       node_properties.vessel = vessel;
       node_properties.celestial = celestial;
-      node_properties.world_position = apsis;
+      node_properties.world_position = (Vector3d)apsis.q;
+      node_properties.velocity = (Vector3d)apsis.p;
       node_properties.source = source;
       node_properties.time = apsis_iterator.IteratorGetTime();
 
@@ -147,6 +148,10 @@ internal class MapNodePool {
                     properties_[node].world_position).ToString(
                         "N0",
                         Culture.culture) + " m</color>";
+            caption.captionLine2 =
+                properties_[node].velocity.magnitude.ToString("N0",
+                                                              Culture.culture) +
+                " m/s";
           } else if (properties_[node].object_type ==
                          MapObject.ObjectType.AscendingNode ||
                      properties_[node].object_type ==
@@ -166,6 +171,10 @@ internal class MapNodePool {
                               properties_[node].world_position)
                                  .magnitude.ToString("N0", Culture.culture) +
                              " m</color>";
+            caption.captionLine2 =
+                properties_[node].velocity.magnitude.ToString("N0",
+                                                              Culture.culture) +
+                " m/s";
           }
           caption.captionLine1 =
               "T" +
@@ -178,6 +187,7 @@ internal class MapNodePool {
                              " Impact<color=" +
                              XKCDColors.HexFormat.Chartreuse + "></color>";
             caption.captionLine1 = "";
+            caption.captionLine2 = "";
           }
           switch (properties_[node].source) {
             case NodeSource.FLIGHT_PLAN:
@@ -201,6 +211,8 @@ internal class MapNodePool {
   private struct MapNodeProperties {
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
+    // Velocity in the plotting frame, expressed in the coordinates of World.
+    public Vector3d velocity;
     public Vessel vessel;
     public CelestialBody celestial;
     public NodeSource source;
