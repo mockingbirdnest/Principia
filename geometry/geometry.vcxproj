@@ -293,6 +293,7 @@
     <ClInclude Include="pair.hpp" />
     <ClInclude Include="pair_body.hpp" />
     <ClInclude Include="perspective.hpp" />
+    <ClInclude Include="perspective_body.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />

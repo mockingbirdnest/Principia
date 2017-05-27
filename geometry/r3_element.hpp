@@ -25,7 +25,7 @@ struct SphericalCoordinates;
 
 // An |R3Element<Scalar>| is an element of Scalar³. |Scalar| should be a vector
 // space over ℝ, represented by |double|. |R3Element| is the underlying data
-// type for more advanced strongly typed structures suchas |Multivector|.
+// type for more advanced strongly typed structures such as |Multivector|.
 template<typename Scalar>
 struct R3Element final {
  public:
