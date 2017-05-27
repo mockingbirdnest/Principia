@@ -212,7 +212,9 @@ internal class MapNodePool {
   private struct MapNodeProperties {
     public MapObject.ObjectType object_type;
     public Vector3d world_position;
-    // Velocity in the plotting frame, expressed in the coordinates of World.
+     // Velocity in the plotting frame.  Note that the handedness is
+     // inconsistent with World; for practical purposes only the norm or
+     // individual coordinates of this vector should be used here.
     public Vector3d velocity;
     public Vessel vessel;
     public CelestialBody celestial;
