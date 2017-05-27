@@ -14,13 +14,14 @@ namespace internal_rp2_element {
 
 using quantities::DebugString;
 using quantities::Infinity;
+using quantities::Square;
 
 template<typename Scalar>
 RP2Element<Scalar>::RP2Element(
     Scalar const& x, Scalar const& y, double z)
     : x_(x), y_(y), z_(z) {
-  // [0:0:0] does not represent any point.
-  CHECK(x != Scalar() || y != Scalar() || z != 0.0);
+  // [0:0:0] does not represent any point but we cannot reject it as it may
+  // result from an underflow or a cancellation.
 
   // Normalize the sign of |z_| so that we return consistently-signed infinities
   // in the functions below.
@@ -39,7 +40,8 @@ bool RP2Element<Scalar>::is_at_infinity() const {
 template<typename Scalar>
 Scalar const RP2Element<Scalar>::x() const {
   if (x_ == Scalar() && z_ == 0.0) {
-    return Infinity<Scalar>();
+    // Returns an infinity of the right sign.
+    return Infinity<Square<Scalar>>() / x_;
   } else {
     return x_ / z_;
   }
@@ -48,7 +50,8 @@ Scalar const RP2Element<Scalar>::x() const {
 template<typename Scalar>
 Scalar const RP2Element<Scalar>::y() const {
   if (y_ == Scalar() && z_ == 0.0) {
-    return Infinity<Scalar>();
+    // Returns an infinity of the right sign.
+    return Infinity<Square<Scalar>>() / y_;
   } else {
     return y_ / z_;
   }
@@ -57,11 +60,19 @@ Scalar const RP2Element<Scalar>::y() const {
 template<typename Scalar>
 bool operator==(RP2Element<Scalar> const& left,
                 RP2Element<Scalar> const& right) {
-  if (left.z_ == 0.0 && right.z_ == 0.0) {
-    return left.x_ * right.y_ == right.x_ * left.y_;
+  bool const left_is_singular =
+      left.x_ == Scalar() && left.y_ == Scalar() && left.z_ == 0.0;
+  bool const right_is_singular =
+      right.x_ == Scalar() && right.y_ == Scalar() && right.z_ == 0.0;
+  if (left_is_singular || right_is_singular) {
+    return left_is_singular && right_is_singular;
   } else {
-    return left.x_ * right.z_ == right.x_ * left.z_ &&
-           left.y_ * right.z_ == right.y_ * left.z_;
+    if (left.z_ == 0.0 && right.z_ == 0.0) {
+      return left.x_ * right.y_ == right.x_ * left.y_;
+    } else {
+      return left.x_ * right.z_ == right.x_ * left.z_ &&
+             left.y_ * right.z_ == right.y_ * left.z_;
+    }
   }
 }
 

@@ -27,12 +27,14 @@ TEST_F(RP2ElementTest, Basic) {
   RP2Element<Length> p4(1.0 * Metre, 2.0 * Metre, 0.0);
   RP2Element<Length> p5(2.0 * Metre, 4.0 * Metre, 0.0);
   RP2Element<Length> p6(0.0 * Metre, -4.0 * Metre, 0.0);
+  RP2Element<Length> p7(0.0 * Metre, -0.0 * Metre, -0.0);
 
   // Basic equality.
   EXPECT_EQ(p1, p2);
   EXPECT_NE(p1, p3);
   EXPECT_EQ(p4, p5);
   EXPECT_NE(p4, p6);
+  EXPECT_NE(p4, p7);
 
   // Infinities.
   EXPECT_FALSE(p1.is_at_infinity());
@@ -41,6 +43,7 @@ TEST_F(RP2ElementTest, Basic) {
   EXPECT_TRUE(p4.is_at_infinity());
   EXPECT_TRUE(p5.is_at_infinity());
   EXPECT_TRUE(p6.is_at_infinity());
+  EXPECT_TRUE(p7.is_at_infinity());
 
   // Euclidean coordinates.
   EXPECT_THAT(p1.x(), AlmostEquals(1.0 / 3.0 * Metre, 0));
@@ -55,6 +58,8 @@ TEST_F(RP2ElementTest, Basic) {
   EXPECT_THAT(p5.y(), AlmostEquals(Infinity<Length>(), 0));
   EXPECT_THAT(p6.x(), AlmostEquals(Infinity<Length>(), 0));
   EXPECT_THAT(p6.y(), AlmostEquals(-Infinity<Length>(), 0));
+  EXPECT_THAT(p7.x(), AlmostEquals(-Infinity<Length>(), 0));
+  EXPECT_THAT(p7.y(), AlmostEquals(Infinity<Length>(), 0));
 }
 
 }  // namespace internal_rp2_element

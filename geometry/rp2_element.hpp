@@ -13,15 +13,16 @@ namespace internal_rp2_element {
 template<typename Scalar>
 class RP2Element {
  public:
-  // Constructs a point from a set of homogeneous coordinates.  The
-  // coordinates may not all be zero.
+  // Constructs a point from a set of homogeneous coordinates.  This class
+  // handles zeros properly and returns infinities of the correct sign.
   explicit RP2Element(Scalar const& x, Scalar const& y, double z);
 
   // Returns true if and only if the point is at infinity.
   bool is_at_infinity() const;
 
   // Returns the Euclidean (inhomogeneous) coordinates of the point.  May be
-  // infinities.
+  // (simultaneously) infinities.  The sign of infinities and zeroes is in the
+  // proper quadrant.
   Scalar const x() const;
   Scalar const y() const;
 
