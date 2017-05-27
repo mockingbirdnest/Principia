@@ -9,6 +9,11 @@ namespace quantities {
 // friendships otherwise become impossible to untangle.
 namespace internal_quantities {
 
+// Equivalent to |std::abs(x)|.
+double Abs(double x);
+template<typename D>
+Quantity<D> Abs(Quantity<D> const& x);
+
 // We need this for templates, for consistency with the dimensionful Sqrt.
 // Equivalent to |std::sqrt(x)|.
 double Sqrt(double x);
@@ -18,6 +23,13 @@ SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
 double Cbrt(double x);
 template<typename D>
 CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x);
+
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
+// explicit specialization yields multiplications statically.
+template<int exponent>
+constexpr double Pow(double x);
+template<int exponent, typename D>
+constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);
