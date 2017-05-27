@@ -25,18 +25,16 @@ using quantities::Sin;
 using quantities::SIUnit;
 
 // We want zero initialization here, so the default constructor won't do.
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>::R3Element() : x(), y(), z() {}
-
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>::R3Element(ScalarX const& x,
-                                                ScalarY const& y,
-                                                ScalarZ const& z)
-    : x(x), y(y), z(z) {}
-
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
 template<typename Scalar>
-Scalar& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) {
+R3Element<Scalar>::R3Element() : x(), y(), z() {}
+
+template<typename Scalar>
+R3Element<Scalar>::R3Element(Scalar const& x,
+                             Scalar const& y,
+                             Scalar const& z) : x(x), y(y), z(z) {}
+
+template<typename Scalar>
+Scalar& R3Element<Scalar>::operator[](int const index) {
   switch (index) {
     case 0:
       return x;
@@ -50,9 +48,8 @@ Scalar& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](int const index) {
   }
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
 template<typename Scalar>
-Scalar const& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](
+Scalar const& R3Element<Scalar>::operator[](
     int const index) const {
   switch (index) {
     case 0:
@@ -67,61 +64,47 @@ Scalar const& R3Element<ScalarX, ScalarY, ScalarZ>::operator[](
   }
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>& R3Element<ScalarX, ScalarY, ScalarZ>::
-operator+=(R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
+template<typename Scalar>
+R3Element<Scalar>& R3Element<Scalar>::operator+=(
+    R3Element<Scalar> const& right) {
   x += right.x;
   y += right.y;
   z += right.z;
   return *this;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>& R3Element<ScalarX, ScalarY, ScalarZ>::
-operator-=(R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
+template<typename Scalar>
+R3Element<Scalar>& R3Element<Scalar>::operator-=(
+    R3Element<Scalar> const& right) {
   x -= right.x;
   y -= right.y;
   z -= right.z;
   return *this;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>& R3Element<ScalarX, ScalarY, ScalarZ>::
-operator*=(double const right) {
+template<typename Scalar>
+R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
   x *= right;
   y *= right;
   z *= right;
   return *this;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>& R3Element<ScalarX, ScalarY, ScalarZ>::
-operator/=(double const right) {
+template<typename Scalar>
+R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
   x /= right;
   y /= right;
   z /= right;
   return *this;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
 template<typename Scalar>
-Scalar R3Element<ScalarX, ScalarY, ScalarZ>::Norm() const {
+Scalar R3Element<Scalar>::Norm() const {
   return quantities::Sqrt(Dot(*this, *this));
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-template<typename S, typename Scalar>
-R3Element<Scalar>
-R3Element<ScalarX, ScalarY, ScalarZ>::OrthogonalizationAgainst(
-    R3Element<S> const& r3_element) const {
-  R3Element<double> const r3_element_normalized = Normalize(r3_element);
-  return *this - Dot(*this, r3_element_normalized) * r3_element_normalized;
-}
-
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
 template<typename Scalar>
-SphericalCoordinates<Scalar> R3Element<ScalarX, ScalarY, ScalarZ>::ToSpherical()
-    const {
+SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   SphericalCoordinates<Scalar> result;
   result.radius = Norm();
   result.latitude = ArcSin(z / result.radius);
@@ -129,33 +112,32 @@ SphericalCoordinates<Scalar> R3Element<ScalarX, ScalarY, ScalarZ>::ToSpherical()
   return result;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-void R3Element<ScalarX, ScalarY, ScalarZ>::WriteToMessage(
-    not_null<serialization::R3Element*> const message) const {
-  using SerializerX =
-      DoubleOrQuantitySerializer<ScalarX, serialization::R3Element::Coordinate>;
-  using SerializerY =
-      DoubleOrQuantitySerializer<ScalarY, serialization::R3Element::Coordinate>;
-  using SerializerZ =
-      DoubleOrQuantitySerializer<ScalarZ, serialization::R3Element::Coordinate>;
-  SerializerX::WriteToMessage(x, message->mutable_x());
-  SerializerY::WriteToMessage(y, message->mutable_y());
-  SerializerZ::WriteToMessage(z, message->mutable_z());
+template<typename Scalar>
+template<typename S>
+R3Element<Scalar> R3Element<Scalar>::OrthogonalizationAgainst(
+    R3Element<S> const& r3_element) const {
+  R3Element<double> const r3_element_normalized = Normalize(r3_element);
+  return *this - Dot(*this, r3_element_normalized) * r3_element_normalized;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ>::ReadFromMessage(
+template<typename Scalar>
+void R3Element<Scalar>::WriteToMessage(
+    not_null<serialization::R3Element*> const message) const {
+  using Serializer =
+      DoubleOrQuantitySerializer<Scalar, serialization::R3Element::Coordinate>;
+  Serializer::WriteToMessage(x, message->mutable_x());
+  Serializer::WriteToMessage(y, message->mutable_y());
+  Serializer::WriteToMessage(z, message->mutable_z());
+}
+
+template<typename Scalar>
+R3Element<Scalar> R3Element<Scalar>::ReadFromMessage(
     serialization::R3Element const& message) {
-  using SerializerX =
-      DoubleOrQuantitySerializer<ScalarX, serialization::R3Element::Coordinate>;
-  using SerializerY =
-      DoubleOrQuantitySerializer<ScalarY, serialization::R3Element::Coordinate>;
-  using SerializerZ =
-      DoubleOrQuantitySerializer<ScalarZ, serialization::R3Element::Coordinate>;
-  return {SerializerX::ReadFromMessage(message.x()),
-          SerializerY::ReadFromMessage(message.y()),
-          SerializerZ::ReadFromMessage(message.z())};
+  using Serializer =
+      DoubleOrQuantitySerializer<Scalar, serialization::R3Element::Coordinate>;
+  return {Serializer::ReadFromMessage(message.x()),
+          Serializer::ReadFromMessage(message.y()),
+          Serializer::ReadFromMessage(message.z())};
 }
 
 template<typename Scalar>
@@ -180,117 +162,93 @@ SphericalCoordinates<Scalar> RadiusLatitudeLongitude(Scalar const& radius,
   return result;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator+(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(+right.x, +right.y, +right.z);
+template<typename Scalar>
+R3Element<Scalar> operator+(R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(+right.x, +right.y, +right.z);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator-(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(-right.x, -right.y, -right.z);
+template<typename Scalar>
+R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(-right.x, -right.y, -right.z);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator+(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-    R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(left.x + right.x,
-                                              left.y + right.y,
-                                              left.z + right.z);
+template<typename Scalar>
+R3Element<Scalar> operator+(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left.x + right.x,
+                           left.y + right.y,
+                           left.z + right.z);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator-(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-    R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(left.x - right.x,
-                                              left.y - right.y,
-                                              left.z - right.z);
+template<typename Scalar>
+R3Element<Scalar> operator-(R3Element<Scalar> const& left,
+                            R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left.x - right.x,
+                           left.y - right.y,
+                           left.z - right.z);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator*(
-    double const left,
-    R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(left * right.x,
-                                              left * right.y,
-                                              left * right.z);
+template<typename Scalar>
+R3Element<Scalar> operator*(double const left,
+                            R3Element<Scalar> const& right) {
+  return R3Element<Scalar>(left * right.x,
+                           left * right.y,
+                           left * right.z);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator*(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-    double const right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(left.x * right,
-                                              left.y * right,
-                                              left.z * right);
+template<typename Scalar>
+R3Element<Scalar> operator*(R3Element<Scalar> const& left,
+                            double const right) {
+  return R3Element<Scalar>(left.x * right,
+                           left.y * right,
+                           left.z * right);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-R3Element<ScalarX, ScalarY, ScalarZ> operator/(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-    double const right) {
-  return R3Element<ScalarX, ScalarY, ScalarZ>(left.x / right,
-                                              left.y / right,
-                                              left.z / right);
+template<typename Scalar>
+R3Element<Scalar> operator/(R3Element<Scalar> const& left,
+                            double const right) {
+  return R3Element<Scalar>(left.x / right,
+                           left.y / right,
+                           left.z / right);
 }
 
-template<typename LDimension,
-         typename RScalarX, typename RScalarY, typename RScalarZ>
-R3Element<Product<Quantity<LDimension>, RScalarX>,
-          Product<Quantity<LDimension>, RScalarY>,
-          Product<Quantity<LDimension>, RScalarZ>>
-operator*(Quantity<LDimension> const& left,
-          R3Element<RScalarX, RScalarY, RScalarZ> const& right) {
-  return R3Element<Product<Quantity<LDimension>, RScalarX>,
-                   Product<Quantity<LDimension>, RScalarY>,
-                   Product<Quantity<LDimension>, RScalarZ>>(
+template<typename LDimension, typename RScalar>
+R3Element<Product<Quantity<LDimension>, RScalar>>
+operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
+  return R3Element<Product<Quantity<LDimension>, RScalar>>(
       left * right.x,
       left * right.y,
       left * right.z);
 }
 
-template<typename LScalarX, typename LScalarY, typename LScalarZ,
-         typename RDimension>
-R3Element<Product<LScalarX, Quantity<RDimension>>,
-          Product<LScalarY, Quantity<RDimension>>,
-          Product<LScalarZ, Quantity<RDimension>>>
-operator*(R3Element<LScalarX, LScalarY, LScalarZ> const& left,
-          Quantity<RDimension> const& right) {
-  return R3Element<Product<LScalarX, Quantity<RDimension>>,
-                   Product<LScalarY, Quantity<RDimension>>,
-                   Product<LScalarZ, Quantity<RDimension>>>(
+template<typename LScalar, typename RDimension>
+R3Element<Product<LScalar, Quantity<RDimension>>>
+operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right) {
+  return R3Element<Product<LScalar, Quantity<RDimension>>>(
       left.x * right,
       left.y * right,
       left.z * right);
 }
 
-template<typename LScalarX, typename LScalarY, typename LScalarZ,
-         typename RDimension>
-R3Element<Quotient<LScalarX, Quantity<RDimension>>,
-          Quotient<LScalarY, Quantity<RDimension>>,
-          Quotient<LScalarZ, Quantity<RDimension>>>
-operator/(R3Element<LScalarX, LScalarY, LScalarZ> const& left,
+template<typename LScalar, typename RDimension>
+R3Element<Quotient<LScalar, Quantity<RDimension>>>
+operator/(R3Element<LScalar> const& left,
           Quantity<RDimension> const& right) {
-  return R3Element<Quotient<LScalarX, Quantity<RDimension>>,
-                   Quotient<LScalarY, Quantity<RDimension>>,
-                   Quotient<LScalarZ, Quantity<RDimension>>>(
+  return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
       left.x / right,
       left.y / right,
       left.z / right);
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-bool operator==(R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-                R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
+template<typename Scalar>
+bool operator==(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
   return left.x == right.x && left.y == right.y && left.z == right.z;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-bool operator!=(R3Element<ScalarX, ScalarY, ScalarZ> const& left,
-                R3Element<ScalarX, ScalarY, ScalarZ> const& right) {
+template<typename Scalar>
+bool operator!=(R3Element<Scalar> const& left,
+                R3Element<Scalar> const& right) {
   return left.x != right.x || left.y != right.y || left.z != right.z;
 }
 
@@ -314,9 +272,8 @@ R3Element<double> NormalizeOrZero(R3Element<Scalar> const& r3_element) {
   }
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-std::string DebugString(
-    R3Element<ScalarX, ScalarY, ScalarZ> const& r3_element) {
+template<typename Scalar>
+std::string DebugString(R3Element<Scalar> const& r3_element) {
   std::string result = "{";
   result += DebugString(r3_element.x);
   result += ", ";
@@ -327,28 +284,18 @@ std::string DebugString(
   return result;
 }
 
-template<typename ScalarX, typename ScalarY, typename ScalarZ>
-std::ostream& operator<<(
-    std::ostream& out,
-    R3Element<ScalarX, ScalarY, ScalarZ> const& r3_element) {
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         R3Element<Scalar> const& r3_element) {
   out << DebugString(r3_element);
   return out;
 }
 
-template<typename LScalarX,
-         typename RScalarX,
-         typename LScalarY,
-         typename RScalarY,
-         typename LScalarZ,
-         typename RScalarZ>
-R3Element<Product<LScalarX, RScalarX>,
-          Product<LScalarY, RScalarY>,
-          Product<LScalarZ, RScalarZ>>
-Cross(R3Element<LScalarX, LScalarY, LScalarZ> const& left,
-      R3Element<RScalarX, RScalarY, RScalarZ> const& right) {
-  return R3Element<Product<LScalarX, RScalarX>,
-                   Product<LScalarY, RScalarY>,
-                   Product<LScalarZ, RScalarZ>>(
+template<typename LScalar, typename RScalar>
+R3Element<Product<LScalar, RScalar>> Cross(
+    R3Element<LScalar> const& left,
+    R3Element<RScalar> const& right) {
+  return R3Element<Product<LScalar, RScalar>>(
       left.y * right.z - left.z * right.y,
       left.z * right.x - left.x * right.z,
       left.x * right.y - left.y * right.x);
