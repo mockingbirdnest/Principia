@@ -128,19 +128,7 @@ class Renderer {
   virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
-  // This function does unnatural things.  It identifies positions in the
-  // plotting frame with those of world using the rigid transformation at the
-  // given |time|, but instead of applying the full rigid motion and
-  // consistently transforming the velocities, it simply applies a linear
-  // transformation to the latter.  The resulting |DegreesOfFreedom| should be
-  // seen as no more than a convenient hack to send a plottable position
-  // together with a velocity in the right coordinates.
-  // TODO(phl): This will no longer be needed once we have support for
-  // projections; instead of these convenient lies we can simply say that the
-  // camera is fixed in the plotting frame and project there; additional data
-  // can be gathered from the velocities as needed and sent directly to be shown
-  // in markers.
-  virtual RigidMotion<Navigation, World> PlottingAsWorld(
+  virtual RigidTransformation<Navigation, World> PlottingToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
