@@ -43,7 +43,8 @@ quantities::Quantity<Dimensions> AbsoluteError(
 template<typename Scalar>
 Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual) {
-  return AbsoluteError(expected, actual, &geometry::R3Element<Scalar>::Norm);
+  return AbsoluteError<geometry::R3Element<Scalar>, Scalar>(
+      expected, actual, &geometry::R3Element<Scalar>::Norm);
 }
 
 template<typename Scalar, typename Frame, int rank>
@@ -98,7 +99,8 @@ double RelativeError(quantities::Quantity<Dimensions> const& expected,
 template<typename Scalar>
 double RelativeError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual) {
-  return RelativeError(expected, actual, &geometry::R3Element<Scalar>::Norm);
+  return RelativeError<geometry::R3Element<Scalar>, Scalar>(
+      expected, actual, &geometry::R3Element<Scalar>::Norm);
 }
 
 template<typename Scalar, typename Frame, int rank>
