@@ -31,7 +31,7 @@ quantities::Quantity<Dimensions> AbsoluteError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual);
 
-// Uses R3Element.Norm().
+// Uses |R3Element::Norm|.
 template<typename Scalar>
 Scalar AbsoluteError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
@@ -69,7 +69,7 @@ template<typename Dimensions>
 double RelativeError(quantities::Quantity<Dimensions> const& expected,
                      quantities::Quantity<Dimensions> const& actual);
 
-// Uses R3Element.Norm().
+// Uses |R3Element::Norm|.
 template<typename Scalar>
 double RelativeError(geometry::R3Element<Scalar> const& expected,
                      geometry::R3Element<Scalar> const& actual);
