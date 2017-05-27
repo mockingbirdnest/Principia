@@ -3,8 +3,6 @@
 
 #include <string>
 
-#include "geometry/r3_element.hpp"
-
 namespace principia {
 namespace geometry {
 namespace internal_rp2_element {
