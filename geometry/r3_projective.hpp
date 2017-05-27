@@ -14,15 +14,14 @@ class R3Projective {
  public:
   // Constructs a point from a set of homogeneous coordinates.  The
   // |coordinates| may not all be zero.
-  explicit R3Projective(R3Element<Scalar> const& coordinates);
+  explicit R3Projective(R3Element<Scalar, Scalar, double> const& coordinates);
 
   // Returns true if and only if the point is at infinity.
-  bool at_infinity() const;
+  bool is_at_infinity() const;
 
-  // Returns the slope of the line going from the origin to this point.  Useful
-  // to distinguish the points at infinity.  Note that the returned value may be
-  // an infinity.
-  Scalar slope() const;
+  // If the point is at infinity, returns a value that uniquely identifies it
+  // among all the points at infinity.
+  double point_at_infinity() const;
 
   // Returns the Euclidean (non-homegeneous) coordinates of the point.  May be
   // infinities simultaneously.
@@ -30,7 +29,7 @@ class R3Projective {
   Scalar const y() const;
 
  private:
-  R3Element<Scalar> coordinates_;
+  R3Element<Scalar, Scalar, double> coordinates_;
 
   friend bool operator==(R3Projective<Scalar> const& left,
                          R3Projective<Scalar> const& right);
@@ -48,4 +47,4 @@ bool operator!=(R3Projective<Scalar> const& left,
 }  // namespace geometry
 }  // namespace principia
 
-#include "geometry/projective_body.hpp"
+#include "geometry/r3_projective_body.hpp"

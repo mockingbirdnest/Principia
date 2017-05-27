@@ -1,25 +1,26 @@
 
 #pragma once
 
-#include "geometry/projective.hpp"
+#include "geometry/r3_projective.hpp"
 
 namespace principia {
 namespace geometry {
 
 template<typename Scalar>
-R3Projective<Scalar>::R3Projective(R3Element<Scalar> const& coordinates)
+R3Projective<Scalar>::R3Projective(
+    R3Element<Scalar, Scalar, double> const& coordinates)
     : coordinates_(coordinates) {
   // (0, 0, 0) does not represent any point.
-  CHECK(coordinates_ != R3Element<Scalar>());
+  CHECK(coordinates_ != R3Element<Scalar, Scalar, double>());
 }
 
 template<typename Scalar>
-bool R3Projective<Scalar>::at_infinity() const {
-  return coordinates_.z == Scalar{};
+bool R3Projective<Scalar>::is_at_infinity() const {
+  return coordinates_.z == 0;
 }
 
 template<typename Scalar>
-inline Scalar R3Projective<Scalar>::slope() const {
+double R3Projective<Scalar>::point_at_infinity() const {
   return coordinates_.y / coordinates_.x;
 }
 
