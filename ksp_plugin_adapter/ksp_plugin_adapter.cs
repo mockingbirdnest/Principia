@@ -842,6 +842,7 @@ public partial class PrincipiaPluginAdapter
       KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
           toolbar_button_);
     }
+    WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     DisableVesselPrecalculate);

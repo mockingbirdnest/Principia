@@ -16,12 +16,15 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Equator;
+using astronomy::J2000;
 using geometry::Bivector;
 using geometry::Vector;
 using geometry::Velocity;
 using geometry::Wedge;
 using physics::Body;
 using physics::DegreesOfFreedom;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
@@ -43,24 +46,6 @@ namespace testing_utilities {
 
 class SolarSystemFactoryTest : public testing::Test {
  protected:
-  // The maximal separation of |primary| and |secondary| ignoring the influence
-  // of any other bodies.
-  Length SemiMajorAxis(
-      MassiveBody const& primary_body,
-      DegreesOfFreedom<ICRFJ2000Equator> const& primary_dof,
-      MassiveBody const& secondary_body,
-      DegreesOfFreedom<ICRFJ2000Equator> const& secondary_dof) {
-    GravitationalParameter const μ = primary_body.gravitational_parameter() +
-                                     secondary_body.gravitational_parameter();
-    RelativeDegreesOfFreedom<ICRFJ2000Equator> const primary_secondary =
-        primary_dof - secondary_dof;
-    Vector<Length, ICRFJ2000Equator> const& r =
-        primary_secondary.displacement();
-    Velocity<ICRFJ2000Equator> const& v = primary_secondary.velocity();
-    SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
-    return -μ / (2 * ε);
-  }
-
   // The sphere of action, or Laplace sphere (Laplace 1799) is is the region
   // where the acceleration to perturbation ratio for the secondary is larger
   // than the corresponding ratio for the primary. In this region, the 2-body
@@ -71,11 +56,12 @@ class SolarSystemFactoryTest : public testing::Test {
       DegreesOfFreedom<ICRFJ2000Equator> const& primary_dof,
       MassiveBody const& secondary_body,
       DegreesOfFreedom<ICRFJ2000Equator> const& secondary_dof) {
+    Length const a = *KeplerOrbit<ICRFJ2000Equator>{
+        primary_body,
+        secondary_body,
+        secondary_dof - primary_dof, J2000}.elements_at_epoch().semimajor_axis;
     // Assuming secondary.mass << primary.mass.
-    return SemiMajorAxis(primary_body, primary_dof,
-                         secondary_body, secondary_dof) *
-        std::pow(secondary_body.mass() /
-                 primary_body.mass(), 2.0 / 5.0);
+    return a * std::pow(secondary_body.mass() / primary_body.mass(), 2.0 / 5.0);
   }
 
   // Tests whether |tertiary| orbits |secondary| in an orbit with excentricity
@@ -84,7 +70,7 @@ class SolarSystemFactoryTest : public testing::Test {
   // to |*primary|. If |relative_error| is greater than 1e-6, it should be tight
   // within an order of magnitude.
   void TestStronglyBoundOrbit(
-      double excentricity,
+      double eccentricity,
       double relative_error,
       MassiveBody const& tertiary_body,
       DegreesOfFreedom<ICRFJ2000Equator> const& tertiary_dof,
@@ -94,22 +80,21 @@ class SolarSystemFactoryTest : public testing::Test {
       std::experimental::optional<
           DegreesOfFreedom<ICRFJ2000Equator> const&> const primary_dof,
       std::string message) {
-    GravitationalParameter const μ =
-        tertiary_body.gravitational_parameter() +
-        secondary_body.gravitational_parameter();
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const tertiary_secondary =
         tertiary_dof - secondary_dof;
+    KeplerOrbit<ICRFJ2000Equator> orbit{
+        secondary_body, tertiary_body, tertiary_secondary, J2000};
     Vector<Length, ICRFJ2000Equator> const& r =
         tertiary_secondary.displacement();
-    Velocity<ICRFJ2000Equator> const& v = tertiary_secondary.velocity();
-    Bivector<SpecificAngularMomentum, ICRFJ2000Equator> const h =
-        Wedge(r / Radian, v);
-    SpecificEnergy const ε = Pow<2>(v.Norm()) / 2 - μ / r.Norm();
-    double e = Sqrt(1 + 2 * ε * Pow<2>(h.Norm() * Radian) / Pow<2>(μ));
-    EXPECT_THAT(RelativeError(excentricity, e), Lt(relative_error)) << message;
+    EXPECT_THAT(
+        RelativeError(eccentricity, *orbit.elements_at_epoch().eccentricity),
+        Lt(relative_error))
+        << message;
     if (relative_error > 1e-6) {
-      EXPECT_THAT(RelativeError(excentricity, e),
-                  Ge(relative_error / 10.0)) << message;
+      EXPECT_THAT(
+          RelativeError(eccentricity, *orbit.elements_at_epoch().eccentricity),
+          Ge(relative_error / 10.0))
+          << message;
     }
     if (primary_dof) {
       EXPECT_THAT(r.Norm(), Lt(LaplaceSphereRadiusRadius(*primary_body,
@@ -556,7 +541,7 @@ TEST_F(SolarSystemFactoryTest, HierarchyAtСпутник2Launch) {
                          sun, sun_dof,
                          "moon");
   // Using centre: Neptune (body centre) [500@899]
-  TestStronglyBoundOrbit(1.529190e-05, 1e-5,
+  TestStronglyBoundOrbit(1.529190e-05, 1e-6,
                          triton, triton_dof,
                          neptune, neptune_dof,
                          sun, sun_dof,

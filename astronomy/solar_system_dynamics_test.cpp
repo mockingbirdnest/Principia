@@ -234,8 +234,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     KeplerianElements<ParentEquator> const& expected_elements =
         expected_osculating_orbit.elements_at_epoch();
 
-    Time const period = 2 * π * Radian / *actual_elements.mean_motion;
-    double const orbits = duration / period;
+    double const orbits = duration / *actual_elements.period;
 
     OrbitError result;
     result.separation_per_orbit =

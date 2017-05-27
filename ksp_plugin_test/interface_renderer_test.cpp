@@ -108,9 +108,10 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   MockRenderer renderer;
+  auto const identity = Rotation<Barycentric, AliceSun>::Identity();
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
-      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
+      .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
@@ -189,10 +190,11 @@ TEST_F(InterfaceRendererTest, Iterator) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   MockRenderer renderer;
+  auto const identity = Rotation<Barycentric, AliceSun>::Identity();
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
-      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
+      .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(t0_));
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);

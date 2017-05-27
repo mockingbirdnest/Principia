@@ -31,6 +31,7 @@ using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
+using physics::RigidTransformation;
 using quantities::Length;
 
 class Renderer {
@@ -100,7 +101,7 @@ class Renderer {
   virtual RigidMotion<Barycentric, Navigation> BarycentricToPlotting(
       Instant const& time) const;
 
-  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
+  virtual RigidTransformation<Barycentric, World> BarycentricToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -127,7 +128,7 @@ class Renderer {
   virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
-  virtual RigidMotion<Navigation, World> PlottingToWorld(
+  virtual RigidTransformation<Navigation, World> PlottingToWorld(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -136,7 +137,7 @@ class Renderer {
       Instant const& time,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual RigidMotion<World, Barycentric> WorldToBarycentric(
+  virtual RigidTransformation<World, Barycentric> WorldToBarycentric(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
@@ -144,7 +145,7 @@ class Renderer {
   virtual OrthogonalMap<World, Barycentric> WorldToBarycentric(
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
-  virtual RigidMotion<World, Navigation> WorldToPlotting(
+  virtual RigidTransformation<World, Navigation> WorldToPlotting(
       Instant const& time,
       Position<World> const& sun_world_position,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;

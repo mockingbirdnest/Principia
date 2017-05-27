@@ -341,7 +341,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
     KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
         *sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
-                AlmostEquals(expected_displacement, 37));
+                AlmostEquals(expected_displacement, 37, 49));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
                 AlmostEquals(expected_velocity, 26));
     EXPECT_THAT(*voyager_orbit.elements_at_epoch().hyperbolic_mean_motion,
@@ -354,9 +354,9 @@ TEST_F(KeplerOrbitTest, Voyager1) {
     KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
         *sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
-                AlmostEquals(expected_displacement, 31));
+                AlmostEquals(expected_displacement, 31, 44));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
-                AlmostEquals(expected_velocity, 28));
+                AlmostEquals(expected_velocity, 27, 28));
   }
 
   KeplerOrbit<ICRFJ2000Equator> voyager_orbit(
@@ -1473,7 +1473,11 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
                                    /*hyperbolic_mean_motion_ulps=*/0,
+#if PRINCIPIA_COMPILER_MSVC
                                    /*hyperbolic_excess_velocity_ulps=*/1,
+#else
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+#endif
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/1,
