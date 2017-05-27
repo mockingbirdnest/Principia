@@ -354,7 +354,7 @@ constexpr double Infinity<double>() {
 
 template<typename D>
 bool IsFinite(Quantity<D> const& x) {
-  return std::isfinite(x.magnitude_);
+  return std::isfinite(x / SIUnit<Quantity<D>>());
 }
 
 template<typename Q>
@@ -408,7 +408,7 @@ inline std::string DebugString(double const number, int const precision) {
 
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
-  return DebugString(quantity.magnitude_, precision) +
+  return DebugString(quantity / SIUnit<Quantity<D>>(), precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +

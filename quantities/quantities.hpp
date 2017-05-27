@@ -1,8 +1,7 @@
 ﻿
 #pragma once
 
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <iostream>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -136,20 +135,6 @@ class Quantity final {
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
-
-  template<int exponent, typename BaseDimensions>
-  friend constexpr Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
-      Quantity<BaseDimensions> const& x);
-
-  template<typename E>
-  friend Quantity<E> Abs(Quantity<E> const&);
-
-  template<typename ArgumentDimensions>
-  friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
-      Quantity<ArgumentDimensions> const& x);
-  template<typename ArgumentDimensions>
-  friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
-      Quantity<ArgumentDimensions> const& x);
 };
 
 template<typename LDimensions, typename RDimensions>

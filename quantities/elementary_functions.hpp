@@ -63,15 +63,12 @@ using internal_quantities::ArcSinh;
 using internal_quantities::ArcTan;
 using internal_quantities::ArcTanh;
 using internal_quantities::Cbrt;
-using internal_quantities::CubeRoot;
 using internal_quantities::Cos;
 using internal_quantities::Cosh;
-using internal_quantities::NthRoot;
 using internal_quantities::Pow;
 using internal_quantities::Sin;
 using internal_quantities::Sinh;
 using internal_quantities::Sqrt;
-using internal_quantities::SquareRoot;
 using internal_quantities::Tan;
 using internal_quantities::Tanh;
 

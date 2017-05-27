@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "quantities/elementary_functions.hpp"
+
 #include <cmath>
 #include <type_traits>
 
@@ -16,7 +18,7 @@ inline double Abs(double const x) {
 
 template<typename D>
 FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
-  return Quantity<D>(std::abs(quantity.magnitude_));
+  return SIUnit<Quantity<D>>() * std::abs(quantity / SIUnit<Quantity<D>>());
 }
 
 inline double Sqrt(double const x) {
@@ -25,7 +27,8 @@ inline double Sqrt(double const x) {
 
 template<typename D>
 SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
-  return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
+  return SIUnit<SquareRoot<Quantity<D>>>() *
+         std::sqrt(x / SIUnit<Quantity<D>>());
 }
 
 inline double Cbrt(double const x) {
@@ -34,7 +37,7 @@ inline double Cbrt(double const x) {
 
 template<typename D>
 CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
-  return CubeRoot<Quantity<D>>(std::cbrt(x.magnitude_));
+  return SIUnit<CubeRoot<Quantity<D>>>() * std::cbrt(x / SIUnit<Quantity<D>>());
 }
 
 template<int exponent>
@@ -83,7 +86,8 @@ inline constexpr double Pow<3>(double x) {
 template<int exponent, typename D>
 constexpr Exponentiation<Quantity<D>, exponent> Pow(
     Quantity<D> const& x) {
-  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
+  return SIUnit<Exponentiation<Quantity<D>, exponent>>() *
+         Pow<exponent>(x / SIUnit<Quantity<D>>());
 }
 
 inline double Sin(Angle const& α) {
@@ -109,7 +113,7 @@ inline Angle ArcTan(double const y, double const x) {
 }
 template<typename D>
 Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x) {
-  return ArcTan(y.magnitude_, x.magnitude_);
+  return ArcTan(y / SIUnit<Quantity<D>>(), x / SIUnit<Quantity<D>>());
 }
 
 inline double Sinh(Angle const& α) {
