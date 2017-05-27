@@ -150,10 +150,6 @@ class Quantity final {
   template<typename ArgumentDimensions>
   friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
       Quantity<ArgumentDimensions> const& x);
-
-  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
-  friend bool IsFinite<>(Quantity<D> const& x);
-  friend std::string DebugString<>(Quantity<D> const&, int);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -168,17 +164,6 @@ operator*(double, Quantity<RDimensions> const&);
 template<typename RDimensions>
 constexpr typename Quantity<RDimensions>::Inverse
 operator/(double, Quantity<RDimensions> const&);
-
-std::string DebugString(
-    double number,
-    int precision = std::numeric_limits<double>::max_digits10);
-template<typename D>
-std::string DebugString(
-    Quantity<D> const& quantity,
-    int precision = std::numeric_limits<double>::max_digits10);
-
-template<typename D>
-std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 // Returns a positive infinity of |Q|.
 template<typename Q>
@@ -202,6 +187,17 @@ constexpr Q SIUnit();
 // Returns 1.
 template<>
 constexpr double SIUnit<double>();
+
+std::string DebugString(
+    double number,
+    int precision = std::numeric_limits<double>::max_digits10);
+template<typename D>
+std::string DebugString(
+    Quantity<D> const& quantity,
+    int precision = std::numeric_limits<double>::max_digits10);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 // A type trait for testing if a type is a quantity.
 template<typename T>

@@ -10,38 +10,21 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
-template<int n, typename Q>
-struct NthRootGenerator<
-    n,
-    Q,
-    std::enable_if_t<(Q::Dimensions::Length % n) == 0 &&
-                     (Q::Dimensions::Mass % n) == 0 &&
-                     (Q::Dimensions::Time % n) == 0 &&
-                     (Q::Dimensions::Current % n) == 0 &&
-                     (Q::Dimensions::Temperature % n) == 0 &&
-                     (Q::Dimensions::Amount % n) == 0 &&
-                     (Q::Dimensions::LuminousIntensity % n) == 0 &&
-                     (Q::Dimensions::Angle % n) == 0>> {
-  enum {
-    Length            = Q::Dimensions::Length / n,
-    Mass              = Q::Dimensions::Mass / n,
-    Time              = Q::Dimensions::Time / n,
-    Current           = Q::Dimensions::Current / n,
-    Temperature       = Q::Dimensions::Temperature / n,
-    Amount            = Q::Dimensions::Amount / n,
-    LuminousIntensity = Q::Dimensions::LuminousIntensity / n,
-    Angle             = Q::Dimensions::Angle / n,
-  };
-  using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
-                                   Amount, LuminousIntensity, Angle>>;
-};
+inline double Abs(double const x) {
+  return std::abs(x);
+}
+
+template<typename D>
+FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
+  return Quantity<D>(std::abs(quantity.magnitude_));
+}
 
 inline double Sqrt(double const x) {
   return std::sqrt(x);
 }
 
 template<typename D>
-inline SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
+SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
   return SquareRoot<Quantity<D>>(std::sqrt(x.magnitude_));
 }
 
@@ -50,16 +33,67 @@ inline double Cbrt(double const x) {
 }
 
 template<typename D>
-inline CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
+CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
   return CubeRoot<Quantity<D>>(std::cbrt(x.magnitude_));
+}
+
+template<int exponent>
+constexpr double Pow(double x) {
+  return std::pow(x, exponent);
+}
+
+// Static specializations for frequently-used exponents, so that this gets
+// turned into multiplications at compile time.
+
+template<>
+inline constexpr double Pow<-3>(double x) {
+  return 1 / (x * x * x);
+}
+
+template<>
+inline constexpr double Pow<-2>(double x) {
+  return 1 / (x * x);
+}
+
+template<>
+inline constexpr double Pow<-1>(double x) {
+  return 1 / x;
+}
+
+template<>
+inline constexpr double Pow<0>(double x) {
+  return 1;
+}
+
+template<>
+inline constexpr double Pow<1>(double x) {
+  return x;
+}
+
+template<>
+inline constexpr double Pow<2>(double x) {
+  return x * x;
+}
+
+template<>
+inline constexpr double Pow<3>(double x) {
+  return x * x * x;
+}
+
+template<int exponent, typename D>
+constexpr Exponentiation<Quantity<D>, exponent> Pow(
+    Quantity<D> const& x) {
+  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
 }
 
 inline double Sin(Angle const& α) {
   return std::sin(α / si::Radian);
 }
+
 inline double Cos(Angle const& α) {
   return std::cos(α / si::Radian);
 }
+
 inline double Tan(Angle const& α) {
   return std::tan(α / si::Radian);
 }

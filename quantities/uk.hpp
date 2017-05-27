@@ -2,6 +2,7 @@
 #pragma once
 
 #include "quantities/constants.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"

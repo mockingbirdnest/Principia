@@ -89,7 +89,7 @@ constexpr Angle  Degree    = π / 180 * Radian;
 constexpr Angle  ArcMinute = π / 10800 * Radian;
 constexpr Angle  ArcSecond = π / 648000 * Radian;
 constexpr Area   Hectare   = 1e4 * Metre * Metre;
-constexpr Volume Litre     = Pow<3>(1e-1 * Metre);
+constexpr Volume Litre     = 1e-3 * Metre * Metre * Metre;
 constexpr Mass   Tonne     = 1e3 * Kilogram;
 
 // Non-SI units whose values must be obtained experimentally

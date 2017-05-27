@@ -52,8 +52,10 @@ double Tanh(Angle const& α);
 Angle ArcSinh(double x);
 Angle ArcCosh(double x);
 Angle ArcTanh(double x);
+
 }  // namespace internal_quantities
 
+using internal_quantities::Abs;
 using internal_quantities::ArcCos;
 using internal_quantities::ArcCosh;
 using internal_quantities::ArcSin;
@@ -65,6 +67,7 @@ using internal_quantities::CubeRoot;
 using internal_quantities::Cos;
 using internal_quantities::Cosh;
 using internal_quantities::NthRoot;
+using internal_quantities::Pow;
 using internal_quantities::Sin;
 using internal_quantities::Sinh;
 using internal_quantities::Sqrt;
