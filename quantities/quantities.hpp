@@ -190,6 +190,7 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 using internal_quantities::Amount;
 using internal_quantities::Angle;
 using internal_quantities::Cube;
+using internal_quantities::CubeRoot;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
 using internal_quantities::Exponentiation;
@@ -203,6 +204,7 @@ using internal_quantities::NaN;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
 using internal_quantities::Square;
+using internal_quantities::SquareRoot;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
 

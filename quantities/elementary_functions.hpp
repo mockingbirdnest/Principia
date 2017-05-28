@@ -1,15 +1,12 @@
 ﻿
 #pragma once
 
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_elementary_functions {
-
-using internal_quantities::CubeRoot;
-using internal_quantities::Product;
-using internal_quantities::SquareRoot;
 
 // Equivalent to |std::fma(x, y, z)|.
 template<typename Q1, typename Q2,
