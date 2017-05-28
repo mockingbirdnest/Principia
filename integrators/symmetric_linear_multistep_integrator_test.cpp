@@ -18,6 +18,7 @@
 namespace principia {
 
 using geometry::Instant;
+using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
 using quantities::Cos;

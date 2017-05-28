@@ -232,10 +232,11 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       AngularVelocity<Barycentric>(),
       Velocity<Barycentric>());
   MockRenderer renderer;
+  auto const identity = Rotation<Barycentric, AliceSun>::Identity();
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
-      .WillRepeatedly(ReturnRef(Rotation<Barycentric, AliceSun>::Identity()));
+      .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
   EXPECT_CALL(navigation_manœuvre, InertialDirection())

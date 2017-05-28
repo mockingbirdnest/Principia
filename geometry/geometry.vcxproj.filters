@@ -113,6 +113,12 @@
     <ClInclude Include="serialization_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="rp2_element.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="rp2_element_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
@@ -155,6 +161,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="frame_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rp2_element_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

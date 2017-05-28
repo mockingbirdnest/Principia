@@ -46,6 +46,10 @@ template<typename T, typename U>
 DoublePrecision<Product<T, U>> Scale(T const& scale,
                                      DoublePrecision<U> const& right);
 
+// Returns the exact product of its arguments.
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b);
+
 // The arguments must be such that |a| >= |b| or a == 0.
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b);
@@ -102,6 +106,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_double_precision
 
 using internal_double_precision::DoublePrecision;
+using internal_double_precision::TwoProduct;
 using internal_double_precision::TwoSum;
 
 }  // namespace numerics

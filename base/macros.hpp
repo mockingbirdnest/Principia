@@ -199,6 +199,12 @@ inline void noreturn() { std::exit(0); }
 #  define CONSTEXPR_INFINITY constexpr
 #endif
 
+#if PRINCIPIA_COMPILER_MSVC
+#define MSVC_ONLY_TEST(test_name) test_name
+#else
+#define MSVC_ONLY_TEST(test_name) DISABLED_##test_name
+#endif
+
 // For templates in macro parameters.
 #define TEMPLATE(...) template<__VA_ARGS__>
 

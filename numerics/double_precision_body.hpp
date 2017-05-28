@@ -9,6 +9,7 @@
 #include <string>
 
 #include "geometry/serialization.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -18,6 +19,7 @@ namespace internal_double_precision {
 using geometry::DoubleOrQuantityOrPointOrMultivectorSerializer;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Abs;
+using quantities::FusedMultiplyAdd;
 using quantities::Quantity;
 using quantities::SIUnit;
 
@@ -113,6 +115,13 @@ DoublePrecision<Product<T, U>> Scale(T const & scale,
   DoublePrecision<Product<T, U>> result;
   result.value = right.value * scale;
   result.error = right.error * scale;
+  return result;
+}
+
+template<typename T, typename U>
+DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
+  DoublePrecision<Product<T, U>> result(a * b);
+  result.error = FusedMultiplyAdd(a, b, -result.value);
   return result;
 }
 

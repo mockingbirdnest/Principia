@@ -1,23 +1,38 @@
 ﻿
 #pragma once
 
+#include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace quantities {
-// elementary_functions shares its internal namespace with quantities, because
-// friendships otherwise become impossible to untangle.
-namespace internal_quantities {
+namespace internal_elementary_functions {
 
-// We need this for templates, for consistency with the dimensionful Sqrt.
+// Equivalent to |std::fma(x, y, z)|.
+template<typename Q1, typename Q2,
+         typename = std::enable_if<is_quantity<Q1>::value>,
+         typename = std::enable_if<is_quantity<Q2>::value>>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z);
+
+// Equivalent to |std::abs(x)|.
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+Q Abs(Q const& x);
+
 // Equivalent to |std::sqrt(x)|.
-double Sqrt(double x);
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+SquareRoot<Q> Sqrt(Q const& x);
 
-double Cbrt(double x);
-template<typename D>
-CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x);
+// Equivalent to |std::cbrt(x)|.
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+CubeRoot<Q> Cbrt(Q const& x);
+
+// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
+// explicit specialization yields multiplications statically.
+template<int exponent, typename Q,
+         typename = std::enable_if<is_quantity<Q>::value>>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);
@@ -40,25 +55,26 @@ double Tanh(Angle const& α);
 Angle ArcSinh(double x);
 Angle ArcCosh(double x);
 Angle ArcTanh(double x);
-}  // namespace internal_quantities
 
-using internal_quantities::ArcCos;
-using internal_quantities::ArcCosh;
-using internal_quantities::ArcSin;
-using internal_quantities::ArcSinh;
-using internal_quantities::ArcTan;
-using internal_quantities::ArcTanh;
-using internal_quantities::Cbrt;
-using internal_quantities::CubeRoot;
-using internal_quantities::Cos;
-using internal_quantities::Cosh;
-using internal_quantities::NthRoot;
-using internal_quantities::Sin;
-using internal_quantities::Sinh;
-using internal_quantities::Sqrt;
-using internal_quantities::SquareRoot;
-using internal_quantities::Tan;
-using internal_quantities::Tanh;
+}  // namespace internal_elementary_functions
+
+using internal_elementary_functions::Abs;
+using internal_elementary_functions::ArcCos;
+using internal_elementary_functions::ArcCosh;
+using internal_elementary_functions::ArcSin;
+using internal_elementary_functions::ArcSinh;
+using internal_elementary_functions::ArcTan;
+using internal_elementary_functions::ArcTanh;
+using internal_elementary_functions::Cbrt;
+using internal_elementary_functions::Cos;
+using internal_elementary_functions::Cosh;
+using internal_elementary_functions::FusedMultiplyAdd;
+using internal_elementary_functions::Pow;
+using internal_elementary_functions::Sin;
+using internal_elementary_functions::Sinh;
+using internal_elementary_functions::Sqrt;
+using internal_elementary_functions::Tan;
+using internal_elementary_functions::Tanh;
 
 }  // namespace quantities
 }  // namespace principia

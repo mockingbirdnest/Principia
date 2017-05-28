@@ -117,6 +117,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
   private FlightGlobals.SpeedDisplayModes previous_display_mode_;
+  private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
+      ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
@@ -299,9 +301,14 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING && vessel.packed))) {
+          (vessel.situation == Vessel.Situations.FLYING && vessel.packed &&
+           (vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude ||
+            vessel.altitude == -vessel.mainBody.Radius)))) {
       reasons.Add("vessel situation is " + vessel.situation +
-                  " and vessel is " + (vessel.packed ? "packed" : "unpacked"));
+                  " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
+                  " at an altitude of " + vessel.altitude + " m above " +
+                  vessel.mainBody.theName + " whose threshold is " +
+                  vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
     if (!vessel.packed &&
         vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
@@ -650,27 +657,55 @@ public partial class PrincipiaPluginAdapter
       }
 
       // Orient the ball.
-      if (FlightGlobals.speedDisplayMode ==
-              FlightGlobals.SpeedDisplayModes.Orbit ||
-          plotting_frame_selector_.get().target_override) {
-        navball_.navBall.rotation =
-            (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
-            (UnityEngine.QuaternionD)plugin_.NavballOrientation(
-                (XYZ)Planetarium.fetch.Sun.position,
-                (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+      navball_.navBall.rotation =
+          (UnityEngine.QuaternionD)navball_.attitudeGymbal *  // sic.
+          (UnityEngine.QuaternionD)plugin_.NavballOrientation(
+              (XYZ)Planetarium.fetch.Sun.position,
+              (XYZ)(Vector3d)active_vessel.ReferenceTransform.position);
+
+      if (previous_display_mode_ != FlightGlobals.speedDisplayMode) {
+        navball_changed_ = true;
+        previous_display_mode_ = FlightGlobals.speedDisplayMode;
+        // The navball speed display mode was changed, change the reference
+        // frame accordingly.
+        switch (FlightGlobals.speedDisplayMode) {
+          case FlightGlobals.SpeedDisplayModes.Surface:
+            plotting_frame_selector_.get().SetFrameType(
+                ReferenceFrameSelector.FrameType.BODY_SURFACE);
+            break;
+          case FlightGlobals.SpeedDisplayModes.Orbit:
+            plotting_frame_selector_.get().SetFrameType(
+                last_non_surface_frame_type_);
+            break;
+        }
       }
 
-      if (navball_changed_ ||
-          previous_display_mode_ != FlightGlobals.speedDisplayMode) {
+      if (navball_changed_) {
         // Texture the ball.
         navball_changed_ = false;
-        previous_display_mode_ = FlightGlobals.speedDisplayMode;
-        if (FlightGlobals.speedDisplayMode ==
-            FlightGlobals.SpeedDisplayModes.Surface) {
-          set_navball_texture(compass_navball_texture_);
-        } else if (plotting_frame_selector_.get().target_override) {
+        if (plotting_frame_selector_.get().target_override) {
           set_navball_texture(target_navball_texture_);
         } else {
+          // If we are targeting an unmanageable vessel, keep the navball in
+          // target mode; otherwise, put it in the mode that reflects the
+          // plotting frame.
+          if (FlightGlobals.speedDisplayMode !=
+              FlightGlobals.SpeedDisplayModes.Target) {
+            if (plotting_frame_selector_.get().frame_type ==
+                    ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+              if (FlightGlobals.speedDisplayMode !=
+                  FlightGlobals.SpeedDisplayModes.Surface) {
+                FlightGlobals.SetSpeedMode(
+                    FlightGlobals.SpeedDisplayModes.Surface);
+              }
+            } else {
+              if (FlightGlobals.speedDisplayMode !=
+                  FlightGlobals.SpeedDisplayModes.Orbit) {
+                FlightGlobals.SetSpeedMode(
+                    FlightGlobals.SpeedDisplayModes.Orbit);
+              }
+            }
+          }
           switch (plotting_frame_selector_.get().frame_type) {
             case ReferenceFrameSelector.FrameType.BODY_SURFACE:
               set_navball_texture(surface_navball_texture_);
@@ -698,6 +733,8 @@ public partial class PrincipiaPluginAdapter
           plugin_.HasVessel(active_vessel.id.ToString()) &&
           (FlightGlobals.speedDisplayMode ==
                FlightGlobals.SpeedDisplayModes.Orbit ||
+           FlightGlobals.speedDisplayMode ==
+               FlightGlobals.SpeedDisplayModes.Surface ||
            plotting_frame_selector_.get().target_override)) {
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
             KSP.UI.Screens.Flight.SpeedDisplay.Instance;
@@ -842,6 +879,7 @@ public partial class PrincipiaPluginAdapter
       KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
           toolbar_button_);
     }
+    WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
                                     DisableVesselPrecalculate);
@@ -1866,6 +1904,11 @@ public partial class PrincipiaPluginAdapter
       NavigationFrameParameters frame_parameters) {
     IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
     plugin_.SetPlottingFrame(ref new_plotting_frame);
+    var frame_type =
+        (ReferenceFrameSelector.FrameType)frame_parameters.extension;
+    if (frame_type != ReferenceFrameSelector.FrameType.BODY_SURFACE) {
+      last_non_surface_frame_type_ = frame_type;
+    }
     navball_changed_ = true;
     reset_rsas_target_ = true;
   }

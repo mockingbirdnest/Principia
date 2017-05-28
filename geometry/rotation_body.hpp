@@ -17,6 +17,8 @@ namespace geometry {
 namespace internal_rotation {
 
 using base::not_null;
+using quantities::Cos;
+using quantities::Sin;
 
 // Well-conditioned conversion of a rotation matrix to a quaternion.  See
 // http://en.wikipedia.org/wiki/Rotation_matrix#Quaternion and

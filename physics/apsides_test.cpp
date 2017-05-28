@@ -26,7 +26,9 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Pow;
+using quantities::Sin;
 using quantities::Speed;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::SolarMass;
@@ -175,8 +177,6 @@ TEST_F(ApsidesTest, ComputeNodes) {
 
   DiscreteTrajectory<World> trajectory;
   trajectory.Append(t0, initial_state[0] + orbit.StateVectors(t0));
-  // TODO(egg): the period should be in KeplerianElements.
-  Time const period = 2 * π * Radian / *elements.mean_motion;
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -209,7 +209,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .longitude,
                 AlmostEquals(elements.longitude_of_ascending_node, 2, 100));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(period, 1, 19));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 20));
     }
     previous_time = time;
   }
@@ -224,7 +224,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                 .longitude,
         AlmostEquals(elements.longitude_of_ascending_node - π * Radian, 0, 25));
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(period, 1, 29));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 29));
     }
     previous_time = time;
   }

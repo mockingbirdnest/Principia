@@ -29,15 +29,15 @@ NormType AbsoluteError(T const& expected, T const& actual,
 }
 
 inline double AbsoluteError(double const expected, double const actual) {
-  return AbsoluteError<double, double, double>(
-             expected, actual, &quantities::Abs);
+  return AbsoluteError(expected, actual, &quantities::Abs<double>);
 }
 
 template<typename Dimensions>
 quantities::Quantity<Dimensions> AbsoluteError(
     quantities::Quantity<Dimensions> const& expected,
     quantities::Quantity<Dimensions> const& actual) {
-  return AbsoluteError(expected, actual, &quantities::Abs<Dimensions>);
+  return AbsoluteError(
+      expected, actual, &quantities::Abs<quantities::Quantity<Dimensions>>);
 }
 
 template<typename Scalar>
@@ -85,14 +85,14 @@ double RelativeError(T const& expected, T const& actual,
 }
 
 inline double RelativeError(double const expected, double const actual) {
-  return RelativeError<double, double, double>(
-             expected, actual, &quantities::Abs);
+  return RelativeError(expected, actual, &quantities::Abs<double>);
 }
 
 template<typename Dimensions>
 double RelativeError(quantities::Quantity<Dimensions> const& expected,
                      quantities::Quantity<Dimensions> const& actual) {
-  return RelativeError(expected, actual, &quantities::Abs<Dimensions>);
+  return RelativeError(
+      expected, actual, &quantities::Abs<quantities::Quantity<Dimensions>>);
 }
 
 template<typename Scalar>

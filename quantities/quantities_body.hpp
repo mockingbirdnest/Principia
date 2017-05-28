@@ -1,13 +1,14 @@
 ﻿
 #pragma once
 
+#include "quantities/quantities.hpp"
+
 #include <cmath>
 #include <cstdio>
 #include <limits>
 #include <string>
 
 #include "base/macros.hpp"
-#include "quantities.hpp"
 
 namespace principia {
 namespace quantities {
@@ -172,6 +173,41 @@ struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
   using Type = T;
 };
 
+// NOTE(phl): We use |is_arithmetic| here, not |double|, to make it possible to
+// write something like |Sqrt(2)|.  We could use |is_arithmetic| in more places
+// but it would make the template magic even harder to follow, so let's not do
+// that until we have a good reason.
+template<int n, typename Q>
+struct NthRootGenerator<n, Q, std::enable_if_t<std::is_arithmetic<Q>::value>> {
+  using Type = double;
+};
+
+template<int n, typename Q>
+struct NthRootGenerator<
+    n,
+    Q,
+    std::enable_if_t<(Q::Dimensions::Length % n) == 0 &&
+                     (Q::Dimensions::Mass % n) == 0 &&
+                     (Q::Dimensions::Time % n) == 0 &&
+                     (Q::Dimensions::Current % n) == 0 &&
+                     (Q::Dimensions::Temperature % n) == 0 &&
+                     (Q::Dimensions::Amount % n) == 0 &&
+                     (Q::Dimensions::LuminousIntensity % n) == 0 &&
+                     (Q::Dimensions::Angle % n) == 0>> {
+  enum {
+    Length            = Q::Dimensions::Length / n,
+    Mass              = Q::Dimensions::Mass / n,
+    Time              = Q::Dimensions::Time / n,
+    Current           = Q::Dimensions::Current / n,
+    Temperature       = Q::Dimensions::Temperature / n,
+    Amount            = Q::Dimensions::Amount / n,
+    LuminousIntensity = Q::Dimensions::LuminousIntensity / n,
+    Angle             = Q::Dimensions::Angle / n,
+  };
+  using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
+                                   Amount, LuminousIntensity, Angle>>;
+};
+
 template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}
 
@@ -286,8 +322,7 @@ constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-FORCE_INLINE constexpr Product<Quantity<LDimensions>,
-                                       Quantity<RDimensions>>
+FORCE_INLINE constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -316,89 +351,6 @@ constexpr typename Quantity<RDimensions>::Inverse operator/(
   return typename Quantity<RDimensions>::Inverse(left / right.magnitude_);
 }
 
-template<int exponent>
-constexpr double Pow(double x) {
-  return std::pow(x, exponent);
-}
-
-// Static specializations for frequently-used exponents, so that this gets
-// turned into multiplications at compile time.
-
-template<>
-inline constexpr double Pow<-3>(double x) {
-  return 1 / (x * x * x);
-}
-
-template<>
-inline constexpr double Pow<-2>(double x) {
-  return 1 / (x * x);
-}
-
-template<>
-inline constexpr double Pow<-1>(double x) {
-  return 1 / x;
-}
-
-template<>
-inline constexpr double Pow<0>(double x) {
-  return 1;
-}
-
-template<>
-inline constexpr double Pow<1>(double x) {
-  return x;
-}
-
-template<>
-inline constexpr double Pow<2>(double x) {
-  return x * x;
-}
-
-template<>
-inline constexpr double Pow<3>(double x) {
-  return x * x * x;
-}
-
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(
-    Quantity<D> const& x) {
-  return Exponentiation<Quantity<D>, exponent>(Pow<exponent>(x.magnitude_));
-}
-
-inline double Abs(double const x) {
-  return std::abs(x);
-}
-
-template<typename D>
-FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
-  return Quantity<D>(std::abs(quantity.magnitude_));
-}
-
-template<typename D>
-bool IsFinite(Quantity<D> const& x) {
-  return std::isfinite(x.magnitude_);
-}
-
-template<typename Q>
-constexpr Q Infinity() {
-  return Q(std::numeric_limits<double>::infinity());
-}
-
-template<>
-constexpr double Infinity<double>() {
-  return std::numeric_limits<double>::infinity();
-}
-
-template<typename Q>
-constexpr Q NaN() {
-  return Q(std::numeric_limits<double>::quiet_NaN());
-}
-
-template<>
-constexpr double NaN<double>() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
-
 template<typename Q>
 constexpr Q SIUnit() {
   return Q(1);
@@ -407,6 +359,21 @@ constexpr Q SIUnit() {
 template<>
 constexpr double SIUnit<double>() {
   return 1;
+}
+
+template<typename Q, typename>
+constexpr Q Infinity() {
+  return SIUnit<Q>() * std::numeric_limits<double>::infinity();
+}
+
+template<typename Q, typename>
+constexpr bool IsFinite(Q const& x) {
+  return std::isfinite(x / SIUnit<Q>());
+}
+
+template<typename Q, typename>
+constexpr Q NaN() {
+  return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }
 
 inline std::string FormatUnit(std::string const& name, int const exponent) {
@@ -440,7 +407,7 @@ inline std::string DebugString(double const number, int const precision) {
 
 template<typename D>
 std::string DebugString(Quantity<D> const& quantity, int const precision) {
-  return DebugString(quantity.magnitude_, precision) +
+  return DebugString(quantity / SIUnit<Quantity<D>>(), precision) +
       FormatUnit("m", D::Length) + FormatUnit("kg", D::Mass) +
       FormatUnit("s", D::Time) + FormatUnit("A", D::Current) +
       FormatUnit("K", D::Temperature) + FormatUnit("mol", D::Amount) +
