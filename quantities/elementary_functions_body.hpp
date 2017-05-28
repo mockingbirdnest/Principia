@@ -12,6 +12,15 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
+template<typename Q1, typename Q2, typename, typename>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return SIUnit<Product<Q1, Q2>>() * std::fma(x / SIUnit<Q1>(),
+                                              y / SIUnit<Q2>(),
+                                              z / SIUnit<Product<Q1, Q2>>());
+}
+
 template<typename Q, typename>
 FORCE_INLINE Q Abs(Q const& quantity) {
   return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());

@@ -173,7 +173,10 @@ struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
   using Type = T;
 };
 
-//TODO(phl):Use is_arithmetic elsewhere?
+// NOTE(phl): We use |is_arithmetic| here, not |double|, to make it possible to
+// write something like |Sqrt(2)|.  We could use |is_arithmetic| in more places
+// but it would make the template magic even harder to follow, so let's not do
+// that until we have a good reason.
 template<int n, typename Q>
 struct NthRootGenerator<n, Q, std::enable_if_t<std::is_arithmetic<Q>::value>> {
   using Type = double;

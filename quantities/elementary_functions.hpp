@@ -9,6 +9,14 @@ namespace quantities {
 // friendships otherwise become impossible to untangle.
 namespace internal_quantities {
 
+// Equivalent to |std::fma(x, y, z)|.
+template<typename Q1, typename Q2,
+         typename = std::enable_if<is_quantity<Q1>::value>,
+         typename = std::enable_if<is_quantity<Q2>::value>>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z);
+
 // Equivalent to |std::abs(x)|.
 template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
 Q Abs(Q const& x);
@@ -60,6 +68,7 @@ using internal_quantities::ArcTanh;
 using internal_quantities::Cbrt;
 using internal_quantities::Cos;
 using internal_quantities::Cosh;
+using internal_quantities::FusedMultiplyAdd;
 using internal_quantities::Pow;
 using internal_quantities::Sin;
 using internal_quantities::Sinh;
