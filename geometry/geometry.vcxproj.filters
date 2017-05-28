@@ -119,6 +119,12 @@
     <ClInclude Include="rp2_element_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="perspective.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="perspective_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">

@@ -4,7 +4,7 @@
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
-#include "geometry/r3_projective.hpp"
+#include "geometry/rp2_element.hpp"
 
 namespace principia {
 namespace geometry {
@@ -20,7 +20,7 @@ class Perspective final {
       AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const& from_camera,
       Scalar const& focal);
 
-  R3Projective<Scalar> operator()(
+  RP2Element<Scalar> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
  private:
