@@ -24,6 +24,7 @@ using integrators::QuinlanTremaine1990Order12;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::SolarSystem;
+using quantities::Abs;
 using quantities::Angle;
 using quantities::ArcSin;
 using quantities::Length;

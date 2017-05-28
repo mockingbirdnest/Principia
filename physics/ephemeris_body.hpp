@@ -47,6 +47,7 @@ using quantities::Abs;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
 using quantities::Quotient;
+using quantities::Sqrt;
 using quantities::Square;
 using quantities::Time;
 using quantities::Variation;

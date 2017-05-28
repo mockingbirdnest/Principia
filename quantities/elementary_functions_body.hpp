@@ -10,34 +10,30 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_quantities {
+namespace internal_elementary_functions {
 
-inline double Abs(double const x) {
-  return std::abs(x);
+template<typename Q1, typename Q2, typename, typename>
+Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
+                                 Q2 const& y,
+                                 Product<Q1, Q2> const& z) {
+  return SIUnit<Product<Q1, Q2>>() * std::fma(x / SIUnit<Q1>(),
+                                              y / SIUnit<Q2>(),
+                                              z / SIUnit<Product<Q1, Q2>>());
 }
 
-template<typename D>
-FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
-  return SIUnit<Quantity<D>>() * std::abs(quantity / SIUnit<Quantity<D>>());
+template<typename Q, typename>
+FORCE_INLINE Q Abs(Q const& quantity) {
+  return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
 }
 
-inline double Sqrt(double const x) {
-  return std::sqrt(x);
+template<typename Q, typename>
+SquareRoot<Q> Sqrt(Q const& x) {
+  return SIUnit<SquareRoot<Q>>() * std::sqrt(x / SIUnit<Q>());
 }
 
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
-  return SIUnit<SquareRoot<Quantity<D>>>() *
-         std::sqrt(x / SIUnit<Quantity<D>>());
-}
-
-inline double Cbrt(double const x) {
-  return std::cbrt(x);
-}
-
-template<typename D>
-CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
-  return SIUnit<CubeRoot<Quantity<D>>>() * std::cbrt(x / SIUnit<Quantity<D>>());
+template<typename Q, typename>
+CubeRoot<Q> Cbrt(Q const& x) {
+  return SIUnit<CubeRoot<Q>>() * std::cbrt(x / SIUnit<Q>());
 }
 
 template<int exponent>
@@ -83,11 +79,9 @@ inline constexpr double Pow<3>(double x) {
   return x * x * x;
 }
 
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(
-    Quantity<D> const& x) {
-  return SIUnit<Exponentiation<Quantity<D>, exponent>>() *
-         Pow<exponent>(x / SIUnit<Quantity<D>>());
+template<int exponent, typename Q, typename>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
+  return SIUnit<Exponentiation<Q, exponent>>() * Pow<exponent>(x / SIUnit<Q>());
 }
 
 inline double Sin(Angle const& α) {
@@ -136,6 +130,6 @@ inline Angle ArcTanh(double const x) {
   return std::atanh(x) * si::Radian;
 }
 
-}  // namespace internal_quantities
+}  // namespace internal_elementary_functions
 }  // namespace quantities
 }  // namespace principia

@@ -306,6 +306,7 @@
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
   </ItemGroup>

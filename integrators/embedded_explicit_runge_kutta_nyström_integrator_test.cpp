@@ -22,8 +22,10 @@ namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
+using quantities::Cos;
 using quantities::Length;
 using quantities::Mass;
+using quantities::Sin;
 using quantities::SpecificImpulse;
 using quantities::Speed;
 using quantities::Time;

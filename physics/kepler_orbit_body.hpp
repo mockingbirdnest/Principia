@@ -35,6 +35,8 @@ using quantities::ArcCosh;
 using quantities::ArcSin;
 using quantities::ArcTan;
 using quantities::Cbrt;
+using quantities::Cos;
+using quantities::Cosh;
 using quantities::DebugString;
 using quantities::NaN;
 using quantities::Pow;

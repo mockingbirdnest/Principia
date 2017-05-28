@@ -34,6 +34,7 @@ using physics::MassiveBody;
 using quantities::Force;
 using quantities::Pow;
 using quantities::SpecificImpulse;
+using quantities::Sqrt;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Milli;
