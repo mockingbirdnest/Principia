@@ -1,8 +1,7 @@
 ﻿
 #pragma once
 
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <iostream>
 #include <limits>
 #include <string>
 #include <type_traits>
@@ -76,71 +75,6 @@ using SquareRoot = NthRoot<2, Q>;
 template<typename Q>
 using CubeRoot = NthRoot<3, Q>;
 
-// Returns a positive infinity of |Q|.
-template<typename Q>
-constexpr Q Infinity();
-template<>
-constexpr double Infinity<double>();
-
-// Returns a quiet NaN of |Q|.
-template<typename Q>
-constexpr Q NaN();
-template<>
-constexpr double NaN<double>();
-
-// Returns the base or derived SI Unit of |Q|.
-// For instance, |SIUnit<Action>() == Joule * Second|.
-template<typename Q>
-constexpr Q SIUnit();
-// Returns 1.
-template<>
-constexpr double SIUnit<double>();
-
-template<typename LDimensions, typename RDimensions>
-constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
-operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
-template<typename LDimensions, typename RDimensions>
-constexpr Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
-operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
-template<typename RDimensions>
-constexpr Quantity<RDimensions>
-operator*(double, Quantity<RDimensions> const&);
-template<typename RDimensions>
-constexpr typename Quantity<RDimensions>::Inverse
-operator/(double, Quantity<RDimensions> const&);
-
-// Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
-// explicit specialization yields multiplications statically.
-template<int exponent>
-constexpr double Pow(double x);
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
-
-// Equivalent to |std::abs(x)|.
-double Abs(double x);
-template<typename D>
-Quantity<D> Abs(Quantity<D> const& x);
-
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
-
-template<typename D>
-Angle ArcTan(Quantity<D> const& y, Quantity<D> const& x);
-
-template<typename D>
-bool IsFinite(Quantity<D> const& x);
-
-std::string DebugString(
-    double number,
-    int precision = std::numeric_limits<double>::max_digits10);
-template<typename D>
-std::string DebugString(
-    Quantity<D> const& quantity,
-    int precision = std::numeric_limits<double>::max_digits10);
-
-template<typename D>
-std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
-
 template<typename D>
 class Quantity final {
  public:
@@ -201,25 +135,54 @@ class Quantity final {
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
-
-  template<int exponent, typename BaseDimensions>
-  friend constexpr Exponentiation<Quantity<BaseDimensions>, exponent> Pow(
-      Quantity<BaseDimensions> const& x);
-
-  template<typename E>
-  friend Quantity<E> Abs(Quantity<E> const&);
-
-  template<typename ArgumentDimensions>
-  friend SquareRoot<Quantity<ArgumentDimensions>> Sqrt(
-      Quantity<ArgumentDimensions> const& x);
-  template<typename ArgumentDimensions>
-  friend CubeRoot<Quantity<ArgumentDimensions>> Cbrt(
-      Quantity<ArgumentDimensions> const& x);
-
-  friend Angle ArcTan<>(Quantity<D> const& y, Quantity<D> const& x);
-  friend bool IsFinite<>(Quantity<D> const& x);
-  friend std::string DebugString<>(Quantity<D> const&, int);
 };
+
+template<typename LDimensions, typename RDimensions>
+constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
+operator*(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
+template<typename LDimensions, typename RDimensions>
+constexpr Quotient<Quantity<LDimensions>, Quantity<RDimensions>>
+operator/(Quantity<LDimensions> const&, Quantity<RDimensions> const&);
+template<typename RDimensions>
+constexpr Quantity<RDimensions>
+operator*(double, Quantity<RDimensions> const&);
+template<typename RDimensions>
+constexpr typename Quantity<RDimensions>::Inverse
+operator/(double, Quantity<RDimensions> const&);
+
+// Returns a positive infinity of |Q|.
+template<typename Q>
+constexpr Q Infinity();
+template<>
+constexpr double Infinity<double>();
+
+template<typename D>
+bool IsFinite(Quantity<D> const& x);
+
+// Returns a quiet NaN of |Q|.
+template<typename Q>
+constexpr Q NaN();
+template<>
+constexpr double NaN<double>();
+
+// Returns the base or derived SI Unit of |Q|.
+// For instance, |SIUnit<Action>() == Joule * Second|.
+template<typename Q>
+constexpr Q SIUnit();
+// Returns 1.
+template<>
+constexpr double SIUnit<double>();
+
+std::string DebugString(
+    double number,
+    int precision = std::numeric_limits<double>::max_digits10);
+template<typename D>
+std::string DebugString(
+    Quantity<D> const& quantity,
+    int precision = std::numeric_limits<double>::max_digits10);
+
+template<typename D>
+std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
@@ -229,7 +192,6 @@ struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
 
 }  // namespace internal_quantities
 
-using internal_quantities::Abs;
 using internal_quantities::Amount;
 using internal_quantities::Angle;
 using internal_quantities::Cube;
@@ -243,7 +205,6 @@ using internal_quantities::Length;
 using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;
 using internal_quantities::NaN;
-using internal_quantities::Pow;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
 using internal_quantities::Square;
