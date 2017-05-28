@@ -22,10 +22,9 @@ CubeRoot<Q> Cbrt(Q const& x);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
-template<int exponent>
-constexpr double Pow(double x);
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(Quantity<D> const& x);
+template<int exponent, typename Q,
+         typename = std::enable_if<is_quantity<Q>::value>>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 
 double Sin(Angle const& α);
 double Cos(Angle const& α);

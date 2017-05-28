@@ -70,11 +70,9 @@ inline constexpr double Pow<3>(double x) {
   return x * x * x;
 }
 
-template<int exponent, typename D>
-constexpr Exponentiation<Quantity<D>, exponent> Pow(
-    Quantity<D> const& x) {
-  return SIUnit<Exponentiation<Quantity<D>, exponent>>() *
-         Pow<exponent>(x / SIUnit<Quantity<D>>());
+template<int exponent, typename Q, typename>
+constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
+  return SIUnit<Exponentiation<Q, exponent>>() * Pow<exponent>(x / SIUnit<Q>());
 }
 
 inline double Sin(Angle const& α) {
