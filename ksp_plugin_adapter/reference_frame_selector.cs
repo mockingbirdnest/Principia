@@ -63,6 +63,20 @@ class ReferenceFrameSelector : WindowRenderer {
   public CelestialBody selected_celestial { get; private set; }
   public Vessel target_override { get; set; }
 
+  // Sets the |frame_type| to |type| unless this would be invalid for the
+  // |selected_celestial|, in which case |frame_type| is set to
+  // |BODY_CENTRED_NON_ROTATING|.
+  public void SetFrameType(FrameType type) {
+    if (selected_celestial.is_root() &&
+        (type == FrameType.BARYCENTRIC_ROTATING ||
+         type == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+      frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
+    } else {
+      frame_type = type;
+    }
+    on_change_(FrameParameters());
+  }
+
   public static String Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
