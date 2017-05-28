@@ -304,7 +304,7 @@ public partial class PrincipiaPluginAdapter
             vessel.altitude == -vessel.mainBody.Radius)))) {
       reasons.Add("vessel situation is " + vessel.situation +
                   " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
-                  "at an altitude of " + vessel.altitude + " m above " +
+                  " at an altitude of " + vessel.altitude + " m above " +
                   vessel.mainBody.theName + " whose threshold is " +
                   vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
