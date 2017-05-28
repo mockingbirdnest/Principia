@@ -5,9 +5,11 @@
 
 namespace principia {
 namespace quantities {
-// elementary_functions shares its internal namespace with quantities, because
-// friendships otherwise become impossible to untangle.
-namespace internal_quantities {
+namespace internal_elementary_functions {
+
+using internal_quantities::CubeRoot;
+using internal_quantities::Product;
+using internal_quantities::SquareRoot;
 
 // Equivalent to |std::fma(x, y, z)|.
 template<typename Q1, typename Q2,
@@ -25,6 +27,7 @@ Q Abs(Q const& x);
 template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
 SquareRoot<Q> Sqrt(Q const& x);
 
+// Equivalent to |std::cbrt(x)|.
 template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
 CubeRoot<Q> Cbrt(Q const& x);
 
@@ -56,25 +59,25 @@ Angle ArcSinh(double x);
 Angle ArcCosh(double x);
 Angle ArcTanh(double x);
 
-}  // namespace internal_quantities
+}  // namespace internal_elementary_functions
 
-using internal_quantities::Abs;
-using internal_quantities::ArcCos;
-using internal_quantities::ArcCosh;
-using internal_quantities::ArcSin;
-using internal_quantities::ArcSinh;
-using internal_quantities::ArcTan;
-using internal_quantities::ArcTanh;
-using internal_quantities::Cbrt;
-using internal_quantities::Cos;
-using internal_quantities::Cosh;
-using internal_quantities::FusedMultiplyAdd;
-using internal_quantities::Pow;
-using internal_quantities::Sin;
-using internal_quantities::Sinh;
-using internal_quantities::Sqrt;
-using internal_quantities::Tan;
-using internal_quantities::Tanh;
+using internal_elementary_functions::Abs;
+using internal_elementary_functions::ArcCos;
+using internal_elementary_functions::ArcCosh;
+using internal_elementary_functions::ArcSin;
+using internal_elementary_functions::ArcSinh;
+using internal_elementary_functions::ArcTan;
+using internal_elementary_functions::ArcTanh;
+using internal_elementary_functions::Cbrt;
+using internal_elementary_functions::Cos;
+using internal_elementary_functions::Cosh;
+using internal_elementary_functions::FusedMultiplyAdd;
+using internal_elementary_functions::Pow;
+using internal_elementary_functions::Sin;
+using internal_elementary_functions::Sinh;
+using internal_elementary_functions::Sqrt;
+using internal_elementary_functions::Tan;
+using internal_elementary_functions::Tanh;
 
 }  // namespace quantities
 }  // namespace principia

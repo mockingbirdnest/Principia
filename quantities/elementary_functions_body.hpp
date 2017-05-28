@@ -10,7 +10,7 @@
 
 namespace principia {
 namespace quantities {
-namespace internal_quantities {
+namespace internal_elementary_functions {
 
 template<typename Q1, typename Q2, typename, typename>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
@@ -130,6 +130,6 @@ inline Angle ArcTanh(double const x) {
   return std::atanh(x) * si::Radian;
 }
 
-}  // namespace internal_quantities
+}  // namespace internal_elementary_functions
 }  // namespace quantities
 }  // namespace principia
