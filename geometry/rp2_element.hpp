@@ -41,7 +41,7 @@ class RP2Element {
   friend std::string DebugString(RP2Element<Scalar> const& rp2_element);
 };
 
-// TODO(phl): Improve these operators using |std::fma| so that they define a
+// These operators are implemented using exact multiplication and define a
 // proper equivalence.
 template<typename Scalar>
 bool operator==(RP2Element<Scalar> const& left,

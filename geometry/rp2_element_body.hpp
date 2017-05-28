@@ -6,12 +6,14 @@
 #include <cmath>
 #include <string>
 
+#include "numerics/double_precision.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_rp2_element {
 
+using numerics::TwoProduct;
 using quantities::DebugString;
 using quantities::Infinity;
 using quantities::Square;
@@ -68,10 +70,10 @@ bool operator==(RP2Element<Scalar> const& left,
     return left_is_singular && right_is_singular;
   } else {
     if (left.z_ == 0.0 && right.z_ == 0.0) {
-      return left.x_ * right.y_ == right.x_ * left.y_;
+      return TwoProduct(left.x_, right.y_) == TwoProduct(right.x_, left.y_);
     } else {
-      return left.x_ * right.z_ == right.x_ * left.z_ &&
-             left.y_ * right.z_ == right.y_ * left.z_;
+      return TwoProduct(left.x_, right.z_) == TwoProduct(right.x_, left.z_) &&
+             TwoProduct(left.y_, right.z_) == TwoProduct(right.y_, left.z_);
     }
   }
 }

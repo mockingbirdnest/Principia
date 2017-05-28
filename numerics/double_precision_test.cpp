@@ -12,6 +12,8 @@
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
+namespace numerics {
+namespace internal_double_precision {
 
 using geometry::Displacement;
 using geometry::Frame;
@@ -19,17 +21,19 @@ using geometry::Position;
 using geometry::Point;
 using geometry::R3Element;
 using quantities::Length;
+using quantities::Mass;
+using quantities::Momentum;
+using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Tan;
+using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
+using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Ne;
-
-namespace numerics {
-namespace internal_double_precision {
 
 // Let's not try to compare those things.
 template<typename T, typename U>
@@ -207,6 +211,21 @@ TEST_F(DoublePrecisionTest, Consistencies) {
   double_accumulator -= wide_v1;
   EXPECT_THAT(double_accumulator, Eq(-w2));
   EXPECT_THAT(compensated_accumulator, Ne(-w2));
+}
+
+TEST_F(DoublePrecisionTest, Product) {
+  Mass const a = 1.0 / 3.0 * Kilogram;
+  Speed const b = 1.0 / 7.0 * Metre / Second;
+  DoublePrecision<Momentum> const c = TwoProduct(a, b);
+  // The numbers below were obtained using Mathematica.
+  EXPECT_THAT(c.value,
+              AlmostEquals(6862628003612184.0 * std::pow(0.5, 57) * Kilogram *
+                               Metre / Second,
+                           0));
+  EXPECT_THAT(c.error,
+              AlmostEquals(-3431314001806092.0 * std::pow(0.5, 110) * Kilogram *
+                               Metre / Second,
+                           0));
 }
 
 }  // namespace internal_double_precision
