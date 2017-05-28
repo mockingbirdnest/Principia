@@ -69,6 +69,7 @@ using QuantitiesDeathTest = QuantitiesTest;
 TEST_F(QuantitiesTest, AbsoluteValue) {
   EXPECT_EQ(Abs(-1729), 1729);
   EXPECT_EQ(Abs(1729), 1729);
+  EXPECT_EQ(Abs(-1729 * Metre), 1729 * Metre);
 }
 
 TEST_F(QuantitiesTest, DimensionfulComparisons) {

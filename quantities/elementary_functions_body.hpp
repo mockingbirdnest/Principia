@@ -12,13 +12,9 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
-inline double Abs(double const x) {
-  return std::abs(x);
-}
-
-template<typename D>
-FORCE_INLINE Quantity<D> Abs(Quantity<D> const& quantity) {
-  return SIUnit<Quantity<D>>() * std::abs(quantity / SIUnit<Quantity<D>>());
+template<typename Q, typename>
+FORCE_INLINE Q Abs(Q const& quantity) {
+  return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
 }
 
 inline double Sqrt(double const x) {

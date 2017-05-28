@@ -10,9 +10,8 @@ namespace quantities {
 namespace internal_quantities {
 
 // Equivalent to |std::abs(x)|.
-double Abs(double x);
-template<typename D>
-Quantity<D> Abs(Quantity<D> const& x);
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+Q Abs(Q const& x);
 
 // We need this for templates, for consistency with the dimensionful Sqrt.
 // Equivalent to |std::sqrt(x)|.
