@@ -13,15 +13,12 @@ namespace internal_quantities {
 template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
 Q Abs(Q const& x);
 
-// We need this for templates, for consistency with the dimensionful Sqrt.
 // Equivalent to |std::sqrt(x)|.
-double Sqrt(double x);
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x);
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+SquareRoot<Q> Sqrt(Q const& x);
 
-double Cbrt(double x);
-template<typename D>
-CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x);
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+CubeRoot<Q> Cbrt(Q const& x);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.

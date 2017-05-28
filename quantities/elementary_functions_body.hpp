@@ -17,23 +17,14 @@ FORCE_INLINE Q Abs(Q const& quantity) {
   return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
 }
 
-inline double Sqrt(double const x) {
-  return std::sqrt(x);
+template<typename Q, typename>
+SquareRoot<Q> Sqrt(Q const& x) {
+  return SIUnit<SquareRoot<Q>>() * std::sqrt(x / SIUnit<Q>());
 }
 
-template<typename D>
-SquareRoot<Quantity<D>> Sqrt(Quantity<D> const& x) {
-  return SIUnit<SquareRoot<Quantity<D>>>() *
-         std::sqrt(x / SIUnit<Quantity<D>>());
-}
-
-inline double Cbrt(double const x) {
-  return std::cbrt(x);
-}
-
-template<typename D>
-CubeRoot<Quantity<D>> Cbrt(Quantity<D> const& x) {
-  return SIUnit<CubeRoot<Quantity<D>>>() * std::cbrt(x / SIUnit<Quantity<D>>());
+template<typename Q, typename>
+CubeRoot<Q> Cbrt(Q const& x) {
+  return SIUnit<CubeRoot<Q>>() * std::cbrt(x / SIUnit<Q>());
 }
 
 template<int exponent>

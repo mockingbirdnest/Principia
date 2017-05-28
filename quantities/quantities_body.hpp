@@ -173,6 +173,12 @@ struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
   using Type = T;
 };
 
+//TODO(phl):Use is_arithmetic elsewhere?
+template<int n, typename Q>
+struct NthRootGenerator<n, Q, std::enable_if_t<std::is_arithmetic<Q>::value>> {
+  using Type = double;
+};
+
 template<int n, typename Q>
 struct NthRootGenerator<
     n,

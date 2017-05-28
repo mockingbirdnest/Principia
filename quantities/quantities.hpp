@@ -186,7 +186,7 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
-struct is_quantity : std::is_floating_point<T>, not_constructible {};
+struct is_quantity : std::is_arithmetic<T>, not_constructible {};
 template<typename D>
 struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
 
