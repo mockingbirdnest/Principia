@@ -333,6 +333,11 @@ class Plugin {
   virtual Vector<double, World> VesselNormal(GUID const& vessel_guid) const;
   virtual Vector<double, World> VesselBinormal(GUID const& vessel_guid) const;
 
+  // TODO(egg): UnmanageableVesselTangent, Normal, Binormal.
+
+  virtual Velocity<World> UnmanageableVesselVelocity(
+      RelativeDegreesOfFreedom<World> const& degrees_of_freedom,
+      Index parent_index) const;
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
   virtual Instant GameEpoch() const;
@@ -382,6 +387,10 @@ class Plugin {
   // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
   // while retaining a timeout.
   void UpdatePredictionForRendering(std::int64_t size) const;
+
+  Velocity<World> VesselVelocity(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const;
 
   // Fill |celestials| using the |index| and |parent_index| fields found in
   // |celestial_messages|.

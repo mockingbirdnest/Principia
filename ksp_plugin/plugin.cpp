@@ -975,16 +975,22 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
       PlanetariumRotation())(Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
+Velocity<World> Plugin::UnmanageableVesselVelocity(
+    RelativeDegreesOfFreedom<World> const& degrees_of_freedom,
+    Index const parent_index) const {
+  auto const parent_degrees_of_freedom =
+      FindOrDie(celestials_,
+                parent_index)->current_degrees_of_freedom(current_time_);
+  return VesselVelocity(current_time_,
+                        parent_degrees_of_freedom +
+                            renderer_->WorldToBarycentric(
+                                PlanetariumRotation())(degrees_of_freedom));
+}
+
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
   Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
   auto const& last = vessel.psychohistory().last();
-  Instant const& time = last.time();
-  DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom =
-      last.degrees_of_freedom();
-  DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
-      renderer_->BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
-  return renderer_->PlottingToWorld(time, PlanetariumRotation())(
-             plotting_frame_degrees_of_freedom.velocity());
+  return VesselVelocity(last.time(), last.degrees_of_freedom());
 }
 
 Instant Plugin::GameEpoch() const {
@@ -1239,6 +1245,15 @@ void Plugin::UpdatePredictionForRendering(std::int64_t const size) const {
   parameters.set_max_steps(size + 1);
   vessel.set_prediction_adaptive_step_parameters(parameters);
   vessel.UpdatePrediction(current_time_ + prediction_length_);
+}
+
+Velocity<World> Plugin::VesselVelocity(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const {
+  DegreesOfFreedom<Navigation> const plotting_frame_degrees_of_freedom =
+      renderer_->BarycentricToPlotting(time)(degrees_of_freedom);
+  return renderer_->PlottingToWorld(time, PlanetariumRotation())(
+      plotting_frame_degrees_of_freedom.velocity());
 }
 
 template<typename T>
