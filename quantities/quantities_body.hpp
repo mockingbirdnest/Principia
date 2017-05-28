@@ -352,31 +352,6 @@ constexpr typename Quantity<RDimensions>::Inverse operator/(
 }
 
 template<typename Q>
-constexpr Q Infinity() {
-  return Q(std::numeric_limits<double>::infinity());
-}
-
-template<>
-constexpr double Infinity<double>() {
-  return std::numeric_limits<double>::infinity();
-}
-
-template<typename D>
-bool IsFinite(Quantity<D> const& x) {
-  return std::isfinite(x / SIUnit<Quantity<D>>());
-}
-
-template<typename Q>
-constexpr Q NaN() {
-  return Q(std::numeric_limits<double>::quiet_NaN());
-}
-
-template<>
-constexpr double NaN<double>() {
-  return std::numeric_limits<double>::quiet_NaN();
-}
-
-template<typename Q>
 constexpr Q SIUnit() {
   return Q(1);
 }
@@ -384,6 +359,21 @@ constexpr Q SIUnit() {
 template<>
 constexpr double SIUnit<double>() {
   return 1;
+}
+
+template<typename Q, typename>
+constexpr Q Infinity() {
+  return SIUnit<Q>() * std::numeric_limits<double>::infinity();
+}
+
+template<typename Q, typename>
+constexpr bool IsFinite(Q const& x) {
+  return std::isfinite(x / SIUnit<Q>());
+}
+
+template<typename Q, typename>
+constexpr Q NaN() {
+  return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }
 
 inline std::string FormatUnit(std::string const& name, int const exponent) {

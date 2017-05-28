@@ -150,21 +150,6 @@ template<typename RDimensions>
 constexpr typename Quantity<RDimensions>::Inverse
 operator/(double, Quantity<RDimensions> const&);
 
-// Returns a positive infinity of |Q|.
-template<typename Q>
-constexpr Q Infinity();
-template<>
-constexpr double Infinity<double>();
-
-template<typename D>
-bool IsFinite(Quantity<D> const& x);
-
-// Returns a quiet NaN of |Q|.
-template<typename Q>
-constexpr Q NaN();
-template<>
-constexpr double NaN<double>();
-
 // Returns the base or derived SI Unit of |Q|.
 // For instance, |SIUnit<Action>() == Joule * Second|.
 template<typename Q>
@@ -172,6 +157,22 @@ constexpr Q SIUnit();
 // Returns 1.
 template<>
 constexpr double SIUnit<double>();
+
+// A type trait for testing if a type is a quantity.
+template<typename T>
+struct is_quantity : std::is_arithmetic<T>, not_constructible {};
+template<typename D>
+struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
+
+// Returns a positive infinity of |Q|.
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+constexpr Q Infinity();
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+constexpr bool IsFinite(Q const& x);
+
+// Returns a quiet NaN of |Q|.
+template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+constexpr Q NaN();
 
 std::string DebugString(
     double number,
@@ -183,12 +184,6 @@ std::string DebugString(
 
 template<typename D>
 std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
-
-// A type trait for testing if a type is a quantity.
-template<typename T>
-struct is_quantity : std::is_arithmetic<T>, not_constructible {};
-template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
 
 }  // namespace internal_quantities
 

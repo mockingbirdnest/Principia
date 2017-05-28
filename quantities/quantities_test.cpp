@@ -44,9 +44,7 @@ using ::testing::Eq;
 using ::testing::Lt;
 using ::testing::MatchesRegex;
 
-class QuantitiesTest : public testing::Test {
- protected:
-};
+class QuantitiesTest : public testing::Test {};
 
 using QuantitiesDeathTest = QuantitiesTest;
 

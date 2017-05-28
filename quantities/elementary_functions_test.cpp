@@ -51,9 +51,7 @@ using uk::Rood;
 using ::testing::Eq;
 using ::testing::Lt;
 
-class ElementaryFunctionsTest : public testing::Test {
- protected:
-};
+class ElementaryFunctionsTest : public testing::Test {};
 
 TEST_F(ElementaryFunctionsTest, FMA) {
   EXPECT_EQ(11 * Coulomb,
@@ -67,7 +65,6 @@ TEST_F(ElementaryFunctionsTest, AbsoluteValue) {
   EXPECT_EQ(Abs(1729), 1729);
   EXPECT_EQ(Abs(-1729 * Metre), 1729 * Metre);
 }
-
 
 TEST_F(ElementaryFunctionsTest, DimensionlessExponentiation) {
   double const number   = π - 42;
