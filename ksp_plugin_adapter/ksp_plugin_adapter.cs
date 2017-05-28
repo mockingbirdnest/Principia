@@ -299,9 +299,14 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING && vessel.packed))) {
+          (vessel.situation == Vessel.Situations.FLYING && vessel.packed &&
+           (vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude ||
+            vessel.altitude == -vessel.mainBody.Radius)))) {
       reasons.Add("vessel situation is " + vessel.situation +
-                  " and vessel is " + (vessel.packed ? "packed" : "unpacked"));
+                  " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
+                  " at an altitude of " + vessel.altitude + " m above " +
+                  vessel.mainBody.theName + " whose threshold is " +
+                  vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
     if (!vessel.packed &&
         vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
