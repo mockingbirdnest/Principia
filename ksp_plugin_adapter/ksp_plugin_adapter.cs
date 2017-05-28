@@ -723,28 +723,61 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
+      // Design for compatibility with FAR: if we are in surface mode in an
+      // atmosphere, FAR gives options to display the IAS, EAS, and Mach number,
+      // in any of a number of units.  In that case, we must force the reference
+      // frame to be that of the surface *of the relevant body*, in order to be
+      // consistent with the speed display.
+      bool ferram_owns_the_speed_display =
+          FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Surface &&
+          active_vessel.atmDensity > 0;
+      if (ferram_owns_the_speed_display) {
+        plotting_frame_selector_.get().SetToSurfaceFrameOf(
+            active_vessel.mainBody);
+      }
+
       if (plotting_frame_selector_.get().target_override == null &&
           FlightGlobals.speedDisplayMode ==
               FlightGlobals.SpeedDisplayModes.Target) {
         KSP.UI.Screens.Flight.SpeedDisplay.Instance.textTitle.text = "Target";
       }
 
-      if (has_active_manageable_vessel() &&
-          plugin_.HasVessel(active_vessel.id.ToString()) &&
-          (FlightGlobals.speedDisplayMode ==
-               FlightGlobals.SpeedDisplayModes.Orbit ||
-           FlightGlobals.speedDisplayMode ==
-               FlightGlobals.SpeedDisplayModes.Surface ||
-           plotting_frame_selector_.get().target_override)) {
+      if (FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Orbit ||
+          FlightGlobals.speedDisplayMode ==
+              FlightGlobals.SpeedDisplayModes.Surface ||
+          plotting_frame_selector_.get().target_override) {
+        bool plugin_has_active_manageable_vessel =
+            has_active_manageable_vessel() &&
+            plugin_.HasVessel(active_vessel.id.ToString());
+
         KSP.UI.Screens.Flight.SpeedDisplay speed_display =
             KSP.UI.Screens.Flight.SpeedDisplay.Instance;
         if (speed_display?.textTitle != null &&
-            speed_display?.textSpeed != null) {
+            speed_display?.textSpeed != null &&
+            !ferram_owns_the_speed_display) {
           speed_display.textTitle.text =
               plotting_frame_selector_.get().ShortName();
+          var active_vessel_velocity =
+              plugin_has_active_manageable_vessel
+                  ? (Vector3d)plugin_.VesselVelocity(
+                        active_vessel.id.ToString())
+                  // TODO(egg): I think pos and vel are in Alice coordinates;
+                  // DO NOT SUBMIT before fixing that.
+                  : (Vector3d)plugin_.UnmanageableVesselVelocity(
+                        new QP{q = (XYZ)active_vessel.orbit.pos,
+                               p = (XYZ)active_vessel.orbit.vel},
+                        active_vessel.orbit.referenceBody.flightGlobalsIndex);
           speed_display.textSpeed.text =
-              ((Vector3d)plugin_.VesselVelocity(active_vessel.id.ToString()))
-                  .magnitude.ToString("F1") + "m/s";
+              active_vessel_velocity.magnitude.ToString("F1") + "m/s";
+        }
+
+        if (!plugin_has_active_manageable_vessel) {
+          // TODO(egg): orient the Frenet trihedron even in the case where the
+          // active vessel is unmanageable, similarly to the speed display
+          // above.
+          return;
         }
 
         // Orient the Frenet trihedron.
