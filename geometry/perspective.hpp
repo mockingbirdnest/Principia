@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include "geometry/affine_map.hpp"
@@ -10,7 +10,10 @@ namespace principia {
 namespace geometry {
 namespace internal_perspective {
 
-//TODO(phl):comments
+// A perspective using the pinhole camera model.  It project a point of
+// |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
+// that frame the camera is looking at the origin and looking at the positive
+// z-axis.  The x- and y- axis of the camera correspond to those of ℝP².
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 class Perspective final {

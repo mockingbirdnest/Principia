@@ -15,6 +15,7 @@
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace geometry {
@@ -26,6 +27,7 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 
 class PerspectiveTest : public ::testing::Test {
@@ -60,24 +62,28 @@ TEST_F(PerspectiveTest, Basic) {
   Point<Displacement<World>> const p1 = camera_origin + 1 * camera_z_axis;
   Point<Displacement<World>> const p2 = camera_origin + 10 * camera_z_axis;
   EXPECT_TRUE(perspective(p0).is_at_infinity());
-  EXPECT_EQ(RP2Element<Length>(0 * Metre, 0 * Metre, 1), perspective(p1));
-  EXPECT_EQ(RP2Element<Length>(0 * Metre, 0 * Metre, 1), perspective(p2));
+  EXPECT_THAT(perspective(p1),
+              Componentwise(VanishesBefore(1 * Metre, 10),
+                            VanishesBefore(1 * Metre, 0)));
+  EXPECT_THAT(perspective(p2),
+              Componentwise(VanishesBefore(1 * Metre, 8),
+                            VanishesBefore(1 * Metre, 4)));
 
   // Check that points on the camera x axis get projected on the x axis of ℝP².
   Displacement<World> const camera_x_axis = world_to_camera_rotation.Inverse()(
       Displacement<Camera>({1 * Metre, 0 * Metre, 0 * Metre}));
-  Point<Displacement<World>> const p3 = camera_origin + 5 * camera_x_axis;
-  Point<Displacement<World>> const p4 = camera_origin + 7 * camera_x_axis;
-  EXPECT_EQ(0 * Metre, perspective(p3).y());
-  EXPECT_EQ(0 * Metre, perspective(p4).y());
+  Point<Displacement<World>> const p3 = p1 + 5 * camera_x_axis;
+  Point<Displacement<World>> const p4 = p1 + 7 * camera_x_axis;
+  EXPECT_THAT(perspective(p3).y(), VanishesBefore(1 * Metre, 20));
+  EXPECT_THAT(perspective(p4).y(), VanishesBefore(1 * Metre, 10));
 
   // Check that points on the camera y axis get projected on the y axis of ℝP².
   Displacement<World> const camera_y_axis = world_to_camera_rotation.Inverse()(
       Displacement<Camera>({0 * Metre, 1 * Metre, 0 * Metre}));
-  Point<Displacement<World>> const p5 = camera_origin - 11 * camera_y_axis;
-  Point<Displacement<World>> const p6 = camera_origin + 13 * camera_y_axis;
-  EXPECT_EQ(0 * Metre, perspective(p5).x());
-  EXPECT_EQ(0 * Metre, perspective(p6).x());
+  Point<Displacement<World>> const p5 = p1 - 11 * camera_y_axis;
+  Point<Displacement<World>> const p6 = p1 + 13 * camera_y_axis;
+  EXPECT_THAT(perspective(p5).x(), VanishesBefore(1 * Metre, 120));
+  EXPECT_THAT(perspective(p6).x(), VanishesBefore(1 * Metre, 0));
 
   // Check that aligned points are aligned in ℝP².
   Point<Displacement<World>> const p7 =
@@ -92,9 +98,16 @@ TEST_F(PerspectiveTest, Basic) {
   RP2Element<Length> const q7 = perspective(p7);
   RP2Element<Length> const q8 = perspective(p8);
   RP2Element<Length> const q9 = perspective(p9);
-  EXPECT_EQ(0 * Metre * Metre,
-            (q8.x() - q7.x()) * (q9.y() - q7.y()) -
-                (q9.x() - q7.x()) * (q8.y() - q7.y()));
+  EXPECT_THAT((q8.x() - q7.x()) * (q9.y() - q7.y()) -
+                  (q9.x() - q7.x()) * (q8.y() - q7.y()),
+              VanishesBefore(1 * Metre * Metre, 6));
+
+  // Check that the focal works as expected.
+  Point<Displacement<World>> const p10 =
+      camera_origin + 1 * camera_x_axis + 2 * camera_y_axis + 3 * camera_z_axis;
+  EXPECT_THAT(perspective(p10),
+              Componentwise(AlmostEquals(1.0 / 0.3 * Metre, 3),
+                            AlmostEquals(2.0 / 0.3 * Metre, 2)));
 }
 
 }  // namespace internal_perspective
