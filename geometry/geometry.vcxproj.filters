@@ -172,5 +172,8 @@
     <ClCompile Include="rp2_element_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="perspective_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -8,7 +8,9 @@
 
 namespace principia {
 namespace geometry {
+namespace internal_perspective {
 
+//TODO(phl):comments
 template<typename FromFrame, typename ToFrame, typename Scalar,
          template<typename, typename> class LinearMap>
 class Perspective final {
@@ -27,6 +29,10 @@ class Perspective final {
   AffineMap<FromFrame, ToFrame, Scalar, LinearMap> to_camera_;
   Scalar focal_;
 };
+
+}  // namespace internal_perspective
+
+using internal_perspective::Perspective;
 
 }  // namespace geometry
 }  // namespace principia
