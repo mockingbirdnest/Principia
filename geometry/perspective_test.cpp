@@ -37,6 +37,8 @@ class PerspectiveTest : public ::testing::Test {
 };
 
 TEST_F(PerspectiveTest, Basic) {
+  Point<Displacement<World>> const camera_origin =
+      World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre});
   Rotation<World, Camera> const world_to_camera_rotation(
       π / 6 * Radian,
       π / 4 * Radian,
@@ -44,36 +46,55 @@ TEST_F(PerspectiveTest, Basic) {
       CardanoAngles::ZYX,
       DefinesFrame<Camera>());
   AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
-      World::origin + Displacement<World>({1 * Metre, 2 * Metre, -3 * Metre}),
+      camera_origin,
       Camera::origin,
       world_to_camera_rotation.Forget());
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
       world_to_camera_affine,
       /*focal=*/10 * Metre);
 
-  Point<Displacement<World>> const point =
-      World::origin + Displacement<World>({5 * Metre, 7 * Metre, 11 * Metre});
-  EXPECT_THAT(
-      world_to_camera_rotation(
-          Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre})),
-      Componentwise(
-          AlmostEquals(Sqrt(3.0) / Sqrt(8.0) * Metre, 1),
-          AlmostEquals((3.0 / Sqrt(32.0) - 1.0 / 4.0) * Metre, 0),
-          AlmostEquals(Sqrt(3.0) / 4.0 * (1.0 + 1.0 / Sqrt(2.0)) * Metre, 1)));
-  EXPECT_THAT(
-      world_to_camera_rotation(
-          Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre})),
-      Componentwise(
-          AlmostEquals(1.0 / Sqrt(8.0) * Metre, 0),
-          AlmostEquals(Sqrt(3.0) / 4.0 * (1.0 + 1.0 / Sqrt(2.0)) * Metre, 2),
-          AlmostEquals((1.0 / Sqrt(32.0) - 3.0 / 4.0) * Metre, 1)));
-  EXPECT_THAT(world_to_camera_rotation(
-                  Displacement<World>({0 * Metre, 0 * Metre, 1 * Metre})),
-              Componentwise(AlmostEquals(-1.0 / Sqrt(2.0) * Metre, 1),
-                            AlmostEquals(Sqrt(3.0) / Sqrt(8.0) * Metre, 0),
-                            AlmostEquals(1.0 / Sqrt(8.0) * Metre, 4)));
-  EXPECT_THAT(perspective(point),
-              Eq(RP2Element<Length>(1 * Metre, 1 * Metre, 1)));
+  // Check that points in the camera z axis get projected to the origin of ℝP².
+  Displacement<World> const camera_z_axis = world_to_camera_rotation.Inverse()(
+      Displacement<Camera>({0 * Metre, 0 * Metre, 1 * Metre}));
+  Point<Displacement<World>> const p0 = camera_origin;
+  Point<Displacement<World>> const p1 = camera_origin + 1 * camera_z_axis;
+  Point<Displacement<World>> const p2 = camera_origin + 10 * camera_z_axis;
+  EXPECT_TRUE(perspective(p0).is_at_infinity());
+  EXPECT_EQ(RP2Element<Length>(0 * Metre, 0 * Metre, 1), perspective(p1));
+  EXPECT_EQ(RP2Element<Length>(0 * Metre, 0 * Metre, 1), perspective(p2));
+
+  // Check that points on the camera x axis get projected on the x axis of ℝP².
+  Displacement<World> const camera_x_axis = world_to_camera_rotation.Inverse()(
+      Displacement<Camera>({1 * Metre, 0 * Metre, 0 * Metre}));
+  Point<Displacement<World>> const p3 = camera_origin + 5 * camera_x_axis;
+  Point<Displacement<World>> const p4 = camera_origin + 7 * camera_x_axis;
+  EXPECT_EQ(0 * Metre, perspective(p3).y());
+  EXPECT_EQ(0 * Metre, perspective(p4).y());
+
+  // Check that points on the camera y axis get projected on the y axis of ℝP².
+  Displacement<World> const camera_y_axis = world_to_camera_rotation.Inverse()(
+      Displacement<Camera>({0 * Metre, 1 * Metre, 0 * Metre}));
+  Point<Displacement<World>> const p5 = camera_origin - 11 * camera_y_axis;
+  Point<Displacement<World>> const p6 = camera_origin + 13 * camera_y_axis;
+  EXPECT_EQ(0 * Metre, perspective(p5).x());
+  EXPECT_EQ(0 * Metre, perspective(p6).x());
+
+  // Check that aligned points are aligned in ℝP².
+  Point<Displacement<World>> const p7 =
+      camera_origin +
+      Displacement<World>({17 * Metre, -23 * Metre, 29 * Metre});
+  Point<Displacement<World>> const p8 =
+      camera_origin +
+      Displacement<World>({18 * Metre, -21 * Metre, 24 * Metre});
+  Point<Displacement<World>> const p9 =
+      camera_origin +
+      Displacement<World>({19 * Metre, -19 * Metre, 19 * Metre});
+  RP2Element<Length> const q7 = perspective(p7);
+  RP2Element<Length> const q8 = perspective(p8);
+  RP2Element<Length> const q9 = perspective(p9);
+  EXPECT_EQ(0 * Metre * Metre,
+            (q8.x() - q7.x()) * (q9.y() - q7.y()) -
+                (q9.x() - q7.x()) * (q8.y() - q7.y()));
 }
 
 }  // namespace internal_perspective
