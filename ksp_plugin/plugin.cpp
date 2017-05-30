@@ -976,15 +976,15 @@ Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
 }
 
 Velocity<World> Plugin::UnmanageableVesselVelocity(
-    RelativeDegreesOfFreedom<World> const& degrees_of_freedom,
+    RelativeDegreesOfFreedom<AliceSun> const& degrees_of_freedom,
     Index const parent_index) const {
   auto const parent_degrees_of_freedom =
       FindOrDie(celestials_,
                 parent_index)->current_degrees_of_freedom(current_time_);
-  return VesselVelocity(current_time_,
-                        parent_degrees_of_freedom +
-                            renderer_->WorldToBarycentric(
-                                PlanetariumRotation())(degrees_of_freedom));
+  return VesselVelocity(
+      current_time_,
+      parent_degrees_of_freedom +
+          PlanetariumRotation().Inverse()(degrees_of_freedom));
 }
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {

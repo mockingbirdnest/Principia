@@ -763,8 +763,6 @@ public partial class PrincipiaPluginAdapter
               plugin_has_active_manageable_vessel
                   ? (Vector3d)plugin_.VesselVelocity(
                         active_vessel.id.ToString())
-                  // TODO(egg): I think pos and vel are in Alice coordinates;
-                  // DO NOT SUBMIT before fixing that.
                   : (Vector3d)plugin_.UnmanageableVesselVelocity(
                         new QP{q = (XYZ)active_vessel.orbit.pos,
                                p = (XYZ)active_vessel.orbit.vel},

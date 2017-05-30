@@ -821,7 +821,7 @@ XYZ principia__UnmanageableVesselVelocity(Plugin const* const plugin,
                                          QP const degrees_of_freedom,
                                          int const parent_index) {
   return ToXYZ(CHECK_NOTNULL(plugin)->UnmanageableVesselVelocity(
-      FromQP<RelativeDegreesOfFreedom<World>>(degrees_of_freedom),
+      FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
       parent_index));
 }
 

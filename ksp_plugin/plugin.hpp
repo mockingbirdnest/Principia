@@ -336,7 +336,7 @@ class Plugin {
   // TODO(egg): UnmanageableVesselTangent, Normal, Binormal.
 
   virtual Velocity<World> UnmanageableVesselVelocity(
-      RelativeDegreesOfFreedom<World> const& degrees_of_freedom,
+      RelativeDegreesOfFreedom<AliceSun> const& degrees_of_freedom,
       Index parent_index) const;
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
