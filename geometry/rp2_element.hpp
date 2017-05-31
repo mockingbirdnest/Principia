@@ -58,6 +58,9 @@ std::ostream& operator<<(std::ostream& os,
                          RP2Element<Scalar> const& rp2_element);
 
 }  // namespace internal_rp2_element
+
+using internal_rp2_element::RP2Element;
+
 }  // namespace geometry
 }  // namespace principia
 
