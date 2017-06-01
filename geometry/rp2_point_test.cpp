@@ -1,5 +1,5 @@
 
-#include "geometry/rp2_element.hpp"
+#include "geometry/rp2_point.hpp"
 
 #include <limits>
 
@@ -11,23 +11,23 @@
 
 namespace principia {
 namespace geometry {
-namespace internal_rp2_element {
+namespace internal_rp2_point {
 
 using quantities::Infinity;
 using quantities::Length;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 
-class RP2ElementTest : public ::testing::Test {};
+class RP2PointTest : public ::testing::Test {};
 
-TEST_F(RP2ElementTest, Basic) {
-  RP2Element<Length> p1(1.0 * Metre, 2.0 * Metre, 3.0);
-  RP2Element<Length> p2(2.0 * Metre, 4.0 * Metre, 6.0);
-  RP2Element<Length> p3(2.0 * Metre, 4.0 * Metre, 5.0);
-  RP2Element<Length> p4(1.0 * Metre, 2.0 * Metre, 0.0);
-  RP2Element<Length> p5(2.0 * Metre, 4.0 * Metre, 0.0);
-  RP2Element<Length> p6(0.0 * Metre, -4.0 * Metre, 0.0);
-  RP2Element<Length> p7(0.0 * Metre, -0.0 * Metre, -0.0);
+TEST_F(RP2PointTest, Basic) {
+  RP2Point<Length> p1(1.0 * Metre, 2.0 * Metre, 3.0);
+  RP2Point<Length> p2(2.0 * Metre, 4.0 * Metre, 6.0);
+  RP2Point<Length> p3(2.0 * Metre, 4.0 * Metre, 5.0);
+  RP2Point<Length> p4(1.0 * Metre, 2.0 * Metre, 0.0);
+  RP2Point<Length> p5(2.0 * Metre, 4.0 * Metre, 0.0);
+  RP2Point<Length> p6(0.0 * Metre, -4.0 * Metre, 0.0);
+  RP2Point<Length> p7(0.0 * Metre, -0.0 * Metre, -0.0);
 
   // Basic equality.
   EXPECT_EQ(p1, p2);
@@ -62,6 +62,6 @@ TEST_F(RP2ElementTest, Basic) {
   EXPECT_THAT(p7.y(), AlmostEquals(Infinity<Length>(), 0));
 }
 
-}  // namespace internal_rp2_element
+}  // namespace internal_rp2_point
 }  // namespace geometry
 }  // namespace principia

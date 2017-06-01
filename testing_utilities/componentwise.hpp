@@ -9,7 +9,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
-#include "geometry/rp2_element.hpp"
+#include "geometry/rp2_point.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
 
@@ -48,7 +48,7 @@ class ComponentwiseMatcher2 final {
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
                        testing::MatchResultListener* listener) const;
   template<typename Scalar>
-  bool MatchAndExplain(geometry::RP2Element<Scalar> const& actual,
+  bool MatchAndExplain(geometry::RP2Point<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;

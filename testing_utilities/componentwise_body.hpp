@@ -107,7 +107,7 @@ bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
 template<typename T1Matcher, typename T2Matcher>
 template<typename Scalar>
 bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
-    geometry::RP2Element<Scalar> const& actual,
+    geometry::RP2Point<Scalar> const& actual,
     testing::MatchResultListener* listener) const {
   bool const x_matches = Matcher<Scalar>(t1_matcher_).MatchAndExplain(
                               actual.x(), listener);
