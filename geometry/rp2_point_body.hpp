@@ -18,8 +18,8 @@ using quantities::DebugString;
 using quantities::Infinity;
 using quantities::Square;
 
-template<typename Scalar>
-RP2Point<Scalar>::RP2Point(
+template<typename Scalar, typename Frame>
+RP2Point<Scalar, Frame>::RP2Point(
     Scalar const& x, Scalar const& y, double const z)
     : x_(x), y_(y), z_(z) {
   // [0:0:0] does not represent any point but we cannot reject it as it may
@@ -34,13 +34,13 @@ RP2Point<Scalar>::RP2Point(
   }
 }
 
-template<typename Scalar>
-bool RP2Point<Scalar>::is_at_infinity() const {
+template<typename Scalar, typename Frame>
+bool RP2Point<Scalar, Frame>::is_at_infinity() const {
   return z_ == 0.0;
 }
 
-template<typename Scalar>
-Scalar const RP2Point<Scalar>::x() const {
+template<typename Scalar, typename Frame>
+Scalar const RP2Point<Scalar, Frame>::x() const {
   if (x_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
     return Infinity<Square<Scalar>>() / x_;
@@ -49,8 +49,8 @@ Scalar const RP2Point<Scalar>::x() const {
   }
 }
 
-template<typename Scalar>
-Scalar const RP2Point<Scalar>::y() const {
+template<typename Scalar, typename Frame>
+Scalar const RP2Point<Scalar, Frame>::y() const {
   if (y_ == Scalar() && z_ == 0.0) {
     // Returns an infinity of the right sign.
     return Infinity<Square<Scalar>>() / y_;
@@ -59,9 +59,9 @@ Scalar const RP2Point<Scalar>::y() const {
   }
 }
 
-template<typename Scalar>
-bool operator==(RP2Point<Scalar> const& left,
-                RP2Point<Scalar> const& right) {
+template<typename Scalar, typename Frame>
+bool operator==(RP2Point<Scalar, Frame> const& left,
+                RP2Point<Scalar, Frame> const& right) {
   bool const left_is_singular =
       left.x_ == Scalar() && left.y_ == Scalar() && left.z_ == 0.0;
   bool const right_is_singular =
@@ -78,22 +78,22 @@ bool operator==(RP2Point<Scalar> const& left,
   }
 }
 
-template<typename Scalar>
-bool operator!=(RP2Point<Scalar> const& left,
-                RP2Point<Scalar> const& right) {
+template<typename Scalar, typename Frame>
+bool operator!=(RP2Point<Scalar, Frame> const& left,
+                RP2Point<Scalar, Frame> const& right) {
   return !(left == right);
 }
 
-template<typename Scalar>
-std::string DebugString(RP2Point<Scalar> const & rp2_point) {
+template<typename Scalar, typename Frame>
+std::string DebugString(RP2Point<Scalar, Frame> const & rp2_point) {
   return "[" + DebugString(rp2_point.x_) + ":" +
                DebugString(rp2_point.y_) + ":" +
                DebugString(rp2_point.z_) + "]";
 }
 
-template<typename Scalar>
+template<typename Scalar, typename Frame>
 std::ostream& operator<<(std::ostream& os,
-                         RP2Point<Scalar> const& rp2_point) {
+                         RP2Point<Scalar, Frame> const& rp2_point) {
   os << DebugString(rp2_point);
   return os;
 }

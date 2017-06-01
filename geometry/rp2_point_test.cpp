@@ -3,10 +3,12 @@
 
 #include <limits>
 
+#include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -18,16 +20,20 @@ using quantities::Length;
 using quantities::si::Metre;
 using testing_utilities::AlmostEquals;
 
-class RP2PointTest : public ::testing::Test {};
+class RP2PointTest : public ::testing::Test {
+ protected:
+  using Projective =
+      Frame<serialization::Frame::TestTag, serialization::Frame::TEST, false>;
+};
 
 TEST_F(RP2PointTest, Basic) {
-  RP2Point<Length> p1(1.0 * Metre, 2.0 * Metre, 3.0);
-  RP2Point<Length> p2(2.0 * Metre, 4.0 * Metre, 6.0);
-  RP2Point<Length> p3(2.0 * Metre, 4.0 * Metre, 5.0);
-  RP2Point<Length> p4(1.0 * Metre, 2.0 * Metre, 0.0);
-  RP2Point<Length> p5(2.0 * Metre, 4.0 * Metre, 0.0);
-  RP2Point<Length> p6(0.0 * Metre, -4.0 * Metre, 0.0);
-  RP2Point<Length> p7(0.0 * Metre, -0.0 * Metre, -0.0);
+  RP2Point<Length, Projective> p1(1.0 * Metre, 2.0 * Metre, 3.0);
+  RP2Point<Length, Projective> p2(2.0 * Metre, 4.0 * Metre, 6.0);
+  RP2Point<Length, Projective> p3(2.0 * Metre, 4.0 * Metre, 5.0);
+  RP2Point<Length, Projective> p4(1.0 * Metre, 2.0 * Metre, 0.0);
+  RP2Point<Length, Projective> p5(2.0 * Metre, 4.0 * Metre, 0.0);
+  RP2Point<Length, Projective> p6(0.0 * Metre, -4.0 * Metre, 0.0);
+  RP2Point<Length, Projective> p7(0.0 * Metre, -0.0 * Metre, -0.0);
 
   // Basic equality.
   EXPECT_EQ(p1, p2);

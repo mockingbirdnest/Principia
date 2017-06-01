@@ -25,7 +25,7 @@ class Perspective final {
       AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const& from_camera,
       Scalar const& focal);
 
-  RP2Point<Scalar> operator()(
+  RP2Point<Scalar, ToFrame> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
  private:

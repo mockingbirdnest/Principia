@@ -10,7 +10,7 @@ namespace internal_rp2_point {
 // An |RP2Point| is an element of ℝP², the real projective plane.  |Scalar|
 // must be a 1-dimensional vector space over ℝ, typically represented by
 // |Quantity| or |double|.
-template<typename Scalar>
+template<typename Scalar, typename Frame>
 class RP2Point {
  public:
   // Constructs a point from a set of homogeneous coordinates.  This class
@@ -31,31 +31,31 @@ class RP2Point {
   Scalar y_;
   double z_;
 
-  template<typename S>
-  friend bool operator==(RP2Point<S> const& left,
-                         RP2Point<S> const& right);
-  template<typename S>
-  friend bool operator!=(RP2Point<S> const& left,
-                         RP2Point<S> const& right);
-  template<typename Scalar>
-  friend std::string DebugString(RP2Point<Scalar> const& rp2_point);
+  template<typename S, typename F>
+  friend bool operator==(RP2Point<S, F> const& left,
+                         RP2Point<S, F> const& right);
+  template<typename S, typename F>
+  friend bool operator!=(RP2Point<S, F> const& left,
+                         RP2Point<S, F> const& right);
+  template<typename S, typename F>
+  friend std::string DebugString(RP2Point<S, F> const& rp2_point);
 };
 
 // These operators are implemented using exact multiplication and define a
 // proper equivalence.
-template<typename Scalar>
-bool operator==(RP2Point<Scalar> const& left,
-                RP2Point<Scalar> const& right);
-template<typename Scalar>
-bool operator!=(RP2Point<Scalar> const& left,
-                RP2Point<Scalar> const& right);
+template<typename Scalar, typename Frame>
+bool operator==(RP2Point<Scalar, Frame> const& left,
+                RP2Point<Scalar, Frame> const& right);
+template<typename Scalar, typename Frame>
+bool operator!=(RP2Point<Scalar, Frame> const& left,
+                RP2Point<Scalar, Frame> const& right);
 
-template<typename Scalar>
-std::string DebugString(RP2Point<Scalar> const& rp2_point);
+template<typename Scalar, typename Frame>
+std::string DebugString(RP2Point<Scalar, Frame> const& rp2_point);
 
-template<typename Scalar>
+template<typename Scalar, typename Frame>
 std::ostream& operator<<(std::ostream& os,
-                         RP2Point<Scalar> const& rp2_point);
+                         RP2Point<Scalar, Frame> const& rp2_point);
 
 }  // namespace internal_rp2_point
 

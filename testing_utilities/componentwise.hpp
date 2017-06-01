@@ -47,8 +47,8 @@ class ComponentwiseMatcher2 final {
   template<typename T1, typename T2>
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
                        testing::MatchResultListener* listener) const;
-  template<typename Scalar>
-  bool MatchAndExplain(geometry::RP2Point<Scalar> const& actual,
+  template<typename Scalar, typename Frame>
+  bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
