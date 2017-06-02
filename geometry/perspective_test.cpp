@@ -7,7 +7,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
-#include "geometry/rp2_element.hpp"
+#include "geometry/rp2_point.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -95,9 +95,9 @@ TEST_F(PerspectiveTest, Basic) {
   Point<Displacement<World>> const p9 =
       camera_origin +
       Displacement<World>({19 * Metre, -19 * Metre, 19 * Metre});
-  RP2Element<Length> const q7 = perspective(p7);
-  RP2Element<Length> const q8 = perspective(p8);
-  RP2Element<Length> const q9 = perspective(p9);
+  RP2Point<Length, Camera> const q7 = perspective(p7);
+  RP2Point<Length, Camera> const q8 = perspective(p8);
+  RP2Point<Length, Camera> const q9 = perspective(p9);
   EXPECT_THAT((q8.x() - q7.x()) * (q9.y() - q7.y()) -
                   (q9.x() - q7.x()) * (q8.y() - q7.y()),
               VanishesBefore(1 * Metre * Metre, 6));
