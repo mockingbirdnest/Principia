@@ -16,7 +16,7 @@ char const Version[] =
 PLATFORM=$(uname -s)
 if [ "$PLATFORM" == "Darwin" ]; then
   echo -e "$VERSION_TEMPLATE" |
-  sed "s/%%DATE%%/`date -j -u -f \"%Y-%m-%d %H:%M:%S %z\" \"$(git log -1 --format=%cd --date=iso)\"`/" |
+  sed "s/%%DATE%%/`date -j -u -f \"%Y-%m-%d %H:%M:%S %z\" -u +%Y-%m-%dT%H:%M:%SZ \"$(git log -1 --format=%cd --date=iso)\"`/" |
   sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > $TEMPORARY_FILE
 else
   echo -e "$VERSION_TEMPLATE" |
