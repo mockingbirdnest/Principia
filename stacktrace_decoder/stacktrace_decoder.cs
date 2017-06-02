@@ -112,9 +112,9 @@ class StackTraceDecoder {
   }
 
   private static void PrintUsage() {
-    Console.WriteLine(
-        "Usage: stacktrace_decoder " +
-        "<info_file_uri> <pdb_file> [--unity-crash-at-commit=<sha1>]");
+    Console.WriteLine("Usage: stacktrace_decoder " +
+                      "<info_file_uri> <principia_pdb_file> " +
+                      "[--unity-crash-at-commit=<sha1>]");
   }
 }
 
