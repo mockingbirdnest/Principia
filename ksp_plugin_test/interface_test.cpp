@@ -141,15 +141,14 @@ class InterfaceTest : public testing::Test {
 
   InterfaceTest()
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
-        hexadecimal_simple_plugin_(
-            ReadFromHexadecimalFile("simple_plugin.proto.hex")),
-        serialized_simple_plugin_(
-            ReadFromBinaryFile("simple_plugin.proto.bin")) {}
+        hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
+            SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
+        serialized_simple_plugin_(ReadFromBinaryFile(
+            SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
-  static std::string ReadFromBinaryFile(std::string const& filename) {
-    std::fstream file =
-        std::fstream(SOLUTION_DIR / "ksp_plugin_test" / filename,
-                     std::ios::in | std::ios::binary);
+  static std::string ReadFromBinaryFile(
+      std::experimental::filesystem::path const& filename) {
+    std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
     CHECK(file.good());
     std::string binary;
     while (!file.eof()) {
@@ -161,9 +160,9 @@ class InterfaceTest : public testing::Test {
     return binary;
   }
 
-  static std::string ReadFromHexadecimalFile(std::string const& filename) {
-    std::fstream file =
-        std::fstream(SOLUTION_DIR / "ksp_plugin_test" / filename);
+  static std::string ReadFromHexadecimalFile(
+      std::experimental::filesystem::path const& filename) {
+    std::fstream file = std::fstream(filename);
     CHECK(file.good());
     std::string hex;
     while (!file.eof()) {
@@ -605,6 +604,25 @@ TEST_F(InterfaceTest, DeserializePlugin) {
           &deserializer,
           &plugin);
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
+                               0,
+                               &deserializer,
+                               &plugin);
+  EXPECT_THAT(plugin, NotNull());
+  principia__DeletePlugin(&plugin);
+}
+
+// Use for debugging saves given by users.
+TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
+  PushDeserializer* deserializer = nullptr;
+  Plugin const* plugin = nullptr;
+  std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
+      R"(P:\Public Mockingbird\Principia\Crashes\1422\persistent.proto.hex)");
+  principia__DeserializePlugin(
+          hexadecimal_plugin.c_str(),
+          hexadecimal_plugin.size(),
+          &deserializer,
+          &plugin);
+  principia__DeserializePlugin(hexadecimal_plugin.c_str(),
                                0,
                                &deserializer,
                                &plugin);
