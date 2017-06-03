@@ -92,7 +92,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(P:\Public Mockingbird\Principia\Journals\JOURNAL.20170422-143027)";
+      R"(C:\Program Files\Kerbal Space Program\1.2.2\glog\Principia\JOURNAL.20170603-094244)";
   Player player(path);
   int count = 0;
   while (player.Play()) {
@@ -106,30 +106,25 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
               << player.last_method_out_return().DebugString();
 
-#if 0
+#if 1
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::RenderedPredictionNodes::extension);
+        serialization::SerializePlugin::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(3220795440);
-    in->set_vessel_guid("cf6715cb-8780-4c39-8c01-3cc0cf35683b");
-    in->mutable_sun_world_position()->set_x(-3412377724.9237709);
-    in->mutable_sun_world_position()->set_y(5875636073.1931963);
-    in->mutable_sun_world_position()->set_z(-11782002982.199373);
+    in->set_plugin(1524276256);
+    in->set_serializer(0);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::RenderedPredictionNodes::extension);
+        serialization::SerializePlugin::extension);
     auto* out = extension->mutable_out();
-    out->set_ascending(1);
-    out->set_descending(2);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<RenderedPredictionNodes>(method_in,
-                                                  method_out_return,
-                                                  player));
+  CHECK(RunIfAppropriate<SerializePlugin>(method_in,
+                                          method_out_return,
+                                          player));
 #endif
 }
 

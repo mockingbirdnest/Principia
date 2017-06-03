@@ -715,6 +715,36 @@ TEST_P(EphemerisTest, Serialization) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
+// Exercises the bug in #1422.
+TEST_P(EphemerisTest, Checkpointing) {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+  Position<ICRFJ2000Equator> centre_of_mass;
+  Time period;
+  SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
+
+  // Set up an ephemeris with a step of 1 hour and integrate it to get one
+  // checkpoint.  Because 8 hours divide 1 day, we have an integral number of
+  // series in the continuous trajectories.
+  Ephemeris<ICRFJ2000Equator> ephemeris1(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(), 1 * Hour));
+  ephemeris1.Prolong(t0_ + 7.5 * Hour);
+  serialization::Ephemeris message1;
+  ephemeris1.WriteToMessage(&message1);
+
+  auto const ephemeris2 =
+      Ephemeris<ICRFJ2000Equator>::ReadFromMessage(message1);
+  ephemeris2->Prolong(t0_ + 50 * Hour);
+  ephemeris2->ForgetBefore(t0_ + 7 * Hour);
+
+  serialization::Ephemeris message2;
+  ephemeris2->WriteToMessage(&message2);
+}
+
 // The gravitational acceleration on an elephant located at the pole.
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   Time const duration = 1 * Second;
@@ -1017,7 +1047,7 @@ INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,
     EphemerisTest,
     ::testing::Values(
-        &McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        //&McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
         &Quinlan1999Order8A<Position<ICRFJ2000Equator>>()));
 
 }  // namespace internal_ephemeris
