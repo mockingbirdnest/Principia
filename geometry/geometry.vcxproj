@@ -292,6 +292,8 @@
     <ClInclude Include="named_quantities.hpp" />
     <ClInclude Include="pair.hpp" />
     <ClInclude Include="pair_body.hpp" />
+    <ClInclude Include="perspective.hpp" />
+    <ClInclude Include="perspective_body.hpp" />
     <ClInclude Include="point.hpp" />
     <ClInclude Include="point_body.hpp" />
     <ClInclude Include="grassmann_body.hpp" />
@@ -309,8 +311,8 @@
     <ClInclude Include="r3_element.hpp" />
     <ClInclude Include="rotation_body.hpp" />
     <ClInclude Include="rotation.hpp" />
-    <ClInclude Include="rp2_element.hpp" />
-    <ClInclude Include="rp2_element_body.hpp" />
+    <ClInclude Include="rp2_point.hpp" />
+    <ClInclude Include="rp2_point_body.hpp" />
     <ClInclude Include="serialization.hpp" />
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
@@ -322,6 +324,7 @@
     <ClCompile Include="grassmann_test.cpp" />
     <ClCompile Include="identity_test.cpp" />
     <ClCompile Include="pair_test.cpp" />
+    <ClCompile Include="perspective_test.cpp" />
     <ClCompile Include="point_test.cpp" />
     <ClCompile Include="affine_map_test.cpp" />
     <ClCompile Include="orthogonal_map_test.cpp" />
@@ -330,7 +333,7 @@
     <ClCompile Include="r3x3_matrix_test.cpp" />
     <ClCompile Include="r3_element_test.cpp" />
     <ClCompile Include="rotation_test.cpp" />
-    <ClCompile Include="rp2_element_test.cpp" />
+    <ClCompile Include="rp2_point_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
   </ItemGroup>
   <ItemGroup>

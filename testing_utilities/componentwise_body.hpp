@@ -105,6 +105,24 @@ bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
 }
 
 template<typename T1Matcher, typename T2Matcher>
+template<typename Scalar, typename Frame>
+bool ComponentwiseMatcher2<T1Matcher, T2Matcher>::MatchAndExplain(
+    geometry::RP2Point<Scalar, Frame> const& actual,
+    testing::MatchResultListener* listener) const {
+  bool const x_matches = Matcher<Scalar>(t1_matcher_).MatchAndExplain(
+                              actual.x(), listener);
+  if (!x_matches) {
+    *listener << " in the x coordinate; ";
+  }
+  bool const y_matches = Matcher<Scalar>(t2_matcher_).MatchAndExplain(
+                              actual.y(), listener);
+  if (!y_matches) {
+    *listener << " in the y coordinate; ";
+  }
+  return x_matches && y_matches;
+}
+
+template<typename T1Matcher, typename T2Matcher>
 void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeTo(
     std::ostream* out) const {
   *out << "t1 ";
