@@ -1101,6 +1101,8 @@ public partial class PrincipiaPluginAdapter
           // TODO(egg): use the centre of mass.  Here it's a bit tedious, some
           // transform nonsense must probably be done.
           part.rb.position = (Vector3d)part_actual_degrees_of_freedom.q;
+          part.rb.transform.position =
+              (Vector3d)part_actual_degrees_of_freedom.q;
           part.rb.velocity = (Vector3d)part_actual_degrees_of_freedom.p;
         }
       }
@@ -1108,6 +1110,7 @@ public partial class PrincipiaPluginAdapter
           physicalObject physical_object in FlightGlobals.physicalObjects.Where(
               o => o != null && o.rb != null)) {
         physical_object.rb.position += q_correction_at_root_part;
+        physical_object.rb.transform.position += q_correction_at_root_part;
         physical_object.rb.velocity += v_correction_at_root_part;
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
