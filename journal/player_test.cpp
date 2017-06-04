@@ -92,7 +92,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(C:\Program Files\Kerbal Space Program\1.2.2\glog\Principia\JOURNAL.20170603-094244)";  // NOLINT
+      R"(C:\Program Files\Kerbal Space Program\1.2.2\glog\Principia\JOURNAL.20170604-182825)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play()) {

@@ -943,9 +943,16 @@ public partial class PrincipiaPluginAdapter
               new QP{q = (XYZ)(Vector3d)part.rb.position,
                      p = (XYZ)(Vector3d)part.rb.velocity});
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
-            plugin_.IncrementPartIntrinsicForce(
-                part.flightID,
-                (XYZ)part_id_to_intrinsic_force_[part.flightID]);
+            // When a Kerbal is doing an EVA and holding on to a ladder, the
+            // ladder imbues them with their weight at the location of the
+            // vessel to which the ladder is attached.  This leads to fantastic
+            // effects where doing an EVA accelerates the vessel, see #1415.
+            // Just say no to stupidity.
+            if (!(vessel.isEVA && vessel.evaController.OnALadder)) {
+              plugin_.IncrementPartIntrinsicForce(
+                  part.flightID,
+                  (XYZ)part_id_to_intrinsic_force_[part.flightID]);
+            }
           }
           if (part_id_to_intrinsic_forces_.ContainsKey(part.flightID)) {
             foreach (
@@ -1153,7 +1160,7 @@ public partial class PrincipiaPluginAdapter
 
   private void ReportVesselsAndParts() {
     // We fetch the forces from the census of nonconservatives here;
-    // part.forces, part.force, and part.torque are cleared by the/
+    // part.forces, part.force, and part.torque are cleared by the
     // FlightIntegrator's FixedUpdate (while we are yielding).
     if (PluginRunning()) {
       if (has_active_manageable_vessel() && FlightGlobals.ActiveVessel.packed) {
