@@ -842,6 +842,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void FixedUpdate() {
+    UnityEngine.Debug.Log("Principia Principia FixedUpdate");
     if (GameSettings.ORBIT_WARP_DOWN_AT_SOI) {
       Log.Info("Setting GameSettings.ORBIT_WARP_DOWN_AT_SOI to false");
       GameSettings.ORBIT_WARP_DOWN_AT_SOI = false;
@@ -927,6 +928,7 @@ public partial class PrincipiaPluginAdapter
   private System.Collections.IEnumerator
   AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
     yield return new UnityEngine.WaitForFixedUpdate();
+    UnityEngine.Debug.Log("Principia Principia WaitForFixedUpdate");
 
   try {
     // Unity's physics has just finished doing its thing.  If we correct the
@@ -1135,6 +1137,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void DisableVesselPrecalculate() {
+    UnityEngine.Debug.Log("Principia DisableVesselPrecalculate");
+    UnityEngine.Debug.Log("Principia ActiveVessel precalc enabled: " +
+                          FlightGlobals.ActiveVessel?.precalc?.enabled);
+    Log.Error("Principia PluginRunning: " + PluginRunning());
     foreach (var vessel in
              FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
@@ -1142,6 +1148,26 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
+    UnityEngine.Debug.Log("Principia SetBodyFramesAndPrecalculateVessels");
+    UnityEngine.Debug.Log("Principia FlightGlobals readiness: " +
+                          FlightGlobals.ready);
+    UnityEngine.Debug.Log("Principia ActiveVessel state: " +
+                          FlightGlobals.ActiveVessel?.state);
+    UnityEngine.Debug.Log("Principia ActiveVessel situation: " +
+                          FlightGlobals.ActiveVessel?.situation);
+    UnityEngine.Debug.Log("Principia ActiveVessel enabled: " +
+                          FlightGlobals.ActiveVessel?.enabled);
+    UnityEngine.Debug.Log("Principia ActiveVessel orbitDriver mode: " +
+    FlightGlobals.ActiveVessel?.orbitDriver?.updateMode);
+    UnityEngine.Debug.Log("Principia ActiveVessel orbitDriver last mode: " +
+    FlightGlobals.ActiveVessel?.orbitDriver?.lastMode);
+    if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
+            OrbitDriver.UpdateMode.TRACK_Phys &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
+            OrbitDriver.UpdateMode.IDLE) {
+      UnityEngine.Debug.Log("Principia skipping AdvanceTime and SetBodyFrames");
+    } else {
     if (PluginRunning()) {
       double plugin_time = plugin_.CurrentTime();
       double universal_time = Planetarium.GetUniversalTime();
@@ -1155,6 +1181,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
     SetBodyFrames();
+    }
     // Unfortunately there is no way to get scheduled between Planetarium and
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
     // body frames for our weird tilt, and run VesselPrecalculate manually.
@@ -1176,6 +1203,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdateVesselOrbits() {
+    UnityEngine.Debug.Log("Principia UpdateVesselOrbits");
     if (PluginRunning()) {
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
@@ -1183,6 +1211,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void ReportVesselsAndParts() {
+    UnityEngine.Debug.Log("Principia ReportVesselsAndParts");
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the/
     // FlightIntegrator's FixedUpdate (while we are yielding).
