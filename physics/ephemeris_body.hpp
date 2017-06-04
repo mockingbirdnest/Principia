@@ -337,7 +337,17 @@ void Ephemeris<Frame>::ForgetBefore(Instant const& t) {
   auto it = std::upper_bound(
                 checkpoints_.begin(), checkpoints_.end(), t,
                 [](Instant const& left, Checkpoint const& right) {
-                  return left < right.instance->time().value;
+                  // This lambda must implement a < comparison.
+                  for (auto const& checkpoint : right.checkpoints) {
+                    if (!checkpoint.IsAfter(left)) {
+                      // The individual |checkpoint| will become invalid, so
+                      // |right| <= |left|.
+                      return false;
+                    }
+                  }
+                  // All the individual checkpoints will remain valid, so
+                  // |left| < |right|.
+                  return true;
                 });
   if (it != checkpoints_.end()) {
     CHECK_LT(t, it->instance->time().value);

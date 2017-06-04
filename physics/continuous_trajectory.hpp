@@ -103,6 +103,12 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
   // is to initialize them with GetCheckpoint.
   class Checkpoint final {
+   public:
+    // Returns true if this checkpoint is after |time| and would remain valid
+    // after a call to |ForgetBefore(time)|.
+    bool IsAfter(Instant const& time) const;
+
+   private:
     // The members have the same meaning as those of class
     // |ContinuousTrajectory|.
     Checkpoint(Instant const& t_max,

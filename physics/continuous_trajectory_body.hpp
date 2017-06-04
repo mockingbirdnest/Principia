@@ -259,6 +259,12 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
 }
 
 template<typename Frame>
+bool ContinuousTrajectory<Frame>::Checkpoint::IsAfter(
+    Instant const& time) const {
+  return time < t_max_;
+}
+
+template<typename Frame>
 ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
     Instant const& t_max,
     Length const& adjusted_tolerance,
