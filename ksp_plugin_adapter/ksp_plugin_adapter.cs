@@ -1142,19 +1142,28 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void SetBodyFramesAndPrecalculateVessels() {
-    if (PluginRunning()) {
-      double plugin_time = plugin_.CurrentTime();
-      double universal_time = Planetarium.GetUniversalTime();
-      time_is_advancing_ = time_is_advancing(universal_time);
-      if (time_is_advancing_) {
-        plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-        if (!is_post_apocalyptic_) {
-          is_post_apocalyptic_ |=
-              plugin_.HasEncounteredApocalypse(out revelation_);
+    if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
+            OrbitDriver.UpdateMode.TRACK_Phys &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
+            OrbitDriver.UpdateMode.IDLE) {
+      Log.Info("Skipping AdvanceTime and SetBodyFrames while waiting for the " +
+               "vessel to be fully ready (see #1421).");
+    } else {
+      if (PluginRunning()) {
+        double plugin_time = plugin_.CurrentTime();
+        double universal_time = Planetarium.GetUniversalTime();
+        time_is_advancing_ = time_is_advancing(universal_time);
+        if (time_is_advancing_) {
+          plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+          if (!is_post_apocalyptic_) {
+            is_post_apocalyptic_ |=
+                plugin_.HasEncounteredApocalypse(out revelation_);
+          }
         }
       }
+      SetBodyFrames();
     }
-    SetBodyFrames();
     // Unfortunately there is no way to get scheduled between Planetarium and
     // VesselPrecalculate, so we get scheduled after VesselPrecalculate, set the
     // body frames for our weird tilt, and run VesselPrecalculate manually.
