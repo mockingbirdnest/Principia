@@ -817,6 +817,14 @@ void principia__SetVerboseLogging(int const level) {
   return m.Return();
 }
 
+XYZ principia__UnmanageableVesselVelocity(Plugin const* const plugin,
+                                         QP const degrees_of_freedom,
+                                         int const parent_index) {
+  return ToXYZ(CHECK_NOTNULL(plugin)->UnmanageableVesselVelocity(
+      FromQP<RelativeDegreesOfFreedom<AliceSun>>(degrees_of_freedom),
+      parent_index));
+}
+
 // Calls |plugin->UpdateCelestialHierarchy| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 void principia__UpdateCelestialHierarchy(Plugin const* const plugin,

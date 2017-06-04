@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5127.
+  extensions 5000 to 5999;  // Last used: 5128.
 }
 
 message AdvanceTime {
@@ -1326,6 +1326,23 @@ message SetVerboseLogging {
     required int32 level = 1;
   }
   optional In in = 1;
+}
+
+message UnmanageableVesselVelocity {
+  extend Method {
+    optional UnmanageableVesselVelocity extension = 5128;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required QP degrees_of_freedom = 2;
+    required int32 celestial_index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message UpdateCelestialHierarchy {

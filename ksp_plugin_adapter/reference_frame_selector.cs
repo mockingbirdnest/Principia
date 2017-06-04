@@ -77,6 +77,14 @@ class ReferenceFrameSelector : WindowRenderer {
     on_change_(FrameParameters());
   }
 
+  // Sets the |frame_type| to |BODY_SURFACE| and sets |selected_celestial| to
+  // the given |celestial|.
+  public void SetToSurfaceFrameOf(CelestialBody celestial) {
+    frame_type = FrameType.BODY_SURFACE;
+    selected_celestial = celestial;
+    on_change_(FrameParameters());
+  }
+
   public static String Name(FrameType type,
                             CelestialBody selected,
                             Vessel target_override) {
