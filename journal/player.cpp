@@ -35,6 +35,11 @@ bool Player::Play() {
     return false;
   }
 
+#if 0
+  LOG(ERROR) << "\n" << method_in->ShortDebugString() << "\n"
+             << method_out_return->ShortDebugString();
+#endif
+
   auto const before = std::chrono::system_clock::now();
 
 #include "journal/player.generated.cc"
