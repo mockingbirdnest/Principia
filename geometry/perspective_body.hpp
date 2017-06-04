@@ -40,6 +40,14 @@ operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
                                    coordinates_in_camera.z / focal_);
 }
 
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
+    Point<Vector<Scalar, FromFrame>> const& center,
+    Scalar const& radius) const {}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

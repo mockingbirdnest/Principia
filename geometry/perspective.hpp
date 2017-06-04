@@ -28,6 +28,9 @@ class Perspective final {
   RP2Point<Scalar, ToFrame> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
+  bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& center,
+                        Scalar const& radius) const;
+
  private:
   AffineMap<FromFrame, ToFrame, Scalar, LinearMap> to_camera_;
   Scalar focal_;
