@@ -335,9 +335,15 @@ class Plugin {
 
   // TODO(egg): UnmanageableVesselTangent, Normal, Binormal.
 
+  // Takes degrees of freedom relative to the celestial with the given index,
+  // and returns the velocity in the plotting frame expressed in the coordinates
+  // of |World|.  This is used to display the velocity of a vessel not known to
+  // the plugin.
   virtual Velocity<World> UnmanageableVesselVelocity(
       RelativeDegreesOfFreedom<AliceSun> const& degrees_of_freedom,
       Index parent_index) const;
+  // Same as |UnmanageableVesselVelocity|, but uses the known degrees of freedom
+  // of a vessel in |vessels_|.
   virtual Velocity<World> VesselVelocity(GUID const& vessel_guid) const;
 
   virtual Instant GameEpoch() const;
