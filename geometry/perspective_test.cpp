@@ -8,6 +8,7 @@
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/sphere.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/elementary_functions.hpp"
@@ -108,6 +109,38 @@ TEST_F(PerspectiveTest, Basic) {
   EXPECT_THAT(perspective(p10),
               Componentwise(AlmostEquals(1.0 / 0.3 * Metre, 3),
                             AlmostEquals(2.0 / 0.3 * Metre, 2)));
+}
+
+TEST_F(PerspectiveTest, IsHiddenBySphere) {
+  Perspective<World, Camera, Length, OrthogonalMap> perspective(
+      AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
+      /*focal=*/1 * Metre);
+
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre}),
+      /*radius=*/3 * Metre);
+
+  // Within the sphere.
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({11 * Metre, 19 * Metre, 32 * Metre});
+  // Far from the sphere.
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({100 * Metre, 50 * Metre, -70 * Metre});
+  // Behind the sphere.
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>({100 * Metre, 202 * Metre, 305 * Metre});
+  // In front of the sphere.
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>({2 * Metre, 4.05 * Metre, 6 * Metre});
+
+  EXPECT_TRUE(perspective.IsHiddenBySphere(p1, sphere));
+  EXPECT_FALSE(perspective.IsHiddenBySphere(p2, sphere));
+  EXPECT_TRUE(perspective.IsHiddenBySphere(p3, sphere));
+  EXPECT_FALSE(perspective.IsHiddenBySphere(p4, sphere));
 }
 
 }  // namespace internal_perspective

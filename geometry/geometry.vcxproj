@@ -317,6 +317,8 @@
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="sign_body.hpp" />
     <ClInclude Include="sign.hpp" />
+    <ClInclude Include="sphere.hpp" />
+    <ClInclude Include="sphere_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />

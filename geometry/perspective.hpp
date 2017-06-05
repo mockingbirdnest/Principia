@@ -5,6 +5,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/sphere.hpp"
 
 namespace principia {
 namespace geometry {
@@ -19,18 +20,23 @@ template<typename FromFrame, typename ToFrame, typename Scalar,
 class Perspective final {
  public:
   Perspective(
-      AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
+      AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const& from_camera,
       Scalar const& focal);
   Perspective(
-      AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const& from_camera,
+      AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
       Scalar const& focal);
 
   RP2Point<Scalar, ToFrame> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
+  bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
+                        Sphere<Scalar, FromFrame> const& sphere) const;
+
  private:
-  AffineMap<FromFrame, ToFrame, Scalar, LinearMap> to_camera_;
-  Scalar focal_;
+  AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const from_camera_;
+  AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const to_camera_;
+  Point<Vector<Scalar, FromFrame>> const camera_;
+  Scalar const focal_;
 };
 
 }  // namespace internal_perspective
