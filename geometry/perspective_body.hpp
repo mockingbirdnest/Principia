@@ -53,15 +53,14 @@ template<typename FromFrame,
          template<typename, typename> class LinearMap>
 bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
     Point<Vector<Scalar, FromFrame>> const& point,
-    Point<Vector<Scalar, FromFrame>> const& centre,
-    Scalar const& radius) const {
+    Sphere<Scalar, FromFrame> const& sphere) const {
   using Displacement = Vector<Scalar, FromFrame>;
 
-  Displacement const camera_to_centre = centre - camera_;
+  Displacement const camera_to_centre = sphere.centre() - camera_;
   Displacement const camera_to_point = point - camera_;
-  Displacement const centre_to_point = point - centre;
+  Displacement const centre_to_point = point - sphere.centre();
 
-  Product<Scalar, Scalar> const r² = radius * radius;
+  Product<Scalar, Scalar> const& r² = sphere.radius²();
   Product<Scalar, Scalar> const camera_to_centre² =
       InnerProduct(camera_to_centre, camera_to_centre);
   Product<Scalar, Scalar> const camera_to_point² =

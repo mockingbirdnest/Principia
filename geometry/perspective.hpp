@@ -5,6 +5,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rp2_point.hpp"
+#include "geometry/sphere.hpp"
 
 namespace principia {
 namespace geometry {
@@ -29,8 +30,7 @@ class Perspective final {
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
-                        Point<Vector<Scalar, FromFrame>> const& centre,
-                        Scalar const& radius) const;
+                        Sphere<Scalar, FromFrame> const& sphere) const;
 
  private:
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const from_camera_;
