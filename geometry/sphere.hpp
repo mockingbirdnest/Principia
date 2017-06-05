@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 
 #include "geometry/grassmann.hpp"
@@ -19,12 +19,12 @@ class Sphere {
 
   Point<Vector<Scalar, Frame>> const& centre() const;
   Scalar const& radius() const;
-  Product<Scalar, Scalar> const radius²() const;
+  Product<Scalar, Scalar> const radiusÂ²() const;
 
  private:
   Point<Vector<Scalar, Frame>> const centre_;
   Scalar const radius_;
-  Product<Scalar, Scalar> const radius²_;
+  Product<Scalar, Scalar> const radiusÂ²_;
 };
 
 }  // namespace internal_sphere

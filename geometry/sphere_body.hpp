@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 
 #include "geometry/sphere.hpp"
@@ -12,7 +12,7 @@ Sphere<Scalar, Frame>::Sphere(Point<Vector<Scalar, Frame>> const& centre,
                               Scalar const& radius)
     : centre_(centre),
       radius_(radius),
-      radius²_(radius_ * radius_) {}
+      radiusÂ²_(radius_ * radius_) {}
 
 template<typename Scalar, typename Frame>
 Point<Vector<Scalar, Frame>> const& Sphere<Scalar, Frame>::centre() const {
@@ -25,8 +25,8 @@ Scalar const& Sphere<Scalar, Frame>::radius() const {
 }
 
 template<typename Scalar, typename Frame>
-Product<Scalar, Scalar> const Sphere<Scalar, Frame>::radius²() const {
-  return radius²_;
+Product<Scalar, Scalar> const Sphere<Scalar, Frame>::radiusÂ²() const {
+  return radiusÂ²_;
 }
 
 }  // namespace internal_sphere
