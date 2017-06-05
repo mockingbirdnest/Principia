@@ -40,6 +40,7 @@ public partial class PrincipiaPluginAdapter
   private MapNodePool map_node_pool_;
 
   private bool selecting_active_vessel_target_ = false;
+  private bool selecting_target_celestial_ = false;
 
   private IntPtr plugin_ = IntPtr.Zero;
 
@@ -1356,9 +1357,13 @@ public partial class PrincipiaPluginAdapter
 
   private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                     Mouse.Buttons buttons) {
-    if (buttons == Mouse.Buttons.Left &&
-        PlanetariumCamera.fetch.target != node.mapObject) {
-      PlanetariumCamera.fetch.SetTarget(node.mapObject);
+    if (buttons == Mouse.Buttons.Left) {
+      if (selecting_target_celestial_) {
+        FlightGlobals.fetch.SetVesselTarget(node.mapObject.celestialBody);
+        selecting_target_celestial_ = false;
+      } else if (PlanetariumCamera.fetch.target != node.mapObject) {
+        PlanetariumCamera.fetch.SetTarget(node.mapObject);
+      }
     }
   }
 
@@ -1386,9 +1391,13 @@ public partial class PrincipiaPluginAdapter
             Vector3d.Cross(ray.direction,
                            ScaledSpace.LocalToScaledSpace(celestial.position) -
                                ray.origin).magnitude;
-        if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius &&
-            PlanetariumCamera.fetch.target != celestial.MapObject) {
-          PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
+        if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius) {
+          if (selecting_target_celestial_) {
+            FlightGlobals.fetch.SetVesselTarget(celestial);
+            selecting_target_celestial_ = false;
+          } else if (PlanetariumCamera.fetch.target != celestial.MapObject) {
+            PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
+          }
         }
       }
     }
@@ -1645,6 +1654,9 @@ public partial class PrincipiaPluginAdapter
         using (new HorizontalLayout()) {
           selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
               selecting_active_vessel_target_, "Select target vessel...");
+          if (selecting_active_vessel_target_) {
+            selecting_target_celestial_ = false;
+          }
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
             UnityEngine.GUILayout.Label(
                 "Target: " +
@@ -1790,6 +1802,29 @@ public partial class PrincipiaPluginAdapter
     Sun.Instance.sunFlare.enabled =
         UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
                                      text  : "Enable Sun lens flare");
+    if (MapView.MapIsEnabled &&
+        FlightGlobals.ActiveVessel?.orbitTargeter != null) {
+      using (new HorizontalLayout()) {
+        selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
+            selecting_target_celestial_, "Select target celestial...");
+        if (selecting_target_celestial_) {
+          selecting_active_vessel_target_ = false;
+        }
+        CelestialBody target_celestial =
+            FlightGlobals.fetch.VesselTarget as CelestialBody;
+        if (target_celestial) {
+          UnityEngine.GUILayout.Label("Target: " + target_celestial.name,
+                                      UnityEngine.GUILayout.ExpandWidth(true));
+          if (UnityEngine.GUILayout.Button("Clear",
+                                           UnityEngine.GUILayout.Width(50))) {
+            selecting_target_celestial_ = false;
+            FlightGlobals.fetch.SetVesselTarget(null);
+          }
+        }
+      }
+    } else {
+      selecting_target_celestial_ = false;
+    }
   }
 
   private void LoggingSettings() {
