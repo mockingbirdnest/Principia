@@ -743,8 +743,9 @@ void Plugin::ComputeAndRenderNodes(
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& ascending,
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
-  CHECK(renderer_->HasTargetVessel());
-  UpdatePredictionForRendering(begin.trajectory()->Size());
+  if (renderer_->HasTargetVessel()) {
+    UpdatePredictionForRendering(begin.trajectory()->Size());
+  }
 
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);

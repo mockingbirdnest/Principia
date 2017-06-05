@@ -1546,6 +1546,32 @@ public partial class PrincipiaPluginAdapter
             vessel    : null,
             celestial : celestial);
       }
+      var frame_type = plotting_frame_selector_.get().frame_type;
+      if (frame_type ==
+              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
+          frame_type == ReferenceFrameSelector.FrameType
+                            .BODY_CENTRED_PARENT_DIRECTION) {
+        var primary =
+            plotting_frame_selector_.get().selected_celestial.referenceBody;
+        IntPtr ascending_nodes_iterator;
+        IntPtr descending_nodes_iterator;
+        plugin_.RenderedPredictionNodes(vessel_guid,
+                                        sun_world_position,
+                                        out ascending_nodes_iterator,
+                                        out descending_nodes_iterator);
+        map_node_pool_.RenderAndDeleteMarkers(
+            ascending_nodes_iterator,
+            MapObject.ObjectType.AscendingNode,
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : primary);
+        map_node_pool_.RenderAndDeleteMarkers(
+            descending_nodes_iterator,
+            MapObject.ObjectType.DescendingNode,
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : primary);
+      }
     }
   }
 
@@ -1603,6 +1629,32 @@ public partial class PrincipiaPluginAdapter
             MapNodePool.NodeSource.FLIGHT_PLAN,
             vessel    : null,
             celestial : celestial);
+      }
+      var frame_type = plotting_frame_selector_.get().frame_type;
+      if (frame_type ==
+              ReferenceFrameSelector.FrameType.BARYCENTRIC_ROTATING ||
+          frame_type == ReferenceFrameSelector.FrameType
+                            .BODY_CENTRED_PARENT_DIRECTION) {
+        var primary =
+            plotting_frame_selector_.get().selected_celestial.referenceBody;
+        IntPtr ascending_nodes_iterator;
+        IntPtr descending_nodes_iterator;
+        plugin_.FlightPlanRenderedNodes(vessel_guid,
+                                        sun_world_position,
+                                        out ascending_nodes_iterator,
+                                        out descending_nodes_iterator);
+        map_node_pool_.RenderAndDeleteMarkers(
+            ascending_nodes_iterator,
+            MapObject.ObjectType.AscendingNode,
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : primary);
+        map_node_pool_.RenderAndDeleteMarkers(
+            descending_nodes_iterator,
+            MapObject.ObjectType.DescendingNode,
+            MapNodePool.NodeSource.PREDICTION,
+            vessel    : null,
+            celestial : primary);
       }
     }
   }
