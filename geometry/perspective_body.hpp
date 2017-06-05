@@ -88,7 +88,7 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
   // centre and the point as seen from the camera and (2) the angle of the cone.
   // If the point does not lie in the cone then surely it is visible.
   bool const is_in_cone =
-      inner_product * inner_product < camera_to_horizon² * camera_to_point²;
+      inner_product * inner_product > camera_to_horizon² * camera_to_point²;
   if (!is_in_cone) {
     return false;
   }

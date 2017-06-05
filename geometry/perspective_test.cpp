@@ -110,6 +110,39 @@ TEST_F(PerspectiveTest, Basic) {
                             AlmostEquals(2.0 / 0.3 * Metre, 2)));
 }
 
+TEST_F(PerspectiveTest, IsHiddenBySphere) {
+  Perspective<World, Camera, Length, OrthogonalMap> perspective(
+      AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
+      /*focal=*/1 * Metre);
+
+  Point<Displacement<World>> const centre =
+      World::origin +
+      Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre});
+  Length const radius = 3 * Metre;
+
+  // Within the sphere.
+  Point<Displacement<World>> const p1 =
+      centre +
+      Displacement<World>({1 * Metre, -1 * Metre, 2 * Metre});
+  // Far from the sphere.
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({100 * Metre, 50 * Metre, -70 * Metre});
+  // Behind the sphere.
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>({100 * Metre, 202 * Metre, 305 * Metre});
+  // In front of the sphere.
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>({2 * Metre, 5 * Metre, 6 * Metre});
+
+  EXPECT_TRUE(perspective.IsHiddenBySphere(p1, centre, radius));
+  EXPECT_FALSE(perspective.IsHiddenBySphere(p2, centre, radius));
+  EXPECT_TRUE(perspective.IsHiddenBySphere(p3, centre, radius));
+  EXPECT_FALSE(perspective.IsHiddenBySphere(p4, centre, radius));
+}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

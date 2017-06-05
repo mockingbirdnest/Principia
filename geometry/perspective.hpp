@@ -35,7 +35,7 @@ class Perspective final {
  private:
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const from_camera_;
   AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const to_camera_;
-  Point<Vector<Scalar, FromFrame>> const& camera_;
+  Point<Vector<Scalar, FromFrame>> const camera_;
   Scalar const focal_;
 };
 
