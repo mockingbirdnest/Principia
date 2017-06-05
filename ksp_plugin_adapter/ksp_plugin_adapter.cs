@@ -101,13 +101,6 @@ public partial class PrincipiaPluginAdapter
   private RenderingActions map_renderer_;
   private RenderingActions galaxy_cube_rotator_;
 
-  private enum PluginSource {
-   SAVED_STATE,
-   ORBITAL_ELEMENTS,
-   CARTESIAN_CONFIG,
-  }
-  private PluginSource plugin_source_;
-
   private KSP.UI.Screens.Flight.NavBall navball_;
   private UnityEngine.Texture compass_navball_texture_;
   private UnityEngine.Texture inertial_navball_texture_;
@@ -490,7 +483,6 @@ public partial class PrincipiaPluginAdapter
       flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
-      plugin_source_ = PluginSource.SAVED_STATE;
     } else {
       Log.Warning("No principia state found, creating one");
       ResetPlugin();
@@ -1634,41 +1626,14 @@ public partial class PrincipiaPluginAdapter
 
   private void DrawMainWindow(int window_id) {
     using (new VerticalLayout()) {
-      String plugin_state;
       if (!PluginRunning()) {
-        plugin_state = "not started";
-      } else if (!time_is_advancing_) {
-        plugin_state = "holding";
-      } else {
-        plugin_state = "running";
+        UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
-      UnityEngine.GUILayout.TextArea(text : "Plugin is " + plugin_state);
-      String last_reset_information;
-      if (!PluginRunning()) {
-        last_reset_information = "";
-      } else {
-        String plugin_source = "";
-        switch (plugin_source_) {
-          case (PluginSource.SAVED_STATE):
-             plugin_source = "a saved state";
-            break;
-          case (PluginSource.ORBITAL_ELEMENTS):
-             plugin_source = "KSP orbital elements";
-            break;
-          case (PluginSource.CARTESIAN_CONFIG):
-             plugin_source = "a cartesian configuration file";
-            break;
-        }
-        last_reset_information =
-            "Plugin was constructed at " +
-            plugin_construction_.ToUniversalTime().ToString("O") + " from " +
-            plugin_source;
-      }
-      UnityEngine.GUILayout.TextArea(last_reset_information);
       String version;
-      String build_date;
-      Interface.GetVersion(build_date: out build_date, version: out version);
-      UnityEngine.GUILayout.TextArea(version + " built on " + build_date);
+      String unused_build_date;
+      Interface.GetVersion(build_date: out unused_build_date,
+                           version: out version);
+      UnityEngine.GUILayout.TextArea(version);
       bool changed_history_length = false;
       Selector(history_lengths_,
                ref history_length_index_,
@@ -1982,7 +1947,6 @@ public partial class PrincipiaPluginAdapter
                 ")");
     }
     if (cartesian_configs.Length > 0) {
-      plugin_source_ = PluginSource.CARTESIAN_CONFIG;
       if (cartesian_configs.Length > 1) {
         Log.Fatal("too many Cartesian configs (" + cartesian_configs.Length +
                   ")");
@@ -2049,7 +2013,6 @@ public partial class PrincipiaPluginAdapter
         Log.Fatal("Exception while reading initial state: " + e.ToString());
       }
     } else {
-      plugin_source_ = PluginSource.ORBITAL_ELEMENTS;
       // We create the plugin at J2000 (a.k.a. Instant{}), rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
       // initial state.
