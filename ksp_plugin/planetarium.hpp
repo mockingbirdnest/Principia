@@ -2,6 +2,7 @@
 #pragma once
 
 #include "base/not_null.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rp2_point.hpp"
@@ -15,6 +16,7 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using base::not_null;
+using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
 using geometry::RP2Point;
@@ -29,8 +31,12 @@ class Planetarium final {
                   perspective,
               not_null<NavigationFrame*> plotting_frame);
 
+  // A naïve method that doesn't pay any attention to the perspective but tries
+  // to ensure that the points before the perspective are separated by less than
+  // |tolerance|.
   std::vector<RP2Point<Length, Camera>> PlotMethod1(
       Trajectory<Barycentric> const& trajectory,
+      Instant const& now,
       Length const& tolerance) const;
 
 private:
