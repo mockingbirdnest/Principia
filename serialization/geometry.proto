@@ -136,7 +136,8 @@ message Frame {
     APPARENT_BUBBLE = 12;
     BARYCENTRIC = 7;
     BODY_WORLD = 9;
-    BUBBLE = 13;
+    // BUBBLE = 13;
+    CAMERA = 14;
     CELESTIAL_SPHERE = 8;
     NAVBALL = 10;
     NAVIGATION = 4;

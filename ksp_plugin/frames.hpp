@@ -34,13 +34,7 @@ using AliceWorld = Frame<serialization::Frame::PluginTag,
 using Barycentric = Frame<serialization::Frame::PluginTag,
                           serialization::Frame::BARYCENTRIC, true>;
 
-// The axes are those of |Barycentre|.  The origin is the barycentre of the
-// physics bubble, that is, the barycentre of the set of unpacked vessels.
-// We identify the origin of |World| with it.
-using Bubble = Frame<serialization::Frame::PluginTag,
-                     serialization::Frame::BUBBLE, false>;
-
-// The axes are those of |Barycentre|.  The origin is that of |World|.  This
+// The axes are those of |Barycentric|.  The origin is that of |World|.  This
 // frame is used for degrees of freedom obtained after the physics simulation of
 // the game has run, and before we perform our correction: the origin has no
 // physical significance.
@@ -82,6 +76,10 @@ using AliceSun = Frame<serialization::Frame::PluginTag,
 using WorldSun = Frame<serialization::Frame::PluginTag,
                        serialization::Frame::WORLD_SUN, false>;
 
+// Used to identify coordinates in the projective plane.
+using Camera = Frame<serialization::Frame::PluginTag,
+                     serialization::Frame::CAMERA, false>;
+
 // Convenient instances of types from |physics| for the above frames.
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
@@ -97,7 +95,7 @@ using internal_frames::AliceWorld;
 using internal_frames::ApparentBubble;
 using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
-using internal_frames::Bubble;
+using internal_frames::Camera;
 using internal_frames::CelestialSphere;
 using internal_frames::Navball;
 using internal_frames::Navigation;
