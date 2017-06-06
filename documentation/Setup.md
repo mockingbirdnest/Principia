@@ -1,4 +1,4 @@
-#Instructions for building Principia on Windows
+# Instructions for building Principia on Windows
 
 These instructions are for Visual Studio 2015, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
@@ -34,12 +34,18 @@ This project depends upon:
 - parts of the Chromium codebase (for stack tracing support in glog on Windows),
   *modified according to the instructions below*.
 
-##Installation steps.
-###Dowloading Principia.
+## Installation steps
+
+### Dowloading Principia
+
 In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
-###KSP and Unity assemblies.
+
+### KSP and Unity assemblies
+
 Copy these assemblies to the directory `<root>\KSP Assemblies`.
-###Downloading the Google libraries.
+
+### Downloading the Google libraries
+
 In `<root>\Google`, run the following commands.
 ```powershell
 git clone "https://github.com/mockingbirdnest/glog.git"
@@ -58,13 +64,15 @@ git am "chromium.patch"
 rm "chromium.patch"
 cd ..
 ```
-###Downloading the third party libraries.
+### Downloading the third party libraries
+
 In `<root>\Third Party`, run the following command.
 ```powershell
 git clone "https://github.com/mockingbirdnest/Optional.git"
 ```
 
-###Building.
+### Building
+
 In `<root>`, run the following command.
 ```powershell
 .\Principia\rebuild_all_solutions.ps1
