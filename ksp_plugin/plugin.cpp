@@ -93,12 +93,6 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using ::operator<<;
 
-namespace {
-
-Length const fitting_tolerance = 1 * Milli(Metre);
-
-}  // namespace
-
 Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
                Angle const& planetarium_rotation)
