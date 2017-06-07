@@ -241,7 +241,7 @@ $(ADAPTER): $(GENERATED_PROFILES)
 ######### Distribution
 
 release: $(ADAPTER) $(KSP_PLUGIN)
-	cd $(FINAL_PRODUCTS_DIR); zip -r principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).zip GameData/
+	cd $(FINAL_PRODUCTS_DIR); gzip -c -r GameData/ > principia_$(UNAME_S)-$(shell git describe --tags --always --dirty --abbrev=40 --long).gz
 
 ########## Cleaning
 

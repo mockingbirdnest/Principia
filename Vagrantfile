@@ -1,10 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure(2) do |config|
+Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/zesty64"
-  # config.vm.synced_folder ".", "/home/vagrant/principia"
-  config.vm.synced_folder "../KSP Assemblies", "/home/vagrant/KSP Assemblies", id: "Assemblies"
+  config.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
 
   script = <<SCRIPT
 echo Provisioning Principia
