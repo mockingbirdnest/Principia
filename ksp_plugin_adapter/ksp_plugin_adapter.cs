@@ -879,6 +879,12 @@ public partial class PrincipiaPluginAdapter
 
       if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
+        string target_id =
+            FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
+        if (!plotting_frame_selector_.get().target_override &&
+            target_id != null && plugin_.HasVessel(target_id)) {
+          plugin_.UpdatePrediction(target_id);
+        }
       }
       plugin_.ForgetAllHistoriesBefore(universal_time -
                                        history_lengths_[history_length_index_]);
@@ -1442,6 +1448,20 @@ public partial class PrincipiaPluginAdapter
             plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia,
             GLLines.Style.SOLID);
+        string target_id =
+            FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
+        if (!plotting_frame_selector_.get().target_override &&
+            target_id != null && plugin_.HasVessel(target_id)) {
+          GLLines.RenderAndDeleteTrajectory(
+              plugin_.RenderedVesselTrajectory(target_id, sun_world_position),
+              XKCDColors.Goldenrod,
+              GLLines.Style.FADED);
+          RenderPredictionMarkers(target_id, sun_world_position);
+          GLLines.RenderAndDeleteTrajectory(
+              plugin_.RenderedPrediction(target_id, sun_world_position),
+              XKCDColors.PigPink,
+              GLLines.Style.SOLID);
+        }
         if (plugin_.FlightPlanExists(active_vessel_guid)) {
           RenderFlightPlanMarkers(active_vessel_guid, sun_world_position);
 
