@@ -38,6 +38,9 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::VanishesBefore;
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::Ge;
+using ::testing::Le;
 using ::testing::Return;
 
 class PlanetariumTest : public ::testing::Test {};
@@ -79,12 +82,15 @@ TEST_F(PlanetariumTest, PlotMethod0) {
 
   Planetarium planetarium({sphere}, perspective, &plotting_frame);
   auto const rp2_points =
-      planetarium.PlotMethod0(trajectory, Instant() + 10 * Second);
+      planetarium.PlotMethod0(trajectory.Begin(),
+                              trajectory.End(),
+                              Instant() + 10 * Second);
 
   for (auto const& rp2_point : rp2_points) {
     // The following limit is obtained by elementary geometry by noticing that
     // the circle is viewed from the camera under an angle of π / 6.
-    EXPECT_LE(rp2_point.x(), 5.0 / Sqrt(3.0) * Metre);
+    EXPECT_THAT(rp2_point.x(), AllOf(Ge(-5.0 / Sqrt(3.0) * Metre),
+                                     Le(5.0 / Sqrt(3.0) * Metre)));
     EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 6, 13));
   }
 }

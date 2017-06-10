@@ -22,12 +22,13 @@ Planetarium::Planetarium(
       plotting_frame_(plotting_frame) {}
 
 std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod0(
-    DiscreteTrajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now) const {
   auto const plottable_spheres = ComputePlottableSpheres(now);
 
   std::vector<RP2Point<Length, Camera>> rp2_points;
-  for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
+  for (auto it = begin; it != end; ++it) {
     AppendRP2PointIfNeeded(it.time(),
                            it.degrees_of_freedom(),
                            plottable_spheres,
@@ -37,15 +38,17 @@ std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod0(
 }
 
 std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod1(
-    Trajectory<Barycentric> const& trajectory,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now,
     Length const& tolerance) const {
   auto const plottable_spheres = ComputePlottableSpheres(now);
 
+  auto const& trajectory = *begin.trajectory();
   std::vector<RP2Point<Length, Camera>> rp2_points;
-  Instant t = trajectory.t_min();
+  Instant t = begin.time();
   Time Δt;
-  while (t <= trajectory.t_max()) {
+  while (t < end.time()) {
     DegreesOfFreedom<Barycentric> const barycentric_degrees_of_freedom =
         trajectory.EvaluateDegreesOfFreedom(t);
     AppendRP2PointIfNeeded(t,

@@ -13,7 +13,6 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/rigid_motion.hpp"
-#include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -29,7 +28,6 @@ using geometry::Sphere;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::RigidMotion;
-using physics::Trajectory;
 using quantities::Length;
 
 // A planetarium is a system of spheres together with a perspective.  In this
@@ -37,23 +35,26 @@ using quantities::Length;
 class Planetarium final {
  public:
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
-  // In particular Navigration vs. NavigationFrame is a mess.
+  // In particular Navigation vs. NavigationFrame is a mess.
   // TODO(phl): Maybe replace the spheres with an ephemeris.
   Planetarium(std::vector<Sphere<Length, Barycentric>> const& spheres,
               Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
               not_null<NavigationFrame*> plotting_frame);
 
-  // A no-op method that just returns all the points in the |trajectory|.
+  // A no-op method that just returns all the points in the trajectory defined
+  // by |begin| and |end|.
   std::vector<RP2Point<Length, Camera>> PlotMethod0(
-      DiscreteTrajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
 
   // A naïve method that doesn't pay any attention to the perspective but tries
   // to ensure that the points before the perspective are separated by less than
   // |tolerance|.
   std::vector<RP2Point<Length, Camera>> PlotMethod1(
-      Trajectory<Barycentric> const& trajectory,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now,
       Length const& tolerance) const;
 
