@@ -348,6 +348,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="manœuvre.hpp" />
     <ClInclude Include="manœuvre_body.hpp" />
     <ClInclude Include="part.hpp" />
+    <ClInclude Include="planetarium.hpp" />
     <ClInclude Include="plugin.hpp" />
     <ClInclude Include="interface.hpp" />
     <ClInclude Include="renderer.hpp" />
@@ -371,6 +372,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="part.cpp" />
     <ClCompile Include="part_subsets.cpp" />
     <ClCompile Include="pile_up.cpp" />
+    <ClCompile Include="planetarium.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="renderer.cpp" />
     <ClCompile Include="vessel.cpp" />

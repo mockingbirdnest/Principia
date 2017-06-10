@@ -19,7 +19,6 @@ using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::ApparentBubble;
-using ksp_plugin::Bubble;
 using physics::DegreesOfFreedom;
 using physics::RelativeDegreesOfFreedom;
 using physics::RigidMotion;

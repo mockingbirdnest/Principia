@@ -3,6 +3,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "gmock/gmock.h"
 #include "physics/dynamic_frame.hpp"
 #include "physics/rigid_motion.hpp"
 
