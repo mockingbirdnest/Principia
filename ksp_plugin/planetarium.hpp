@@ -56,9 +56,14 @@ class Planetarium final {
       Length const& tolerance) const;
 
  private:
+  // Computes the coordinates of the |spheres_| in the |plotting_frame_| at time
+  // |now|.
   std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
+  // Appends to |rp2_points| a point corresponding to the
+  // |barycentric_degrees_of_freedom| transformed in the |plotting_frame_| at
+  // time |t|, but only if that point is not hidden by a sphere.
   void AppendRP2PointIfNeeded(
       Instant const& t,
       DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom,
