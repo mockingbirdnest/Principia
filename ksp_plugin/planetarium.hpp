@@ -30,8 +30,13 @@ using physics::RigidMotion;
 using physics::Trajectory;
 using quantities::Length;
 
+// A planetarium is a system of spheres together with a perspective.  In this
+// setting it is possible to draw trajectories in the projective plane.
 class Planetarium final {
  public:
+  // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
+  // In particular Navigration vs. NavigationFrame is a mess.
+  // TODO(phl): Maybe replace the spheres with an ephemeris.
   Planetarium(std::vector<Sphere<Length, Barycentric>> const& spheres,
               Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,

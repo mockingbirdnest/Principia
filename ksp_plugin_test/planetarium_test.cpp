@@ -8,15 +8,18 @@
 #include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
 #include "physics/mock_dynamic_frame.hpp"
+#include "physics/rigid_motion.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::LinearMap;
@@ -24,12 +27,18 @@ using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::MockDynamicFrame;
+using physics::RigidMotion;
+using physics::RigidTransformation;
 using quantities::Cos;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::VanishesBefore;
+using ::testing::_;
+using ::testing::Return;
 
 class PlanetariumTest : public ::testing::Test {};
 
@@ -50,8 +59,6 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   }
 
   // The camera is located as {0, 20, 0} and is looking along -y.
-  // TODO(phl): Why Bivector below?
-  // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective(
       AffineMap<Navigation, Camera, Length, OrthogonalMap>(
           Navigation::origin +
@@ -64,10 +71,22 @@ TEST_F(PlanetariumTest, PlotMethod0) {
       /*focal=*/5 * Metre);
 
   MockDynamicFrame<Barycentric, Navigation> plotting_frame;
-  Planetarium planetarium({sphere}, perspective, &plotting_frame);
+  EXPECT_CALL(plotting_frame, ToThisFrameAtTime(_))
+      .WillRepeatedly(Return(RigidMotion<Barycentric, Navigation>(
+          RigidTransformation<Barycentric, Navigation>::Identity(),
+          AngularVelocity<Barycentric>(),
+          Velocity<Barycentric>())));
 
+  Planetarium planetarium({sphere}, perspective, &plotting_frame);
   auto const rp2_points =
       planetarium.PlotMethod0(trajectory, Instant() + 10 * Second);
+
+  for (auto const& rp2_point : rp2_points) {
+    // The following limit is obtained by elementary geometry by noticing that
+    // the circle is viewed from the camera under an angle of π / 6.
+    EXPECT_LE(rp2_point.x(), 5.0 / Sqrt(3.0) * Metre);
+    EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 6, 13));
+  }
 }
 
 }  // namespace internal_planetarium
