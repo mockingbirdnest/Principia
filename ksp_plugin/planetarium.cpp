@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/planetarium.hpp"
 
+#include <vector>
+
 #include "geometry/point.hpp"
 
 namespace principia {

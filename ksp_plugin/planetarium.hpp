@@ -1,5 +1,7 @@
-
+﻿
 #pragma once
+
+#include <vector>
 
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
@@ -47,7 +49,7 @@ class Planetarium final {
       DiscreteTrajectory<Barycentric> const& trajectory,
       Instant const& now) const;
 
-  // A na�ve method that doesn't pay any attention to the perspective but tries
+  // A naïve method that doesn't pay any attention to the perspective but tries
   // to ensure that the points before the perspective are separated by less than
   // |tolerance|.
   std::vector<RP2Point<Length, Camera>> PlotMethod1(
