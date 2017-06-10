@@ -33,7 +33,7 @@ using quantities::Length;
 class Planetarium final {
  public:
   Planetarium(std::vector<Sphere<Length, Barycentric>> const& spheres,
-              Perspective<Barycentric, Camera, Length, OrthogonalMap> const&
+              Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
               not_null<NavigationFrame*> plotting_frame);
 
@@ -51,15 +51,19 @@ class Planetarium final {
       Length const& tolerance) const;
 
  private:
+  std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
+      Instant const& now) const;
+
   void AppendRP2PointIfNeeded(
-      RigidMotion<Navigation, Barycentric> const& inverse_rigid_motion_at_now,
       Instant const& t,
       DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom,
+      std::vector<Sphere<Length, Navigation>> const& plottable_spheres,
       std::vector<RP2Point<Length, Camera>>& rp2_points) const;
 
   std::vector<Sphere<Length, Barycentric>> const spheres_;
-  Perspective<Barycentric, Camera, Length, OrthogonalMap> const perspective_;
-  not_null<NavigationFrame*>  const plotting_frame_;
+  Perspective<Navigation, Camera, Length, OrthogonalMap> const
+      perspective_;
+  not_null<NavigationFrame*> const plotting_frame_;
 };
 
 }  // namespace internal_planetarium

@@ -51,15 +51,16 @@ TEST_F(PlanetariumTest, PlotMethod0) {
 
   // The camera is located as {0, 20, 0} and is looking along -y.
   // TODO(phl): Why Bivector below?
-  Perspective<Barycentric, Camera, Length, OrthogonalMap> const perspective(
-      AffineMap<Barycentric, Camera, Length, OrthogonalMap>(
-          Barycentric::origin +
-              Displacement<Barycentric>({0 * Metre, 20 * Metre, 0 * Metre}),
+  // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
+  Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective(
+      AffineMap<Navigation, Camera, Length, OrthogonalMap>(
+          Navigation::origin +
+              Displacement<Navigation>({0 * Metre, 20 * Metre, 0 * Metre}),
           Camera::origin,
-          Rotation<Barycentric, Camera>(
-              Vector<double, Barycentric>({1, 0, 0}),
-              Vector<double, Barycentric>({0, 0, 1}),
-              Bivector<double, Barycentric>({0, -1, 0})).Forget()),
+          Rotation<Navigation, Camera>(
+              Vector<double, Navigation>({1, 0, 0}),
+              Vector<double, Navigation>({0, 0, 1}),
+              Bivector<double, Navigation>({0, -1, 0})).Forget()),
       /*focal=*/5 * Metre);
 
   MockDynamicFrame<Barycentric, Navigation> plotting_frame;

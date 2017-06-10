@@ -12,7 +12,8 @@ using quantities::Time;
 
 Planetarium::Planetarium(
     std::vector<Sphere<Length, Barycentric>> const& spheres,
-    Perspective<Barycentric, Camera, Length, OrthogonalMap> const& perspective,
+    Perspective<Navigation, Camera, Length, OrthogonalMap> const&
+        perspective,
     not_null<NavigationFrame*> const plotting_frame)
     : spheres_(spheres),
       perspective_(perspective),
@@ -21,17 +22,15 @@ Planetarium::Planetarium(
 std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric> const& trajectory,
     Instant const& now) const {
-  RigidMotion<Navigation, Barycentric> const inverse_rigid_motion_at_now =
-      plotting_frame_->ToThisFrameAtTime(now).Inverse();
-  std::vector<RP2Point<Length, Camera>> rp2_points;
+  auto const plottable_spheres = ComputePlottableSpheres(now);
 
+  std::vector<RP2Point<Length, Camera>> rp2_points;
   for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-    AppendRP2PointIfNeeded(inverse_rigid_motion_at_now,
-                           it.time(),
+    AppendRP2PointIfNeeded(it.time(),
                            it.degrees_of_freedom(),
+                           plottable_spheres,
                            rp2_points);
   }
-
   return rp2_points;
 }
 
@@ -39,18 +38,17 @@ std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod1(
     Trajectory<Barycentric> const& trajectory,
     Instant const& now,
     Length const& tolerance) const {
-  RigidMotion<Navigation, Barycentric> const inverse_rigid_motion_at_now =
-      plotting_frame_->ToThisFrameAtTime(now).Inverse();
-  std::vector<RP2Point<Length, Camera>> rp2_points;
+  auto const plottable_spheres = ComputePlottableSpheres(now);
 
+  std::vector<RP2Point<Length, Camera>> rp2_points;
   Instant t = trajectory.t_min();
   Time Δt;
   while (t <= trajectory.t_max()) {
     DegreesOfFreedom<Barycentric> const barycentric_degrees_of_freedom =
         trajectory.EvaluateDegreesOfFreedom(t);
-    AppendRP2PointIfNeeded(inverse_rigid_motion_at_now,
-                           t,
+    AppendRP2PointIfNeeded(t,
                            barycentric_degrees_of_freedom,
+                           plottable_spheres,
                            rp2_points);
 
     // Don't pay any attention to the perspective, just adjust |Δt| to stay
@@ -58,28 +56,39 @@ std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod1(
     Δt = tolerance / barycentric_degrees_of_freedom.velocity().Norm();
     t += Δt;
   }
-
   return rp2_points;
 }
 
+std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
+    Instant const& now) const {
+  RigidMotion<Barycentric, Navigation> const rigid_motion_at_now =
+      plotting_frame_->ToThisFrameAtTime(now);
+
+  std::vector<Sphere<Length, Navigation>> plottable_spheres;
+  for (auto const& barycentric_sphere : spheres_) {
+    plottable_spheres.emplace_back(
+        rigid_motion_at_now.rigid_transformation()(barycentric_sphere.centre()),
+        barycentric_sphere.radius());
+  }
+  return plottable_spheres;
+}
+
 void Planetarium::AppendRP2PointIfNeeded(
-    RigidMotion<Navigation, Barycentric> const& inverse_rigid_motion_at_now,
     Instant const& t,
     DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom,
+    std::vector<Sphere<Length, Navigation>> const& plottable_spheres,
     std::vector<RP2Point<Length, Camera>>& rp2_points) const {
   RigidMotion<Barycentric, Navigation> const rigid_motion_at_t =
       plotting_frame_->ToThisFrameAtTime(t);
-  RigidMotion<Barycentric, Barycentric> const rigid_motion_back_and_forth =
-      inverse_rigid_motion_at_now * rigid_motion_at_t;
-  DegreesOfFreedom<Barycentric> const plottable_degrees_of_freedom =
-      rigid_motion_back_and_forth(barycentric_degrees_of_freedom);
+  DegreesOfFreedom<Navigation> const plottable_degrees_of_freedom =
+      rigid_motion_at_t(barycentric_degrees_of_freedom);
 
   // TODO(phl): This is missing a precise determination of the time when the
   // trajectory become hidden.
   bool hidden = false;
-  for (auto const& sphere : spheres_) {
+  for (auto const& plottable_sphere : plottable_spheres) {
     if (perspective_.IsHiddenBySphere(plottable_degrees_of_freedom.position(),
-                                      sphere)) {
+                                      plottable_sphere)) {
       hidden = true;
       break;
     }
