@@ -88,7 +88,6 @@ void Planetarium::AppendRP2PointIfNeeded(
   DegreesOfFreedom<Navigation> const plottable_degrees_of_freedom =
       rigid_motion_at_t(barycentric_degrees_of_freedom);
 
-  // TODO(phl): This happily draws behind the camera.
   // TODO(phl): This is missing a precise determination of the time when the
   // trajectory become hidden.
   bool hidden = false;
@@ -100,9 +99,11 @@ void Planetarium::AppendRP2PointIfNeeded(
     }
   }
   if (!hidden) {
-    RP2Point<Length, Camera> const rp2_point =
+    auto const rp2_point =
         perspective_(plottable_degrees_of_freedom.position());
-    rp2_points.push_back(rp2_point);
+    if (rp2_point.has_value()) {
+      rp2_points.push_back(*rp2_point);
+    }
   }
 }
 

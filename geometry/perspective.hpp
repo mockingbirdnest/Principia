@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <experimental/optional>
+
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
@@ -26,7 +28,8 @@ class Perspective final {
       AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
       Scalar const& focal);
 
-  RP2Point<Scalar, ToFrame> operator()(
+  // Returns |nullopt| if the |point| is behind the camera.
+  std::experimental::optional<RP2Point<Scalar, ToFrame>> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
