@@ -99,9 +99,11 @@ void Planetarium::AppendRP2PointIfNeeded(
     }
   }
   if (!hidden) {
-    RP2Point<Length, Camera> const rp2_point =
+    auto const rp2_point =
         perspective_(plottable_degrees_of_freedom.position());
-    rp2_points.push_back(rp2_point);
+    if (rp2_point.has_value()) {
+      rp2_points.push_back(*rp2_point);
+    }
   }
 }
 
