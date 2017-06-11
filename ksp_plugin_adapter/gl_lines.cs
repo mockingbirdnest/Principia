@@ -127,8 +127,28 @@ internal static class GLLines {
   }
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
-    return PlanetariumCamera.Camera.WorldToScreenPoint(
-               ScaledSpace.LocalToScaledSpace(world));
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    Vector3d wp = ScaledSpace.LocalToScaledSpace(world);
+    // calculate view-projection matrix
+    UnityEngine.Matrix4x4 matrix =
+        camera.projectionMatrix * camera.worldToCameraMatrix;
+
+    // multiply world point by VP matrix
+    UnityEngine.Vector4 temp = matrix * 
+        new UnityEngine.Vector4((float)wp.x,
+                                (float)wp.y,
+                                (float)wp.z,
+                                1.0f);
+    if (temp.w == 0f) {
+      // point is exactly on camera focus point, screen point is undefined
+      // unity handles this by returning 0,0,0
+      return UnityEngine.Vector3.zero;
+    } else {
+      // convert x and y from clip space to window coordinates
+      temp.x = (temp.x / temp.w + 1.0f) * 0.5f * camera.pixelWidth;
+      temp.y = (temp.y / temp.w + 1.0f) * 0.5f * camera.pixelHeight;
+      return new UnityEngine.Vector3(temp.x, temp.y, (float)wp.z);
+    }
   }
 
   private static bool rendering_lines_ = false;
