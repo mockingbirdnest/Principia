@@ -147,7 +147,7 @@ internal static class GLLines {
       // convert x and y from clip space to window coordinates
       temp.x = (temp.x / temp.w + 1.0f) * 0.5f * camera.pixelWidth;
       temp.y = (temp.y / temp.w + 1.0f) * 0.5f * camera.pixelHeight;
-      return new UnityEngine.Vector3(temp.x, temp.y, (float)wp.z);
+      return new UnityEngine.Vector3(temp.x, temp.y, temp.z);
     }
   }
 
