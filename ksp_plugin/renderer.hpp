@@ -53,7 +53,7 @@ class Renderer {
   virtual void SetTargetVessel(
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
-      not_null<Ephemeris<Barycentric> const*> const ephemeris);
+      not_null<Ephemeris<Barycentric> const*> ephemeris);
 
   // Reverts to frame last set by |SetPlottingFrame|.  The second version only
   // has an effect if the given |vessel| is the current target vessel.
@@ -155,7 +155,7 @@ class Renderer {
   static not_null<std::unique_ptr<Renderer>> ReadFromMessage(
       serialization::Renderer const& message,
       not_null<Celestial const*> sun,
-      not_null<Ephemeris<Barycentric> const*> const ephemeris);
+      not_null<Ephemeris<Barycentric> const*> ephemeris);
 
  private:
   not_null<Celestial const*> const sun_;

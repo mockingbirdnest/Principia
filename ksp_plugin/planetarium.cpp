@@ -12,13 +12,18 @@ namespace internal_planetarium {
 using geometry::Position;
 using quantities::Time;
 
+namespace {
+
+constexpr double sphere_radius_multiplier = 1.05;
+
+}  // namespace
+
 Planetarium::Planetarium(
-    std::vector<Sphere<Length, Barycentric>> const& spheres,
-    Perspective<Navigation, Camera, Length, OrthogonalMap> const&
-        perspective,
+    Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective,
+    not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame*> const plotting_frame)
-    : spheres_(spheres),
-      perspective_(perspective),
+    : perspective_(perspective),
+      ephemeris_(ephemeris),
       plotting_frame_(plotting_frame) {}
 
 std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod0(
@@ -68,12 +73,17 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Instant const& now) const {
   RigidMotion<Barycentric, Navigation> const rigid_motion_at_now =
       plotting_frame_->ToThisFrameAtTime(now);
-
   std::vector<Sphere<Length, Navigation>> plottable_spheres;
-  for (auto const& barycentric_sphere : spheres_) {
+
+  auto const& bodies = ephemeris_->bodies();
+  for (auto const body : bodies) {
+    auto const trajectory = ephemeris_->trajectory(body);
+    Length const mean_radius = body->mean_radius();
+    Position<Barycentric> const centre_in_barycentric =
+        trajectory->EvaluatePosition(now);
     plottable_spheres.emplace_back(
-        rigid_motion_at_now.rigid_transformation()(barycentric_sphere.centre()),
-        barycentric_sphere.radius());
+        rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
+        sphere_radius_multiplier * mean_radius);
   }
   return plottable_spheres;
 }
