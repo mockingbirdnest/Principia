@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/planetarium.hpp"
 
+#include <vector>
+
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
