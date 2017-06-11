@@ -7,8 +7,12 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
+#include "physics/massive_body.hpp"
+#include "physics/mock_continuous_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
+#include "physics/mock_ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
+#include "physics/rotating_body.hpp"
 #include "quantities/numbers.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
@@ -26,13 +30,18 @@ using geometry::LinearMap;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
+using physics::MassiveBody;
+using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
+using physics::MockEphemeris;
 using physics::RigidMotion;
 using physics::RigidTransformation;
+using physics::RotatingBody;
 using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -42,14 +51,16 @@ using ::testing::AllOf;
 using ::testing::Ge;
 using ::testing::Le;
 using ::testing::Return;
+using ::testing::ReturnRef;
 
-class PlanetariumTest : public ::testing::Test {};
+class PlanetariumTest : public ::testing::Test {
+ protected:
+  Instant const t0_;
+};
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  Sphere<Length, Barycentric> sphere(Barycentric::origin, /*radius=*/1 * Metre);
-
   // A circular trajectory around the origin.
-  DiscreteTrajectory<Barycentric> trajectory;
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
   for (Time t; t <= 10 * Second; t += 1 * Second) {
     DegreesOfFreedom<Barycentric> const degrees_of_freedom(
         Barycentric::origin +
@@ -58,7 +69,7 @@ TEST_F(PlanetariumTest, PlotMethod0) {
                  10 * Metre * Cos(2 * π * t * Radian / (10 * Second)),
                  0 * Metre}),
         Velocity<Barycentric>());
-    trajectory.Append(Instant() + t, degrees_of_freedom);
+    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
   }
 
   // The camera is located as {0, 20, 0} and is looking along -y.
@@ -80,11 +91,30 @@ TEST_F(PlanetariumTest, PlotMethod0) {
           AngularVelocity<Barycentric>(),
           Velocity<Barycentric>())));
 
-  Planetarium planetarium({sphere}, perspective, &plotting_frame);
+  // A body of radius 1 m located at the origin.
+  RotatingBody<Barycentric> const body(
+      MassiveBody::Parameters(1 * Kilogram),
+      RotatingBody<Barycentric>::Parameters(
+          /*mean_radius=*/1 * Metre,
+          /*reference_angle=*/0 * Radian,
+          /*reference_instant=*/t0_,
+          /*angular_frequency=*/10 * Radian / Second,
+          /*ascension_of_pole=*/0 * Radian,
+          /*declination_of_pole=*/π / 2 * Radian));
+  std::vector<not_null<MassiveBody const*>> const bodies = {&body};
+  MockContinuousTrajectory<Barycentric> continuous_trajectory;
+  MockEphemeris<Barycentric> ephemeris;
+  EXPECT_CALL(ephemeris, bodies()).WillRepeatedly(ReturnRef(bodies));
+  EXPECT_CALL(ephemeris, trajectory(_))
+      .WillRepeatedly(Return(&continuous_trajectory));
+  EXPECT_CALL(continuous_trajectory, EvaluatePosition(_))
+      .WillRepeatedly(Return(Barycentric::origin));
+
+  Planetarium planetarium(perspective, &ephemeris, &plotting_frame);
   auto const rp2_points =
-      planetarium.PlotMethod0(trajectory.Begin(),
-                              trajectory.End(),
-                              Instant() + 10 * Second);
+      planetarium.PlotMethod0(discrete_trajectory.Begin(),
+                              discrete_trajectory.End(),
+                              t0_ + 10 * Second);
 
   for (auto const& rp2_point : rp2_points) {
     // The following limit is obtained by elementary geometry by noticing that

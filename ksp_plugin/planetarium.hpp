@@ -12,6 +12,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/rigid_motion.hpp"
 #include "quantities/quantities.hpp"
 
@@ -27,19 +28,19 @@ using geometry::RP2Point;
 using geometry::Sphere;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
+using physics::Ephemeris;
 using physics::RigidMotion;
 using quantities::Length;
 
-// A planetarium is a system of spheres together with a perspective.  In this
-// setting it is possible to draw trajectories in the projective plane.
+// A planetarium is an ephemeris together with a perspective.  In this setting
+// it is possible to draw trajectories in the projective plane.
 class Planetarium final {
  public:
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
-  // TODO(phl): Maybe replace the spheres with an ephemeris.
-  Planetarium(std::vector<Sphere<Length, Barycentric>> const& spheres,
-              Perspective<Navigation, Camera, Length, OrthogonalMap> const&
+  Planetarium(Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
+              not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame*> plotting_frame);
 
   // A no-op method that just returns all the points in the trajectory defined
@@ -59,8 +60,8 @@ class Planetarium final {
       Length const& tolerance) const;
 
  private:
-  // Computes the coordinates of the |spheres_| in the |plotting_frame_| at time
-  // |now|.
+  // Computes the coordinates of the spheres that represent the |ephemeris_|
+  // bodies.  These coordinates are in the |plotting_frame_| at time |now|.
   std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
@@ -73,9 +74,9 @@ class Planetarium final {
       std::vector<Sphere<Length, Navigation>> const& plottable_spheres,
       std::vector<RP2Point<Length, Camera>>& rp2_points) const;
 
-  std::vector<Sphere<Length, Barycentric>> const spheres_;
   Perspective<Navigation, Camera, Length, OrthogonalMap> const
       perspective_;
+  not_null<Ephemeris<Barycentric> const*> const ephemeris_;
   not_null<NavigationFrame*> const plotting_frame_;
 };
 
