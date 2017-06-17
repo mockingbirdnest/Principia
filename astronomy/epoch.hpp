@@ -5,6 +5,7 @@
 #include <limits>
 
 #include "geometry/named_quantities.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 // |geometry::Instant| represents instants of Terrestrial Time (TT).  The
