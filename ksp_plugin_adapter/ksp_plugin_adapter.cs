@@ -875,14 +875,13 @@ public partial class PrincipiaPluginAdapter
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             active_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
-      }
-
-      if (ready_to_draw_active_vessel_trajectory) {
         plugin_.UpdatePrediction(active_vessel.id.ToString());
         string target_id =
             FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
         if (!plotting_frame_selector_.get().target_override &&
             target_id != null && plugin_.HasVessel(target_id)) {
+          plugin_.VesselSetPredictionAdaptiveStepParameters(
+              target_id, adaptive_step_parameters);
           plugin_.UpdatePrediction(target_id);
         }
       }
