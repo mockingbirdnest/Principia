@@ -2,6 +2,7 @@
 #pragma once
 
 #include <experimental/optional>
+#include <vector>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
@@ -32,8 +33,16 @@ class Perspective final {
   std::experimental::optional<RP2Point<Scalar, ToFrame>> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
+  // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
                         Sphere<Scalar, FromFrame> const& sphere) const;
+
+  // Returns the (sub)segments of |segment| that are visible in this perspective
+  // after taking into account the hiding by |sphere|.  The returned vector has
+  // 0, 1, or 2 elements.
+  std::vector<Segment<Point<Vector<Scalar, FromFrame>>>> VisibleSegments(
+      Segment<Point<Vector<Scalar, FromFrame>>> const& segment,
+      Sphere<Scalar, FromFrame> const& sphere) const;
 
  private:
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const from_camera_;

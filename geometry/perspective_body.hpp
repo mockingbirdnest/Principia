@@ -108,6 +108,17 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
   return !is_in_front_of_horizon;
 }
 
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+std::vector<Segment<Point<Vector<Scalar, FromFrame>>>>
+Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
+    Segment<Point<Vector<Scalar, FromFrame>>> const& segment,
+    Sphere<Scalar, FromFrame> const& sphere) const {
+  return std::vector<Segment<Point<Vector<Scalar, FromFrame>>>>();
+}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia
