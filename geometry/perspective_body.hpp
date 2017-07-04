@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <vector>
+
 #include "geometry/perspective.hpp"
 #include "quantities/named_quantities.hpp"
 
