@@ -116,7 +116,7 @@ std::vector<Segment<Vector<Scalar, FromFrame>>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     Segment<Vector<Scalar, FromFrame>> const& segment,
     Sphere<Scalar, FromFrame> const& sphere) const {
-  return std::vector<Segment<Point<Vector<Scalar, FromFrame>>>>();
+  return std::vector<Segment<Vector<Scalar, FromFrame>>>();
 }
 
 }  // namespace internal_perspective
