@@ -2,6 +2,8 @@
 #pragma once
 
 #include <experimental/optional>
+#include <utility>
+#include <vector>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
@@ -12,6 +14,9 @@
 namespace principia {
 namespace geometry {
 namespace internal_perspective {
+
+template<typename Vector>
+using Segment = std::pair<Point<Vector>, Point<Vector>>;
 
 // A perspective using the pinhole camera model.  It project a point of
 // |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
@@ -32,8 +37,16 @@ class Perspective final {
   std::experimental::optional<RP2Point<Scalar, ToFrame>> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
+  // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
                         Sphere<Scalar, FromFrame> const& sphere) const;
+
+  // Returns the (sub)segments of |segment| that are visible in this perspective
+  // after taking into account the hiding by |sphere|.  The returned vector has
+  // 0, 1, or 2 elements.
+  std::vector<Segment<Vector<Scalar, FromFrame>>> VisibleSegments(
+      Segment<Vector<Scalar, FromFrame>> const& segment,
+      Sphere<Scalar, FromFrame> const& sphere) const;
 
  private:
   AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const from_camera_;
@@ -45,6 +58,7 @@ class Perspective final {
 }  // namespace internal_perspective
 
 using internal_perspective::Perspective;
+using internal_perspective::Segment;
 
 }  // namespace geometry
 }  // namespace principia

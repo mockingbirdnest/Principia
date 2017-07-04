@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <vector>
+
 #include "geometry/perspective.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -106,6 +108,17 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
   // centre.
   bool const is_in_front_of_horizon = inner_product < camera_to_horizon²;
   return !is_in_front_of_horizon;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+std::vector<Segment<Vector<Scalar, FromFrame>>>
+Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
+    Segment<Vector<Scalar, FromFrame>> const& segment,
+    Sphere<Scalar, FromFrame> const& sphere) const {
+  return std::vector<Segment<Vector<Scalar, FromFrame>>>();
 }
 
 }  // namespace internal_perspective
