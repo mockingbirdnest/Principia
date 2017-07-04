@@ -81,9 +81,6 @@ class Point final {
   friend class geometry::BarycentreCalculator;
 };
 
-template<typename Vector>
-using Segment = std::pair<Point<Vector>, Point<Vector>>;
-
 // TODO(egg): constexpr these operators.
 template<typename Vector>
 Point<Vector> operator+(Vector const& translation,
@@ -114,7 +111,6 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 }  // namespace internal_point
 
 using internal_point::Point;
-using internal_point::Segment;
 
 // Specialize BarycentreCalculator to make it applicable to Points.
 template<typename Vector, typename Weight>

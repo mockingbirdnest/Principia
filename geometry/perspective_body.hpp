@@ -112,9 +112,9 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
-std::vector<Segment<Point<Vector<Scalar, FromFrame>>>>
+std::vector<Segment<Vector<Scalar, FromFrame>>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
-    Segment<Point<Vector<Scalar, FromFrame>>> const& segment,
+    Segment<Vector<Scalar, FromFrame>> const& segment,
     Sphere<Scalar, FromFrame> const& sphere) const {
   return std::vector<Segment<Point<Vector<Scalar, FromFrame>>>>();
 }

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <experimental/optional>
+#include <utility>
 #include <vector>
 
 #include "geometry/affine_map.hpp"
@@ -13,6 +14,9 @@
 namespace principia {
 namespace geometry {
 namespace internal_perspective {
+
+template<typename Vector>
+using Segment = std::pair<Point<Vector>, Point<Vector>>;
 
 // A perspective using the pinhole camera model.  It project a point of
 // |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
@@ -40,8 +44,8 @@ class Perspective final {
   // Returns the (sub)segments of |segment| that are visible in this perspective
   // after taking into account the hiding by |sphere|.  The returned vector has
   // 0, 1, or 2 elements.
-  std::vector<Segment<Point<Vector<Scalar, FromFrame>>>> VisibleSegments(
-      Segment<Point<Vector<Scalar, FromFrame>>> const& segment,
+  std::vector<Segment<Vector<Scalar, FromFrame>>> VisibleSegments(
+      Segment<Vector<Scalar, FromFrame>> const& segment,
       Sphere<Scalar, FromFrame> const& sphere) const;
 
  private:
@@ -54,6 +58,7 @@ class Perspective final {
 }  // namespace internal_perspective
 
 using internal_perspective::Perspective;
+using internal_perspective::Segment;
 
 }  // namespace geometry
 }  // namespace principia
