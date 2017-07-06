@@ -143,6 +143,25 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
   EXPECT_FALSE(perspective.IsHiddenBySphere(p4, sphere));
 }
 
+TEST_F(PerspectiveTest, VisibleSegments) {
+  Perspective<World, Camera, Length, OrthogonalMap> perspective(
+      AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
+      /*focal=*/1 * Metre);
+
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre}),
+      /*radius=*/3 * Metre);
+
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({11 * Metre, 19 * Metre, 32 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({100 * Metre, 50 * Metre, -70 * Metre});
+
+  perspective.VisibleSegments({p1, p2}, sphere);
+}
+
 TEST_F(PerspectiveTest, BehindCamera) {
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
       AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),

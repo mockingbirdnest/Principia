@@ -10,6 +10,7 @@ namespace principia {
 namespace geometry {
 namespace internal_perspective {
 
+using geometry::InnerProduct;
 using quantities::Product;
 
 template<typename FromFrame, typename ToFrame, typename Scalar,
@@ -118,7 +119,36 @@ std::vector<Segment<Vector<Scalar, FromFrame>>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     Segment<Vector<Scalar, FromFrame>> const& segment,
     Sphere<Scalar, FromFrame> const& sphere) const {
-  return std::vector<Segment<Vector<Scalar, FromFrame>>>();
+  // K is the position of the camera, A and B the extremities of the segment,
+  // C the centre of the sphere.
+  Point<Vector<Scalar, FromFrame>> const& K = camera_;
+  Point<Vector<Scalar, FromFrame>> const& A = segment.first;
+  Point<Vector<Scalar, FromFrame>> const& B = segment.second;
+  Point<Vector<Scalar, FromFrame>> const& C = sphere.centre();
+
+  // H is the projection of C on the plane KAB.  It is such that:
+  //   KH = ɑ * KA + β * KB
+  // where ɑ and β are computed by solving a linear system.
+  Vector<Scalar, FromFrame> const KA = A - K;
+  Vector<Scalar, FromFrame> const KB = B - K;
+  Vector<Scalar, FromFrame> const KC = C - K;
+  auto const KA² = InnerProduct(KA, KA);
+  auto const KB² = InnerProduct(KB, KB);
+  auto const KAKB = InnerProduct(KA, KB);
+  auto const KAKC = InnerProduct(KA, KC);
+  auto const KBKC = InnerProduct(KB, KC);
+
+  auto const determinant = KA² * KB² - KAKB * KAKB;
+  double const ɑ = (KB² * KAKC - KAKB * KBKC) / determinant;
+  double const β = (KA² * KBKC - KAKB * KAKC) / determinant;
+  Vector<Scalar, FromFrame> const KH = ɑ * KA + β * KB;
+
+  // The basic check: if H is outside the sphere, there is no intersection.
+  Vector<Scalar, FromFrame> const CH = KH - KC;
+  if (InnerProduct(CH, CH) >= sphere.radius²()) {
+    return {segment};
+  }
+  return {};
 }
 
 }  // namespace internal_perspective
