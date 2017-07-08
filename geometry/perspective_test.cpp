@@ -282,7 +282,8 @@ TEST_F(PerspectiveTest, VisibleSegments) {
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
   }
 
-  // A segment intersecting the front of the sphere.
+  // A segment intersecting the front of the sphere and not intersecting the
+  // cone.
   {
     Point<Displacement<World>> const p1 =
         World::origin +
@@ -300,6 +301,50 @@ TEST_F(PerspectiveTest, VisibleSegments) {
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
                 ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
                             Pair(AlmostEquals(p4, 2), p2)));
+  }
+
+  // A segment intersecting the cone in front of the centre of the sphere.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-0.05 * Metre, 0 * Metre, -3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-0.05 * Metre, 0 * Metre, 2 * Metre});
+    Point<Displacement<World>> const p3 =
+        World::origin +
+        Displacement<World>(
+            {-0.05 * Metre, 0 * Metre, -199.0 / (60.0 * Sqrt(11.0)) * Metre});
+    Point<Displacement<World>> const p4 =
+        World::origin +
+        Displacement<World>(
+            {-0.05 * Metre, 0 * Metre, 199.0 / (60.0 * Sqrt(11.0)) * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+                ElementsAre(Pair(p1, AlmostEquals(p3, 4)),
+                            Pair(AlmostEquals(p4, 4), p2)));
+  }
+
+  // A segment intersecting the cone behind the centre of the sphere.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({10 * Metre, 0 * Metre, -3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({10 * Metre, 0 * Metre, 5 * Metre});
+    Point<Displacement<World>> const p3 =
+        World::origin +
+        Displacement<World>(
+            {10 * Metre, 0 * Metre, -20.0 / (3.0 * Sqrt(11.0)) * Metre});
+    Point<Displacement<World>> const p4 =
+        World::origin +
+        Displacement<World>(
+            {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+                ElementsAre(Pair(p1, AlmostEquals(p3, 3)),
+                            Pair(AlmostEquals(p4, 15), p2)));
   }
 }
 
