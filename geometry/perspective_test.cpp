@@ -31,6 +31,8 @@ using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Pair;
 
 class PerspectiveTest : public ::testing::Test {
  protected:
@@ -254,6 +256,50 @@ TEST_F(PerspectiveTest, VisibleSegments) {
     Segment<Displacement<World>> segment{p1, p2};
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(segment));
+  }
+
+  // A segment behind the sphere, with a length smaller than the diametre.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({5 * Metre, 0.9 * Metre, 0.1 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({5 * Metre, -0.8 * Metre, -0.3 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
+  }
+
+  // A segment behind the sphere, with a length larger than the diametre.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({10 * Metre, 1.5 * Metre, -1.1 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({10 * Metre, -1.6 * Metre, 1.2 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
+  }
+
+  // A segment intersecting the front of the sphere.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-0.5 * Metre, 0 * Metre, -1 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-0.5 * Metre, 0 * Metre, 2 * Metre});
+    Point<Displacement<World>> const p3 =
+        World::origin +
+        Displacement<World>({-0.5 * Metre, 0 * Metre, -Sqrt(3) / 2.0 * Metre});
+    Point<Displacement<World>> const p4 =
+        World::origin +
+        Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3) / 2.0 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+                ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
+                            Pair(AlmostEquals(p4, 2), p2)));
   }
 }
 
