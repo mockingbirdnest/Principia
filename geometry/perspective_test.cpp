@@ -30,6 +30,7 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
+using ::testing::ElementsAre;
 
 class PerspectiveTest : public ::testing::Test {
  protected:
@@ -144,22 +145,62 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
 }
 
 TEST_F(PerspectiveTest, VisibleSegments) {
+  // The camera is on the x-axis and looks towards the positive x.
+  Point<Displacement<World>> const camera_origin =
+      World::origin + Displacement<World>({-10 * Metre, 0 * Metre, 0 * Metre});
+  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
+      camera_origin,
+      Camera::origin,
+      OrthogonalMap<World, Camera>::Identity());
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
-      AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
+      world_to_camera_affine,
       /*focal=*/1 * Metre);
 
-  Sphere<Length, World> const sphere(
-      World::origin + Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre}),
-      /*radius=*/3 * Metre);
+  // The sphere is at the origin and has unit radius.
+  Sphere<Length, World> const sphere(World::origin,
+                                     /*radius=*/1 * Metre);
 
-  Point<Displacement<World>> const p1 =
-      World::origin +
-      Displacement<World>({11 * Metre, 19 * Metre, 32 * Metre});
-  Point<Displacement<World>> const p2 =
-      World::origin +
-      Displacement<World>({100 * Metre, 50 * Metre, -70 * Metre});
+  // A segment away from the sphere with x > 0.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({9 * Metre, 21 * Metre, 32 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
 
-  perspective.VisibleSegments({p1, p2}, sphere);
+  // A segment away from the sphere with x < 0.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 20 * Metre, 30 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-3 * Metre, 21 * Metre, 32 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
+
+  // A segment tangent to the sphere when seen from the camera.
+  {
+    double const ε = std::numeric_limits<double>::epsilon();
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>(
+            {9.8 * Metre, Sqrt(3.96) * (1 + ε) * Metre, 7 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>(
+            {9.8 * Metre, Sqrt(3.96) * (1 + ε) * Metre, -9 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
 }
 
 TEST_F(PerspectiveTest, BehindCamera) {
