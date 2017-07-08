@@ -130,7 +130,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
 
   // H is the projection of C on the plane KAB.  It is such that:
   //   KH = ɑ * KA + β * KB
-  // where ɑ and β are computed by solving a linear system.
+  // where ɑ and β are computed by solving the linear system:
+  //   KA.KH = KA.KC = ɑ * KA² + β * KA.KB
+  //   KB.KH = KB.KC = ɑ * KA.KB + β * KB²
   Vector<Scalar, FromFrame> const KA = A - K;
   Vector<Scalar, FromFrame> const KB = B - K;
   Vector<Scalar, FromFrame> const KC = C - K;
@@ -153,50 +155,91 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     return {segment};
   }
 
-  // If ɑ + β < 1, H is between K and the line AB.
-  // If ɑ + β > 1, H is behind the line AB when seen from K.
-  // If ɑ + β == 1, H is on the line AB.
-  if (ɑ + β >= 1) {
-    // I is the intersection of the sphere with the line AB.  It is such that:
-    //   KI = KA + λ * AB
-    // where λ is computed by solving a quadratic equation.
-    Vector<Scalar, FromFrame> const AB = B - A;
-    Vector<Scalar, FromFrame> const AC = C - A;
-    auto const AB² = InnerProduct(AB, AB);
-    auto const AC² = InnerProduct(AC, AC);
-    auto const ABAC = InnerProduct(AB, AC);
+  // TODO(phl): See if an early exit is possible/easy here when ɑ + β ≫ 1.
 
-    std::set<double> λs = SolveQuadraticEquation(/*origin=*/0.0,
-                                                 /*a0=*/AC² - sphere.radius²(),
-                                                 /*a1=*/-2.0 * ABAC,
-                                                 /*a2=*/AB²);
-    if (λs.size() != 2) {
-      // The sphere doesn't intersect the line AB or is tangent to it.  There is
-      // no hiding.
-      return {segment};
-    }
-    double const λ1 = *λs.begin();
-    double const λ2 = *λs.rbegin();
-    if (λ1 <= 0.0 && λ2 >= 1.0) {
-      // The sphere swallows the segment.
-      return {};
-    }
-    if (λ1 > 0.0 && λ2 < 1.0) {
-      // The sphere hides the middle of the segment.
-      return {{A, A + λ1 * AB }, {A + λ2 * AB, B }};
-    }
-    if (λ1 <= 0.0) {
-      // The sphere hides the beginning of the segment.
-      return {{A + λ2 * AB, B }};
-    }
-    {
-      CHECK_GE(λ2, 1.0);
-      // The sphere hides the end of the segment.
-      return {{A, A + λ1 * AB }};
+  // P is a point of the plane KAB where a line going through K is tangent to
+  // the circle formed by the intersection of the sphere with the plane KAB.  It
+  // is such that:
+  //   PH = γ * KA + δ * KB
+  // where γ and δ are computed by solving the system:
+  //   PH² = r²
+  //   PH.KH = r²
+  // where r² = R² - CH² is the square of the radius of the above-mentioned
+  // circle.  There are two such points because the sphere intersects the plane.
+  auto const r² = sphere.radius²() - CH²;
+  auto const KAKH = InnerProduct(KA, KH);
+  auto const KBKH = InnerProduct(KB, KH);
+  auto const a0 = r² * (r² * KA² - KAKH * KAKH);
+  auto const a1 = 2.0 * r² * (KAKB * KAKH - KA² * KBKH);
+  auto const a2 =
+      KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
+  std::set<double> δs = SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
+  CHECK_EQ(2, δs.size());
+
+  // The λs define points R where the line AB intersects the cone+sphere system,
+  // according to the formula:
+  //   KR = KA + λ * AB
+  // There can be between 0 and 4 values of λ.
+  std::set<double> λs;
+
+  // For each solution of the above quadratic equation, compute the value of λ,
+  // if any.
+  for (double const δ : δs) {
+    double const γ = (r² - δ * KBKH) / KAKH;
+    Vector<Scalar, FromFrame> const PH = γ * KA + δ * KB;
+    // The value of γ + δ determines where P lies with respect to the line AB.
+    // If it is behind as seen from K, there is no intersection.
+    if (γ + δ < 1) {
+      auto const KAPH = InnerProduct(KA, PH);
+      auto const ABPH = InnerProduct(AB, PH);
+      double const λ = -KAPH / ABPH;
+      λs.insert(λ);
     }
   }
 
-  return {};
+  // Q is the intersection of the sphere with the line AB.  It is such that:
+  //   KQ = KA + μ * AB
+  // where μ is computed by solving a quadratic equation:
+  //   CQ² = R² = (KQ - KC)² = (μ * AB - AC)²
+  Vector<Scalar, FromFrame> const AB = B - A;
+  Vector<Scalar, FromFrame> const AC = C - A;
+  auto const AB² = InnerProduct(AB, AB);
+  auto const AC² = InnerProduct(AC, AC);
+  auto const ABAC = InnerProduct(AB, AC);
+
+  std::set<double> μs = SolveQuadraticEquation(/*origin=*/0.0,
+                                               /*a0=*/AC² - sphere.radius²(),
+                                               /*a1=*/-2.0 * ABAC,
+                                               /*a2=*/AB²);
+  λs.insert(μs.begin(), μs.end());
+
+  // Now we have all the possible intersection of the cone+sphere with the line
+  // AB.  Determine which ones fall in the segment AB and compute the final
+  // result.
+  if (λs.size() < 2) {
+    // The cone+sphere doesn't intersect the line AB or is tangent to it.  There
+    // is no hiding.
+    return {segment};
+  }
+  double const λ_min = *λs.begin();
+  double const λ_max = *λs.rbegin();
+  if (λ_min <= 0.0 && λ_max >= 1.0) {
+    // The cone+sphere swallows the segment.
+    return {};
+  }
+  if (λ_min > 0.0 && λ_max < 1.0) {
+    // The cone+sphere hides the middle of the segment.
+    return {{A, A + λ_min * AB }, {A + λ_max * AB, B }};
+  }
+  if (λ_min <= 0.0) {
+    // The cone+sphere hides the beginning of the segment.
+    return {{A + λ_max * AB, B }};
+  }
+  {
+    CHECK_GE(λ_max, 1.0);
+    // The cone+sphere hides the end of the segment.
+    return {{A, A + λ_min * AB }};
+  }
 }
 
 }  // namespace internal_perspective
