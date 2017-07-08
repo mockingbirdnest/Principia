@@ -147,8 +147,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   double const β = (KA² * KBKC - KAKB * KAKC) / determinant;
   Vector<Scalar, FromFrame> const KH = ɑ * KA + β * KB;
 
-  // The basic check: if H is outside the sphere, there is no intersection and
-  // thus no hiding.
+  // The basic check: if H is outside or on the sphere, there is no intersection
+  // and thus no hiding.
   Vector<Scalar, FromFrame> const CH = KH - KC;
   auto const CH² = InnerProduct(CH, CH);
   if (CH² >= sphere.radius²()) {
@@ -176,14 +176,15 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   std::set<double> δs = SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
   CHECK_EQ(2, δs.size());
 
-  // The λs define points R where the line AB intersects the cone+sphere system,
+  // The λs define points Q where the line AB intersects the cone+sphere system,
   // according to the formula:
-  //   KR = KA + λ * AB
+  //   KQ = KA + λ * AB
   // There can be between 0 and 4 values of λ.
   std::set<double> λs;
 
   // For each solution of the above quadratic equation, compute the value of λ,
   // if any.
+  Vector<Scalar, FromFrame> const AB = B - A;
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
     Vector<Scalar, FromFrame> const PH = γ * KA + δ * KB;
@@ -201,7 +202,6 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   KQ = KA + μ * AB
   // where μ is computed by solving a quadratic equation:
   //   CQ² = R² = (KQ - KC)² = (μ * AB - AC)²
-  Vector<Scalar, FromFrame> const AB = B - A;
   Vector<Scalar, FromFrame> const AC = C - A;
   auto const AB² = InnerProduct(AB, AB);
   auto const AC² = InnerProduct(AC, AC);
@@ -211,9 +211,11 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
                                                /*a0=*/AC² - sphere.radius²(),
                                                /*a1=*/-2.0 * ABAC,
                                                /*a2=*/AB²);
+
+  // Merge and sort all the intersections.
   λs.insert(μs.begin(), μs.end());
 
-  // Now we have all the possible intersection of the cone+sphere with the line
+  // Now we have all the possible intersections of the cone+sphere with the line
   // AB.  Determine which ones fall in the segment AB and compute the final
   // result.
   if (λs.size() < 2) {
