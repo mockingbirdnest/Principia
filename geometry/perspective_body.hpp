@@ -188,9 +188,11 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
     Vector<Scalar, FromFrame> const PH = γ * KA + δ * KB;
-    // The value of γ + δ determines where P lies with respect to the line AB.
-    // If it is behind as seen from K, there is no intersection.
-    if (γ + δ < 1) {
+    // Here we have:
+    //   KP = (ɑ - γ) * KA + (β - δ) * KB
+    // Thus, the value of ɑ + β - γ - δ determines where P lies with respect to
+    // the line AB. If it is behind as seen from K, there is no intersection.
+    if (ɑ + β - γ - δ < 1) {
       auto const KAPH = InnerProduct(KA, PH);
       auto const ABPH = InnerProduct(AB, PH);
       double const λ = -KAPH / ABPH;

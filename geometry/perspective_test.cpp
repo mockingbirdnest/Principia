@@ -201,6 +201,60 @@ TEST_F(PerspectiveTest, VisibleSegments) {
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(segment));
   }
+
+  // A segment entirely in front of the sphere, smaller than the sphere.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, 0.10 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, -0.10 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
+
+  // A segment entirely in front of the sphere, out of the sphere in one
+  // direction.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, 3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, -0.10 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
+
+  // A segment entirely in front of the sphere, out of the sphere in both
+  // directions.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, 3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0 * Metre, -5 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
+
+  // A segment entirely in front of the sphere, not parallel to the z-axis.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 0.2 * Metre, -3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>({-5 * Metre, 3 * Metre, 0.1 * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(segment));
+  }
 }
 
 TEST_F(PerspectiveTest, BehindCamera) {
