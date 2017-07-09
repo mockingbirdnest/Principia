@@ -439,6 +439,20 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
                           Pair(AlmostEquals(p4, 4), p2)));
 }
 
+TEST_F(VisibleSegmentsTest, Wtf) {
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({+7.77429986470929890e+00 * Metre,
+                                           -6.96329812586472841e+00 * Metre,
+                                           +4.69986567261152999e+00 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-6.71731874077453561e+00 * Metre,
+                                           -7.93922086105482183e+00 * Metre,
+                                           +4.06349175030368848e+00 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

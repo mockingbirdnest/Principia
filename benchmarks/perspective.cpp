@@ -26,7 +26,11 @@ using Camera = Frame<serialization::Frame::TestTag,
                      serialization::Frame::TEST2, false>;
 }  // namespace
 
-void BM_VisibleSegmentsRandom(benchmark::State& state) {
+void RandomSegmentsBenchmark(
+    std::uniform_real_distribution<> const& x_distribution,
+    std::uniform_real_distribution<> const& y_distribution,
+    std::uniform_real_distribution<> const& z_distribution,
+    benchmark::State& state) {
   // The camera is on the x-axis and looks towards the positive x.
   Point<Displacement<World>> const camera_origin(
       World::origin +
@@ -43,23 +47,21 @@ void BM_VisibleSegmentsRandom(benchmark::State& state) {
   Sphere<Length, World> const sphere(World::origin,
                                      /*radius=*/1 * Metre);
 
-  // Generate random segments in the cube [-10, 10[³.
   int const count = state.range_x();
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> distribution(-10.0, 10.0);
   std::vector<Segment<Displacement<World>>> segments;
   for (int i = 0; i < count; ++i) {
     segments.emplace_back(
         Point<Displacement<World>>(
             World::origin +
-            Displacement<World>({distribution(random) * Metre,
-                                 distribution(random) * Metre,
-                                 distribution(random) * Metre})),
+            Displacement<World>({x_distribution(random) * Metre,
+                                 y_distribution(random) * Metre,
+                                 z_distribution(random) * Metre})),
         Point<Displacement<World>>(
             World::origin +
-            Displacement<World>({distribution(random) * Metre,
-                                 distribution(random) * Metre,
-                                 distribution(random) * Metre})));
+            Displacement<World>({x_distribution(random) * Metre,
+                                 y_distribution(random) * Metre,
+                                 z_distribution(random) * Metre})));
   }
 
   int visible_segments_count = 0;
@@ -68,6 +70,7 @@ void BM_VisibleSegmentsRandom(benchmark::State& state) {
     for (auto const& segment : segments) {
       auto const visible_segments =
           perspective.VisibleSegments(segment, sphere);
+      CHECK_EQ(1, visible_segments.size()) << segment.first <<"\n"<<segment.second;
       ++visible_segments_count;
       visible_segments_size += visible_segments.size();
     };
@@ -78,7 +81,22 @@ void BM_VisibleSegmentsRandom(benchmark::State& state) {
                                 static_cast<double>(visible_segments_count)));
 }
 
-BENCHMARK(BM_VisibleSegmentsRandom)->Arg(1000);
+void BM_VisibleSegmentsRandomEverywhere(benchmark::State& state) {
+  // Generate random segments in the cube [-10, 10[³.
+  std::uniform_real_distribution<> distribution(-10.0, 10.0);
+  RandomSegmentsBenchmark(distribution, distribution, distribution, state);
+}
+
+void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
+  // Generate random segments in the volume [-10, 10[² × [3, 10[.
+  std::uniform_real_distribution<> xy_distribution(-10.0, 10.0);
+  std::uniform_real_distribution<> z_distribution(3.0, 10.0);
+  RandomSegmentsBenchmark(
+      xy_distribution, xy_distribution, z_distribution, state);
+}
+
+//BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
+BENCHMARK(BM_VisibleSegmentsRandomNoIntersection)->Arg(1000);
 
 }  // namespace geometry
 }  // namespace principia
