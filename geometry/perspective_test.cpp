@@ -162,6 +162,10 @@ TEST_F(PerspectiveTest, VisibleSegments) {
   Sphere<Length, World> const sphere(World::origin,
                                      /*radius=*/1 * Metre);
 
+  // The equation of the line KP in the plane x-z is:
+  //   x - 3 * sqrt(11) z + 10 = 0
+  // This is used to compute many of the expected values below.
+
   // A segment away from the sphere with x > 0.
   {
     Point<Displacement<World>> const p1 =
@@ -188,7 +192,9 @@ TEST_F(PerspectiveTest, VisibleSegments) {
                 ElementsAre(segment));
   }
 
-  // A segment tangent to the sphere when seen from the camera.
+  // A segment tangent to the sphere when seen from the camera.  Need a 1-ulp
+  // tolerance to make sure that the segment doesn't get cut in two because of
+  // rounding.
   {
     double const ε = std::numeric_limits<double>::epsilon();
     Point<Displacement<World>> const p1 =
@@ -208,10 +214,10 @@ TEST_F(PerspectiveTest, VisibleSegments) {
   {
     Point<Displacement<World>> const p1 =
         World::origin +
-        Displacement<World>({-5 * Metre, 0 * Metre, 0.10 * Metre});
+        Displacement<World>({-5 * Metre, 0 * Metre, 0.1 * Metre});
     Point<Displacement<World>> const p2 =
         World::origin +
-        Displacement<World>({-5 * Metre, 0 * Metre, -0.10 * Metre});
+        Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
     Segment<Displacement<World>> segment{p1, p2};
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(segment));
@@ -225,7 +231,7 @@ TEST_F(PerspectiveTest, VisibleSegments) {
         Displacement<World>({-5 * Metre, 0 * Metre, 3 * Metre});
     Point<Displacement<World>> const p2 =
         World::origin +
-        Displacement<World>({-5 * Metre, 0 * Metre, -0.10 * Metre});
+        Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
     Segment<Displacement<World>> segment{p1, p2};
     EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(segment));
@@ -293,17 +299,18 @@ TEST_F(PerspectiveTest, VisibleSegments) {
         Displacement<World>({-0.5 * Metre, 0 * Metre, 2 * Metre});
     Point<Displacement<World>> const p3 =
         World::origin +
-        Displacement<World>({-0.5 * Metre, 0 * Metre, -Sqrt(3) / 2.0 * Metre});
+        Displacement<World>({-0.5 * Metre, 0 * Metre, -Sqrt(3.0) / 2 * Metre});
     Point<Displacement<World>> const p4 =
         World::origin +
-        Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3) / 2.0 * Metre});
+        Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3.0) / 2 * Metre});
     Segment<Displacement<World>> segment{p1, p2};
-    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
                             Pair(AlmostEquals(p4, 2), p2)));
   }
 
-  // A segment intersecting the cone in front of the centre of the sphere.
+  // A segment intersecting the cone in front of the centre of the sphere, both
+  // extremities are visible.
   {
     Point<Displacement<World>> const p1 =
         World::origin +
@@ -320,12 +327,13 @@ TEST_F(PerspectiveTest, VisibleSegments) {
         Displacement<World>(
             {-0.05 * Metre, 0 * Metre, 199.0 / (60.0 * Sqrt(11.0)) * Metre});
     Segment<Displacement<World>> segment{p1, p2};
-    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(Pair(p1, AlmostEquals(p3, 4)),
                             Pair(AlmostEquals(p4, 4), p2)));
   }
 
-  // A segment intersecting the cone behind the centre of the sphere.
+  // A segment intersecting the cone behind the centre of the sphere, both
+  // extremities are visible.
   {
     Point<Displacement<World>> const p1 =
         World::origin +
@@ -342,9 +350,52 @@ TEST_F(PerspectiveTest, VisibleSegments) {
         Displacement<World>(
             {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
     Segment<Displacement<World>> segment{p1, p2};
-    EXPECT_THAT(perspective.VisibleSegments(segment, sphere), 
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
                 ElementsAre(Pair(p1, AlmostEquals(p3, 3)),
                             Pair(AlmostEquals(p4, 15), p2)));
+  }
+
+  // A segment intersecting the cone behind the centre of the sphere, only one
+  // extremity is visible.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({9 * Metre, 0 * Metre, 3 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin +
+        Displacement<World>(
+            {11 * Metre, 0 * Metre, (40.0 / (3.0 * Sqrt(11.0)) - 3.0) * Metre});
+    Point<Displacement<World>> const p3 =
+        World::origin +
+        Displacement<World>(
+            {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(Pair(p1, AlmostEquals(p3, 95))));
+  }
+
+  // A segment intersecting the sphere on one side and the cone behind the
+  // centre of the sphere on the other side.  Both extremities are visible.
+  {
+    Point<Displacement<World>> const p1 =
+        World::origin +
+        Displacement<World>({-2 * Metre, 0 * Metre, -2 * Metre});
+    Point<Displacement<World>> const p2 =
+        World::origin + 
+        Displacement<World>({3 * Metre, 0 * Metre, 3 * Metre});
+    Point<Displacement<World>> const p3 =
+        World::origin +
+        Displacement<World>(
+            {-Sqrt(0.5) * Metre, 0 * Metre, -Sqrt(0.5) * Metre});
+    Point<Displacement<World>> const p4 =
+        World::origin +
+        Displacement<World>({10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre,
+                             0 * Metre,
+                             10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
+    Segment<Displacement<World>> segment{p1, p2};
+    EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+                ElementsAre(Pair(p1, AlmostEquals(p3, 1)),
+                            Pair(AlmostEquals(p4, 4), p2)));
   }
 }
 
