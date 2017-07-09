@@ -328,6 +328,7 @@
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="perspective.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="чебышёв_series.cpp" />

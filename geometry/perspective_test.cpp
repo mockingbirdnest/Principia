@@ -168,7 +168,7 @@ TEST_F(PerspectiveTest, BehindCamera) {
 class VisibleSegmentsTest : public PerspectiveTest {
  protected:
   VisibleSegmentsTest()
-      :  // The camera is on the x-axis and looks towards the positive x.
+      : // The camera is on the x-axis and looks towards the positive x.
         camera_origin_(
             World::origin +
             Displacement<World>({-10 * Metre, 0 * Metre, 0 * Metre})),
@@ -187,7 +187,7 @@ class VisibleSegmentsTest : public PerspectiveTest {
 
   Point<Displacement<World>> const camera_origin_;
   AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine_;
-  Perspective<World, Camera, Length, OrthogonalMap> perspective_;
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective_;
   Sphere<Length, World> const sphere_;
 };
 
