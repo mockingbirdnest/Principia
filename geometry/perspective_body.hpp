@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "geometry/perspective.hpp"
@@ -131,8 +132,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // H is the projection of C on the plane KAB.  It is such that:
   //   KH = ɑ * KA + β * KB
   // where ɑ and β are computed by solving the linear system:
-  //   KA.KH = KA.KC = ɑ * KA² + β * KA.KB
-  //   KB.KH = KB.KC = ɑ * KA.KB + β * KB²
+  //   KA·KH = KA·KC = ɑ * KA² + β * KA·KB
+  //   KB·KH = KB·KC = ɑ * KA·KB + β * KB²
   Vector<Scalar, FromFrame> const KA = A - K;
   Vector<Scalar, FromFrame> const KB = B - K;
   Vector<Scalar, FromFrame> const KC = C - K;
@@ -163,7 +164,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   PH = γ * KA + δ * KB
   // where γ and δ are computed by solving the system:
   //   PH² = r²
-  //   PH.KH = r²
+  //   PH·KH = r²
   // where r² = R² - CH² is the square of the radius of the above-mentioned
   // circle.  There are two such points because the sphere intersects the plane.
   auto const r² = sphere.radius²() - CH²;

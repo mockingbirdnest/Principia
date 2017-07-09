@@ -1,5 +1,5 @@
 ﻿
-#pragma once
+#include <limits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/frame.hpp"
@@ -381,7 +381,7 @@ TEST_F(PerspectiveTest, VisibleSegments) {
         World::origin +
         Displacement<World>({-2 * Metre, 0 * Metre, -2 * Metre});
     Point<Displacement<World>> const p2 =
-        World::origin + 
+        World::origin +
         Displacement<World>({3 * Metre, 0 * Metre, 3 * Metre});
     Point<Displacement<World>> const p3 =
         World::origin +
