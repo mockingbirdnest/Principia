@@ -70,7 +70,6 @@ void RandomSegmentsBenchmark(
     for (auto const& segment : segments) {
       auto const visible_segments =
           perspective.VisibleSegments(segment, sphere);
-      CHECK_EQ(1, visible_segments.size()) << segment.first <<"\n"<<segment.second;
       ++visible_segments_count;
       visible_segments_size += visible_segments.size();
     };
@@ -88,14 +87,16 @@ void BM_VisibleSegmentsRandomEverywhere(benchmark::State& state) {
 }
 
 void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
-  // Generate random segments in the volume [-10, 10[² × [3, 10[.
+  // Generate random segments in the volume [-10, 10[² × [10, 20[.  Note that
+  // there is no guarantee that the sphere will not occasionally intersect the
+  // plane KAP
   std::uniform_real_distribution<> xy_distribution(-10.0, 10.0);
-  std::uniform_real_distribution<> z_distribution(3.0, 10.0);
+  std::uniform_real_distribution<> z_distribution(10.0, 20.0);
   RandomSegmentsBenchmark(
       xy_distribution, xy_distribution, z_distribution, state);
 }
 
-//BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
+BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomNoIntersection)->Arg(1000);
 
 }  // namespace geometry

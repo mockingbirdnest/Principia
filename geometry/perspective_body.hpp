@@ -197,7 +197,13 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       auto const KAPH = InnerProduct(KA, PH);
       auto const ABPH = InnerProduct(AB, PH);
       double const λ = -KAPH / ABPH;
-      λs.insert(λ);
+      auto const KQ = KA + λ * AB;
+      // It is possible for Q to lie behind the camera, in which case:
+      //   KQ·KC <= 0
+      // and there is no intersection.
+      if (InnerProduct(KQ, KC) > Product<Scalar, Scalar>{}) {
+        λs.insert(λ);
+      }
     }
   }
 
