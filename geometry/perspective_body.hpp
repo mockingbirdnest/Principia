@@ -175,7 +175,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const a2 =
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
   std::set<double> δs = SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
-  CHECK_EQ(2, δs.size());
+  CHECK_EQ(2, δs.size()) << a0 << " " << a1 << " " << a2;
 
   // The λs define points Q where the line AB intersects the cone+sphere system,
   // according to the formula:
