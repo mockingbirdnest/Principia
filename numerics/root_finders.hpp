@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <set>
+#include <vector>
 
 #include "quantities/named_quantities.hpp"
 
@@ -23,9 +23,9 @@ Argument Bisect(Function f,
 
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
-// The result may have 0, 1 or 2 values.
+// The result may have 0, 1 or 2 values and is sorted.
 template<typename Argument, typename Value>
-std::set<Argument> SolveQuadraticEquation(
+std::vector<Argument> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
     Derivative<Value, Argument> const& a1,

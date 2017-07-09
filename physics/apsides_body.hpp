@@ -2,7 +2,7 @@
 
 #include "physics/apsides.hpp"
 
-#include <set>
+#include <vector>
 
 #include "numerics/root_finders.hpp"
 
@@ -70,7 +70,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
               {*previous_squared_distance, squared_distance},
               {*previous_squared_distance_derivative,
                squared_distance_derivative});
-      std::set<Instant> const extrema =
+      std::vector<Instant> const extrema =
           squared_distance_approximation.FindExtrema();
 
       // Now look at the extrema and check that exactly one is in the required
