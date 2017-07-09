@@ -168,7 +168,7 @@ TEST_F(PerspectiveTest, BehindCamera) {
 class VisibleSegmentsTest : public PerspectiveTest {
  protected:
   VisibleSegmentsTest()
-      : // The camera is on the x-axis and looks towards the positive x.
+      :  // The camera is on the x-axis and looks towards the positive x.
         camera_origin_(
             World::origin +
             Displacement<World>({-10 * Metre, 0 * Metre, 0 * Metre})),

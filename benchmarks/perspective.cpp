@@ -77,7 +77,7 @@ void RandomSegmentsBenchmark(
           perspective.VisibleSegments(segment, sphere);
       ++visible_segments_count;
       visible_segments_size += visible_segments.size();
-    };
+    }
   }
 
   state.SetLabel("average visible segments: " +
@@ -130,7 +130,7 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
           perspective.VisibleSegments(segment, sphere);
       ++visible_segments_count;
       visible_segments_size += visible_segments.size();
-    };
+    }
   }
 
   state.SetLabel("average visible segments: " +
