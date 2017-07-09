@@ -242,16 +242,16 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
   if (λ_min > 0.0 && λ_max < 1.0) {
     // The cone+sphere hides the middle of the segment.
-    return {{A, A + λ_min * AB }, {A + λ_max * AB, B }};
+    return {{A, A + λ_min * AB}, {A + λ_max * AB, B}};
   }
   if (λ_min <= 0.0) {
     // The cone+sphere hides the beginning of the segment.
-    return {{A + λ_max * AB, B }};
+    return {{A + λ_max * AB, B}};
   }
   {
-    CHECK_GE(λ_max, 1.0);
+    DCHECK_GE(λ_max, 1.0);
     // The cone+sphere hides the end of the segment.
-    return {{A, A + λ_min * AB }};
+    return {{A, A + λ_min * AB}};
   }
 }
 
