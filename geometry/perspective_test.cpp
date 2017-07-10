@@ -187,7 +187,7 @@ class VisibleSegmentsTest : public PerspectiveTest {
 
   Point<Displacement<World>> const camera_origin_;
   AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine_;
-  Perspective<World, Camera, Length, OrthogonalMap> perspective_;
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective_;
   Sphere<Length, World> const sphere_;
 };
 
@@ -431,12 +431,29 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
   Point<Displacement<World>> const p4 =
       World::origin +
       Displacement<World>({10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre,
-                            0 * Metre,
-                            10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
+                           0 * Metre,
+                           10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
   Segment<Displacement<World>> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(Pair(p1, AlmostEquals(p3, 1)),
                           Pair(AlmostEquals(p4, 4), p2)));
+}
+
+// A segment vaguely parallel to the axis of the cone.  It does intersect the
+// cone twice, but one if the intersections is behind the camera so there is no
+// hiding.
+TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({+7.77429986470929890e+00 * Metre,
+                                           -6.96329812586472841e+00 * Metre,
+                                           +4.69986567261152999e+00 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-6.71731874077453561e+00 * Metre,
+                                           -7.93922086105482183e+00 * Metre,
+                                           +4.06349175030368848e+00 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
 }
 
 }  // namespace internal_perspective

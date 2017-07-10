@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <set>
+#include <algorithm>
 #include <vector>
 
 #include "geometry/perspective.hpp"
@@ -176,13 +176,14 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
   std::vector<double> const δs =
       SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
-  CHECK_EQ(2, δs.size());
+  CHECK_EQ(2, δs.size()) << a0 << " " << a1 << " " << a2;
 
   // The λs define points Q where the line AB intersects the cone+sphere system,
   // according to the formula:
   //   KQ = KA + λ * AB
   // There can be between 0 and 4 values of λ.
-  std::set<double> λs;
+  std::vector<double> λs;
+  λs.reserve(4);
 
   // For each solution of the above quadratic equation, compute the value of λ,
   // if any.
@@ -198,7 +199,13 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       auto const KAPH = InnerProduct(KA, PH);
       auto const ABPH = InnerProduct(AB, PH);
       double const λ = -KAPH / ABPH;
-      λs.insert(λ);
+      auto const KQ = KA + λ * AB;
+      // It is possible for Q to lie behind the camera, in which case:
+      //   KQ·KC <= 0
+      // and there is no intersection.
+      if (InnerProduct(KQ, KC) > Product<Scalar, Scalar>{}) {
+        λs.push_back(λ);
+      }
     }
   }
 
@@ -218,7 +225,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
                              /*a2=*/AB²);
 
   // Merge and sort all the intersections.
-  λs.insert(μs.begin(), μs.end());
+  std::copy(μs.begin(), μs.end(), std::back_inserter(λs));
+  std::sort(λs.begin(), λs.end());
 
   // Now we have all the possible intersections of the cone+sphere with the line
   // AB.  Determine which ones fall in the segment AB and compute the final
@@ -236,16 +244,16 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
   if (λ_min > 0.0 && λ_max < 1.0) {
     // The cone+sphere hides the middle of the segment.
-    return {{A, A + λ_min * AB }, {A + λ_max * AB, B }};
+    return {{A, A + λ_min * AB}, {A + λ_max * AB, B}};
   }
   if (λ_min <= 0.0) {
     // The cone+sphere hides the beginning of the segment.
-    return {{A + λ_max * AB, B }};
+    return {{A + λ_max * AB, B}};
   }
   {
-    CHECK_GE(λ_max, 1.0);
+    DCHECK_GE(λ_max, 1.0);
     // The cone+sphere hides the end of the segment.
-    return {{A, A + λ_min * AB }};
+    return {{A, A + λ_min * AB}};
   }
 }
 
