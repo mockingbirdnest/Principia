@@ -174,7 +174,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const a1 = 2.0 * r² * (KAKB * KAKH - KA² * KBKH);
   auto const a2 =
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
-  std::set<double> δs = SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
+  std::vector<double> const δs =
+      SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
   CHECK_EQ(2, δs.size());
 
   // The λs define points Q where the line AB intersects the cone+sphere system,
@@ -210,10 +211,11 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const AC² = InnerProduct(AC, AC);
   auto const ABAC = InnerProduct(AB, AC);
 
-  std::set<double> μs = SolveQuadraticEquation(/*origin=*/0.0,
-                                               /*a0=*/AC² - sphere.radius²(),
-                                               /*a1=*/-2.0 * ABAC,
-                                               /*a2=*/AB²);
+  std::vector<double> const μs =
+      SolveQuadraticEquation(/*origin=*/0.0,
+                             /*a0=*/AC² - sphere.radius²(),
+                             /*a1=*/-2.0 * ABAC,
+                             /*a2=*/AB²);
 
   // Merge and sort all the intersections.
   λs.insert(μs.begin(), μs.end());

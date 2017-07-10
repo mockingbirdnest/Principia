@@ -3,8 +3,8 @@
 
 #include "numerics/hermite3.hpp"
 
-#include <set>
 #include <utility>
+#include <vector>
 
 #include "numerics/root_finders.hpp"
 
@@ -60,7 +60,7 @@ Hermite3<Argument, Value>::EvaluateDerivative(Argument const& argument) const {
 }
 
 template<typename Argument, typename Value>
-std::set<Argument> Hermite3<Argument, Value>::FindExtrema() const {
+std::vector<Argument> Hermite3<Argument, Value>::FindExtrema() const {
   return SolveQuadraticEquation<Argument, Derivative1>(
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
