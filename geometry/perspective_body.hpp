@@ -1,7 +1,6 @@
 ﻿
 #pragma once
 
-#include <set>
 #include <vector>
 
 #include "geometry/perspective.hpp"
@@ -182,7 +181,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // according to the formula:
   //   KQ = KA + λ * AB
   // There can be between 0 and 4 values of λ.
-  std::set<double> λs;
+  std::vector<double> λs;
+  λs.reserve(4);
 
   // For each solution of the above quadratic equation, compute the value of λ,
   // if any.
@@ -203,7 +203,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       //   KQ·KC <= 0
       // and there is no intersection.
       if (InnerProduct(KQ, KC) > Product<Scalar, Scalar>{}) {
-        λs.insert(λ);
+        λs.push_back(λ);
       }
     }
   }
@@ -224,7 +224,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
                              /*a2=*/AB²);
 
   // Merge and sort all the intersections.
-  λs.insert(μs.begin(), μs.end());
+  std::copy(μs.begin(), μs.end(), std::back_inserter(λs));
+  std::sort(λs.begin(), λs.end());
 
   // Now we have all the possible intersections of the cone+sphere with the line
   // AB.  Determine which ones fall in the segment AB and compute the final
