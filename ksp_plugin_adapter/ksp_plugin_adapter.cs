@@ -1148,9 +1148,7 @@ public partial class PrincipiaPluginAdapter
       // them at the previous instant, and will propagate them at the beginning
       // of the next frame...
     }
-  } catch (Exception e) {
-    Log.Fatal(e.ToString());
-  }
+  } catch (Exception e) { Log.Fatal(e.ToString()); }
   }
 
   private void DisableVesselPrecalculate() {
