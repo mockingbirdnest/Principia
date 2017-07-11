@@ -314,7 +314,7 @@ public partial class PrincipiaPluginAdapter
     if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
       reasons.Add("vessel is unpacked and frame is rotating");
     }
-    if (vessel.isEVA && !vessel.evaController.Ready) {
+    if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
     }
     if (reasons.Count == 0) {
