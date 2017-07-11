@@ -156,18 +156,27 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     return {segment};
   }
 
-  // TODO(phl): See if an early exit is possible/easy here when ɑ + β ≫ 1.
+  // The sphere intersects the plane KAB.  r² = R² - CH² is the square of the
+  // radius of the circle formed by this intersection.
+  auto const r² = sphere.radius²() - CH²;
+
+  // If ɑ is negative, H is on the other side of the line KB with respect to A.
+  // If it is large enough in absolute value the circle doesn't intersect the
+  // wedge formed by KA and KB and there is no hiding.  Same for β with respect
+  // to the line KA.
+  if ((ɑ < 0 && ɑ * ɑ >= r² * KB² / determinant) ||
+      (β < 0 && β * β >= r² * KA² / determinant)) {
+    return {segment};
+  }
 
   // P is a point of the plane KAB where a line going through K is tangent to
-  // the circle formed by the intersection of the sphere with the plane KAB.  It
-  // is such that:
+  // the circle .  It is such that:
   //   PH = γ * KA + δ * KB
   // where γ and δ are computed by solving the system:
   //   PH² = r²
   //   PH·KH = r²
-  // where r² = R² - CH² is the square of the radius of the above-mentioned
-  // circle.  There are two such points because the sphere intersects the plane.
-  auto const r² = sphere.radius²() - CH²;
+  // We know that there are two such points because the sphere intersects the
+  // plane.
   auto const KAKH = InnerProduct(KA, KH);
   auto const KBKH = InnerProduct(KB, KH);
   auto const a0 = r² * (r² * KA² - KAKH * KAKH);
