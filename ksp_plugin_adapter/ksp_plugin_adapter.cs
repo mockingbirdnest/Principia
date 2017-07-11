@@ -929,8 +929,6 @@ public partial class PrincipiaPluginAdapter
   AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
     yield return new UnityEngine.WaitForFixedUpdate();
 
-  int debug_sequence_counter = 0;
-  Stack<string> debug_info_stack = new Stack<string>();
   try {
     // Unity's physics has just finished doing its thing.  If we correct the
     // positions here, nobody will know that they're not the ones obtained by
@@ -943,7 +941,6 @@ public partial class PrincipiaPluginAdapter
       yield break;
     }
 
-    ++debug_sequence_counter;
     foreach (Vessel vessel in FlightGlobals.Vessels) {
       string unmanageability_reasons = UnmanageabilityReasons(vessel);
       if (unmanageability_reasons != null) {
@@ -1025,33 +1022,24 @@ public partial class PrincipiaPluginAdapter
 
     plugin_.PrepareToReportCollisions();
 
-    ++debug_sequence_counter;
     // The collisions are reported and stored into |currentCollisions| in
     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
     // Here, the |currentCollisions| are the collisions that occurred in the
     // physics simulation, which is why we report them before calling
     // |AdvanceTime|.
     foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-      debug_info_stack.Push(vessel1.vesselName);
       if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
-        debug_info_stack.Push("if");
-        debug_info_stack.Push(vessel1.isEVA ? "is EVA" : "is not EVA");
         if (vessel1.isEVA && vessel1.evaController.OnALadder) {
-          debug_info_stack.Push("if1");
           var vessel2 = vessel1.evaController.LadderPart.vessel;
           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
               !vessel2.packed) {
-            debug_info_stack.Push("if");
             plugin_.ReportCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
                     vessel1.evaController.LadderPart).flightID);
-            debug_info_stack.Pop();
           }
-          debug_info_stack.Pop();
         }
         foreach (Part part1 in vessel1.parts) {
-          debug_info_stack.Push(part1.name);
           foreach (var collider in part1.currentCollisions) {
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.
@@ -1059,28 +1047,19 @@ public partial class PrincipiaPluginAdapter
                           " in vessel " + vessel1.vesselName);
               continue;
             }
-            debug_info_stack.Push(collider.ToString());
-            debug_info_stack.Push(collider.name);
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
               plugin_.ReportCollision(closest_physical_parent(part1).flightID,
                                       closest_physical_parent(part2).flightID);
             }
-            debug_info_stack.Pop();
-            debug_info_stack.Pop();
           }
-          debug_info_stack.Pop();
         }
-        debug_info_stack.Pop();
-        debug_info_stack.Pop();
       }
-      debug_info_stack.Pop();
     }
 
     plugin_.FreeVesselsAndPartsAndCollectPileUps();
 
-    ++debug_sequence_counter;
     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
         continue;
@@ -1097,7 +1076,6 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    ++debug_sequence_counter;
     if (!has_active_manageable_vessel() || FlightGlobals.ActiveVessel.packed) {
       // If we are timewarping, the next FixedUpdate might not occur in
       // TimeScale * fixedDeltaTime.
@@ -1106,7 +1084,6 @@ public partial class PrincipiaPluginAdapter
 
     plugin_.AdvanceParts(universal_time);
 
-    ++debug_sequence_counter;
     // We don't want to do too many things here, since all the KSP classes
     // still think they're in the preceding step.  We only nudge the Unity
     // transforms of loaded vessels & their parts.
@@ -1172,9 +1149,7 @@ public partial class PrincipiaPluginAdapter
       // of the next frame...
     }
   } catch (Exception e) {
-    Log.Fatal("Exception (@" + debug_sequence_counter + ") [" +
-              String.Join(", ", debug_info_stack.ToArray())  + "] " +
-              e.ToString());
+    Log.Fatal(e.ToString());
   }
   }
 
