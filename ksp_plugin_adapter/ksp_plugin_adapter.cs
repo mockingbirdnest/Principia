@@ -1042,9 +1042,9 @@ public partial class PrincipiaPluginAdapter
         foreach (Part part1 in vessel1.parts) {
           foreach (var collider in part1.currentCollisions) {
             if (collider == null) {
-              // This happens, albeit quite rarely, see #1447.
-              Log.Warning("Skipping null collider of " + part1.name +
-                          " in vessel " + vessel1.vesselName);
+              // This happens, albeit quite rarely, see #1447.  When it happens,
+              // the null collider remains in |currentCollisions| until the next
+              // scene change, so we do not log, otherwise we would spam.
               continue;
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
