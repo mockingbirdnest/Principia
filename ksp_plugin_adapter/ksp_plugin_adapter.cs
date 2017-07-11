@@ -1041,6 +1041,12 @@ public partial class PrincipiaPluginAdapter
         }
         foreach (Part part1 in vessel1.parts) {
           foreach (var collider in part1.currentCollisions) {
+            if (collider == null) {
+              // This happens, albeit quite rarely, see #1447.  When it happens,
+              // the null collider remains in |currentCollisions| until the next
+              // scene change, so we do not log, otherwise we would spam.
+              continue;
+            }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
