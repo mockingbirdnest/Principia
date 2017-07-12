@@ -184,8 +184,12 @@ TEST_F(ElementaryFunctionsTest, HyperbolicFunctions) {
 TEST_F(ElementaryFunctionsTest, ExpLogAndRoots) {
   EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
   EXPECT_THAT(std::exp(std::log(2) / 3), AlmostEquals(Cbrt(2), 1));
-  EXPECT_EQ(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, Sqrt(Rood));
-  EXPECT_EQ(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, Cbrt(Gallon));
+  EXPECT_THAT(
+      Sqrt(Rood),
+      AlmostEquals(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, 0));
+  EXPECT_THAT(
+      Cbrt(Gallon),
+      AlmostEquals(std::exp(std::log(Gallon / Pow<3>(Foot)) / 3) * Foot, 0, 1));
 }
 
 }  // namespace quantities
