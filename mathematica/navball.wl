@@ -404,7 +404,7 @@ inertial=
   Gray,
   Black,
   White,
-  Darker@Darker@Blue,
+  horizon,
   Red,
   Darker@Green,
   ra];
