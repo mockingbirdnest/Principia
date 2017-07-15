@@ -568,9 +568,9 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
     PartId const part_at_origin) const {
-  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)->
-                                part(part_at_origin)->
-                                degrees_of_freedom();
+  auto const part =
+      FindOrDie(part_id_to_vessel_, part_at_origin)->part(part_at_origin);
+  auto const world_origin = part->degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
           world_origin.position(),
@@ -578,9 +578,10 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
           renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
+  CHECK(!part->tail().Empty());
   return barycentric_to_world(
       FindOrDie(celestials_, index)->
-          trajectory().EvaluateDegreesOfFreedom(current_time_));
+          trajectory().EvaluateDegreesOfFreedom(part->tail().last().time()));
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {

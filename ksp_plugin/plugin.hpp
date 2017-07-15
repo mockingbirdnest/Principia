@@ -224,6 +224,7 @@ class Plugin {
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
   // |Index|, identifying the origin of |World| with that of |Bubble|.
+  // |AdvanceParts| must have been called since the last call to |AdvanceTime|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
       PartId part_at_origin) const;
