@@ -1151,7 +1151,8 @@ public partial class PrincipiaPluginAdapter
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-          FlightGlobals.ActiveVessel.rootPart.flightID);
+          FlightGlobals.ActiveVessel.rootPart.flightID,
+          universal_time);
       DO_NOT_SUBMIT_CelestialWorldDegreesOfFreedomAltitude =
           ((Vector3d)main_body_dof.q).magnitude -
           FlightGlobals.ActiveVessel.orbit.referenceBody.Radius;

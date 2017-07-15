@@ -204,6 +204,7 @@ message CelestialWorldDegreesOfFreedom {
                                  (is_subject) = true];
     required int32 index = 2;
     required fixed32 part_at_origin = 3;
+    required double time = 4;
   }
   message Return {
     required QP result = 1;

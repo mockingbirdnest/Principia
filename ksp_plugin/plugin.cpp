@@ -567,7 +567,8 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
-    PartId const part_at_origin) const {
+    PartId const part_at_origin,
+    Instant const time) const {
   auto const part =
       FindOrDie(part_id_to_vessel_, part_at_origin)->part(part_at_origin);
   auto const world_origin = part->degrees_of_freedom();
@@ -580,8 +581,8 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
       world_origin.velocity()};
   CHECK(!part->tail().Empty());
   return barycentric_to_world(
-      FindOrDie(celestials_, index)->
-          trajectory().EvaluateDegreesOfFreedom(part->tail().last().time()));
+      FindOrDie(celestials_,
+                index)->trajectory().EvaluateDegreesOfFreedom(time));
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {

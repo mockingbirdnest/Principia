@@ -221,12 +221,16 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                              int const index,
-                                             PartId const part_at_origin) {
+                                             PartId const part_at_origin,
+                                             double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
       {plugin, index, part_at_origin});
   CHECK_NOTNULL(plugin);
   return m.Return(
-      ToQP(plugin->CelestialWorldDegreesOfFreedom(index, part_at_origin)));
+      ToQP(plugin->CelestialWorldDegreesOfFreedom(
+          index,
+          part_at_origin,
+          FromGameTime(*plugin, time))));
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {
