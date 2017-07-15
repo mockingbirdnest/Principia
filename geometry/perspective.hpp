@@ -48,7 +48,8 @@ class Perspective final {
       Segment<Vector<Scalar, FromFrame>> const& segment,
       Sphere<Scalar, FromFrame> const& sphere) const;
 
-  //TODO(phl):comment
+  // Same as above, but for hiding with multiple spheres.  For N spheres it may
+  // return N + 1 segments.
   std::vector<Segment<Vector<Scalar, FromFrame>>> VisibleSegments(
       Segment<Vector<Scalar, FromFrame>> const& segment,
       std::vector<Sphere<Scalar, FromFrame>> const& spheres) const;

@@ -71,7 +71,8 @@ class Planetarium final {
   std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
-  //TODO(phl):comment
+  // Computes the segments of the trajectory defined by |begin| and |end| that
+  // are not hidden by the |plottable_spheres|.
   std::vector<Segment<Displacement<Navigation>>> ComputePlottableSegments(
       const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
