@@ -31,6 +31,7 @@ std::vector<RP2Point<Length, Camera>> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now) const {
   auto const plottable_spheres = ComputePlottableSpheres(now);
+  auto const segments = ComputePlottableSegments();
 
   std::vector<RP2Point<Length, Camera>> rp2_points;
   for (auto it = begin; it != end; ++it) {
@@ -81,11 +82,40 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Length const mean_radius = body->mean_radius();
     Position<Barycentric> const centre_in_barycentric =
         trajectory->EvaluatePosition(now);
+    // TODO(phl): Don't create a plottable sphere if the body is very far from
+    // the camera.  What should the criteria be?
     plottable_spheres.emplace_back(
         rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
         sphere_radius_multiplier * mean_radius);
   }
   return plottable_spheres;
+}
+
+std::vector<Segment<Displacement<Navigation>>>
+Planetarium::ComputePlottableSegments(
+    const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) {
+  if (begin == end) {
+    return {};
+  }
+
+  Segment<Displacement<Navigation>> segment;
+  auto it1 = begin;
+  auto it2 = it1;
+  while (it1 != it2) {
+    ++it2;
+    segment.first = it1.degrees_of_freedom().position();
+    segment.second = it2.degrees_of_freedom().position();
+    for (auto const& plottable_sphere : plottable_spheres) {
+      auto const segments = perspective_.VisibleSegments(segment, sphere);
+    }
+    it1 = it2;
+  }
+  for (auto it = begin; it != end; ++it) {
+    AppendRP2PointIfNeeded(it.time(),
+                           it.degrees_of_freedom(),
+
 }
 
 void Planetarium::AppendRP2PointIfNeeded(

@@ -21,10 +21,12 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using base::not_null;
+using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
 using geometry::RP2Point;
+using geometry::Segment;
 using geometry::Sphere;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -64,6 +66,12 @@ class Planetarium final {
   // bodies.  These coordinates are in the |plotting_frame_| at time |now|.
   std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
+
+  //TODO(phl):comment
+  std::vector<Segment<Displacement<Navigation>>> ComputePlottableSegments(
+      const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end);
 
   // Appends to |rp2_points| a point corresponding to the
   // |barycentric_degrees_of_freedom| transformed in the |plotting_frame_| at

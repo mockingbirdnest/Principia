@@ -33,6 +33,7 @@ using ::testing::Eq;
 using ::testing::ElementsAre;
 using ::testing::IsEmpty;
 using ::testing::Pair;
+using ::testing::SizeIs;
 using ::testing::_;
 
 class PerspectiveTest : public ::testing::Test {
@@ -454,6 +455,19 @@ TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
   Segment<Displacement<World>> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
               ElementsAre(segment));
+}
+
+TEST_F(VisibleSegmentsTest, MultipleSpheres) {
+  Sphere<Length, World> const sphere2(
+    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}),
+      /*radius=*/1 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, 10 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
+              SizeIs(3));
 }
 
 }  // namespace internal_perspective
