@@ -224,7 +224,7 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                              PartId const part_at_origin,
                                              double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
-      {plugin, index, part_at_origin});
+      {plugin, index, part_at_origin, time});
   CHECK_NOTNULL(plugin);
   return m.Return(ToQP(plugin->CelestialWorldDegreesOfFreedom(
                            index,
