@@ -263,29 +263,21 @@ public partial class PrincipiaPluginAdapter
     body.CBUpdate();
   }
 
-  private double DO_NOT_SUBMIT_VesselFromParentAltitude;
-  private double DO_NOT_SUBMIT_CelestialWorldDegreesOfFreedomAltitude;
-
   private void UpdateVessel(Vessel vessel, double universal_time) {
      if (plugin_.HasVessel(vessel.id.ToString())) {
        QP from_parent = plugin_.VesselFromParent(
            vessel.mainBody.flightGlobalsIndex,
            vessel.id.ToString());
-       //vessel.orbitDriver.UpdateOrbit(true);
+       vessel.orbitDriver.UpdateOrbit(true);
        vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
                                            vel : (Vector3d)from_parent.p,
                                            refBody : vessel.orbit.referenceBody,
                                            UT : universal_time);
        var q = (Vector3d)from_parent.q;
        q.Swizzle();
-       if (vessel.isActiveVessel) {
-         DO_NOT_SUBMIT_VesselFromParentAltitude =
-             q.magnitude - vessel.orbit.referenceBody.Radius;
-       }
        vessel.SetPosition(vessel.orbit.referenceBody.position + q -
                           vessel.orbitDriver.driverTransform.rotation *
-                              vessel.localCoM,
-                          false);
+                              vessel.localCoM);
      }
   }
 
@@ -1153,9 +1145,6 @@ public partial class PrincipiaPluginAdapter
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
           FlightGlobals.ActiveVessel.rootPart.flightID,
           universal_time);
-      DO_NOT_SUBMIT_CelestialWorldDegreesOfFreedomAltitude =
-          ((Vector3d)main_body_dof.q).magnitude -
-          FlightGlobals.ActiveVessel.orbit.referenceBody.Radius;
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
                         FlightGlobals.ActiveVessel.mainBody.position;
@@ -1756,10 +1745,6 @@ public partial class PrincipiaPluginAdapter
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
-      UnityEngine.GUILayout.TextArea(
-        DO_NOT_SUBMIT_VesselFromParentAltitude.ToString());
-      UnityEngine.GUILayout.TextArea(
-        DO_NOT_SUBMIT_CelestialWorldDegreesOfFreedomAltitude.ToString());
       String version;
       String unused_build_date;
       Interface.GetVersion(build_date: out unused_build_date,
