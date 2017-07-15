@@ -579,7 +579,6 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
           renderer_->BarycentricToWorld(PlanetariumRotation())},
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
-  CHECK(!part->tail().Empty());
   return barycentric_to_world(
       FindOrDie(celestials_,
                 index)->trajectory().EvaluateDegreesOfFreedom(time));
