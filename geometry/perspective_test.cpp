@@ -459,7 +459,7 @@ TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
 
 TEST_F(VisibleSegmentsTest, MultipleSpheres) {
   Sphere<Length, World> const sphere2(
-    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}),
+    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 5 * Metre}),
       /*radius=*/1 * Metre);
   Point<Displacement<World>> const p1 =
       World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});

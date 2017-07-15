@@ -57,7 +57,7 @@ class RigidMotion final {
   RigidMotion<ToFrame, FromFrame> Inverse() const;
 
  private:
-  RigidTransformation<FromFrame, ToFrame> const rigid_transformation_;
+  RigidTransformation<FromFrame, ToFrame> rigid_transformation_;
   // d/dt rigid_transformation⁻¹(basis of ToFrame). The positively oriented
   // orthogonal bases of |FromFrame| are acted upon faithfully and transitively
   // by SO(FromFrame), so this lies in the tangent space, i.e., the Lie algebra

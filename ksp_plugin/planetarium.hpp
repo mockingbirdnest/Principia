@@ -25,6 +25,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
+using geometry::RP2Line;
 using geometry::RP2Point;
 using geometry::Segment;
 using geometry::Sphere;
@@ -47,7 +48,7 @@ class Planetarium final {
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
-  std::vector<RP2Point<Length, Camera>> PlotMethod0(
+  std::vector<RP2Line<Length, Camera>> PlotMethod0(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
@@ -55,7 +56,7 @@ class Planetarium final {
   // A naïve method that doesn't pay any attention to the perspective but tries
   // to ensure that the points before the perspective are separated by less than
   // |tolerance|.
-  std::vector<RP2Point<Length, Camera>> PlotMethod1(
+  std::vector<RP2Line<Length, Camera>> PlotMethod1(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now,
@@ -71,16 +72,7 @@ class Planetarium final {
   std::vector<Segment<Displacement<Navigation>>> ComputePlottableSegments(
       const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end);
-
-  // Appends to |rp2_points| a point corresponding to the
-  // |barycentric_degrees_of_freedom| transformed in the |plotting_frame_| at
-  // time |t|, but only if that point is not hidden by a sphere.
-  void AppendRP2PointIfNeeded(
-      Instant const& t,
-      DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom,
-      std::vector<Sphere<Length, Navigation>> const& plottable_spheres,
-      std::vector<RP2Point<Length, Camera>>& rp2_points) const;
+      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
   Perspective<Navigation, Camera, Length, OrthogonalMap> const
       perspective_;
