@@ -268,16 +268,10 @@ public partial class PrincipiaPluginAdapter
        QP from_parent = plugin_.VesselFromParent(
            vessel.mainBody.flightGlobalsIndex,
            vessel.id.ToString());
-       vessel.orbitDriver.UpdateOrbit(true);
        vessel.orbit.UpdateFromStateVectors(pos : (Vector3d)from_parent.q,
                                            vel : (Vector3d)from_parent.p,
                                            refBody : vessel.orbit.referenceBody,
                                            UT : universal_time);
-       var q = (Vector3d)from_parent.q;
-       q.Swizzle();
-       vessel.SetPosition(vessel.orbit.referenceBody.position + q -
-                          vessel.orbitDriver.driverTransform.rotation *
-                              vessel.localCoM);
      }
   }
 
@@ -1208,14 +1202,6 @@ public partial class PrincipiaPluginAdapter
         continue;
       }
       vessel.precalc.enabled = true;
-      if (vessel.orbitDriver.updateMode == OrbitDriver.UpdateMode.UPDATE &&
-          PluginRunning() &&
-          plugin_.HasVessel(vessel.id.ToString())) {
-        vessel.precalc.updateOrbit = false;
-        UpdateVessel(vessel, Planetarium.GetUniversalTime());
-      } else {
-        vessel.precalc.updateOrbit = true;
-      }
       // In stock this is equivalent to |FixedUpdate()|.  With
       // ModularFlightIntegrator's ModularVesselPrecalculate, which gets run
       // in TimingPre like us, this comes with a flag that ensures it only gets
@@ -1225,12 +1211,10 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void UpdateVesselOrbits() {
-    /*
     if (PluginRunning()) {
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }
-    */
   }
 
   private void ReportVesselsAndParts() {
