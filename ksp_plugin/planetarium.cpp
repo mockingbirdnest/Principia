@@ -12,17 +12,16 @@ namespace internal_planetarium {
 using geometry::Position;
 using quantities::Time;
 
-namespace {
-
-constexpr double sphere_radius_multiplier = 1.05;
-
-}  // namespace
+Planetarium::Parameters::Parameters(double const sphere_radius_multiplier)
+    : sphere_radius_multiplier_(sphere_radius_multiplier) {}
 
 Planetarium::Planetarium(
+    Parameters const& parameters,
     Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame*> const plotting_frame)
-    : perspective_(perspective),
+    : parameters_(parameters),
+      perspective_(perspective),
       ephemeris_(ephemeris),
       plotting_frame_(plotting_frame) {}
 
@@ -56,13 +55,6 @@ std::vector<RP2Line<Length, Camera>> Planetarium::PlotMethod0(
   return rp2_lines;
 }
 
-std::vector<RP2Line<Length, Camera>> Planetarium::PlotMethod1(
-    DiscreteTrajectory<Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now,
-    Length const& tolerance) const {
-}
-
 std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Instant const& now) const {
   RigidMotion<Barycentric, Navigation> const rigid_motion_at_now =
@@ -79,7 +71,7 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     // the camera.  What should the criteria be?
     plottable_spheres.emplace_back(
         rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
-        sphere_radius_multiplier * mean_radius);
+        parameters_.sphere_radius_multiplier_ * mean_radius);
   }
   return plottable_spheres;
 }
@@ -111,7 +103,8 @@ Planetarium::ComputePlottableSegments(
     Position<Navigation> const p2 =
         rigid_motion_at_t2(it2.degrees_of_freedom()).position();
 
-    // Use the perspective to compute the visible segments.
+    // Use the perspective to compute the visible segments in the Navigation
+    // frame.
     const Segment<Displacement<Navigation>> segment = {p1, p2};
     auto segments = perspective_.VisibleSegments(segment, plottable_spheres);
     std::move(segments.begin(),

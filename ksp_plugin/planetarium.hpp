@@ -39,9 +39,21 @@ using quantities::Length;
 // it is possible to draw trajectories in the projective plane.
 class Planetarium final {
  public:
+  class Parameters final {
+   public:
+    // Defines the "dark area" around a celestial where we don't draw
+    // trajectories.
+    explicit Parameters(double sphere_radius_multiplier);
+
+   private:
+    double const sphere_radius_multiplier_;
+    friend class Planetarium;
+  };
+
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
-  Planetarium(Perspective<Navigation, Camera, Length, OrthogonalMap> const&
+  Planetarium(Parameters const& parameters,
+              Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame*> plotting_frame);
@@ -52,15 +64,6 @@ class Planetarium final {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
-
-  // A naïve method that doesn't pay any attention to the perspective but tries
-  // to ensure that the points before the perspective are separated by less than
-  // |tolerance|.
-  std::vector<RP2Line<Length, Camera>> PlotMethod1(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Instant const& now,
-      Length const& tolerance) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
@@ -74,6 +77,7 @@ class Planetarium final {
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
+  Parameters const parameters_;
   Perspective<Navigation, Camera, Length, OrthogonalMap> const
       perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
