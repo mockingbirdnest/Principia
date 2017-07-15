@@ -580,8 +580,8 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
       AngularVelocity<Barycentric>{},
       world_origin.velocity()};
   return barycentric_to_world(
-      FindOrDie(celestials_,
-                index)->trajectory().EvaluateDegreesOfFreedom(time));
+      FindOrDie(celestials_, index)->
+          trajectory().EvaluateDegreesOfFreedom(time));
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
