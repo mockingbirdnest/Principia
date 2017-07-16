@@ -1258,6 +1258,7 @@ public partial class PrincipiaPluginAdapter
       }
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
 
+      // TODO(egg): DO NOT SUBMIT before the Dämmerungsgötterdämmerungsdämmerung
       Vector3d ? offset = null;
       if (false && FlightGlobals.ActiveVessel != null &&
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
