@@ -942,7 +942,6 @@ public partial class PrincipiaPluginAdapter
     // positions here, nobody will know that they're not the ones obtained by
     // Unity.
 
-    time_is_advancing_ = time_is_advancing(universal_time);
     if (!time_is_advancing_) {
       yield break;
     }
@@ -1081,12 +1080,6 @@ public partial class PrincipiaPluginAdapter
             new QP{q = (XYZ)(Vector3d)part.rb.position,
                    p = (XYZ)(Vector3d)part.rb.velocity});
       }
-    }
-
-    if (!has_active_manageable_vessel() || FlightGlobals.ActiveVessel.packed) {
-      // If we are timewarping, the next FixedUpdate might not occur in
-      // TimeScale * fixedDeltaTime.
-      yield break;
     }
 
     plugin_.CatchUpLaggingVessels();
@@ -1266,7 +1259,7 @@ public partial class PrincipiaPluginAdapter
       ApplyToBodyTree(body => UpdateBody(body, Planetarium.GetUniversalTime()));
 
       Vector3d ? offset = null;
-      if (FlightGlobals.ActiveVessel != null &&
+      if (false && FlightGlobals.ActiveVessel != null &&
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
         QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
             FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
