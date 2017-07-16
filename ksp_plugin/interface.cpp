@@ -187,6 +187,7 @@ void principia__CatchUpVessel(Plugin* const plugin,
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(vessel_guid);
   plugin->CatchUpVessel(vessel_guid);
+  return m.Return();
 }
 
 // Calls |plugin->CelestialFromParent| with the arguments given.

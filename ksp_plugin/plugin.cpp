@@ -596,36 +596,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
-  // In some cases involving physics dewarping, the vessel may have an
-  // authoritative point in the future, see #1441.  Bail out early.
-  Instant last_authoritative_time = Instant() - Infinity<Time>();
-  for (auto const& pair : vessels_) {
-    Vessel const& vessel = *pair.second;
-    last_authoritative_time = std::max(last_authoritative_time,
-                                       vessel.last_authoritative().time());
-  }
-  if (last_authoritative_time >= t) {
-    return;
-  }
-
-  if (!vessels_.empty()) {
-    bool tails_are_empty;
-    vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
-      tails_are_empty = part.tail().Empty();
-    });
-    if (tails_are_empty) {
-      CatchUpLaggingVessels(t);
-    }
-  }
-
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.AdvanceTime();
-  }
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ClearAllIntrinsicForces();
   }
 
+  ephemeris_->Prolong(current_time_);
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
