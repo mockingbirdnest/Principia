@@ -68,7 +68,7 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Position<Barycentric> const centre_in_barycentric =
         trajectory->EvaluatePosition(now);
     // TODO(phl): Don't create a plottable sphere if the body is very far from
-    // the camera.  What should the criteria be?
+    // the camera.  What should the criterion be?
     plottable_spheres.emplace_back(
         rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
         parameters_.sphere_radius_multiplier_ * mean_radius);
