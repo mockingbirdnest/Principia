@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5128.
+  extensions 5000 to 5999;  // Last used: 5129.
 }
 
 message AdvanceTime {
@@ -1059,6 +1059,25 @@ message NewPlugin {
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumCreate {
+  extend Method {
+    optional PlanetariumCreate extensions = 5129;
+  }
+  message In {
+    required XYZ x_in_camera = 1;
+    required XYZ y_in_camera = 2;
+    required XYZ z_in_camera = 3;
+    required XYZ origin_in_camera = 4;
+    required double focal = 5;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Planetarium",
                                  (is_produced) = true];
   }
   optional In in = 1;

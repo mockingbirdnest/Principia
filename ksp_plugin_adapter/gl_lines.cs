@@ -128,6 +128,50 @@ internal static class GLLines {
 
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
+
+    Interface.LogWarning("CTW:");
+    for (int r = 0; r < 4; ++r) {
+      for (int c = 0; c < 4; ++c) {
+        Interface.LogWarning(r + " " + c + " " +
+                             camera.worldToCameraMatrix[r, c]);
+      }
+    }
+    Interface.LogWarning("PROJ:");
+    for (int r = 0; r < 4; ++r) {
+      for (int c = 0; c < 4; ++c) {
+        Interface.LogWarning(r + " " + c + " " +
+                             camera.projectionMatrix[r, c]);
+      }
+    }
+    Interface.LogWarning("CEL:");
+    foreach (CelestialBody body in hiding_bodies_) {
+      Vector3d position = body.position;
+      Vector3d sposition = ScaledSpace.LocalToScaledSpace(position);
+      Interface.LogWarning(position.x + " " + position.y + " " + position.z);
+      Interface.LogWarning(sposition.x + " " + sposition.y + " " + sposition.z);
+    }
+
+    UnityEngine.Vector3 x_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(1, 0, 0));
+    UnityEngine.Vector3 y_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(0, 1, 0));
+    UnityEngine.Vector3 z_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(0, 0, 1));
+    UnityEngine.Vector3 origin_in_camera =
+        camera.worldToCameraMatrix.MultiplyPoint3x4(
+            new UnityEngine.Vector3(0, 0, 0));
+    UnityEngine.Vector3 inverse_focal =
+        camera.projectionMatrix.MultiplyPoint(
+            new UnityEngine.Vector3(0, 0, 1));
+    var p = Interface.PlanetariumCreate((XYZ)(Vector3d)x_in_camera,
+                                        (XYZ)(Vector3d)y_in_camera,
+                                        (XYZ)(Vector3d)z_in_camera,
+                                        (XYZ)(Vector3d)origin_in_camera,
+                                        1.0 / inverse_focal.z);
+
     Vector3d wp = ScaledSpace.LocalToScaledSpace(world);
     // calculate view-projection matrix
     UnityEngine.Matrix4x4 matrix =
