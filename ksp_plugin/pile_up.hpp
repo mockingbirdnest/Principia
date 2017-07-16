@@ -88,6 +88,8 @@ class PileUp {
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
+  Instant const& time();
+
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
   static PileUp ReadFromMessage(
       serialization::PileUp const& message,

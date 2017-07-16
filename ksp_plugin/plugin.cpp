@@ -506,7 +506,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
     vessel.ForSomePart([this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
-          current_time_,
+          previous_time_,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
           ephemeris_.get());
@@ -533,17 +533,17 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::AdvanceParts(Instant const& t) {
+void Plugin::CatchUpLaggingPileUps() {
   CHECK(!initializing_);
-  CHECK_GT(t, current_time_);
 
-  ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
-    pile_up.DeformPileUpIfNeeded();
-    pile_up.AdvanceTime(t);
-    // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
-    // anymore, it could be part of |PileUp::AdvanceTime|.
-    pile_up.NudgeParts();
+    if (pile_up.time() < current_time_) {
+      pile_up.DeformPileUpIfNeeded();
+      pile_up.AdvanceTime(current_time_);
+      // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
+      // anymore, it could be part of |PileUp::AdvanceTime|.
+      pile_up.NudgeParts();
+    }
   }
 }
 
@@ -591,7 +591,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK_GT(t, current_time_);
 
   // In some cases involving physics dewarping, the vessel may have an
-  // authoritative point in the future.  Bail out early.
+  // authoritative point in the future, see #1441.  Bail out early.
   Instant last_authoritative_time = Instant() - Infinity<Time>();
   for (auto const& pair : vessels_) {
     Vessel const& vessel = *pair.second;
@@ -608,7 +608,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       tails_are_empty = part.tail().Empty();
     });
     if (tails_are_empty) {
-      AdvanceParts(t);
+      CatchUpLaggingPileUps(t);
     }
   }
 

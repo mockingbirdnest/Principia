@@ -218,6 +218,10 @@ void PileUp::NudgeParts() const {
   }
 }
 
+Instant const& PileUp::time() {
+  return psychohistory_->last().time();
+}
+
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   for (auto const part : parts_) {
     message->add_part_id(part->part_id());

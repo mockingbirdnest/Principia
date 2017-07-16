@@ -213,7 +213,7 @@ class Plugin {
   // Advances time on the pile ups to |t|, filling the tails of all parts up to
   // instant |t|.  The vessels are unaffected, and |current_time_| remains
   // unchanged.
-  virtual void AdvanceParts(Instant const& t);
+  virtual void CatchUpLaggingPileUps();
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
@@ -231,7 +231,7 @@ class Plugin {
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
-  // Calls |AdvanceParts| if it has not been called; otherwise the vessels are
+  // Calls |CatchUpLaggingPileUps| if it has not been called; otherwise the vessels are
   // advanced using the tails previously computed during that call.
   // Clears the intrinsic force on all loaded parts.
   // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
