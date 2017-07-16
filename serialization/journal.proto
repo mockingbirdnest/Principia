@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5128.
+  extensions 5000 to 5999;  // Last used: 5129.
 }
 
 message AdvanceTime {
@@ -111,6 +111,17 @@ message CatchUpLaggingVessels {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message CatchUpVessel {
+  extend Method {
+    optional CatchUpVessel extension = 5129;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
   }
   optional In in = 1;
 }

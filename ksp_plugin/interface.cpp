@@ -181,6 +181,14 @@ void principia__CatchUpLaggingVessels(Plugin* const plugin) {
   return m.Return();
 }
 
+void principia__CatchUpVessel(Plugin* const plugin,
+                              char const* const vessel_guid){
+  journal::Method<journal::CatchUpVessel> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(vessel_guid);
+  plugin->CatchUpVessel(vessel_guid);
+}
+
 // Calls |plugin->CelestialFromParent| with the arguments given.
 // |plugin| must not be null.  No transfer of ownership.
 QP principia__CelestialFromParent(Plugin const* const plugin,

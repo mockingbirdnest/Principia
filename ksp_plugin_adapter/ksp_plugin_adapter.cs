@@ -940,9 +940,7 @@ public partial class PrincipiaPluginAdapter
   try {
     // Unity's physics has just finished doing its thing.  If we correct the
     // positions here, nobody will know that they're not the ones obtained by
-    // Unity.  Careful however: while the positions here are those of the next
-    // step, the Planetarium hasn't run yet, and still has its old time.
-    universal_time += Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+    // Unity.
 
     time_is_advancing_ = time_is_advancing(universal_time);
     if (!time_is_advancing_) {
@@ -1066,7 +1064,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    plugin_.FreeVesselsAndPartsAndCollectPileUps();
+    plugin_.FreeVesselsAndPartsAndCollectPileUps(
+        Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime);
 
     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
@@ -1090,7 +1089,7 @@ public partial class PrincipiaPluginAdapter
       yield break;
     }
 
-    plugin_.AdvanceParts(universal_time);
+    plugin_.CatchUpLaggingVessels();
 
     // We don't want to do too many things here, since all the KSP classes
     // still think they're in the preceding step.  We only nudge the Unity
@@ -1185,6 +1184,11 @@ public partial class PrincipiaPluginAdapter
           if (!is_post_apocalyptic_) {
             is_post_apocalyptic_ |=
                 plugin_.HasEncounteredApocalypse(out revelation_);
+          }
+          foreach (var vessel in FlightGlobals.Vessels) {
+            if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
+              plugin_.CatchUpVessel(vessel.id.ToString());
+            }
           }
         }
       }
