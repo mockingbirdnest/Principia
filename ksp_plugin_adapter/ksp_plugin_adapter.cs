@@ -140,6 +140,17 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private KSP.UI.Screens.SpaceTracking space_tracking_;
+  private KSP.UI.Screens.SpaceTracking space_tracking {
+    get {
+     if (space_tracking_ == null) {
+       space_tracking_ = (KSP.UI.Screens.SpaceTracking)FindObjectOfType(
+                             typeof(KSP.UI.Screens.SpaceTracking));
+     }
+     return space_tracking_;
+    }
+  }
+
   // TODO(egg): these should be moved to the C++; there it can be made a vector
   // because we can test whether we have the part or not. Set in
   // FashionablyLate, before the FlightIntegrator clears the forces.  Used in
@@ -314,6 +325,9 @@ public partial class PrincipiaPluginAdapter
     if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
       reasons.Add("vessel is unpacked and frame is rotating");
     }
+    if (vessel.isEVA && vessel.evaController?.Ready == false) {
+      reasons.Add("vessel is an unready Kerbal");
+    }
     if (reasons.Count == 0) {
       return null;
     } else {
@@ -328,11 +342,6 @@ public partial class PrincipiaPluginAdapter
   private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null && is_manageable(active_vessel);
-  }
-
-  private bool draw_active_vessel_trajectory() {
-    return MapView.MapIsEnabled &&
-           has_active_manageable_vessel();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -852,16 +861,18 @@ public partial class PrincipiaPluginAdapter
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      Vessel active_vessel = FlightGlobals.ActiveVessel;
+      Vessel main_vessel = FlightGlobals.ActiveVessel ??
+                           space_tracking?.SelectedVessel;
       bool ready_to_draw_active_vessel_trajectory =
-          draw_active_vessel_trajectory() &&
-          plugin_.HasVessel(active_vessel.id.ToString());
+          main_vessel != null &&
+          MapView.MapIsEnabled &&
+          plugin_.HasVessel(main_vessel.id.ToString());
 
       if (ready_to_draw_active_vessel_trajectory) {
         // TODO(egg): make the speed tolerance independent.  Also max_steps.
         AdaptiveStepParameters adaptive_step_parameters =
             plugin_.VesselGetPredictionAdaptiveStepParameters(
-                active_vessel.id.ToString());
+                main_vessel.id.ToString());
         adaptive_step_parameters =
             new AdaptiveStepParameters {
               integrator_kind = adaptive_step_parameters.integrator_kind,
@@ -873,16 +884,15 @@ public partial class PrincipiaPluginAdapter
                   prediction_length_tolerances_[
                       prediction_length_tolerance_index_]};
         plugin_.VesselSetPredictionAdaptiveStepParameters(
-            active_vessel.id.ToString(), adaptive_step_parameters);
+            main_vessel.id.ToString(), adaptive_step_parameters);
         plugin_.SetPredictionLength(double.PositiveInfinity);
-      }
-
-      if (ready_to_draw_active_vessel_trajectory) {
-        plugin_.UpdatePrediction(active_vessel.id.ToString());
+        plugin_.UpdatePrediction(main_vessel.id.ToString());
         string target_id =
             FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
         if (!plotting_frame_selector_.get().target_override &&
             target_id != null && plugin_.HasVessel(target_id)) {
+          plugin_.VesselSetPredictionAdaptiveStepParameters(
+              target_id, adaptive_step_parameters);
           plugin_.UpdatePrediction(target_id);
         }
       }
@@ -1039,6 +1049,12 @@ public partial class PrincipiaPluginAdapter
         }
         foreach (Part part1 in vessel1.parts) {
           foreach (var collider in part1.currentCollisions) {
+            if (collider == null) {
+              // This happens, albeit quite rarely, see #1447.  When it happens,
+              // the null collider remains in |currentCollisions| until the next
+              // scene change, so we do not log, otherwise we would spam.
+              continue;
+            }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
             if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
@@ -1121,7 +1137,8 @@ public partial class PrincipiaPluginAdapter
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-          FlightGlobals.ActiveVessel.rootPart.flightID);
+          FlightGlobals.ActiveVessel.rootPart.flightID,
+          universal_time);
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
                         FlightGlobals.ActiveVessel.mainBody.position;
@@ -1249,7 +1266,8 @@ public partial class PrincipiaPluginAdapter
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
         QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
             FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-            FlightGlobals.ActiveVessel.rootPart.flightID);
+            FlightGlobals.ActiveVessel.rootPart.flightID,
+            Planetarium.GetUniversalTime());
         krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
         offset = (Vector3d)main_body_dof.q -
                  FlightGlobals.ActiveVessel.mainBody.position;
@@ -1426,26 +1444,27 @@ public partial class PrincipiaPluginAdapter
       vessel.mapObject.uiNode.OnClick += OnVesselNodeClick;
       RemoveStockTrajectoriesIfNeeded(vessel);
     }
-    Vessel active_vessel = FlightGlobals.ActiveVessel;
-    if (active_vessel == null) {
+    Vessel main_vessel = FlightGlobals.ActiveVessel ??
+                         space_tracking?.SelectedVessel;
+    if (main_vessel == null) {
       return;
     }
-    string active_vessel_guid = active_vessel.id.ToString();
+    string main_vessel_guid = main_vessel.id.ToString();
     bool ready_to_draw_active_vessel_trajectory =
-        draw_active_vessel_trajectory() &&
-        plugin_.HasVessel(active_vessel_guid);
+        MapView.MapIsEnabled &&
+        plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
 
       GLLines.Draw(() => {
         GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedVesselTrajectory(active_vessel_guid,
+            plugin_.RenderedVesselTrajectory(main_vessel_guid,
                                              sun_world_position),
             XKCDColors.AcidGreen,
             GLLines.Style.FADED);
-        RenderPredictionMarkers(active_vessel_guid, sun_world_position);
+        RenderPredictionMarkers(main_vessel_guid, sun_world_position);
         GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedPrediction(active_vessel_guid, sun_world_position),
+            plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),
             XKCDColors.Fuchsia,
             GLLines.Style.SOLID);
         string target_id =
@@ -1462,15 +1481,15 @@ public partial class PrincipiaPluginAdapter
               XKCDColors.PigPink,
               GLLines.Style.SOLID);
         }
-        if (plugin_.FlightPlanExists(active_vessel_guid)) {
-          RenderFlightPlanMarkers(active_vessel_guid, sun_world_position);
+        if (plugin_.FlightPlanExists(main_vessel_guid)) {
+          RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
 
           int number_of_segments =
-              plugin_.FlightPlanNumberOfSegments(active_vessel_guid);
+              plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
           for (int i = 0; i < number_of_segments; ++i) {
             bool is_burn = i % 2 == 1;
             var rendered_segments = plugin_.FlightPlanRenderedSegment(
-                active_vessel_guid, sun_world_position, i);
+                main_vessel_guid, sun_world_position, i);
             if (rendered_segments.IteratorAtEnd()) {
               Log.Info("Skipping segment " + i);
               continue;
@@ -1485,7 +1504,7 @@ public partial class PrincipiaPluginAdapter
               int manoeuvre_index = i / 2;
               NavigationManoeuvreFrenetTrihedron manoeuvre =
                   plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                      active_vessel_guid,
+                      main_vessel_guid,
                       manoeuvre_index);
               double scale = (ScaledSpace.ScaledToLocalSpace(
                                   MapView.MapCamera.transform.position) -

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace principia {
 namespace geometry {
@@ -41,6 +42,10 @@ class RP2Point {
   friend std::string DebugString(RP2Point<S, F> const& rp2_point);
 };
 
+// A line formed of RP2Points.
+template<typename Scalar, typename Frame>
+using RP2Line = std::vector<RP2Point<Scalar, Frame>>;
+
 // These operators are implemented using exact multiplication and define a
 // proper equivalence.
 template<typename Scalar, typename Frame>
@@ -59,6 +64,7 @@ std::ostream& operator<<(std::ostream& os,
 
 }  // namespace internal_rp2_point
 
+using internal_rp2_point::RP2Line;
 using internal_rp2_point::RP2Point;
 
 }  // namespace geometry

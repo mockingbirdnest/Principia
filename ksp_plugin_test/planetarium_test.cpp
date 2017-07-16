@@ -18,6 +18,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -47,6 +48,7 @@ using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 using testing_utilities::VanishesBefore;
 using ::testing::_;
 using ::testing::AllOf;
@@ -54,6 +56,7 @@ using ::testing::Ge;
 using ::testing::Le;
 using ::testing::Return;
 using ::testing::ReturnRef;
+using ::testing::SizeIs;
 
 class PlanetariumTest : public ::testing::Test {
  protected:
@@ -112,18 +115,30 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   EXPECT_CALL(continuous_trajectory, EvaluatePosition(_))
       .WillRepeatedly(Return(Barycentric::origin));
 
-  Planetarium planetarium(perspective, &ephemeris, &plotting_frame);
-  auto const rp2_points =
+  Planetarium::Parameters parameters(1);  // No dark area.
+  Planetarium planetarium(parameters, perspective, &ephemeris, &plotting_frame);
+  auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory.Begin(),
                               discrete_trajectory.End(),
                               t0_ + 10 * Second);
 
-  for (auto const& rp2_point : rp2_points) {
-    // The following limit is obtained by elementary geometry by noticing that
-    // the circle is viewed from the camera under an angle of π / 6.
-    EXPECT_THAT(rp2_point.x(), AllOf(Ge(-5.0 / Sqrt(3.0) * Metre),
-                                     Le(5.0 / Sqrt(3.0) * Metre)));
-    EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 6, 13));
+  // Because of the way the trajectory was constructed we have two lines which
+  // meet in front of the camera and are separated by a hole behind the planet.
+  EXPECT_THAT(rp2_lines, SizeIs(2));
+  EXPECT_THAT(rp2_lines[0].front().x() - rp2_lines[1].back().x(),
+              VanishesBefore(1 * Metre, 6));
+  EXPECT_THAT(rp2_lines[0].back().x() - rp2_lines[1].front().x(),
+              AlmostEquals(10.0 / Sqrt(399.0) * Metre, 48, 94));
+
+  for (auto const& rp2_line : rp2_lines) {
+    for (auto const& rp2_point : rp2_line) {
+      // The following limit is obtained by elementary geometry by noticing that
+      // the trajectory is viewed from the camera under an angle of π / 6.
+      EXPECT_THAT(rp2_point.x(),
+                  AllOf(Ge(-5.0 / Sqrt(3.0) * Metre),
+                        Le(5.0 / Sqrt(3.0) * Metre)));
+      EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 5, 13));
+    }
   }
 }
 

@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-#include <set>
 #include <utility>
+#include <vector>
 
 #include "quantities/named_quantities.hpp"
 
@@ -28,7 +28,8 @@ class Hermite3 final {
   Value Evaluate(Argument const& argument) const;
   Derivative1 EvaluateDerivative(Argument const& argument) const;
 
-  std::set<Argument> FindExtrema() const;
+  // The result is sorted.
+  std::vector<Argument> FindExtrema() const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;

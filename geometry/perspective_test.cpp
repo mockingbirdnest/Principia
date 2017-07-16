@@ -1,5 +1,5 @@
 ﻿
-#pragma once
+#include <limits>
 
 #include "geometry/affine_map.hpp"
 #include "geometry/frame.hpp"
@@ -30,6 +30,11 @@ using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::VanishesBefore;
 using ::testing::Eq;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
+using ::testing::Pair;
+using ::testing::SizeIs;
+using ::testing::_;
 
 class PerspectiveTest : public ::testing::Test {
  protected:
@@ -159,6 +164,310 @@ TEST_F(PerspectiveTest, BehindCamera) {
 
   EXPECT_TRUE(perspective(p1).has_value());
   EXPECT_FALSE(perspective(p2).has_value());
+}
+
+class VisibleSegmentsTest : public PerspectiveTest {
+ protected:
+  VisibleSegmentsTest()
+      :  // The camera is on the x-axis and looks towards the positive x.
+        camera_origin_(
+            World::origin +
+            Displacement<World>({-10 * Metre, 0 * Metre, 0 * Metre})),
+        world_to_camera_affine_(camera_origin_,
+                                Camera::origin,
+                                OrthogonalMap<World, Camera>::Identity()),
+        perspective_(world_to_camera_affine_,
+                     /*focal=*/1 * Metre),
+        // The sphere is at the origin and has unit radius.
+        sphere_(World::origin,
+                /*radius=*/1 * Metre) {
+    // The equation of the line KP in the plane x-z is:
+    //   x - 3 * sqrt(11) z + 10 = 0
+    // This is used to compute many of the expected values below.
+  }
+
+  Point<Displacement<World>> const camera_origin_;
+  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine_;
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective_;
+  Sphere<Length, World> const sphere_;
+};
+
+// A segment away from the sphere with x > 0.
+TEST_F(VisibleSegmentsTest, AwayPositiveX) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({10 * Metre, 20 * Metre, 30 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({9 * Metre, 21 * Metre, 32 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment away from the sphere with x < 0.
+TEST_F(VisibleSegmentsTest, AwayNegativeX) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 20 * Metre, 30 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-3 * Metre, 21 * Metre, 32 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment tangent to the sphere when seen from the camera.  Need a 1-ulp
+// tolerance to make sure that the segment doesn't get cut in two because of
+// rounding.
+TEST_F(VisibleSegmentsTest, TangentNotBitten) {
+  double const ε = std::numeric_limits<double>::epsilon();
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>(
+          {9.8 * Metre, Sqrt(3.96) * (1 + ε) * Metre, 7 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>(
+          {9.8 * Metre, Sqrt(3.96) * (1 + ε) * Metre, -9 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// Same as above but the segment gets cut in two.
+TEST_F(VisibleSegmentsTest, TangentBittenBittenBitten) {
+  double const ε = std::numeric_limits<double>::epsilon();
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>(
+          {9.8 * Metre, Sqrt(3.96) * (1 - ε) * Metre, 7 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>(
+          {9.8 * Metre, Sqrt(3.96) * (1 - ε) * Metre, -9 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, _), Pair(_, p2)));
+}
+
+// A segment entirely in front of the sphere, smaller than the sphere.
+TEST_F(VisibleSegmentsTest, InFrontSmaller) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, 0.1 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment entirely in front of the sphere, out of the sphere in one
+// direction.
+TEST_F(VisibleSegmentsTest, InFrontOnTheSide) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, 3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, -0.1 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment entirely in front of the sphere, out of the sphere in both
+// directions.
+TEST_F(VisibleSegmentsTest, InFrontLarger) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, 3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0 * Metre, -5 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment entirely in front of the sphere, not parallel to the z-axis.
+TEST_F(VisibleSegmentsTest, InFrontNotAlongZ) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 0.2 * Metre, -3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-5 * Metre, 3 * Metre, 0.1 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+// A segment behind the sphere, with a length smaller than the diametre.
+TEST_F(VisibleSegmentsTest, BehindSmallerThanDiameter) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({5 * Metre, 0.9 * Metre, 0.1 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({5 * Metre, -0.8 * Metre, -0.3 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_), IsEmpty());
+}
+
+// A segment behind the sphere, with a length larger than the diametre.
+TEST_F(VisibleSegmentsTest, BehindLargerThanDiameter) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({10 * Metre, 1.5 * Metre, -1.1 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({10 * Metre, -1.6 * Metre, 1.2 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_), IsEmpty());
+}
+
+// A segment intersecting the front of the sphere and not intersecting the
+// cone.
+TEST_F(VisibleSegmentsTest, IntersectingFrontOfTheSphere) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-0.5 * Metre, 0 * Metre, -1 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-0.5 * Metre, 0 * Metre, 2 * Metre});
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>({-0.5 * Metre, 0 * Metre, -Sqrt(3.0) / 2 * Metre});
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>({-0.5 * Metre, 0 * Metre, Sqrt(3.0) / 2 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, AlmostEquals(p3, 0)),
+                          Pair(AlmostEquals(p4, 2), p2)));
+}
+
+// A segment intersecting the cone in front of the centre of the sphere, both
+// extremities are visible.
+TEST_F(VisibleSegmentsTest, IntersectingConeInFrontOfTheSphereCentre) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-0.05 * Metre, 0 * Metre, -3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({-0.05 * Metre, 0 * Metre, 2 * Metre});
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>(
+          {-0.05 * Metre, 0 * Metre, -199.0 / (60.0 * Sqrt(11.0)) * Metre});
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>(
+          {-0.05 * Metre, 0 * Metre, 199.0 / (60.0 * Sqrt(11.0)) * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, AlmostEquals(p3, 4)),
+                          Pair(AlmostEquals(p4, 4), p2)));
+}
+
+// A segment intersecting the cone behind the centre of the sphere, both
+// extremities are visible.
+TEST_F(VisibleSegmentsTest, IntersectingConeTwoVisibleSegments) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({10 * Metre, 0 * Metre, -3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({10 * Metre, 0 * Metre, 5 * Metre});
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>(
+          {10 * Metre, 0 * Metre, -20.0 / (3.0 * Sqrt(11.0)) * Metre});
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>(
+          {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, AlmostEquals(p3, 3)),
+                          Pair(AlmostEquals(p4, 15), p2)));
+}
+
+// A segment intersecting the cone behind the centre of the sphere, only one
+// extremity is visible.
+TEST_F(VisibleSegmentsTest, IntersectingConeOneVisibleSegment) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({9 * Metre, 0 * Metre, 3 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>(
+          {11 * Metre, 0 * Metre, (40.0 / (3.0 * Sqrt(11.0)) - 3.0) * Metre});
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>(
+          {10 * Metre, 0 * Metre, 20.0 / (3.0 * Sqrt(11.0)) * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, AlmostEquals(p3, 95))));
+}
+
+// A segment intersecting the sphere on one side and the cone behind the
+// centre of the sphere on the other side.  Both extremities are visible.
+TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({-2 * Metre, 0 * Metre, -2 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({3 * Metre, 0 * Metre, 3 * Metre});
+  Point<Displacement<World>> const p3 =
+      World::origin +
+      Displacement<World>(
+          {-Sqrt(0.5) * Metre, 0 * Metre, -Sqrt(0.5) * Metre});
+  Point<Displacement<World>> const p4 =
+      World::origin +
+      Displacement<World>({10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre,
+                           0 * Metre,
+                           10.0 / (3.0 * Sqrt(11.0) - 1.0) * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(Pair(p1, AlmostEquals(p3, 1)),
+                          Pair(AlmostEquals(p4, 4), p2)));
+}
+
+// A segment vaguely parallel to the axis of the cone.  It does intersect the
+// cone twice, but one if the intersections is behind the camera so there is no
+// hiding.
+TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({+7.77429986470929890e+00 * Metre,
+                                           -6.96329812586472841e+00 * Metre,
+                                           +4.69986567261152999e+00 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-6.71731874077453561e+00 * Metre,
+                                           -7.93922086105482183e+00 * Metre,
+                                           +4.06349175030368848e+00 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, sphere_),
+              ElementsAre(segment));
+}
+
+TEST_F(VisibleSegmentsTest, MultipleSpheres) {
+  Sphere<Length, World> const sphere2(
+    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 5 * Metre}),
+      /*radius=*/1 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, 10 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
+              SizeIs(3));
 }
 
 }  // namespace internal_perspective

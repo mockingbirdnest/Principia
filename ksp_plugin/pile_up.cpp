@@ -149,6 +149,7 @@ void PileUp::AdvanceTime(Instant const& t) {
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           fixed_step_parameters_);
     }
+    CHECK_LT(psychohistory_->last().time(), t);
     ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     if (psychohistory_->last().time() < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next

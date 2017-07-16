@@ -21,10 +21,13 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using base::not_null;
+using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
+using geometry::RP2Line;
 using geometry::RP2Point;
+using geometry::Segment;
 using geometry::Sphere;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -36,28 +39,31 @@ using quantities::Length;
 // it is possible to draw trajectories in the projective plane.
 class Planetarium final {
  public:
+  class Parameters final {
+   public:
+    // Defines the "dark area" around a celestial where we don't draw
+    // trajectories.
+    explicit Parameters(double sphere_radius_multiplier);
+
+   private:
+    double const sphere_radius_multiplier_;
+    friend class Planetarium;
+  };
+
   // TODO(phl): All this Navigation is weird.  Should it be named Plotting?
   // In particular Navigation vs. NavigationFrame is a mess.
-  Planetarium(Perspective<Navigation, Camera, Length, OrthogonalMap> const&
+  Planetarium(Parameters const& parameters,
+              Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
               not_null<NavigationFrame*> plotting_frame);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
-  std::vector<RP2Point<Length, Camera>> PlotMethod0(
+  std::vector<RP2Line<Length, Camera>> PlotMethod0(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
-
-  // A naïve method that doesn't pay any attention to the perspective but tries
-  // to ensure that the points before the perspective are separated by less than
-  // |tolerance|.
-  std::vector<RP2Point<Length, Camera>> PlotMethod1(
-      DiscreteTrajectory<Barycentric>::Iterator const& begin,
-      DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Instant const& now,
-      Length const& tolerance) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
@@ -65,15 +71,14 @@ class Planetarium final {
   std::vector<Sphere<Length, Navigation>> ComputePlottableSpheres(
       Instant const& now) const;
 
-  // Appends to |rp2_points| a point corresponding to the
-  // |barycentric_degrees_of_freedom| transformed in the |plotting_frame_| at
-  // time |t|, but only if that point is not hidden by a sphere.
-  void AppendRP2PointIfNeeded(
-      Instant const& t,
-      DegreesOfFreedom<Barycentric> const& barycentric_degrees_of_freedom,
-      std::vector<Sphere<Length, Navigation>> const& plottable_spheres,
-      std::vector<RP2Point<Length, Camera>>& rp2_points) const;
+  // Computes the segments of the trajectory defined by |begin| and |end| that
+  // are not hidden by the |plottable_spheres|.
+  std::vector<Segment<Displacement<Navigation>>> ComputePlottableSegments(
+      const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end) const;
 
+  Parameters const parameters_;
   Perspective<Navigation, Camera, Length, OrthogonalMap> const
       perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;

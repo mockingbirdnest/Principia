@@ -43,6 +43,8 @@
 #include "physics/frame_field.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -86,6 +88,7 @@ using physics::RigidMotion;
 using physics::RigidTransformation;
 using physics::SolarSystem;
 using quantities::Force;
+using quantities::Infinity;
 using quantities::Length;
 using quantities::si::Kilogram;
 using quantities::si::Milli;
@@ -564,10 +567,11 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
 
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
-    PartId const part_at_origin) const {
-  auto const world_origin = FindOrDie(part_id_to_vessel_, part_at_origin)->
-                                part(part_at_origin)->
-                                degrees_of_freedom();
+    PartId const part_at_origin,
+    Instant const& time) const {
+  auto const part =
+      FindOrDie(part_id_to_vessel_, part_at_origin)->part(part_at_origin);
+  auto const world_origin = part->degrees_of_freedom();
   RigidMotion<Barycentric, World> barycentric_to_world{
       RigidTransformation<Barycentric, World>{
           world_origin.position(),
@@ -577,7 +581,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
       world_origin.velocity()};
   return barycentric_to_world(
       FindOrDie(celestials_, index)->
-          trajectory().EvaluateDegreesOfFreedom(current_time_));
+          trajectory().EvaluateDegreesOfFreedom(time));
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
@@ -585,6 +589,18 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
           << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
+
+  // In some cases involving physics dewarping, the vessel may have an
+  // authoritative point in the future.  Bail out early.
+  Instant last_authoritative_time = Instant() - Infinity<Time>();
+  for (auto const& pair : vessels_) {
+    Vessel const& vessel = *pair.second;
+    last_authoritative_time = std::max(last_authoritative_time,
+                                       vessel.last_authoritative().time());
+  }
+  if (last_authoritative_time >= t) {
+    return;
+  }
 
   if (!vessels_.empty()) {
     bool tails_are_empty;
