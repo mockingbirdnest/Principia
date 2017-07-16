@@ -71,8 +71,8 @@ class Part final {
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
   // This temporarily holds the trajectory followed by the part during the call
-  // to |PileUp::AdvanceTime| for the containing |PileUp|.  It read and cleared
-  // by |Part::AdvanceTime| for the containing |Part|.
+  // to |PileUp::AdvanceTime| for the containing |PileUp|.  It is read and
+  // cleared by |Vessel::AdvanceTime| for the containing |Vessel|.
   DiscreteTrajectory<Barycentric>& tail();
   DiscreteTrajectory<Barycentric> const& tail() const;
 

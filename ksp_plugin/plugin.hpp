@@ -226,7 +226,8 @@ class Plugin {
   // |Index|, identifying the origin of |World| with that of |Bubble|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
-      PartId part_at_origin) const;
+      PartId part_at_origin,
+      Instant const& time) const;
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.

@@ -1137,7 +1137,8 @@ public partial class PrincipiaPluginAdapter
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-          FlightGlobals.ActiveVessel.rootPart.flightID);
+          FlightGlobals.ActiveVessel.rootPart.flightID,
+          universal_time);
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
                         FlightGlobals.ActiveVessel.mainBody.position;
@@ -1265,7 +1266,8 @@ public partial class PrincipiaPluginAdapter
           plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
         QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
             FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-            FlightGlobals.ActiveVessel.rootPart.flightID);
+            FlightGlobals.ActiveVessel.rootPart.flightID,
+            Planetarium.GetUniversalTime());
         krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
         offset = (Vector3d)main_body_dof.q -
                  FlightGlobals.ActiveVessel.mainBody.position;
