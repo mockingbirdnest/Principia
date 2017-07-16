@@ -174,10 +174,10 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__AdvanceParts(Plugin* const plugin, double const t) {
-  journal::Method<journal::AdvanceParts> m({plugin, t});
+void principia__CatchUpLaggingVessels(Plugin* const plugin) {
+  journal::Method<journal::CatchUpLaggingVessels> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->CatchUpLaggingVessels(FromGameTime(*plugin, t));
+  plugin->CatchUpLaggingVessels();
   return m.Return();
 }
 
@@ -339,10 +339,12 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
-  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m({plugin});
+void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin,
+                                                     double const delta_t) {
+  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m(
+      {plugin, delta_t});
   CHECK_NOTNULL(plugin);
-  plugin->FreeVesselsAndPartsAndCollectPileUps();
+  plugin->FreeVesselsAndPartsAndCollectPileUps(delta_t * Second);
   return m.Return();
 }
 

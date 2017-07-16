@@ -466,7 +466,7 @@ void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
-void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
+void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(!initializing_);
 
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
@@ -503,10 +503,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   // the same subset.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([this](Part& first_part) {
+    vessel.ForSomePart([Δt, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
-          previous_time_,
+          current_time_ - Δt,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
           ephemeris_.get());
@@ -638,7 +638,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
 void Plugin::CatchUpVessel(GUID const& vessel_guid) {
   CHECK(!initializing_);
   Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  vessel.ForSomePart([](Part& part) {
+  vessel.ForSomePart([this](Part& part) {
     auto const pile_up = part.containing_pile_up()->iterator();
     // This may be false, if we have already caught up the pile up as part of
     // |CatchUpVessel| for another vessel in the pile up.

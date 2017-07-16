@@ -105,13 +105,12 @@ message AdvanceTime {
   optional In in = 1;
 }
 
-message AdvanceParts {
+message CatchUpLaggingVessels {
   extend Method {
-    optional AdvanceParts extension = 5120;
+    optional CatchUpLaggingVessels extension = 5120;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required double t = 2;
   }
   optional In in = 1;
 }
@@ -647,6 +646,7 @@ message FreeVesselsAndPartsAndCollectPileUps {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double delta_t = 2;
   }
   optional In in = 1;
 }

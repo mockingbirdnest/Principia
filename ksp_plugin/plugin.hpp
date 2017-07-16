@@ -202,7 +202,7 @@ class Plugin {
   // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
   // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
   // and updates the list of |pile_ups_| according to the reported collisions.
-  virtual void FreeVesselsAndPartsAndCollectPileUps();
+  virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
   // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
   // relevant part.  This part must be in a loaded vessel.
