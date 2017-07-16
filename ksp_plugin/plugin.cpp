@@ -533,7 +533,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::CatchUpLaggingPileUps() {
+void Plugin::CatchUpLaggingVessels() {
   CHECK(!initializing_);
 
   for (PileUp& pile_up : pile_ups_) {
@@ -543,6 +543,12 @@ void Plugin::CatchUpLaggingPileUps() {
       // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
       // anymore, it could be part of |PileUp::AdvanceTime|.
       pile_up.NudgeParts();
+    }
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    if (vessel.psychohistory().last().time() < current_time_) {
+      vessel.AdvanceTime();
     }
   }
 }
@@ -608,7 +614,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
       tails_are_empty = part.tail().Empty();
     });
     if (tails_are_empty) {
-      CatchUpLaggingPileUps(t);
+      CatchUpLaggingVessels(t);
     }
   }
 
@@ -627,6 +633,24 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   planetarium_rotation_ = planetarium_rotation;
   UpdatePlanetariumRotation();
   loaded_vessels_.clear();
+}
+
+void Plugin::CatchUpVessel(GUID const& vessel_guid) {
+  CHECK(!initializing_);
+  Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  vessel.ForSomePart([](Part& part) {
+    auto const pile_up = part.containing_pile_up()->iterator();
+    // This may be false, if we have already caught up the pile up as part of
+    // |CatchUpVessel| for another vessel in the pile up.
+    if (pile_up->time() < current_time_) {
+      // TODO(egg): this should probably check that deformation is not needed
+      // instead.
+      pile_up->DeformPileUpIfNeeded();
+      pile_up->AdvanceTime(current_time_);
+      pile_up->NudgeParts();
+    }
+  });
+  vessel.AdvanceTime();
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {

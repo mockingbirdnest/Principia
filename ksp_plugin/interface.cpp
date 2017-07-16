@@ -177,7 +177,7 @@ void principia__AdvanceTime(Plugin* const plugin,
 void principia__AdvanceParts(Plugin* const plugin, double const t) {
   journal::Method<journal::AdvanceParts> m({plugin, t});
   CHECK_NOTNULL(plugin);
-  plugin->CatchUpLaggingPileUps(FromGameTime(*plugin, t));
+  plugin->CatchUpLaggingVessels(FromGameTime(*plugin, t));
   return m.Return();
 }
 
