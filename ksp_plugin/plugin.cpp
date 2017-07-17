@@ -1316,11 +1316,17 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   auto deletion_callback = [it, &map = part_id_to_vessel_] {
     map.erase(it);
   };
-  auto part = make_not_null_unique<Part>(part_id,
-                                         name,
-                                         mass,
-                                         degrees_of_freedom,
-                                         std::move(deletion_callback));
+  auto part = make_not_null_unique<Part>(
+      part_id,
+      name,
+      mass,
+      // TODO(egg): DO NOT SUBMIT this is a hack to check that parts are indeed
+      // added at the wrong time.
+      DegreesOfFreedom<Barycentric>{
+          degrees_of_freedom.position() -
+              degrees_of_freedom.velocity() * (20 * Milli(Second)),
+          degrees_of_freedom.velocity()},
+      std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }
 
