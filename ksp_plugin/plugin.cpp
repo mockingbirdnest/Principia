@@ -395,7 +395,8 @@ void Plugin::InsertOrKeepLoadedPart(
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-    DegreesOfFreedom<World> const& part_degrees_of_freedom) {
+    DegreesOfFreedom<World> const& part_degrees_of_freedom,
+    Time const& Δt) {
   not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
   CHECK(is_loaded(vessel));
@@ -411,6 +412,7 @@ void Plugin::InsertOrKeepLoadedPart(
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
+    Time const previous_time = current_time_ - Δt;
     enum class LocalTag { tag };
     using MainBodyCentred =
         geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
@@ -421,12 +423,12 @@ void Plugin::InsertOrKeepLoadedPart(
         RigidTransformation<World, MainBodyCentred>{
             main_body_degrees_of_freedom.position(),
             MainBodyCentred::origin,
-            main_body_frame.ToThisFrameAtTime(current_time_).orthogonal_map() *
+            main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
         AngularVelocity<World>(),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric =
-        main_body_frame.FromThisFrameAtTime(current_time_) *
+        main_body_frame.FromThisFrameAtTime(previous_time) *
         world_to_main_body_centred;
 
     AddPart(vessel,
@@ -1320,12 +1322,7 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
       part_id,
       name,
       mass,
-      // TODO(egg): DO NOT SUBMIT this is a hack to check that parts are indeed
-      // added at the wrong time.
-      DegreesOfFreedom<Barycentric>{
-          degrees_of_freedom.position() -
-              degrees_of_freedom.velocity() * (20 * Milli(Second)),
-          degrees_of_freedom.velocity()},
+      degrees_of_freedom,
       std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }

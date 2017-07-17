@@ -595,7 +595,8 @@ void principia__InsertOrKeepLoadedPart(
     char const* const vessel_guid,
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
-    QP const part_world_degrees_of_freedom) {
+    QP const part_world_degrees_of_freedom,
+    double const delta_t) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
        part_id,
@@ -604,7 +605,8 @@ void principia__InsertOrKeepLoadedPart(
        vessel_guid,
        main_body_index,
        main_body_world_degrees_of_freedom,
-       part_world_degrees_of_freedom});
+       part_world_degrees_of_freedom,
+       delta_t});
   CHECK_NOTNULL(plugin);
   plugin->InsertOrKeepLoadedPart(
       part_id,
@@ -613,7 +615,8 @@ void principia__InsertOrKeepLoadedPart(
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom));
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom),
+      delta_t * Second);
   return m.Return();
 }
 

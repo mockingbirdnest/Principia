@@ -160,6 +160,11 @@ public partial class PrincipiaPluginAdapter
   private Dictionary<uint, Vector3d> part_id_to_intrinsic_force_ =
       new Dictionary<uint, Vector3d>();
 
+  // The degrees of freedom at BetterLateThanNever.  Those are used to insert
+  // new parts with the correct initial state.
+  private Dictionary<uint, QP> part_id_to_degrees_of_freedom_ =
+      new Dictionary<uint, QP>();
+
   // The first apocalyptic error message.
   [KSPField(isPersistant = true)]
   private String revelation_ = "";
@@ -441,6 +446,9 @@ public partial class PrincipiaPluginAdapter
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  ReportVesselsAndParts);
+    // Timing5, 8008.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
+                                 StorePartDegreesOfFreedom);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -929,6 +937,9 @@ public partial class PrincipiaPluginAdapter
                                     UpdateVesselOrbits);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     ReportVesselsAndParts);
+    TimingManager.FixedUpdateRemove(
+        TimingManager.TimingStage.BetterLateThanNever,
+        StorePartDegreesOfFreedom);
   }
 
   #endregion
@@ -946,6 +957,11 @@ public partial class PrincipiaPluginAdapter
       yield break;
     }
 
+    double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+
+    // NOTE(egg): Inserting vessels and parts has to occur in
+    // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
+    // the physics step.  See also #1281.
     foreach (Vessel vessel in FlightGlobals.Vessels) {
       string unmanageability_reasons = UnmanageabilityReasons(vessel);
       if (unmanageability_reasons != null) {
@@ -967,8 +983,27 @@ public partial class PrincipiaPluginAdapter
             new QP{q = (XYZ)vessel.mainBody.position,
                    p = (XYZ)(-krakensbane.FrameVel)};
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          QP degrees_of_freedom;
+          if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
+            degrees_of_freedom = part_id_to_degrees_of_freedom_[part.flightID];
+          } else {
+            // Assumptions about the invariants of KSP will invariably fail.
+            // This is a graceful fallback.
+            Log.Error("Unpacked part " + part.name + " (" +
+                      part.flightID.ToString("X") +
+                      ") appeared between BetterLateThanNever and " +
+                      "WaitForFixedUpdate.  Linearly extrapolating its " +
+                      "position at the previous frame.");
+            degrees_of_freedom =
+                new QP{q = (XYZ)((Vector3d)part.rb.position -
+                                  Δt * (Vector3d)part.rb.velocity),
+                       p = (XYZ)(Vector3d)part.rb.velocity};
+          }
           // In the first few frames after spawning a Kerbal, its physicsMass is
           // 0; we use its rb.mass instead.
+          // NOTE(egg): the physics engine does not move the celestials, so it
+          // is fine to use |main_body_degrees_of_freedom| here rather than to
+          // store it during |FixedUpdate| or one of its timings.
           plugin_.InsertOrKeepLoadedPart(
               part.flightID,
               part.name,
@@ -976,9 +1011,8 @@ public partial class PrincipiaPluginAdapter
               vessel.id.ToString(),
               vessel.mainBody.flightGlobalsIndex,
               main_body_degrees_of_freedom,
-              // TODO(egg): use the centre of mass.
-              new QP{q = (XYZ)(Vector3d)part.rb.position,
-                     p = (XYZ)(Vector3d)part.rb.velocity});
+              degrees_of_freedom,
+              Δt);
           if (part_id_to_intrinsic_force_.ContainsKey(part.flightID)) {
             // When a Kerbal is doing an EVA and holding on to a ladder, the
             // ladder imbues them with their weight at the location of the
@@ -1063,8 +1097,7 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    plugin_.FreeVesselsAndPartsAndCollectPileUps(
-        Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime);
+    plugin_.FreeVesselsAndPartsAndCollectPileUps(Δt);
 
     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
@@ -1241,6 +1274,23 @@ public partial class PrincipiaPluginAdapter
             part_id_to_intrinsic_forces_.Add(part.flightID,
                                              part.forces.ToArray());
           }
+        }
+      }
+    }
+  }
+
+  private void StorePartDegreesOfFreedom() {
+    if (PluginRunning()) {
+      part_id_to_degrees_of_freedom_.Clear();
+      foreach (Vessel vessel in
+               FlightGlobals.Vessels.Where(v => is_manageable(v) &&
+                                                !v.packed)) {
+        foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
+          // TODO(egg): use the centre of mass.
+          part_id_to_degrees_of_freedom_.Add(
+              part.flightID,
+              new QP{q = (XYZ)(Vector3d)part.rb.position,
+                     p = (XYZ)(Vector3d)part.rb.velocity});
         }
       }
     }
