@@ -412,7 +412,7 @@ void Plugin::InsertOrKeepLoadedPart(
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
-    Time const previous_time = current_time_ - Δt;
+    Instant const previous_time = current_time_ - Δt;
     enum class LocalTag { tag };
     using MainBodyCentred =
         geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
