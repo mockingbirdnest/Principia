@@ -129,27 +129,46 @@ internal static class GLLines {
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
 
-    Interface.LogWarning("CTW:");
-    for (int r = 0; r < 4; ++r) {
-      for (int c = 0; c < 4; ++c) {
-        Interface.LogWarning(r + " " + c + " " +
-                             camera.worldToCameraMatrix[r, c]);
-      }
-    }
-    Interface.LogWarning("PROJ:");
-    for (int r = 0; r < 4; ++r) {
-      for (int c = 0; c < 4; ++c) {
-        Interface.LogWarning(r + " " + c + " " +
-                             camera.projectionMatrix[r, c]);
-      }
-    }
-    Interface.LogWarning("CEL:");
-    foreach (CelestialBody body in hiding_bodies_) {
-      Vector3d position = body.position;
-      Vector3d sposition = ScaledSpace.LocalToScaledSpace(position);
-      Interface.LogWarning(position.x + " " + position.y + " " + position.z);
-      Interface.LogWarning(sposition.x + " " + sposition.y + " " + sposition.z);
-    }
+    //Interface.LogWarning("CTW:");
+    //for (int r = 0; r < 4; ++r) {
+    //  for (int c = 0; c < 4; ++c) {
+    //    Interface.LogWarning(r + " " + c + " " +
+    //                         camera.worldToCameraMatrix[r, c]);
+    //  }
+    //}
+    //Interface.LogWarning("PROJ:");
+    //Interface.LogWarning("w:" + camera.pixelWidth + " h:" + camera.pixelHeight +
+    //                     " f:" + camera.fieldOfView);
+    //Interface.LogWarning("n:" + camera.nearClipPlane +
+    //                     " f:" + camera.farClipPlane);
+    //for (int r = 0; r < 4; ++r) {
+    //  for (int c = 0; c < 4; ++c) {
+    //    Interface.LogWarning(r + " " + c + " " +
+    //                         camera.projectionMatrix[r, c]);
+    //  }
+    //}
+    //Interface.LogWarning("CEL:");
+    //foreach (CelestialBody body in hiding_bodies_) {
+    //  Vector3d position = body.position;
+    //  Vector3d sposition = ScaledSpace.LocalToScaledSpace(position);
+    //  Interface.LogWarning(position.x + " " + position.y + " " + position.z);
+    //  Interface.LogWarning(sposition.x + " " + sposition.y + " " + sposition.z);
+    //}
+    //UnityEngine.Vector4 t =
+    //    camera.projectionMatrix * new UnityEngine.Vector4(1, 1, 1, 1);
+    //t.x = (t.x / t.w + 1.0f) * 0.5f * camera.pixelWidth;
+    //t.y = (t.y / t.w + 1.0f) * 0.5f * camera.pixelHeight;
+    //Interface.LogWarning("t:" + t.x + " " + t.y + " " + t.z);
+    //t =
+    //    camera.projectionMatrix * new UnityEngine.Vector4(-1, -1, 1, 1);
+    //t.x = (t.x / t.w + 1.0f) * 0.5f * camera.pixelWidth;
+    //t.y = (t.y / t.w + 1.0f) * 0.5f * camera.pixelHeight;
+    //Interface.LogWarning("t:" + t.x + " " + t.y + " " + t.z);
+    //t =
+    //    camera.projectionMatrix * new UnityEngine.Vector4(1, 1, 2, 1);
+    //t.x = (t.x / t.w + 1.0f) * 0.5f * camera.pixelWidth;
+    //t.y = (t.y / t.w + 1.0f) * 0.5f * camera.pixelHeight;
+    //Interface.LogWarning("t:" + t.x + " " + t.y + " " + t.z);
 
     UnityEngine.Vector3 x_in_camera =
         camera.worldToCameraMatrix.MultiplyVector(
@@ -160,17 +179,28 @@ internal static class GLLines {
     UnityEngine.Vector3 z_in_camera =
         camera.worldToCameraMatrix.MultiplyVector(
             new UnityEngine.Vector3(0, 0, 1));
-    UnityEngine.Vector3 origin_in_camera =
-        camera.worldToCameraMatrix.MultiplyPoint3x4(
-            new UnityEngine.Vector3(0, 0, 0));
-    UnityEngine.Vector3 inverse_focal =
-        camera.projectionMatrix.MultiplyPoint(
-            new UnityEngine.Vector3(0, 0, 1));
+    UnityEngine.Vector3 camera_in_world =
+        ScaledSpace.ScaledToLocalSpace(camera.transform.position);
+
+    // According to
+    // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
+    // the on-centre projection matrix has the form:
+    //   n / w                0                0                0
+    //     0                n / h              0                0
+    //     0                  0        (n + f) / (n - f)  2 f n / (n - f)
+    //     0                  0               -1                0
+    // where n and f are the near- and far-clipping distances, and w and h
+    // are the width and height of the screen seen in the focal plane.  h is
+    // seen under an angle that is ɑ, the field of view, and therefore the focal
+    // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
+    double focal =
+        camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
+                                Math.Tan(Math.PI * camera.fieldOfView / 360));
     var p = Interface.PlanetariumCreate((XYZ)(Vector3d)x_in_camera,
                                         (XYZ)(Vector3d)y_in_camera,
                                         (XYZ)(Vector3d)z_in_camera,
-                                        (XYZ)(Vector3d)origin_in_camera,
-                                        1.0 / inverse_focal.z);
+                                        (XYZ)(Vector3d)camera_in_world,
+                                        focal);
 
     Vector3d wp = ScaledSpace.LocalToScaledSpace(world);
     // calculate view-projection matrix
