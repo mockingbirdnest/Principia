@@ -211,9 +211,9 @@ class Plugin {
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Advances time on the pile ups to |t|, filling the tails of all parts up to
-  // instant |t|.  The vessels are unaffected, and |current_time_| remains
-  // unchanged.
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.
   virtual void CatchUpLaggingVessels();
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
@@ -232,8 +232,6 @@ class Plugin {
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
-  // Calls |CatchUpLaggingVessels| if it has not been called; otherwise the vessels are
-  // advanced using the tails previously computed during that call.
   // Clears the intrinsic force on all loaded parts.
   // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
   // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
@@ -243,6 +241,9 @@ class Plugin {
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
+  // Advances time to |current_time_| on the pile up containing the given
+  // vessel if the pile up is not there already, and advances time to
+  // |current_time_| on that vessel.
   virtual void CatchUpVessel(GUID const& vessel_guid);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.

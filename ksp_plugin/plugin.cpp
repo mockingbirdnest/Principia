@@ -495,7 +495,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // Bind the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel, this](Part& first_part) {
+    vessel.ForSomePart([this, &vessel](Part& first_part) {
       vessel.ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
@@ -1322,12 +1322,11 @@ void Plugin::AddPart(not_null<Vessel*> const vessel,
   auto deletion_callback = [it, &map = part_id_to_vessel_] {
     map.erase(it);
   };
-  auto part = make_not_null_unique<Part>(
-      part_id,
-      name,
-      mass,
-      degrees_of_freedom,
-      std::move(deletion_callback));
+  auto part = make_not_null_unique<Part>(part_id,
+                                         name,
+                                         mass,
+                                         degrees_of_freedom,
+                                         std::move(deletion_callback));
   vessel->AddPart(std::move(part));
 }
 

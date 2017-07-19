@@ -88,6 +88,8 @@ class PileUp {
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
+  // Returns the last |Instant| passed to |AdvanceTime|.  Note that this may
+  // correspond to a non-authoritative point.
   Instant const& time();
 
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
