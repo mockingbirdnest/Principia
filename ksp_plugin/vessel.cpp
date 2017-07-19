@@ -178,6 +178,9 @@ bool Vessel::has_flight_plan() const {
 
 void Vessel::AdvanceTime() {
   CHECK(!parts_.empty());
+  if (guid_ == "af5dc7c7-4913-4dc9-889b-c1fe246c2ffe") {
+    LOG(ERROR) << "AdvanceTime on af5dc7c7-4913-4dc9-889b-c1fe246c2ffe";
+  }
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
   std::vector<DiscreteTrajectory<Barycentric>::Iterator> tails;
   its.reserve(parts_.size());

@@ -473,8 +473,10 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> vessel = it->second.get();
+    Instant const vessel_time =
+        is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel)) {
-      vessel->PreparePsychohistory(current_time_);
+      vessel->PreparePsychohistory(vessel_time);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
@@ -505,10 +507,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // the same subset.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([Δt, this](Part& first_part) {
+    Instant const vessel_time =
+        is_loaded(&vessel) ? current_time_ - Δt : current_time_;
+    vessel.ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
-          current_time_ - Δt,
+          vessel_time,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
           ephemeris_.get());
@@ -603,7 +607,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
 
   ephemeris_->Prolong(current_time_);
-  VLOG(1) << "Time has been advanced" << '\n'
+  LOG(ERROR) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
   current_time_ = t;
