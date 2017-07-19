@@ -607,7 +607,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   }
 
   ephemeris_->Prolong(current_time_);
-  LOG(ERROR) << "Time has been advanced" << '\n'
+  VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
   current_time_ = t;

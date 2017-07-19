@@ -92,7 +92,7 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   // An example of how journaling may be used for debugging.  You must set
   // |path| and fill the |method_in| and |method_out_return| protocol buffers.
   std::string path =
-      R"(C:\Users\robin\Projects\Kerbal Space Program\KSP_win64 1.2.2\glog\Principia\JOURNAL.20170719-193221)";  // NOLINT
+      R"(\\venezia.mockingbirdnest.com\Namespaces\Public\Public Mockingbird\Principia\Crashes\1441\replication\JOURNAL.20170616-195725)";  // NOLINT
   Player player(path);
   int count = 0;
   while (player.Play()) {
@@ -106,22 +106,25 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   LOG(ERROR) << "Last successful method out/return: \n"
               << player.last_method_out_return().DebugString();
 
-#if 1
+#if 0
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::CatchUpVessel::extension);
+        serialization::AdvanceTime::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(3352313152);
-    in->set_vessel_guid("af5dc7c7-4913-4dc9-889b-c1fe246c2ffe");
+    in->set_plugin(239018496);
+    in->set_t(55066.065156232558);
+    in->set_planetarium_rotation(-220.16314278280507);
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::CatchUpVessel::extension);
+        serialization::AdvanceTime::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<CatchUpVessel>(method_in, method_out_return, player));
+  CHECK(RunIfAppropriate<AdvanceTime>(method_in,
+                                      method_out_return,
+                                      player));
 #endif
 }
 
