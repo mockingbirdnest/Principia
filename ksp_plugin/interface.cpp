@@ -182,7 +182,7 @@ void principia__CatchUpLaggingVessels(Plugin* const plugin) {
 }
 
 void principia__CatchUpVessel(Plugin* const plugin,
-                              char const* const vessel_guid){
+                              char const* const vessel_guid) {
   journal::Method<journal::CatchUpVessel> m({plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(vessel_guid);
