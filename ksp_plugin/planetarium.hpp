@@ -37,7 +37,7 @@ using quantities::Length;
 
 // A planetarium is an ephemeris together with a perspective.  In this setting
 // it is possible to draw trajectories in the projective plane.
-class Planetarium final {
+class Planetarium {
  public:
   class Parameters final {
    public:

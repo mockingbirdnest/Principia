@@ -804,14 +804,14 @@ not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
   return find_vessel_by_guid_or_die(vessel_guid).get();
 }
 
-std::unique_ptr<Planetarium> Plugin::NewPlanetarium(
+not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
     Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
     const {
-  return std::make_unique<Planetarium>(parameters,
-                                       perspective,
-                                       ephemeris_.get(),
-                                       renderer_->GetPlottingFrame());
+  return make_not_null_unique<Planetarium>(parameters,
+                                           perspective,
+                                           ephemeris_.get(),
+                                           renderer_->GetPlottingFrame());
 }
 
 not_null<std::unique_ptr<NavigationFrame>>

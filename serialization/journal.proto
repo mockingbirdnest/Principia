@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5129.
+  extensions 5000 to 5999;  // Last used: 5130.
 }
 
 message AdvanceTime {
@@ -1068,7 +1068,7 @@ message NewPlugin {
 
 message PlanetariumCreate {
   extend Method {
-    optional PlanetariumCreate extensions = 5129;
+    optional PlanetariumCreate extension = 5129;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1086,6 +1086,21 @@ message PlanetariumCreate {
   }
   optional In in = 1;
   optional Return return = 3;
+}
+
+message PlanetariumDelete {
+  extend Method {
+    optional PlanetariumDelete extension = 5130;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
 }
 
 message PrepareToReportCollisions {

@@ -310,7 +310,7 @@ class Plugin {
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
 
-  virtual std::unique_ptr<Planetarium> NewPlanetarium(
+  virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
       Planetarium::Parameters const& parameters,
       Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
       const;

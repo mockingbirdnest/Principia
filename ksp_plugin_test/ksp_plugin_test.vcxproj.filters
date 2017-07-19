@@ -146,6 +146,12 @@
     <ClCompile Include="..\ksp_plugin\planetarium.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface_planetarium_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\interface_planetarium.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
@@ -161,6 +167,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mock_celestial.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mock_planetarium.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

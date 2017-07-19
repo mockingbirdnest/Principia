@@ -7,6 +7,8 @@
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "glog/logging.h"
+#include "journal/method.hpp"
+#include "journal/profiles.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "quantities/quantities.hpp"
@@ -34,17 +36,14 @@ Planetarium* principia__PlanetariumCreate(Plugin const* const plugin,
                                           XYZ const xyz_world_z_in_camera,
                                           XYZ const xyz_camera_in_world,
                                           double const focal) {
+  journal::Method<journal::PlanetariumCreate> m({plugin,
+                                                 sun_world_position,
+                                                 xyz_world_x_in_camera,
+                                                 xyz_world_y_in_camera,
+                                                 xyz_world_z_in_camera,
+                                                 xyz_camera_in_world,
+                                                 focal});
   Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
-
-  LOG(WARNING) << "X: " << xyz_world_x_in_camera.x << " "
-               << xyz_world_x_in_camera.y << " " << xyz_world_x_in_camera.z;
-  LOG(WARNING) << "Y: " << xyz_world_y_in_camera.x << " "
-               << xyz_world_y_in_camera.y << " " << xyz_world_y_in_camera.z;
-  LOG(WARNING) << "Z: " << xyz_world_z_in_camera.x << " "
-               << xyz_world_z_in_camera.y << " " << xyz_world_z_in_camera.z;
-  LOG(WARNING) << "O: " << xyz_camera_in_world.x << " " << xyz_camera_in_world.y
-               << " " << xyz_camera_in_world.z;
-  LOG(WARNING) << focal;
 
   Multivector<double, Camera, 1> const world_x_in_camera(
       FromXYZ(xyz_world_x_in_camera));
@@ -71,8 +70,17 @@ Planetarium* principia__PlanetariumCreate(Plugin const* const plugin,
       world_to_camera_affine_map * plotting_to_world_affine_map,
       focal * Metre);
 
-  return plugin->NewPlanetarium(parameters, perspective).release();
+  return m.Return(plugin->NewPlanetarium(parameters, perspective).release());
 }
+
+void principia__PlanetariumDelete(
+    Planetarium const** const planetarium) {
+  CHECK_NOTNULL(planetarium);
+  journal::Method<journal::PlanetariumDelete> m({planetarium}, {planetarium});
+  TakeOwnership(planetarium);
+  return m.Return();
+}
+
 
 }  // namespace interface
 }  // namespace principia
