@@ -200,7 +200,7 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
       RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
                                          satellite_initial_velocity_));
   plugin_->PrepareToReportCollisions();
-  plugin_->FreeVesselsAndPartsAndCollectPileUps();
+  plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
 
   plugin_->renderer().SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
@@ -230,11 +230,13 @@ TEST_F(PluginIntegrationTest, BodyCentredNonrotatingNavigationIntegration) {
                                 SolarSystemFactory::Earth,
                                 /*loaded=*/false,
                                 inserted);
+    plugin_->CatchUpLaggingVessels();
   }
   for (; t < initial_time + 12 * Hour; t += δt_long) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
+    plugin_->CatchUpLaggingVessels();
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
@@ -298,7 +300,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
                               vessel_guid,
                               {from_the_earth_to_l5, initial_velocity});
   plugin_->PrepareToReportCollisions();
-  plugin_->FreeVesselsAndPartsAndCollectPileUps();
+  plugin_->FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
 
   plugin_->renderer().SetPlottingFrame(
       plugin_->NewBarycentricRotatingNavigationFrame(SolarSystemFactory::Earth,
@@ -321,6 +323,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
+    plugin_->CatchUpLaggingVessels();
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
@@ -331,6 +334,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
     plugin_->AdvanceTime(
         t,
         1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
+    plugin_->CatchUpLaggingVessels();
     plugin_->InsertOrKeepVessel(vessel_guid,
                                 vessel_name,
                                 SolarSystemFactory::Earth,
@@ -339,6 +343,7 @@ TEST_F(PluginIntegrationTest, BarycentricRotatingNavigationIntegration) {
   }
   plugin_->AdvanceTime(t,
                        1 * Radian / Pow<2>(Minute) * Pow<2>(t - initial_time));
+  plugin_->CatchUpLaggingVessels();
   plugin_->InsertOrKeepVessel(vessel_guid,
                               vessel_name,
                               SolarSystemFactory::Earth,
@@ -695,7 +700,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
        Velocity<AliceSun>(
            {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second})});
   plugin.PrepareToReportCollisions();
-  plugin.FreeVesselsAndPartsAndCollectPileUps();
+  plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
 
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
