@@ -174,10 +174,19 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__AdvanceParts(Plugin* const plugin, double const t) {
-  journal::Method<journal::AdvanceParts> m({plugin, t});
+void principia__CatchUpLaggingVessels(Plugin* const plugin) {
+  journal::Method<journal::CatchUpLaggingVessels> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->AdvanceParts(FromGameTime(*plugin, t));
+  plugin->CatchUpLaggingVessels();
+  return m.Return();
+}
+
+void principia__CatchUpVessel(Plugin* const plugin,
+                              char const* const vessel_guid) {
+  journal::Method<journal::CatchUpVessel> m({plugin, vessel_guid});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(vessel_guid);
+  plugin->CatchUpVessel(vessel_guid);
   return m.Return();
 }
 
@@ -339,10 +348,12 @@ void principia__ForgetAllHistoriesBefore(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin) {
-  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m({plugin});
+void principia__FreeVesselsAndPartsAndCollectPileUps(Plugin* const plugin,
+                                                     double const delta_t) {
+  journal::Method<journal::FreeVesselsAndPartsAndCollectPileUps> m(
+      {plugin, delta_t});
   CHECK_NOTNULL(plugin);
-  plugin->FreeVesselsAndPartsAndCollectPileUps();
+  plugin->FreeVesselsAndPartsAndCollectPileUps(delta_t * Second);
   return m.Return();
 }
 
@@ -584,7 +595,8 @@ void principia__InsertOrKeepLoadedPart(
     char const* const vessel_guid,
     int const main_body_index,
     QP const main_body_world_degrees_of_freedom,
-    QP const part_world_degrees_of_freedom) {
+    QP const part_world_degrees_of_freedom,
+    double const delta_t) {
   journal::Method<journal::InsertOrKeepLoadedPart> m(
       {plugin,
        part_id,
@@ -593,7 +605,8 @@ void principia__InsertOrKeepLoadedPart(
        vessel_guid,
        main_body_index,
        main_body_world_degrees_of_freedom,
-       part_world_degrees_of_freedom});
+       part_world_degrees_of_freedom,
+       delta_t});
   CHECK_NOTNULL(plugin);
   plugin->InsertOrKeepLoadedPart(
       part_id,
@@ -602,7 +615,8 @@ void principia__InsertOrKeepLoadedPart(
       vessel_guid,
       main_body_index,
       FromQP<DegreesOfFreedom<World>>(main_body_world_degrees_of_freedom),
-      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom));
+      FromQP<DegreesOfFreedom<World>>(part_world_degrees_of_freedom),
+      delta_t * Second);
   return m.Return();
 }
 
