@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <deque>
 #include <vector>
 
 #include "geometry/perspective.hpp"
@@ -264,6 +265,29 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     // The cone+sphere hides the end of the segment.
     return {{A, A + λ_min * AB}};
   }
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+std::vector<Segment<Vector<Scalar, FromFrame>>>
+Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
+    Segment<Vector<Scalar, FromFrame>> const& segment,
+    std::vector<Sphere<Scalar, FromFrame>> const& spheres) const {
+  std::vector<Segment<Vector<Scalar, FromFrame>>> old_segments = {segment};
+  std::vector<Segment<Vector<Scalar, FromFrame>>> new_segments;
+  for (auto const& sphere : spheres) {
+    for (auto const& old_segment : old_segments) {
+      auto new_segments_for_sphere = VisibleSegments(old_segment, sphere);
+      std::move(new_segments_for_sphere.begin(),
+                new_segments_for_sphere.end(),
+                std::back_inserter(new_segments));
+    }
+    old_segments = std::move(new_segments);
+    new_segments.clear();
+  }
+  return old_segments;
 }
 
 }  // namespace internal_perspective
