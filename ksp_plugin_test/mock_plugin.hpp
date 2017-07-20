@@ -77,7 +77,7 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
   MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
 
-  not_null<std::unique_ptr<Planetarium>> 
+  not_null<std::unique_ptr<Planetarium>>
   NewPlanetarium(
       Planetarium::Parameters const& parameters,
       Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
