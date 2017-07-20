@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5130.
+  extensions 5000 to 5999;  // Last used: 5131.
 }
 
 message AdvanceTime {
@@ -105,13 +105,23 @@ message AdvanceTime {
   optional In in = 1;
 }
 
-message AdvanceParts {
+message CatchUpLaggingVessels {
   extend Method {
-    optional AdvanceParts extension = 5120;
+    optional CatchUpLaggingVessels extension = 5120;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required double t = 2;
+  }
+  optional In in = 1;
+}
+
+message CatchUpVessel {
+  extend Method {
+    optional CatchUpVessel extension = 5129;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
   }
   optional In in = 1;
 }
@@ -647,6 +657,7 @@ message FreeVesselsAndPartsAndCollectPileUps {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required double delta_t = 2;
   }
   optional In in = 1;
 }
@@ -856,6 +867,7 @@ message InsertOrKeepLoadedPart {
     required int32 main_body_index = 5;
     required QP main_body_world_degrees_of_freedom = 6;
     required QP part_world_degrees_of_freedom = 7;
+    required double delta_t = 9;
   }
   optional In in = 1;
 }
@@ -1068,7 +1080,7 @@ message NewPlugin {
 
 message PlanetariumCreate {
   extend Method {
-    optional PlanetariumCreate extension = 5129;
+    optional PlanetariumCreate extension = 5130;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1090,7 +1102,7 @@ message PlanetariumCreate {
 
 message PlanetariumDelete {
   extend Method {
-    optional PlanetariumDelete extension = 5130;
+    optional PlanetariumDelete extension = 5131;
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",

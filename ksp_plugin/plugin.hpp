@@ -184,7 +184,8 @@ class Plugin {
       GUID const& vessel_guid,
       Index main_body_index,
       DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-      DegreesOfFreedom<World> const& part_degrees_of_freedom);
+      DegreesOfFreedom<World> const& part_degrees_of_freedom,
+      Time const& Δt);
 
   // Calls |increment_intrinsic_force| on the relevant part, which must be in a
   // loaded vessel.
@@ -205,7 +206,7 @@ class Plugin {
   // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
   // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
   // and updates the list of |pile_ups_| according to the reported collisions.
-  virtual void FreeVesselsAndPartsAndCollectPileUps();
+  virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
   // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
   // relevant part.  This part must be in a loaded vessel.
@@ -213,10 +214,10 @@ class Plugin {
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Advances time on the pile ups to |t|, filling the tails of all parts up to
-  // instant |t|.  The vessels are unaffected, and |current_time_| remains
-  // unchanged.
-  virtual void AdvanceParts(Instant const& t);
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.
+  virtual void CatchUpLaggingVessels();
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
@@ -234,8 +235,6 @@ class Plugin {
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
-  // Calls |AdvanceParts| if it has not been called; otherwise the vessels are
-  // advanced using the tails previously computed during that call.
   // Clears the intrinsic force on all loaded parts.
   // |t| must be greater than |current_time_|.  |planetarium_rotation| is the
   // value of KSP's |Planetarium.InverseRotAngle| at instant |t|, which provides
@@ -244,6 +243,11 @@ class Plugin {
   // even though it's a double-precision value).  Note that KSP's
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
+
+  // Advances time to |current_time_| on the pile up containing the given
+  // vessel if the pile up is not there already, and advances time to
+  // |current_time_| on that vessel.
+  virtual void CatchUpVessel(GUID const& vessel_guid);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;

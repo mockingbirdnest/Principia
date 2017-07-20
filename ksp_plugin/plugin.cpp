@@ -395,7 +395,8 @@ void Plugin::InsertOrKeepLoadedPart(
     GUID const& vessel_guid,
     Index const main_body_index,
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
-    DegreesOfFreedom<World> const& part_degrees_of_freedom) {
+    DegreesOfFreedom<World> const& part_degrees_of_freedom,
+    Time const& Δt) {
   not_null<Vessel*> const vessel =
       find_vessel_by_guid_or_die(vessel_guid).get();
   CHECK(is_loaded(vessel));
@@ -411,6 +412,7 @@ void Plugin::InsertOrKeepLoadedPart(
       vessel->AddPart(current_vessel->ExtractPart(part_id));
     }
   } else {
+    Instant const previous_time = current_time_ - Δt;
     enum class LocalTag { tag };
     using MainBodyCentred =
         geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
@@ -421,12 +423,12 @@ void Plugin::InsertOrKeepLoadedPart(
         RigidTransformation<World, MainBodyCentred>{
             main_body_degrees_of_freedom.position(),
             MainBodyCentred::origin,
-            main_body_frame.ToThisFrameAtTime(current_time_).orthogonal_map() *
+            main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
         AngularVelocity<World>(),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric =
-        main_body_frame.FromThisFrameAtTime(current_time_) *
+        main_body_frame.FromThisFrameAtTime(previous_time) *
         world_to_main_body_centred;
 
     AddPart(vessel,
@@ -466,13 +468,15 @@ void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
-void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
+void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(!initializing_);
 
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> vessel = it->second.get();
+    Instant const vessel_time =
+        is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel)) {
-      vessel->PreparePsychohistory(current_time_);
+      vessel->PreparePsychohistory(vessel_time);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
@@ -491,7 +495,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   // Bind the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel, this](Part& first_part) {
+    vessel.ForSomePart([this, &vessel](Part& first_part) {
       vessel.ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
@@ -503,10 +507,12 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps() {
   // the same subset.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([this](Part& first_part) {
+    Instant const vessel_time =
+        is_loaded(&vessel) ? current_time_ - Δt : current_time_;
+    vessel.ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
-          current_time_,
+          vessel_time,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
           ephemeris_.get());
@@ -533,17 +539,23 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::AdvanceParts(Instant const& t) {
+void Plugin::CatchUpLaggingVessels() {
   CHECK(!initializing_);
-  CHECK_GT(t, current_time_);
 
-  ephemeris_->Prolong(t);
   for (PileUp& pile_up : pile_ups_) {
-    pile_up.DeformPileUpIfNeeded();
-    pile_up.AdvanceTime(t);
-    // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
-    // anymore, it could be part of |PileUp::AdvanceTime|.
-    pile_up.NudgeParts();
+    if (pile_up.time() < current_time_) {
+      pile_up.DeformPileUpIfNeeded();
+      pile_up.AdvanceTime(current_time_);
+      // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
+      // anymore, it could be part of |PileUp::AdvanceTime|.
+      pile_up.NudgeParts();
+    }
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    if (vessel.psychohistory().last().time() < current_time_) {
+      vessel.AdvanceTime();
+    }
   }
 }
 
@@ -590,36 +602,11 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
-  // In some cases involving physics dewarping, the vessel may have an
-  // authoritative point in the future.  Bail out early.
-  Instant last_authoritative_time = Instant() - Infinity<Time>();
-  for (auto const& pair : vessels_) {
-    Vessel const& vessel = *pair.second;
-    last_authoritative_time = std::max(last_authoritative_time,
-                                       vessel.last_authoritative().time());
-  }
-  if (last_authoritative_time >= t) {
-    return;
-  }
-
-  if (!vessels_.empty()) {
-    bool tails_are_empty;
-    vessels_.begin()->second->ForSomePart([&tails_are_empty](Part& part) {
-      tails_are_empty = part.tail().Empty();
-    });
-    if (tails_are_empty) {
-      AdvanceParts(t);
-    }
-  }
-
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.AdvanceTime();
-  }
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ClearAllIntrinsicForces();
   }
 
+  ephemeris_->Prolong(current_time_);
   VLOG(1) << "Time has been advanced" << '\n'
           << "from : " << current_time_ << '\n'
           << "to   : " << t;
@@ -627,6 +614,24 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   planetarium_rotation_ = planetarium_rotation;
   UpdatePlanetariumRotation();
   loaded_vessels_.clear();
+}
+
+void Plugin::CatchUpVessel(GUID const& vessel_guid) {
+  CHECK(!initializing_);
+  Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  vessel.ForSomePart([this](Part& part) {
+    auto const pile_up = part.containing_pile_up()->iterator();
+    // This may be false, if we have already caught up the pile up as part of
+    // |CatchUpVessel| for another vessel in the pile up.
+    if (pile_up->time() < current_time_) {
+      // TODO(egg): this should probably check that deformation is not needed
+      // instead.
+      pile_up->DeformPileUpIfNeeded();
+      pile_up->AdvanceTime(current_time_);
+      pile_up->NudgeParts();
+    }
+  });
+  vessel.AdvanceTime();
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {

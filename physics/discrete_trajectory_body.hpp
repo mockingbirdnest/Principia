@@ -155,7 +155,9 @@ void DiscreteTrajectory<Frame>::Append(
                                    time,
                                    degrees_of_freedom);
   // Decrementing |end()| is much faster than incrementing |it|.  Don't ask.
-  CHECK(--timeline_.end() == it) << "Append out of order at " << time;
+  CHECK(--timeline_.end() == it)
+      << "Append out of order at " << time << ", last time is "
+      << (--timeline_.end())->first;
 }
 
 template<typename Frame>
