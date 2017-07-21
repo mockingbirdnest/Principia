@@ -12,4 +12,6 @@ The [FAQ](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reportin
 
 The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) gives a fairly detailed description of the new features in each release.
 
+Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
+
 Download the binary (Ubuntu and Windows) [here](https://goo.gl/J8ycA8) or, if you don't trust our binary, build the mod from the [Cauchy](https://github.com/mockingbirdnest/Principia/releases/tag/2017062403-Cauchy) release.
