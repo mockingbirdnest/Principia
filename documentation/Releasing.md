@@ -7,6 +7,7 @@ is called `la-vache`.  `<Mathematician>` and `<mathematician>` stand for the ver
 names with the appropriate cases.
 - [ ] Make sure that the fingerprints for detecting and fixing the stock system are up-to-date.
 - [ ] Make sure that the `PlayerTest.Benchmark` test contains the latest journal file name and has been merged as the last pull request.
+- [ ] Check that the release name, release date, and lunation number for the following update, used by the update reminder, are correctly set in the adapter.
 - [ ] Make sure that the project can be built and tested under Linux.
 - [ ] Create and push a tag for the current state of mockingbirdnest/master, where `"yyyyMMddHH"` is the date of the new moon in UT1:
 ```powershell

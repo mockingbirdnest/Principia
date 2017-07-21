@@ -15,6 +15,11 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
+      
+  private const String чебышёв_release_name = "Чебышёв";
+  private const int чебышёв_lunation_number = 218;
+  private DateTimeOffset чебышёв_release_date =
+      new DateTimeOffset(2017, 08, 21, 18, 30, 11, TimeSpan.Zero);
 
   private const String principia_key = "serialized_plugin";
   private const String principia_initial_state_config_name =
@@ -1754,6 +1759,12 @@ public partial class PrincipiaPluginAdapter
     using (new VerticalLayout()) {
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
+      }
+      if (DateTimeOffset.Now > чебышёв_release_date) {
+        UnityEngine.GUILayout.TextArea(
+            "PSA: the new moon of lunation number " + чебышёв_lunation_number +
+            " has come; please download the latest Principia release, " +
+            чебышёв_release_name + ".");
       }
       String version;
       String unused_build_date;
