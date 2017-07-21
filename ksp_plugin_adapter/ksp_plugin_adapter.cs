@@ -16,9 +16,9 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
       
-  private const String чебышёв_release_name = "Чебышёв";
-  private const int чебышёв_lunation_number = 218;
-  private DateTimeOffset чебышёв_release_date =
+  private const String next_release_name = "Чебышёв";
+  private const int next_release_lunation_number = 218;
+  private DateTimeOffset next_release_date =
       new DateTimeOffset(2017, 08, 21, 18, 30, 11, TimeSpan.Zero);
 
   private const String principia_key = "serialized_plugin";
@@ -1760,11 +1760,12 @@ public partial class PrincipiaPluginAdapter
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
-      if (DateTimeOffset.Now > чебышёв_release_date) {
+      if (DateTimeOffset.Now > next_release_date) {
         UnityEngine.GUILayout.TextArea(
-            "PSA: the new moon of lunation number " + чебышёв_lunation_number +
+            "Announcement: the new moon of lunation number " +
+            next_release_lunation_number +
             " has come; please download the latest Principia release, " +
-            чебышёв_release_name + ".");
+            next_release_name + ".");
       }
       String version;
       String unused_build_date;
