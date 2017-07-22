@@ -7,11 +7,9 @@
 #include "physics/discrete_trajectory.hpp"
 
 namespace principia {
-namespace interface {
+namespace ksp_plugin {
 
 using base::not_null;
-using ksp_plugin::Plugin;
-using ksp_plugin::World;
 using physics::DiscreteTrajectory;
 
 // A wrapper for a container and an iterator into that container.
@@ -72,6 +70,7 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   not_null<Plugin const*> plugin_;
 };
 
-}  // namespace interface
+}  // namespace ksp_plugin
 }  // namespace principia
 
+#include "ksp_plugin/iterators_body.hpp"

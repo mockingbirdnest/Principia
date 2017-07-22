@@ -40,6 +40,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
+using ksp_plugin::Iterator;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
 using ksp_plugin::Planetarium;

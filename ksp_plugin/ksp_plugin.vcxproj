@@ -333,6 +333,7 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="identification.hpp" />
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="iterators.hpp" />
+    <ClInclude Include="iterators_body.hpp" />
     <ClInclude Include="part_subsets.hpp" />
     <ClInclude Include="pile_up.hpp" />
     <ClInclude Include="flight_plan.hpp" />

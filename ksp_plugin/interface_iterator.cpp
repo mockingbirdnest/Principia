@@ -5,14 +5,18 @@
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "physics/discrete_trajectory.hpp"
 
 namespace principia {
 namespace interface {
 
 using base::check_not_null;
+using ksp_plugin::TypedIterator;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});
