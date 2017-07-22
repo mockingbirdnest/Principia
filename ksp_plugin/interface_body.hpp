@@ -264,6 +264,10 @@ inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
   return {r3_element.x, r3_element.y, r3_element.z};
 }
 
+inline XYZ ToXYZ(geometry::RP2Point<Length, Camera> const& rp2_point) {
+  return {rp2_point.x() / Metre, rp2_point.y() / Metre, rp2_point.z()};
+}
+
 inline XYZ ToXYZ(Position<World> const& position) {
   return XYZConverter<Position<World>>::ToXYZ(position);
 }

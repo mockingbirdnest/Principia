@@ -27,6 +27,11 @@ class RP2Point {
   Scalar const x() const;
   Scalar const y() const;
 
+  // Returns the homogeneous z-coordinate passed at construction.  Beware, this
+  // breaks the projective geometry.  It is useful for graphics, though, as an
+  // indication of depth.
+  double const z() const;
+
  private:
   Scalar x_;
   Scalar y_;

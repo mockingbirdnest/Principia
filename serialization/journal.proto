@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5131.
+  extensions 5000 to 5999;  // Last used: 5133.
 }
 
 message AdvanceTime {
@@ -916,9 +916,9 @@ message IteratorDelete {
   optional Out out = 2;
 }
 
-message IteratorGetQP {
+message IteratorGetDiscreteTrajectoryQP {
   extend Method {
-    optional IteratorGetQP extension = 5093;
+    optional IteratorGetDiscreteTrajectoryQP extension = 5093;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -931,9 +931,9 @@ message IteratorGetQP {
   optional Return return = 3;
 }
 
-message IteratorGetTime {
+message IteratorGetDiscreteTrajectoryTime {
   extend Method {
-    optional IteratorGetTime extension = 5094;
+    optional IteratorGetDiscreteTrajectoryTime extension = 5094;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -946,9 +946,40 @@ message IteratorGetTime {
   optional Return return = 3;
 }
 
-message IteratorGetXYZ {
+message IteratorGetDiscreteTrajectoryXYZ {
   extend Method {
-    optional IteratorGetXYZ extension = 5085;
+    optional IteratorGetDiscreteTrajectoryXYZ extension = 5085;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XYZ result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetRP2LinesIterator {
+  extend Method {
+    optional IteratorGetRP2LinesIterator extension = 5132;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetRP2LineXYZ {
+  extend Method {
+    optional IteratorGetRP2LineXYZ extension = 5133;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",

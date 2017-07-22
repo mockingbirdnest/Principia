@@ -21,6 +21,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace interface {
@@ -40,6 +41,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
+using ksp_plugin::Camera;
 using ksp_plugin::Iterator;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
@@ -50,6 +52,7 @@ using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
+using quantities::Length;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -119,6 +122,7 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
+XYZ ToXYZ(geometry::RP2Point<Length, Camera> const& rp2_point);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);
