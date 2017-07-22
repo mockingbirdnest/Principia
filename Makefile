@@ -1,6 +1,10 @@
 .SECONDEXPANSION:
 PERCENT := %
 
+# detect OS
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
 CXX := clang++
 
 # TODO(egg): build benchmarks
@@ -47,7 +51,13 @@ ADAPTER_BUILD_DIR     := ksp_plugin_adapter/obj/
 ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
-PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
+
+ifeq ($(UNAME_S),Linux)
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+endif
+ifeq ($(UNAME_S),Darwin)
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
+endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
@@ -65,20 +75,21 @@ SHARED_ARGS   := \
 	-DTEMP_DIR='std::experimental::filesystem::path("/tmp")'                \
 	-DNDEBUG
 
-# detect OS
-UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    UNAME_M := $(shell uname -m)
     ifeq ($(UNAME_M),x86_64)
         SHARED_ARGS += -m64
     else
         SHARED_ARGS += -m32
     endif
     MDTOOL := mdtool
+    LIBS += -lsupc++
+    TEST_LIBS += -lsupc++
+    SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
     SHARED_ARGS += -mmacosx-version-min=10.7 -arch x86_64
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
+    SHAREDFLAG := -dynamiclib
 endif
 
 COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
@@ -184,7 +195,7 @@ KSP_PLUGIN := $(PLUGIN_DIRECTORY)principia.so
 
 $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) -dynamiclib  $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(SHAREDFLAG) $(LDFLAGS) $^ $(LIBS) -o $@
 
 ##### Tests
 
