@@ -90,7 +90,7 @@ message WXYZ {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5133.
+  extensions 5000 to 5999;  // Last used: 5134.
 }
 
 message AdvanceTime {
@@ -1144,6 +1144,24 @@ message PlanetariumDelete {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message PlanetariumPlotPsychohistory {
+  extend Method {
+    optional PlanetariumPlotPsychohistory extension = 5134;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed64 planetarium = 2 [(pointer_to) = "Planetarium const"];
+    required string vessel_guid = 3;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
 }
 
 message PrepareToReportCollisions {
