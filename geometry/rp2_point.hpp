@@ -46,6 +46,10 @@ class RP2Point {
 template<typename Scalar, typename Frame>
 using RP2Line = std::vector<RP2Point<Scalar, Frame>>;
 
+// A list of disjoint lines.
+template<typename Scalar, typename Frame>
+using RP2Lines = std::vector<RP2Line<Scalar, Frame>>;
+
 // These operators are implemented using exact multiplication and define a
 // proper equivalence.
 template<typename Scalar, typename Frame>
@@ -65,6 +69,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_rp2_point
 
 using internal_rp2_point::RP2Line;
+using internal_rp2_point::RP2Lines;
 using internal_rp2_point::RP2Point;
 
 }  // namespace geometry

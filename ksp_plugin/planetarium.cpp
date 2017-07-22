@@ -10,6 +10,7 @@ namespace ksp_plugin {
 namespace internal_planetarium {
 
 using geometry::Position;
+using geometry::RP2Line;
 using quantities::Time;
 
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier)
@@ -25,7 +26,7 @@ Planetarium::Planetarium(
       ephemeris_(ephemeris),
       plotting_frame_(plotting_frame) {}
 
-std::vector<RP2Line<Length, Camera>> Planetarium::PlotMethod0(
+RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now) const {
@@ -33,13 +34,14 @@ std::vector<RP2Line<Length, Camera>> Planetarium::PlotMethod0(
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            begin, end);
 
-  std::vector<RP2Line<Length, Camera>> rp2_lines;
+  RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.
     auto const rp2_first = perspective_(plottable_segment.first);
     auto const rp2_second = perspective_(plottable_segment.second);
 
     // Ignore any segment that goes behind the camera.
+    // TODO(phl): These segments should probably be clipped to the focal plane.
     if (!rp2_first || !rp2_second) {
       continue;
     }

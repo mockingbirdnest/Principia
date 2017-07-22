@@ -25,7 +25,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
-using geometry::RP2Line;
+using geometry::RP2Lines;
 using geometry::RP2Point;
 using geometry::Segment;
 using geometry::Sphere;
@@ -60,7 +60,7 @@ class Planetarium {
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
-  std::vector<RP2Line<Length, Camera>> PlotMethod0(
+  RP2Lines<Length, Camera> PlotMethod0(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
