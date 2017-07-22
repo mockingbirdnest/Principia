@@ -1526,7 +1526,7 @@ public partial class PrincipiaPluginAdapter
               continue;
             }
             Vector3d position_at_start =
-                (Vector3d)rendered_segments.IteratorGetXYZ();
+                (Vector3d)rendered_segments.IteratorGetDiscreteTrajectoryXYZ();
             GLLines.RenderAndDeleteTrajectory(
                 rendered_segments,
                 is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,

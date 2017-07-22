@@ -17,6 +17,7 @@
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -49,6 +50,7 @@ using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
@@ -317,11 +319,14 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                            vessel_guid,
                                            {0, 1, 2},
                                            3);
-  EXPECT_EQ(XYZ({0, 0, 0}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 0, 0}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
   principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 1, 2}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 1, 2}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
   principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 2, 4}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
 
   burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,
