@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 echo "Required prerequisites for build: build-essential clang libc++-dev libc++abi-dev monodevelop subversion git"
 echo "Required runtime dependencies: libc++1"
@@ -10,7 +11,7 @@ BASE_FLAGS="-fPIC -O3 -g"
 
 PLATFORM=$(uname -s)
 if [ "$PLATFORM" == "Darwin" ]; then
-    C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.7 -arch i386"
+    C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.7 -arch x86_64"
 elif [ "$PLATFORM" == "Linux" ]; then
 	BITNESS=$(uname -m)
 	if [ "$BITNESS" == "x86_64" ]; then
@@ -28,8 +29,12 @@ CXX_FLAGS="-std=c++14 $LD_FLAGS"
 mkdir -p deps
 cd deps
 
-git clone "https://github.com/mockingbirdnest/protobuf"
+if [ ! -d "protobuf" ]; then
+  git clone "https://github.com/mockingbirdnest/protobuf"
+fi
 pushd protobuf
+git checkout master
+git pull
 ./autogen.sh
 if [ "$PLATFORM" == "Linux" ]; then
     ./autogen.sh # Really definitely needs to run twice on Ubuntu for some reason.
@@ -38,8 +43,12 @@ fi
 make -j8
 popd
 
-git clone "https://github.com/mockingbirdnest/glog"
+if [ ! -d "glog" ]; then
+  git clone "https://github.com/mockingbirdnest/glog"
+fi
 pushd glog
+git checkout master
+git pull
 aclocal
 automake
 ./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
@@ -47,17 +56,46 @@ make -j8
 popd
 
 # googlemock/googletest don't need to be compiled
-git clone "https://github.com/mockingbirdnest/googlemock"
-git clone "https://github.com/mockingbirdnest/googletest"
+if [ ! -d "googlemock" ]; then
+  git clone "https://github.com/mockingbirdnest/googlemock"
+fi
+pushd googlemock
+git checkout master
+git pull
+popd
 
-git clone "https://github.com/Norgg/eggsperimental_filesystem.git"
+if [ ! -d "googletest" ]; then
+  git clone "https://github.com/mockingbirdnest/googletest"
+fi
+pushd googletest
+git checkout master
+git pull
+popd
+
+if [ ! -d "eggsperimental_filesystem" ]; then
+  git clone "https://github.com/Norgg/eggsperimental_filesystem.git"
+fi
+pushd eggsperimental_filesystem
+git checkout master
+git pull
+popd
 
 # Optional doesn't need to be compiled either
-git clone "https://github.com/mockingbirdnest/Optional.git"
+if [ ! -d "Optional" ]; then
+  git clone "https://github.com/mockingbirdnest/Optional.git"
+fi
+pushd Optional
+git checkout master
+git pull
+popd
 
 # TODO(egg): This probably needs to be compiled
-git clone "https://github.com/mockingbirdnest/benchmark"
+if [ ! -d "benchmark" ]; then
+  git clone "https://github.com/mockingbirdnest/benchmark"
+fi
 pushd benchmark
+git checkout master
+git pull
 cmake -DCMAKE_C_COMPILER:FILEPATH=`which clang` -DCMAKE_CXX_COMPILER:FILEPATH=`which clang++` -DCMAKE_C_FLAGS="${C_FLAGS}" -DCMAKE_CXX_FLAGS="${CXX_FLAGS}" -DCMAKE_LD_FLAGS="${LD_FLAGS}"
 make -j8
 popd
