@@ -19,7 +19,7 @@ Planetarium::Planetarium(
     Parameters const& parameters,
     Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
-    not_null<NavigationFrame*> const plotting_frame)
+    not_null<NavigationFrame const*> const plotting_frame)
     : parameters_(parameters),
       perspective_(perspective),
       ephemeris_(ephemeris),

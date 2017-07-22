@@ -37,7 +37,7 @@ using quantities::Length;
 
 // A planetarium is an ephemeris together with a perspective.  In this setting
 // it is possible to draw trajectories in the projective plane.
-class Planetarium final {
+class Planetarium {
  public:
   class Parameters final {
    public:
@@ -56,7 +56,7 @@ class Planetarium final {
               Perspective<Navigation, Camera, Length, OrthogonalMap> const&
                   perspective,
               not_null<Ephemeris<Barycentric> const*> ephemeris,
-              not_null<NavigationFrame*> plotting_frame);
+              not_null<NavigationFrame const*> plotting_frame);
 
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
@@ -82,7 +82,7 @@ class Planetarium final {
   Perspective<Navigation, Camera, Length, OrthogonalMap> const
       perspective_;
   not_null<Ephemeris<Barycentric> const*> const ephemeris_;
-  not_null<NavigationFrame*> const plotting_frame_;
+  not_null<NavigationFrame const*> const plotting_frame_;
 };
 
 }  // namespace internal_planetarium

@@ -13,6 +13,7 @@
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -40,6 +41,7 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
+using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
