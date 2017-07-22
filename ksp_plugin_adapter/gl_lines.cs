@@ -132,6 +132,37 @@ internal static class GLLines {
                ScaledSpace.LocalToScaledSpace(world));
   }
 
+  public static void PlotPsychohistory(IntPtr plugin,
+                                       string vessel_guid,
+                                       XYZ sun_world_position) {
+    UnityEngine.GL.Color(XKCDColors.Banana);
+
+    IntPtr planetarium = plugin.PlanetariumCreate();
+    IntPtr rp2_lines_iterator =
+        plugin.PlanetariumPlotPsychohistory(planetarium, vessel_guid);
+    for (;
+         !rp2_lines_iterator.IteratorAtEnd();
+         rp2_lines_iterator.IteratorIncrement()) {
+      XYZ? previous_rp2_point = null;
+      IntPtr rp2_line_iterator =
+          rp2_lines_iterator.IteratorGetRP2LinesIterator();
+      for (;
+           !rp2_line_iterator.IteratorAtEnd();
+           rp2_line_iterator.IteratorIncrement()) {
+        XYZ current_rp2_point = rp2_line_iterator.IteratorGetRP2LineXYZ();
+        if (previous_rp2_point.HasValue) {
+          UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
+                                  (float)previous_rp2_point.Value.y,
+                                  0);
+          UnityEngine.GL.Vertex3((float)current_rp2_point.x,
+                                  (float)current_rp2_point.y,
+                                  0);
+        }
+        previous_rp2_point = current_rp2_point;
+      }
+    }
+  }
+
   private static bool rendering_lines_ = false;
   private static CelestialBody[] hiding_bodies_;
   private static UnityEngine.Material line_material_;
