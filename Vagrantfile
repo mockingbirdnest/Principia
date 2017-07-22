@@ -41,5 +41,13 @@ SCRIPT
 
   config.vm.define "macos" do |macos|
     macos.vm.box = "jhcook/macos-sierra"
+    macos.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
+
+    script = <<SCRIPT
+echo Provisioning Principia
+SCRIPT
+
+    macos.vm.provision "shell", inline: script
+
   end
 end
