@@ -132,12 +132,49 @@ internal static class GLLines {
                ScaledSpace.LocalToScaledSpace(world));
   }
 
+  private static IntPtr NewPlanetarium(IntPtr plugin,
+                                       XYZ sun_world_position) {
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    UnityEngine.Vector3 x_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(1, 0, 0));
+    UnityEngine.Vector3 y_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(0, 1, 0));
+    UnityEngine.Vector3 z_in_camera =
+        camera.worldToCameraMatrix.MultiplyVector(
+            new UnityEngine.Vector3(0, 0, 1));
+    UnityEngine.Vector3 camera_in_world =
+        ScaledSpace.ScaledToLocalSpace(camera.transform.position);
+
+    // According to
+    // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
+    // the on-centre projection matrix has the form:
+    //   n / w                0                0                0
+    //     0                n / h              0                0
+    //     0                  0        (n + f) / (n - f)  2 f n / (n - f)
+    //     0                  0               -1                0
+    // where n and f are the near- and far-clipping distances, and w and h
+    // are the width and height of the screen seen in the focal plane.  h is
+    // seen under an angle that is ɑ, the field of view, and therefore the focal
+    // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
+    double focal =
+        camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
+                                Math.Tan(Math.PI * camera.fieldOfView / 360));
+    return plugin.PlanetariumCreate(sun_world_position,
+                                    (XYZ)(Vector3d)x_in_camera,
+                                    (XYZ)(Vector3d)y_in_camera,
+                                    (XYZ)(Vector3d)z_in_camera,
+                                    (XYZ)(Vector3d)camera_in_world,
+                                    focal);
+  }
+
   public static void PlotPsychohistory(IntPtr plugin,
                                        string vessel_guid,
                                        XYZ sun_world_position) {
     UnityEngine.GL.Color(XKCDColors.Banana);
 
-    IntPtr planetarium = plugin.PlanetariumCreate();
+    IntPtr planetarium = NewPlanetarium(plugin, sun_world_position);
     IntPtr rp2_lines_iterator =
         plugin.PlanetariumPlotPsychohistory(planetarium, vessel_guid);
     for (;
