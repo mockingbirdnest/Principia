@@ -191,7 +191,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
   std::vector<double> const δs =
       SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
-  CHECK_EQ(2, δs.size()) << a0 << " " << a1 << " " << a2;
+  CHECK_EQ(2, δs.size()) << "a0:" << a0 << " a1:" << a1 << " a2:" << a2
+                         << "\nK:" << K << " A:" << A << " B:" << B
+                         << " C:" << C;
 
   // The λs define points Q where the line AB intersects the cone+sphere system,
   // according to the formula:
@@ -253,6 +255,10 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
   double const λ_min = *λs.begin();
   double const λ_max = *λs.rbegin();
+  if (λ_min >= 1.0 || λ_max <= 0.0) {
+    // All the intersections are outside of the segment AB.
+    return {segment};
+  }
   if (λ_min <= 0.0 && λ_max >= 1.0) {
     // The cone+sphere swallows the segment.
     return {};
@@ -263,10 +269,12 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
   if (λ_min <= 0.0) {
     // The cone+sphere hides the beginning of the segment.
+    DCHECK_GT(λ_max, 0.0);
     return {{A + λ_max * AB, B}};
   }
   {
-    DCHECK_GE(λ_max, 1.0);
+    DCHECK_GT(λ_max, 1.0);
+    DCHECK_LE(λ_min, 1.0);
     // The cone+sphere hides the end of the segment.
     return {{A, A + λ_min * AB}};
   }

@@ -82,7 +82,7 @@ Planetarium* principia__PlanetariumCreate(
                                    FromXYZ<Position<World>>(sun_world_position),
                                    plugin->PlanetariumRotation());
 
-  Planetarium::Parameters parameters(/*sphere_radius_multiplier*/1.05);
+  Planetarium::Parameters parameters(/*sphere_radius_multiplier=*/1.05);
   Perspective<Navigation, Camera, Length, OrthogonalMap> perspective(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
