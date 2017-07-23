@@ -175,6 +175,14 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     return {segment};
   }
 
+  // Bail out if the camera is inside the sphere: the segment is completely
+  // hidden.  This situation would cause trouble in the computation of P below
+  // as the quadratic equation would have no solution.
+  auto const KC² = InnerProduct(KC, KC);
+  if (KC² <= sphere.radius²()) {
+    return {};
+  }
+
   // P is a point of the plane KAB where a line going through K is tangent to
   // the circle .  It is such that:
   //   PH = γ * KA + δ * KB

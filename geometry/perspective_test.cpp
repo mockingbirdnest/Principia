@@ -501,6 +501,35 @@ TEST_F(VisibleSegmentsTest, OutsideOfSegment) {
               ElementsAre(segment));
 }
 
+TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
+  Point<Displacement<World>> const camera_origin(
+      World::origin + Displacement<World>({-1.35993502776454182e+10 * Metre,
+                                           +4.79792595486199576e+06 * Metre,
+                                           -1.57980008827209473e+05 * Metre}));
+  AffineMap<World, Camera, Length, OrthogonalMap> world_to_camera_affine(
+      camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1 * Metre);
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({-1.35998843607365036e+10 * Metre,
+                                           +5.00094497194097005e+06 * Metre,
+                                           -2.45569064268199872e+03 * Metre}),
+      /*radius=*/+6.30000000000000000e+05 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({-1.35993763102505913e+10 * Metre,
+                                           +1.02319916576216407e+07 * Metre,
+                                           -1.54814310483471490e+03 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-1.35993763068824501e+10 * Metre,
+                                           +1.02318443313949741e+07 * Metre,
+                                           -1.54719462661686703e+03 * Metre});
+
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+              ElementsAre(segment));
+}
+
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia
