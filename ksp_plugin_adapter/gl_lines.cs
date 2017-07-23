@@ -90,6 +90,7 @@ internal static class GLLines {
     var begin = WorldToMapScreen(world_begin);
     var end = WorldToMapScreen(world_end);
     if (begin.z > 0 && end.z > 0) {
+      Log.Info("O:"+end.x+" "+end.y);
       UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
       UnityEngine.GL.Vertex3(end.x, end.y, 0);
     }
@@ -135,17 +136,18 @@ internal static class GLLines {
   private static IntPtr NewPlanetarium(IntPtr plugin,
                                        XYZ sun_world_position) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    UnityEngine.Vector3 x_in_camera =
-        camera.worldToCameraMatrix.MultiplyVector(
+    UnityEngine.Vector3 opengl_camera_x_in_world =
+        camera.cameraToWorldMatrix.MultiplyVector(
             new UnityEngine.Vector3(1, 0, 0));
-    UnityEngine.Vector3 y_in_camera =
-        camera.worldToCameraMatrix.MultiplyVector(
+    UnityEngine.Vector3 opengl_camera_y_in_world =
+        camera.cameraToWorldMatrix.MultiplyVector(
             new UnityEngine.Vector3(0, 1, 0));
-    UnityEngine.Vector3 z_in_camera =
-        camera.worldToCameraMatrix.MultiplyVector(
+    UnityEngine.Vector3 opengl_camera_z_in_world =
+        camera.cameraToWorldMatrix.MultiplyVector(
             new UnityEngine.Vector3(0, 0, 1));
-    UnityEngine.Vector3 camera_in_world =
+    UnityEngine.Vector3 camera_position_in_world =
         ScaledSpace.ScaledToLocalSpace(camera.transform.position);
+    Log.Info("sw:"+sun_world_position.x+" "+sun_world_position.y+" "+sun_world_position.z);
 
     // According to
     // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
@@ -161,12 +163,20 @@ internal static class GLLines {
     double focal =
         camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
                                 Math.Tan(Math.PI * camera.fieldOfView / 360));
-    return plugin.PlanetariumCreate(sun_world_position,
-                                    (XYZ)(Vector3d)x_in_camera,
-                                    (XYZ)(Vector3d)y_in_camera,
-                                    (XYZ)(Vector3d)z_in_camera,
-                                    (XYZ)(Vector3d)camera_in_world,
-                                    focal);
+    return plugin.PlanetariumCreate(
+               sun_world_position,
+               (XYZ)(Vector3d)opengl_camera_x_in_world,
+               (XYZ)(Vector3d)opengl_camera_y_in_world,
+               (XYZ)(Vector3d)opengl_camera_z_in_world,
+               (XYZ)(Vector3d)camera_position_in_world,
+               focal);
+  }
+
+  private static XYZ ToScreen(XYZ rp2_point) {
+    UnityEngine.Camera camera = PlanetariumCamera.Camera;
+    return new XYZ{x = (rp2_point.x + 1.0f) * 0.5f * camera.pixelWidth,
+                   y = (rp2_point.y + 1.0f) * 0.5f * camera.pixelHeight,
+                   z = rp2_point.z};
   }
 
   public static void PlotPsychohistory(IntPtr plugin,
@@ -186,8 +196,10 @@ internal static class GLLines {
       for (;
            !rp2_line_iterator.IteratorAtEnd();
            rp2_line_iterator.IteratorIncrement()) {
-        XYZ current_rp2_point = rp2_line_iterator.IteratorGetRP2LineXYZ();
+        XYZ current_rp2_point = ToScreen(
+            rp2_line_iterator.IteratorGetRP2LineXYZ());
         if (previous_rp2_point.HasValue) {
+          Log.Info("N:"+current_rp2_point.x+" "+current_rp2_point.y);
           UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
                                   (float)previous_rp2_point.Value.y,
                                   0);

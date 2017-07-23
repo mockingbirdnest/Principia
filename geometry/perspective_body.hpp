@@ -1,11 +1,12 @@
 ﻿
 #pragma once
 
+#include "geometry/perspective.hpp"
+
 #include <algorithm>
 #include <deque>
 #include <vector>
 
-#include "geometry/perspective.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -25,7 +26,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
     : from_camera_(from_camera),
       to_camera_(from_camera.Inverse()),
       camera_(from_camera_(ToFrame::origin)),
-      focal_(focal) {}
+      focal_(focal) {
+  LOG(INFO)<<"nc:"<<camera_;
+}
 
 template<typename FromFrame,
          typename ToFrame,
@@ -37,7 +40,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
     : from_camera_(to_camera.Inverse()),
       to_camera_(to_camera),
       camera_(from_camera_(ToFrame::origin)),
-      focal_(focal) {}
+      focal_(focal) {
+  LOG(INFO)<<"nc:"<<camera_;
+}
 
 template<typename FromFrame,
          typename ToFrame,
