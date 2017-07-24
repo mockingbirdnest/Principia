@@ -18,6 +18,9 @@ namespace internal_perspective {
 template<typename Vector>
 using Segment = std::pair<Point<Vector>, Point<Vector>>;
 
+template<typename Vector>
+using Segments = std::vector<Segment<Vector>>;
+
 // A perspective using the pinhole camera model.  It project a point of
 // |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
 // that frame the camera is located at the origin and looking at the positive
@@ -44,13 +47,13 @@ class Perspective final {
   // Returns the (sub)segments of |segment| that are visible in this perspective
   // after taking into account the hiding by |sphere|.  The returned vector has
   // 0, 1, or 2 elements.
-  std::vector<Segment<Vector<Scalar, FromFrame>>> VisibleSegments(
+  Segments<Vector<Scalar, FromFrame>> VisibleSegments(
       Segment<Vector<Scalar, FromFrame>> const& segment,
       Sphere<Scalar, FromFrame> const& sphere) const;
 
   // Same as above, but for hiding with multiple spheres.  For N spheres it may
   // return N + 1 segments.
-  std::vector<Segment<Vector<Scalar, FromFrame>>> VisibleSegments(
+  Segments<Vector<Scalar, FromFrame>> VisibleSegments(
       Segment<Vector<Scalar, FromFrame>> const& segment,
       std::vector<Sphere<Scalar, FromFrame>> const& spheres) const;
 

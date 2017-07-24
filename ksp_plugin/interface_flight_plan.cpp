@@ -9,11 +9,13 @@
 #include "journal/profiles.hpp"
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -33,6 +35,7 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
+using ksp_plugin::TypedIterator;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
@@ -40,6 +43,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using quantities::Speed;

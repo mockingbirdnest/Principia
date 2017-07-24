@@ -27,6 +27,11 @@ class RP2Point {
   Scalar const x() const;
   Scalar const y() const;
 
+  // Returns the homogeneous z-coordinate passed at construction.  Beware, this
+  // breaks the projective geometry.  It is useful for graphics, though, as an
+  // indication of depth.
+  double const z() const;
+
  private:
   Scalar x_;
   Scalar y_;
@@ -45,6 +50,10 @@ class RP2Point {
 // A line formed of RP2Points.
 template<typename Scalar, typename Frame>
 using RP2Line = std::vector<RP2Point<Scalar, Frame>>;
+
+// A list of disjoint lines.
+template<typename Scalar, typename Frame>
+using RP2Lines = std::vector<RP2Line<Scalar, Frame>>;
 
 // These operators are implemented using exact multiplication and define a
 // proper equivalence.
@@ -65,6 +74,7 @@ std::ostream& operator<<(std::ostream& os,
 }  // namespace internal_rp2_point
 
 using internal_rp2_point::RP2Line;
+using internal_rp2_point::RP2Lines;
 using internal_rp2_point::RP2Point;
 
 }  // namespace geometry

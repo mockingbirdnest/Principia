@@ -65,6 +65,12 @@
     <ClInclude Include="planetarium.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="iterators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="iterators_body.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="interface.cpp">

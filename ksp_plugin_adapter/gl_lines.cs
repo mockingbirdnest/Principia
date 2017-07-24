@@ -107,7 +107,8 @@ internal static class GLLines {
       for (int i = 0;
            !trajectory_iterator.IteratorAtEnd();
            trajectory_iterator.IteratorIncrement(), ++i) {
-        Vector3d current_point = (Vector3d)trajectory_iterator.IteratorGetXYZ();
+        Vector3d current_point =
+            (Vector3d)trajectory_iterator.IteratorGetDiscreteTrajectoryXYZ();
         if (previous_point.HasValue) {
           if (style == Style.FADED) {
             colour.a = (float)(4 * i + size) / (float)(5 * size);

@@ -3,16 +3,28 @@
 
 #include <vector>
 
+#include "geometry/rp2_point.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
+#include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
+#include "physics/discrete_trajectory.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace interface {
 
 using base::check_not_null;
+using geometry::RP2Line;
+using geometry::RP2Lines;
+using geometry::RP2Point;
+using ksp_plugin::Camera;
+using ksp_plugin::TypedIterator;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
+using physics::DiscreteTrajectory;
+using quantities::Length;
 
 bool principia__IteratorAtEnd(Iterator const* const iterator) {
   journal::Method<journal::IteratorAtEnd> m({iterator});
@@ -25,8 +37,8 @@ void principia__IteratorDelete(Iterator** const iterator) {
   return m.Return();
 }
 
-QP principia__IteratorGetQP(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetQP> m({iterator});
+QP principia__IteratorGetDiscreteTrajectoryQP(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDiscreteTrajectoryQP> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
@@ -36,8 +48,9 @@ QP principia__IteratorGetQP(Iterator const* const iterator) {
       }));
 }
 
-double principia__IteratorGetTime(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetTime> m({iterator});
+double principia__IteratorGetDiscreteTrajectoryTime(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDiscreteTrajectoryTime> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
@@ -48,14 +61,38 @@ double principia__IteratorGetTime(Iterator const* const iterator) {
       }));
 }
 
-XYZ principia__IteratorGetXYZ(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetXYZ> m({iterator});
+XYZ principia__IteratorGetDiscreteTrajectoryXYZ(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetDiscreteTrajectoryXYZ> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<DiscreteTrajectory<World>> const*>(iterator));
   return m.Return(typed_iterator->Get<XYZ>(
       [](DiscreteTrajectory<World>::Iterator const& iterator) -> XYZ {
         return ToXYZ(iterator.degrees_of_freedom().position());
+      }));
+}
+
+Iterator* principia__IteratorGetRP2LinesIterator(
+    Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetRP2LinesIterator> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<RP2Lines<Length, Camera>> const*>(iterator));
+  return m.Return(typed_iterator->Get<Iterator*>(
+      [](RP2Line<Length, Camera> const& rp2_line) -> Iterator* {
+        return new TypedIterator<RP2Line<Length, Camera>>(rp2_line);
+      }));
+}
+
+XYZ principia__IteratorGetRP2LineXYZ(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetRP2LineXYZ> m({iterator});
+  CHECK_NOTNULL(iterator);
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<RP2Line<Length, Camera>> const*>(iterator));
+  return m.Return(typed_iterator->Get<XYZ>(
+      [](RP2Point<Length, Camera> const& rp2_point) -> XYZ {
+        return ToXYZ(rp2_point);
       }));
 }
 

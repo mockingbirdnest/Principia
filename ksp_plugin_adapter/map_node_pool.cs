@@ -48,7 +48,7 @@ internal class MapNodePool {
                                      CelestialBody celestial) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
-      QP apsis = apsis_iterator.IteratorGetQP();
+      QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
       MapNodeProperties node_properties;
       node_properties.object_type = type;
       node_properties.vessel = vessel;
@@ -56,7 +56,7 @@ internal class MapNodePool {
       node_properties.world_position = (Vector3d)apsis.q;
       node_properties.velocity = (Vector3d)apsis.p;
       node_properties.source = source;
-      node_properties.time = apsis_iterator.IteratorGetTime();
+      node_properties.time = apsis_iterator.IteratorGetDiscreteTrajectoryTime();
 
       if (pool_index_ == nodes_.Count) {
         AddMapNodeToPool();
