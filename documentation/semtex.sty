@@ -225,6 +225,8 @@
 \renewcommand{\vec}[1]{\if@delimsize#1\else\oldvec{#1}\fi}
 \let\oldoverbrace\overbrace
 \renewcommand{\overbrace}[1]{\if@delimsize#1\else\oldoverbrace{#1}\fi}
+\let\oldoverrightarrow\overrightarrow
+\renewcommand{\overrightarrow}[1]{\if@delimsize#1\else\oldoverrightarrow{#1}\fi}
 
 \makeatother
 
@@ -324,11 +326,7 @@
 \DeclareDelimiterX\lcurlyBarRcurly[2]{\lbrace}{\rbrace}{#1\:\delimsize\vert\: #2}
 \DeclareDelimiterX\lcurlyCommaRcurly[2]{\lbrace}{\rbrace}{#1, #2}
 
-\DeclareDocumentCommand\emptyDotEmpty{mm}{
-  \unkernedEmptyDotEmpty
-  {\kern-\nulldelimiterspace #1 }
-  {#2}\kern-\nulldelimiterspace
-}
+\DeclareDocumentCommand\emptyDotEmpty{mm}{#1\cdot #2}
 
 \DeclareDocumentCommand\emptySlashEmpty{mm}{
   \unkernedEmptySlashEmpty
