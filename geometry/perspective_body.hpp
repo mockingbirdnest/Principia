@@ -154,8 +154,8 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   double const β = (KA² * KBKC - KAKB * KAKC) / determinant;
   Vector<Scalar, FromFrame> const KH = ɑ * KA + β * KB;
 
-  // The basic check: if H is outside or on the sphere, there is no intersection
-  // and thus no hiding.
+  // The basic check: if H is outside or on the sphere, the sphere doesn't
+  // intersect the plane KAB and therefore there is no hiding.
   Vector<Scalar, FromFrame> const CH = KH - KC;
   auto const CH² = InnerProduct(CH, CH);
   if (CH² >= sphere.radius²()) {
@@ -176,12 +176,20 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
 
   // Bail out if the camera is inside the sphere: the segment is completely
-  // hidden.  This situation would cause trouble in the computation of P below
-  // as the quadratic equation would have no solution.
+  // hidden.  This is not a common situation, so we do not do this check early,
+  // but would cause trouble in the computations below.
   auto const KC² = InnerProduct(KC, KC);
   if (KC² <= sphere.radius²()) {
     return {};
   }
+
+  // S is the intersection of the line AB with the plane orthogonal to KC that
+  // contains K.  It is such that:
+  //   KS = KA + σ * AB
+  Vector<Scalar, FromFrame> const AB = B - A;
+  auto const KAKH = InnerProduct(KA, KH);
+  auto const ABKH = InnerProduct(AB, KH);
+  double const σ = -KAKH / ABKH;
 
   // P is a point of the plane KAB where a line going through K is tangent to
   // the circle .  It is such that:
@@ -191,7 +199,6 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   PH·KH = r²
   // We know that there are two such points because the sphere intersects the
   // plane.
-  auto const KAKH = InnerProduct(KA, KH);
   auto const KBKH = InnerProduct(KB, KH);
   auto const a0 = r² * (r² * KA² - KAKH * KAKH);
   auto const a1 = 2.0 * r² * (KAKB * KAKH - KA² * KBKH);
@@ -203,36 +210,34 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
                          << "\nK:" << K << " A:" << A << " B:" << B
                          << " C:" << C;
 
-  // The λs define points Q where the line AB intersects the cone+sphere system,
-  // according to the formula:
+  // Q is the intersection of the cone with the line AB.  It is such that:
   //   KQ = KA + λ * AB
-  // There can be between 0 and 4 values of λ.
+  // T is the intersection of the line AB with the plane orthogonal to KC that
+  // contains P.  It is such that:
+  //   KT = KA + τ * AB
+  // The only part of the cone that is relevant for intersections is the part
+  // that is on the other side of T with respect to S.
+  // For each solution δ of the above quadratic equation, compute PH and obtain
+  // the values of λ and τ.
   std::vector<double> λs;
-  λs.reserve(4);
-
-  // For each solution of the above quadratic equation, compute the value of λ,
-  // if any.
-  Vector<Scalar, FromFrame> const AB = B - A;
+  λs.reserve(2);
+  auto const KH² = InnerProduct(KH, KH);
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
     Vector<Scalar, FromFrame> const PH = γ * KA + δ * KB;
-    // Here we have:
-    //   KP = (ɑ - γ) * KA + (β - δ) * KB
-    // Thus, the value of ɑ + β - γ - δ determines where P lies with respect to
-    // the line AB. If it is behind as seen from K, there is no intersection.
-    if (ɑ + β - γ - δ < 1) {
-      auto const KAPH = InnerProduct(KA, PH);
-      auto const ABPH = InnerProduct(AB, PH);
-      double const λ = -KAPH / ABPH;
-      auto const KQ = KA + λ * AB;
-      // It is possible for Q to lie behind the camera, in which case:
-      //   KQ·KC <= 0
-      // and there is no intersection.
-      if (InnerProduct(KQ, KC) > Product<Scalar, Scalar>{}) {
-        λs.push_back(λ);
-      }
+    auto const KAPH = InnerProduct(KA, PH);
+    auto const KHPH = InnerProduct(KH, PH);
+    auto const ABPH = InnerProduct(AB, PH);
+    double const λ = -KAPH / ABPH;
+    double const τ = (KH² - KHPH - KAKH) / ABKH;
+    // Only keep this λ if it intersects the cone in the "interesting" part.
+    // We need to distinguish the case where A, B are in the same order as S, T
+    // in the line AB from the case where they are in opposite orders.
+    if ((σ < τ && τ < λ) || (τ < σ && λ < τ)) {
+      λs.push_back(λ);
     }
   }
+  CHECK_GE(2, λs.size());
 
   // Q is the intersection of the sphere with the line AB.  It is such that:
   //   KQ = KA + μ * AB
@@ -253,14 +258,15 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   std::copy(μs.begin(), μs.end(), std::back_inserter(λs));
   std::sort(λs.begin(), λs.end());
 
-  // Now we have all the possible intersections of the cone+sphere with the line
-  // AB.  Determine which ones fall in the segment AB and compute the final
-  // result.
-  if (λs.size() < 2) {
-    // The cone+sphere doesn't intersect the line AB or is tangent to it.  There
-    // is no hiding.
+  // The line AB doesn't have an interesting intersection with the cone and
+  // doesn't intersect the sphere.  There is no hiding.
+  if (λs.empty()) {
     return {segment};
   }
+
+  // Now we have all the interesting intersections of the cone+sphere with the
+  // line AB.  Determine which ones fall in the segment AB and compute the final
+  // result.
   double const λ_min = *λs.begin();
   double const λ_max = *λs.rbegin();
   if (λ_min >= 1.0 || λ_max <= 0.0) {
