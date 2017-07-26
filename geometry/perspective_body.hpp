@@ -27,9 +27,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
     : from_camera_(from_camera),
       to_camera_(from_camera.Inverse()),
       camera_(from_camera_(ToFrame::origin)),
-      focal_(focal) {
-  LOG(INFO)<<"nc:"<<camera_;
-}
+      focal_(focal) {}
 
 template<typename FromFrame,
          typename ToFrame,
@@ -41,9 +39,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
     : from_camera_(to_camera.Inverse()),
       to_camera_(to_camera),
       camera_(from_camera_(ToFrame::origin)),
-      focal_(focal) {
-  LOG(INFO)<<"nc:"<<camera_;
-}
+      focal_(focal) {}
 
 template<typename FromFrame,
          typename ToFrame,
