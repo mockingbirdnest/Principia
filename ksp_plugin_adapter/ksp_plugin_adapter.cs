@@ -1493,6 +1493,9 @@ public partial class PrincipiaPluginAdapter
                                              sun_world_position),
             XKCDColors.AcidGreen,
             GLLines.Style.FADED);
+        GLLines.PlotPsychohistory(plugin_,
+                                  main_vessel_guid,
+                                  sun_world_position);
         RenderPredictionMarkers(main_vessel_guid, sun_world_position);
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),
