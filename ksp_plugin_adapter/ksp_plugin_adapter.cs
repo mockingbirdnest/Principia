@@ -1549,7 +1549,8 @@ public partial class PrincipiaPluginAdapter
                 GLLines.AddSegment(
                     position_at_start,
                     position_at_start + scale * (Vector3d)world_direction,
-                    hide_behind_bodies : false);
+                    hide_behind_bodies : false,
+                    trace:false);
               };
               add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
               add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
