@@ -174,10 +174,12 @@ internal static class GLLines {
 
   private static XYZ ToScreen(XYZ rp2_point) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XYZ{x = (rp2_point.x + 1.0f) * 0.5f * camera.pixelWidth,
-                   y = (rp2_point.y + 1.0f) * 0.5f * camera.pixelHeight,
+    return new XYZ{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0f) *
+                       0.5f * camera.pixelWidth,
+                   y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0f) *
+                       0.5f * camera.pixelHeight,
                    z = rp2_point.z};
-  }
+   }
 
   public static void PlotPsychohistory(IntPtr plugin,
                                        string vessel_guid,
