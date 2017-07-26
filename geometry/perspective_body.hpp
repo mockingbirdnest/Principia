@@ -135,19 +135,27 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   Point<Vector<Scalar, FromFrame>> const& B = segment.second;
   Point<Vector<Scalar, FromFrame>> const& C = sphere.centre();
 
+  Vector<Scalar, FromFrame> const KA = A - K;
+  Vector<Scalar, FromFrame> const KB = B - K;
+  Vector<Scalar, FromFrame> const KC = C - K;
+
+  // Consider the plane that contains K and is orthogonal to KC.  If the segment
+  // AB is entirely in the half-space that doesn't contain C, there is no
+  // intersection and no hiding.
+  auto const KAKC = InnerProduct(KA, KC);
+  auto const KBKC = InnerProduct(KB, KC);
+  if (KAKC <= Square<Scalar>{} && KBKC <= Square<Scalar>{}) {
+    return {segment};
+  }
+
   // H is the projection of C on the plane KAB.  It is such that:
   //   KH = ɑ * KA + β * KB
   // where ɑ and β are computed by solving the linear system:
   //   KA·KH = KA·KC = ɑ * KA² + β * KA·KB
   //   KB·KH = KB·KC = ɑ * KA·KB + β * KB²
-  Vector<Scalar, FromFrame> const KA = A - K;
-  Vector<Scalar, FromFrame> const KB = B - K;
-  Vector<Scalar, FromFrame> const KC = C - K;
   auto const KA² = InnerProduct(KA, KA);
   auto const KB² = InnerProduct(KB, KB);
   auto const KAKB = InnerProduct(KA, KB);
-  auto const KAKC = InnerProduct(KA, KC);
-  auto const KBKC = InnerProduct(KB, KC);
 
   auto const determinant = KA² * KB² - KAKB * KAKB;
   double const ɑ = (KB² * KAKC - KAKB * KBKC) / determinant;
@@ -183,14 +191,6 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     return {};
   }
 
-  // S is the intersection of the line AB with the plane orthogonal to KC that
-  // contains K.  It is such that:
-  //   KS = KA + σ * AB
-  Vector<Scalar, FromFrame> const AB = B - A;
-  auto const KAKH = InnerProduct(KA, KH);
-  auto const ABKH = InnerProduct(AB, KH);
-  double const σ = -KAKH / ABKH;
-
   // P is a point of the plane KAB where a line going through K is tangent to
   // the circle .  It is such that:
   //   PH = γ * KA + δ * KB
@@ -199,6 +199,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   PH·KH = r²
   // We know that there are two such points because the sphere intersects the
   // plane.
+  auto const KAKH = InnerProduct(KA, KH);
   auto const KBKH = InnerProduct(KB, KH);
   auto const a0 = r² * (r² * KA² - KAKH * KAKH);
   auto const a1 = 2.0 * r² * (KAKB * KAKH - KA² * KBKH);
@@ -210,17 +211,30 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
                          << "\nK:" << K << " A:" << A << " B:" << B
                          << " C:" << C;
 
+  // S is the intersection of the line AB with the line orthogonal to KC that
+  // contains K.  It is such that:
+  //   KS = KA + σ * AB
+  // Note that σ may be infinite if AB ⊥ KH.  In this case AB.KH is +0.0 and the
+  // infinity has the sign of the numerator.  The same applies to τ below.
+  Vector<Scalar, FromFrame> const AB = B - A;
+  auto const ABKH = InnerProduct(AB, KH);
+  double const σ = -KAKH / ABKH;
+
   // Q is the intersection of the cone with the line AB.  It is such that:
   //   KQ = KA + λ * AB
-  // T is the intersection of the line AB with the plane orthogonal to KC that
+  // T is the intersection of the line AB with the line orthogonal to KC that
   // contains P.  It is such that:
   //   KT = KA + τ * AB
-  // The only part of the cone that is relevant for intersections is the part
-  // that is on the other side of T with respect to S.
-  // For each solution δ of the above quadratic equation, compute PH and obtain
-  // the values of λ and τ.
+  // Note that the two choices of P yield the same point T and the same value of
+  // τ.  The only part of the cone that is relevant for intersections is the
+  // part that is on the other side of T with respect to S.
+  // For each solution δ of the above quadratic equation, this loop computes PH
+  // and obtains the values of λ and τ.
   std::vector<double> λs;
   λs.reserve(2);
+  bool λ_lt_σ = false;
+  bool λ_gt_σ = false;
+  double infinity = 0.0;  // Might be NaN in cases where it's not used.
   auto const KH² = InnerProduct(KH, KH);
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
@@ -228,16 +242,31 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     auto const KAPH = InnerProduct(KA, PH);
     auto const KHPH = InnerProduct(KH, PH);
     auto const ABPH = InnerProduct(AB, PH);
-    double const λ = -KAPH / ABPH;
     double const τ = (KH² - KHPH - KAKH) / ABKH;
+    infinity = std::numeric_limits<double>::infinity() * (τ - σ);
+    // Keep track of the location of Q with respect to S.
+    double const λ = -KAPH / ABPH;
+    λ_lt_σ |= λ < σ;
+    λ_gt_σ |= λ > σ;
     // Only keep this λ if it intersects the cone in the "interesting" part.
     // We need to distinguish the case where A, B are in the same order as S, T
-    // in the line AB from the case where they are in opposite orders.
-    if ((σ < τ && τ < λ) || (τ < σ && λ < τ)) {
+    // in the line AB (σ <= τ) from the case where they are in opposite orders
+    // (τ <= σ).
+    // If AB ⊥ KH, both σ and τ are infinite.  They have the same sign if AB is
+    // behind T and opposite signs if AB is between S and T.  Hence the
+    // equalities in the comparisons below.
+    if ((σ <= τ && τ < λ) || (τ <= σ && λ < τ)) {
       λs.push_back(λ);
     }
   }
-  CHECK_GE(2, λs.size());
+
+  // If we have intersections on both sides of S, this is the hyperbolic case.
+  // Add a point at infinity.  This is correct even if λs is empty, i.e. if the
+  // intersection with the cone+sphere system is in the sphere.
+  if (λ_lt_σ && λ_gt_σ) {
+    CHECK_GE(1, λs.size());
+    λs.push_back(infinity);
+  }
 
   // Q is the intersection of the sphere with the line AB.  It is such that:
   //   KQ = KA + μ * AB
