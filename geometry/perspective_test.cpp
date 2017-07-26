@@ -441,7 +441,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
 }
 
 // A segment vaguely parallel to the axis of the cone.  It does intersect the
-// cone twice, but one if the intersections is behind the camera so there is no
+// cone twice, but one of the intersections is behind the camera so there is no
 // hiding.
 TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
   Point<Displacement<World>> const p1 =
@@ -472,7 +472,7 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
 
 // A case where the intersections are far outside of the segment.  This used to
 // be mishandled.
-TEST_F(VisibleSegmentsTest, OutsideOfSegment) {
+TEST_F(VisibleSegmentsTest, BehindCamera) {
   Point<Displacement<World>> const camera_origin(
       World::origin + Displacement<World>({-1.35994803226833153e+10 * Metre,
                                            +6.48711944107992947e+06 * Metre,
@@ -501,6 +501,7 @@ TEST_F(VisibleSegmentsTest, OutsideOfSegment) {
               ElementsAre(segment));
 }
 
+// A case where the camera is inside the sphere.
 TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
   Point<Displacement<World>> const camera_origin(
       World::origin + Displacement<World>({-1.35993502776454182e+10 * Metre,
@@ -529,7 +530,9 @@ TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
 }
 
-TEST_F(VisibleSegmentsTest, Wtf) {
+// A hyperbolic case where the segment is entirely hidden.  It used to be
+// entirely visible.
+TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
   Point<Displacement<World>> const camera_origin(
       World::origin + Displacement<World>({-1.35999109873531647e+10 * Metre,
                                            -2.00764947838563850e+05 * Metre,

@@ -33,8 +33,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            begin, end);
-  bool logged = false;
-
   RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.
@@ -46,8 +44,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     if (!rp2_first || !rp2_second) {
       continue;
     }
-    LOG_IF(INFO,!logged)<<"ps:"<<plottable_segment.first<<" "<<plottable_segment.second;
-    logged=true;
 
     // Create a new ℝP² line when two segments are not consecutive.
     if (rp2_lines.empty() || rp2_lines.back().back() != *rp2_first) {
@@ -57,7 +53,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
       rp2_lines.back().push_back(*rp2_second);
     }
   }
-  LOG_IF(INFO, !rp2_lines.empty() && !rp2_lines[0].empty())<<"rp:"<<rp2_lines[0][0]<<" "<<rp2_lines[0][1];
   return rp2_lines;
 }
 
@@ -99,7 +94,6 @@ Planetarium::ComputePlottableSegments(
       rigid_motion_at_t1(it1.degrees_of_freedom()).position();
 
   auto it2 = it1;
-  LOG(INFO)<<"it:"<<it1.degrees_of_freedom().position();
   while (++it2 != end) {
     // Processing one segment of the trajectory.
     Instant const t2 = it2.time();

@@ -60,17 +60,14 @@ Planetarium* principia__PlanetariumCreate(
       FromXYZ(xyz_opengl_camera_y_in_world));
   Multivector<double, World, 2> const opengl_camera_z_in_world(
       FromXYZ(xyz_opengl_camera_z_in_world));
+  // Note the minus sign for z below because our convention with respect to the
+  // orientation of z is opposite that of OpenGL.
   Rotation<Camera, World> const camera_to_world_rotation(
       opengl_camera_x_in_world,
       opengl_camera_y_in_world,
       -opengl_camera_z_in_world);
   Position<World> const camera_position_in_world =
       FromXYZ<Position<World>>(xyz_camera_position_in_world);
-  LOG(INFO)<<"wx:"<<opengl_camera_x_in_world;
-  LOG(INFO)<<"wy:"<<opengl_camera_y_in_world;
-  LOG(INFO)<<"wz:"<<opengl_camera_z_in_world;
-  LOG(INFO)<<"wc:"<<camera_position_in_world;
-  LOG(INFO)<<"ff:"<<focal;
 
   RigidTransformation<Camera, World> const
       camera_to_world_affine_map(Camera::origin,
