@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <limits>
 #include <vector>
 
 #include "numerics/root_finders.hpp"
