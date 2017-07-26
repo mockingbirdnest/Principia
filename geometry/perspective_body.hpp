@@ -136,6 +136,14 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   Vector<Scalar, FromFrame> const KB = B - K;
   Vector<Scalar, FromFrame> const KC = C - K;
 
+  // Bail out if the camera is inside the sphere: the segment is completely
+  // hidden.  This is not a common situation, but it would cause no end of
+  // trouble below, so we might as well handle it first.
+  auto const KC² = InnerProduct(KC, KC);
+  if (KC² <= sphere.radius²()) {
+    return {};
+  }
+
   // Consider the plane that contains K and is orthogonal to KC.  If the segment
   // AB is entirely in the half-space that doesn't contain C, there is no
   // intersection and no hiding.
@@ -178,14 +186,6 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   if ((ɑ < 0 && ɑ * ɑ >= r² * KB² / determinant) ||
       (β < 0 && β * β >= r² * KA² / determinant)) {
     return {segment};
-  }
-
-  // Bail out if the camera is inside the sphere: the segment is completely
-  // hidden.  This is not a common situation, so we do not do this check early,
-  // but would cause trouble in the computations below.
-  auto const KC² = InnerProduct(KC, KC);
-  if (KC² <= sphere.radius²()) {
-    return {};
   }
 
   // P is a point of the plane KAB where a line going through K is tangent to
