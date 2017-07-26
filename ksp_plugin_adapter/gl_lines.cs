@@ -90,7 +90,6 @@ internal static class GLLines {
     var begin = WorldToMapScreen(world_begin);
     var end = WorldToMapScreen(world_end);
     if (begin.z > 0 && end.z > 0) {
-      Log.Info("O:"+end.x+" "+end.y);
       UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
       UnityEngine.GL.Vertex3(end.x, end.y, 0);
     }
@@ -131,87 +130,6 @@ internal static class GLLines {
   private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
     return PlanetariumCamera.Camera.WorldToScreenPoint(
                ScaledSpace.LocalToScaledSpace(world));
-  }
-
-  private static IntPtr NewPlanetarium(IntPtr plugin,
-                                       XYZ sun_world_position) {
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    UnityEngine.Vector3 opengl_camera_x_in_world =
-        camera.cameraToWorldMatrix.MultiplyVector(
-            new UnityEngine.Vector3(1, 0, 0));
-    UnityEngine.Vector3 opengl_camera_y_in_world =
-        camera.cameraToWorldMatrix.MultiplyVector(
-            new UnityEngine.Vector3(0, 1, 0));
-    UnityEngine.Vector3 opengl_camera_z_in_world =
-        camera.cameraToWorldMatrix.MultiplyVector(
-            new UnityEngine.Vector3(0, 0, 1));
-    UnityEngine.Vector3 camera_position_in_world =
-        ScaledSpace.ScaledToLocalSpace(camera.transform.position);
-    Log.Info("sw:"+sun_world_position.x+" "+sun_world_position.y+" "+sun_world_position.z);
-
-    // According to
-    // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
-    // the on-centre projection matrix has the form:
-    //   n / w                0                0                0
-    //     0                n / h              0                0
-    //     0                  0        (n + f) / (n - f)  2 f n / (n - f)
-    //     0                  0               -1                0
-    // where n and f are the near- and far-clipping distances, and w and h
-    // are the width and height of the screen seen in the focal plane.  h is
-    // seen under an angle that is ɑ, the field of view, and therefore the focal
-    // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
-    double focal =
-        camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
-                                Math.Tan(Math.PI * camera.fieldOfView / 360));
-    return plugin.PlanetariumCreate(
-               sun_world_position,
-               (XYZ)(Vector3d)opengl_camera_x_in_world,
-               (XYZ)(Vector3d)opengl_camera_y_in_world,
-               (XYZ)(Vector3d)opengl_camera_z_in_world,
-               (XYZ)(Vector3d)camera_position_in_world,
-               focal);
-  }
-
-  private static XYZ ToScreen(XYZ rp2_point) {
-    UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XYZ{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0f) *
-                       0.5f * camera.pixelWidth,
-                   y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0f) *
-                       0.5f * camera.pixelHeight,
-                   z = rp2_point.z};
-   }
-
-  public static void PlotPsychohistory(IntPtr plugin,
-                                       string vessel_guid,
-                                       XYZ sun_world_position) {
-    UnityEngine.GL.Color(XKCDColors.Banana);
-
-    IntPtr planetarium = NewPlanetarium(plugin, sun_world_position);
-    IntPtr rp2_lines_iterator =
-        plugin.PlanetariumPlotPsychohistory(planetarium, vessel_guid);
-    for (;
-         !rp2_lines_iterator.IteratorAtEnd();
-         rp2_lines_iterator.IteratorIncrement()) {
-      XYZ? previous_rp2_point = null;
-      IntPtr rp2_line_iterator =
-          rp2_lines_iterator.IteratorGetRP2LinesIterator();
-      for (;
-           !rp2_line_iterator.IteratorAtEnd();
-           rp2_line_iterator.IteratorIncrement()) {
-        XYZ current_rp2_point = ToScreen(
-            rp2_line_iterator.IteratorGetRP2LineXYZ());
-        if (previous_rp2_point.HasValue) {
-          Log.Info("N:"+current_rp2_point.x+" "+current_rp2_point.y);
-          UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
-                                  (float)previous_rp2_point.Value.y,
-                                  0);
-          UnityEngine.GL.Vertex3((float)current_rp2_point.x,
-                                  (float)current_rp2_point.y,
-                                  0);
-        }
-        previous_rp2_point = current_rp2_point;
-      }
-    }
   }
 
   private static bool rendering_lines_ = false;
