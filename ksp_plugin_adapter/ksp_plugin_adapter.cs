@@ -41,7 +41,7 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private bool use_cayley_plotting_ = true;
   [KSPField(isPersistant = true)]
-  private bool use_чебышёв_plotting_ = true;  // TODO(phl): Change to false.
+  private bool use_чебышёв_plotting_ = false;
   private UnityEngine.Rect main_window_rectangle_;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
@@ -1490,6 +1490,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      //TODO(phl): Delete this.
       IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
 
       GLLines.Draw(() => {
@@ -1509,23 +1510,53 @@ public partial class PrincipiaPluginAdapter
                                         GLLines.Style.FADED);
         }
         RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-        GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),
-            XKCDColors.Fuchsia,
-            GLLines.Style.SOLID);
+        if (use_cayley_plotting_) {
+          GLLines.RenderAndDeleteTrajectory(
+              plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),
+              XKCDColors.Fuchsia,
+              GLLines.Style.SOLID);
+        }
+        if (use_чебышёв_plotting_) {
+          IntPtr rp2_lines_iterator =
+              planetarium.PlanetariumPlotPrediction(plugin_,
+                                                    main_vessel_guid);
+          GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                        XKCDColors.Cerise,
+                                        GLLines.Style.SOLID);
+        }
         string target_id =
             FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
         if (!plotting_frame_selector_.get().target_override &&
             target_id != null && plugin_.HasVessel(target_id)) {
-          GLLines.RenderAndDeleteTrajectory(
-              plugin_.RenderedVesselTrajectory(target_id, sun_world_position),
-              XKCDColors.Goldenrod,
-              GLLines.Style.FADED);
+          if (use_cayley_plotting_) {
+            GLLines.RenderAndDeleteTrajectory(
+                plugin_.RenderedVesselTrajectory(target_id, sun_world_position),
+                XKCDColors.Goldenrod,
+                GLLines.Style.FADED);
+          }
+          if (use_чебышёв_plotting_) {
+            IntPtr rp2_lines_iterator =
+                planetarium.PlanetariumPlotPsychohistory(plugin_,
+                                                         target_id);
+            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                          XKCDColors.Orange,
+                                          GLLines.Style.FADED);
+          }
           RenderPredictionMarkers(target_id, sun_world_position);
-          GLLines.RenderAndDeleteTrajectory(
-              plugin_.RenderedPrediction(target_id, sun_world_position),
-              XKCDColors.PigPink,
-              GLLines.Style.SOLID);
+          if (use_cayley_plotting_) {
+            GLLines.RenderAndDeleteTrajectory(
+                plugin_.RenderedPrediction(target_id, sun_world_position),
+                XKCDColors.PigPink,
+                GLLines.Style.SOLID);
+          }
+          if (use_чебышёв_plotting_) {
+            IntPtr rp2_lines_iterator =
+                planetarium.PlanetariumPlotPrediction(plugin_,
+                                                      main_vessel_guid);
+            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                          XKCDColors.Raspberry,
+                                          GLLines.Style.SOLID);
+          }
         }
         if (plugin_.FlightPlanExists(main_vessel_guid)) {
           RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
@@ -1974,6 +2005,10 @@ public partial class PrincipiaPluginAdapter
 
   private void LoggingSettings() {
     using (new HorizontalLayout()) {
+      use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
+          use_cayley_plotting_, "Use Cayley plotting");
+      use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
+          use_чебышёв_plotting_, "Use Чебышёв plotting");
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
