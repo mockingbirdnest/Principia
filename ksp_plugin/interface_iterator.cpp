@@ -85,14 +85,14 @@ Iterator* principia__IteratorGetRP2LinesIterator(
       }));
 }
 
-XYZ principia__IteratorGetRP2LineXYZ(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetRP2LineXYZ> m({iterator});
+XY principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetRP2LineXY> m({iterator});
   CHECK_NOTNULL(iterator);
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<RP2Line<Length, Camera>> const*>(iterator));
-  return m.Return(typed_iterator->Get<XYZ>(
-      [](RP2Point<Length, Camera> const& rp2_point) -> XYZ {
-        return ToXYZ(rp2_point);
+  return m.Return(typed_iterator->Get<XY>(
+      [](RP2Point<Length, Camera> const& rp2_point) -> XY {
+        return ToXY(rp2_point);
       }));
 }
 

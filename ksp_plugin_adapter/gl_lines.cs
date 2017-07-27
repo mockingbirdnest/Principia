@@ -194,12 +194,12 @@ internal static class GLLines {
         IntPtr rp2_line_iterator =
             rp2_lines_iterator.IteratorGetRP2LinesIterator();
         try {
-          XYZ? previous_rp2_point = null;
+          XY? previous_rp2_point = null;
           for (;
                 !rp2_line_iterator.IteratorAtEnd();
                 rp2_line_iterator.IteratorIncrement()) {
-            XYZ current_rp2_point = ToScreen(
-                rp2_line_iterator.IteratorGetRP2LineXYZ());
+            XY current_rp2_point = ToScreen(
+                rp2_line_iterator.IteratorGetRP2LineXY());
             if (previous_rp2_point.HasValue) {
               if (style == Style.FADED) {
                 colour.a = (float)(4 * index + size) / (float)(5 * size);
@@ -231,13 +231,12 @@ internal static class GLLines {
                ScaledSpace.LocalToScaledSpace(world));
   }
 
-  private static XYZ ToScreen(XYZ rp2_point) {
+  private static XY ToScreen(XY rp2_point) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XYZ{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0f) *
-                       0.5f * camera.pixelWidth,
-                   y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0f) *
-                       0.5f * camera.pixelHeight,
-                   z = rp2_point.z};
+    return new XY{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0f) *
+                      0.5f * camera.pixelWidth,
+                  y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0f) *
+                      0.5f * camera.pixelHeight};
    }
 
   private static bool rendering_lines_ = false;

@@ -89,6 +89,11 @@ message WXYZ {
   required double z = 4;
 }
 
+message XY {
+  required double x = 1;
+  required double y = 2;
+}
+
 message Method {
   extensions 5000 to 5999;  // Last used: 5136.
 }
@@ -977,16 +982,16 @@ message IteratorGetRP2LinesIterator {
   optional Return return = 3;
 }
 
-message IteratorGetRP2LineXYZ {
+message IteratorGetRP2LineXY {
   extend Method {
-    optional IteratorGetRP2LineXYZ extension = 5133;
+    optional IteratorGetRP2LineXY extension = 5133;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
                                    (is_subject) = true];
   }
   message Return {
-    required XYZ result = 1;
+    required XY result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
