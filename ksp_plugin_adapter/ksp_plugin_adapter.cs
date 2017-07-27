@@ -38,6 +38,10 @@ public partial class PrincipiaPluginAdapter
   private int main_window_x_ = UnityEngine.Screen.width / 2;
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
+  [KSPField(isPersistant = true)]
+  private bool use_cayley_plotting_ = true;
+  [KSPField(isPersistant = true)]
+  private bool use_чебышёв_plotting_ = true;  // TODO(phl): Change to false.
   private UnityEngine.Rect main_window_rectangle_;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
@@ -1486,16 +1490,24 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
+      IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
 
       GLLines.Draw(() => {
-        GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedVesselTrajectory(main_vessel_guid,
-                                             sun_world_position),
-            XKCDColors.AcidGreen,
-            GLLines.Style.FADED);
-        GLLines.PlotPsychohistory(plugin_,
-                                  main_vessel_guid,
-                                  sun_world_position);
+        if (use_cayley_plotting_) {
+          GLLines.RenderAndDeleteTrajectory(
+              plugin_.RenderedVesselTrajectory(main_vessel_guid,
+                                               sun_world_position),
+              XKCDColors.AcidGreen,
+              GLLines.Style.FADED);
+        }
+        if (use_чебышёв_plotting_) {
+          IntPtr rp2_lines_iterator =
+              planetarium.PlanetariumPlotPsychohistory(plugin_,
+                                                       main_vessel_guid);
+          GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                        XKCDColors.Banana,
+                                        GLLines.Style.FADED);
+        }
         RenderPredictionMarkers(main_vessel_guid, sun_world_position);
         GLLines.RenderAndDeleteTrajectory(
             plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),

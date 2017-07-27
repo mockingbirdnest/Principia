@@ -102,6 +102,12 @@ void principia__IteratorIncrement(Iterator* const iterator) {
   return m.Return();
 }
 
+void principia__IteratorReset(Iterator* const iterator) {
+  journal::Method<journal::IteratorReset> m({iterator});
+  CHECK_NOTNULL(iterator)->Reset();
+  return m.Return();
+}
+
 int principia__IteratorSize(Iterator const* const iterator) {
   journal::Method<journal::IteratorSize> m({iterator});
   return m.Return(CHECK_NOTNULL(iterator)->Size());

@@ -96,11 +96,11 @@ void principia__PlanetariumDelete(
 }
 
 Iterator* principia__PlanetariumPlotPsychohistory(
-    Plugin const* const plugin,
     Planetarium const* const planetarium,
+    Plugin const* const plugin,
     char const* const vessel_guid) {
-  journal::Method<journal::PlanetariumPlotPsychohistory> m({plugin,
-                                                            planetarium,
+  journal::Method<journal::PlanetariumPlotPsychohistory> m({planetarium,
+                                                            plugin,
                                                             vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);

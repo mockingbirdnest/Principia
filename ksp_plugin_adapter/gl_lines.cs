@@ -131,12 +131,7 @@ internal static class GLLines {
     }
   }
 
-  private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
-    return PlanetariumCamera.Camera.WorldToScreenPoint(
-               ScaledSpace.LocalToScaledSpace(world));
-  }
-
-  private static IntPtr NewPlanetarium(IntPtr plugin,
+  public static IntPtr NewPlanetarium(IntPtr plugin,
                                        XYZ sun_world_position) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
     UnityEngine.Vector3 opengl_camera_x_in_world =
@@ -173,6 +168,77 @@ internal static class GLLines {
                (XYZ)(Vector3d)opengl_camera_z_in_world,
                (XYZ)(Vector3d)camera_position_in_world,
                focal);
+  }
+
+  public static void PlotAndDeleteRP2Lines(IntPtr rp2_lines_iterator,
+                                           UnityEngine.Color colour,
+                                           Style style) {
+    try {
+      UnityEngine.GL.Color(colour);
+
+      // First evaluate the total size of the lines.
+      int size = 0;
+      for (;
+            !rp2_lines_iterator.IteratorAtEnd();
+            rp2_lines_iterator.IteratorIncrement()) {
+        IntPtr rp2_line_iterator =
+            rp2_lines_iterator.IteratorGetRP2LinesIterator();
+        try {
+          size += rp2_line_iterator.IteratorSize();
+        } finally {
+          Interface.IteratorDelete(ref rp2_line_iterator);
+        }
+      }
+
+      Log.Info("LN:" + rp2_lines_iterator.IteratorSize());
+
+      // Reset the iterator and do the actual plotting.
+      rp2_lines_iterator.IteratorReset();
+      int index = 0;
+      for (;
+           !rp2_lines_iterator.IteratorAtEnd();
+           rp2_lines_iterator.IteratorIncrement()) {
+        IntPtr rp2_line_iterator =
+            rp2_lines_iterator.IteratorGetRP2LinesIterator();
+        try {
+          XYZ? previous_rp2_point = null;
+          Log.Info("PT:" + rp2_line_iterator.IteratorSize());
+          for (;
+                !rp2_line_iterator.IteratorAtEnd();
+                rp2_line_iterator.IteratorIncrement()) {
+            XYZ current_rp2_point = ToScreen(
+                rp2_line_iterator.IteratorGetRP2LineXYZ());
+            if (previous_rp2_point.HasValue) {
+              Log.Info("N:" + previous_rp2_point.Value.x + " " +
+                        previous_rp2_point.Value.y + "/" + current_rp2_point.x +
+                        " " + current_rp2_point.y);
+              if (style == Style.FADED) {
+                colour.a = (float)(4 * index + size) / (float)(5 * size);
+                UnityEngine.GL.Color(colour);
+              }
+              if (style != Style.DASHED || index % 2 == 1) {
+                UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
+                                        (float)previous_rp2_point.Value.y,
+                                        0);
+                UnityEngine.GL.Vertex3((float)current_rp2_point.x,
+                                        (float)current_rp2_point.y,
+                                        0);
+              }
+            }
+            previous_rp2_point = current_rp2_point;
+          }
+        } finally {
+          Interface.IteratorDelete(ref rp2_line_iterator);
+        }
+      }
+    } finally {
+      Interface.IteratorDelete(ref rp2_lines_iterator);
+    }
+  }
+
+  private static UnityEngine.Vector3 WorldToMapScreen(Vector3d world) {
+    return PlanetariumCamera.Camera.WorldToScreenPoint(
+               ScaledSpace.LocalToScaledSpace(world));
   }
 
   private static XYZ ToScreen(XYZ rp2_point) {
