@@ -80,8 +80,7 @@ internal static class GLLines {
 
   public static void AddSegment(Vector3d world_begin,
                                 Vector3d world_end,
-                                bool hide_behind_bodies,
-                                bool trace) {
+                                bool hide_behind_bodies) {
     if (!rendering_lines_) {
       Log.Fatal("|AddSegment| outside of |DrawLines|");
     }
@@ -91,7 +90,6 @@ internal static class GLLines {
     var begin = WorldToMapScreen(world_begin);
     var end = WorldToMapScreen(world_end);
     if (begin.z > 0 && end.z > 0) {
-      if (trace) { Log.Info("O:" + end.x + " " + end.y); }
       UnityEngine.GL.Vertex3(begin.x, begin.y, 0);
       UnityEngine.GL.Vertex3(end.x, end.y, 0);
     }
@@ -100,7 +98,6 @@ internal static class GLLines {
   public static void RenderAndDeleteTrajectory(IntPtr trajectory_iterator,
                                                UnityEngine.Color colour,
                                                Style style) {
-        bool trace = colour == XKCDColors.AcidGreen;
     try {
       Vector3d? previous_point = null;
 
@@ -120,8 +117,7 @@ internal static class GLLines {
           if (style != Style.DASHED || i % 2 == 1) {
             AddSegment(previous_point.Value,
                        current_point,
-                       hide_behind_bodies : true,
-                       trace:trace);
+                       hide_behind_bodies : true);
           }
         }
         previous_point = current_point;
@@ -145,7 +141,6 @@ internal static class GLLines {
             new UnityEngine.Vector3(0, 0, 1));
     UnityEngine.Vector3 camera_position_in_world =
         ScaledSpace.ScaledToLocalSpace(camera.transform.position);
-    Log.Info("sw:"+sun_world_position.x+" "+sun_world_position.y+" "+sun_world_position.z);
 
     // According to
     // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
@@ -190,9 +185,6 @@ internal static class GLLines {
         }
       }
 
-      Log.Info("CO:" + colour.ToString());
-      Log.Info("LN:" + rp2_lines_iterator.IteratorSize());
-
       // Reset the iterator and do the actual plotting.
       rp2_lines_iterator.IteratorReset();
       int index = 0;
@@ -203,16 +195,12 @@ internal static class GLLines {
             rp2_lines_iterator.IteratorGetRP2LinesIterator();
         try {
           XYZ? previous_rp2_point = null;
-          Log.Info("PT:" + rp2_line_iterator.IteratorSize());
           for (;
                 !rp2_line_iterator.IteratorAtEnd();
                 rp2_line_iterator.IteratorIncrement()) {
             XYZ current_rp2_point = ToScreen(
                 rp2_line_iterator.IteratorGetRP2LineXYZ());
             if (previous_rp2_point.HasValue) {
-              Log.Info("N:" + previous_rp2_point.Value.x + " " +
-                        previous_rp2_point.Value.y + "/" + current_rp2_point.x +
-                        " " + current_rp2_point.y);
               if (style == Style.FADED) {
                 colour.a = (float)(4 * index + size) / (float)(5 * size);
                 UnityEngine.GL.Color(colour);
