@@ -63,7 +63,8 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
           FromGameTime(plugin, burn.initial_time),
-          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v)};
+          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v),
+          burn.is_inertially_fixed};
 }
 
 FlightPlan& GetFlightPlan(Plugin const& plugin,
@@ -150,7 +151,8 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv)};
+          ToXYZ(Δv),
+          manœuvre.is_inertially_fixed()};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(

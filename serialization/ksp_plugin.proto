@@ -40,6 +40,7 @@ message Manoeuvre {
   required Quantity duration = 5;
   required Point initial_time = 6;
   required DynamicFrame frame = 7;
+  optional bool is_inertially_fixed = 8;  // Required, addded in Чебышёв.
 }
 
 message Part {
