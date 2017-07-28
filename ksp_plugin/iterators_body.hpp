@@ -64,6 +64,11 @@ inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
   return trajectory_->Size();
 }
 
+inline DiscreteTrajectory<World>::Iterator TypedIterator<
+    DiscreteTrajectory<World>>::iterator() const {
+  return iterator_;
+}
+
 inline not_null<Plugin const*> TypedIterator<
     DiscreteTrajectory<World>>::plugin() const {
   return plugin_;

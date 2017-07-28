@@ -62,6 +62,7 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
   void Increment() override;
   int Size() const override;
 
+  DiscreteTrajectory<World>::Iterator iterator() const;
   not_null<Plugin const*> plugin() const;
 
  private:
