@@ -62,6 +62,9 @@ int FlightPlan::number_of_manœuvres() const {
 NavigationManœuvre const& FlightPlan::GetManœuvre(int const index) const {
   CHECK_LE(0, index);
   CHECK_LT(index, number_of_manœuvres());
+  LOG(ERROR) << "Getting a "
+             << (manœuvres_[index].is_inertially_fixed() ? "fixed" : "guided")
+             << u8"manœuvre";
   return manœuvres_[index];
 }
 
@@ -135,6 +138,8 @@ void FlightPlan::RemoveLast() {
 }
 
 bool FlightPlan::ReplaceLast(Burn burn) {
+  LOG(ERROR) << "Replacing last burn with a "
+             << (burn.is_inertially_fixed ? "fixed" : "guided") << "burn";
   CHECK(!manœuvres_.empty());
   auto manœuvre = MakeNavigationManœuvre(std::move(burn),
                                          manœuvres_.back().initial_mass());
@@ -148,6 +153,10 @@ bool FlightPlan::ReplaceLast(Burn burn) {
       PopLastSegment();  // Last burn.
       ReplaceLastSegment(recomputed_penultimate_coast);
       Append(std::move(manœuvre));
+      LOG(ERROR) << "Appended a "
+                 << (manœuvres_.back().is_inertially_fixed() ? "fixed"
+                                                             : "guided")
+                 << u8"manœuvre";
       return true;
     }
   }
@@ -270,11 +279,17 @@ FlightPlan::FlightPlan()
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
+  LOG(ERROR) << "Appending a "
+             << (manœuvre.is_inertially_fixed() ? "fixed" : "guided")
+             << u8"manœuvre";
   manœuvres_.emplace_back(std::move(manœuvre));
   {
     // Hide the moved-from |manœuvre|.
     NavigationManœuvre& manœuvre = manœuvres_.back();
     CHECK_EQ(manœuvre.initial_time(), segments_.back()->last().time());
+    LOG(ERROR) << "Emplaced a "
+               << (manœuvre.is_inertially_fixed() ? "fixed" : "guided")
+               << u8"manœuvre";
     manœuvre.set_coasting_trajectory(segments_.back());
     AddSegment();
     BurnLastSegment(manœuvre);
@@ -302,6 +317,9 @@ bool FlightPlan::RecomputeSegments() {
 }
 
 void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
+  LOG(ERROR) << "Computing a "
+             << (manœuvre.is_inertially_fixed() ? "fixed" : "guided")
+             << u8"manœuvre";
   if (anomalous_segments_ > 0) {
     return;
   } else if (manœuvre.initial_time() < manœuvre.final_time()) {

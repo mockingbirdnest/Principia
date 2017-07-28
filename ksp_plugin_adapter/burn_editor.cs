@@ -140,9 +140,11 @@ class BurnEditor {
     is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
     initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
+    Log.Error("After reset         : " + is_inertially_fixed_);
   }
 
   public Burn Burn() {
+    Log.Error("Will send burn with : " + is_inertially_fixed_);
     return new Burn{
         thrust_in_kilonewtons = thrust_in_kilonewtons_,
         specific_impulse_in_seconds_g0 = specific_impulse_in_seconds_g0_,
