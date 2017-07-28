@@ -336,6 +336,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                     /*is_inertially_fixed=*/true);
         movement.set_duration(manœuvre.duration() / movements);
         movement.set_initial_time(segments_.back()->last().time());
+        movement.set_coasting_trajectory(segments_.back());
         remaining_mass = movement.final_mass();
         bool const reached_desired_final_time =
             ephemeris_->FlowWithAdaptiveStep(segments_.back(),
