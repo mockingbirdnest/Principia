@@ -76,9 +76,6 @@ FlightPlan& GetFlightPlan(Plugin const& plugin,
 
 Burn GetBurn(Plugin const& plugin,
              NavigationManœuvre const& manœuvre) {
-  LOG(ERROR) << "Getting the burn from a "
-             << (manœuvre.is_inertially_fixed() ? "fixed" : "guided")
-             << u8"manœuvre";
   Velocity<Frenet<NavigationFrame>> const Δv =
       manœuvre.Δv() == Speed() ? Velocity<Frenet<NavigationFrame>>()
                                : manœuvre.Δv() * manœuvre.direction();
@@ -150,9 +147,6 @@ Burn GetBurn(Plugin const& plugin,
 
   CHECK_EQ(number_of_subclasses, 1) << "Could not construct frame parameters";
 
-  LOG(ERROR) << "Returning a "
-             << (manœuvre.is_inertially_fixed() ? "fixed" : "guided") << "burn";
-
   return {manœuvre.thrust() / Kilo(Newton),
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
@@ -164,9 +158,6 @@ Burn GetBurn(Plugin const& plugin,
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
     Plugin const& plugin,
     NavigationManœuvre const& manœuvre) {
-  LOG(ERROR) << "Converting a "
-             << (manœuvre.is_inertially_fixed() ? "fixed" : "guided")
-             << u8"manœuvre";
   NavigationManoeuvre result;
   result.burn = GetBurn(plugin, manœuvre);
   result.initial_mass_in_tonnes = manœuvre.initial_mass() / Tonne;
