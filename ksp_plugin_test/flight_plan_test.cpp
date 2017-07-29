@@ -105,7 +105,8 @@ class FlightPlanTest : public testing::Test {
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
             initial_time,
             Velocity<Frenet<Navigation>>(
-                {Δv, 0 * Metre / Second, 0 * Metre / Second})};
+                {Δv, 0 * Metre / Second, 0 * Metre / Second}),
+            /*is_inertially_fixed=*/true};
   }
 
   Burn MakeFirstBurn() {
@@ -114,7 +115,8 @@ class FlightPlanTest : public testing::Test {
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
             /*initial_time=*/t0_ + 1 * Second,
             Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
+            /*is_inertially_fixed=*/true};
   }
 
   Burn MakeSecondBurn() {
