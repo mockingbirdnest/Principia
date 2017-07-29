@@ -89,8 +89,13 @@ message WXYZ {
   required double z = 4;
 }
 
+message XY {
+  required double x = 1;
+  required double y = 2;
+}
+
 message Method {
-  extensions 5000 to 5999;  // Last used: 5134.
+  extensions 5000 to 5999;  // Last used: 5136.
 }
 
 message AdvanceTime {
@@ -977,16 +982,16 @@ message IteratorGetRP2LinesIterator {
   optional Return return = 3;
 }
 
-message IteratorGetRP2LineXYZ {
+message IteratorGetRP2LineXY {
   extend Method {
-    optional IteratorGetRP2LineXYZ extension = 5133;
+    optional IteratorGetRP2LineXY extension = 5133;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
                                    (is_subject) = true];
   }
   message Return {
-    required XYZ result = 1;
+    required XY result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -995,6 +1000,17 @@ message IteratorGetRP2LineXYZ {
 message IteratorIncrement {
   extend Method {
     optional IteratorIncrement extension = 5086;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message IteratorReset {
+  extend Method {
+    optional IteratorReset extension = 5135;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
@@ -1146,14 +1162,32 @@ message PlanetariumDelete {
   optional Out out = 2;
 }
 
+message PlanetariumPlotPrediction {
+  extend Method {
+    optional PlanetariumPlotPrediction extension = 5136;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required string vessel_guid = 3;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message PlanetariumPlotPsychohistory {
   extend Method {
     optional PlanetariumPlotPsychohistory extension = 5134;
   }
   message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required fixed64 planetarium = 2 [(pointer_to) = "Planetarium const"];
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required string vessel_guid = 3;
   }
   message Return {
