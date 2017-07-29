@@ -44,6 +44,7 @@ using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -115,7 +116,8 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   EXPECT_CALL(continuous_trajectory, EvaluatePosition(_))
       .WillRepeatedly(Return(Barycentric::origin));
 
-  Planetarium::Parameters parameters(1);  // No dark area.
+  // No dark area.
+  Planetarium::Parameters parameters(1, 0 * Degree, 90 * Degree);
   Planetarium planetarium(parameters, perspective, &ephemeris, &plotting_frame);
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory.Begin(),
