@@ -13,8 +13,12 @@ using geometry::Position;
 using geometry::RP2Line;
 using quantities::Time;
 
-Planetarium::Parameters::Parameters(double const sphere_radius_multiplier)
-    : sphere_radius_multiplier_(sphere_radius_multiplier) {}
+Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
+                                    Angle const& angular_resolution,
+                                    Angle const& field_of_view)
+    : sphere_radius_multiplier_(sphere_radius_multiplier),
+      angular_resolution_(angular_resolution),
+      field_of_view_(field_of_view) {}
 
 Planetarium::Planetarium(
     Parameters const& parameters,
