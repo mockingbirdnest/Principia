@@ -173,9 +173,6 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
       plugin.renderer().BarycentricToWorld(plugin.PlanetariumRotation())(
           barycentric_inertial_direction);
   result.inertial_direction = ToXYZ(world_inertial_direction);
-  LOG(ERROR) << "Returning a manœuvre whose burn is"
-             << (result.burn.is_inertially_fixed ? "fixed" : "guided")
-             << "burn";
   return result;
 }
 
