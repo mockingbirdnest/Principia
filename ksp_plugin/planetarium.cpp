@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/point.hpp"
+#include "quantities/elementary_functions.hpp"
 
 namespace principia {
 namespace ksp_plugin {
@@ -11,14 +12,17 @@ namespace internal_planetarium {
 
 using geometry::Position;
 using geometry::RP2Line;
+using quantities::Pow;
+using quantities::Sin;
+using quantities::Tan;
 using quantities::Time;
 
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& angular_resolution,
                                     Angle const& field_of_view)
     : sphere_radius_multiplier_(sphere_radius_multiplier),
-      angular_resolution_(angular_resolution),
-      field_of_view_(field_of_view) {}
+      sin²_angular_resolution_(Pow<2>(Sin(angular_resolution))),
+      tan_field_of_view_(Tan(field_of_view)) {}
 
 Planetarium::Planetarium(
     Parameters const& parameters,
@@ -37,11 +41,25 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            begin, end);
+
+  auto const field_of_view_radius² =
+      perspective_.focal() * perspective_.focal() *
+      parameters_.tan_field_of_view_ * parameters_.tan_field_of_view_;
   RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.
     auto const rp2_first = perspective_(plottable_segment.first);
     auto const rp2_second = perspective_(plottable_segment.second);
+
+    // If the segment is entirely outside the field of view, ignore it.
+    Length const x1 = rp2_first.x();
+    Length const y1 = rp2_first.y();
+    Length const x2 = rp2_second.x();
+    Length const y2 = rp2_second.y();
+    if (x1 * x1 + y1 * y1 > field_of_view_radius² &&
+        x2 * x2 + y2 * y2 > field_of_view_radius²) {
+      continue;
+    }
 
     // Create a new ℝP² line when two segments are not consecutive.
     if (rp2_lines.empty() || rp2_lines.back().back() != rp2_first) {
@@ -66,11 +84,15 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Length const mean_radius = body->mean_radius();
     Position<Barycentric> const centre_in_barycentric =
         trajectory->EvaluatePosition(now);
-    // TODO(phl): Don't create a plottable sphere if the body is very far from
-    // the camera.  What should the criterion be?
-    plottable_spheres.emplace_back(
+    Sphere<Length, Navigation> plottable_sphere(
         rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
         parameters_.sphere_radius_multiplier_ * mean_radius);
+    // If the sphere is seen under an angle that is very small it doesn't
+    // participate in hiding.
+    if (perspective_.SphereSin²HalfAngle(plottable_sphere) <
+        parameters_.sin²_angular_resolution_) {
+      plottable_spheres.emplace_back(std::move(plottable_sphere));
+    }
   }
   return plottable_spheres;
 }
