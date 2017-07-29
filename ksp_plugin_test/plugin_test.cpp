@@ -861,7 +861,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
                 mock_dynamic_frame),
             /*initial_time=*/HistoryTime(time, 4),
             Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
+            /*is_inertially_fixed=*/true};
   };
   plugin_->CreateFlightPlan(guid,
                             /*final_time=*/HistoryTime(time, 8),
