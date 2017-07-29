@@ -201,6 +201,10 @@ class JournalProtoProcessor final {
   // The C# attribute for marshalling a field.
   std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
 
+  // The C# type for a field, suitable for use in a private member when the
+  // actual data cannot be exposed directly (think bool).
+  std::map<FieldDescriptor const*, std::string> field_cs_private_type_;
+
   // The C#/C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
   std::map<FieldDescriptor const*, std::string> field_cs_type_;
