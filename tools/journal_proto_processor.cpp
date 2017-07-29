@@ -856,7 +856,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_cxx_assignment_fn_[field_descriptor](
                 "m.", serialize_member_name));
 
-    if (field_cs_private_type_[descriptor].empty()) {
+    if (field_cs_private_type_[field_descriptor].empty()) {
       cs_interface_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + ";\n";
@@ -865,9 +865,13 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "  private " + field_cs_private_type_[field_descriptor] + " " +
           field_descriptor_name + "_;\n" +
           "  public " + field_cs_type_[field_descriptor] + " " +
-          field_descriptor_name + "{\n" +
-          "    get { return " + field_descriptor_name + "; }\n" +
-          "    set { " + field_descriptor_name + "_ = value; }\n";
+          field_descriptor_name + " {\n" +
+          "    get { return " + field_descriptor_name + "_ != " +
+          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
+          "    set { " + field_descriptor_name + "_ = value ? " +
+          "(" + field_cs_private_type_[field_descriptor] + ")1 : " +
+          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
+          "  }\n";
     }
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
