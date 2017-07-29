@@ -54,9 +54,9 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
   EXPECT_CALL(*plugin_, CurrentTime()).WillRepeatedly(Return(t0_));
   EXPECT_CALL(*plugin_, PlanetariumRotation())
       .WillRepeatedly(ReturnRef(identity));
-  EXPECT_CALL(renderer, PlottingToWorld(_, _, _))
+  EXPECT_CALL(renderer, WorldToPlotting(_, _, _))
       .WillOnce(Return(
-          AffineMap<Navigation, World, Length, OrthogonalMap>::Identity()));
+          AffineMap<World, Navigation, Length, OrthogonalMap>::Identity()));
   EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
       .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
 

@@ -19,6 +19,7 @@ class Iterator {
 
   virtual bool AtEnd() const = 0;
   virtual void Increment() = 0;
+  virtual void Reset() = 0;
   virtual int Size() const = 0;
 };
 
@@ -37,6 +38,7 @@ class TypedIterator : public Iterator {
 
   bool AtEnd() const override;
   void Increment() override;
+  void Reset() override;
   int Size() const override;
 
  private:
@@ -60,8 +62,10 @@ class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
 
   bool AtEnd() const override;
   void Increment() override;
+  void Reset() override;
   int Size() const override;
 
+  DiscreteTrajectory<World>::Iterator iterator() const;
   not_null<Plugin const*> plugin() const;
 
  private:

@@ -166,6 +166,11 @@ inline bool operator==(WXYZ const& left, WXYZ const& right) {
          NaNIndependentEq(left.z, right.z);
 }
 
+inline bool operator==(XY const& left, XY const& right) {
+  return NaNIndependentEq(left.x, right.x) &&
+         NaNIndependentEq(left.y, right.y);
+}
+
 inline bool operator==(XYZ const& left, XYZ const& right) {
   return NaNIndependentEq(left.x, right.x) &&
          NaNIndependentEq(left.y, right.y) &&
@@ -260,12 +265,12 @@ inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
           quaternion.imaginary_part().z};
 }
 
-inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
-  return {r3_element.x, r3_element.y, r3_element.z};
+inline XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point) {
+  return {rp2_point.x() / Metre, rp2_point.y() / Metre};
 }
 
-inline XYZ ToXYZ(geometry::RP2Point<Length, Camera> const& rp2_point) {
-  return {rp2_point.x() / Metre, rp2_point.y() / Metre, rp2_point.z()};
+inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {
+  return {r3_element.x, r3_element.y, r3_element.z};
 }
 
 inline XYZ ToXYZ(Position<World> const& position) {

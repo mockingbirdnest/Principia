@@ -33,7 +33,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
                                                            begin, end);
-
   RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.

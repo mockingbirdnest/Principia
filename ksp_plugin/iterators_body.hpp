@@ -31,6 +31,11 @@ void TypedIterator<Container>::Increment() {
 }
 
 template<typename Container>
+void TypedIterator<Container>::Reset() {
+  iterator_ = container_.begin();
+}
+
+template<typename Container>
 int TypedIterator<Container>::Size() const {
   return container_.size();
 }
@@ -60,8 +65,17 @@ inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
   ++iterator_;
 }
 
+inline void TypedIterator<DiscreteTrajectory<World>>::Reset() {
+  iterator_ = trajectory_->Begin();
+}
+
 inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
   return trajectory_->Size();
+}
+
+inline DiscreteTrajectory<World>::Iterator TypedIterator<
+    DiscreteTrajectory<World>>::iterator() const {
+  return iterator_;
 }
 
 inline not_null<Plugin const*> TypedIterator<

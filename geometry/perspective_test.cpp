@@ -441,7 +441,7 @@ TEST_F(VisibleSegmentsTest, IntersectingConeAndSphere) {
 }
 
 // A segment vaguely parallel to the axis of the cone.  It does intersect the
-// cone twice, but one if the intersections is behind the camera so there is no
+// cone twice, but one of the intersections is behind the camera so there is no
 // hiding.
 TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
   Point<Displacement<World>> const p1 =
@@ -468,6 +468,96 @@ TEST_F(VisibleSegmentsTest, MultipleSpheres) {
   Segment<Displacement<World>> segment{p1, p2};
   EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
               SizeIs(3));
+}
+
+// A case where the intersections are far outside of the segment.  This used to
+// be mishandled.
+TEST_F(VisibleSegmentsTest, BehindCamera) {
+  Point<Displacement<World>> const camera_origin(
+      World::origin + Displacement<World>({-1.35994803226833153e+10 * Metre,
+                                           +6.48711944107992947e+06 * Metre,
+                                           +1.16940398868560791e+05 * Metre}));
+  AffineMap<World, Camera, Length, OrthogonalMap> world_to_camera_affine(
+      camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1.00000001794823179e+00 * Metre);
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({-1.35998847769040604e+10 * Metre,
+                                           +5.65312885169138480e+06 * Metre,
+                                           -2.45548475776178384e+03 * Metre}),
+      /*radius=*/+6.30000000000000000e+05 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({-1.35993763102505913e+10 * Metre,
+                                           +1.02319916576216407e+07 * Metre,
+                                           -1.54814310483471490e+03 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-1.35993763068824501e+10 * Metre,
+                                           +1.02318443313949741e+07 * Metre,
+                                           -1.54719462661686703e+03 * Metre});
+
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+              ElementsAre(segment));
+}
+
+// A case where the camera is inside the sphere.
+TEST_F(VisibleSegmentsTest, CameraInsideSphere) {
+  Point<Displacement<World>> const camera_origin(
+      World::origin + Displacement<World>({-1.35993502776454182e+10 * Metre,
+                                           +4.79792595486199576e+06 * Metre,
+                                           -1.57980008827209473e+05 * Metre}));
+  AffineMap<World, Camera, Length, OrthogonalMap> world_to_camera_affine(
+      camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1 * Metre);
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({-1.35998843607365036e+10 * Metre,
+                                           +5.00094497194097005e+06 * Metre,
+                                           -2.45569064268199872e+03 * Metre}),
+      /*radius=*/+6.30000000000000000e+05 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({-1.35993763102505913e+10 * Metre,
+                                           +1.02319916576216407e+07 * Metre,
+                                           -1.54814310483471490e+03 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-1.35993763068824501e+10 * Metre,
+                                           +1.02318443313949741e+07 * Metre,
+                                           -1.54719462661686703e+03 * Metre});
+
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
+}
+
+// A hyperbolic case where the segment is entirely hidden.  It used to be
+// entirely visible.
+TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
+  Point<Displacement<World>> const camera_origin(
+      World::origin + Displacement<World>({-1.35999109873531647e+10 * Metre,
+                                           -2.00764947838563850e+05 * Metre,
+                                           -2.22307361124038696e+05 * Metre}));
+  AffineMap<World, Camera, Length, OrthogonalMap> world_to_camera_affine(
+      camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1 * Metre);
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({-1.35998825622369633e+10 * Metre,
+                                           +2.59904061185893603e+06 * Metre,
+                                           -2.45644535030410043e+03 * Metre}),
+      /*radius=*/+6.30000000000000000e+05 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({-1.35993763102505913e+10 * Metre,
+                                           +1.02319916576216407e+07 * Metre,
+                                           -1.54814310483471490e+03 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({-1.35993763068824501e+10 * Metre,
+                                           +1.02318443313949741e+07 * Metre,
+                                           -1.54719462661686703e+03 * Metre});
+
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
 }
 
 }  // namespace internal_perspective
