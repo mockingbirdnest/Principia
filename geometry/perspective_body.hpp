@@ -89,7 +89,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SegmentBehindFocalPlane(
               {segment.first, intercept});
     } else {
       CHECK(second_is_visible);
-      return 
+      return
           std::experimental::make_optional<Segment<Vector<Scalar, FromFrame>>>(
               {intercept, segment.second});
     }

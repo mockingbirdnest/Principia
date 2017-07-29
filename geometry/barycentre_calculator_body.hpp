@@ -3,6 +3,7 @@
 
 #include "geometry/barycentre_calculator.hpp"
 
+#include <utility>
 #include <vector>
 
 #include "glog/logging.h"
