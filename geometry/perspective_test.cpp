@@ -148,7 +148,7 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
   EXPECT_FALSE(perspective.IsHiddenBySphere(p4, sphere));
 }
 
-TEST_F(PerspectiveTest, BehindCamera) {
+TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
       AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
       /*focal=*/1 * Metre);
@@ -156,14 +156,21 @@ TEST_F(PerspectiveTest, BehindCamera) {
   // In front of the camera.
   Point<Displacement<World>> const p1 =
       World::origin +
-      Displacement<World>({1 * Metre, -2 * Metre, 3 * Metre});
+      Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre});
   // Behind the camera.
   Point<Displacement<World>> const p2 =
       World::origin +
-      Displacement<World>({-1 * Metre, 2 * Metre, -3 * Metre});
+      Displacement<World>({4 * Metre, 5 * Metre, -6 * Metre});
 
-  //EXPECT_TRUE(perspective(p1).has_value());
-  //EXPECT_FALSE(perspective(p2).has_value());
+  auto const segment = perspective.SegmentBehindFocalPlane({p1, p2});
+  EXPECT_TRUE(segment.has_value());
+  EXPECT_THAT(segment->first, AlmostEquals(p1, 0));
+  EXPECT_THAT(
+      segment->second,
+      AlmostEquals(World::origin +
+                       Displacement<World>(
+                           {5.0 / 3.0 * Metre, 8.0 / 3.0 * Metre, 1 * Metre}),
+                   1));
 }
 
 class VisibleSegmentsTest : public PerspectiveTest {

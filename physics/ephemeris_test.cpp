@@ -4,6 +4,7 @@
 #include <limits>
 #include <map>
 #include <set>
+#include <utility>
 #include <vector>
 
 #include "astronomy/frames.hpp"
@@ -143,7 +144,7 @@ class EphemerisTest
                                              moon->gravitational_parameter()));
     centre_of_mass =
         Barycentre<Position<ICRFJ2000Equator>, Mass>(
-            {q1, q2}, {earth->mass(), moon->mass()});
+            std::make_pair(q1, q2), {earth->mass(), moon->mass()});
     Velocity<ICRFJ2000Equator> const v1(
         {-2 * π * (q1 - centre_of_mass).Norm() / period,
          0 * SIUnit<Speed>(),

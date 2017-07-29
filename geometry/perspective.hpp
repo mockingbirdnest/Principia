@@ -36,11 +36,14 @@ class Perspective final {
       AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
       Scalar const& focal);
 
-  //TODO(phl):comment
+  // Returns the ℝP² element resulting from the projection of |point|.  This
+  // is properly defined for all points other than the camera origin.
   RP2Point<Scalar, ToFrame> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
 
-  //TODO(phl):comment
+  // Returns the part of |segment| that is behind the focal plane as seen from
+  // the camera.  Returns nullopt if |segment| is entirely in front of the focal
+  // plane.
   std::experimental::optional<Segment<Vector<Scalar, FromFrame>>>
   SegmentBehindFocalPlane(
       Segment<Vector<Scalar, FromFrame>> const& segment) const;

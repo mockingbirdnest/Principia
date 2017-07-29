@@ -35,6 +35,15 @@ Scalar const& BarycentreCalculator<Vector, Scalar>::weight() const {
 }
 
 template<typename T, typename Scalar>
+T Barycentre(std::pair<T, T> const & ts,
+             std::pair<Scalar, Scalar> const & weights) {
+  BarycentreCalculator<T, Scalar> calculator;
+  calculator.Add(ts.first, weights.first);
+  calculator.Add(ts.second, weights.second);
+  return calculator.Get();
+}
+
+template<typename T, typename Scalar>
 T Barycentre(std::vector<T> const& ts, std::vector<Scalar> const& weights) {
   CHECK_EQ(ts.size(), weights.size()) << "Ts and weights of unequal sizes";
   CHECK(!ts.empty()) << "Empty input";
