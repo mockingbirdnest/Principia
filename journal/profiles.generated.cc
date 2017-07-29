@@ -8,7 +8,8 @@ NavigationFrameParameters DeserializeNavigationFrameParameters(serialization::Na
   return {navigation_frame_parameters.extension(),
           navigation_frame_parameters.centre_index(),
           navigation_frame_parameters.primary_index(),
-          navigation_frame_parameters.secondary_index()};
+          navigation_frame_parameters.secondary_index(),
+          navigation_frame_parameters.boule()};
 }
 
 XYZ DeserializeXYZ(serialization::XYZ const& xyz) {
@@ -96,6 +97,7 @@ serialization::NavigationFrameParameters SerializeNavigationFrameParameters(Navi
   m.set_centre_index(navigation_frame_parameters.centre_index);
   m.set_primary_index(navigation_frame_parameters.primary_index);
   m.set_secondary_index(navigation_frame_parameters.secondary_index);
+  m.set_boule(navigation_frame_parameters.boule);
   return m;
 }
 

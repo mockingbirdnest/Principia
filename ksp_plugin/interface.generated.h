@@ -8,6 +8,7 @@ struct NavigationFrameParameters {
   int centre_index;
   int primary_index;
   int secondary_index;
+  bool boule;
 };
 
 static_assert(std::is_pod<NavigationFrameParameters>::value,

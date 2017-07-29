@@ -14,6 +14,11 @@ internal partial struct NavigationFrameParameters {
   public int centre_index;
   public int primary_index;
   public int secondary_index;
+  private Byte boule_;
+  public bool boule {
+    get { return boule_ != (Byte)0; }
+    set { boule_ = value ? (Byte)1 : (Byte)0; }
+  }
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -213,6 +218,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanAppend",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool FlightPlanAppend(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
@@ -237,6 +243,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanExists",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool FlightPlanExists(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
@@ -348,6 +355,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanReplaceLast",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool FlightPlanReplaceLast(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
@@ -356,6 +364,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanSetAdaptiveStepParameters",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool FlightPlanSetAdaptiveStepParameters(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
@@ -364,6 +373,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__FlightPlanSetDesiredFinalTime",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool FlightPlanSetDesiredFinalTime(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
@@ -432,6 +442,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__HasEncounteredApocalypse",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool HasEncounteredApocalypse(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))] out String details);
@@ -439,6 +450,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__HasVessel",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool HasVessel(
       this IntPtr plugin,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid);
@@ -484,8 +496,8 @@ internal static partial class Interface {
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_guid,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String vessel_name,
       int parent_index,
-      bool loaded,
-      out bool inserted);
+      [MarshalAs(UnmanagedType.I1)] bool loaded,
+      [MarshalAs(UnmanagedType.I1)] out bool inserted);
 
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__InsertOrKeepLoadedPart",
@@ -514,6 +526,7 @@ internal static partial class Interface {
   [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__IteratorAtEnd",
              CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.I1)]
   internal static extern bool IteratorAtEnd(
       this IntPtr iterator);
 
