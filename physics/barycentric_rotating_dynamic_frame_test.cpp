@@ -2,7 +2,6 @@
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
 #include <memory>
-#include <utility>
 
 #include "astronomy/frames.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -93,7 +92,7 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         centre_of_mass_initial_state_(
             Barycentre<DegreesOfFreedom<ICRFJ2000Equator>,
                        GravitationalParameter>(
-                std::make_pair(big_initial_state_, small_initial_state_),
+                {big_initial_state_, small_initial_state_},
                 {big_gravitational_parameter_,
                  small_gravitational_parameter_})) {
     EXPECT_CALL(mock_ephemeris_,

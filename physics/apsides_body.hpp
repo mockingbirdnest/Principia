@@ -2,7 +2,6 @@
 
 #include "physics/apsides.hpp"
 
-#include <utility>
 #include <vector>
 
 #include "numerics/root_finders.hpp"
@@ -90,7 +89,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
         // |squared_distance_approximation|. Use a linear interpolation of
         // |squared_distance_derivative| instead.
         apsis_time = Barycentre<Instant, Variation<Square<Length>>>(
-            std::make_pair(time, *previous_time),
+            {time, *previous_time},
             {*previous_squared_distance_derivative,
              -squared_distance_derivative});
       }
@@ -150,9 +149,8 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
           Sign(z_approximation.Evaluate(time))) {
         // The Hermite approximation is poorly conditioned, let's use a linear
         // approximation
-        node_time = Barycentre<Instant, Length>(
-                        std::make_pair(*previous_time, time),
-                        {z, -*previous_z});
+        node_time = Barycentre<Instant, Length>({*previous_time, time},
+                                                {z, -*previous_z});
       } else {
         // The normal case, find the intersection with z = 0 using bisection.
         // TODO(egg): Bisection on a polynomial seems daft; we should have

@@ -3,8 +3,6 @@
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
-#include <utility>
-
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -63,8 +61,8 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
       secondary_trajectory_->EvaluateDegreesOfFreedom(t);
   DegreesOfFreedom<InertialFrame> const barycentre_degrees_of_freedom =
       Barycentre<DegreesOfFreedom<InertialFrame>, GravitationalParameter>(
-          std::make_pair(primary_degrees_of_freedom,
-                         secondary_degrees_of_freedom),
+          {primary_degrees_of_freedom,
+           secondary_degrees_of_freedom},
           {primary_->gravitational_parameter(),
            secondary_->gravitational_parameter()});
 
@@ -148,7 +146,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
 
   Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
       Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
-          std::make_pair(primary_acceleration, secondary_acceleration),
+          {primary_acceleration, secondary_acceleration},
           {primary_->gravitational_parameter(),
            secondary_->gravitational_parameter()});
   return AcceleratedRigidMotion<InertialFrame, ThisFrame>(
