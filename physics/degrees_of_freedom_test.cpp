@@ -65,7 +65,7 @@ TEST_F(DegreesOfFreedomDeathTest, BarycentreError) {
   auto barycentre =
       [](std::vector<DegreesOfFreedom<World>> const& degrees_of_freedom,
          std::vector<Entropy> const& weights) -> DegreesOfFreedom<World> {
-    return Barycentre<DegreesOfFreedom<World>, Entropy>(
+    return Barycentre<DegreesOfFreedom<World>, Entropy, std::vector>(
                degrees_of_freedom, weights);
   };
   EXPECT_DEATH({
@@ -102,10 +102,11 @@ TEST_F(DegreesOfFreedomTest, Output) {\
 
 TEST_F(DegreesOfFreedomTest, Barycentre) {
   DegreesOfFreedom<World> const barycentre =
-      Barycentre<DegreesOfFreedom<World>, Entropy>({d1_, d2_, d3_},
-                                                   {3 * SIUnit<Entropy>(),
-                                                    4 * SIUnit<Entropy>(),
-                                                    5 * SIUnit<Entropy>()});
+      Barycentre<DegreesOfFreedom<World>, Entropy, std::vector>(
+          {d1_, d2_, d3_},
+          {3 * SIUnit<Entropy>(),
+           4 * SIUnit<Entropy>(),
+           5 * SIUnit<Entropy>()});
   EXPECT_THAT(barycentre,
               Componentwise(
                   Eq(origin_ +
