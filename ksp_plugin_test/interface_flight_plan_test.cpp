@@ -223,7 +223,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       30 * Second * StandardGravity,
       Vector<double, Frenet<Navigation>>({1, 1, 1}),
       std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
-          navigation_manœuvre_frame));
+          navigation_manœuvre_frame),
+      /*is_inertially_fixed=*/true);
   navigation_manœuvre.set_initial_time(Instant());
   navigation_manœuvre.set_duration(7 * Second);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
