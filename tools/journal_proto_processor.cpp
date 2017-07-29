@@ -856,6 +856,9 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_cxx_assignment_fn_[field_descriptor](
                 "m.", serialize_member_name));
 
+    CHECK_EQ(field_cs_private_type_[field_descriptor].empty(),
+             field_cs_marshal_[field_descriptor].empty())
+         << "Unexpected marshalling/blittability " << field_descriptor_name;
     if (field_cs_private_type_[field_descriptor].empty()) {
       cs_interface_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
@@ -921,7 +924,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       has_return = true;
     } else {
       LOG(FATAL) << "Unexpected nested message "
-          << nested_descriptor->full_name();
+                 << nested_descriptor->full_name();
     }
   }
 
