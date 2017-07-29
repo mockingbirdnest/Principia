@@ -196,8 +196,8 @@ internal static class GLLines {
         try {
           XY? previous_rp2_point = null;
           for (;
-                !rp2_line_iterator.IteratorAtEnd();
-                rp2_line_iterator.IteratorIncrement()) {
+               !rp2_line_iterator.IteratorAtEnd();
+               rp2_line_iterator.IteratorIncrement()) {
             XY current_rp2_point = ToScreen(
                 rp2_line_iterator.IteratorGetRP2LineXY());
             if (previous_rp2_point.HasValue) {
@@ -207,11 +207,11 @@ internal static class GLLines {
               }
               if (style != Style.DASHED || index % 2 == 1) {
                 UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
-                                        (float)previous_rp2_point.Value.y,
-                                        0);
+                                       (float)previous_rp2_point.Value.y,
+                                       0);
                 UnityEngine.GL.Vertex3((float)current_rp2_point.x,
-                                        (float)current_rp2_point.y,
-                                        0);
+                                       (float)current_rp2_point.y,
+                                       0);
               }
             }
             previous_rp2_point = current_rp2_point;
@@ -233,10 +233,10 @@ internal static class GLLines {
 
   private static XY ToScreen(XY rp2_point) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
-    return new XY{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0f) *
-                      0.5f * camera.pixelWidth,
-                  y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0f) *
-                      0.5f * camera.pixelHeight};
+    return new XY{x = (rp2_point.x * camera.projectionMatrix[0, 0] + 1.0) *
+                      0.5 * camera.pixelWidth,
+                  y = (rp2_point.y * camera.projectionMatrix[1, 1] + 1.0) *
+                      0.5 * camera.pixelHeight};
    }
 
   private static bool rendering_lines_ = false;
