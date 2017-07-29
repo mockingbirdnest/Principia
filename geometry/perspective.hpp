@@ -36,9 +36,14 @@ class Perspective final {
       AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
       Scalar const& focal);
 
-  // Returns |nullopt| if the |point| is behind the camera.
-  std::experimental::optional<RP2Point<Scalar, ToFrame>> operator()(
+  //TODO(phl):comment
+  RP2Point<Scalar, ToFrame> operator()(
       Point<Vector<Scalar, FromFrame>> const& point) const;
+
+  //TODO(phl):comment
+  std::experimental::optional<Segment<Vector<Scalar, FromFrame>>>
+  SegmentBehindFocalPlane(
+      Segment<Vector<Scalar, FromFrame>> const& segment) const;
 
   // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
