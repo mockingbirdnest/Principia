@@ -130,7 +130,7 @@ class Manœuvre {
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
-  bool const is_inertially_fixed_{};
+  bool const is_inertially_fixed_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
 
