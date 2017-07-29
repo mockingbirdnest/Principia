@@ -8,6 +8,7 @@
 #include <limits>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "numerics/root_finders.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -46,22 +47,52 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
-std::experimental::optional<RP2Point<Scalar, ToFrame>>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::operator()(
-    Point<Vector<Scalar, FromFrame>> const& point) const {
+RP2Point<Scalar, ToFrame> Perspective<FromFrame, ToFrame, Scalar, LinearMap>::
+operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
   Point<Vector<Scalar, ToFrame>> const point_in_camera = to_camera_(point);
   Vector<Scalar, ToFrame> const displacement_in_camera =
       point_in_camera - ToFrame::origin;
   R3Element<Scalar> const coordinates_in_camera =
       displacement_in_camera.coordinates();
-  if (coordinates_in_camera.z < Scalar()) {
-    // Do not project points that are behind the camera.
+  // This is the actual pinhole camera projection.
+  return RP2Point<Scalar, ToFrame>(coordinates_in_camera.x,
+                                   coordinates_in_camera.y,
+                                   coordinates_in_camera.z / focal_);
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+std::experimental::optional<Segment<Vector<Scalar, FromFrame>>>
+Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SegmentBehindFocalPlane(
+    Segment<Vector<Scalar, FromFrame>> const& segment) const {
+  Vector<double, FromFrame> const z =
+      from_camera_.linear_map()(Vector<double, ToFrame>({0.0, 0.0, 1.0}));
+  Scalar const z1 = InnerProduct(segment.first - camera_, z);
+  Scalar const z2 = InnerProduct(segment.second - camera_, z);
+  bool const first_is_visible = z1 >= focal_;
+  bool const second_is_visible = z2 >= focal_;
+  if (first_is_visible && second_is_visible) {
+    return segment;
+  } else if (!first_is_visible && !second_is_visible) {
     return std::experimental::nullopt;
   } else {
-    // This is the actual pinhole camera projection.
-    return RP2Point<Scalar, ToFrame>(coordinates_in_camera.x,
-                                     coordinates_in_camera.y,
-                                     coordinates_in_camera.z / focal_);
+    // λ determines where the segment intersects the focal plane.
+    double const λ = (focal_ - z2) / (z1 - z2);
+    auto const intercept =
+        Barycentre<Point<Vector<Scalar, FromFrame>>, double>(segment,
+                                                             {λ, 1.0 - λ});
+    if (first_is_visible) {
+      return
+          std::experimental::make_optional<Segment<Vector<Scalar, FromFrame>>>(
+              {segment.first, intercept});
+    } else {
+      CHECK(second_is_visible);
+      return
+          std::experimental::make_optional<Segment<Vector<Scalar, FromFrame>>>(
+              {intercept, segment.second});
+    }
   }
 }
 

@@ -39,18 +39,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     auto const rp2_first = perspective_(plottable_segment.first);
     auto const rp2_second = perspective_(plottable_segment.second);
 
-    // Ignore any segment that goes behind the camera.
-    // TODO(phl): These segments should probably be clipped to the focal plane.
-    if (!rp2_first || !rp2_second) {
-      continue;
-    }
-
     // Create a new ℝP² line when two segments are not consecutive.
-    if (rp2_lines.empty() || rp2_lines.back().back() != *rp2_first) {
-      RP2Line<Length, Camera> const rp2_line = {*rp2_first, *rp2_second};
+    if (rp2_lines.empty() || rp2_lines.back().back() != rp2_first) {
+      RP2Line<Length, Camera> const rp2_line = {rp2_first, rp2_second};
       rp2_lines.push_back(rp2_line);
     } else {
-      rp2_lines.back().push_back(*rp2_second);
+      rp2_lines.back().push_back(rp2_second);
     }
   }
   return rp2_lines;
@@ -104,13 +98,20 @@ Planetarium::ComputePlottableSegments(
     Position<Navigation> const p2 =
         rigid_motion_at_t2(it2.degrees_of_freedom()).position();
 
-    // Use the perspective to compute the visible segments in the Navigation
-    // frame.
+    // Find the part of the segment that is behind the focal plane.  We don't
+    // care about things that are in front of the focal plane.
     const Segment<Displacement<Navigation>> segment = {p1, p2};
-    auto segments = perspective_.VisibleSegments(segment, plottable_spheres);
-    std::move(segments.begin(),
-              segments.end(),
-              std::back_inserter(all_segments));
+    auto const segment_behind_focal_plane =
+        perspective_.SegmentBehindFocalPlane(segment);
+    if (segment_behind_focal_plane) {
+      // Find the part(s) of the segment that are not hidden by spheres.  These
+      // are the ones we want to plot.
+      auto segments = perspective_.VisibleSegments(*segment_behind_focal_plane,
+                                                   plottable_spheres);
+      std::move(segments.begin(),
+                segments.end(),
+                std::back_inserter(all_segments));
+    }
 
     it1 = it2;
     t1 = t2;
