@@ -60,11 +60,6 @@ Scalar const RP2Point<Scalar, Frame>::y() const {
 }
 
 template<typename Scalar, typename Frame>
-double const RP2Point<Scalar, Frame>::z() const {
-  return z_;
-}
-
-template<typename Scalar, typename Frame>
 bool operator==(RP2Point<Scalar, Frame> const& left,
                 RP2Point<Scalar, Frame> const& right) {
   bool const left_is_singular =

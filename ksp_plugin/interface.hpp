@@ -81,6 +81,7 @@ bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
                 NavigationManoeuvreFrenetTrihedron const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
+bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 
 // Conversions between interchange data and typed data.
@@ -121,8 +122,9 @@ QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
 
+XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point);
+
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
-XYZ ToXYZ(geometry::RP2Point<Length, Camera> const& rp2_point);
 XYZ ToXYZ(Position<World> const& position);
 XYZ ToXYZ(Vector<double, World> const& direction);
 XYZ ToXYZ(Velocity<Frenet<NavigationFrame>> const& velocity);

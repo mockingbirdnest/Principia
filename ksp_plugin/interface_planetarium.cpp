@@ -95,20 +95,35 @@ void principia__PlanetariumDelete(
   return m.Return();
 }
 
-Iterator* principia__PlanetariumPlotPsychohistory(
-    Plugin const* const plugin,
+Iterator* principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
+    Plugin const* const plugin,
     char const* const vessel_guid) {
-  journal::Method<journal::PlanetariumPlotPsychohistory> m({plugin,
-                                                            planetarium,
+  journal::Method<journal::PlanetariumPlotPrediction> m({planetarium,
+                                                         plugin,
+                                                         vessel_guid});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
+  auto const rp2_lines = planetarium->PlotMethod0(prediction.Begin(),
+                                                  prediction.End(),
+                                                  plugin->CurrentTime());
+  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+}
+
+Iterator* principia__PlanetariumPlotPsychohistory(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::PlanetariumPlotPsychohistory> m({planetarium,
+                                                            plugin,
                                                             vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
   auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  auto const rp2_lines =
-      planetarium->PlotMethod0(psychohistory.Begin(),
-                               psychohistory.End(),
-                               plugin->CurrentTime());
+  auto const rp2_lines = planetarium->PlotMethod0(psychohistory.Begin(),
+                                                  psychohistory.End(),
+                                                  plugin->CurrentTime());
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
