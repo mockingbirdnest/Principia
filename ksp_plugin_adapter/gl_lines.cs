@@ -153,9 +153,11 @@ internal static class GLLines {
     // are the width and height of the screen seen in the focal plane.  h is
     // seen under an angle that is ɑ, the field of view, and therefore the focal
     // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
+    // TODO(phl): figure out why this should be 1.
     double focal =
-        camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
+        1 / (camera.projectionMatrix[1, 1] *
                                 Math.Tan(Math.PI * camera.fieldOfView / 360));
+
     return plugin.PlanetariumCreate(
                sun_world_position,
                (XYZ)(Vector3d)opengl_camera_x_in_world,

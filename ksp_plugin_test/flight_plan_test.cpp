@@ -105,7 +105,8 @@ class FlightPlanTest : public testing::Test {
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
             initial_time,
             Velocity<Frenet<Navigation>>(
-                {Δv, 0 * Metre / Second, 0 * Metre / Second})};
+                {Δv, 0 * Metre / Second, 0 * Metre / Second}),
+            /*is_inertially_fixed=*/true};
   }
 
   Burn MakeFirstBurn() {
@@ -114,7 +115,8 @@ class FlightPlanTest : public testing::Test {
             make_not_null_unique<TestNavigationFrame>(*navigation_frame_),
             /*initial_time=*/t0_ + 1 * Second,
             Velocity<Frenet<Navigation>>(
-                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+                {1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
+            /*is_inertially_fixed=*/true};
   }
 
   Burn MakeSecondBurn() {
@@ -412,6 +414,30 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   flight_plan_->GetSegment(4, begin, end);
   --end;
   EXPECT_EQ(t0_ + 42 * Second, end.time());
+}
+
+TEST_F(FlightPlanTest, GuidedBurn) {
+  flight_plan_->SetDesiredFinalTime(t0_ + 42 * Second);
+  auto unguided_burn = MakeFirstBurn();
+  unguided_burn.thrust /= 10;
+  EXPECT_TRUE(flight_plan_->Append(std::move(unguided_burn)));
+  DiscreteTrajectory<Barycentric>::Iterator begin;
+  DiscreteTrajectory<Barycentric>::Iterator end;
+  DiscreteTrajectory<Barycentric>::Iterator last;
+  flight_plan_->GetAllSegments(begin, end);
+  last = --end;
+  Speed const unguided_final_speed =
+      last.degrees_of_freedom().velocity().Norm();
+  auto guided_burn = MakeFirstBurn();
+  guided_burn.thrust /= 10;
+  guided_burn.is_inertially_fixed = false;
+  EXPECT_TRUE(flight_plan_->ReplaceLast(std::move(guided_burn)));
+  flight_plan_->GetAllSegments(begin, end);
+  last = --end;
+  Speed const guided_final_speed = last.degrees_of_freedom().velocity().Norm();
+  EXPECT_THAT(
+      guided_final_speed,
+      AllOf(Gt(1.39 * unguided_final_speed), Lt(1.40 * unguided_final_speed)));
 }
 
 TEST_F(FlightPlanTest, Serialization) {

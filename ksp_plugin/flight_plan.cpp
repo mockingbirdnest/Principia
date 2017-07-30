@@ -305,15 +305,51 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   if (anomalous_segments_ > 0) {
     return;
   } else if (manœuvre.initial_time() < manœuvre.final_time()) {
-    bool const reached_desired_final_time =
-        ephemeris_->FlowWithAdaptiveStep(segments_.back(),
-                                         manœuvre.IntrinsicAcceleration(),
-                                         manœuvre.final_time(),
-                                         adaptive_step_parameters_,
-                                         max_ephemeris_steps_per_frame,
-                                         /*last_point_only=*/false);
-    if (!reached_desired_final_time) {
-      anomalous_segments_ = 1;
+    if (manœuvre.is_inertially_fixed()) {
+      bool const reached_desired_final_time =
+          ephemeris_->FlowWithAdaptiveStep(segments_.back(),
+                                           manœuvre.IntrinsicAcceleration(),
+                                           manœuvre.final_time(),
+                                           adaptive_step_parameters_,
+                                           max_ephemeris_steps_per_frame,
+                                           /*last_point_only=*/false);
+      if (!reached_desired_final_time) {
+        anomalous_segments_ = 1;
+      }
+    } else {
+      // We decompose the manœuvre in smaller unguided manœuvres (movements),
+      // which are unguided.
+      // TODO(egg): eventually we should just compute the direction in the
+      // right-hand-side of the integrator, but for that we need the velocity,
+      // which means we need general Runge-Kutta integrators.
+      constexpr int movements = 100;
+      Mass remaining_mass = manœuvre.initial_mass();
+      serialization::DynamicFrame serialized_manœuvre_frame;
+      manœuvre.frame()->WriteToMessage(&serialized_manœuvre_frame);
+      for (int i = 0; i < movements; ++i) {
+        NavigationManœuvre movement(manœuvre.thrust(),
+                                    remaining_mass,
+                                    manœuvre.specific_impulse(),
+                                    manœuvre.direction(),
+                                    NavigationFrame::ReadFromMessage(
+                                        serialized_manœuvre_frame, ephemeris_),
+                                    /*is_inertially_fixed=*/true);
+        movement.set_duration(manœuvre.duration() / movements);
+        movement.set_initial_time(segments_.back()->last().time());
+        movement.set_coasting_trajectory(segments_.back());
+        remaining_mass = movement.final_mass();
+        bool const reached_desired_final_time =
+            ephemeris_->FlowWithAdaptiveStep(segments_.back(),
+                                             movement.IntrinsicAcceleration(),
+                                             movement.final_time(),
+                                             adaptive_step_parameters_,
+                                             max_ephemeris_steps_per_frame,
+                                             /*last_point_only=*/false);
+        if (!reached_desired_final_time) {
+          anomalous_segments_ = 1;
+          return;
+        }
+      }
     }
   }
 }

@@ -28,6 +28,7 @@ struct Burn final {
   not_null<std::unique_ptr<NavigationFrame const>> frame;
   Instant initial_time;
   Velocity<Frenet<Navigation>> Δv;
+  bool is_inertially_fixed;
 };
 
 NavigationManœuvre MakeNavigationManœuvre(Burn burn, Mass const& initial_mass);

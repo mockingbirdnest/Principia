@@ -1496,14 +1496,14 @@ public partial class PrincipiaPluginAdapter
           if (use_cayley_plotting_) {
             GLLines.RenderAndDeleteTrajectory(
                 plugin_.RenderedVesselTrajectory(main_vessel_guid,
-                                                  sun_world_position),
+                                                 sun_world_position),
                 XKCDColors.AcidGreen,
                 GLLines.Style.FADED);
           }
           if (use_чебышёв_plotting_) {
             IntPtr rp2_lines_iterator =
                 planetarium.PlanetariumPlotPsychohistory(plugin_,
-                                                          main_vessel_guid);
+                                                         main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                           XKCDColors.Banana,
                                           GLLines.Style.FADED);
