@@ -1138,7 +1138,7 @@ message PlanetariumCreate {
     required XYZ xyz_opengl_camera_z_in_world = 5;
     required XYZ xyz_camera_position_in_world = 6;
     required double focal = 7;
-    required double field_of_view_in_degrees = 8;
+    required double field_of_view = 8;
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Planetarium",

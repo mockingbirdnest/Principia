@@ -153,16 +153,21 @@ internal static class GLLines {
     // are the width and height of the screen seen in the focal plane.  h is
     // seen under an angle that is ɑ, the field of view, and therefore the focal
     // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
-    double focal =
-        camera.nearClipPlane / (camera.projectionMatrix[1, 1] *
-                                Math.Tan(Math.PI * camera.fieldOfView / 360));
+    double m00 = camera.projectionMatrix[0, 0];
+    double m11 = camera.projectionMatrix[1, 1];
+    double focal = camera.nearClipPlane /
+                   (m11 * Math.Tan(Math.PI * camera.fieldOfView / 360));
+    double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
+                                      m00 * m11);
+    Log.Info("fov:" + field_of_view);
     return plugin.PlanetariumCreate(
                sun_world_position,
                (XYZ)(Vector3d)opengl_camera_x_in_world,
                (XYZ)(Vector3d)opengl_camera_y_in_world,
                (XYZ)(Vector3d)opengl_camera_z_in_world,
                (XYZ)(Vector3d)camera_position_in_world,
-               focal);
+               focal,
+               field_of_view);
   }
 
   public static void PlotAndDeleteRP2Lines(IntPtr rp2_lines_iterator,

@@ -36,8 +36,8 @@ using physics::DiscreteTrajectory;
 using physics::RigidTransformation;
 using quantities::Length;
 using quantities::si::ArcMinute;
-using quantities::si::Degree;
 using quantities::si::Metre;
+using quantities::si::Radian;
 
 Planetarium* principia__PlanetariumCreate(
     Plugin const* const plugin,
@@ -47,7 +47,7 @@ Planetarium* principia__PlanetariumCreate(
     XYZ const xyz_opengl_camera_z_in_world,
     XYZ const xyz_camera_position_in_world,
     double const focal,
-    double const field_of_view_in_degrees) {
+    double const field_of_view) {
   journal::Method<journal::PlanetariumCreate> m({plugin,
                                                  sun_world_position,
                                                  xyz_opengl_camera_x_in_world,
@@ -55,7 +55,7 @@ Planetarium* principia__PlanetariumCreate(
                                                  xyz_opengl_camera_z_in_world,
                                                  xyz_camera_position_in_world,
                                                  focal,
-                                                 field_of_view_in_degrees});
+                                                 field_of_view});
   Renderer const& renderer = CHECK_NOTNULL(plugin)->renderer();
 
   Multivector<double, World, 1> const opengl_camera_x_in_world(
@@ -87,7 +87,7 @@ Planetarium* principia__PlanetariumCreate(
   // https://en.wikipedia.org/wiki/Visual_acuity#Physiology
   Planetarium::Parameters parameters(/*sphere_radius_multiplier=*/1.05,
                                      /*angular_resolution=*/0.4 * ArcMinute,
-                                     field_of_view_in_degrees * Degree);
+                                     field_of_view * Radian);
   Perspective<Navigation, Camera, Length, OrthogonalMap> perspective(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
