@@ -46,6 +46,7 @@ message Burn {
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
   required XYZ delta_v = 5;
+  required bool is_inertially_fixed = 6;
 }
 
 message KeplerianElements {

@@ -16,12 +16,14 @@ class MockManœuvre : public Manœuvre<InertialFrame, Frame>{
       Mass const& initial_mass,
       SpecificImpulse const& specific_impulse,
       Vector<double, Frenet<Frame>> const& direction,
-      not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame)
+      not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame,
+      bool const is_inertially_fixed)
       : Manœuvre<InertialFrame, Frame>(thrust,
                                        initial_mass,
                                        specific_impulse,
                                        direction,
-                                       std::move(frame)) {}
+                                       std::move(frame),
+                                       is_inertially_fixed) {}
 
   MOCK_CONST_METHOD0_T(InertialDirection, Vector<double, InertialFrame>());
 

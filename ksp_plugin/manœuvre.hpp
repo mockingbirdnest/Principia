@@ -43,7 +43,8 @@ class Manœuvre {
            SpecificImpulse const& specific_impulse,
            Vector<double, Frenet<Frame>> const& direction,
            not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>>
-               frame);
+               frame,
+           bool is_inertially_fixed);
   Manœuvre(Manœuvre&&) = default;
   Manœuvre& operator=(Manœuvre&&) = default;
   virtual ~Manœuvre() = default;
@@ -104,6 +105,11 @@ class Manœuvre {
   // Frenet frame at the beginning of the manœuvre.
   virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
 
+  // If true, the direction of the burn remains fixed in a nonrotating frame.
+  // Otherwise, the direction of the burn remains fixed in the Frenet frame of
+  // the trajectory.
+  bool is_inertially_fixed() const;
+
   // Intensity, timing and coasting trajectory must have been set.  The result
   // is valid until |*this| is destroyed.
   typename Ephemeris<InertialFrame>::IntrinsicAcceleration
@@ -124,6 +130,7 @@ class Manœuvre {
   std::experimental::optional<Time> duration_;
   std::experimental::optional<Instant> initial_time_;
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
+  bool const is_inertially_fixed_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;
 };
 

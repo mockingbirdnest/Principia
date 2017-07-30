@@ -155,11 +155,11 @@ internal static class GLLines {
     // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
     double m00 = camera.projectionMatrix[0, 0];
     double m11 = camera.projectionMatrix[1, 1];
-    double focal = camera.nearClipPlane /
-                   (m11 * Math.Tan(Math.PI * camera.fieldOfView / 360));
+    // TODO(phl): figure out why this should be 1.
+    double focal =
+        1 / (camera.m11 * Math.Tan(Math.PI * camera.fieldOfView / 360));
     double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
                                       m00 * m11);
-    Log.Info("fov:" + field_of_view);
     return plugin.PlanetariumCreate(
                sun_world_position,
                (XYZ)(Vector3d)opengl_camera_x_in_world,
