@@ -127,25 +127,6 @@ internal static class GLLines {
     }
   }
 
-  private static void LogMatrix(UnityEngine.Matrix4x4 A) {
-    string log = "{";
-    for (int i = 0; i < 4; ++i) {
-      log += "{";
-      for (int j = 0; j < 4; ++j) {
-        log += A[i,j].ToString("R").Replace("E","*^");
-        if (j < 3) {
-          log += ", ";
-        }
-      }
-      log += "}";
-      if (i < 3) {
-        log += ", ";
-      }
-    }
-    log += "}";
-    Log.Error(log);
-  }
-
   public static IntPtr NewPlanetarium(IntPtr plugin,
                                        XYZ sun_world_position) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
@@ -173,23 +154,10 @@ internal static class GLLines {
     // are the width and height of the screen seen in the focal plane.  h is
     // seen under an angle that is ɑ, the field of view, and therefore the focal
     // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
+    // TODO(phl): figure out why this should be 1.
     double focal =
         1 / (camera.projectionMatrix[1, 1] *
                                 Math.Tan(Math.PI * camera.fieldOfView / 360));
-
-    Log.Error("camera.cameraToWorldMatrix:");
-    LogMatrix(camera.cameraToWorldMatrix);
-    Log.Error("camera.projectionMatrix:");
-    LogMatrix(camera.projectionMatrix);
-    Log.Error("camera.nearClipPlane: " + camera.nearClipPlane.ToString("R"));
-    Log.Error("camera.fieldOfView: " + camera.fieldOfView.ToString("R"));
-    Log.Error("camera.farClipPlane: " + camera.farClipPlane.ToString("R"));
-    Log.Error("camera.orthographic: " + camera.orthographic);
-    Log.Error("camera.orthographicSize: " +
-              camera.orthographicSize.ToString("R"));
-    Log.Error("camera.pixelHeight: " + camera.pixelHeight);
-    Log.Error("camera.pixelWidth: " + camera.pixelWidth);
-    Log.Error("camera.aspect: " + camera.aspect.ToString("R"));
 
     return plugin.PlanetariumCreate(
                sun_world_position,
