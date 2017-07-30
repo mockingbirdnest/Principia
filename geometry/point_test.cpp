@@ -126,7 +126,7 @@ TEST_F(PointDeathTest, BarycentreError) {
   auto barycentre =
       [](std::vector<Instant> const& instants,
          std::vector<Volume> const& weights) -> Instant {
-    return Barycentre<Instant, Volume>(instants, weights);
+    return Barycentre<Instant, Volume, std::vector>(instants, weights);
   };
   EXPECT_DEATH({
     Instant const t1 = mjd0 + 1 * Day;
