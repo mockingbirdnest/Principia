@@ -33,6 +33,7 @@ using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::RigidMotion;
+using quantities::Angle;
 using quantities::Length;
 
 // A planetarium is an ephemeris together with a perspective.  In this setting
@@ -41,12 +42,18 @@ class Planetarium {
  public:
   class Parameters final {
    public:
-    // Defines the "dark area" around a celestial where we don't draw
-    // trajectories.
-    explicit Parameters(double sphere_radius_multiplier);
+    // |sphere_radius_multiplier| defines the "dark area" around a celestial
+    // where we don't draw trajectories.  |angular_resolution| defines the limit
+    // beyond which spheres don't participate in hiding.  |field_of_view|
+    // is the half-angle of a cone outside of which not plotting takes place.
+    explicit Parameters(double sphere_radius_multiplier,
+                        Angle const& angular_resolution,
+                        Angle const& field_of_view);
 
    private:
     double const sphere_radius_multiplier_;
+    double const sin²_angular_resolution_;
+    double const tan_field_of_view_;
     friend class Planetarium;
   };
 

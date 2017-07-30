@@ -13,12 +13,13 @@ namespace internal_planetarium {
 
 using geometry::AffineMap;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using testing_utilities::make_not_null;
 
 class MockPlanetarium : public Planetarium {
  public:
   MockPlanetarium()
-      : Planetarium(Planetarium::Parameters(1.0),
+      : Planetarium(Planetarium::Parameters(1.0, 1.0 * Radian, 1.0 * Radian),
                     Perspective<Navigation, Camera, Length, OrthogonalMap>(
                         AffineMap<Navigation, Camera, Length, OrthogonalMap>::
                             Identity(),

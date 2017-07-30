@@ -47,6 +47,15 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
+Scalar const& Perspective<FromFrame, ToFrame, Scalar, LinearMap>::focal()
+    const {
+  return focal_;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
 RP2Point<Scalar, ToFrame> Perspective<FromFrame, ToFrame, Scalar, LinearMap>::
 operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
   Point<Vector<Scalar, ToFrame>> const point_in_camera = to_camera_(point);
@@ -147,6 +156,21 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
   // centre.
   bool const is_in_front_of_horizon = inner_product < camera_to_horizon²;
   return !is_in_front_of_horizon;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+double Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SphereSin²HalfAngle(
+    Sphere<Scalar, FromFrame> const& sphere) const {
+  // See VisibleSegments for the notation.
+  Point<Vector<Scalar, FromFrame>> const& K = camera_;
+  Point<Vector<Scalar, FromFrame>> const& C = sphere.centre();
+  Vector<Scalar, FromFrame> const KC = C - K;
+  auto const KC² = InnerProduct(KC, KC);
+  // Return 1.0 if the camera is within the sphere.
+  return std::min(1.0, sphere.radius²() / KC²);
 }
 
 template<typename FromFrame,
