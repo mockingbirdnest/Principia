@@ -103,6 +103,37 @@ void principia__PlanetariumDelete(
   return m.Return();
 }
 
+Iterator* principia__PlanetariumPlotFlightPlanSegment(
+    Planetarium const* const planetarium,
+    Plugin const* const plugin,
+    char const* const vessel_guid,
+    int const index) {
+  journal::Method<journal::PlanetariumPlotFlightPlanSegment> m({planetarium,
+                                                                plugin,
+                                                                vessel_guid,
+                                                                index});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(planetarium);
+  Vessel const& vessel = *plugin->GetVessel(vessel_guid);
+  CHECK(vessel.has_flight_plan()) << vessel_guid;
+  DiscreteTrajectory<Barycentric>::Iterator segment_begin;
+  DiscreteTrajectory<Barycentric>::Iterator segment_end;
+  vessel.flight_plan().GetSegment(index, segment_begin, segment_end);
+  RP2Lines<Length, Camera> rp2_lines;
+  // TODO(egg): this is ugly; we should centralize rendering.
+  // If this is a burn and we cannot render the beginning of the burn, we
+  // render none of it, otherwise we try to render the Frenet trihedron at the
+  // start and we fail.
+  if (index % 2 == 0 ||
+      segment_begin == segment_end ||
+      segment_begin.time() >= plugin->CurrentTime()) {
+     rp2_lines = planetarium->PlotMethod0(segment_begin,
+                                          segment_end,
+                                          plugin->CurrentTime());
+  }
+  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+}
+
 Iterator* principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
