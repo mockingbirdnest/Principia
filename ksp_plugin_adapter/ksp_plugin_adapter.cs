@@ -1575,10 +1575,23 @@ public partial class PrincipiaPluginAdapter
               Vector3d position_at_start =
                   (Vector3d)rendered_segments.
                       IteratorGetDiscreteTrajectoryXYZ();
-              GLLines.RenderAndDeleteTrajectory(
-                  rendered_segments,
-                  is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
-                  is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              if (use_cayley_plotting_) {
+                GLLines.RenderAndDeleteTrajectory(
+                    rendered_segments,
+                    is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
+              if (use_чебышёв_plotting_) {
+                IntPtr rp2_lines_iterator =
+                    planetarium.PlanetariumPlotFlightPlanSegment(
+                        plugin_,
+                        main_vessel_guid,
+                        i);
+                GLLines.PlotAndDeleteRP2Lines(
+                    rp2_lines_iterator,
+                    is_burn ? XKCDColors.Grapefruit : XKCDColors.Blueberry,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
               if (is_burn) {
                 int manoeuvre_index = i / 2;
                 NavigationManoeuvreFrenetTrihedron manoeuvre =
@@ -2010,9 +2023,9 @@ public partial class PrincipiaPluginAdapter
   private void LoggingSettings() {
     using (new HorizontalLayout()) {
       use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_cayley_plotting_, "Use Cayley plotting");
+          use_cayley_plotting_, "Cayley plotting");
       use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_чебышёв_plotting_, "Use Чебышёв plotting");
+          use_чебышёв_plotting_, "Чебышёв plotting");
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
