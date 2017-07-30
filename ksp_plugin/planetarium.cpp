@@ -89,7 +89,7 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
         parameters_.sphere_radius_multiplier_ * mean_radius);
     // If the sphere is seen under an angle that is very small it doesn't
     // participate in hiding.
-    if (perspective_.SphereSin²HalfAngle(plottable_sphere) <
+    if (perspective_.SphereSin²HalfAngle(plottable_sphere) >
         parameters_.sin²_angular_resolution_) {
       plottable_spheres.emplace_back(std::move(plottable_sphere));
     }
