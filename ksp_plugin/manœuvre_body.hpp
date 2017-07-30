@@ -175,7 +175,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
 }
 
 template<typename InertialFrame, typename Frame>
-inline bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
+bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
   return is_inertially_fixed_;
 }
 

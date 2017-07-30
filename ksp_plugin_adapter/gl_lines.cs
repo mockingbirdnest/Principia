@@ -142,30 +142,30 @@ internal static class GLLines {
     UnityEngine.Vector3 camera_position_in_world =
         ScaledSpace.ScaledToLocalSpace(camera.transform.position);
 
-
-    // According to
-    // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
-    // the on-centre projection matrix has the form:
+    // For explanations regarding the OpenGL projection matrix, see
+    // http://www.songho.ca/opengl/gl_projectionmatrix.html.  The on-centre
+    // projection matrix has the form:
     //   n / w                0                0                0
     //     0                n / h              0                0
     //     0                  0        (n + f) / (n - f)  2 f n / (n - f)
     //     0                  0               -1                0
     // where n and f are the near- and far-clipping distances, and w and h
-    // are the width and height of the screen seen in the focal plane.  h is
-    // seen under an angle that is ɑ, the field of view, and therefore the focal
-    // distance is d = h / tan ɑ/2 = n / (m11 tan ɑ/2).
-    // TODO(phl): figure out why this should be 1.
-    double focal =
-        1 / (camera.projectionMatrix[1, 1] *
-                                Math.Tan(Math.PI * camera.fieldOfView / 360));
-
+    // are the half-width and half-height of the screen seen in the focal plane.
+    // n is also the focal distance, but we prefer to make that distance 1 metre
+    // to avoid having to rescale the result.  The only actual effect of n is
+    // the clipping distance, and in space, no one can hear you clip.
+    double m00 = camera.projectionMatrix[0, 0];
+    double m11 = camera.projectionMatrix[1, 1];
+    double field_of_view = Math.Atan2(Math.Sqrt(m00 * m00 + m11 * m11),
+                                      m00 * m11);
     return plugin.PlanetariumCreate(
                sun_world_position,
                (XYZ)(Vector3d)opengl_camera_x_in_world,
                (XYZ)(Vector3d)opengl_camera_y_in_world,
                (XYZ)(Vector3d)opengl_camera_z_in_world,
                (XYZ)(Vector3d)camera_position_in_world,
-               focal);
+               /*focal=*/1,
+               field_of_view);
   }
 
   public static void PlotAndDeleteRP2Lines(IntPtr rp2_lines_iterator,

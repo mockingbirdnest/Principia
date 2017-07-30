@@ -36,6 +36,8 @@ class Perspective final {
       AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
       Scalar const& focal);
 
+  Scalar const& focal() const;
+
   // Returns the ℝP² element resulting from the projection of |point|.  This
   // is properly defined for all points other than the camera origin.
   RP2Point<Scalar, ToFrame> operator()(
@@ -51,6 +53,9 @@ class Perspective final {
   // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
                         Sphere<Scalar, FromFrame> const& sphere) const;
+
+  // Returns sin² ɑ where ɑ is the half angle under which the |sphere| is seen.
+  double SphereSin²HalfAngle(Sphere<Scalar, FromFrame> const& sphere) const;
 
   // Returns the (sub)segments of |segment| that are visible in this perspective
   // after taking into account the hiding by |sphere|.  The returned vector has
