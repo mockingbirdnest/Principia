@@ -116,6 +116,31 @@ TEST_F(PerspectiveTest, Basic) {
                             AlmostEquals(2.0 / 0.3 * Metre, 2)));
 }
 
+TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
+  Perspective<World, Camera, Length, OrthogonalMap> perspective(
+      AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
+      /*focal=*/1 * Metre);
+
+  // In front of the camera.
+  Point<Displacement<World>> const p1 =
+      World::origin +
+      Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre});
+  // Behind the camera.
+  Point<Displacement<World>> const p2 =
+      World::origin +
+      Displacement<World>({4 * Metre, 5 * Metre, -6 * Metre});
+
+  auto const segment = perspective.SegmentBehindFocalPlane({p1, p2});
+  EXPECT_TRUE(segment.has_value());
+  EXPECT_THAT(segment->first, AlmostEquals(p1, 0));
+  EXPECT_THAT(
+      segment->second,
+      AlmostEquals(World::origin +
+                       Displacement<World>(
+                           {5.0 / 3.0 * Metre, 8.0 / 3.0 * Metre, 1 * Metre}),
+                   1));
+}
+
 TEST_F(PerspectiveTest, IsHiddenBySphere) {
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
       AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
@@ -148,29 +173,17 @@ TEST_F(PerspectiveTest, IsHiddenBySphere) {
   EXPECT_FALSE(perspective.IsHiddenBySphere(p4, sphere));
 }
 
-TEST_F(PerspectiveTest, SegmentBehindFocalPlane) {
+TEST_F(PerspectiveTest, SphereSin²HalfAngle) {
   Perspective<World, Camera, Length, OrthogonalMap> perspective(
       AffineMap<World, Camera, Length, OrthogonalMap>::Identity(),
       /*focal=*/1 * Metre);
 
-  // In front of the camera.
-  Point<Displacement<World>> const p1 =
-      World::origin +
-      Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre});
-  // Behind the camera.
-  Point<Displacement<World>> const p2 =
-      World::origin +
-      Displacement<World>({4 * Metre, 5 * Metre, -6 * Metre});
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({0 * Metre, 0 * Metre, 100 * Metre}),
+      /*radius=*/1 * Metre);
 
-  auto const segment = perspective.SegmentBehindFocalPlane({p1, p2});
-  EXPECT_TRUE(segment.has_value());
-  EXPECT_THAT(segment->first, AlmostEquals(p1, 0));
-  EXPECT_THAT(
-      segment->second,
-      AlmostEquals(World::origin +
-                       Displacement<World>(
-                           {5.0 / 3.0 * Metre, 8.0 / 3.0 * Metre, 1 * Metre}),
-                   1));
+  EXPECT_THAT(perspective.SphereSin²HalfAngle(sphere),
+              AlmostEquals(0.0001, 0));
 }
 
 class VisibleSegmentsTest : public PerspectiveTest {
