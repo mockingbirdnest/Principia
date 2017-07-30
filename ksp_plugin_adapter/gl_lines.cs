@@ -142,7 +142,6 @@ internal static class GLLines {
     UnityEngine.Vector3 camera_position_in_world =
         ScaledSpace.ScaledToLocalSpace(camera.transform.position);
 
-
     // According to
     // https://docs.unity3d.com/ScriptReference/Camera-projectionMatrix.html,
     // the on-centre projection matrix has the form:
