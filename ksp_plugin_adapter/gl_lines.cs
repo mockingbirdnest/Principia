@@ -142,7 +142,7 @@ internal static class GLLines {
     UnityEngine.Vector3 camera_position_in_world =
         ScaledSpace.ScaledToLocalSpace(camera.transform.position);
 
-    // For explanations regarding the OpenGL project matrix, see
+    // For explanations regarding the OpenGL projection matrix, see
     // http://www.songho.ca/opengl/gl_projectionmatrix.html.  The on-centre
     // projection matrix has the form:
     //   n / w                0                0                0
