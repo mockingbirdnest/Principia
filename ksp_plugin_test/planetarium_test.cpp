@@ -121,7 +121,10 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   }
 
   // No dark area, infinite acuity, wide field of view.
-  Planetarium::Parameters parameters(1, 0 * Degree, 90 * Degree);
+  Planetarium::Parameters parameters(
+      /*sphere_radius_multiplier=*/1,
+      /*angular_resolution=*/0 * Degree,
+      /*field_of_view=*/90 * Degree);
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
@@ -165,7 +168,10 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   }
 
   // No dark area, human visual acuity, wide field of view.
-  Planetarium::Parameters parameters(1, 0.4 * ArcMinute, 90 * Degree);
+  Planetarium::Parameters parameters(
+      /*sphere_radius_multiplier=*/1,
+      /*angular_resolution=*/0.4 * ArcMinute,
+      /*field_of_view=*/90 * Degree);
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
