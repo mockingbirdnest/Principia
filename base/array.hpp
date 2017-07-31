@@ -60,6 +60,7 @@ struct UniqueArray final {
 template<typename Element, std::int32_t max_size>
 class BoundedArray final {
   using Container = std::array<Element, max_size>;
+
  public:
   using iterator = typename Container::iterator;
   using const_iterator = typename Container::const_iterator;
