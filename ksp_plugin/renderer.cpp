@@ -212,6 +212,23 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
          frenet_frame_to_plotting_frame.Forget();
 }
 
+OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
+    Vessel const& vessel,
+    NavigationFrame const& navigation_frame,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  auto const vessel_psychohistory_last = vessel.psychohistory().last();
+  auto const to_navigation =
+      navigation_frame.ToThisFrameAtTime(vessel_psychohistory_last.time());
+  auto const from_navigation = to_navigation.orthogonal_map().Inverse();
+  auto const frenet_frame =
+      navigation_frame.FrenetFrame(
+          vessel_psychohistory_last.time(),
+          to_navigation(
+              vessel_psychohistory_last.degrees_of_freedom())).Forget();
+  return BarycentricToWorld(planetarium_rotation) * from_navigation *
+         frenet_frame;
+}
+
 OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(
     Instant const& time) const {
   return GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map();
