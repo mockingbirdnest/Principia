@@ -78,12 +78,12 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
   if (discriminant.value == discriminant_zero &&
       discriminant.error == discriminant_zero) {
     // One solution.
-    return {{origin - 0.5 * a1 / a2}, 1};
+    return {origin - 0.5 * a1 / a2};
   } else if (discriminant.value < discriminant_zero ||
              (discriminant.value == discriminant_zero &&
               discriminant.error < discriminant_zero)) {
     // No solution.
-    return {{}, 0};
+    return {};
   } else {
     // Two solutions.  Compute the numerator of the larger one.
     Derivative1 numerator;
@@ -96,9 +96,9 @@ BoundedArray<Argument, 2> SolveQuadraticEquation(
     auto const solution1 = origin + numerator / (2.0 * a2);
     auto const solution2 = origin + (2.0 * a0) / numerator;
     if (solution1 < solution2) {
-      return {{solution1, solution2}, 2};
+      return {solution1, solution2};
     } else {
-      return {{solution2, solution1}, 2};
+      return {solution2, solution1};
     }
   }
 }
