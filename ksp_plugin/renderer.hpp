@@ -125,6 +125,13 @@ class Renderer {
       Vessel const& vessel,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
+  // Converts from the Frenet frame of the vessel's free-falling trajectory in
+  // the given |navigation_frame| to the |World| coordinates.
+  virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
+      Vessel const& vessel,
+      NavigationFrame const& navigation_frame,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
   virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(
       Instant const& time) const;
 
