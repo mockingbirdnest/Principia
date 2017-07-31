@@ -46,6 +46,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   auto const field_of_view_radius² =
       perspective_.focal() * perspective_.focal() *
       parameters_.tan_field_of_view_ * parameters_.tan_field_of_view_;
+  std::experimental::optional<Position<Navigation>> previous_position;
   RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.
@@ -62,12 +63,17 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
       continue;
     }
 
-    // Create a new ℝP² line when two segments are not consecutive.
-    if (rp2_lines.empty() || rp2_lines.back().back() != rp2_first) {
+    // Create a new ℝP² line when two segments are not consecutive.  Don't
+    // compare ℝP² points for equality, that's expensive.
+    bool const are_consecutive =
+        previous_position == plottable_segment.first;
+    previous_position = plottable_segment.second;
+
+    if (are_consecutive) {
+      rp2_lines.back().push_back(rp2_second);
+    } else {
       RP2Line<Length, Camera> const rp2_line = {rp2_first, rp2_second};
       rp2_lines.push_back(rp2_line);
-    } else {
-      rp2_lines.back().push_back(rp2_second);
     }
   }
   return rp2_lines;
