@@ -66,7 +66,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     // Create a new ℝP² line when two segments are not consecutive.  Don't
     // compare ℝP² points for equality, that's expensive.
     bool const are_consecutive =
-        previous_position && *previous_position == plottable_segment.first;
+        previous_position == plottable_segment.first;
     previous_position = plottable_segment.second;
 
     if (are_consecutive) {
