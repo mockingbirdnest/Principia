@@ -1,6 +1,8 @@
 
 #include "base/array.hpp"
 
+#include <string>
+
 #include "gtest/gtest.h"
 
 namespace principia {
