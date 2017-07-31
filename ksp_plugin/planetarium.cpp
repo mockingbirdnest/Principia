@@ -22,6 +22,7 @@ Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& field_of_view)
     : sphere_radius_multiplier_(sphere_radius_multiplier),
       sin²_angular_resolution_(Pow<2>(Sin(angular_resolution))),
+      tan_angular_resolution_(Tan(angular_resolution)),
       tan_field_of_view_(Tan(field_of_view)) {}
 
 Planetarium::Planetarium(
@@ -70,6 +71,48 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     }
   }
   return rp2_lines;
+}
+
+RP2Lines<Length, Camera> Planetarium::PlotMethod1(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Instant const& now) const {
+  Length const focal_plane_tolerance =
+      perspective_.focal() * parameters_.tan_angular_resolution_;
+  auto const focal_plane_tolerance² =
+      focal_plane_tolerance * focal_plane_tolerance;
+
+  auto const rp2_lines = PlotMethod0(begin, end, now);
+
+  int skipped = 0;
+  int total = 0;
+  RP2Lines<Length, Camera> new_rp2_lines;
+  for (auto const& rp2_line : rp2_lines) {
+    RP2Line<Length, Camera> new_rp2_line;
+    std::experimental::optional<RP2Point<Length, Camera>> start_rp2_point;
+    for (int i = 0; i < rp2_line.size(); ++i) {
+      RP2Point<Length, Camera> const& rp2_point = rp2_line[i];
+      if (i == 0) {
+        new_rp2_line.push_back(rp2_point);
+        start_rp2_point = rp2_point;
+      } else if (Pow<2>(rp2_point.x() - start_rp2_point->x()) +
+                 Pow<2>(rp2_point.y() - start_rp2_point->y()) >
+                     focal_plane_tolerance²) {
+        // TODO(phl): This creates a segment if the tolerance is exceeded.  It
+        // should probably create a segment that stays just below the tolerance.
+        new_rp2_line.push_back(rp2_point);
+        start_rp2_point = rp2_point;
+      } else if (i == rp2_line.size() - 1) {
+        new_rp2_line.push_back(rp2_point);
+      } else {
+        ++skipped;
+      }
+      ++total;
+    }
+    new_rp2_lines.push_back(std::move(new_rp2_line));
+  }
+  LOG(INFO) << "Skipped " << skipped << " points out of " << total;
+  return new_rp2_lines;
 }
 
 std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(

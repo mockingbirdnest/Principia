@@ -39,6 +39,27 @@ using quantities::si::ArcMinute;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
+namespace {
+
+RP2Lines<Length, Camera> PlotMethodN(
+    Planetarium const& planetarium,
+    int const method,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Instant const& now) {
+  switch (method) {
+    case 0:
+      return planetarium.PlotMethod0(begin, end, now);
+    case 1:
+      return planetarium.PlotMethod1(begin, end, now);
+    default:
+      LOG(FATAL) << "Unexpected method " << method;
+      base::noreturn();
+  }
+}
+
+}  // namespace
+
 Planetarium* principia__PlanetariumCreate(
     Plugin const* const plugin,
     XYZ const sun_world_position,
@@ -106,10 +127,12 @@ void principia__PlanetariumDelete(
 Iterator* principia__PlanetariumPlotFlightPlanSegment(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
+    int const method,
     char const* const vessel_guid,
     int const index) {
   journal::Method<journal::PlanetariumPlotFlightPlanSegment> m({planetarium,
                                                                 plugin,
+                                                                method,
                                                                 vessel_guid,
                                                                 index});
   CHECK_NOTNULL(plugin);
@@ -127,9 +150,11 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
   if (index % 2 == 0 ||
       segment_begin == segment_end ||
       segment_begin.time() >= plugin->CurrentTime()) {
-     rp2_lines = planetarium->PlotMethod0(segment_begin,
-                                          segment_end,
-                                          plugin->CurrentTime());
+     rp2_lines = PlotMethodN(*planetarium,
+                             method,
+                             segment_begin,
+                             segment_end,
+                             plugin->CurrentTime());
   }
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
@@ -137,32 +162,40 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
 Iterator* principia__PlanetariumPlotPrediction(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
+    int const method,
     char const* const vessel_guid) {
   journal::Method<journal::PlanetariumPlotPrediction> m({planetarium,
                                                          plugin,
+                                                         method,
                                                          vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto const rp2_lines = planetarium->PlotMethod0(prediction.Begin(),
-                                                  prediction.End(),
-                                                  plugin->CurrentTime());
+  auto const rp2_lines = PlotMethodN(*planetarium,
+                                     method,
+                                     prediction.Begin(),
+                                     prediction.End(),
+                                     plugin->CurrentTime());
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
 Iterator* principia__PlanetariumPlotPsychohistory(
     Planetarium const* const planetarium,
     Plugin const* const plugin,
+    int const method,
     char const* const vessel_guid) {
   journal::Method<journal::PlanetariumPlotPsychohistory> m({planetarium,
                                                             plugin,
+                                                            method,
                                                             vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
   auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  auto const rp2_lines = planetarium->PlotMethod0(psychohistory.Begin(),
-                                                  psychohistory.End(),
-                                                  plugin->CurrentTime());
+  auto const rp2_lines = PlotMethodN(*planetarium,
+                                     method,
+                                     psychohistory.Begin(),
+                                     psychohistory.End(),
+                                     plugin->CurrentTime());
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
