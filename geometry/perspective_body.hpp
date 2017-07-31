@@ -283,8 +283,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // part that is on the other side of T with respect to S.
   // For each solution δ of the above quadratic equation, this loop computes PH
   // and obtains the values of λ and τ.
-  std::vector<double> λs;
-  λs.reserve(4);
+  BoundedArray<double, 4> λs = {{}, 0};
   bool λ_lt_σ = false;
   bool λ_gt_σ = false;
   double infinity = 0.0;  // Might be NaN in cases where it's not used.

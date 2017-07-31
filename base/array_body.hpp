@@ -43,6 +43,28 @@ Array<Element> UniqueArray<Element>::get() const {
 }
 
 template<typename Element, std::int32_t size_>
+void BoundedArray<Element, size_>::push_back(const Element& value) {
+  data[actual_size++] = value;
+}
+
+template<typename Element, std::int32_t size_>
+void BoundedArray<Element, size_>::push_back(Element&& value) {
+  data[actual_size++] = value;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::iterator
+BoundedArray<Element, size_>::begin() {
+  return data.begin();
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::iterator
+BoundedArray<Element, size_>::end() {
+  return data.begin() + actual_size;
+}
+
+template<typename Element, std::int32_t size_>
 typename BoundedArray<Element, size_>::const_iterator
 BoundedArray<Element, size_>::begin() const {
   return data.begin();
@@ -52,6 +74,18 @@ template<typename Element, std::int32_t size_>
 typename BoundedArray<Element, size_>::const_iterator
 BoundedArray<Element, size_>::end() const {
   return data.begin() + actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_reverse_iterator
+BoundedArray<Element, size_>::rbegin() const {
+  return data.rend() - actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_reverse_iterator
+BoundedArray<Element, size_>::rend() const {
+  return data.rend();
 }
 
 template<typename Element, std::int32_t size_>
