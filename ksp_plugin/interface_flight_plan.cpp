@@ -247,6 +247,25 @@ double principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
                  GetFlightPlan(*plugin, vessel_guid).desired_final_time()));
 }
 
+XYZ principia__FlightPlanGetGuidance(Plugin const* const plugin,
+                                     char const* const vessel_guid,
+                                     int const index) {
+  journal::Method<journal::FlightPlanGetGuidance> m(
+      {plugin, vessel_guid, index});
+  CHECK_NOTNULL(plugin);
+  auto const& manœuvre = GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
+  Vector<double, World> result;
+  if (manœuvre.is_inertially_fixed()) {
+    result = plugin->renderer().BarycentricToWorld(
+        plugin->PlanetariumRotation())(manœuvre.InertialDirection());
+  } else {
+    result = plugin->renderer().FrenetToWorld(
+        *plugin->GetVessel(vessel_guid),
+        plugin->PlanetariumRotation())(manœuvre.direction());
+  }
+  return m.Return(ToXYZ(result));
+}
+
 double principia__FlightPlanGetInitialTime(Plugin const* const plugin,
                                            char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetInitialTime> m({plugin, vessel_guid});

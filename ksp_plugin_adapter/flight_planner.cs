@@ -277,10 +277,9 @@ class FlightPlanner : WindowRenderer {
               TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
             }
           }
+          XYZ guidance = plugin_.FlightPlanGetGuidance(vessel_guid, i);
           if (show_guidance_ &&
-              !double.IsNaN(manoeuvre.inertial_direction.x +
-                            manoeuvre.inertial_direction.y +
-                            manoeuvre.inertial_direction.z)) {
+              !double.IsNaN(guidance.x + guidance.y + guidance.z)) {
             if (guidance_node_ == null ||
                 !vessel_.patchedConicSolver.maneuverNodes.Contains(
                     guidance_node_)) {
@@ -315,7 +314,7 @@ class FlightPlanner : WindowRenderer {
                 ((Vector3d)manoeuvre.burn.delta_v).magnitude *
                 (Vector3d)(UnityEngine.Quaternion.Inverse(
                                stock_frenet_frame_to_world) *
-                           (Vector3d)manoeuvre.inertial_direction);
+                           (Vector3d)guidance);
             guidance_node_.UT = manoeuvre.burn.initial_time;
             vessel_.patchedConicSolver.UpdateFlightPlan();
             should_clear_guidance = false;
