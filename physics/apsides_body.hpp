@@ -4,12 +4,14 @@
 
 #include <vector>
 
+#include "base/array.hpp"
 #include "numerics/root_finders.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_apsides {
 
+using base::BoundedArray;
 using geometry::Barycentre;
 using geometry::Instant;
 using geometry::Position;
@@ -70,7 +72,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
               {*previous_squared_distance, squared_distance},
               {*previous_squared_distance_derivative,
                squared_distance_derivative});
-      std::vector<Instant> const extrema =
+      BoundedArray<Instant, 2> const extrema =
           squared_distance_approximation.FindExtrema();
 
       // Now look at the extrema and check that exactly one is in the required

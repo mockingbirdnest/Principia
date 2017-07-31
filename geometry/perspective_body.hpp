@@ -258,7 +258,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const a1 = 2.0 * r² * (KAKB * KAKH - KA² * KBKH);
   auto const a2 =
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
-  std::vector<double> const δs =
+  BoundedArray<double, 2> const δs =
       SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
   CHECK_EQ(2, δs.size()) << "a0:" << a0 << " a1:" << a1 << " a2:" << a2
                          << "\nK:" << K << " A:" << A << " B:" << B
@@ -329,7 +329,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const AC² = InnerProduct(AC, AC);
   auto const ABAC = InnerProduct(AB, AC);
 
-  std::vector<double> const μs =
+  BoundedArray<double, 2> const μs =
       SolveQuadraticEquation(/*origin=*/0.0,
                              /*a0=*/AC² - sphere.radius²(),
                              /*a1=*/-2.0 * ABAC,
