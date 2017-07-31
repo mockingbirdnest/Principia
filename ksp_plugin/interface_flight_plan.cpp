@@ -254,16 +254,26 @@ XYZ principia__FlightPlanGetGuidance(Plugin const* const plugin,
       {plugin, vessel_guid, index});
   CHECK_NOTNULL(plugin);
   auto const& manœuvre = GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
-  Vector<double, World> result;
+  Vector<double, Barycentric> barycentric_guidance;
   if (manœuvre.is_inertially_fixed()) {
-    result = plugin->renderer().BarycentricToWorld(
-        plugin->PlanetariumRotation())(manœuvre.InertialDirection());
+    barycentric_guidance = manœuvre.InertialDirection();
   } else {
-    result = plugin->renderer().FrenetToWorld(
-        *plugin->GetVessel(vessel_guid),
-        plugin->PlanetariumRotation())(manœuvre.direction());
+    auto const vessel_psychohistory_last =
+        plugin->GetVessel(vessel_guid)->psychohistory().last();
+    auto const to_manœuvre_frame =
+        manœuvre.frame()->ToThisFrameAtTime(vessel_psychohistory_last.time());
+    auto const from_manœuvre_frame =
+        to_manœuvre_frame.orthogonal_map().Inverse();
+    barycentric_guidance =
+        (from_manœuvre_frame *
+         manœuvre.frame()->FrenetFrame(
+             vessel_psychohistory_last.time(),
+             to_manœuvre_frame(
+                 vessel_psychohistory_last.degrees_of_freedom())).Forget())(
+            manœuvre.direction());
   }
-  return m.Return(ToXYZ(result));
+  return m.Return(ToXYZ(plugin->renderer().BarycentricToWorld(
+      plugin->PlanetariumRotation())(barycentric_guidance)));
 }
 
 double principia__FlightPlanGetInitialTime(Plugin const* const plugin,
