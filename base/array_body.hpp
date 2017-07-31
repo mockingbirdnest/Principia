@@ -42,6 +42,18 @@ Array<Element> UniqueArray<Element>::get() const {
   return Array<Element>(data.get(), size);
 }
 
+template<typename Element, std::int32_t size_>
+typename std::array<Element, size_>::const_iterator
+BoundedArray<Element, size_>::begin() const {
+  return data.begin();
+}
+
+template<typename Element, std::int32_t size_>
+typename std::array<Element, size_>::const_iterator
+BoundedArray<Element, size_>::end() const {
+  return data.begin() + size;
+}
+
 template<typename Element>
 bool operator==(Array<Element> left, Array<Element> right) {
   if (left.size != right.size) {
@@ -53,18 +65,18 @@ bool operator==(Array<Element> left, Array<Element> right) {
 }
 
 template<typename Element>
-inline bool operator==(Array<Element> left, UniqueArray<Element> const& right) {
+bool operator==(Array<Element> left, UniqueArray<Element> const& right) {
   return left == right.get();
 }
 
 template<typename Element>
-inline bool operator==(UniqueArray<Element> const& left, Array<Element> right) {
+bool operator==(UniqueArray<Element> const& left, Array<Element> right) {
   return left.get() == right;
 }
 
 template<typename Element>
-inline bool operator==(UniqueArray<Element> const& left,
-                       UniqueArray<Element> const& right) {
+bool operator==(UniqueArray<Element> const& left,
+                UniqueArray<Element> const& right) {
   return left.get() == right.get();
 }
 

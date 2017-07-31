@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -54,6 +55,19 @@ struct UniqueArray final {
   std::unique_ptr<Element[]> data;
   std::int64_t size;  // In number of elements.
 };
+
+// A simple container for an array and a size.  The client is expected to use
+// aggregate initialization for this type, and to ensure that the values passed
+// for |data| and |size| are consistent.
+template<typename Element, std::int32_t size_>
+struct BoundedArray final {
+  typename std::array<Element, size_>::const_iterator begin() const;
+  typename std::array<Element, size_>::const_iterator end() const;
+
+  std::array<Element, size_> data;
+  std::int32_t size;
+};
+
 
 // Specializations.
 using Bytes = Array<std::uint8_t>;

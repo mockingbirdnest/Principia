@@ -169,5 +169,8 @@
     <ClCompile Include="version.generated.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="array_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
