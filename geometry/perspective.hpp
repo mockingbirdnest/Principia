@@ -84,6 +84,7 @@ class Perspective final {
 
 using internal_perspective::Perspective;
 using internal_perspective::Segment;
+using internal_perspective::Segments;
 
 }  // namespace geometry
 }  // namespace principia
