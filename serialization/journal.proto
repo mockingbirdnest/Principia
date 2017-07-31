@@ -1172,8 +1172,9 @@ message PlanetariumPlotFlightPlanSegment {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required string vessel_guid = 3;
-    required int32 index = 4;
+    required int32 method = 3;
+    required string vessel_guid = 4;
+    required int32 index = 5;
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
@@ -1191,7 +1192,8 @@ message PlanetariumPlotPrediction {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required string vessel_guid = 3;
+    required int32 method = 3;
+    required string vessel_guid = 4;
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
@@ -1209,7 +1211,8 @@ message PlanetariumPlotPsychohistory {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
-    required string vessel_guid = 3;
+    required int32 method = 3;
+    required string vessel_guid = 4;
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
