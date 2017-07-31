@@ -98,6 +98,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
       } else if (Pow<2>(rp2_point.x() - start_rp2_point->x()) +
                  Pow<2>(rp2_point.y() - start_rp2_point->y()) >
                      focal_plane_tolerance²) {
+        // TODO(phl): This creates a segment if the tolerance is exceeded.  It
+        // should probably create a segment that stays just below the tolerance.
         new_rp2_line.push_back(rp2_point);
         start_rp2_point = rp2_point;
       } else if (i == rp2_line.size() - 1) {

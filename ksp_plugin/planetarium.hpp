@@ -73,7 +73,8 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
 
-  //TODO(phl):comment
+  // A method that coalesces segments until they are larger than the angular
+  // resolution.
   RP2Lines<Length, Camera> PlotMethod1(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
