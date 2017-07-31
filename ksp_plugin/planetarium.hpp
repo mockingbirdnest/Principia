@@ -53,6 +53,7 @@ class Planetarium {
    private:
     double const sphere_radius_multiplier_;
     double const sin²_angular_resolution_;
+    double const tan_angular_resolution_;
     double const tan_field_of_view_;
     friend class Planetarium;
   };
@@ -68,6 +69,12 @@ class Planetarium {
   // A no-op method that just returns all the points in the trajectory defined
   // by |begin| and |end|.
   RP2Lines<Length, Camera> PlotMethod0(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Instant const& now) const;
+
+  //TODO(phl):comment
+  RP2Lines<Length, Camera> PlotMethod1(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;

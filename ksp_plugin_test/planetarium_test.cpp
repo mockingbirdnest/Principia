@@ -44,6 +44,7 @@ using quantities::Cos;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::si::ArcMinute;
 using quantities::si::Degree;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
@@ -61,11 +62,52 @@ using ::testing::SizeIs;
 
 class PlanetariumTest : public ::testing::Test {
  protected:
+  PlanetariumTest()
+      :  // The camera is located as {0, 20, 0} and is looking along -y.
+        perspective_(
+            AffineMap<Navigation, Camera, Length, OrthogonalMap>(
+                Navigation::origin + Displacement<Navigation>(
+                                         {0 * Metre, 20 * Metre, 0 * Metre}),
+                Camera::origin,
+                Rotation<Navigation, Camera>(
+                    Vector<double, Navigation>({1, 0, 0}),
+                    Vector<double, Navigation>({0, 0, 1}),
+                    Bivector<double, Navigation>({0, -1, 0}))
+                    .Forget()),
+            /*focal=*/5 * Metre),
+        // A body of radius 1 m located at the origin.
+        body_(MassiveBody::Parameters(1 * Kilogram),
+              RotatingBody<Barycentric>::Parameters(
+                  /*mean_radius=*/1 * Metre,
+                  /*reference_angle=*/0 * Radian,
+                  /*reference_instant=*/t0_,
+                  /*angular_frequency=*/10 * Radian / Second,
+                  /*ascension_of_pole=*/0 * Radian,
+                  /*declination_of_pole=*/π / 2 * Radian)),
+        bodies_({&body_}) {
+    EXPECT_CALL(plotting_frame_, ToThisFrameAtTime(_))
+        .WillRepeatedly(Return(RigidMotion<Barycentric, Navigation>(
+            RigidTransformation<Barycentric, Navigation>::Identity(),
+            AngularVelocity<Barycentric>(),
+            Velocity<Barycentric>())));
+    EXPECT_CALL(ephemeris_, bodies()).WillRepeatedly(ReturnRef(bodies_));
+    EXPECT_CALL(ephemeris_, trajectory(_))
+        .WillRepeatedly(Return(&continuous_trajectory_));
+    EXPECT_CALL(continuous_trajectory_, EvaluatePosition(_))
+        .WillRepeatedly(Return(Barycentric::origin));
+  }
+
   Instant const t0_;
+  Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective_;
+  MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
+  RotatingBody<Barycentric> const body_;
+  std::vector<not_null<MassiveBody const*>> const bodies_;
+  MockContinuousTrajectory<Barycentric> continuous_trajectory_;
+  MockEphemeris<Barycentric> ephemeris_;
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  // A circular trajectory around the origin.
+  // A circular trajectory around the origin, with 10 segments.
   DiscreteTrajectory<Barycentric> discrete_trajectory;
   for (Time t; t <= 10 * Second; t += 1 * Second) {
     DegreesOfFreedom<Barycentric> const degrees_of_freedom(
@@ -78,47 +120,10 @@ TEST_F(PlanetariumTest, PlotMethod0) {
     discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
   }
 
-  // The camera is located as {0, 20, 0} and is looking along -y.
-  Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective(
-      AffineMap<Navigation, Camera, Length, OrthogonalMap>(
-          Navigation::origin +
-              Displacement<Navigation>({0 * Metre, 20 * Metre, 0 * Metre}),
-          Camera::origin,
-          Rotation<Navigation, Camera>(
-              Vector<double, Navigation>({1, 0, 0}),
-              Vector<double, Navigation>({0, 0, 1}),
-              Bivector<double, Navigation>({0, -1, 0})).Forget()),
-      /*focal=*/5 * Metre);
-
-  MockDynamicFrame<Barycentric, Navigation> plotting_frame;
-  EXPECT_CALL(plotting_frame, ToThisFrameAtTime(_))
-      .WillRepeatedly(Return(RigidMotion<Barycentric, Navigation>(
-          RigidTransformation<Barycentric, Navigation>::Identity(),
-          AngularVelocity<Barycentric>(),
-          Velocity<Barycentric>())));
-
-  // A body of radius 1 m located at the origin.
-  RotatingBody<Barycentric> const body(
-      MassiveBody::Parameters(1 * Kilogram),
-      RotatingBody<Barycentric>::Parameters(
-          /*mean_radius=*/1 * Metre,
-          /*reference_angle=*/0 * Radian,
-          /*reference_instant=*/t0_,
-          /*angular_frequency=*/10 * Radian / Second,
-          /*ascension_of_pole=*/0 * Radian,
-          /*declination_of_pole=*/π / 2 * Radian));
-  std::vector<not_null<MassiveBody const*>> const bodies = {&body};
-  MockContinuousTrajectory<Barycentric> continuous_trajectory;
-  MockEphemeris<Barycentric> ephemeris;
-  EXPECT_CALL(ephemeris, bodies()).WillRepeatedly(ReturnRef(bodies));
-  EXPECT_CALL(ephemeris, trajectory(_))
-      .WillRepeatedly(Return(&continuous_trajectory));
-  EXPECT_CALL(continuous_trajectory, EvaluatePosition(_))
-      .WillRepeatedly(Return(Barycentric::origin));
-
-  // No dark area.
+  // No dark area, infinite acuity, wide field of view.
   Planetarium::Parameters parameters(1, 0 * Degree, 90 * Degree);
-  Planetarium planetarium(parameters, perspective, &ephemeris, &plotting_frame);
+  Planetarium planetarium(
+      parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory.Begin(),
                               discrete_trajectory.End(),
@@ -141,6 +146,40 @@ TEST_F(PlanetariumTest, PlotMethod0) {
                         Le(5.0 / Sqrt(3.0) * Metre)));
       EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 5, 13));
     }
+  }
+}
+
+TEST_F(PlanetariumTest, PlotMethod1) {
+  // A quarter of a circular trajectory around the origin, with many small
+  // segments.
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
+  for (Time t; t <= 25'000 * Second; t += 1 * Second) {
+    DegreesOfFreedom<Barycentric> const degrees_of_freedom(
+        Barycentric::origin +
+            Displacement<Barycentric>(
+                {10 * Metre * Sin(2 * π * t * Radian / (100'000 * Second)),
+                 10 * Metre * Cos(2 * π * t * Radian / (100'000 * Second)),
+                 0 * Metre}),
+        Velocity<Barycentric>());
+    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
+  }
+
+  // No dark area, human visual acuity, wide field of view.
+  Planetarium::Parameters parameters(1, 0.4 * ArcMinute, 90 * Degree);
+  Planetarium planetarium(
+      parameters, perspective_, &ephemeris_, &plotting_frame_);
+  auto const rp2_lines =
+      planetarium.PlotMethod1(discrete_trajectory.Begin(),
+                              discrete_trajectory.End(),
+                              t0_ + 10 * Second);
+
+  EXPECT_THAT(rp2_lines, SizeIs(1));
+  EXPECT_THAT(rp2_lines[0], SizeIs(4954));
+  for (auto const& rp2_point : rp2_lines[0]) {
+    EXPECT_THAT(rp2_point.x(),
+                AllOf(Ge(0 * Metre),
+                      Le(5.0 / Sqrt(3.0) * Metre)));
+    EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
   }
 }
 
