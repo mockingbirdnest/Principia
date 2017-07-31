@@ -58,11 +58,13 @@ struct UniqueArray final {
 
 // A simple container for an array and a size.
 template<typename Element, std::int32_t max_size>
-struct BoundedArray final {
-  using iterator = typename std::array<Element, max_size>::iterator;
-  using const_iterator = typename std::array<Element, max_size>::const_iterator;
-  using const_reverse_iterator =
-      typename std::array<Element, max_size>::const_reverse_iterator;
+class BoundedArray final {
+  using Container = std::array<Element, max_size>;
+ public:
+  using iterator = typename Container::iterator;
+  using const_iterator = typename Container::const_iterator;
+  using const_reverse_iterator = typename  Container::const_reverse_iterator;
+  using size_type = typename Container::size_type;
   using value_type = Element;
 
   template<typename... Args>
@@ -80,9 +82,10 @@ struct BoundedArray final {
   const_reverse_iterator rend() const;
 
   bool empty() const;
-  std::size_t size() const;
+  size_type size() const;
 
-  std::array<Element, max_size> data;
+ private:
+  Container data_;
   std::int32_t size_;
 };
 

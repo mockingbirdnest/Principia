@@ -45,53 +45,53 @@ Array<Element> UniqueArray<Element>::get() const {
 template<typename Element, std::int32_t max_size>
 template<typename... Args>
 constexpr BoundedArray<Element, max_size>::BoundedArray(Args&&... args)
-    : data{std::forward<Args>(args)...},
+    : data_{std::forward<Args>(args)...},
       size_(sizeof...(args)) {}
 
 template<typename Element, std::int32_t max_size>
 void BoundedArray<Element, max_size>::push_back(const Element& value) {
-  data[size_++] = value;
+  data_[size_++] = value;
 }
 
 template<typename Element, std::int32_t max_size>
 void BoundedArray<Element, max_size>::push_back(Element&& value) {
-  data[size_++] = value;
+  data_[size_++] = value;
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::iterator
 BoundedArray<Element, max_size>::begin() {
-  return data.begin();
+  return data_.begin();
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::iterator
 BoundedArray<Element, max_size>::end() {
-  return data.begin() + size_;
+  return data_.begin() + size_;
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::const_iterator
 BoundedArray<Element, max_size>::begin() const {
-  return data.begin();
+  return data_.begin();
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::const_iterator
 BoundedArray<Element, max_size>::end() const {
-  return data.begin() + size_;
+  return data_.begin() + size_;
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::const_reverse_iterator
 BoundedArray<Element, max_size>::rbegin() const {
-  return data.rend() - size_;
+  return data_.rend() - size_;
 }
 
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::const_reverse_iterator
 BoundedArray<Element, max_size>::rend() const {
-  return data.rend();
+  return data_.rend();
 }
 
 template<typename Element, std::int32_t max_size>
@@ -100,7 +100,8 @@ bool BoundedArray<Element, max_size>::empty() const {
 }
 
 template<typename Element, std::int32_t max_size>
-std::size_t BoundedArray<Element, max_size>::size() const {
+typename BoundedArray<Element, max_size>::size_type
+BoundedArray<Element, max_size>::size() const {
   return size_;
 }
 
