@@ -56,16 +56,17 @@ struct UniqueArray final {
   std::int64_t size;  // In number of elements.
 };
 
-// A simple container for an array and a size.  The client is expected to use
-// aggregate initialization for this type, and to ensure that the values passed
-// for |data| and |size| are consistent.  This type is *not* self-initializing.
-template<typename Element, std::int32_t size_>
+// A simple container for an array and a size.
+template<typename Element, std::int32_t max_size>
 struct BoundedArray final {
-  using iterator = typename std::array<Element, size_>::iterator;
-  using const_iterator = typename std::array<Element, size_>::const_iterator;
+  using iterator = typename std::array<Element, max_size>::iterator;
+  using const_iterator = typename std::array<Element, max_size>::const_iterator;
   using const_reverse_iterator =
-      typename std::array<Element, size_>::const_reverse_iterator;
+      typename std::array<Element, max_size>::const_reverse_iterator;
   using value_type = Element;
+
+  template<typename... Args>
+  constexpr BoundedArray(Args&&... args);
 
   void push_back(const Element& value);
   void push_back(Element&& value);
@@ -81,8 +82,8 @@ struct BoundedArray final {
   bool empty() const;
   std::size_t size() const;
 
-  std::array<Element, size_> data;
-  std::int32_t actual_size;
+  std::array<Element, max_size> data;
+  std::int32_t size_;
 };
 
 
