@@ -42,6 +42,7 @@ public partial class PrincipiaPluginAdapter
   private bool use_cayley_plotting_ = true;
   [KSPField(isPersistant = true)]
   private bool use_чебышёв_plotting_ = false;
+  private static int чебышёв_plotting_method_ = 1;
   private UnityEngine.Rect main_window_rectangle_;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
@@ -153,6 +154,9 @@ public partial class PrincipiaPluginAdapter
   private KSP.UI.Screens.SpaceTracking space_tracking {
     get {
      if (space_tracking_ == null) {
+       if (HighLogic.LoadedScene != GameScenes.TRACKSTATION) {
+         return null;
+       }
        space_tracking_ = (KSP.UI.Screens.SpaceTracking)FindObjectOfType(
                              typeof(KSP.UI.Screens.SpaceTracking));
      }
@@ -1502,8 +1506,10 @@ public partial class PrincipiaPluginAdapter
           }
           if (use_чебышёв_plotting_) {
             IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPsychohistory(plugin_,
-                                                         main_vessel_guid);
+                planetarium.PlanetariumPlotPsychohistory(
+                    plugin_,
+                    чебышёв_plotting_method_,
+                    main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                           XKCDColors.Banana,
                                           GLLines.Style.FADED);
@@ -1518,8 +1524,10 @@ public partial class PrincipiaPluginAdapter
           }
           if (use_чебышёв_plotting_) {
             IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPrediction(plugin_,
-                                                      main_vessel_guid);
+                planetarium.PlanetariumPlotPrediction(
+                    plugin_,
+                    чебышёв_plotting_method_,
+                    main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                           XKCDColors.Cerise,
                                           GLLines.Style.SOLID);
@@ -1537,8 +1545,10 @@ public partial class PrincipiaPluginAdapter
             }
             if (use_чебышёв_plotting_) {
               IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPsychohistory(plugin_,
-                                                           target_id);
+                  planetarium.PlanetariumPlotPsychohistory(
+                      plugin_,
+                      чебышёв_plotting_method_,
+                      target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                             XKCDColors.Orange,
                                             GLLines.Style.FADED);
@@ -1552,8 +1562,10 @@ public partial class PrincipiaPluginAdapter
             }
             if (use_чебышёв_plotting_) {
               IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPrediction(plugin_,
-                                                        main_vessel_guid);
+                  planetarium.PlanetariumPlotPrediction(
+                      plugin_,
+                      чебышёв_plotting_method_,
+                      main_vessel_guid);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                             XKCDColors.Raspberry,
                                             GLLines.Style.SOLID);
@@ -1575,10 +1587,24 @@ public partial class PrincipiaPluginAdapter
               Vector3d position_at_start =
                   (Vector3d)rendered_segments.
                       IteratorGetDiscreteTrajectoryXYZ();
-              GLLines.RenderAndDeleteTrajectory(
-                  rendered_segments,
-                  is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
-                  is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              if (use_cayley_plotting_) {
+                GLLines.RenderAndDeleteTrajectory(
+                    rendered_segments,
+                    is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
+              if (use_чебышёв_plotting_) {
+                IntPtr rp2_lines_iterator =
+                    planetarium.PlanetariumPlotFlightPlanSegment(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid,
+                        i);
+                GLLines.PlotAndDeleteRP2Lines(
+                    rp2_lines_iterator,
+                    is_burn ? XKCDColors.Grapefruit : XKCDColors.Blueberry,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
               if (is_burn) {
                 int manoeuvre_index = i / 2;
                 NavigationManoeuvreFrenetTrihedron manoeuvre =
@@ -2010,9 +2036,9 @@ public partial class PrincipiaPluginAdapter
   private void LoggingSettings() {
     using (new HorizontalLayout()) {
       use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_cayley_plotting_, "Use Cayley plotting");
+          use_cayley_plotting_, "Cayley plotting");
       use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_чебышёв_plotting_, "Use Чебышёв plotting");
+          use_чебышёв_plotting_, "Чебышёв plotting");
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
