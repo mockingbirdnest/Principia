@@ -60,7 +60,7 @@ Hermite3<Argument, Value>::EvaluateDerivative(Argument const& argument) const {
 }
 
 template<typename Argument, typename Value>
-std::vector<Argument> Hermite3<Argument, Value>::FindExtrema() const {
+BoundedArray<Argument, 2> Hermite3<Argument, Value>::FindExtrema() const {
   return SolveQuadraticEquation<Argument, Derivative1>(
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
