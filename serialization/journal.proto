@@ -96,7 +96,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5137.
+  extensions 5000 to 5999;  // Last used: 5138.
 }
 
 message AdvanceTime {
@@ -425,7 +425,7 @@ message FlightPlanGetDesiredFinalTime {
 
 message FlightPlanGetGuidance {
   extend Method {
-    optional FlightPlanGetGuidance extension = 5137;
+    optional FlightPlanGetGuidance extension = 5138;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
