@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/array.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
@@ -14,6 +15,8 @@
 namespace principia {
 namespace geometry {
 namespace internal_perspective {
+
+using base::BoundedArray;
 
 template<typename Vector>
 using Segment = std::pair<Point<Vector>, Point<Vector>>;
@@ -60,7 +63,7 @@ class Perspective final {
   // Returns the (sub)segments of |segment| that are visible in this perspective
   // after taking into account the hiding by |sphere|.  The returned vector has
   // 0, 1, or 2 elements.
-  Segments<Vector<Scalar, FromFrame>> VisibleSegments(
+  BoundedArray<Segment<Vector<Scalar, FromFrame>>, 2> VisibleSegments(
       Segment<Vector<Scalar, FromFrame>> const& segment,
       Sphere<Scalar, FromFrame> const& sphere) const;
 

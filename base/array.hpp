@@ -61,11 +61,16 @@ struct UniqueArray final {
 // for |data| and |size| are consistent.
 template<typename Element, std::int32_t size_>
 struct BoundedArray final {
-  typename std::array<Element, size_>::const_iterator begin() const;
-  typename std::array<Element, size_>::const_iterator end() const;
+  using const_iterator = typename std::array<Element, size_>::const_iterator;
+  using value_type = Element;
+
+  const_iterator begin() const;
+  const_iterator end() const;
+  bool empty() const;
+  std::size_t size() const;
 
   std::array<Element, size_> data;
-  std::int32_t size;
+  std::int32_t actual_size;
 };
 
 

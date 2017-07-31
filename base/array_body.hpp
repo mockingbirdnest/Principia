@@ -43,15 +43,25 @@ Array<Element> UniqueArray<Element>::get() const {
 }
 
 template<typename Element, std::int32_t size_>
-typename std::array<Element, size_>::const_iterator
+typename BoundedArray<Element, size_>::const_iterator
 BoundedArray<Element, size_>::begin() const {
   return data.begin();
 }
 
 template<typename Element, std::int32_t size_>
-typename std::array<Element, size_>::const_iterator
+typename BoundedArray<Element, size_>::const_iterator
 BoundedArray<Element, size_>::end() const {
-  return data.begin() + size;
+  return data.begin() + actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+bool BoundedArray<Element, size_>::empty() const {
+  return actual_size == 0;
+}
+
+template<typename Element, std::int32_t size_>
+std::size_t BoundedArray<Element, size_>::size() const {
+  return actual_size;
 }
 
 template<typename Element>

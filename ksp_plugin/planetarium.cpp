@@ -146,8 +146,7 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
   return plottable_spheres;
 }
 
-std::vector<Segment<Displacement<Navigation>>>
-Planetarium::ComputePlottableSegments(
+Segments<Displacement<Navigation>> Planetarium::ComputePlottableSegments(
     const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {

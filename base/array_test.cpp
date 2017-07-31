@@ -42,5 +42,12 @@ TEST(ArrayTest, BoundedArray3) {
   EXPECT_EQ(111.0, sum);
 }
 
+TEST(ArrayTest, Return) {
+  std::string s;
+  auto fn = [s]() -> BoundedArray<std::string, 3> {
+    return {{s}, 1};
+  };
+}
+
 }  // namespace base
 }  // namespace principia
