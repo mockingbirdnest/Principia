@@ -153,6 +153,9 @@ public partial class PrincipiaPluginAdapter
   private KSP.UI.Screens.SpaceTracking space_tracking {
     get {
      if (space_tracking_ == null) {
+       if (HighLogic.LoadedScene != GameScenes.TRACKSTATION) {
+         return null;
+       }
        space_tracking_ = (KSP.UI.Screens.SpaceTracking)FindObjectOfType(
                              typeof(KSP.UI.Screens.SpaceTracking));
      }
