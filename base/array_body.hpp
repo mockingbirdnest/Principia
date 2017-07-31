@@ -42,6 +42,62 @@ Array<Element> UniqueArray<Element>::get() const {
   return Array<Element>(data.get(), size);
 }
 
+template<typename Element, std::int32_t size_>
+void BoundedArray<Element, size_>::push_back(const Element& value) {
+  data[actual_size++] = value;
+}
+
+template<typename Element, std::int32_t size_>
+void BoundedArray<Element, size_>::push_back(Element&& value) {
+  data[actual_size++] = value;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::iterator
+BoundedArray<Element, size_>::begin() {
+  return data.begin();
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::iterator
+BoundedArray<Element, size_>::end() {
+  return data.begin() + actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_iterator
+BoundedArray<Element, size_>::begin() const {
+  return data.begin();
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_iterator
+BoundedArray<Element, size_>::end() const {
+  return data.begin() + actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_reverse_iterator
+BoundedArray<Element, size_>::rbegin() const {
+  return data.rend() - actual_size;
+}
+
+template<typename Element, std::int32_t size_>
+typename BoundedArray<Element, size_>::const_reverse_iterator
+BoundedArray<Element, size_>::rend() const {
+  return data.rend();
+}
+
+template<typename Element, std::int32_t size_>
+bool BoundedArray<Element, size_>::empty() const {
+  return actual_size == 0;
+}
+
+template<typename Element, std::int32_t size_>
+std::size_t BoundedArray<Element, size_>::size() const {
+  return actual_size;
+}
+
 template<typename Element>
 bool operator==(Array<Element> left, Array<Element> right) {
   if (left.size != right.size) {
@@ -53,18 +109,18 @@ bool operator==(Array<Element> left, Array<Element> right) {
 }
 
 template<typename Element>
-inline bool operator==(Array<Element> left, UniqueArray<Element> const& right) {
+bool operator==(Array<Element> left, UniqueArray<Element> const& right) {
   return left == right.get();
 }
 
 template<typename Element>
-inline bool operator==(UniqueArray<Element> const& left, Array<Element> right) {
+bool operator==(UniqueArray<Element> const& left, Array<Element> right) {
   return left.get() == right;
 }
 
 template<typename Element>
-inline bool operator==(UniqueArray<Element> const& left,
-                       UniqueArray<Element> const& right) {
+bool operator==(UniqueArray<Element> const& left,
+                UniqueArray<Element> const& right) {
   return left.get() == right.get();
 }
 

@@ -24,6 +24,7 @@ Argument Bisect(Function f,
 // Returns the solutions of the quadratic equation:
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
 // The result may have 0, 1 or 2 values and is sorted.
+// TODO(phl): Use BoundedArray here.
 template<typename Argument, typename Value>
 std::vector<Argument> SolveQuadraticEquation(
     Argument const& origin,

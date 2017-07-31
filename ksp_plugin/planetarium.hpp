@@ -28,6 +28,7 @@ using geometry::Perspective;
 using geometry::RP2Lines;
 using geometry::RP2Point;
 using geometry::Segment;
+using geometry::Segments;
 using geometry::Sphere;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -88,7 +89,7 @@ class Planetarium {
 
   // Computes the segments of the trajectory defined by |begin| and |end| that
   // are not hidden by the |plottable_spheres|.
-  std::vector<Segment<Displacement<Navigation>>> ComputePlottableSegments(
+  Segments<Displacement<Navigation>> ComputePlottableSegments(
       const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end) const;
