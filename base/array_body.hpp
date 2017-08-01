@@ -42,60 +42,67 @@ Array<Element> UniqueArray<Element>::get() const {
   return Array<Element>(data.get(), size);
 }
 
-template<typename Element, std::int32_t size_>
-void BoundedArray<Element, size_>::push_back(const Element& value) {
-  data[actual_size++] = value;
+template<typename Element, std::int32_t max_size>
+template<typename... Args>
+constexpr BoundedArray<Element, max_size>::BoundedArray(Args&&... args)
+    : data_{std::forward<Args>(args)...},
+      size_(sizeof...(args)) {}
+
+template<typename Element, std::int32_t max_size>
+void BoundedArray<Element, max_size>::push_back(const Element& value) {
+  data_[size_++] = value;
 }
 
-template<typename Element, std::int32_t size_>
-void BoundedArray<Element, size_>::push_back(Element&& value) {
-  data[actual_size++] = value;
+template<typename Element, std::int32_t max_size>
+void BoundedArray<Element, max_size>::push_back(Element&& value) {
+  data_[size_++] = value;
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::iterator
-BoundedArray<Element, size_>::begin() {
-  return data.begin();
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::iterator
+BoundedArray<Element, max_size>::begin() {
+  return data_.begin();
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::iterator
-BoundedArray<Element, size_>::end() {
-  return data.begin() + actual_size;
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::iterator
+BoundedArray<Element, max_size>::end() {
+  return data_.begin() + size_;
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::const_iterator
-BoundedArray<Element, size_>::begin() const {
-  return data.begin();
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_iterator
+BoundedArray<Element, max_size>::begin() const {
+  return data_.begin();
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::const_iterator
-BoundedArray<Element, size_>::end() const {
-  return data.begin() + actual_size;
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_iterator
+BoundedArray<Element, max_size>::end() const {
+  return data_.begin() + size_;
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::const_reverse_iterator
-BoundedArray<Element, size_>::rbegin() const {
-  return data.rend() - actual_size;
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_reverse_iterator
+BoundedArray<Element, max_size>::rbegin() const {
+  return data_.rend() - size_;
 }
 
-template<typename Element, std::int32_t size_>
-typename BoundedArray<Element, size_>::const_reverse_iterator
-BoundedArray<Element, size_>::rend() const {
-  return data.rend();
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_reverse_iterator
+BoundedArray<Element, max_size>::rend() const {
+  return data_.rend();
 }
 
-template<typename Element, std::int32_t size_>
-bool BoundedArray<Element, size_>::empty() const {
-  return actual_size == 0;
+template<typename Element, std::int32_t max_size>
+bool BoundedArray<Element, max_size>::empty() const {
+  return size_ == 0;
 }
 
-template<typename Element, std::int32_t size_>
-std::size_t BoundedArray<Element, size_>::size() const {
-  return actual_size;
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::size_type
+BoundedArray<Element, max_size>::size() const {
+  return size_;
 }
 
 template<typename Element>

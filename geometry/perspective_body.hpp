@@ -197,7 +197,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // trouble below, so we might as well handle it first.
   auto const KC² = InnerProduct(KC, KC);
   if (KC² <= sphere.radius²()) {
-    return {{}, 0};
+    return {};
   }
 
   // Consider the plane that contains K and is orthogonal to KC.  If the segment
@@ -206,7 +206,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const KAKC = InnerProduct(KA, KC);
   auto const KBKC = InnerProduct(KB, KC);
   if (KAKC <= Square<Scalar>{} && KBKC <= Square<Scalar>{}) {
-    return {{segment}, 1};
+    return {segment};
   }
 
   // H is the projection of C on the plane KAB.  It is such that:
@@ -228,7 +228,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   Vector<Scalar, FromFrame> const CH = KH - KC;
   auto const CH² = InnerProduct(CH, CH);
   if (CH² >= sphere.radius²()) {
-    return {{segment}, 1};
+    return {segment};
   }
 
   // The sphere intersects the plane KAB.  r² = R² - CH² is the square of the
@@ -241,7 +241,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // to the line KA.
   if ((ɑ < 0 && ɑ * ɑ >= r² * KB² / determinant) ||
       (β < 0 && β * β >= r² * KA² / determinant)) {
-    return {{segment}, 1};
+    return {segment};
   }
 
   // P is a point of the plane KAB where a line going through K is tangent to
@@ -283,7 +283,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // part that is on the other side of T with respect to S.
   // For each solution δ of the above quadratic equation, this loop computes PH
   // and obtains the values of λ and τ.
-  BoundedArray<double, 4> λs = {{}, 0};
+  BoundedArray<double, 4> λs;
   bool λ_lt_σ = false;
   bool λ_gt_σ = false;
   double infinity = 0.0;  // Might be NaN in cases where it's not used.
@@ -342,7 +342,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // The line AB doesn't have an interesting intersection with the cone and
   // doesn't intersect the sphere.  There is no hiding.
   if (λs.empty()) {
-    return {{segment}, 1};
+    return {segment};
   }
 
   // Now we have all the interesting intersections of the cone+sphere with the
@@ -352,27 +352,27 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   double const λ_max = *λs.rbegin();
   if (λ_min >= 1.0 || λ_max <= 0.0) {
     // All the intersections are outside of the segment AB.
-    return {{segment}, 1};
+    return {segment};
   }
   if (λ_min <= 0.0 && λ_max >= 1.0) {
     // The cone+sphere swallows the segment.
-    return {{}, 0};
+    return {};
   }
   if (λ_min > 0.0 && λ_max < 1.0) {
     // The cone+sphere hides the middle of the segment.
-    return {{Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB},
-             Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B}}, 2};
+    return {Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB },
+            Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B }};
   }
   if (λ_min <= 0.0) {
     // The cone+sphere hides the beginning of the segment.
     DCHECK_GT(λ_max, 0.0);
-    return {{Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B}}, 1};
+    return {Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B}};
   }
   {
     DCHECK_GT(λ_max, 1.0);
     DCHECK_LE(λ_min, 1.0);
     // The cone+sphere hides the end of the segment.
-    return {{Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB}}, 1};
+    return {Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB}};
   }
 }
 
