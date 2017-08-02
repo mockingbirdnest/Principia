@@ -384,8 +384,8 @@ Segments<Vector<Scalar, FromFrame>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     Segment<Vector<Scalar, FromFrame>> const& segment,
     std::vector<Sphere<Scalar, FromFrame>> const& spheres) const {
-  std::vector<Segment<Vector<Scalar, FromFrame>>> old_segments = {segment};
-  std::vector<Segment<Vector<Scalar, FromFrame>>> new_segments;
+  Segments<Vector<Scalar, FromFrame>> old_segments = {segment};
+  Segments<Vector<Scalar, FromFrame>> new_segments;
   for (auto const& sphere : spheres) {
     for (auto const& old_segment : old_segments) {
       auto new_segments_for_sphere = VisibleSegments(old_segment, sphere);

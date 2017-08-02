@@ -138,6 +138,70 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
                                 static_cast<double>(visible_segments_count)));
 }
 
+void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
+  // The camera is slightly above the x-y plane and looks towards the positive
+  // x-axis.
+  Point<Displacement<World>> const camera_origin(
+      World::origin +
+      Displacement<World>({-100 * Metre, 1 * Metre, 0 * Metre}));
+  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
+      camera_origin,
+      Camera::origin,
+      OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1 * Metre);
+
+  // The first sphere is at the origin and has unit radius.
+  std::vector<Sphere<Length, World>> spheres;
+  spheres.emplace_back(World::origin, /*radius=*/1 * Metre);
+
+  // A bunch of other spheres scattered around.
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> distribution(-10.0, 10.0);
+  for (int i = 0; i < state.range_y(); ++i) {
+    spheres.emplace_back(
+        World::origin + Displacement<World>({distribution(random) * Metre,
+                                             distribution(random) * Metre,
+                                             distribution(random) * Metre}),
+        /*radius=*/1 * Metre);
+  }
+
+  // A circular orbit in the x-y plane.
+  int const count = state.range_x();
+  std::vector<Segment<Displacement<World>>> segments;
+  for (int i = 0; i < count; ++i) {
+    Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
+    Angle θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
+    segments.emplace_back(
+        Point<Displacement<World>>(
+            World::origin +
+            Displacement<World>({10 * Cos(θ1) * Metre,
+                                 10 * Sin(θ1) * Metre,
+                                 0 * Metre})),
+        Point<Displacement<World>>(
+            World::origin +
+            Displacement<World>({10 * Cos(θ2) * Metre,
+                                 10 * Sin(θ2) * Metre,
+                                 0 * Metre})));
+  }
+
+  int visible_segments_count = 0;
+  int visible_segments_size = 0;
+  while (state.KeepRunning()) {
+    for (auto const& segment : segments) {
+      auto const visible_segments =
+          perspective.VisibleSegments(segment, spheres);
+      ++visible_segments_count;
+      visible_segments_size += visible_segments.size();
+    }
+  }
+
+  state.SetLabel("average visible segments: " +
+                 std::to_string(static_cast<double>(visible_segments_size) /
+                                static_cast<double>(visible_segments_count)));
+}
+
 void BM_VisibleSegmentsRandomEverywhere(benchmark::State& state) {
   // Generate random segments in the cube [-10, 10[³.
   std::uniform_real_distribution<> distribution(-10.0, 10.0);
@@ -158,6 +222,7 @@ void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
 BENCHMARK(BM_VisibleSegmentsOrbit)->Arg(10)->Arg(100)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomNoIntersection)->Arg(1000);
+BENCHMARK(BM_VisibleSegmentsOrbitMultipleSpheres)->Args({20, 1000});
 
 }  // namespace geometry
 }  // namespace principia
