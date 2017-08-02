@@ -38,12 +38,15 @@ public partial class PrincipiaPluginAdapter
   private int main_window_x_ = UnityEngine.Screen.width / 2;
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
+  private UnityEngine.Rect main_window_rectangle_;
+
   [KSPField(isPersistant = true)]
   private bool use_cayley_plotting_ = true;
   [KSPField(isPersistant = true)]
   private bool use_чебышёв_plotting_ = false;
-  private static int чебышёв_plotting_method_ = 1;
-  private UnityEngine.Rect main_window_rectangle_;
+  [KSPField(isPersistant = true)]
+  private int чебышёв_plotting_method_ = 1;
+  private const int чебышёв_plotting_methods_count = 2;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
@@ -2039,6 +2042,17 @@ public partial class PrincipiaPluginAdapter
           use_cayley_plotting_, "Cayley plotting");
       use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
           use_чебышёв_plotting_, "Чебышёв plotting");
+    }
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Label("Чебышёв plotting method:");
+      for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
+        if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
+                                     i.ToString())) {
+          чебышёв_plotting_method_ = i;
+        }
+      }
+    }
+    using (new HorizontalLayout()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
               text    : "←",
