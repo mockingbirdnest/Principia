@@ -222,7 +222,7 @@ void BM_VisibleSegmentsRandomNoIntersection(benchmark::State& state) {
 BENCHMARK(BM_VisibleSegmentsOrbit)->Arg(10)->Arg(100)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomEverywhere)->Arg(1000);
 BENCHMARK(BM_VisibleSegmentsRandomNoIntersection)->Arg(1000);
-BENCHMARK(BM_VisibleSegmentsOrbitMultipleSpheres)->Args({20, 1000});
+BENCHMARK(BM_VisibleSegmentsOrbitMultipleSpheres)->Args({1000, 20});
 
 }  // namespace geometry
 }  // namespace principia
