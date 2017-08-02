@@ -384,6 +384,12 @@ Segments<Vector<Scalar, FromFrame>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     Segment<Vector<Scalar, FromFrame>> const& segment,
     std::vector<Sphere<Scalar, FromFrame>> const& spheres) const {
+  // This algorithm takes the input segment, applies the hiding by the first
+  // sphere (which can result in 0, 1, or 2 segments), applies the hiding by the
+  // second sphere to the resulting segments, and so on.  To reduce memory
+  // allocation this is done in place in the following vector, for which we
+  // reserse the maximum possible size.  As hiding proceeds, segments are taken
+  // from the vector and replaced or appended as needed.
   Segments<Vector<Scalar, FromFrame>> segments;
   segments.reserve(spheres.size() + 1);
   segments.push_back(segment);
