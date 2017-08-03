@@ -143,9 +143,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const final_time = last.time();
   auto const& trajectory = *begin.trajectory();
 
-  auto const tolerance =
-      perspective_.focal() * parameters_.sin²_angular_resolution_;
-  auto const squared_tolerance = Pow<2>(tolerance);
+  auto const squared_tolerance = Pow<2>(parameters_.tan_angular_resolution_);
 
   auto previous_time = begin.time();
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
@@ -197,11 +195,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
                 Pow<2>(previous_projected_velocity_y));
   }
 
-  Square<Length> squared_error_estimate;
+  Instant t;
+  double squared_error_estimate;
   Position<Navigation> position_in_navigation;
   Displacement<Camera> displacement_from_camera;
-  Length projected_x;
-  Length projected_y;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
 
@@ -211,32 +208,29 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     do {
       step *= Sqrt(Sqrt(squared_tolerance / squared_error_estimate));
     estimate_segment_error:
-      if (previous_time + step > final_time) {
-        // TODO(egg): can this be greater than |final_time|?
-        step = final_time - previous_time;
+      t = previous_time + step;
+      if (t > final_time) {
+        t = final_time;
+        step = t - previous_time;
       }
       Length const estimated_projected_x =
           previous_projected_x + step * previous_projected_velocity_x;
       Length const estimated_projected_y =
           previous_projected_y + step * previous_projected_velocity_y;
 
+      Displacement<Camera> estimated_unprojected(
+          {estimated_projected_x, estimated_projected_y, perspective_.focal()});
+
       position_in_navigation =
-          plotting_frame_->ToThisFrameAtTime(
-              previous_time + step).rigid_transformation()(
-                  trajectory.EvaluatePosition(previous_time + step));
+          plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
+              trajectory.EvaluatePosition(t));
       displacement_from_camera =
           perspective_.to_camera()(position_in_navigation) - Camera::origin;
 
-      projected_x = perspective_.focal() *
-                    displacement_from_camera.coordinates().x /
-                    displacement_from_camera.coordinates().z;
-      projected_y = perspective_.focal() *
-                    displacement_from_camera.coordinates().y /
-                    displacement_from_camera.coordinates().z;
-
+      auto const wedge = Wedge(estimated_unprojected, displacement_from_camera);
       squared_error_estimate =
-          (Pow<2>(projected_x - estimated_projected_x) +
-           Pow<2>(projected_y - estimated_projected_y)) / 4;
+          InnerProduct(wedge, wedge) /
+          Pow<2>(InnerProduct(estimated_unprojected, displacement_from_camera));
     } while (squared_error_estimate > squared_tolerance);
     auto const segments =
         perspective_.VisibleSegments(
@@ -253,14 +247,17 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     }
 
     auto const velocity_in_camera = perspective_.to_camera().linear_map()(
-        plotting_frame_->ToThisFrameAtTime(
-            previous_time + step).orthogonal_map()(
-                trajectory.EvaluateVelocity(previous_time + step)));
+        plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
+            trajectory.EvaluateVelocity(t)));
 
-    previous_time = previous_time + step;
+    previous_time = t;
     previous_position_in_navigation = position_in_navigation;
-    previous_projected_x = projected_x;
-    previous_projected_y = projected_y;
+    previous_projected_x = perspective_.focal() *
+                           displacement_from_camera.coordinates().x /
+                           displacement_from_camera.coordinates().z;
+    previous_projected_y = perspective_.focal() *
+                           displacement_from_camera.coordinates().y /
+                           displacement_from_camera.coordinates().z;
     previous_projected_velocity_x =
         perspective_.focal() *
         (displacement_from_camera.coordinates().z *
