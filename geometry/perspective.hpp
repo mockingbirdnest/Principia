@@ -41,6 +41,8 @@ class Perspective final {
 
   Scalar const& focal() const;
 
+  AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera() const;
+
   // Returns the ℝP² element resulting from the projection of |point|.  This
   // is properly defined for all points other than the camera origin.
   RP2Point<Scalar, ToFrame> operator()(

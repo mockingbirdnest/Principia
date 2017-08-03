@@ -14,7 +14,10 @@ using geometry::Position;
 using geometry::RP2Line;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Tan;
+using quantities::Speed;
+using quantities::Square;
 using quantities::Time;
 
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
@@ -119,6 +122,161 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
   }
   LOG(INFO) << "Skipped " << skipped << " points out of " << total;
   return new_rp2_lines;
+}
+
+RP2Lines<Length, Camera> Planetarium::PlotMethod2(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Instant const& now) const {
+  RP2Lines<Length, Camera> lines;
+  if (begin == end) {
+    return lines;
+  }
+  auto last = end;
+  --last;
+  if (begin == last) {
+    return lines;
+  }
+
+  auto const plottable_spheres = ComputePlottableSpheres(now);
+
+  auto const final_time = last.time();
+  auto const& trajectory = *begin.trajectory();
+
+  auto const tolerance =
+      perspective_.focal() * parameters_.sin²_angular_resolution_;
+  auto const squared_tolerance = Pow<2>(tolerance);
+
+  auto previous_time = begin.time();
+  auto previous_degrees_of_freedom = begin.degrees_of_freedom();
+
+  Position<Navigation> previous_position_in_navigation;
+  Length previous_projected_x;
+  Length previous_projected_y;
+  Speed previous_projected_velocity_x;
+  Speed previous_projected_velocity_y;
+  Time step;
+
+  {
+    previous_position_in_navigation =
+        plotting_frame_->ToThisFrameAtTime(
+            previous_time).rigid_transformation()(
+                previous_degrees_of_freedom.position());
+    auto const initial_displacement_from_camera =
+        perspective_.to_camera()(previous_position_in_navigation) -
+        Camera::origin;
+    auto const initial_velocity_in_camera =
+        perspective_.to_camera().linear_map()(
+            plotting_frame_->ToThisFrameAtTime(previous_time)
+                .orthogonal_map()(previous_degrees_of_freedom.velocity()));
+
+    previous_projected_x = perspective_.focal() *
+                           initial_displacement_from_camera.coordinates().x /
+                           initial_displacement_from_camera.coordinates().z;
+    previous_projected_y = perspective_.focal() *
+                           initial_displacement_from_camera.coordinates().y /
+                           initial_displacement_from_camera.coordinates().z;
+
+    previous_projected_velocity_x =
+        perspective_.focal() *
+        (initial_displacement_from_camera.coordinates().z *
+             initial_velocity_in_camera.coordinates().x -
+         initial_displacement_from_camera.coordinates().x *
+             initial_velocity_in_camera.coordinates().z) /
+        Pow<2>(initial_displacement_from_camera.coordinates().z);
+    previous_projected_velocity_y =
+        perspective_.focal() *
+        (initial_displacement_from_camera.coordinates().z *
+             initial_velocity_in_camera.coordinates().y -
+         initial_displacement_from_camera.coordinates().y *
+             initial_velocity_in_camera.coordinates().z) /
+        Pow<2>(initial_displacement_from_camera.coordinates().z);
+
+    step = parameters_.sin²_angular_resolution_ * perspective_.focal() /
+           Sqrt(Pow<2>(previous_projected_velocity_x) +
+                Pow<2>(previous_projected_velocity_y));
+  }
+
+  Square<Length> squared_error_estimate;
+  Position<Navigation> position_in_navigation;
+  Displacement<Camera> displacement_from_camera;
+  Length projected_x;
+  Length projected_y;
+
+  std::experimental::optional<Position<Navigation>> last_endpoint;
+
+  goto estimate_segment_error;
+
+  while (previous_time < final_time) {
+    do {
+      step *= Sqrt(Sqrt(squared_error_estimate / squared_tolerance));
+    estimate_segment_error:
+      if (previous_time + step > final_time) {
+        // TODO(egg): can this be greater than |final_time|?
+        step = final_time - previous_time;
+      }
+      Length const estimated_projected_x =
+          previous_projected_x + step * previous_projected_velocity_x;
+      Length const estimated_projected_y =
+          previous_projected_y + step * previous_projected_velocity_y;
+
+      position_in_navigation =
+          plotting_frame_->ToThisFrameAtTime(
+              previous_time + step).rigid_transformation()(
+                  trajectory.EvaluatePosition(previous_time + step));
+      displacement_from_camera =
+          perspective_.to_camera()(position_in_navigation) - Camera::origin;
+
+      projected_x = perspective_.focal() *
+                    displacement_from_camera.coordinates().x /
+                    displacement_from_camera.coordinates().z;
+      projected_y = perspective_.focal() *
+                    displacement_from_camera.coordinates().y /
+                    displacement_from_camera.coordinates().z;
+
+      squared_error_estimate =
+          (Pow<2>(projected_x - estimated_projected_x) +
+           Pow<2>(projected_y - estimated_projected_y)) / 4;
+    } while (squared_error_estimate > squared_tolerance);
+    auto const segments =
+        perspective_.VisibleSegments(
+            Segment<Displacement<Navigation>>(previous_position_in_navigation,
+                                              position_in_navigation),
+            plottable_spheres);
+    for (auto const& segment : segments) {
+      if (last_endpoint != segment.first) {
+        lines.emplace_back();
+        lines.back().push_back(perspective_(segment.first));
+      }
+      lines.back().push_back(perspective_(segment.second));
+      last_endpoint = segment.second;
+    }
+
+    auto const velocity_in_camera = perspective_.to_camera().linear_map()(
+        plotting_frame_->ToThisFrameAtTime(
+            previous_time + step).orthogonal_map()(
+                trajectory.EvaluateVelocity(previous_time + step)));
+
+    previous_time = previous_time + step;
+    previous_position_in_navigation = position_in_navigation;
+    previous_projected_x = projected_x;
+    previous_projected_y = projected_y;
+    previous_projected_velocity_x =
+        perspective_.focal() *
+        (displacement_from_camera.coordinates().z *
+             velocity_in_camera.coordinates().x -
+         displacement_from_camera.coordinates().x *
+             velocity_in_camera.coordinates().z) /
+        Pow<2>(displacement_from_camera.coordinates().z);
+    previous_projected_velocity_y =
+        perspective_.focal() *
+        (displacement_from_camera.coordinates().z *
+             velocity_in_camera.coordinates().y -
+         displacement_from_camera.coordinates().y *
+             velocity_in_camera.coordinates().z) /
+        Pow<2>(displacement_from_camera.coordinates().z);
+  }
+  return lines;
 }
 
 std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(

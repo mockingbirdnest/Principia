@@ -56,6 +56,15 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
+AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const&
+Perspective<FromFrame, ToFrame, Scalar, LinearMap>::to_camera() const {
+  return to_camera_;
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
 RP2Point<Scalar, ToFrame> Perspective<FromFrame, ToFrame, Scalar, LinearMap>::
 operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
   Point<Vector<Scalar, ToFrame>> const point_in_camera = to_camera_(point);

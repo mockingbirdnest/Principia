@@ -52,6 +52,8 @@ RP2Lines<Length, Camera> PlotMethodN(
       return planetarium.PlotMethod0(begin, end, now);
     case 1:
       return planetarium.PlotMethod1(begin, end, now);
+    case 2:
+      return planetarium.PlotMethod2(begin, end, now);
     default:
       LOG(FATAL) << "Unexpected method " << method;
       base::noreturn();
