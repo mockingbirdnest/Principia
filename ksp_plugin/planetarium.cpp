@@ -12,6 +12,7 @@ namespace internal_planetarium {
 
 using geometry::Position;
 using geometry::RP2Line;
+using geometry::Velocity;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
@@ -120,7 +121,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
     }
     new_rp2_lines.push_back(std::move(new_rp2_line));
   }
-  LOG(INFO) << "Skipped " << skipped << " points out of " << total;
+  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total
+            << ".";
   return new_rp2_lines;
 }
 
@@ -149,51 +151,17 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
 
   Position<Navigation> previous_position_in_navigation;
-  Length previous_projected_x;
-  Length previous_projected_y;
-  Speed previous_projected_velocity_x;
-  Speed previous_projected_velocity_y;
+  Velocity<Navigation> previous_velocity_in_navigation;
   Time step;
 
-  {
-    previous_position_in_navigation =
-        plotting_frame_->ToThisFrameAtTime(
-            previous_time).rigid_transformation()(
-                previous_degrees_of_freedom.position());
-    auto const initial_displacement_from_camera =
-        perspective_.to_camera()(previous_position_in_navigation) -
-        Camera::origin;
-    auto const initial_velocity_in_camera =
-        perspective_.to_camera().linear_map()(
-            plotting_frame_->ToThisFrameAtTime(previous_time)
-                .orthogonal_map()(previous_degrees_of_freedom.velocity()));
+  previous_position_in_navigation =
+      plotting_frame_->ToThisFrameAtTime(previous_time)
+          .rigid_transformation()(previous_degrees_of_freedom.position());
+  previous_velocity_in_navigation =
+      plotting_frame_->ToThisFrameAtTime(previous_time)
+          .orthogonal_map()(previous_degrees_of_freedom.velocity());
 
-    previous_projected_x = perspective_.focal() *
-                           initial_displacement_from_camera.coordinates().x /
-                           initial_displacement_from_camera.coordinates().z;
-    previous_projected_y = perspective_.focal() *
-                           initial_displacement_from_camera.coordinates().y /
-                           initial_displacement_from_camera.coordinates().z;
-
-    previous_projected_velocity_x =
-        perspective_.focal() *
-        (initial_displacement_from_camera.coordinates().z *
-             initial_velocity_in_camera.coordinates().x -
-         initial_displacement_from_camera.coordinates().x *
-             initial_velocity_in_camera.coordinates().z) /
-        Pow<2>(initial_displacement_from_camera.coordinates().z);
-    previous_projected_velocity_y =
-        perspective_.focal() *
-        (initial_displacement_from_camera.coordinates().z *
-             initial_velocity_in_camera.coordinates().y -
-         initial_displacement_from_camera.coordinates().y *
-             initial_velocity_in_camera.coordinates().z) /
-        Pow<2>(initial_displacement_from_camera.coordinates().z);
-
-    step = parameters_.sin²_angular_resolution_ * perspective_.focal() /
-           Sqrt(Pow<2>(previous_projected_velocity_x) +
-                Pow<2>(previous_projected_velocity_y));
-  }
+  step = final_time - previous_time;
 
   Instant t;
   double squared_error_estimate;
@@ -201,6 +169,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   Displacement<Camera> displacement_from_camera;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
+
+  int steps_accepted = 0;
+  int steps_attempted = 0;
 
   goto estimate_segment_error;
 
@@ -213,13 +184,11 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
         t = final_time;
         step = t - previous_time;
       }
-      Length const estimated_projected_x =
-          previous_projected_x + step * previous_projected_velocity_x;
-      Length const estimated_projected_y =
-          previous_projected_y + step * previous_projected_velocity_y;
-
-      Displacement<Camera> estimated_unprojected(
-          {estimated_projected_x, estimated_projected_y, perspective_.focal()});
+      Position<Navigation> const estimated_position =
+          previous_position_in_navigation +
+          previous_velocity_in_navigation * step;
+      auto const estimated_displacement_from_camera =
+          perspective_.to_camera()(estimated_position) - Camera::origin;
 
       position_in_navigation =
           plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
@@ -227,11 +196,15 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       displacement_from_camera =
           perspective_.to_camera()(position_in_navigation) - Camera::origin;
 
-      auto const wedge = Wedge(estimated_unprojected, displacement_from_camera);
+      auto const wedge =
+          Wedge(estimated_displacement_from_camera, displacement_from_camera);
       squared_error_estimate =
           InnerProduct(wedge, wedge) /
-          Pow<2>(InnerProduct(estimated_unprojected, displacement_from_camera));
+          Pow<2>(InnerProduct(estimated_displacement_from_camera,
+                              displacement_from_camera));
+      ++steps_attempted;
     } while (squared_error_estimate > squared_tolerance);
+    ++steps_accepted;
     auto const segments =
         perspective_.VisibleSegments(
             Segment<Displacement<Navigation>>(previous_position_in_navigation,
@@ -246,33 +219,14 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       last_endpoint = segment.second;
     }
 
-    auto const velocity_in_camera = perspective_.to_camera().linear_map()(
-        plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
-            trajectory.EvaluateVelocity(t)));
-
     previous_time = t;
     previous_position_in_navigation = position_in_navigation;
-    previous_projected_x = perspective_.focal() *
-                           displacement_from_camera.coordinates().x /
-                           displacement_from_camera.coordinates().z;
-    previous_projected_y = perspective_.focal() *
-                           displacement_from_camera.coordinates().y /
-                           displacement_from_camera.coordinates().z;
-    previous_projected_velocity_x =
-        perspective_.focal() *
-        (displacement_from_camera.coordinates().z *
-             velocity_in_camera.coordinates().x -
-         displacement_from_camera.coordinates().x *
-             velocity_in_camera.coordinates().z) /
-        Pow<2>(displacement_from_camera.coordinates().z);
-    previous_projected_velocity_y =
-        perspective_.focal() *
-        (displacement_from_camera.coordinates().z *
-             velocity_in_camera.coordinates().y -
-         displacement_from_camera.coordinates().y *
-             velocity_in_camera.coordinates().z) /
-        Pow<2>(displacement_from_camera.coordinates().z);
+    previous_velocity_in_navigation = 
+        plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
+            trajectory.EvaluateVelocity(t));
   }
+  LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
+            << steps_attempted << " steps.";
   return lines;
 }
 
