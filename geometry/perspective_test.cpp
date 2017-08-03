@@ -477,19 +477,6 @@ TEST_F(VisibleSegmentsTest, HyperbolicIntersection) {
               ElementsAre(segment));
 }
 
-TEST_F(VisibleSegmentsTest, MultipleSpheres) {
-  Sphere<Length, World> const sphere2(
-    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 5 * Metre}),
-      /*radius=*/1 * Metre);
-  Point<Displacement<World>> const p1 =
-      World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});
-  Point<Displacement<World>> const p2 =
-      World::origin + Displacement<World>({2 * Metre, 0 * Metre, 10 * Metre});
-  Segment<Displacement<World>> segment{p1, p2};
-  EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
-              SizeIs(3));
-}
-
 // A case where the intersections are far outside of the segment.  This used to
 // be mishandled.
 TEST_F(VisibleSegmentsTest, BehindCamera) {
@@ -580,6 +567,48 @@ TEST_F(VisibleSegmentsTest, AnotherHyperbolicIntersection) {
   EXPECT_THAT(perspective.VisibleSegments(segment, sphere), IsEmpty());
 }
 
+// A case where the segment is seen under a very small angle (3.2e-08 radian)
+// from the camera.
+TEST_F(VisibleSegmentsTest, SmallAngle) {
+  Point<Displacement<World>> const camera_origin =
+      World::origin + Displacement<World>({+6.91404109651565552e+05 * Metre,
+                                           -6.24300985912289470e+04 * Metre,
+                                           -1.05537869332772680e+04 * Metre});
+  AffineMap<World, Camera, Length, OrthogonalMap> world_to_camera_affine(
+      camera_origin, Camera::origin, OrthogonalMap<World, Camera>::Identity());
+  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
+      world_to_camera_affine,
+      /*focal=*/1 * Metre);
+  Sphere<Length, World> const sphere(
+      World::origin + Displacement<World>({+0.00000000000000000e+00 * Metre,
+                                           +0.00000000000000000e+00 * Metre,
+                                           +0.00000000000000000e+00 * Metre}),
+      /*radius=*/+6.30000000000000000e+05 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({+6.66879854196548462e+05 * Metre,
+                                           +7.60680419044313021e+05 * Metre,
+                                           +1.90194540126288375e+04 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({+6.66878618906021118e+05 * Metre,
+                                           +7.60722757674634922e+05 * Metre,
+                                           +1.90209760584930445e+04 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective.VisibleSegments(segment, sphere),
+              ElementsAre(segment));
+}
+
+TEST_F(VisibleSegmentsTest, MultipleSpheres) {
+  Sphere<Length, World> const sphere2(
+    World::origin + Displacement<World>({0 * Metre, 0 * Metre, 5 * Metre}),
+      /*radius=*/1 * Metre);
+  Point<Displacement<World>> const p1 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, -10 * Metre});
+  Point<Displacement<World>> const p2 =
+      World::origin + Displacement<World>({2 * Metre, 0 * Metre, 10 * Metre});
+  Segment<Displacement<World>> segment{p1, p2};
+  EXPECT_THAT(perspective_.VisibleSegments(segment, {sphere_, sphere2}),
+              SizeIs(3));
+}
 }  // namespace internal_perspective
 }  // namespace geometry
 }  // namespace principia

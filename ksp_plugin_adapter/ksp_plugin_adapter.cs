@@ -2047,7 +2047,7 @@ public partial class PrincipiaPluginAdapter
       UnityEngine.GUILayout.Label("Чебышёв plotting method:");
       for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
         if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
-                                     i.ToString())) {
+                                         i.ToString())) {
           чебышёв_plotting_method_ = i;
         }
       }

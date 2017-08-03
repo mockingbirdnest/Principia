@@ -259,8 +259,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // where γ and δ are computed by solving the system:
   //   PH² = r²
   //   PH·KH = r²
-  // We know that there are two such points because the sphere intersects the
-  // plane.
+  // We expect that there are two such points because the sphere intersects the
+  // plane, but if the segment is seen under a very small angle, cancellations
+  // may cause the quadratic equation to have no solution.
   auto const KAKH = InnerProduct(KA, KH);
   auto const KBKH = InnerProduct(KB, KH);
   auto const a0 = r² * (r² * KA² - KAKH * KAKH);
@@ -269,9 +270,9 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
       KB² * KAKH * KAKH - 2.0 * KAKB * KAKH * KBKH + KA² * KBKH * KBKH;
   BoundedArray<double, 2> const δs =
       SolveQuadraticEquation(/*origin=*/0.0, a0, a1, a2);
-  CHECK_EQ(2, δs.size()) << "a0:" << a0 << " a1:" << a1 << " a2:" << a2
-                         << "\nK:" << K << " A:" << A << " B:" << B
-                         << " C:" << C;
+  if (δs.size() != 2) {
+    return {segment};
+  }
 
   // S is the intersection of the line AB with the line orthogonal to KC that
   // contains K.  It is such that:
