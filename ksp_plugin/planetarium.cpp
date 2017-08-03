@@ -209,7 +209,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   while (previous_time < final_time) {
     do {
-      step *= Sqrt(Sqrt(squared_error_estimate / squared_tolerance));
+      step *= Sqrt(Sqrt(squared_tolerance / squared_error_estimate));
     estimate_segment_error:
       if (previous_time + step > final_time) {
         // TODO(egg): can this be greater than |final_time|?
