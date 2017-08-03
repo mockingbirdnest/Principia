@@ -199,9 +199,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       auto const wedge =
           Wedge(estimated_displacement_from_camera, displacement_from_camera);
       squared_error_estimate =
-          InnerProduct(wedge, wedge) /
-          Pow<2>(InnerProduct(estimated_displacement_from_camera,
-                              displacement_from_camera));
+          (InnerProduct(wedge, wedge) /
+           Pow<2>(InnerProduct(estimated_displacement_from_camera,
+                               displacement_from_camera))) / 16;
       ++steps_attempted;
     } while (squared_error_estimate > squared_tolerance);
     ++steps_accepted;
@@ -221,7 +221,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
     previous_time = t;
     previous_position_in_navigation = position_in_navigation;
-    previous_velocity_in_navigation = 
+    previous_velocity_in_navigation =
         plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
             trajectory.EvaluateVelocity(t));
   }
