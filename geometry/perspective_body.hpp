@@ -56,15 +56,6 @@ template<typename FromFrame,
          typename ToFrame,
          typename Scalar,
          template<typename, typename> class LinearMap>
-AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const&
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::to_camera() const {
-  return to_camera_;
-}
-
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
 RP2Point<Scalar, ToFrame> Perspective<FromFrame, ToFrame, Scalar, LinearMap>::
 operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
   Point<Vector<Scalar, ToFrame>> const point_in_camera = to_camera_(point);
@@ -112,6 +103,19 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SegmentBehindFocalPlane(
               {intercept, segment.second});
     }
   }
+}
+
+template<typename FromFrame,
+         typename ToFrame,
+         typename Scalar,
+         template<typename, typename> class LinearMap>
+double Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Tan²AngularDistance(
+    Point<Vector<Scalar, FromFrame>> const& p1,
+    Point<Vector<Scalar, FromFrame>> const& p2) const {
+  auto const v1 = to_camera_(p1) - ToFrame::origin;
+  auto const v2 = to_camera_(p2) - ToFrame::origin;
+  auto const wedge = Wedge(v1, v2);
+  return InnerProduct(wedge, wedge) / Pow<2>(InnerProduct(v1, v2));
 }
 
 template<typename FromFrame,

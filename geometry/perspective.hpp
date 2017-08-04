@@ -41,8 +41,6 @@ class Perspective final {
 
   Scalar const& focal() const;
 
-  AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera() const;
-
   // Returns the ℝP² element resulting from the projection of |point|.  This
   // is properly defined for all points other than the camera origin.
   RP2Point<Scalar, ToFrame> operator()(
@@ -54,6 +52,11 @@ class Perspective final {
   std::experimental::optional<Segment<Vector<Scalar, FromFrame>>>
   SegmentBehindFocalPlane(
       Segment<Vector<Scalar, FromFrame>> const& segment) const;
+
+  // The square of the tangent of the angular distance between the given points
+  // as seen from the camera.
+  double Tan²AngularDistance(Point<Vector<Scalar, FromFrame>> const& p1,
+                             Point<Vector<Scalar, FromFrame>> const& p2) const;
 
   // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,

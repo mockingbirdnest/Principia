@@ -145,7 +145,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const final_time = last.time();
   auto const& trajectory = *begin.trajectory();
 
-  double const squared_tolerance = Pow<2>(parameters_.tan_angular_resolution_);
+  double const tan²_angular_resolution =
+      Pow<2>(parameters_.tan_angular_resolution_);
 
   auto previous_time = begin.time();
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
@@ -164,7 +165,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   step = final_time - previous_time;
 
   Instant t;
-  double squared_error_estimate;
+  double estimated_tan²_error;
   Position<Navigation> position_in_navigation;
   Displacement<Camera> displacement_from_camera;
 
@@ -173,12 +174,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   int steps_accepted = 0;
   int steps_attempted = 0;
 
-  goto estimate_segment_error;
+  goto estimate_tan²_error;
 
   while (previous_time < final_time) {
     do {
-      step *= 0.9 * Sqrt(Sqrt(squared_tolerance / squared_error_estimate));
-    estimate_segment_error:
+      step *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+    estimate_tan²_error:
       t = previous_time + step;
       if (t > final_time) {
         t = final_time;
@@ -187,23 +188,16 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Position<Navigation> const estimated_position =
           previous_position_in_navigation +
           previous_velocity_in_navigation * step;
-      auto const estimated_displacement_from_camera =
-          perspective_.to_camera()(estimated_position) - Camera::origin;
 
       position_in_navigation =
           plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
               trajectory.EvaluatePosition(t));
-      displacement_from_camera =
-          perspective_.to_camera()(position_in_navigation) - Camera::origin;
 
-      auto const wedge =
-          Wedge(estimated_displacement_from_camera, displacement_from_camera);
-      squared_error_estimate =
-          (InnerProduct(wedge, wedge) /
-           Pow<2>(InnerProduct(estimated_displacement_from_camera,
-                               displacement_from_camera))) / 16;
+      estimated_tan²_error =
+          perspective_.Tan²AngularDistance(estimated_position,
+                                           position_in_navigation);
       ++steps_attempted;
-    } while (squared_error_estimate > squared_tolerance);
+    } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
     auto const segments =
         perspective_.VisibleSegments(
