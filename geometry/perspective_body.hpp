@@ -18,6 +18,7 @@ namespace internal_perspective {
 
 using geometry::InnerProduct;
 using numerics::SolveQuadraticEquation;
+using quantities::Pow;
 using quantities::Product;
 using quantities::Square;
 

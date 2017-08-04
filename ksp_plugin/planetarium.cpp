@@ -17,8 +17,6 @@ using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Tan;
-using quantities::Speed;
-using quantities::Square;
 using quantities::Time;
 
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
@@ -151,18 +149,18 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto previous_time = begin.time();
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
 
-  Position<Navigation> previous_position_in_navigation;
-  Velocity<Navigation> previous_velocity_in_navigation;
-  Time step;
+  Position<Navigation> previous_position;
+  Velocity<Navigation> previous_velocity;
+  Time Δt;
 
-  previous_position_in_navigation =
+  previous_position =
       plotting_frame_->ToThisFrameAtTime(previous_time)
           .rigid_transformation()(previous_degrees_of_freedom.position());
-  previous_velocity_in_navigation =
+  previous_velocity =
       plotting_frame_->ToThisFrameAtTime(previous_time)
           .orthogonal_map()(previous_degrees_of_freedom.velocity());
 
-  step = final_time - previous_time;
+  Δt = final_time - previous_time;
 
   Instant t;
   double estimated_tan²_error;
@@ -178,16 +176,15 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   while (previous_time < final_time) {
     do {
-      step *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
-      t = previous_time + step;
+      t = previous_time + Δt;
       if (t > final_time) {
         t = final_time;
-        step = t - previous_time;
+        Δt = t - previous_time;
       }
       Position<Navigation> const estimated_position =
-          previous_position_in_navigation +
-          previous_velocity_in_navigation * step;
+          previous_position + previous_velocity * Δt;
 
       position_in_navigation =
           plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
@@ -201,7 +198,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     ++steps_accepted;
     auto const segments =
         perspective_.VisibleSegments(
-            Segment<Displacement<Navigation>>(previous_position_in_navigation,
+            Segment<Displacement<Navigation>>(previous_position,
                                               position_in_navigation),
             plottable_spheres);
     for (auto const& full_segment : segments) {
@@ -219,8 +216,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     }
 
     previous_time = t;
-    previous_position_in_navigation = position_in_navigation;
-    previous_velocity_in_navigation =
+    previous_position = position_in_navigation;
+    previous_velocity =
         plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
             trajectory.EvaluateVelocity(t));
   }
