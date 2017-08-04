@@ -182,14 +182,15 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
         t = final_time;
         Δt = t - previous_time;
       }
-      Position<Navigation> const estimated_position =
+      Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
 
       position = plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
                      trajectory.EvaluatePosition(t));
 
       estimated_tan²_error =
-          perspective_.Tan²AngularDistance(estimated_position, position) / 16;
+          perspective_.Tan²AngularDistance(extrapolated_position, position) /
+          16;
       ++steps_attempted;
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
