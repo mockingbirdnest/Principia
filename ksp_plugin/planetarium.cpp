@@ -164,8 +164,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   Instant t;
   double estimated_tan²_error;
-  Position<Navigation> position_in_navigation;
-  Displacement<Camera> displacement_from_camera;
+  Position<Navigation> position;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
 
@@ -186,20 +185,19 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Position<Navigation> const estimated_position =
           previous_position + previous_velocity * Δt;
 
-      position_in_navigation =
-          plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
-              trajectory.EvaluatePosition(t));
+      position = plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
+                     trajectory.EvaluatePosition(t));
 
       estimated_tan²_error =
           perspective_.Tan²AngularDistance(estimated_position,
-                                           position_in_navigation);
+                                           position);
       ++steps_attempted;
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
     auto const segments =
         perspective_.VisibleSegments(
             Segment<Displacement<Navigation>>(previous_position,
-                                              position_in_navigation),
+                                              position),
             plottable_spheres);
     for (auto const& full_segment : segments) {
       // TODO(egg): also limit to field of view.
@@ -215,11 +213,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       last_endpoint = segment->second;
     }
 
+    previous_position = position;
+    previous_velocity = plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
+                            trajectory.EvaluateVelocity(t));
     previous_time = t;
-    previous_position = position_in_navigation;
-    previous_velocity =
-        plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
-            trajectory.EvaluateVelocity(t));
   }
   LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
             << steps_attempted << " steps.";
