@@ -65,6 +65,8 @@ class BoundedArray final {
   using iterator = typename Container::iterator;
   using const_iterator = typename Container::const_iterator;
   using const_reverse_iterator = typename  Container::const_reverse_iterator;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
   using size_type = typename Container::size_type;
   using value_type = Element;
 
@@ -81,6 +83,11 @@ class BoundedArray final {
 
   const_reverse_iterator rbegin() const;
   const_reverse_iterator rend() const;
+
+  reference front();
+  const_reference front() const;
+  reference back();
+  const_reference back() const;
 
   bool empty() const;
   size_type size() const;

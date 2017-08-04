@@ -95,6 +95,30 @@ BoundedArray<Element, max_size>::rend() const {
 }
 
 template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::reference
+BoundedArray<Element, max_size>::front() {
+  return data_.front()
+}
+
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_reference
+BoundedArray<Element, max_size>::front() const {
+  return data_.front();
+}
+
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::reference
+BoundedArray<Element, max_size>::back() {
+  return data_[size_ - 1];
+}
+
+template<typename Element, std::int32_t max_size>
+typename BoundedArray<Element, max_size>::const_reference
+BoundedArray<Element, max_size>::back() const {
+  return data_[size_ - 1];
+}
+
+template<typename Element, std::int32_t max_size>
 bool BoundedArray<Element, max_size>::empty() const {
   return size_ == 0;
 }
