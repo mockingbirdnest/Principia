@@ -385,19 +385,58 @@ Segments<Vector<Scalar, FromFrame>>
 Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
     Segment<Vector<Scalar, FromFrame>> const& segment,
     std::vector<Sphere<Scalar, FromFrame>> const& spheres) const {
-  std::vector<Segment<Vector<Scalar, FromFrame>>> old_segments = {segment};
-  std::vector<Segment<Vector<Scalar, FromFrame>>> new_segments;
+  // This algorithm takes the input segment, applies the hiding by the first
+  // sphere (which can result in 0, 1, or 2 segments), applies the hiding by the
+  // second sphere to the resulting segments, and so on.  To reduce memory
+  // allocation this is done in place in the following vector, for which we
+  // reserve the maximum possible size.  As hiding proceeds, segments are taken
+  // from the vector and replaced or appended as needed.
+  Segments<Vector<Scalar, FromFrame>> segments;
+  segments.reserve(spheres.size() + 1);
+  segments.push_back(segment);
+
+  // The range [in_begin, in_end[ contains the segments that have been produced
+  // so far by iterating through the outer loop.
+  int in_begin = 0;
+  int in_end = 1;
+
+  // The range [out_begin, out_end[ contains the segments that have been
+  // produced by the current iterations of the outer loop.  It grows in both
+  // directions.  If VisibleSegments returns 0 segments, the out_ indices are
+  // unaffected.  If VisibleSegments returns at least 1 segment, that segment is
+  // inserted before out_begin (effectively replacing the segment that was just
+  // processed) and out_begin is decremented.  If VisibleSegments returns 2
+  // segments the second one is push at the end of the vector after out_end and
+  // out_end is incremented.
+  int out_begin = 1;
+  int out_end = 1;
+
+  // At the beginning and end of the outer loop below all the active segments
+  // are stored in a contiguous slice of the vector segments.  That slice
+  // doesn't start at 0 iff at least one call to VisibleSegments returned 0
+  // segments.
   for (auto const& sphere : spheres) {
-    for (auto const& old_segment : old_segments) {
-      auto new_segments_for_sphere = VisibleSegments(old_segment, sphere);
-      std::move(new_segments_for_sphere.begin(),
-                new_segments_for_sphere.end(),
-                std::back_inserter(new_segments));
+    for (int i = in_end - 1; i >= in_begin; --i) {
+      auto const& old_segment = segments[i];
+      auto const new_segments_for_sphere = VisibleSegments(old_segment, sphere);
+      int const new_segments_for_sphere_size = new_segments_for_sphere.size();
+      if (new_segments_for_sphere_size >= 1) {
+        segments[--out_begin] = std::move(new_segments_for_sphere.front());
+        if (new_segments_for_sphere_size == 2) {
+          segments.push_back(std::move(new_segments_for_sphere.back()));
+          ++out_end;
+        }
+      }
     }
-    old_segments = std::move(new_segments);
-    new_segments.clear();
+    in_begin = out_begin;
+    in_end = out_end;
+    out_begin = in_end;
+    out_end = in_end;
   }
-  return old_segments;
+  if (in_begin > 0) {
+    segments.erase(segments.begin(), segments.begin() + in_begin);
+  }
+  return segments;
 }
 
 }  // namespace internal_perspective
