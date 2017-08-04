@@ -189,6 +189,43 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   }
 }
 
+TEST_F(PlanetariumTest, PlotMethod2) {
+  // A quarter of a circular trajectory around the origin, with many small
+  // segments.
+  DiscreteTrajectory<Barycentric> discrete_trajectory;
+  for (Time t; t <= 25'000 * Second; t += 1 * Second) {
+    DegreesOfFreedom<Barycentric> const degrees_of_freedom(
+        Barycentric::origin +
+            Displacement<Barycentric>(
+                {10 * Metre * Sin(2 * π * t * Radian / (100'000 * Second)),
+                 10 * Metre * Cos(2 * π * t * Radian / (100'000 * Second)),
+                 0 * Metre}),
+        Velocity<Barycentric>());
+    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
+  }
+
+  // No dark area, human visual acuity, wide field of view.
+  Planetarium::Parameters parameters(
+      /*sphere_radius_multiplier=*/1,
+      /*angular_resolution=*/0.4 * ArcMinute,
+      /*field_of_view=*/90 * Degree);
+  Planetarium planetarium(
+      parameters, perspective_, &ephemeris_, &plotting_frame_);
+  auto const rp2_lines =
+      planetarium.PlotMethod2(discrete_trajectory.Begin(),
+                              discrete_trajectory.End(),
+                              t0_ + 10 * Second);
+
+  EXPECT_THAT(rp2_lines, SizeIs(1));
+  EXPECT_THAT(rp2_lines[0], SizeIs(4954));
+  for (auto const& rp2_point : rp2_lines[0]) {
+    EXPECT_THAT(rp2_point.x(),
+                AllOf(Ge(0 * Metre),
+                      Le(5.0 / Sqrt(3.0) * Metre)));
+    EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
+  }
+}
+
 }  // namespace internal_planetarium
 }  // namespace ksp_plugin
 }  // namespace principia

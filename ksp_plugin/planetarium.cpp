@@ -145,7 +145,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto const final_time = last.time();
   auto const& trajectory = *begin.trajectory();
 
-  auto const squared_tolerance = Pow<2>(parameters_.tan_angular_resolution_);
+  double const squared_tolerance = Pow<2>(parameters_.tan_angular_resolution_);
 
   auto previous_time = begin.time();
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
@@ -210,13 +210,18 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
             Segment<Displacement<Navigation>>(previous_position_in_navigation,
                                               position_in_navigation),
             plottable_spheres);
-    for (auto const& segment : segments) {
-      if (last_endpoint != segment.first) {
-        lines.emplace_back();
-        lines.back().push_back(perspective_(segment.first));
+    for (auto const& full_segment : segments) {
+      // TODO(egg): also limit to field of view.
+      auto const segment = perspective_.SegmentBehindFocalPlane(full_segment);
+      if (!segment) {
+        continue;
       }
-      lines.back().push_back(perspective_(segment.second));
-      last_endpoint = segment.second;
+      if (last_endpoint != segment->first) {
+        lines.emplace_back();
+        lines.back().push_back(perspective_(segment->first));
+      }
+      lines.back().push_back(perspective_(segment->second));
+      last_endpoint = segment->second;
     }
 
     previous_time = t;
