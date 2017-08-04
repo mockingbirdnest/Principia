@@ -65,7 +65,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
       continue;
     }
 
-    // Create a new ℝP² line when two segments are not consecutive.  Don't
+    // Create a new ℝP² line when two visible_segments are not consecutive.  Don't
     // compare ℝP² points for equality, that's expensive.
     bool const are_consecutive =
         previous_position == plottable_segment.first;
@@ -194,29 +194,32 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       ++steps_attempted;
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
-    auto const segments =
-        perspective_.VisibleSegments(
-            Segment<Displacement<Navigation>>(previous_position,
-                                              position),
-            plottable_spheres);
-    for (auto const& full_segment : segments) {
-      // TODO(egg): also limit to field of view.
-      auto const segment = perspective_.SegmentBehindFocalPlane(full_segment);
-      if (!segment) {
-        continue;
-      }
-      if (last_endpoint != segment->first) {
-        lines.emplace_back();
-        lines.back().push_back(perspective_(segment->first));
-      }
-      lines.back().push_back(perspective_(segment->second));
-      last_endpoint = segment->second;
-    }
+
+    // TODO(egg): also limit to field of view.
+    auto const segment_behind_focal_plane =
+        perspective_.SegmentBehindFocalPlane(
+            Segment<Displacement<Navigation>>(previous_position, position));
 
     previous_position = position;
     previous_velocity = plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
                             trajectory.EvaluateVelocity(t));
     previous_time = t;
+
+    if (!segment_behind_focal_plane) {
+      continue;
+    }
+
+    auto const visible_segments = perspective_.VisibleSegments(
+                                      *segment_behind_focal_plane,
+                                      plottable_spheres);
+    for (auto const& segment : visible_segments) {
+      if (last_endpoint != segment.first) {
+        lines.emplace_back();
+        lines.back().push_back(perspective_(segment.first));
+      }
+      lines.back().push_back(perspective_(segment.second));
+      last_endpoint = segment.second;
+    }
   }
   LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
             << steps_attempted << " steps.";
