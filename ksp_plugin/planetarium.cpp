@@ -189,8 +189,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
                      trajectory.EvaluatePosition(t));
 
       estimated_tan²_error =
-          perspective_.Tan²AngularDistance(estimated_position,
-                                           position);
+          perspective_.Tan²AngularDistance(estimated_position, position) / 16;
       ++steps_attempted;
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
