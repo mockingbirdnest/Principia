@@ -12,8 +12,10 @@ namespace internal_planetarium {
 
 using geometry::Position;
 using geometry::RP2Line;
+using geometry::Velocity;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
 
@@ -117,8 +119,112 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
     }
     new_rp2_lines.push_back(std::move(new_rp2_line));
   }
-  LOG(INFO) << "Skipped " << skipped << " points out of " << total;
+  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total
+            << ", emitting " << total - skipped << " points";
   return new_rp2_lines;
+}
+
+RP2Lines<Length, Camera> Planetarium::PlotMethod2(
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end,
+    Instant const& now) const {
+  RP2Lines<Length, Camera> lines;
+  if (begin == end) {
+    return lines;
+  }
+  auto last = end;
+  --last;
+  if (begin == last) {
+    return lines;
+  }
+
+  double const tan²_angular_resolution =
+      Pow<2>(parameters_.tan_angular_resolution_);
+  auto const plottable_spheres = ComputePlottableSpheres(now);
+  auto const& trajectory = *begin.trajectory();
+  auto const final_time = last.time();
+
+  auto previous_time = begin.time();
+  RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+      plotting_frame_->ToThisFrameAtTime(previous_time);
+  Position<Navigation> previous_position =
+      to_plotting_frame_at_t.rigid_transformation()(
+          begin.degrees_of_freedom().position());
+  Velocity<Navigation> previous_velocity =
+      to_plotting_frame_at_t.orthogonal_map()(
+          begin.degrees_of_freedom().velocity());
+  Time Δt = final_time - previous_time;
+
+  Instant t;
+  double estimated_tan²_error;
+  Position<Navigation> position;
+
+  std::experimental::optional<Position<Navigation>> last_endpoint;
+
+  int steps_accepted = 0;
+  int steps_attempted = 0;
+
+  goto estimate_tan²_error;
+
+  while (previous_time < final_time) {
+    do {
+      // One square root because we have squared errors, another one because the
+      // errors are quadratic in time (in other words, two square roots because
+      // the squared errors are quartic in time).
+      // A safety factor prevents catastrophic retries.
+      Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
+    estimate_tan²_error:
+      t = previous_time + Δt;
+      if (t > final_time) {
+        t = final_time;
+        Δt = t - previous_time;
+      }
+      Position<Navigation> const extrapolated_position =
+          previous_position + previous_velocity * Δt;
+      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      position = to_plotting_frame_at_t.rigid_transformation()(
+                     trajectory.EvaluatePosition(t));
+
+      // The quadratic term of the error between the linear interpolation and
+      // the actual function is maximized halfway through the segment, so it is
+      // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
+      // thus (1/2 Δt² f″(t-Δt))² / 16.
+      estimated_tan²_error =
+          perspective_.Tan²AngularDistance(extrapolated_position, position) /
+          16;
+      ++steps_attempted;
+    } while (estimated_tan²_error > tan²_angular_resolution);
+    ++steps_accepted;
+
+    // TODO(egg): also limit to field of view.
+    auto const segment_behind_focal_plane =
+        perspective_.SegmentBehindFocalPlane(
+            Segment<Displacement<Navigation>>(previous_position, position));
+
+    previous_time = t;
+    previous_position = position;
+    previous_velocity =
+        to_plotting_frame_at_t.orthogonal_map()(trajectory.EvaluateVelocity(t));
+
+    if (!segment_behind_focal_plane) {
+      continue;
+    }
+
+    auto const visible_segments = perspective_.VisibleSegments(
+                                      *segment_behind_focal_plane,
+                                      plottable_spheres);
+    for (auto const& segment : visible_segments) {
+      if (last_endpoint != segment.first) {
+        lines.emplace_back();
+        lines.back().push_back(perspective_(segment.first));
+      }
+      lines.back().push_back(perspective_(segment.second));
+      last_endpoint = segment.second;
+    }
+  }
+  LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
+            << steps_attempted << " steps";
+  return lines;
 }
 
 std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(

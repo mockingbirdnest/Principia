@@ -53,6 +53,11 @@ class Perspective final {
   SegmentBehindFocalPlane(
       Segment<Vector<Scalar, FromFrame>> const& segment) const;
 
+  // The square of the tangent of the angular distance between the given points
+  // as seen from the camera.
+  double Tan²AngularDistance(Point<Vector<Scalar, FromFrame>> const& p1,
+                             Point<Vector<Scalar, FromFrame>> const& p2) const;
+
   // Returns true iff the |point| is hidden by the |sphere| in this perspective.
   bool IsHiddenBySphere(Point<Vector<Scalar, FromFrame>> const& point,
                         Sphere<Scalar, FromFrame> const& sphere) const;

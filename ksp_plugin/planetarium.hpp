@@ -81,6 +81,11 @@ class Planetarium {
       DiscreteTrajectory<Barycentric>::Iterator const& end,
       Instant const& now) const;
 
+  RP2Lines<Length, Camera> PlotMethod2(
+      DiscreteTrajectory<Barycentric>::Iterator const& begin,
+      DiscreteTrajectory<Barycentric>::Iterator const& end,
+      Instant const& now) const;
+
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|
   // bodies.  These coordinates are in the |plotting_frame_| at time |now|.

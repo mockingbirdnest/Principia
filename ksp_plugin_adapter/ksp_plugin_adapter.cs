@@ -46,7 +46,7 @@ public partial class PrincipiaPluginAdapter
   private bool use_чебышёв_plotting_ = false;
   [KSPField(isPersistant = true)]
   private int чебышёв_plotting_method_ = 1;
-  private const int чебышёв_plotting_methods_count = 2;
+  private const int чебышёв_plotting_methods_count = 3;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
