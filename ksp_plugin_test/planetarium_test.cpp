@@ -113,8 +113,8 @@ class PlanetariumTest : public ::testing::Test {
               Displacement<Barycentric>({10 * Metre * Sin(ɑ),
                                          10 * Metre * Cos(ɑ),
                                          0 * Metre}),
-          Velocity<Barycentric>({1 * Metre * Cos(ɑ) / Second,
-                                 -1 * Metre * Sin(ɑ) / Second,
+          Velocity<Barycentric>({(20 * π / period) * Metre * Cos(ɑ),
+                                 -(20 * π / period) * Metre * Sin(ɑ),
                                  0 * Metre / Second}));
       discrete_trajectory->Append(t0_ + t, degrees_of_freedom);
     }
@@ -218,11 +218,11 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                               t0_ + 10 * Second);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
-  EXPECT_THAT(rp2_lines[0], SizeIs(AllOf(Ge(274820), Le(275842))));
+  EXPECT_THAT(rp2_lines[0], SizeIs(43));
   for (auto const& rp2_point : rp2_lines[0]) {
     EXPECT_THAT(rp2_point.x(),
-                AllOf(Ge(-0.05 * Metre),
-                      Le((5.0 / Sqrt(3.0) + 0.05) * Metre)));
+                AllOf(Ge(0 * Metre),
+                      Le((5.0 / Sqrt(3.0)) * Metre)));
     EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
   }
 }
