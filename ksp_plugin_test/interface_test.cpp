@@ -26,6 +26,7 @@
 #include "testing_utilities/actions.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
+#include "testing_utilities/serialization.hpp"
 
 namespace principia {
 namespace interface {
@@ -86,6 +87,8 @@ using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
+using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::ReadFromHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::ByMove;
 using ::testing::DoAll;
@@ -145,38 +148,6 @@ class InterfaceTest : public testing::Test {
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
-
-  static std::string ReadFromBinaryFile(
-      std::experimental::filesystem::path const& filename) {
-    std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
-    CHECK(file.good());
-    std::string binary;
-    while (!file.eof()) {
-      char c;
-      file.get(c);
-      binary.append(1, c);
-    }
-    file.close();
-    return binary;
-  }
-
-  static std::string ReadFromHexadecimalFile(
-      std::experimental::filesystem::path const& filename) {
-    std::fstream file = std::fstream(filename);
-    CHECK(file.good());
-    std::string hex;
-    while (!file.eof()) {
-      std::string line;
-      std::getline(file, line);
-      for (auto const c : line) {
-        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
-          hex.append(1, c);
-        }
-      }
-    }
-    file.close();
-    return hex;
-  }
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   std::string const hexadecimal_simple_plugin_;
