@@ -65,7 +65,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
       continue;
     }
 
-    // Create a new ℝP² line when two visible_segments are not consecutive.  Don't
+    // Create a new ℝP² line when two segments are not consecutive.  Don't
     // compare ℝP² points for equality, that's expensive.
     bool const are_consecutive =
         previous_position == plottable_segment.first;
@@ -119,8 +119,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
     }
     new_rp2_lines.push_back(std::move(new_rp2_line));
   }
-  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total
-            << ".";
+  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total;
   return new_rp2_lines;
 }
 
@@ -149,18 +148,16 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto previous_time = begin.time();
   auto previous_degrees_of_freedom = begin.degrees_of_freedom();
 
-  Position<Navigation> previous_position;
-  Velocity<Navigation> previous_velocity;
-  Time Δt;
+  RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
+      plotting_frame_->ToThisFrameAtTime(previous_time);
 
-  previous_position =
-      plotting_frame_->ToThisFrameAtTime(previous_time)
-          .rigid_transformation()(previous_degrees_of_freedom.position());
-  previous_velocity =
-      plotting_frame_->ToThisFrameAtTime(previous_time)
-          .orthogonal_map()(previous_degrees_of_freedom.velocity());
-
-  Δt = final_time - previous_time;
+  Position<Navigation> previous_position =
+      to_plotting_frame_at_t.rigid_transformation()(
+          previous_degrees_of_freedom.position());
+  Velocity<Navigation> previous_velocity =
+      to_plotting_frame_at_t.orthogonal_map()(
+          previous_degrees_of_freedom.velocity());
+  Time Δt = final_time - previous_time;
 
   Instant t;
   double estimated_tan²_error;
@@ -175,6 +172,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   while (previous_time < final_time) {
     do {
+      // One square root because we have squared errors, another one because the
+      // errors are quadratic in time (in other words, two square roots because
+      // the squared errors are quartic in time).
+      // A safety factor prevent catastrophic retries.
       Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
       t = previous_time + Δt;
@@ -184,10 +185,14 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       }
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
-
-      position = plotting_frame_->ToThisFrameAtTime(t).rigid_transformation()(
+      to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      position = to_plotting_frame_at_t.rigid_transformation()(
                      trajectory.EvaluatePosition(t));
 
+      // The quadratic term of the error between the linear interpolation and
+      // the actual function is maximized halfway through the segment, so it is
+      // 1/2 (Δt/2)² f″(t-Δt) = (1/2 Δt² f″(t-Δt)) / 4; the squared error is
+      // thus (1/2 Δt² f″(t-Δt))² / 16.
       estimated_tan²_error =
           perspective_.Tan²AngularDistance(extrapolated_position, position) /
           16;
@@ -201,8 +206,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
             Segment<Displacement<Navigation>>(previous_position, position));
 
     previous_position = position;
-    previous_velocity = plotting_frame_->ToThisFrameAtTime(t).orthogonal_map()(
-                            trajectory.EvaluateVelocity(t));
+    previous_velocity =
+        to_plotting_frame_at_t.orthogonal_map()(trajectory.EvaluateVelocity(t));
     previous_time = t;
 
     if (!segment_behind_focal_plane) {
@@ -222,7 +227,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     }
   }
   LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
-            << steps_attempted << " steps.";
+            << steps_attempted << " steps";
   return lines;
 }
 
