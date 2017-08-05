@@ -137,26 +137,21 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     return lines;
   }
 
-  auto const plottable_spheres = ComputePlottableSpheres(now);
-
-  auto const final_time = last.time();
-  auto const& trajectory = *begin.trajectory();
-
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
+  auto const plottable_spheres = ComputePlottableSpheres(now);
+  auto const& trajectory = *begin.trajectory();
+  auto const final_time = last.time();
 
   auto previous_time = begin.time();
-  auto previous_degrees_of_freedom = begin.degrees_of_freedom();
-
   RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
       plotting_frame_->ToThisFrameAtTime(previous_time);
-
   Position<Navigation> previous_position =
       to_plotting_frame_at_t.rigid_transformation()(
-          previous_degrees_of_freedom.position());
+          begin.degrees_of_freedom().position());
   Velocity<Navigation> previous_velocity =
       to_plotting_frame_at_t.orthogonal_map()(
-          previous_degrees_of_freedom.velocity());
+          begin.degrees_of_freedom().velocity());
   Time Δt = final_time - previous_time;
 
   Instant t;
@@ -205,10 +200,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
         perspective_.SegmentBehindFocalPlane(
             Segment<Displacement<Navigation>>(previous_position, position));
 
+    previous_time = t;
     previous_position = position;
     previous_velocity =
         to_plotting_frame_at_t.orthogonal_map()(trajectory.EvaluateVelocity(t));
-    previous_time = t;
 
     if (!segment_behind_focal_plane) {
       continue;
