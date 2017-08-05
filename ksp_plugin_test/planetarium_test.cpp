@@ -1,8 +1,10 @@
 ﻿
 #include "ksp_plugin/planetarium.hpp"
 
+#include <random>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
@@ -25,6 +27,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
+using base::make_not_null_unique;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -97,6 +100,27 @@ class PlanetariumTest : public ::testing::Test {
         .WillRepeatedly(Return(Barycentric::origin));
   }
 
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>>
+  NewCircularTrajectory(Time const& period,
+                        Time const& step,
+                        Time const& last) {
+    auto discrete_trajectory =
+        make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+    for (Time t; t <= last; t += step) {
+      Angle const ɑ = 2 * π * t * Radian / period;
+      DegreesOfFreedom<Barycentric> const degrees_of_freedom(
+          Barycentric::origin +
+              Displacement<Barycentric>({10 * Metre * Sin(ɑ),
+                                         10 * Metre * Cos(ɑ),
+                                         0 * Metre}),
+          Velocity<Barycentric>({1 * Metre * Cos(ɑ) / Second,
+                                 -1 * Metre * Sin(ɑ) / Second,
+                                 0 * Metre / Second}));
+      discrete_trajectory->Append(t0_ + t, degrees_of_freedom);
+    }
+    return discrete_trajectory;
+  }
+
   Instant const t0_;
   Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective_;
   MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
@@ -107,18 +131,9 @@ class PlanetariumTest : public ::testing::Test {
 };
 
 TEST_F(PlanetariumTest, PlotMethod0) {
-  // A circular trajectory around the origin, with 10 segments.
-  DiscreteTrajectory<Barycentric> discrete_trajectory;
-  for (Time t; t <= 10 * Second; t += 1 * Second) {
-    DegreesOfFreedom<Barycentric> const degrees_of_freedom(
-        Barycentric::origin +
-            Displacement<Barycentric>(
-                {10 * Metre * Sin(2 * π * t * Radian / (10 * Second)),
-                 10 * Metre * Cos(2 * π * t * Radian / (10 * Second)),
-                 0 * Metre}),
-        Velocity<Barycentric>());
-    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
-  }
+  auto const discrete_trajectory = NewCircularTrajectory(/*period=*/10 * Second,
+                                                         /*step=*/1 * Second,
+                                                         /*last=*/10 * Second);
 
   // No dark area, infinite acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -128,8 +143,8 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod0(discrete_trajectory.Begin(),
-                              discrete_trajectory.End(),
+      planetarium.PlotMethod0(discrete_trajectory->Begin(),
+                              discrete_trajectory->End(),
                               t0_ + 10 * Second);
 
   // Because of the way the trajectory was constructed we have two lines which
@@ -155,17 +170,10 @@ TEST_F(PlanetariumTest, PlotMethod0) {
 TEST_F(PlanetariumTest, PlotMethod1) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  DiscreteTrajectory<Barycentric> discrete_trajectory;
-  for (Time t; t <= 25'000 * Second; t += 1 * Second) {
-    DegreesOfFreedom<Barycentric> const degrees_of_freedom(
-        Barycentric::origin +
-            Displacement<Barycentric>(
-                {10 * Metre * Sin(2 * π * t * Radian / (100'000 * Second)),
-                 10 * Metre * Cos(2 * π * t * Radian / (100'000 * Second)),
-                 0 * Metre}),
-        Velocity<Barycentric>());
-    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
-  }
+  auto const discrete_trajectory =
+      NewCircularTrajectory(/*period=*/100'000 * Second,
+                            /*step=*/1 * Second,
+                            /*last=*/25'000 * Second);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -175,8 +183,8 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod1(discrete_trajectory.Begin(),
-                              discrete_trajectory.End(),
+      planetarium.PlotMethod1(discrete_trajectory->Begin(),
+                              discrete_trajectory->End(),
                               t0_ + 10 * Second);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
@@ -192,17 +200,10 @@ TEST_F(PlanetariumTest, PlotMethod1) {
 TEST_F(PlanetariumTest, PlotMethod2) {
   // A quarter of a circular trajectory around the origin, with many small
   // segments.
-  DiscreteTrajectory<Barycentric> discrete_trajectory;
-  for (Time t; t <= 25'000 * Second; t += 1 * Second) {
-    DegreesOfFreedom<Barycentric> const degrees_of_freedom(
-        Barycentric::origin +
-            Displacement<Barycentric>(
-                {10 * Metre * Sin(2 * π * t * Radian / (100'000 * Second)),
-                 10 * Metre * Cos(2 * π * t * Radian / (100'000 * Second)),
-                 0 * Metre}),
-        Velocity<Barycentric>());
-    discrete_trajectory.Append(t0_ + t, degrees_of_freedom);
-  }
+  auto const discrete_trajectory =
+      NewCircularTrajectory(/*period=*/100'000 * Second,
+                            /*step=*/1 * Second,
+                            /*last=*/25'000 * Second);
 
   // No dark area, human visual acuity, wide field of view.
   Planetarium::Parameters parameters(
@@ -212,16 +213,16 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   Planetarium planetarium(
       parameters, perspective_, &ephemeris_, &plotting_frame_);
   auto const rp2_lines =
-      planetarium.PlotMethod2(discrete_trajectory.Begin(),
-                              discrete_trajectory.End(),
+      planetarium.PlotMethod2(discrete_trajectory->Begin(),
+                              discrete_trajectory->End(),
                               t0_ + 10 * Second);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
-  EXPECT_THAT(rp2_lines[0], SizeIs(AllOf(Ge(588), Le(671))));
+  EXPECT_THAT(rp2_lines[0], SizeIs(275842));
   for (auto const& rp2_point : rp2_lines[0]) {
     EXPECT_THAT(rp2_point.x(),
-                AllOf(Ge(0 * Metre),
-                      Le(5.0 / Sqrt(3.0) * Metre)));
+                AllOf(Ge(-0.05 * Metre),
+                      Le((5.0 / Sqrt(3.0) + 0.05) * Metre)));
     EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
   }
 }
