@@ -135,7 +135,7 @@ TEST_F(BundleTest, Deadline) {
               Eq(workers * workers_per_dependent_bundle));
 }
 
-TEST_F(BundleTest, NonCooperativeDeadline) {
+TEST_F(BundleTest, DISABLED_NonCooperativeDeadline) {
   for (int i = 0; i < 10 * workers; ++i) {
     // Waiters with no cooperative abort.
     bundle_.Add([this] {
