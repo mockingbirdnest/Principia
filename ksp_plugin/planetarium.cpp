@@ -119,7 +119,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
     }
     new_rp2_lines.push_back(std::move(new_rp2_line));
   }
-  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total;
+  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total
+            << ", emitting " << total - skipped << " points";
   return new_rp2_lines;
 }
 
@@ -170,7 +171,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       // One square root because we have squared errors, another one because the
       // errors are quadratic in time (in other words, two square roots because
       // the squared errors are quartic in time).
-      // A safety factor prevent catastrophic retries.
+      // A safety factor prevents catastrophic retries.
       Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
       t = previous_time + Δt;
