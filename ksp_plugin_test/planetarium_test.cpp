@@ -218,7 +218,7 @@ TEST_F(PlanetariumTest, PlotMethod2) {
                               t0_ + 10 * Second);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
-  EXPECT_THAT(rp2_lines[0], SizeIs(AllOf(Ge(274820),Le(275842))));
+  EXPECT_THAT(rp2_lines[0], SizeIs(AllOf(Ge(274820), Le(275842))));
   for (auto const& rp2_point : rp2_lines[0]) {
     EXPECT_THAT(rp2_point.x(),
                 AllOf(Ge(-0.05 * Metre),
