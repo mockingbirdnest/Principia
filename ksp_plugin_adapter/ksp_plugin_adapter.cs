@@ -1571,7 +1571,7 @@ public partial class PrincipiaPluginAdapter
                   planetarium.PlanetariumPlotPrediction(
                       plugin_,
                       чебышёв_plotting_method_,
-                      main_vessel_guid);
+                      target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
                                             XKCDColors.Raspberry,
                                             GLLines.Style.SOLID);
