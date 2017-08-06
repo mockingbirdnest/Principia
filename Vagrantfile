@@ -41,13 +41,27 @@ SCRIPT
 
   config.vm.define "macos" do |macos|
     macos.vm.box = "jhcook/macos-sierra"
-    macos.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
 
     script = <<SCRIPT
 echo Provisioning Principia
 SCRIPT
 
     macos.vm.provision "shell", inline: script
+
+    config.vm.provider "virtualbox" do |v|
+        v.customize ["modifyvm", :id, "--usb", "off"]
+        v.customize ["modifyvm", :id, "--usbehci", "off"]
+    end
+  end
+
+  config.vm.define "macos2" do |macos2|
+    macos2.vm.box = "gobadiah/macos-sierra"
+
+    script = <<SCRIPT
+echo Provisioning Principia
+SCRIPT
+
+    macos2.vm.provision "shell", inline: script
 
     config.vm.provider "virtualbox" do |v|
         v.customize ["modifyvm", :id, "--usb", "off"]

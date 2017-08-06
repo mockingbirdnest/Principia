@@ -53,6 +53,21 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\KSP Assemblies\1.3\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\KSP Assemblies\1.3\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\..\KSP Assemblies\1.3\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release KSP 1.2.2'">
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\KSP Assemblies\1.2.2\Assembly-CSharp.dll</HintPath>
@@ -65,21 +80,6 @@
     </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\..\KSP Assemblies\1.2.2\UnityEngine.UI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup Condition="'$(Configuration)' != 'Release KSP 1.2.2'">
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\KSP Assemblies\1.3\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\KSP Assemblies\1.3\UnityEngine.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\KSP Assemblies\1.3\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
