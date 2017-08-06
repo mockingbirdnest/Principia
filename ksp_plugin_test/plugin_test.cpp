@@ -34,6 +34,7 @@
 #include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
+#include "testing_utilities/serialization.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
@@ -94,6 +95,8 @@ using testing_utilities::make_not_null;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
+using testing_utilities::WriteToBinaryFile;
+using testing_utilities::WriteToHexadecimalFile;
 using ::testing::AllOf;
 using ::testing::AnyNumber;
 using ::testing::ByMove;
@@ -290,32 +293,12 @@ class PluginTest : public testing::Test {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     std::string const serialized = message.SerializeAsString();
-
-    std::fstream file = std::fstream(
+    WriteToBinaryFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin",
-        std::ios::binary | std::ios::out);
-    CHECK(file.good());
-    file.write(serialized.c_str(), serialized.size());
-    file.close();
-
-    file = std::fstream(
+        serialized);
+    WriteToHexadecimalFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex",
-        std::ios::out);
-    CHECK(file.good());
-    int index = 0;
-    for (unsigned char c : serialized) {
-      file << std::hex << std::uppercase << std::setw(2) << std::setfill('0')
-           << static_cast<int>(c);
-      ++index;
-      if (index == 40) {
-        file << '\n';
-        index = 0;
-      }
-    }
-    if (index != 0) {
-      file << '\n';
-    }
-    file.close();
+        serialized);
   }
 
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;

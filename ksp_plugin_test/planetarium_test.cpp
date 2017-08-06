@@ -9,6 +9,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
 #include "gtest/gtest.h"
 #include "physics/massive_body.hpp"
@@ -21,6 +22,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/serialization.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -33,6 +35,7 @@ using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
 using geometry::LinearMap;
+using geometry::Perspective;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
@@ -54,6 +57,7 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::VanishesBefore;
 using ::testing::_;
 using ::testing::AllOf;
@@ -226,6 +230,57 @@ TEST_F(PlanetariumTest, PlotMethod2) {
     EXPECT_THAT(rp2_point.y(), VanishesBefore(1 * Metre, 0, 14));
   }
 }
+
+#if !defined(_DEBUG)
+TEST_F(PlanetariumTest, RealSolarSystem) {
+  serialization::DiscreteTrajectory discrete_trajectory_message;
+  discrete_trajectory_message.ParseFromString(ReadFromBinaryFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_trajectory.proto.bin"));
+  auto discrete_trajectory =
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
+          discrete_trajectory_message, {});
+
+  serialization::Ephemeris ephemeris_message;
+  ephemeris_message.ParseFromString(ReadFromBinaryFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_ephemeris.proto.bin"));
+  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(ephemeris_message);
+
+  serialization::DynamicFrame plotting_frame_message;
+  plotting_frame_message.ParseFromString(
+      ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                         "planetarium_plotting_frame.proto.bin"));
+  auto plotting_frame =
+      NavigationFrame::ReadFromMessage(plotting_frame_message, ephemeris.get());
+
+  serialization::AffineMap affine_map_message;
+  affine_map_message.ParseFromString(ReadFromBinaryFile(
+      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_to_camera.proto.bin"));
+  auto affine_map =
+      AffineMap<Navigation, Camera, Length, OrthogonalMap>::ReadFromMessage(
+          affine_map_message);
+
+  EXPECT_EQ(23423, discrete_trajectory->Size());
+
+  Planetarium::Parameters parameters(
+      /*sphere_radius_multiplier=*/1,
+      /*angular_resolution=*/0.4 * ArcMinute,
+      /*field_of_view=*/90 * Degree);
+  Planetarium planetarium(
+      parameters,
+      Perspective<Navigation, Camera, Length, OrthogonalMap>(
+          affine_map, /*focal=*/1 * Metre),
+      ephemeris.get(),
+      plotting_frame.get());
+  auto const rp2_lines =
+      planetarium.PlotMethod2(discrete_trajectory->Begin(),
+                              discrete_trajectory->End(),
+                              discrete_trajectory->last().time());
+
+  EXPECT_EQ(2, rp2_lines.size());
+  EXPECT_EQ(2, rp2_lines[0].size());
+  EXPECT_EQ(9, rp2_lines[1].size());
+}
+#endif
 
 }  // namespace internal_planetarium
 }  // namespace ksp_plugin
