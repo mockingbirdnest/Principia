@@ -231,12 +231,14 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   }
 }
 
+#if !defined(_DEBUG)
 TEST_F(PlanetariumTest, RealSolarSystem) {
   serialization::DiscreteTrajectory discrete_trajectory_message;
   discrete_trajectory_message.ParseFromString(ReadFromBinaryFile(
       SOLUTION_DIR / "ksp_plugin_test" / "planetarium_trajectory.proto.bin"));
   auto discrete_trajectory =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(discrete_trajectory_message, {});
+      DiscreteTrajectory<Barycentric>::ReadFromMessage(
+          discrete_trajectory_message, {});
 
   serialization::Ephemeris ephemeris_message;
   ephemeris_message.ParseFromString(ReadFromBinaryFile(
@@ -257,6 +259,8 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       AffineMap<Navigation, Camera, Length, OrthogonalMap>::ReadFromMessage(
           affine_map_message);
 
+  EXPECT_EQ(23423, discrete_trajectory->Size());
+
   Planetarium::Parameters parameters(
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
@@ -271,7 +275,12 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       planetarium.PlotMethod2(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),
                               discrete_trajectory->last().time());
+
+  EXPECT_EQ(2, rp2_lines.size());
+  EXPECT_EQ(2, rp2_lines[0].size());
+  EXPECT_EQ(9, rp2_lines[1].size());
 }
+#endif
 
 }  // namespace internal_planetarium
 }  // namespace ksp_plugin
