@@ -13,8 +13,7 @@ MockPlugin::MockPlugin() : Plugin("JD2451545", "JD2451545", Angle()) {}
 
 not_null<std::unique_ptr<Planetarium>> MockPlugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
-    Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
-    const {
+    Perspective<Navigation, Camera> const& perspective) const {
   std::unique_ptr<Planetarium> planetarium;
   FillPlanetarium(parameters, perspective, &planetarium);
   return std::move(planetarium);

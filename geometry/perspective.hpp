@@ -8,6 +8,7 @@
 #include "base/array.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/point.hpp"
 #include "geometry/rp2_point.hpp"
 #include "geometry/sphere.hpp"
@@ -30,8 +31,7 @@ using Segments = std::vector<Segment<Frame>>;
 // |FromFrame| to an element of ℝP².  |ToFrame| is the frame of the camera.  In
 // that frame the camera is located at the origin and looking at the positive
 // z-axis.  The x- and y- axis of the camera correspond to those of ℝP².
-template<typename FromFrame, typename ToFrame,
-         template<typename, typename> class LinearMap>
+template<typename FromFrame, typename ToFrame>
 class Perspective final {
  public:
   Perspective(

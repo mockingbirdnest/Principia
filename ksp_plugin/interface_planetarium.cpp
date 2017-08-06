@@ -118,7 +118,7 @@ Planetarium* principia__PlanetariumCreate(
       /*sphere_radius_multiplier=*/1.0 + olympus_mons_peak / mars_mean_radius,
       /*angular_resolution=*/0.4 * ArcMinute,
       field_of_view * Radian);
-  Perspective<Navigation, Camera, Length, OrthogonalMap> perspective(
+  Perspective<Navigation, Camera> perspective(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
 

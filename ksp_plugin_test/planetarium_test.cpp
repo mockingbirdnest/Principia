@@ -72,7 +72,7 @@ class PlanetariumTest : public ::testing::Test {
   PlanetariumTest()
       :  // The camera is located as {0, 20, 0} and is looking along -y.
         perspective_(
-            AffineMap<Navigation, Camera, Length, OrthogonalMap>(
+            RigidTransformation<Navigation, Camera>(
                 Navigation::origin + Displacement<Navigation>(
                                          {0 * Metre, 20 * Metre, 0 * Metre}),
                 Camera::origin,
@@ -126,7 +126,7 @@ class PlanetariumTest : public ::testing::Test {
   }
 
   Instant const t0_;
-  Perspective<Navigation, Camera, Length, OrthogonalMap> const perspective_;
+  Perspective<Navigation, Camera> const perspective_;
   MockDynamicFrame<Barycentric, Navigation> plotting_frame_;
   RotatingBody<Barycentric> const body_;
   std::vector<not_null<MassiveBody const*>> const bodies_;
@@ -255,8 +255,8 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
   serialization::AffineMap affine_map_message;
   affine_map_message.ParseFromString(ReadFromBinaryFile(
       SOLUTION_DIR / "ksp_plugin_test" / "planetarium_to_camera.proto.bin"));
-  auto affine_map =
-      AffineMap<Navigation, Camera, Length, OrthogonalMap>::ReadFromMessage(
+  auto rigid_transformation =
+      RigidTransformation<Navigation, Camera>::ReadFromMessage(
           affine_map_message);
 
   EXPECT_EQ(23423, discrete_trajectory->Size());
@@ -265,12 +265,11 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
       /*sphere_radius_multiplier=*/1,
       /*angular_resolution=*/0.4 * ArcMinute,
       /*field_of_view=*/90 * Degree);
-  Planetarium planetarium(
-      parameters,
-      Perspective<Navigation, Camera, Length, OrthogonalMap>(
-          affine_map, /*focal=*/1 * Metre),
-      ephemeris.get(),
-      plotting_frame.get());
+  Planetarium planetarium(parameters,
+                          Perspective<Navigation, Camera>(rigid_transformation,
+                                                          /*focal=*/1 * Metre),
+                          ephemeris.get(),
+                          plotting_frame.get());
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),

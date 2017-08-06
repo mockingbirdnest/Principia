@@ -19,9 +19,9 @@ namespace interface {
 
 using base::make_not_null_unique;
 using base::not_null;
-using geometry::AffineMap;
 using geometry::Instant;
 using geometry::OrthogonalMap;
+using geometry::RigidTransformation;
 using geometry::Rotation;
 using ksp_plugin::Camera;
 using ksp_plugin::Navigation;
@@ -55,8 +55,7 @@ TEST_F(InterfacePlanetariumTest, ConstructionDestruction) {
   EXPECT_CALL(*plugin_, PlanetariumRotation())
       .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(renderer, WorldToPlotting(_, _, _))
-      .WillOnce(Return(
-          AffineMap<World, Navigation, Length, OrthogonalMap>::Identity()));
+      .WillOnce(Return(RigidTransformation<World, Navigation>::Identity()));
   EXPECT_CALL(*plugin_, FillPlanetarium(_, _, _))
       .WillOnce(FillUniquePtr<2>(new MockPlanetarium));
 

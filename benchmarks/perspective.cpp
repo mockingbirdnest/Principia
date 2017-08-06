@@ -37,32 +37,31 @@ void RandomSegmentsBenchmark(
     std::uniform_real_distribution<> const& z_distribution,
     benchmark::State& state) {
   // The camera is on the x-axis and looks towards the positive x.
-  Point<Displacement<World>> const camera_origin(
+  Position<World> const camera_origin(
       World::origin +
       Displacement<World>({-10 * Metre, 0 * Metre, 0 * Metre}));
-  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
-      world_to_camera_affine,
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(world_to_camera_transformation,
+                                               /*focal=*/1 * Metre);
 
   // The sphere is at the origin and has unit radius.
-  Sphere<Length, World> const sphere(World::origin,
-                                     /*radius=*/1 * Metre);
+  Sphere<World> const sphere(World::origin,
+                             /*radius=*/1 * Metre);
 
   int const count = state.range_x();
   std::mt19937_64 random(42);
-  std::vector<Segment<Displacement<World>>> segments;
+  std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
     segments.emplace_back(
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({x_distribution(random) * Metre,
                                  y_distribution(random) * Metre,
                                  z_distribution(random) * Metre})),
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({x_distribution(random) * Metre,
                                  y_distribution(random) * Metre,
@@ -88,34 +87,33 @@ void RandomSegmentsBenchmark(
 void BM_VisibleSegmentsOrbit(benchmark::State& state) {
   // The camera is slightly above the x-y plane and looks towards the positive
   // x-axis.
-  Point<Displacement<World>> const camera_origin(
+  Position<World> const camera_origin(
       World::origin +
       Displacement<World>({-100 * Metre, 1 * Metre, 0 * Metre}));
-  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
-      world_to_camera_affine,
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(world_to_camera_transformation,
+                                               /*focal=*/1 * Metre);
 
   // The sphere is at the origin and has unit radius.
-  Sphere<Length, World> const sphere(World::origin,
-                                     /*radius=*/1 * Metre);
+  Sphere<World> const sphere(World::origin,
+                             /*radius=*/1 * Metre);
 
   // A circular orbit in the x-y plane.
   int const count = state.range_x();
-  std::vector<Segment<Displacement<World>>> segments;
+  std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
     Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
     Angle θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
     segments.emplace_back(
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({10 * Cos(θ1) * Metre,
                                  10 * Sin(θ1) * Metre,
                                  0 * Metre})),
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({10 * Cos(θ2) * Metre,
                                  10 * Sin(θ2) * Metre,
@@ -141,19 +139,18 @@ void BM_VisibleSegmentsOrbit(benchmark::State& state) {
 void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
   // The camera is slightly above the x-y plane and looks towards the positive
   // x-axis.
-  Point<Displacement<World>> const camera_origin(
+  Position<World> const camera_origin(
       World::origin +
       Displacement<World>({-100 * Metre, 1 * Metre, 0 * Metre}));
-  AffineMap<World, Camera, Length, OrthogonalMap> const world_to_camera_affine(
+  RigidTransformation<World, Camera> const world_to_camera_transformation(
       camera_origin,
       Camera::origin,
       OrthogonalMap<World, Camera>::Identity());
-  Perspective<World, Camera, Length, OrthogonalMap> const perspective(
-      world_to_camera_affine,
-      /*focal=*/1 * Metre);
+  Perspective<World, Camera> const perspective(world_to_camera_transformation,
+                                               /*focal=*/1 * Metre);
 
   // The first sphere is at the origin and has unit radius.
-  std::vector<Sphere<Length, World>> spheres;
+  std::vector<Sphere<World>> spheres;
   spheres.emplace_back(World::origin, /*radius=*/1 * Metre);
 
   // A bunch of other spheres scattered around.
@@ -169,17 +166,17 @@ void BM_VisibleSegmentsOrbitMultipleSpheres(benchmark::State& state) {
 
   // A circular orbit in the x-y plane.
   int const count = state.range_x();
-  std::vector<Segment<Displacement<World>>> segments;
+  std::vector<Segment<World>> segments;
   for (int i = 0; i < count; ++i) {
     Angle θ1 = 2 * π * i * Radian / static_cast<double>(count);
     Angle θ2 = 2 * π * (i + 1) * Radian / static_cast<double>(count);
     segments.emplace_back(
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({10 * Cos(θ1) * Metre,
                                  10 * Sin(θ1) * Metre,
                                  0 * Metre})),
-        Point<Displacement<World>>(
+        Position<World>(
             World::origin +
             Displacement<World>({10 * Cos(θ2) * Metre,
                                  10 * Sin(θ2) * Metre,

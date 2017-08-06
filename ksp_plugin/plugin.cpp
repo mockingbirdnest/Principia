@@ -811,7 +811,7 @@ not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
 
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
-    Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
+    Perspective<Navigation, Camera> const& perspective)
     const {
   return make_not_null_unique<Planetarium>(parameters,
                                            perspective,

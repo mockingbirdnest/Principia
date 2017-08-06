@@ -22,10 +22,8 @@ using quantities::Pow;
 using quantities::Product;
 using quantities::Square;
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-Perspective<FromFrame, ToFrame, LinearMap>::Perspective(
+template<typename FromFrame, typename ToFrame>
+Perspective<FromFrame, ToFrame>::Perspective(
     RigidTransformation<ToFrame, FromFrame> const& from_camera,
     Length const& focal)
     : from_camera_(from_camera),
@@ -33,10 +31,8 @@ Perspective<FromFrame, ToFrame, LinearMap>::Perspective(
       camera_(from_camera_(ToFrame::origin)),
       focal_(focal) {}
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-Perspective<FromFrame, ToFrame, LinearMap>::Perspective(
+template<typename FromFrame, typename ToFrame>
+Perspective<FromFrame, ToFrame>::Perspective(
     RigidTransformation<FromFrame, ToFrame> const& to_camera,
     Length const& focal)
     : from_camera_(to_camera.Inverse()),
@@ -44,17 +40,13 @@ Perspective<FromFrame, ToFrame, LinearMap>::Perspective(
       camera_(from_camera_(ToFrame::origin)),
       focal_(focal) {}
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-Length const& Perspective<FromFrame, ToFrame, LinearMap>::focal() const {
+template<typename FromFrame, typename ToFrame>
+Length const& Perspective<FromFrame, ToFrame>::focal() const {
   return focal_;
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-RP2Point<Length, ToFrame> Perspective<FromFrame, ToFrame, LinearMap>::
+template<typename FromFrame, typename ToFrame>
+RP2Point<Length, ToFrame> Perspective<FromFrame, ToFrame>::
 operator()(Position<FromFrame> const& point) const {
   Position<ToFrame> const point_in_camera = to_camera_(point);
   Displacement<ToFrame> const displacement_in_camera =
@@ -67,11 +59,9 @@ operator()(Position<FromFrame> const& point) const {
                                    coordinates_in_camera.z / focal_);
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
+template<typename FromFrame, typename ToFrame>
 std::experimental::optional<Segment<FromFrame>>
-Perspective<FromFrame, ToFrame, LinearMap>::SegmentBehindFocalPlane(
+Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
     Segment<FromFrame> const& segment) const {
   Vector<double, FromFrame> const z =
       from_camera_.linear_map()(Vector<double, ToFrame>({0.0, 0.0, 1.0}));
@@ -100,10 +90,8 @@ Perspective<FromFrame, ToFrame, LinearMap>::SegmentBehindFocalPlane(
   }
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-double Perspective<FromFrame, ToFrame, LinearMap>::Tan²AngularDistance(
+template<typename FromFrame, typename ToFrame>
+double Perspective<FromFrame, ToFrame>::Tan²AngularDistance(
     Position<FromFrame> const& p1,
     Position<FromFrame> const& p2) const {
   auto const v1 = to_camera_(p1) - ToFrame::origin;
@@ -112,10 +100,8 @@ double Perspective<FromFrame, ToFrame, LinearMap>::Tan²AngularDistance(
   return InnerProduct(wedge, wedge) / Pow<2>(InnerProduct(v1, v2));
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-bool Perspective<FromFrame, ToFrame, LinearMap>::IsHiddenBySphere(
+template<typename FromFrame, typename ToFrame>
+bool Perspective<FromFrame, ToFrame>::IsHiddenBySphere(
     Position<FromFrame> const& point,
     Sphere<FromFrame> const& sphere) const {
   Displacement<FromFrame> const camera_to_centre = sphere.centre() - camera_;
@@ -160,10 +146,8 @@ bool Perspective<FromFrame, ToFrame, LinearMap>::IsHiddenBySphere(
   return !is_in_front_of_horizon;
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-double Perspective<FromFrame, ToFrame, LinearMap>::SphereSin²HalfAngle(
+template<typename FromFrame, typename ToFrame>
+double Perspective<FromFrame, ToFrame>::SphereSin²HalfAngle(
     Sphere<FromFrame> const& sphere) const {
   // See VisibleSegments for the notation.
   Position<FromFrame> const& K = camera_;
@@ -174,11 +158,9 @@ double Perspective<FromFrame, ToFrame, LinearMap>::SphereSin²HalfAngle(
   return std::min(1.0, sphere.radius²() / KC²);
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
+template<typename FromFrame, typename ToFrame>
 BoundedArray<Segment<FromFrame>, 2>
-Perspective<FromFrame, ToFrame, LinearMap>::VisibleSegments(
+Perspective<FromFrame, ToFrame>::VisibleSegments(
     Segment<FromFrame> const& segment,
     Sphere<FromFrame> const& sphere) const {
   // K is the position of the camera, A and B the extremities of the segment,
@@ -377,11 +359,8 @@ Perspective<FromFrame, ToFrame, LinearMap>::VisibleSegments(
   }
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         template<typename, typename> class LinearMap>
-Segments<FromFrame>
-Perspective<FromFrame, ToFrame, LinearMap>::VisibleSegments(
+template<typename FromFrame, typename ToFrame>
+Segments<FromFrame> Perspective<FromFrame, ToFrame>::VisibleSegments(
     Segment<FromFrame> const& segment,
     std::vector<Sphere<FromFrame>> const& spheres) const {
   // This algorithm takes the input segment, applies the hiding by the first
