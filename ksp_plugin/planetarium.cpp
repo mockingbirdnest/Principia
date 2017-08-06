@@ -157,7 +157,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   Instant t;
   double estimated_tan²_error;
-  Position<Barycentric> position_in_barycentric;
+  std::experimental::optional<DegreesOfFreedom<Barycentric>>
+      degrees_of_freedom_in_barycentric;
   Position<Navigation> position;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
@@ -183,9 +184,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
       to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
-      position_in_barycentric = trajectory.EvaluatePosition(t);
+      degrees_of_freedom_in_barycentric =
+          trajectory.EvaluateDegreesOfFreedom(t);
       position = to_plotting_frame_at_t.rigid_transformation()(
-                     position_in_barycentric);
+                     degrees_of_freedom_in_barycentric->position());
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
@@ -206,8 +208,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     previous_time = t;
     previous_position = position;
     previous_velocity =
-        to_plotting_frame_at_t({position_in_barycentric,
-                                trajectory.EvaluateVelocity(t)}).velocity();
+        to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
 
     if (!segment_behind_focal_plane) {
       continue;
