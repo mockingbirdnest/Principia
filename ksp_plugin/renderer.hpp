@@ -26,12 +26,12 @@ using geometry::AffineMap;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::Rotation;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 using quantities::Length;
 
 class Renderer {

@@ -15,6 +15,7 @@
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "geometry/identity.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -51,6 +52,7 @@ using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
+using geometry::RigidTransformation;
 using geometry::Trivector;
 using integrators::IntegrationProblem;
 using integrators::McLachlanAtela1992Order5Optimal;
@@ -64,7 +66,6 @@ using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 using physics::SolarSystem;
 using quantities::Abs;
 using quantities::Acceleration;
