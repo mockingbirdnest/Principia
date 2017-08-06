@@ -89,7 +89,7 @@ class ReferenceFrameSelector : WindowRenderer {
                             CelestialBody selected,
                             Vessel target_override) {
    if (target_override) {
-     return "Target Local Vert./Horiz. at " + selected.theName;
+     return "Target Local Vert./Horiz. at " + selected.NameWithArticle();
    }
    switch (type) {
      case FrameType.BODY_CENTRED_NON_ROTATING:
@@ -152,18 +152,19 @@ class ReferenceFrameSelector : WindowRenderer {
     if (target_override) {
       return "Reference frame fixing the target vessel (" +
              target_override.vesselName + "), the plane of its orbit around " +
-             selected.theName + ", and the line between them";
+             selected.NameWithArticle() + ", and the line between them";
     }
     switch (type) {
       case FrameType.BODY_CENTRED_NON_ROTATING:
         return "Non-rotating reference frame fixing the centre of " +
-               selected.theName;
+               selected.NameWithArticle();
       case FrameType.BARYCENTRIC_ROTATING:
         if (selected.is_root()) {
           throw Log.Fatal("Describing barycentric rotating frame of root body");
         } else {
           return "Reference frame fixing the barycentre of " +
-                 selected.theName + " and " + selected.referenceBody.theName +
+                 selected.NameWithArticle() + " and " +
+                 selected.referenceBody.NameWithArticle() +
                  ", the plane in which they move about the barycentre, and" +
                  " the line between them";
         }
@@ -172,12 +173,15 @@ class ReferenceFrameSelector : WindowRenderer {
           throw Log.Fatal(
               "Describing parent-direction rotating frame of root body");
         } else {
-          return "Reference frame fixing the centre of " + selected.theName +
+          return "Reference frame fixing the centre of " +
+                 selected.NameWithArticle() +
                  ", the plane of its orbit around " +
-                 selected.referenceBody.theName + ", and the line between them";
+                 selected.referenceBody.NameWithArticle() +
+                 ", and the line between them";
         }
       case FrameType.BODY_SURFACE:
-        return "Reference frame fixing the surface of " + selected.theName;
+        return "Reference frame fixing the surface of " +
+               selected.NameWithArticle();
       default:
         throw Log.Fatal("Unexpected type " + type.ToString());
     }
