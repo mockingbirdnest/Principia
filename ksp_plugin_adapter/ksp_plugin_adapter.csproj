@@ -44,7 +44,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.2.2|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Release KSP 1.2.2\</OutputPath>
+    <OutputPath>..\Release\1.2.2 Compatibility\</OutputPath>
     <DefineConstants>TRACE;KSP_VERSION_1_2_2</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Optimize>true</Optimize>
