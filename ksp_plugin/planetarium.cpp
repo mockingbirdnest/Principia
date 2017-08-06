@@ -147,16 +147,17 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   auto previous_time = begin.time();
   RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
       plotting_frame_->ToThisFrameAtTime(previous_time);
+  DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
+      to_plotting_frame_at_t(begin.degrees_of_freedom());
   Position<Navigation> previous_position =
-      to_plotting_frame_at_t.rigid_transformation()(
-          begin.degrees_of_freedom().position());
+      initial_degrees_of_freedom.position();
   Velocity<Navigation> previous_velocity =
-      to_plotting_frame_at_t.orthogonal_map()(
-          begin.degrees_of_freedom().velocity());
+      initial_degrees_of_freedom.velocity();
   Time Δt = final_time - previous_time;
 
   Instant t;
   double estimated_tan²_error;
+  Position<Barycentric> position_in_barycentric;
   Position<Navigation> position;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
@@ -182,8 +183,9 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
       to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
+      position_in_barycentric = trajectory.EvaluatePosition(t);
       position = to_plotting_frame_at_t.rigid_transformation()(
-                     trajectory.EvaluatePosition(t));
+                     position_in_barycentric);
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
@@ -204,7 +206,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     previous_time = t;
     previous_position = position;
     previous_velocity =
-        to_plotting_frame_at_t.orthogonal_map()(trajectory.EvaluateVelocity(t));
+        to_plotting_frame_at_t({position_in_barycentric,
+                                trajectory.EvaluateVelocity(t)}).velocity();
 
     if (!segment_behind_focal_plane) {
       continue;
