@@ -28,6 +28,18 @@ BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::centre() const {
 }
 
 template<typename InertialFrame, typename ThisFrame>
+Instant BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::t_min()
+    const {
+  return centre_trajectory_->t_min();
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Instant BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::t_max()
+    const {
+  return centre_trajectory_->t_max();
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BodyCentredNonRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {

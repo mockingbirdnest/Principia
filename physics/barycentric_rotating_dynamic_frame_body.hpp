@@ -52,6 +52,18 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::secondary() const {
 }
 
 template<typename InertialFrame, typename ThisFrame>
+Instant BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::t_min()
+    const {
+  return std::max(primary_trajectory_->t_min(), secondary_trajectory_->t_min());
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Instant BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::t_max()
+    const {
+  return std::min(primary_trajectory_->t_max(), secondary_trajectory_->t_max());
+}
+
+template<typename InertialFrame, typename ThisFrame>
 RigidMotion<InertialFrame, ThisFrame>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::ToThisFrameAtTime(
     Instant const& t) const {
