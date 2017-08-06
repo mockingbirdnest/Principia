@@ -537,6 +537,9 @@ public partial class PrincipiaPluginAdapter
       PopupDialog.SpawnPopupDialog(
           anchorMin           : default(UnityEngine.Vector2),
           anchorMax           : default(UnityEngine.Vector2),
+#if KSP_VERSION_1_3
+          dialogName          : "Principia error",
+#endif
           title               : "Principia",
           message             : bad_installation_popup_,
           buttonMessage       : "OK",
