@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iomanip>
+#include <string>
 
 namespace principia {
 namespace testing_utilities {
