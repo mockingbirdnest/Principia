@@ -87,70 +87,6 @@ inline bool NaNIndependentEq(double const left, double const right) {
   return (left == right) || (std::isnan(left) && std::isnan(right));
 }
 
-template<typename Container>
-TypedIterator<Container>::TypedIterator(Container container)
-    : container_(std::move(container)),
-      iterator_(container_.begin()) {}
-
-template<typename Container>
-template<typename Interchange>
-Interchange TypedIterator<Container>::Get(
-    std::function<Interchange(typename Container::value_type const&)> const&
-        convert) const {
-  CHECK(iterator_ != container_.end());
-  return convert(*iterator_);
-}
-
-template<typename Container>
-bool TypedIterator<Container>::AtEnd() const {
-  return iterator_ == container_.end();
-}
-
-template<typename Container>
-void TypedIterator<Container>::Increment() {
-  ++iterator_;
-}
-
-template<typename Container>
-int TypedIterator<Container>::Size() const {
-  return container_.size();
-}
-
-inline TypedIterator<DiscreteTrajectory<World>>::TypedIterator(
-    not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
-    not_null<Plugin const*> const plugin)
-    : trajectory_(std::move(trajectory)),
-      iterator_(trajectory_->Begin()),
-      plugin_(plugin) {
-  CHECK(trajectory_->is_root());
-}
-
-template<typename Interchange>
-Interchange TypedIterator<DiscreteTrajectory<World>>::Get(
-    std::function<Interchange(
-        DiscreteTrajectory<World>::Iterator const&)> const& convert) const {
-  CHECK(iterator_ != trajectory_->End());
-  return convert(iterator_);
-}
-
-inline bool TypedIterator<DiscreteTrajectory<World>>::AtEnd() const {
-  return iterator_ == trajectory_->End();
-}
-
-inline void TypedIterator<DiscreteTrajectory<World>>::Increment() {
-  ++iterator_;
-}
-
-inline int TypedIterator<DiscreteTrajectory<World>>::Size() const {
-  return trajectory_->Size();
-}
-
-inline not_null<Plugin const*> TypedIterator<
-    DiscreteTrajectory<World>>::plugin() const {
-  return plugin_;
-}
-
-
 template<typename T>
 std::unique_ptr<T> TakeOwnership(T** const pointer) {
   CHECK_NOTNULL(pointer);
@@ -228,6 +164,11 @@ inline bool operator==(WXYZ const& left, WXYZ const& right) {
          NaNIndependentEq(left.x, right.x) &&
          NaNIndependentEq(left.y, right.y) &&
          NaNIndependentEq(left.z, right.z);
+}
+
+inline bool operator==(XY const& left, XY const& right) {
+  return NaNIndependentEq(left.x, right.x) &&
+         NaNIndependentEq(left.y, right.y);
 }
 
 inline bool operator==(XYZ const& left, XYZ const& right) {
@@ -322,6 +263,10 @@ inline WXYZ ToWXYZ(geometry::Quaternion const& quaternion) {
           quaternion.imaginary_part().x,
           quaternion.imaginary_part().y,
           quaternion.imaginary_part().z};
+}
+
+inline XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point) {
+  return {rp2_point.x() / Metre, rp2_point.y() / Metre};
 }
 
 inline XYZ ToXYZ(geometry::R3Element<double> const& r3_element) {

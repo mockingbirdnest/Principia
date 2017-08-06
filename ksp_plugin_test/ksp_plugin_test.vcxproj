@@ -39,6 +39,7 @@
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_planetarium.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_vessel.cpp" />
     <ClCompile Include="..\ksp_plugin\part.cpp" />
@@ -51,6 +52,7 @@
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />
+    <ClCompile Include="interface_planetarium_test.cpp" />
     <ClCompile Include="interface_renderer_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
     <ClCompile Include="manœuvre_test.cpp" />
@@ -75,6 +77,7 @@
     <ClInclude Include="mock_celestial.hpp" />
     <ClInclude Include="mock_flight_plan.hpp" />
     <ClInclude Include="mock_manœuvre.hpp" />
+    <ClInclude Include="mock_planetarium.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>

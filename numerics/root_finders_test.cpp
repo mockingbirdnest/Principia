@@ -80,7 +80,7 @@ TEST_F(RootFindersTest, QuadraticEquations) {
 
   // A typed system.
   Instant const t0;
-  std::vector<Instant> s5 = SolveQuadraticEquation(
+  auto const s5 = SolveQuadraticEquation(
       t0, 1.0 * Metre, 2.0 * Metre / Second, 1.0 * Metre / Second / Second);
   EXPECT_THAT(s5, ElementsAre(t0 - 1.0 * Second));
 }

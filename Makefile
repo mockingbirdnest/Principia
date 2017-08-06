@@ -1,6 +1,10 @@
 .SECONDEXPANSION:
 PERCENT := %
 
+# detect OS
+UNAME_S := $(shell uname -s)
+UNAME_M := $(shell uname -m)
+
 CXX := clang++
 
 # TODO(egg): build benchmarks
@@ -47,11 +51,17 @@ ADAPTER_BUILD_DIR     := ksp_plugin_adapter/obj/
 ADAPTER_CONFIGURATION := Release
 FINAL_PRODUCTS_DIR    := Release/
 ADAPTER               := $(ADAPTER_BUILD_DIR)$(ADAPTER_CONFIGURATION)/ksp_plugin_adapter.dll
-PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+
+ifeq ($(UNAME_S),Linux)
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/Linux64/
+endif
+ifeq ($(UNAME_S),Darwin)
+    PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
+endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
-	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lsupc++
+	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
@@ -65,20 +75,21 @@ SHARED_ARGS   := \
 	-DTEMP_DIR='std::experimental::filesystem::path("/tmp")'                \
 	-DNDEBUG
 
-# detect OS
-UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-    UNAME_M := $(shell uname -m)
     ifeq ($(UNAME_M),x86_64)
         SHARED_ARGS += -m64
     else
         SHARED_ARGS += -m32
     endif
     MDTOOL := mdtool
+    LIBS += -lsupc++
+    TEST_LIBS += -lsupc++
+    SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    SHARED_ARGS += -mmacosx-version-min=10.7 -arch i386
+    SHARED_ARGS += -mmacosx-version-min=10.7 -arch x86_64
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
+    SHAREDFLAG := -dynamiclib
 endif
 
 COMPILER_OPTIONS := -c $(SHARED_ARGS) $(INCLUDES)
@@ -184,7 +195,7 @@ KSP_PLUGIN := $(PLUGIN_DIRECTORY)principia.so
 
 $(KSP_PLUGIN) : $(PROTO_OBJECTS) $(PLUGIN_OBJECTS) $(JOURNAL_LIB_OBJECTS) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
-	$(CXX) -shared $(LDFLAGS) $^ $(LIBS) -o $@
+	$(CXX) $(SHAREDFLAG) $(LDFLAGS) $^ $(LIBS) -o $@
 
 ##### Tests
 
@@ -214,7 +225,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 
 $(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
 	@mkdir -p $(@D)
-	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -lsupc++ -o $@
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
 ########## Testing
 
@@ -297,7 +308,7 @@ iwyu_generate_mappings:
 
 %.cpp!!iwyu: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
-	$(REMOVE_BOM) 
+	$(REMOVE_BOM)
 	$(FIX_INCLUDES) < $(subst !SLASH!,/, $*.iwyu) | cat
 	$(RESTORE_BOM)
 
@@ -306,7 +317,7 @@ iwyu: $(subst /,!SLASH!, $(addsuffix !!iwyu, $(IWYU_TARGETS)))
 
 %.cpp!!iwyu_unsafe: iwyu_generate_mappings
 	$(IWYU) $(CXXFLAGS) $(subst !SLASH!,/, $*.cpp) $(IWYU_FLAGS) 2>&1 | tee $(subst !SLASH!,/, $*.iwyu) | $(IWYU_CHECK_ERROR)
-	$(REMOVE_BOM) 
+	$(REMOVE_BOM)
 	$(FIX_INCLUDES) $(IWYU_NOSAFE_HEADERS) < $(subst !SLASH!,/, $*.iwyu) | cat
 	$(RESTORE_BOM)
 
@@ -315,4 +326,3 @@ iwyu_unsafe: $(subst /,!SLASH!, $(addsuffix !!iwyu_unsafe, $(IWYU_TARGETS)))
 
 iwyu_clean:
 	$(IWYU_CLEAN)
-

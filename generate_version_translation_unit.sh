@@ -13,9 +13,17 @@ char const Version[] =
 }  // namespace base
 }  // namespace principia"
 
-echo -e "$VERSION_TEMPLATE" | 
-sed "s/%%DATE%%/`date -d $(git log -1 --format=%cd --date=iso-strict) -u +%Y-%m-%dT%H:%M:%SZ`/" |
-sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > $TEMPORARY_FILE
+PLATFORM=$(uname -s)
+if [ "$PLATFORM" == "Darwin" ]; then
+  echo -e "$VERSION_TEMPLATE" |
+  sed "s/%%DATE%%/`date -j -u -f \"%Y-%m-%d %H:%M:%S %z\" -u +%Y-%m-%dT%H:%M:%SZ \"$(git log -1 --format=%cd --date=iso)\"`/" |
+  sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > $TEMPORARY_FILE
+else
+  echo -e "$VERSION_TEMPLATE" |
+  sed "s/%%DATE%%/`date -d $(git log -1 --format=%cd --date=iso-strict) -u +%Y-%m-%dT%H:%M:%SZ`/" |
+  sed "s/%%VERSION%%/`git describe --tags --always --dirty --abbrev=40 --long`/" > $TEMPORARY_FILE
+fi
+
 if cmp -s base/version.generated.cc $TEMPORARY_FILE
 then
   echo "No change to git describe, leaving base/version.generated.cc untouched"

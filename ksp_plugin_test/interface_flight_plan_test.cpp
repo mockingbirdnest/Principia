@@ -17,6 +17,7 @@
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -37,6 +38,7 @@ using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Identity;
 using geometry::OrthogonalMap;
+using geometry::RigidTransformation;
 using geometry::Rotation;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
@@ -49,13 +51,13 @@ using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
 using ksp_plugin::WorldSun;
 using physics::BodyCentredNonRotatingDynamicFrame;
+using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::MassiveBody;
 using physics::MockContinuousTrajectory;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 using quantities::constants::StandardGravity;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -221,7 +223,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       30 * Second * StandardGravity,
       Vector<double, Frenet<Navigation>>({1, 1, 1}),
       std::unique_ptr<DynamicFrame<Barycentric, Navigation> const>(
-          navigation_manœuvre_frame));
+          navigation_manœuvre_frame),
+      /*is_inertially_fixed=*/true);
   navigation_manœuvre.set_initial_time(Instant());
   navigation_manœuvre.set_duration(7 * Second);
   auto const barycentric_to_plotting = RigidMotion<Barycentric, Navigation>(
@@ -317,11 +320,14 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                                            vessel_guid,
                                            {0, 1, 2},
                                            3);
-  EXPECT_EQ(XYZ({0, 0, 0}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 0, 0}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
   principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 1, 2}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 1, 2}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
   principia__IteratorIncrement(iterator);
-  EXPECT_EQ(XYZ({0, 2, 4}), principia__IteratorGetXYZ(iterator));
+  EXPECT_EQ(XYZ({0, 2, 4}),
+            principia__IteratorGetDiscreteTrajectoryXYZ(iterator));
 
   burn.thrust_in_kilonewtons = 10;
   EXPECT_CALL(*plugin_,

@@ -9,22 +9,23 @@ namespace principia {
 namespace geometry {
 namespace internal_sphere {
 
-using quantities::Product;
+using quantities::Length;
+using quantities::Square;
 
-template<typename Scalar, typename Frame>
+template<typename Frame>
 class Sphere {
  public:
-  Sphere(Point<Vector<Scalar, Frame>> const& centre,
-         Scalar const& radius);
+  Sphere(Position<Frame> const& centre,
+         Length const& radius);
 
-  Point<Vector<Scalar, Frame>> const& centre() const;
-  Scalar const& radius() const;
-  Product<Scalar, Scalar> const radius²() const;
+  Position<Frame> const& centre() const;
+  Length const& radius() const;
+  Square<Length> const radius²() const;
 
  private:
-  Point<Vector<Scalar, Frame>> const centre_;
-  Scalar const radius_;
-  Product<Scalar, Scalar> const radius²_;
+  Position<Frame> const centre_;
+  Length const radius_;
+  Square<Length> const radius²_;
 };
 
 }  // namespace internal_sphere

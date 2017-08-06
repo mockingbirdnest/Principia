@@ -13,10 +13,12 @@
 #include "base/monostable.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/perspective.hpp"
 #include "geometry/point.hpp"
 #include "ksp_plugin/celestial.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/manœuvre.hpp"
+#include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/renderer.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
@@ -47,6 +49,7 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Point;
+using geometry::Perspective;
 using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
@@ -310,6 +313,10 @@ class Plugin {
 
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
+
+  virtual not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
+      Planetarium::Parameters const& parameters,
+      Perspective<Navigation, Camera> const& perspective) const;
 
   virtual not_null<std::unique_ptr<NavigationFrame>>
   NewBarycentricRotatingNavigationFrame(Index primary_index,

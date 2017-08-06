@@ -46,6 +46,7 @@ message Burn {
   required NavigationFrameParameters frame = 3;
   required double initial_time = 4;
   required XYZ delta_v = 5;
+  required bool is_inertially_fixed = 6;
 }
 
 message KeplerianElements {
@@ -89,8 +90,13 @@ message WXYZ {
   required double z = 4;
 }
 
+message XY {
+  required double x = 1;
+  required double y = 2;
+}
+
 message Method {
-  extensions 5000 to 5999;  // Last used: 5129.
+  extensions 5000 to 5999;  // Last used: 5138.
 }
 
 message AdvanceTime {
@@ -412,6 +418,23 @@ message FlightPlanGetDesiredFinalTime {
   }
   message Return {
     required double result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FlightPlanGetGuidance {
+  extend Method {
+    optional FlightPlanGetGuidance extension = 5138;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required string vessel_guid = 2;
+    required int32 index = 3;
+  }
+  message Return {
+    required XYZ result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -916,9 +939,9 @@ message IteratorDelete {
   optional Out out = 2;
 }
 
-message IteratorGetQP {
+message IteratorGetDiscreteTrajectoryQP {
   extend Method {
-    optional IteratorGetQP extension = 5093;
+    optional IteratorGetDiscreteTrajectoryQP extension = 5093;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -931,9 +954,9 @@ message IteratorGetQP {
   optional Return return = 3;
 }
 
-message IteratorGetTime {
+message IteratorGetDiscreteTrajectoryTime {
   extend Method {
-    optional IteratorGetTime extension = 5094;
+    optional IteratorGetDiscreteTrajectoryTime extension = 5094;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -946,9 +969,9 @@ message IteratorGetTime {
   optional Return return = 3;
 }
 
-message IteratorGetXYZ {
+message IteratorGetDiscreteTrajectoryXYZ {
   extend Method {
-    optional IteratorGetXYZ extension = 5085;
+    optional IteratorGetDiscreteTrajectoryXYZ extension = 5085;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
@@ -961,9 +984,51 @@ message IteratorGetXYZ {
   optional Return return = 3;
 }
 
+message IteratorGetRP2LinesIterator {
+  extend Method {
+    optional IteratorGetRP2LinesIterator extension = 5132;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetRP2LineXY {
+  extend Method {
+    optional IteratorGetRP2LineXY extension = 5133;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required XY result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
 message IteratorIncrement {
   extend Method {
     optional IteratorIncrement extension = 5086;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (is_subject) = true];
+  }
+  optional In in = 1;
+}
+
+message IteratorReset {
+  extend Method {
+    optional IteratorReset extension = 5135;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
@@ -1073,6 +1138,102 @@ message NewPlugin {
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Plugin",
                                  (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumCreate {
+  extend Method {
+    optional PlanetariumCreate extension = 5130;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required XYZ sun_world_position = 2;
+    required XYZ xyz_opengl_camera_x_in_world = 3;
+    required XYZ xyz_opengl_camera_y_in_world = 4;
+    required XYZ xyz_opengl_camera_z_in_world = 5;
+    required XYZ xyz_camera_position_in_world = 6;
+    required double focal = 7;
+    required double field_of_view = 8;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Planetarium",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumDelete {
+  extend Method {
+    optional PlanetariumDelete extension = 5131;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message PlanetariumPlotFlightPlanSegment {
+  extend Method {
+    optional PlanetariumPlotFlightPlanSegment extension = 5137;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 method = 3;
+    required string vessel_guid = 4;
+    required int32 index = 5;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumPlotPrediction {
+  extend Method {
+    optional PlanetariumPlotPrediction extension = 5136;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 method = 3;
+    required string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message PlanetariumPlotPsychohistory {
+  extend Method {
+    optional PlanetariumPlotPsychohistory extension = 5134;
+  }
+  message In {
+    required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (is_subject) = true];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
+    required int32 method = 3;
+    required string vessel_guid = 4;
+  }
+  message Return {
+    required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;

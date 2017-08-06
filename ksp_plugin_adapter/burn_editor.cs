@@ -100,6 +100,12 @@ class BurnEditor {
         frame_warning = "Manœuvre frame differs from plotting frame";
       }
       UnityEngine.GUILayout.TextArea(frame_warning, warning_style);
+      if (is_inertially_fixed_ !=
+          UnityEngine.GUILayout.Toggle(is_inertially_fixed_,
+                                       "Inertially fixed")) {
+        changed = true;
+        is_inertially_fixed_ = !is_inertially_fixed_;
+      }
       changed |= Δv_tangent_.Render(enabled);
       changed |= Δv_normal_.Render(enabled);
       changed |= Δv_binormal_.Render(enabled);
@@ -131,6 +137,7 @@ class BurnEditor {
     Δv_binormal_.value = burn.delta_v.z;
     initial_time_.value = burn.initial_time;
     reference_frame_selector_.Reset(burn.frame);
+    is_inertially_fixed_ = burn.is_inertially_fixed;
     duration_ = manoeuvre.duration;
     initial_mass_in_tonnes_ = manoeuvre.initial_mass_in_tonnes;
   }
@@ -143,7 +150,8 @@ class BurnEditor {
         initial_time = initial_time_.value,
         delta_v = new XYZ{x = Δv_tangent_.value,
                           y = Δv_normal_.value,
-                          z = Δv_binormal_.value}};
+                          z = Δv_binormal_.value},
+        is_inertially_fixed = is_inertially_fixed_};
   }
 
   public void ReferenceFrameChanged(NavigationFrameParameters parameters) {
@@ -239,6 +247,7 @@ class BurnEditor {
     specific_impulse_in_seconds_g0_ = range;
   }
 
+  private bool is_inertially_fixed_;
   private DifferentialSlider Δv_tangent_;
   private DifferentialSlider Δv_normal_;
   private DifferentialSlider Δv_binormal_;

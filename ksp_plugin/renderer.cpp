@@ -2,6 +2,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -12,13 +13,13 @@ namespace internal_renderer {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
+using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::ComputeApsides;
 using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
-using physics::RigidTransformation;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
                    not_null<std::unique_ptr<NavigationFrame>> plotting_frame)
@@ -210,6 +211,23 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 
   return PlottingToWorld(time, planetarium_rotation) *
          frenet_frame_to_plotting_frame.Forget();
+}
+
+OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
+    Vessel const& vessel,
+    NavigationFrame const& navigation_frame,
+    Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
+  auto const vessel_psychohistory_last = vessel.psychohistory().last();
+  auto const to_navigation =
+      navigation_frame.ToThisFrameAtTime(vessel_psychohistory_last.time());
+  auto const from_navigation = to_navigation.orthogonal_map().Inverse();
+  auto const frenet_frame =
+      navigation_frame.FrenetFrame(
+          vessel_psychohistory_last.time(),
+          to_navigation(
+              vessel_psychohistory_last.degrees_of_freedom())).Forget();
+  return BarycentricToWorld(planetarium_rotation) * from_navigation *
+         frenet_frame;
 }
 
 OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(

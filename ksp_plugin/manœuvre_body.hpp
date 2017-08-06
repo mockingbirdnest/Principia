@@ -24,12 +24,14 @@ Manœuvre<InertialFrame, Frame>::Manœuvre(
     Mass const& initial_mass,
     SpecificImpulse const& specific_impulse,
     Vector<double, Frenet<Frame>> const& direction,
-    not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame)
+    not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame,
+    bool const is_inertially_fixed)
     : thrust_(thrust),
       initial_mass_(initial_mass),
       specific_impulse_(specific_impulse),
       direction_(NormalizeOrZero(direction)),
-      frame_(std::move(frame)) {}
+      frame_(std::move(frame)),
+      is_inertially_fixed_(is_inertially_fixed) {}
 
 template<typename InertialFrame, typename Frame>
 Force const& Manœuvre<InertialFrame, Frame>::thrust() const {
@@ -173,6 +175,11 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
 }
 
 template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
+  return is_inertially_fixed_;
+}
+
+template<typename InertialFrame, typename Frame>
 typename Ephemeris<InertialFrame>::IntrinsicAcceleration
     Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
   Vector<double, InertialFrame> const inertial_direction = InertialDirection();
@@ -197,6 +204,7 @@ void Manœuvre<InertialFrame, Frame>::WriteToMessage(
   duration_->WriteToMessage(message->mutable_duration());
   initial_time_->WriteToMessage(message->mutable_initial_time());
   frame_->WriteToMessage(message->mutable_frame());
+  message->set_is_inertially_fixed(is_inertially_fixed_);
 }
 
 template<typename InertialFrame, typename Frame>
@@ -209,7 +217,8 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
       SpecificImpulse::ReadFromMessage(message.specific_impulse()),
       Vector<double, Frenet<Frame>>::ReadFromMessage(message.direction()),
       DynamicFrame<InertialFrame, Frame>::ReadFromMessage(
-          message.frame(), ephemeris));
+          message.frame(), ephemeris),
+      message.is_inertially_fixed());
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;

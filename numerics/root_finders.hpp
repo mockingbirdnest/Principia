@@ -3,12 +3,14 @@
 
 #include <vector>
 
+#include "base/array.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_root_finders {
 
+using base::BoundedArray;
 using quantities::Derivative;
 
 // Approximates a root of |f| between |lower_bound| and |upper_bound| by
@@ -25,7 +27,7 @@ Argument Bisect(Function f,
 //   a2 * (x - origin)^2 + a1 * (x - origin) + a0 == 0
 // The result may have 0, 1 or 2 values and is sorted.
 template<typename Argument, typename Value>
-std::vector<Argument> SolveQuadraticEquation(
+BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
     Derivative<Value, Argument> const& a1,

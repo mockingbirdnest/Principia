@@ -43,6 +43,18 @@ class MockRenderer : public Renderer {
       BarycentricToWorldSun,
       OrthogonalMap<Barycentric, WorldSun>(
           Rotation<Barycentric, AliceSun> const& planetarium_rotation));
+  MOCK_CONST_METHOD3(
+      PlottingToWorld,
+      RigidTransformation<Navigation, World>(
+          Instant const& time,
+          Position<World> const& sun_world_position,
+          Rotation<Barycentric, AliceSun> const& planetarium_rotation));
+  MOCK_CONST_METHOD3(
+      WorldToPlotting,
+      RigidTransformation<World, Navigation>(
+          Instant const& time,
+          Position<World> const& sun_world_position,
+          Rotation<Barycentric, AliceSun> const& planetarium_rotation));
 };
 
 }  // namespace internal_renderer

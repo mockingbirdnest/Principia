@@ -77,6 +77,9 @@ class MockPlugin : public Plugin {
   MOCK_CONST_METHOD1(HasVessel, bool(GUID const& vessel_guid));
   MOCK_CONST_METHOD1(GetVessel, not_null<Vessel*>(GUID const& vessel_guid));
 
+  not_null<std::unique_ptr<Planetarium>> NewPlanetarium(
+      Planetarium::Parameters const& parameters,
+      Perspective<Navigation, Camera> const& perspective) const override;
   not_null<std::unique_ptr<NavigationFrame>>
   NewBodyCentredNonRotatingNavigationFrame(
       Index reference_body_index) const override;
@@ -85,6 +88,10 @@ class MockPlugin : public Plugin {
       Index primary_index,
       Index secondary_index) const override;
 
+  MOCK_CONST_METHOD3(FillPlanetarium,
+                     void(Planetarium::Parameters const& parameters,
+                          Perspective<Navigation, Camera> const& perspective,
+                          std::unique_ptr<Planetarium>* planetarium));
   MOCK_CONST_METHOD2(
       FillBodyCentredNonRotatingNavigationFrame,
       void(Index reference_body_index,

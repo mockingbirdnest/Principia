@@ -40,6 +40,14 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
+  [KSPField(isPersistant = true)]
+  private bool use_cayley_plotting_ = true;
+  [KSPField(isPersistant = true)]
+  private bool use_чебышёв_plotting_ = false;
+  [KSPField(isPersistant = true)]
+  private int чебышёв_plotting_method_ = 1;
+  private const int чебышёв_plotting_methods_count = 3;
+
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
   private Controlled<FlightPlanner> flight_planner_;
   private MapNodePool map_node_pool_;
@@ -149,6 +157,9 @@ public partial class PrincipiaPluginAdapter
   private KSP.UI.Screens.SpaceTracking space_tracking {
     get {
      if (space_tracking_ == null) {
+       if (HighLogic.LoadedScene != GameScenes.TRACKSTATION) {
+         return null;
+       }
        space_tracking_ = (KSP.UI.Screens.SpaceTracking)FindObjectOfType(
                              typeof(KSP.UI.Screens.SpaceTracking));
      }
@@ -1486,75 +1497,144 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-
-      GLLines.Draw(() => {
-        GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedVesselTrajectory(main_vessel_guid,
-                                             sun_world_position),
-            XKCDColors.AcidGreen,
-            GLLines.Style.FADED);
-        RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-        GLLines.RenderAndDeleteTrajectory(
-            plugin_.RenderedPrediction(main_vessel_guid, sun_world_position),
-            XKCDColors.Fuchsia,
-            GLLines.Style.SOLID);
-        string target_id =
-            FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-        if (!plotting_frame_selector_.get().target_override &&
-            target_id != null && plugin_.HasVessel(target_id)) {
-          GLLines.RenderAndDeleteTrajectory(
-              plugin_.RenderedVesselTrajectory(target_id, sun_world_position),
-              XKCDColors.Goldenrod,
-              GLLines.Style.FADED);
-          RenderPredictionMarkers(target_id, sun_world_position);
-          GLLines.RenderAndDeleteTrajectory(
-              plugin_.RenderedPrediction(target_id, sun_world_position),
-              XKCDColors.PigPink,
-              GLLines.Style.SOLID);
-        }
-        if (plugin_.FlightPlanExists(main_vessel_guid)) {
-          RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
-
-          int number_of_segments =
-              plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
-          for (int i = 0; i < number_of_segments; ++i) {
-            bool is_burn = i % 2 == 1;
-            var rendered_segments = plugin_.FlightPlanRenderedSegment(
-                main_vessel_guid, sun_world_position, i);
-            if (rendered_segments.IteratorAtEnd()) {
-              Log.Info("Skipping segment " + i);
-              continue;
-            }
-            Vector3d position_at_start =
-                (Vector3d)rendered_segments.IteratorGetXYZ();
+      IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
+      try {
+        GLLines.Draw(() => {
+          if (use_cayley_plotting_) {
             GLLines.RenderAndDeleteTrajectory(
-                rendered_segments,
-                is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
-                is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
-            if (is_burn) {
-              int manoeuvre_index = i / 2;
-              NavigationManoeuvreFrenetTrihedron manoeuvre =
-                  plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                      main_vessel_guid,
-                      manoeuvre_index);
-              double scale = (ScaledSpace.ScaledToLocalSpace(
-                                  MapView.MapCamera.transform.position) -
-                              position_at_start).magnitude * 0.015;
-              Action<XYZ, UnityEngine.Color> add_vector =
-                  (world_direction, colour) => {
-                UnityEngine.GL.Color(colour);
-                GLLines.AddSegment(
-                    position_at_start,
-                    position_at_start + scale * (Vector3d)world_direction,
-                    hide_behind_bodies : false);
-              };
-              add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
-              add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
-              add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+                plugin_.RenderedVesselTrajectory(main_vessel_guid,
+                                                 sun_world_position),
+                XKCDColors.AcidGreen,
+                GLLines.Style.FADED);
+          }
+          if (use_чебышёв_plotting_) {
+            IntPtr rp2_lines_iterator =
+                planetarium.PlanetariumPlotPsychohistory(
+                    plugin_,
+                    чебышёв_plotting_method_,
+                    main_vessel_guid);
+            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                          XKCDColors.Banana,
+                                          GLLines.Style.FADED);
+          }
+          RenderPredictionMarkers(main_vessel_guid, sun_world_position);
+          if (use_cayley_plotting_) {
+            GLLines.RenderAndDeleteTrajectory(
+                plugin_.RenderedPrediction(main_vessel_guid,
+                                           sun_world_position),
+                XKCDColors.Fuchsia,
+                GLLines.Style.SOLID);
+          }
+          if (use_чебышёв_plotting_) {
+            IntPtr rp2_lines_iterator =
+                planetarium.PlanetariumPlotPrediction(
+                    plugin_,
+                    чебышёв_plotting_method_,
+                    main_vessel_guid);
+            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                          XKCDColors.Cerise,
+                                          GLLines.Style.SOLID);
+          }
+          string target_id =
+              FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
+          if (!plotting_frame_selector_.get().target_override &&
+              target_id != null && plugin_.HasVessel(target_id)) {
+            if (use_cayley_plotting_) {
+              GLLines.RenderAndDeleteTrajectory(
+                  plugin_.RenderedVesselTrajectory(target_id,
+                                                   sun_world_position),
+                  XKCDColors.Goldenrod,
+                  GLLines.Style.FADED);
+            }
+            if (use_чебышёв_plotting_) {
+              IntPtr rp2_lines_iterator =
+                  planetarium.PlanetariumPlotPsychohistory(
+                      plugin_,
+                      чебышёв_plotting_method_,
+                      target_id);
+              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                            XKCDColors.Orange,
+                                            GLLines.Style.FADED);
+            }
+            RenderPredictionMarkers(target_id, sun_world_position);
+            if (use_cayley_plotting_) {
+              GLLines.RenderAndDeleteTrajectory(
+                  plugin_.RenderedPrediction(target_id, sun_world_position),
+                  XKCDColors.PigPink,
+                  GLLines.Style.SOLID);
+            }
+            if (use_чебышёв_plotting_) {
+              IntPtr rp2_lines_iterator =
+                  planetarium.PlanetariumPlotPrediction(
+                      plugin_,
+                      чебышёв_plotting_method_,
+                      main_vessel_guid);
+              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
+                                            XKCDColors.Raspberry,
+                                            GLLines.Style.SOLID);
             }
           }
-        }
-      });
+          if (plugin_.FlightPlanExists(main_vessel_guid)) {
+            RenderFlightPlanMarkers(main_vessel_guid, sun_world_position);
+
+            int number_of_segments =
+                plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
+            for (int i = 0; i < number_of_segments; ++i) {
+              bool is_burn = i % 2 == 1;
+              var rendered_segments = plugin_.FlightPlanRenderedSegment(
+                  main_vessel_guid, sun_world_position, i);
+              if (rendered_segments.IteratorAtEnd()) {
+                Log.Info("Skipping segment " + i);
+                continue;
+              }
+              Vector3d position_at_start =
+                  (Vector3d)rendered_segments.
+                      IteratorGetDiscreteTrajectoryXYZ();
+              if (use_cayley_plotting_) {
+                GLLines.RenderAndDeleteTrajectory(
+                    rendered_segments,
+                    is_burn ? XKCDColors.OrangeRed : XKCDColors.BabyBlue,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
+              if (use_чебышёв_plotting_) {
+                IntPtr rp2_lines_iterator =
+                    planetarium.PlanetariumPlotFlightPlanSegment(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid,
+                        i);
+                GLLines.PlotAndDeleteRP2Lines(
+                    rp2_lines_iterator,
+                    is_burn ? XKCDColors.Grapefruit : XKCDColors.Blueberry,
+                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+              }
+              if (is_burn) {
+                int manoeuvre_index = i / 2;
+                NavigationManoeuvreFrenetTrihedron manoeuvre =
+                    plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                        main_vessel_guid,
+                        manoeuvre_index);
+                double scale = (ScaledSpace.ScaledToLocalSpace(
+                                    MapView.MapCamera.transform.position) -
+                                position_at_start).magnitude * 0.015;
+                Action<XYZ, UnityEngine.Color> add_vector =
+                    (world_direction, colour) => {
+                      UnityEngine.GL.Color(colour);
+                      GLLines.AddSegment(
+                    position_at_start,
+                    position_at_start + scale * (Vector3d)world_direction,
+                    hide_behind_bodies: false);
+                    };
+                add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
+                add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
+                add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+              }
+            }
+          }
+        });
+      } finally {
+        Interface.PlanetariumDelete(ref planetarium);
+      }
       map_node_pool_.Update();
     } else {
       map_node_pool_.Clear();
@@ -1957,6 +2037,21 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LoggingSettings() {
+    using (new HorizontalLayout()) {
+      use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
+          use_cayley_plotting_, "Cayley plotting");
+      use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
+          use_чебышёв_plotting_, "Чебышёв plotting");
+    }
+    using (new HorizontalLayout()) {
+      UnityEngine.GUILayout.Label("Чебышёв plotting method:");
+      for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
+        if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
+                                         i.ToString())) {
+          чебышёв_plotting_method_ = i;
+        }
+      }
+    }
     using (new HorizontalLayout()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(

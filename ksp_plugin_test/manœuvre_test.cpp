@@ -2,6 +2,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 
 #include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/continuous_trajectory.hpp"
@@ -24,6 +25,7 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::RigidTransformation;
 using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
@@ -31,7 +33,6 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
-using physics::RigidTransformation;
 using quantities::Pow;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -96,7 +97,8 @@ TEST_F(ManœuvreTest, TimedBurn) {
       /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       /*direction=*/2 * e_y,
-      MakeMockDynamicFrame());
+      MakeMockDynamicFrame(),
+      /*is_inertially_fixed=*/true);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -147,7 +149,8 @@ TEST_F(ManœuvreTest, TargetΔv) {
       /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       /*direction=*/e_y,
-      MakeMockDynamicFrame());
+      MakeMockDynamicFrame(),
+      /*is_inertially_fixed=*/true);
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
@@ -230,7 +233,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_1st_90_percent_thrust,
       specific_impulse_1st,
       e_y,
-      MakeMockDynamicFrame());
+      MakeMockDynamicFrame(),
+      /*is_inertially_fixed=*/true);
   EXPECT_THAT(RelativeError(lox_flowrate_1st + fuel_flowrate_1st,
                             first_burn.mass_flow()),
               Lt(1e-4));
@@ -271,7 +275,8 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
       total_vehicle_at_s_ivb_2nd_90_percent_thrust,
       specific_impulse_2nd,
       e_y,
-      MakeMockDynamicFrame());
+      MakeMockDynamicFrame(),
+      /*is_inertially_fixed=*/true);
   EXPECT_THAT(RelativeError(lox_flowrate_2nd + fuel_flowrate_2nd,
                             second_burn.mass_flow()),
               Lt(2e-4));
@@ -334,7 +339,8 @@ TEST_F(ManœuvreTest, Serialization) {
       /*initial_mass=*/2 * Kilogram,
       /*specific_impulse=*/1 * Newton * Second / Kilogram,
       /*direction=*/e_y,
-      std::move(mock_dynamic_frame));
+      std::move(mock_dynamic_frame),
+      /*is_inertially_fixed=*/true);
   manœuvre.set_Δv(1 * Metre / Second);
   manœuvre.set_time_of_half_Δv(t0_);
 

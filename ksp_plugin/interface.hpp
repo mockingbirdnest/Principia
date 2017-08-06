@@ -4,6 +4,7 @@
 #include <typeindex>
 #include <type_traits>
 
+#include "base/not_null.hpp"
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -12,13 +13,15 @@
 #include "geometry/quaternion.hpp"
 #include "geometry/r3_element.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/pile_up.hpp"
+#include "ksp_plugin/planetarium.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/degrees_of_freedom.hpp"
-#include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace interface {
@@ -38,73 +41,18 @@ using geometry::Vector;
 using geometry::Velocity;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
+using ksp_plugin::Camera;
+using ksp_plugin::Iterator;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
+using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
 using physics::Frenet;
 using physics::RelativeDegreesOfFreedom;
-
-// A wrapper for a container and an iterator into that container.
-class Iterator {
- public:
-  virtual ~Iterator() = default;
-
-  virtual bool AtEnd() const = 0;
-  virtual void Increment() = 0;
-  virtual int Size() const = 0;
-};
-
-// A concrete, typed subclass of |Iterator| which holds a |Container|.
-template<typename Container>
-class TypedIterator : public Iterator {
- public:
-  explicit TypedIterator(Container container);
-
-  // Obtains the element denoted by this iterator and converts it to some
-  // |Interchange| type using |convert|.
-  template<typename Interchange>
-  Interchange Get(
-      std::function<Interchange(typename Container::value_type const&)> const&
-          convert) const;
-
-  bool AtEnd() const override;
-  void Increment() override;
-  int Size() const override;
-
- private:
-  Container container_;
-  typename Container::const_iterator iterator_;
-};
-
-// A specialization for |DiscreteTrajectory<World>|.
-template<>
-class TypedIterator<DiscreteTrajectory<World>> : public Iterator {
- public:
-  TypedIterator(not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory,
-                not_null<Plugin const*> plugin);
-
-  // Obtains the element denoted by this iterator and converts it to some
-  // |Interchange| type using |convert|.
-  template<typename Interchange>
-  Interchange Get(
-      std::function<Interchange(
-          DiscreteTrajectory<World>::Iterator const&)> const& convert) const;
-
-  bool AtEnd() const override;
-  void Increment() override;
-  int Size() const override;
-
-  not_null<Plugin const*> plugin() const;
-
- private:
-  not_null<std::unique_ptr<DiscreteTrajectory<World>>> trajectory_;
-  DiscreteTrajectory<World>::Iterator iterator_;
-  not_null<Plugin const*> plugin_;
-};
+using quantities::Length;
 
 // Takes ownership of |**pointer| and returns it to the caller.  Nulls
 // |*pointer|.  |pointer| must not be null.  No transfer of ownership of
@@ -133,6 +81,7 @@ bool operator==(NavigationManoeuvreFrenetTrihedron const& left,
                 NavigationManoeuvreFrenetTrihedron const& right);
 bool operator==(QP const& left, QP const& right);
 bool operator==(WXYZ const& left, WXYZ const& right);
+bool operator==(XY const& left, XY const& right);
 bool operator==(XYZ const& left, XYZ const& right);
 
 // Conversions between interchange data and typed data.
@@ -172,6 +121,8 @@ QP ToQP(DegreesOfFreedom<World> const& dof);
 QP ToQP(RelativeDegreesOfFreedom<AliceSun> const& relative_dof);
 
 WXYZ ToWXYZ(geometry::Quaternion const& quaternion);
+
+XY ToXY(geometry::RP2Point<Length, Camera> const& rp2_point);
 
 XYZ ToXYZ(geometry::R3Element<double> const& r3_element);
 XYZ ToXYZ(Position<World> const& position);

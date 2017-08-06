@@ -26,12 +26,12 @@ using geometry::AffineMap;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::Rotation;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 using quantities::Length;
 
 class Renderer {
@@ -123,6 +123,13 @@ class Renderer {
   // the plotted frame to the |World| coordinates.
   virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
       Vessel const& vessel,
+      Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
+
+  // Converts from the Frenet frame of the vessel's free-falling trajectory in
+  // the given |navigation_frame| to the |World| coordinates.
+  virtual OrthogonalMap<Frenet<Navigation>, World> FrenetToWorld(
+      Vessel const& vessel,
+      NavigationFrame const& navigation_frame,
       Rotation<Barycentric, AliceSun> const& planetarium_rotation) const;
 
   virtual OrthogonalMap<Navigation, Barycentric> PlottingToBarycentric(

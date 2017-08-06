@@ -57,7 +57,7 @@ Argument Bisect(Function f,
 }
 
 template<typename Argument, typename Value>
-std::vector<Argument> SolveQuadraticEquation(
+BoundedArray<Argument, 2> SolveQuadraticEquation(
     Argument const& origin,
     Value const& a0,
     Derivative<Value, Argument> const& a1,

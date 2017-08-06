@@ -9,11 +9,13 @@
 #include "journal/profiles.hpp"
 #include "ksp_plugin/burn.hpp"
 #include "ksp_plugin/flight_plan.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/vessel.hpp"
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -33,6 +35,7 @@ using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
 using ksp_plugin::NavigationManœuvre;
+using ksp_plugin::TypedIterator;
 using ksp_plugin::Vessel;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
@@ -40,6 +43,7 @@ using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::BodySurfaceDynamicFrame;
+using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::Frenet;
 using quantities::Speed;
@@ -59,7 +63,8 @@ ksp_plugin::Burn FromInterfaceBurn(Plugin const& plugin,
           burn.specific_impulse_in_seconds_g0 * Second * StandardGravity,
           NewNavigationFrame(plugin, burn.frame),
           FromGameTime(plugin, burn.initial_time),
-          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v)};
+          FromXYZ<Velocity<Frenet<NavigationFrame>>>(burn.delta_v),
+          burn.is_inertially_fixed};
 }
 
 FlightPlan& GetFlightPlan(Plugin const& plugin,
@@ -146,7 +151,8 @@ Burn GetBurn(Plugin const& plugin,
           manœuvre.specific_impulse() / (Second * StandardGravity),
           parameters,
           ToGameTime(plugin, manœuvre.initial_time()),
-          ToXYZ(Δv)};
+          ToXYZ(Δv),
+          manœuvre.is_inertially_fixed()};
 }
 
 NavigationManoeuvre ToInterfaceNavigationManoeuvre(
@@ -239,6 +245,26 @@ double principia__FlightPlanGetDesiredFinalTime(Plugin const* const plugin,
   return m.Return(
       ToGameTime(*plugin,
                  GetFlightPlan(*plugin, vessel_guid).desired_final_time()));
+}
+
+XYZ principia__FlightPlanGetGuidance(Plugin const* const plugin,
+                                     char const* const vessel_guid,
+                                     int const index) {
+  journal::Method<journal::FlightPlanGetGuidance> m(
+      {plugin, vessel_guid, index});
+  CHECK_NOTNULL(plugin);
+  auto const& manœuvre = GetFlightPlan(*plugin, vessel_guid).GetManœuvre(index);
+  Vector<double, World> result;
+  if (manœuvre.is_inertially_fixed()) {
+    result = plugin->renderer().BarycentricToWorld(
+                 plugin->PlanetariumRotation())(manœuvre.InertialDirection());
+  } else {
+    result = plugin->renderer().FrenetToWorld(
+                 *plugin->GetVessel(vessel_guid),
+                 *manœuvre.frame(),
+                 plugin->PlanetariumRotation())(manœuvre.direction());
+  }
+  return m.Return(ToXYZ(result));
 }
 
 double principia__FlightPlanGetInitialTime(Plugin const* const plugin,

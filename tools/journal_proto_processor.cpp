@@ -425,6 +425,8 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
 void JournalProtoProcessor::ProcessRequiredBoolField(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "bool";
+  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.I1)";
+  field_cs_private_type_[descriptor] = "Byte";
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
 }
 
@@ -854,9 +856,27 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
             field_cxx_assignment_fn_[field_descriptor](
                 "m.", serialize_member_name));
 
-    cs_interface_type_declaration_[descriptor] +=
-        "  public " + field_cs_type_[field_descriptor] + " " +
-        field_descriptor_name + ";\n";
+    // TODO(phl): field_cs_private_type_ should be set iff field_cs_marshal_ is
+    // set.  This is not the case at the moment because of strings being passed
+    // in the interchange messages.  This will need fixing if we ever want to
+    // pass non-ASCII strings or to return these structs.
+    if (field_cs_private_type_[field_descriptor].empty()) {
+      cs_interface_type_declaration_[descriptor] +=
+          "  public " + field_cs_type_[field_descriptor] + " " +
+          field_descriptor_name + ";\n";
+    } else {
+      cs_interface_type_declaration_[descriptor] +=
+          "  private " + field_cs_private_type_[field_descriptor] + " " +
+          field_descriptor_name + "_;\n" +
+          "  public " + field_cs_type_[field_descriptor] + " " +
+          field_descriptor_name + " {\n" +
+          "    get { return " + field_descriptor_name + "_ != " +
+          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
+          "    set { " + field_descriptor_name + "_ = value ? " +
+          "(" + field_cs_private_type_[field_descriptor] + ")1 : " +
+          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
+          "  }\n";
+    }
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
@@ -905,7 +925,7 @@ void JournalProtoProcessor::ProcessMethodExtension(
       has_return = true;
     } else {
       LOG(FATAL) << "Unexpected nested message "
-          << nested_descriptor->full_name();
+                 << nested_descriptor->full_name();
     }
   }
 

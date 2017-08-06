@@ -1,0 +1,165 @@
+\documentclass[10pt, a4paper, oneside]{basestyle}
+\usepackage[Mathematics]{semtex}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\newcommand{\point}[1]{\mathrm{#1}}
+\newcommand{\bipoint}[2]{\overrightarrow{\point #1 \point #2}}
+\newcommand{\straightline}[2]{\point #1 \point #2}
+\newcommand{\plane}[3]{\point #1 \point #2 \point #3}
+\newcommand{\squarenorm}[1]{\scal{#1}{#1}}
+
+\title{%
+\textdisplay{%
+Documentation for the hiding computations in Planetarium%
+}%
+}
+\author{Pascal~Leroy (pleroy)}
+\begin{document}
+\maketitle
+$\point A$ and $\point B$ are the extremities of the segment; $\point C$ is the
+centre of the sphere; $R$ is the radius of the sphere; $\point K$ is the
+location of the camera.
+
+For simplicity we will do most of our analysis in the plane $\plane KAB$.
+We will use $\tuple{\bipoint KA, \bipoint KB}$ as a basis of that plane.
+Let $\point H$ be the orthogonal projection of $\point C$ on $\plane KAB$. Define
+$\ga$, $\gb$ to be its coordinates in $\plane KAB$:\[
+\bipoint KH = \ga \bipoint KA + \gb \bipoint KB\text.
+\]
+Note that $\bipoint KH = \bipoint KC + \bipoint CH$. By its definition,
+$\bipoint CH$ is orthogonal to both $\bipoint KA$ and $\bipoint KB$:\begin{align*}
+\scal{\bipoint KA}{\bipoint CH} &= 0\\
+\scal{\bipoint KB}{\bipoint CH} &= 0\text,
+\end{align*}
+or:
+\begin{align*}
+\scal{\bipoint KA}{\bipoint KH} &= \scal{\bipoint KA}{\bipoint KC}\\
+\scal{\bipoint KB}{\bipoint KH} &= \scal{\bipoint KB}{\bipoint KC}\text.
+\end{align*}
+Expanding $\bipoint KH$ gives a linear system of two equations with two unknowns:
+\begin{align*}
+\ga \scal{\bipoint KA}{\bipoint KA} + \gb \scal{\bipoint KA}{\bipoint KB}
+    &= \scal{\bipoint KA}{\bipoint KC}\\
+\ga \scal{\bipoint KA}{\bipoint KB} + \ga \scal{\bipoint KB}{\bipoint KB}
+    &= \scal{\bipoint KB}{\bipoint KC}\text.
+\end{align*}
+The determinant of this system is:\[
+D = \pascal{\squarenorm{\bipoint KA}} \pascal{\squarenorm{\bipoint KB}}
+    - \pascal{\scal{\bipoint KA}{\bipoint KB}}^2\text,
+\]
+which is non-zero if and only if $\point A \neq \point B$. The solutions are thus
+\begin{align*}
+\ga &= \frac
+  {\pascal{\squarenorm{\bipoint KB}} \pascal{\scal{\bipoint KA}{\bipoint KC}} -
+   \pascal{\scal{\bipoint KA}{\bipoint KB}} \pascal{\scal{\bipoint KB}{\bipoint KC}}}
+  {D}\\
+\gb &= \frac
+  {\pascal{\squarenorm{\bipoint KA}} \pascal{\scal{\bipoint KB}{\bipoint KC}} -
+   \pascal{\scal{\bipoint KA}{\bipoint KB}} \pascal{\scal{\bipoint KA}{\bipoint KC}}}
+  {D}\text.
+\end{align*}
+Now that $\bipoint KH$ is determined we can compute
+$\bipoint CH = \bipoint KH - \bipoint KC$ and $\scal{\bipoint CH}{\bipoint CH}$.
+If $\squarenorm{\bipoint CH} \geq R^2$, the sphere is either tangent to
+the plane $\plane KAB$ or doesn't intersect it. Thus, there is no hiding.
+
+Let's look at a figure in the plane $\plane KAB$ when the sphere intersects
+that plane, considering first the situation where the intersection circle is
+between the camera and the segment.
+$r$ is the radius of the circle, it is such that
+$r^2 = R^2 - \squarenorm{\bipoint CH}$. $\point P$ is a point where a line
+going through $K$ is tangent to the circle.
+$\point Q$ is the point where $\straightline KP$ intersects $\straightline AB$; it may be
+between $\point K$ and $\point P$ or behind $\point P$.
+
+We need to find $\point P$. It is defined by two equations:
+\begin{align*}
+\squarenorm{\bipoint PH} &= r^2\\
+\scal{\bipoint PH}{\bipoint KP} &= 0\text.
+\end{align*}
+
+The second equation may be rewritten:
+\begin{align*}
+\scal{\bipoint PH}{\pascal{\bipoint KH + \bipoint HP}} &= 0 \\
+\scal{\bipoint PH}{\bipoint KH} &= r^2\text.
+\end{align*}
+Let $\gg$ and $\gd$ be the coordinates of $\bipoint PH$ in $\plane KAB$:\[
+\bipoint PH = \gg {\bipoint KA} + \gd {\bipoint KB}\text.
+\]
+The second equation is linear:\[
+\gg\scal{\bipoint KA}{\bipoint KH} + \gd\scal{\bipoint KB}{\bipoint KH} = r^2\text.
+\]
+Thus:\[
+\gg = \frac{r^2 - \gd \scal{\bipoint KB}{\bipoint KH}}{\scal{\bipoint KA}{\bipoint KH}}\text.
+\]
+Note that $\scal{\bipoint KA}{\bipoint KH}$ and $\scal{\bipoint KB}{\bipoint KH}$ cannot both be $0$
+unless $\point K$ is on $\straightline AB$.
+
+The first equation is quadratic:\[
+\pa{\gg\bipoint KA + \gd \bipoint KB}^2 = r^2\text.
+\]
+Pluging the value of $\gg$ above we get:
+\begin{align*}
+\gd^2\pa{
+ \pascal{\squarenorm{\bipoint KB}} \pascal{\scal{\bipoint KA}{\bipoint KH}}^2 +
+ 2\pascal{\scal{\bipoint KA}{\bipoint KB}}
+  \pascal{\scal{\bipoint KA}{\bipoint KH}}
+  \pascal{\scal{\bipoint KB}{\bipoint KH}} +
+ \squarenorm{\bipoint KA} \pascal{\scal{\bipoint KB}{\bipoint KH}}^2} &+\\
+2\gd r^2\pa{
+ \pascal{\scal{\bipoint KA}{\bipoint KB}}
+ \pascal{\scal{\bipoint KA}{\bipoint KH}} -
+ \pascal{\squarenorm{\bipoint KA}} \pascal{\scal{\bipoint KB}{\bipoint KH}}} &+\\
+r^2\pa{
+ r^2\pascal{\squarenorm{\bipoint KA}} -
+ \pascal{\scal{\bipoint KA}{\bipoint KH}}^2} &= 0\text.
+\end{align*}
+This equation always has two solutions because the sphere intersects $\plane KAB$.
+Having determined $\bipoint PH$, we can find $\point Q$. $\point Q$ is on the line
+$\straightline AB$, thus:\[
+\bipoint AQ = \gl \bipoint AB\text,
+\] which can be written \[
+\bipoint KQ - \bipoint KA = \gl \bipoint AB\text.
+\]
+Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
+-\scal{\bipoint KA}{\bipoint PH} = \gl \scal{\bipoint AB}{\bipoint PH}\text{, or, }
+\gl = -\frac{\scal{\bipoint KA}{\bipoint PH}}{\scal{\bipoint AB}{\bipoint PH}}\text.
+\]
+It is possible though that $\point Q$ would be between $\point K$ and $\point P$, in
+which case the segment would not intersect the cone. To determine if this is the case we write:\[
+\bipoint KP = \bipoint KH -\bipoint PH = \pa{\ga-\gg}\bipoint KA + \pa{\gb-\gd}\bipoint KB\text.
+\]
+The line $\straightline AB$ is the set of points of the form $\gh\bipoint KA + \pa{1-\gh}\bipoint KB$
+so $\point P$ is in front of $\straightline AB$ if and only if\[
+\ga-\gg+\gb-\gd < 1\text.
+\]
+
+To complete the analysis we need to compute the intersection of the sphere (not the cone) with the
+line $\straightline AB$. $\point Q$ is on the sphere, thus\[
+\squarenorm{\bipoint CQ} = R^2\text.
+\]
+It is also on the line $\straightline AB$ thus\[
+\bipoint KQ = \bipoint KA + \gm \bipoint AB\text.
+\]
+We have:\[
+\bipoint CQ = \bipoint KQ - \bipoint KC =
+  \bipoint KA + \gm \bipoint AB - \bipoint KC =
+  \bipoint CA + \gm \bipoint AB\text,
+\]
+and therefore\[
+R^2 = \pascal{\bipoint CA + \gm \bipoint AB}^2\text,
+\]
+meaning that $\gm$ is a solution of\[
+\gm \squarenorm{\bipoint AB} + 2 \gm \scal{\bipoint CA}{\bipoint AB}
++ \squarenorm{\bipoint CA} - R^2 = 0\text.
+\]
+Depending on the location of the segment with respect to the sphere, there can be $0$, $1$, or $2$
+intersections.
+
+If we take the union of the values of $\gl$ and $\gm$ and order them, it is straightforward to
+find the visible segments. Remember that $0<\gl,\gm<1$ for points that are in the segment
+$\straightline AB$.
+\end{document}

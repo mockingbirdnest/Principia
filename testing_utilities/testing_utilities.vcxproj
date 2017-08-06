@@ -41,6 +41,8 @@
     <ClInclude Include="matchers.hpp" />
     <ClInclude Include="numerics.hpp" />
     <ClInclude Include="numerics_body.hpp" />
+    <ClInclude Include="serialization.hpp" />
+    <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="solar_system_factory.hpp" />
     <ClInclude Include="solar_system_factory_body.hpp" />
     <ClInclude Include="statistics.hpp" />

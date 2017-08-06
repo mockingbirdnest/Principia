@@ -27,7 +27,10 @@ class BarycentreCalculator final {
 
 // |T| is anything for which a specialization of BarycentreCalculator exists.
 template<typename T, typename Scalar>
-T Barycentre(std::vector<T> const& ts, std::vector<Scalar> const& weights);
+T Barycentre(std::pair<T, T> const& ts,
+             std::pair<Scalar, Scalar> const& weights);
+template<typename T, typename Scalar, template<typename...> class Container>
+T Barycentre(Container<T> const& ts, Container<Scalar> const& weights);
 
 }  // namespace geometry
 }  // namespace principia

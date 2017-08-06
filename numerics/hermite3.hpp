@@ -4,12 +4,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/array.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_hermite3 {
 
+using base::BoundedArray;
 using quantities::Derivative;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
@@ -29,7 +31,7 @@ class Hermite3 final {
   Derivative1 EvaluateDerivative(Argument const& argument) const;
 
   // The result is sorted.
-  std::vector<Argument> FindExtrema() const;
+  BoundedArray<Argument, 2> FindExtrema() const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;

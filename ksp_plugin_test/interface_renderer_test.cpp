@@ -10,6 +10,7 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
+#include "physics/discrete_trajectory.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/actions.hpp"
@@ -26,6 +27,7 @@ using ksp_plugin::MockPlugin;
 using ksp_plugin::MockRenderer;
 using ksp_plugin::MockVessel;
 using ksp_plugin::Navigation;
+using physics::DiscreteTrajectory;
 using physics::MockDynamicFrame;
 using quantities::si::Metre;
 using testing_utilities::FillUniquePtr;
@@ -157,7 +159,7 @@ TEST_F(InterfaceRendererTest, RenderedPrediction) {
   // Traverse it and check that we get the right data.
   for (int i = 0; i < trajectory_size; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZ const xyz = principia__IteratorGetXYZ(iterator);
+    XYZ const xyz = principia__IteratorGetDiscreteTrajectoryXYZ(iterator);
     EXPECT_EQ(1 + 10 * i, xyz.x);
     EXPECT_EQ(2 + 20 * i, xyz.y);
     EXPECT_EQ(3 + 30 * i, xyz.z);
@@ -241,7 +243,7 @@ TEST_F(InterfaceRendererTest, Iterator) {
   // Traverse it and check that we get the right data.
   for (int i = 0; i < trajectory_size; ++i) {
     EXPECT_FALSE(principia__IteratorAtEnd(iterator));
-    XYZ const xyz = principia__IteratorGetXYZ(iterator);
+    XYZ const xyz = principia__IteratorGetDiscreteTrajectoryXYZ(iterator);
     EXPECT_EQ(1 + 10 * i, xyz.x);
     EXPECT_EQ(2 + 20 * i, xyz.y);
     EXPECT_EQ(3 + 30 * i, xyz.z);

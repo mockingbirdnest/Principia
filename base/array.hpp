@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -54,6 +55,48 @@ struct UniqueArray final {
   std::unique_ptr<Element[]> data;
   std::int64_t size;  // In number of elements.
 };
+
+// A simple container for an array and a size.
+template<typename Element, std::int32_t max_size>
+class BoundedArray final {
+  using Container = std::array<Element, max_size>;
+
+ public:
+  using iterator = typename Container::iterator;
+  using const_iterator = typename Container::const_iterator;
+  using const_reverse_iterator = typename  Container::const_reverse_iterator;
+  using reference = typename Container::reference;
+  using const_reference = typename Container::const_reference;
+  using size_type = typename Container::size_type;
+  using value_type = Element;
+
+  template<typename... Args>
+  constexpr BoundedArray(Args&&... args);
+
+  void push_back(const Element& value);
+  void push_back(Element&& value);
+
+  iterator begin();
+  iterator end();
+  const_iterator begin() const;
+  const_iterator end() const;
+
+  const_reverse_iterator rbegin() const;
+  const_reverse_iterator rend() const;
+
+  reference front();
+  const_reference front() const;
+  reference back();
+  const_reference back() const;
+
+  bool empty() const;
+  size_type size() const;
+
+ private:
+  Container data_;
+  std::int32_t size_;
+};
+
 
 // Specializations.
 using Bytes = Array<std::uint8_t>;
