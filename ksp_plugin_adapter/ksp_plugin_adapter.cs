@@ -333,13 +333,13 @@ public partial class PrincipiaPluginAdapter
       reasons.Add("vessel situation is " + vessel.situation +
                   " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
                   " at an altitude of " + vessel.altitude + " m above " +
-                  vessel.mainBody.DisplayName() + " whose threshold is " +
+                  vessel.mainBody.NameWithArticle() + " whose threshold is " +
                   vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
     if (!vessel.packed &&
         vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
       reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
-                  " m above " + vessel.mainBody.DisplayName() +
+                  " m above " + vessel.mainBody.NameWithArticle() +
                   ", below the threshold of " +
                   vessel.mainBody.inverseRotThresholdAltitude + " m");
     }
@@ -2343,10 +2343,10 @@ public partial class PrincipiaPluginAdapter
         body => {
           double timewarp_limit = body.timeWarpAltitudeLimits[1];
           if (timewarp_limit == 0) {
-            Log.Error("The timewarp limit for " + body.DisplayName() +
+            Log.Error("The timewarp limit for " + body.NameWithArticle() +
                       " vanishes");
             if (body.atmosphereDepth == 0) {
-              Log.Error(body.DisplayName() +
+              Log.Error(body.NameWithArticle() +
                         " is airless, setting the manageability" +
                         " threshold to 10 km to allow landings");
               timewarp_limit = 10e3;
@@ -2355,7 +2355,7 @@ public partial class PrincipiaPluginAdapter
           body.inverseRotThresholdAltitude =
                 (float)Math.Max(timewarp_limit,
                                 body.atmosphereDepth);
-          Log.Info("Set manageability threshold for " + body.DisplayName() +
+          Log.Info("Set manageability threshold for " + body.NameWithArticle() +
                    " to " + body.inverseRotThresholdAltitude +
                    " m; its atmosphere extends to " + body.atmosphereDepth +
                    " m and timewarp is allowed above " +
