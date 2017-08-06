@@ -2,6 +2,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 
 #include "geometry/frame.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/continuous_trajectory.hpp"
@@ -24,6 +25,7 @@ using base::make_not_null_unique;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
+using geometry::RigidTransformation;
 using geometry::Velocity;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
@@ -31,7 +33,6 @@ using physics::DiscreteTrajectory;
 using physics::MassiveBody;
 using physics::MockDynamicFrame;
 using physics::MockEphemeris;
-using physics::RigidTransformation;
 using quantities::Pow;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;

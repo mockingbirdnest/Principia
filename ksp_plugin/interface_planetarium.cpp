@@ -3,6 +3,7 @@
 
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
 #include "geometry/perspective.hpp"
 #include "geometry/rotation.hpp"
@@ -25,6 +26,7 @@ using geometry::AffineMap;
 using geometry::Multivector;
 using geometry::OrthogonalMap;
 using geometry::Perspective;
+using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::RP2Lines;
 using ksp_plugin::Camera;
@@ -33,7 +35,6 @@ using ksp_plugin::Planetarium;
 using ksp_plugin::Renderer;
 using ksp_plugin::TypedIterator;
 using physics::DiscreteTrajectory;
-using physics::RigidTransformation;
 using quantities::Length;
 using quantities::si::ArcMinute;
 using quantities::si::Kilo;
@@ -117,7 +118,7 @@ Planetarium* principia__PlanetariumCreate(
       /*sphere_radius_multiplier=*/1.0 + olympus_mons_peak / mars_mean_radius,
       /*angular_resolution=*/0.4 * ArcMinute,
       field_of_view * Radian);
-  Perspective<Navigation, Camera, Length, OrthogonalMap> perspective(
+  Perspective<Navigation, Camera> perspective(
       world_to_plotting_affine_map * camera_to_world_affine_map,
       focal * Metre);
 

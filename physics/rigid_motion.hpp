@@ -20,18 +20,13 @@ using geometry::Bivector;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Length;
 using quantities::Variation;
 using quantities::si::Radian;
-
-// An arbitrary rigid transformation.  Simultaneous positions between two frames
-// are always related by such a transformation.
-template<typename FromFrame, typename ToFrame>
-using RigidTransformation =
-    AffineMap<FromFrame, ToFrame, Length, OrthogonalMap>;
 
 // The instantaneous motion of |ToFrame| with respect to |FromFrame|.
 // This is the derivative of a |RigidTransformation<FromFrame, ToFrame>|.
