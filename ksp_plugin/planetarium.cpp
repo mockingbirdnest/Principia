@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "geometry/point.hpp"

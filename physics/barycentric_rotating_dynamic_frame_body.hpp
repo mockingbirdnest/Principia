@@ -3,6 +3,8 @@
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
+#include <algorithm>
+
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"

@@ -3,6 +3,8 @@
 
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 
+#include <algorithm>
+
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/quantities.hpp"
