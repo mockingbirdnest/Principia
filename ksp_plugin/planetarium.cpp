@@ -30,7 +30,7 @@ Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
 
 Planetarium::Planetarium(
     Parameters const& parameters,
-    Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective,
+    Perspective<Navigation, Camera> const& perspective,
     not_null<Ephemeris<Barycentric> const*> const ephemeris,
     not_null<NavigationFrame const*> const plotting_frame)
     : parameters_(parameters),
@@ -163,7 +163,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   Instant t;
   double estimated_tan²_error;
-  Position<Barycentric> position_in_barycentric;
+  std::experimental::optional<DegreesOfFreedom<Barycentric>>
+      degrees_of_freedom_in_barycentric;
   Position<Navigation> position;
 
   std::experimental::optional<Position<Navigation>> last_endpoint;
@@ -189,9 +190,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Position<Navigation> const extrapolated_position =
           previous_position + previous_velocity * Δt;
       to_plotting_frame_at_t = plotting_frame_->ToThisFrameAtTime(t);
-      position_in_barycentric = trajectory.EvaluatePosition(t);
+      degrees_of_freedom_in_barycentric =
+          trajectory.EvaluateDegreesOfFreedom(t);
       position = to_plotting_frame_at_t.rigid_transformation()(
-                     position_in_barycentric);
+                     degrees_of_freedom_in_barycentric->position());
 
       // The quadratic term of the error between the linear interpolation and
       // the actual function is maximized halfway through the segment, so it is
@@ -207,13 +209,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     // TODO(egg): also limit to field of view.
     auto const segment_behind_focal_plane =
         perspective_.SegmentBehindFocalPlane(
-            Segment<Displacement<Navigation>>(previous_position, position));
+            Segment<Navigation>(previous_position, position));
 
     previous_time = t;
     previous_position = position;
     previous_velocity =
-        to_plotting_frame_at_t({position_in_barycentric,
-                                trajectory.EvaluateVelocity(t)}).velocity();
+        to_plotting_frame_at_t(*degrees_of_freedom_in_barycentric).velocity();
 
     if (!segment_behind_focal_plane) {
       continue;
@@ -236,11 +237,11 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   return lines;
 }
 
-std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
+std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
     Instant const& now) const {
   RigidMotion<Barycentric, Navigation> const rigid_motion_at_now =
       plotting_frame_->ToThisFrameAtTime(now);
-  std::vector<Sphere<Length, Navigation>> plottable_spheres;
+  std::vector<Sphere<Navigation>> plottable_spheres;
 
   auto const& bodies = ephemeris_->bodies();
   for (auto const body : bodies) {
@@ -248,7 +249,7 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
     Length const mean_radius = body->mean_radius();
     Position<Barycentric> const centre_in_barycentric =
         trajectory->EvaluatePosition(now);
-    Sphere<Length, Navigation> plottable_sphere(
+    Sphere<Navigation> plottable_sphere(
         rigid_motion_at_now.rigid_transformation()(centre_in_barycentric),
         parameters_.sphere_radius_multiplier_ * mean_radius);
     // If the sphere is seen under an angle that is very small it doesn't
@@ -261,11 +262,11 @@ std::vector<Sphere<Length, Navigation>> Planetarium::ComputePlottableSpheres(
   return plottable_spheres;
 }
 
-Segments<Displacement<Navigation>> Planetarium::ComputePlottableSegments(
-    const std::vector<Sphere<Length, Navigation>>& plottable_spheres,
+Segments<Navigation> Planetarium::ComputePlottableSegments(
+    const std::vector<Sphere<Navigation>>& plottable_spheres,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  std::vector<Segment<Displacement<Navigation>>> all_segments;
+  Segments<Navigation> all_segments;
   if (begin == end) {
     return all_segments;
   }
@@ -289,7 +290,7 @@ Segments<Displacement<Navigation>> Planetarium::ComputePlottableSegments(
 
     // Find the part of the segment that is behind the focal plane.  We don't
     // care about things that are in front of the focal plane.
-    const Segment<Displacement<Navigation>> segment = {p1, p2};
+    const Segment<Navigation> segment = {p1, p2};
     auto const segment_behind_focal_plane =
         perspective_.SegmentBehindFocalPlane(segment);
     if (segment_behind_focal_plane) {

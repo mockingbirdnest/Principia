@@ -22,65 +22,51 @@ using quantities::Pow;
 using quantities::Product;
 using quantities::Square;
 
-template<typename FromFrame, typename ToFrame, typename Scalar,
-         template<typename, typename> class LinearMap>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
-    AffineMap<ToFrame, FromFrame, Scalar, LinearMap> const& from_camera,
-    Scalar const& focal)
+template<typename FromFrame, typename ToFrame>
+Perspective<FromFrame, ToFrame>::Perspective(
+    RigidTransformation<ToFrame, FromFrame> const& from_camera,
+    Length const& focal)
     : from_camera_(from_camera),
       to_camera_(from_camera.Inverse()),
       camera_(from_camera_(ToFrame::origin)),
       focal_(focal) {}
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Perspective(
-    AffineMap<FromFrame, ToFrame, Scalar, LinearMap> const& to_camera,
-    Scalar const& focal)
+template<typename FromFrame, typename ToFrame>
+Perspective<FromFrame, ToFrame>::Perspective(
+    RigidTransformation<FromFrame, ToFrame> const& to_camera,
+    Length const& focal)
     : from_camera_(to_camera.Inverse()),
       to_camera_(to_camera),
       camera_(from_camera_(ToFrame::origin)),
       focal_(focal) {}
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-Scalar const& Perspective<FromFrame, ToFrame, Scalar, LinearMap>::focal()
-    const {
+template<typename FromFrame, typename ToFrame>
+Length const& Perspective<FromFrame, ToFrame>::focal() const {
   return focal_;
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-RP2Point<Scalar, ToFrame> Perspective<FromFrame, ToFrame, Scalar, LinearMap>::
-operator()(Point<Vector<Scalar, FromFrame>> const& point) const {
-  Point<Vector<Scalar, ToFrame>> const point_in_camera = to_camera_(point);
-  Vector<Scalar, ToFrame> const displacement_in_camera =
+template<typename FromFrame, typename ToFrame>
+RP2Point<Length, ToFrame> Perspective<FromFrame, ToFrame>::
+operator()(Position<FromFrame> const& point) const {
+  Position<ToFrame> const point_in_camera = to_camera_(point);
+  Displacement<ToFrame> const displacement_in_camera =
       point_in_camera - ToFrame::origin;
-  R3Element<Scalar> const coordinates_in_camera =
+  R3Element<Length> const coordinates_in_camera =
       displacement_in_camera.coordinates();
   // This is the actual pinhole camera projection.
-  return RP2Point<Scalar, ToFrame>(coordinates_in_camera.x,
+  return RP2Point<Length, ToFrame>(coordinates_in_camera.x,
                                    coordinates_in_camera.y,
                                    coordinates_in_camera.z / focal_);
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-std::experimental::optional<Segment<Vector<Scalar, FromFrame>>>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SegmentBehindFocalPlane(
-    Segment<Vector<Scalar, FromFrame>> const& segment) const {
+template<typename FromFrame, typename ToFrame>
+std::experimental::optional<Segment<FromFrame>>
+Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
+    Segment<FromFrame> const& segment) const {
   Vector<double, FromFrame> const z =
       from_camera_.linear_map()(Vector<double, ToFrame>({0.0, 0.0, 1.0}));
-  Scalar const z1 = InnerProduct(segment.first - camera_, z);
-  Scalar const z2 = InnerProduct(segment.second - camera_, z);
+  Length const z1 = InnerProduct(segment.first - camera_, z);
+  Length const z2 = InnerProduct(segment.second - camera_, z);
   bool const first_is_visible = z1 >= focal_;
   bool const second_is_visible = z2 >= focal_;
   if (first_is_visible && second_is_visible) {
@@ -91,54 +77,42 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SegmentBehindFocalPlane(
     // λ determines where the segment intersects the focal plane.
     double const λ = (focal_ - z2) / (z1 - z2);
     auto const intercept =
-        Barycentre<Point<Vector<Scalar, FromFrame>>, double>(segment,
-                                                             {λ, 1.0 - λ});
+        Barycentre<Position<FromFrame>, double>(segment,
+                                                {λ, 1.0 - λ});
     if (first_is_visible) {
-      return
-          std::experimental::make_optional<Segment<Vector<Scalar, FromFrame>>>(
-              {segment.first, intercept});
+      return std::experimental::make_optional<Segment<FromFrame>>(
+                 {segment.first, intercept});
     } else {
       CHECK(second_is_visible);
-      return
-          std::experimental::make_optional<Segment<Vector<Scalar, FromFrame>>>(
-              {intercept, segment.second});
+      return std::experimental::make_optional<Segment<FromFrame>>(
+                 {intercept, segment.second});
     }
   }
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-double Perspective<FromFrame, ToFrame, Scalar, LinearMap>::Tan²AngularDistance(
-    Point<Vector<Scalar, FromFrame>> const& p1,
-    Point<Vector<Scalar, FromFrame>> const& p2) const {
+template<typename FromFrame, typename ToFrame>
+double Perspective<FromFrame, ToFrame>::Tan²AngularDistance(
+    Position<FromFrame> const& p1,
+    Position<FromFrame> const& p2) const {
   auto const v1 = to_camera_(p1) - ToFrame::origin;
   auto const v2 = to_camera_(p2) - ToFrame::origin;
   auto const wedge = Wedge(v1, v2);
   return InnerProduct(wedge, wedge) / Pow<2>(InnerProduct(v1, v2));
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
-    Point<Vector<Scalar, FromFrame>> const& point,
-    Sphere<Scalar, FromFrame> const& sphere) const {
-  using Displacement = Vector<Scalar, FromFrame>;
+template<typename FromFrame, typename ToFrame>
+bool Perspective<FromFrame, ToFrame>::IsHiddenBySphere(
+    Position<FromFrame> const& point,
+    Sphere<FromFrame> const& sphere) const {
+  Displacement<FromFrame> const camera_to_centre = sphere.centre() - camera_;
+  Displacement<FromFrame> const camera_to_point = point - camera_;
+  Displacement<FromFrame> const centre_to_point = point - sphere.centre();
 
-  Displacement const camera_to_centre = sphere.centre() - camera_;
-  Displacement const camera_to_point = point - camera_;
-  Displacement const centre_to_point = point - sphere.centre();
-
-  Product<Scalar, Scalar> const& r² = sphere.radius²();
-  Product<Scalar, Scalar> const camera_to_centre² =
-      InnerProduct(camera_to_centre, camera_to_centre);
-  Product<Scalar, Scalar> const camera_to_point² =
-      InnerProduct(camera_to_point, camera_to_point);
-  Product<Scalar, Scalar> const centre_to_point² =
-      InnerProduct(centre_to_point, centre_to_point);
+  auto const& r² = sphere.radius²();
+  auto const camera_to_centre² = InnerProduct(camera_to_centre,
+                                              camera_to_centre);
+  auto const camera_to_point² = InnerProduct(camera_to_point, camera_to_point);
+  auto const centre_to_point² = InnerProduct(centre_to_point, centre_to_point);
 
   // If the point lies in the sphere then surely it is hidden.
   bool const is_in_sphere = centre_to_point² < r²;
@@ -148,11 +122,11 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
 
   // Squared distance between the camera and the horizon, i.e., the circle
   // where the cone from the camera tangents the sphere.  Plain Πυθαγόρας.
-  Product<Scalar, Scalar> const camera_to_horizon² = camera_to_centre² - r²;
+  auto const camera_to_horizon² = camera_to_centre² - r²;
 
   // This implicitly gives the cosine of the angle between the centre and the
   // point as seen from the camera.
-  Product<Scalar, Scalar> const inner_product =
+  auto const inner_product =
       InnerProduct(camera_to_point, camera_to_centre);
 
   // This effectively compares the square cosines of (1) the angle between the
@@ -172,39 +146,33 @@ bool Perspective<FromFrame, ToFrame, Scalar, LinearMap>::IsHiddenBySphere(
   return !is_in_front_of_horizon;
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-double Perspective<FromFrame, ToFrame, Scalar, LinearMap>::SphereSin²HalfAngle(
-    Sphere<Scalar, FromFrame> const& sphere) const {
+template<typename FromFrame, typename ToFrame>
+double Perspective<FromFrame, ToFrame>::SphereSin²HalfAngle(
+    Sphere<FromFrame> const& sphere) const {
   // See VisibleSegments for the notation.
-  Point<Vector<Scalar, FromFrame>> const& K = camera_;
-  Point<Vector<Scalar, FromFrame>> const& C = sphere.centre();
-  Vector<Scalar, FromFrame> const KC = C - K;
+  Position<FromFrame> const& K = camera_;
+  Position<FromFrame> const& C = sphere.centre();
+  Displacement<FromFrame> const KC = C - K;
   auto const KC² = InnerProduct(KC, KC);
   // Return 1.0 if the camera is within the sphere.
   return std::min(1.0, sphere.radius²() / KC²);
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-BoundedArray<Segment<Vector<Scalar, FromFrame>>, 2>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
-    Segment<Vector<Scalar, FromFrame>> const& segment,
-    Sphere<Scalar, FromFrame> const& sphere) const {
+template<typename FromFrame, typename ToFrame>
+BoundedArray<Segment<FromFrame>, 2>
+Perspective<FromFrame, ToFrame>::VisibleSegments(
+    Segment<FromFrame> const& segment,
+    Sphere<FromFrame> const& sphere) const {
   // K is the position of the camera, A and B the extremities of the segment,
   // C the centre of the sphere.
-  Point<Vector<Scalar, FromFrame>> const& K = camera_;
-  Point<Vector<Scalar, FromFrame>> const& A = segment.first;
-  Point<Vector<Scalar, FromFrame>> const& B = segment.second;
-  Point<Vector<Scalar, FromFrame>> const& C = sphere.centre();
+  Position<FromFrame> const& K = camera_;
+  Position<FromFrame> const& A = segment.first;
+  Position<FromFrame> const& B = segment.second;
+  Position<FromFrame> const& C = sphere.centre();
 
-  Vector<Scalar, FromFrame> const KA = A - K;
-  Vector<Scalar, FromFrame> const KB = B - K;
-  Vector<Scalar, FromFrame> const KC = C - K;
+  Displacement<FromFrame> const KA = A - K;
+  Displacement<FromFrame> const KB = B - K;
+  Displacement<FromFrame> const KC = C - K;
 
   // Bail out if the camera is inside the sphere: the segment is completely
   // hidden.  This is not a common situation, but it would cause no end of
@@ -219,7 +187,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   // intersection and no hiding.
   auto const KAKC = InnerProduct(KA, KC);
   auto const KBKC = InnerProduct(KB, KC);
-  if (KAKC <= Square<Scalar>{} && KBKC <= Square<Scalar>{}) {
+  if (KAKC <= Square<Length>{} && KBKC <= Square<Length>{}) {
     return {segment};
   }
 
@@ -235,11 +203,11 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const determinant = KA² * KB² - KAKB * KAKB;
   double const ɑ = (KB² * KAKC - KAKB * KBKC) / determinant;
   double const β = (KA² * KBKC - KAKB * KAKC) / determinant;
-  Vector<Scalar, FromFrame> const KH = ɑ * KA + β * KB;
+  Displacement<FromFrame> const KH = ɑ * KA + β * KB;
 
   // The basic check: if H is outside or on the sphere, the sphere doesn't
   // intersect the plane KAB and therefore there is no hiding.
-  Vector<Scalar, FromFrame> const CH = KH - KC;
+  Displacement<FromFrame> const CH = KH - KC;
   auto const CH² = InnerProduct(CH, CH);
   if (CH² >= sphere.radius²()) {
     return {segment};
@@ -284,7 +252,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   KS = KA + σ * AB
   // Note that σ may be infinite if AB ⊥ KH.  In this case AB.KH is +0.0 and the
   // infinity has the sign of the numerator.  The same applies to τ below.
-  Vector<Scalar, FromFrame> const AB = B - A;
+  Displacement<FromFrame> const AB = B - A;
   auto const ABKH = InnerProduct(AB, KH);
   double const σ = -KAKH / ABKH;
 
@@ -305,7 +273,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   auto const KH² = InnerProduct(KH, KH);
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
-    Vector<Scalar, FromFrame> const PH = γ * KA + δ * KB;
+    Displacement<FromFrame> const PH = γ * KA + δ * KB;
     auto const KAPH = InnerProduct(KA, PH);
     auto const KHPH = InnerProduct(KH, PH);
     auto const ABPH = InnerProduct(AB, PH);
@@ -339,7 +307,7 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   //   KQ = KA + μ * AB
   // where μ is computed by solving a quadratic equation:
   //   CQ² = R² = (KQ - KC)² = (μ * AB - AC)²
-  Vector<Scalar, FromFrame> const AC = C - A;
+  Displacement<FromFrame> const AC = C - A;
   auto const AB² = InnerProduct(AB, AB);
   auto const AC² = InnerProduct(AC, AC);
   auto const ABAC = InnerProduct(AB, AC);
@@ -375,37 +343,33 @@ Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
   }
   if (λ_min > 0.0 && λ_max < 1.0) {
     // The cone+sphere hides the middle of the segment.
-    return {Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB },
-            Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B }};
+    return {Segment<FromFrame>{A, A + λ_min * AB },
+            Segment<FromFrame>{A + λ_max * AB, B }};
   }
   if (λ_min <= 0.0) {
     // The cone+sphere hides the beginning of the segment.
     DCHECK_GT(λ_max, 0.0);
-    return {Segment<Vector<Scalar, FromFrame>>{A + λ_max * AB, B}};
+    return {Segment<FromFrame>{A + λ_max * AB, B}};
   }
   {
     DCHECK_GT(λ_max, 1.0);
     DCHECK_LE(λ_min, 1.0);
     // The cone+sphere hides the end of the segment.
-    return {Segment<Vector<Scalar, FromFrame>>{A, A + λ_min * AB}};
+    return {Segment<FromFrame>{A, A + λ_min * AB}};
   }
 }
 
-template<typename FromFrame,
-         typename ToFrame,
-         typename Scalar,
-         template<typename, typename> class LinearMap>
-Segments<Vector<Scalar, FromFrame>>
-Perspective<FromFrame, ToFrame, Scalar, LinearMap>::VisibleSegments(
-    Segment<Vector<Scalar, FromFrame>> const& segment,
-    std::vector<Sphere<Scalar, FromFrame>> const& spheres) const {
+template<typename FromFrame, typename ToFrame>
+Segments<FromFrame> Perspective<FromFrame, ToFrame>::VisibleSegments(
+    Segment<FromFrame> const& segment,
+    std::vector<Sphere<FromFrame>> const& spheres) const {
   // This algorithm takes the input segment, applies the hiding by the first
   // sphere (which can result in 0, 1, or 2 segments), applies the hiding by the
   // second sphere to the resulting segments, and so on.  To reduce memory
   // allocation this is done in place in the following vector, for which we
   // reserve the maximum possible size.  As hiding proceeds, segments are taken
   // from the vector and replaced or appended as needed.
-  Segments<Vector<Scalar, FromFrame>> segments;
+  Segments<FromFrame> segments;
   segments.reserve(spheres.size() + 1);
   segments.push_back(segment);
 

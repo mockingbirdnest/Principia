@@ -2,6 +2,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
 #include "physics/body_centred_body_direction_dynamic_frame.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -12,13 +13,13 @@ namespace internal_renderer {
 
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
+using geometry::RigidTransformation;
 using geometry::Vector;
 using geometry::Velocity;
 using physics::BodyCentredBodyDirectionDynamicFrame;
 using physics::ComputeApsides;
 using physics::ComputeNodes;
 using physics::DegreesOfFreedom;
-using physics::RigidTransformation;
 
 Renderer::Renderer(not_null<Celestial const*> const sun,
                    not_null<std::unique_ptr<NavigationFrame>> plotting_frame)

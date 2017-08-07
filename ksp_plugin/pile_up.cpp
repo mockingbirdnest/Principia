@@ -5,6 +5,7 @@
 #include <map>
 
 #include "geometry/identity.hpp"
+#include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/rigid_motion.hpp"
@@ -20,10 +21,10 @@ using geometry::BarycentreCalculator;
 using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::Position;
+using geometry::RigidTransformation;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,

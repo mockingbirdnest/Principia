@@ -71,6 +71,7 @@ using geometry::EulerAngles;
 using geometry::Identity;
 using geometry::Normalize;
 using geometry::Permutation;
+using geometry::RigidTransformation;
 using geometry::Sign;
 using physics::BarycentricRotatingDynamicFrame;
 using physics::BodyCentredBodyDirectionDynamicFrame;
@@ -85,7 +86,6 @@ using physics::Frenet;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::RigidMotion;
-using physics::RigidTransformation;
 using physics::SolarSystem;
 using quantities::Force;
 using quantities::Infinity;
@@ -811,7 +811,7 @@ not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
 
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
     Planetarium::Parameters const& parameters,
-    Perspective<Navigation, Camera, Length, OrthogonalMap> const& perspective)
+    Perspective<Navigation, Camera> const& perspective)
     const {
   return make_not_null_unique<Planetarium>(parameters,
                                            perspective,

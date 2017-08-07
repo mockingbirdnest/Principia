@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
@@ -19,6 +20,12 @@ using Velocity = Vector<quantities::Speed, Frame>;
 
 template<typename Frame>
 using AngularVelocity = Bivector<quantities::AngularFrequency, Frame>;
+
+// An arbitrary rigid transformation.  Simultaneous positions between two frames
+// are always related by such a transformation.
+template<typename FromFrame, typename ToFrame>
+using RigidTransformation =
+    AffineMap<FromFrame, ToFrame, quantities::Length, OrthogonalMap>;
 
 }  // namespace geometry
 }  // namespace principia
