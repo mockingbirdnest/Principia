@@ -12,6 +12,8 @@ namespace principia {
 namespace physics {
 namespace internal_dynamic_frame {
 
+using astronomy::InfiniteFuture;
+using astronomy::InfinitePast;
 using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Frame;
@@ -52,6 +54,14 @@ class InertialFrame : public DynamicFrame<OtherFrame, ThisFrame> {
       std::function<Vector<Acceleration, OtherFrame>(
           Instant const& t,
           Position<OtherFrame> const& q)> gravity);
+
+  Instant t_min() const override {
+    return InfinitePast;
+  }
+
+  Instant t_max() const override {
+    return InfiniteFuture;
+  }
 
   RigidMotion<OtherFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;

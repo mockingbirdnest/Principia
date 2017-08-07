@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/planetarium.hpp"
 
+#include <algorithm>
 #include <vector>
 
 #include "geometry/point.hpp"
@@ -41,9 +42,14 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now) const {
+  auto const plottable_begin =
+      begin.trajectory()->LowerBound(plotting_frame_->t_min());
+  auto const plottable_end =
+      begin.trajectory()->LowerBound(plotting_frame_->t_max());
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const plottable_segments = ComputePlottableSegments(plottable_spheres,
-                                                           begin, end);
+                                                           plottable_begin,
+                                                           plottable_end);
 
   auto const field_of_view_radius² =
       perspective_.focal() * perspective_.focal() *
@@ -134,21 +140,21 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   }
   auto last = end;
   --last;
-  if (begin == last) {
-    return lines;
-  }
 
   double const tan²_angular_resolution =
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const& trajectory = *begin.trajectory();
-  auto const final_time = last.time();
-
-  auto previous_time = begin.time();
+  auto const final_time = std::min(last.time(), plotting_frame_->t_max());
+  auto previous_time = std::max(begin.time(), plotting_frame_->t_min());
+  if (final_time <= previous_time) {
+    return lines;
+  }
   RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
       plotting_frame_->ToThisFrameAtTime(previous_time);
   DegreesOfFreedom<Navigation> const initial_degrees_of_freedom =
-      to_plotting_frame_at_t(begin.degrees_of_freedom());
+      to_plotting_frame_at_t(
+          trajectory.EvaluateDegreesOfFreedom(previous_time));
   Position<Navigation> previous_position =
       initial_degrees_of_freedom.position();
   Velocity<Navigation> previous_velocity =

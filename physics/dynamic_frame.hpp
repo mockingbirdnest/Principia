@@ -36,6 +36,11 @@ class DynamicFrame {
  public:
   virtual ~DynamicFrame() = default;
 
+  // The operations that take an |Instant| are valid in the range
+  // [t_min, t_max].
+  virtual Instant t_min() const = 0;
+  virtual Instant t_max() const = 0;
+
   // At least one of |ToThisFrameAtTime| and |FromThisFrameAtTime| must be
   // overriden in derived classes; the default implementation inverts the other
   // one.

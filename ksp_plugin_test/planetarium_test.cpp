@@ -29,8 +29,9 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_planetarium {
 
+using astronomy::InfinitePast;
+using astronomy::InfiniteFuture;
 using base::make_not_null_unique;
-using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -92,6 +93,8 @@ class PlanetariumTest : public ::testing::Test {
                   /*ascension_of_pole=*/0 * Radian,
                   /*declination_of_pole=*/π / 2 * Radian)),
         bodies_({&body_}) {
+    ON_CALL(plotting_frame_, t_min()).WillByDefault(Return(InfinitePast));
+    ON_CALL(plotting_frame_, t_max()).WillByDefault(Return(InfiniteFuture));
     EXPECT_CALL(plotting_frame_, ToThisFrameAtTime(_))
         .WillRepeatedly(Return(RigidMotion<Barycentric, Navigation>(
             RigidTransformation<Barycentric, Navigation>::Identity(),

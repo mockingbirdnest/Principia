@@ -3,6 +3,8 @@
 
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 
+#include <algorithm>
+
 #include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3x3_matrix.hpp"
@@ -49,6 +51,18 @@ template<typename InertialFrame, typename ThisFrame>
 not_null<MassiveBody const*>
 BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::secondary() const {
   return secondary_;
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Instant BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::t_min()
+    const {
+  return std::max(primary_trajectory_->t_min(), secondary_trajectory_->t_min());
+}
+
+template<typename InertialFrame, typename ThisFrame>
+Instant BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::t_max()
+    const {
+  return std::min(primary_trajectory_->t_max(), secondary_trajectory_->t_max());
 }
 
 template<typename InertialFrame, typename ThisFrame>

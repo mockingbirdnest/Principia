@@ -42,6 +42,9 @@ class BodyCentredNonRotatingDynamicFrame
 
   not_null<MassiveBody const*> centre() const;
 
+  Instant t_min() const override;
+  Instant t_max() const override;
+
   RigidMotion<InertialFrame, ThisFrame> ToThisFrameAtTime(
       Instant const& t) const override;
 
