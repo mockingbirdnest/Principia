@@ -23,7 +23,24 @@ $\point A$ and $\point B$ are the extremities of the segment; $\point C$ is the
 centre of the sphere; $R$ is the radius of the sphere; $\point K$ is the
 location of the camera.
 
-For simplicity we will do most of our analysis in the plane $\plane KAB$.
+We start our analysis by eliminating a case that would cause anomalies in the
+computations below.  If:\[
+\scal{\bipoint KC}{\bipoint KC} < R^2
+\]
+then the camera is inside the sphere and the segment is hidden irrespective of
+its position.
+
+Next, consider the plane that contains $\point K$ and is orthogonal to
+$\bipoint KC$; it separates the entire space into two half-spaces.  If the
+segment $\bipoint AB$ is entirely within the half-space that does not contain
+$\point C$ then the segment is not hidden.  This is the case if the following
+inequalities are both true:
+\begin{align*}
+\scal{\bipoint KA}{\bipoint KC} < 0\\
+\scal{\bipoint KB}{\bipoint KC} < 0\text.
+\end{align*}
+
+For simplicity we will do the rest of our analysis in the plane $\plane KAB$.
 We will use $\tuple{\bipoint KA, \bipoint KB}$ as a basis of that plane.
 Let $\point H$ be the orthogonal projection of $\point C$ on $\plane KAB$. Define
 $\ga$, $\gb$ to be its coordinates in $\plane KAB$:\[
@@ -67,13 +84,42 @@ If $\squarenorm{\bipoint CH} \geq R^2$, the sphere is either tangent to
 the plane $\plane KAB$ or doesn't intersect it. Thus, there is no hiding.
 
 Let's look at a figure in the plane $\plane KAB$ when the sphere intersects
-that plane, considering first the situation where the intersection circle is
-between the camera and the segment.
-$r$ is the radius of the circle, it is such that
-$r^2 = R^2 - \squarenorm{\bipoint CH}$. $\point P$ is a point where a line
-going through $K$ is tangent to the circle.
-$\point Q$ is the point where $\straightline KP$ intersects $\straightline AB$; it may be
-between $\point K$ and $\point P$ or behind $\point P$.
+that plane.  Let $r$ be the radius of the intersection circle; it is such that
+$r^2 = R^2 - \squarenorm{\bipoint CH}$.
+
+If the circle doesn't intersect the wedge $\plane KAB$ then the segment
+$\bipoint AB$.  To find if this is the case, first observe that, if $\gq$ is the
+angle between $\bipoint KA$ and $\bipoint KB$, we have:
+\begin{align*}
+\scal{\bipoint KA}{\bipoint KB} &= KA KB cos \gq
+\end{align*}
+Assume that $\point H$ is outside the wedge $\plane KAB$ and in a position where
+the circle is tangent to $\bipoint KB$ at point $\point N$.  Let $\point M$ be
+the point where $\point H$ projects on $\bipoint KB$ parallel to $\bipoint KA$.
+We have:
+\begin{align*}
+{\bipoint HM} &= \ga {\bipoint KA}
+\end{align*}
+and:
+\begin{align*}
+\scal{\bipoint HM}{\bipoint HM} &= \frac{r^2} {sin^2 \gq} &= \frac{r^2} {1 - cos^2 \gq}
+\end{align*}
+Eliminating $\bipoint HM$ we obtain the following conditions on $\ga$ for
+$\point H$ to be in the position indicated above:
+\begin{align*}
+\ga < 0\\
+\ga^2 > r^2 \frac{\scal{\bipoint KB}{\bipoint KB}}
+                 {\scal{\bipoint KA}{\bipoint KA}\scal{\bipoint KB}{\bipoint KB} -
+                  {\scal{\bipoint KA}{\bipoint KB}}^2}\text.
+\end{align*}
+We have similar conditions on $\gb$ for the circle to be outside the wedge
+$\plane KAB$ and tangent to $\bipoint KA$.
+
+The next step is to find out the extension of the wedge formed by the circle
+when seen from $\point K$.  Let $\point P$ be a point where a line
+going through $K$ is tangent to the circle, and let $\point Q$ be the point 
+where $\straightline KP$ intersects $\straightline AB$; it may be between
+$\point K$ and $\point P$ or behind $\point P$.
 
 We need to find $\point P$. It is defined by two equations:
 \begin{align*}
@@ -128,14 +174,45 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 -\scal{\bipoint KA}{\bipoint PH} = \gl \scal{\bipoint AB}{\bipoint PH}\text{, or, }
 \gl = -\frac{\scal{\bipoint KA}{\bipoint PH}}{\scal{\bipoint AB}{\bipoint PH}}\text.
 \]
-It is possible though that $\point Q$ would be between $\point K$ and $\point P$, in
-which case the segment would not intersect the cone. To determine if this is the case we write:\[
-\bipoint KP = \bipoint KH -\bipoint PH = \pa{\ga-\gg}\bipoint KA + \pa{\gb-\gd}\bipoint KB\text.
+
+Having determined the values of $\gl$ we need to find out where $\point Q$ is
+located with respect to the segment $\bipoint AB$.  Let $\point S$ be the
+intersection of $\straightline AB$ with the line orthogonal to $\straightline KH$
+at $\point K$.  We locate $\point S$ on $\straightline AB$ as follows:\[
+\bipoint KS = \bipoint KA + \gs \bipoint AB\text.
 \]
-The line $\straightline AB$ is the set of points of the form $\gh\bipoint KA + \pa{1-\gh}\bipoint KB$
-so $\point P$ is in front of $\straightline AB$ if and only if\[
-\ga-\gg+\gb-\gd < 1\text.
+Noting that $\scal{\bipoint KS}{\bipoint KH} = 0$ we obtain:\[
+\gs = -\frac{\scal{\bipoint KA}{\bipoint KH}}
+            {\scal{\bipoint AB}{\bipoint KH}}
 \]
+Now let $\point T$ be the intersection of $\straightline AB$ with the line
+orthogonal to $\straightline KH$ at $\point P$.  We locate $\point T$ on
+$\straightline AB$ similarly:\[
+\bipoint KT = \bipoint KA + \gt \bipoint AB\text.
+\]
+We have:\[
+\bipoint PT = \bipoint KA + \gt \bipoint AB - \bipoint KH + \bipoint PH
+\]
+Noting that $\scal{\bipoint PT}{\bipoint KH} = 0$ we obtain:\[
+\gt = \frac{\scal{\bipoint KH}{\bipoint KH} - \scal{\bipoint PH}{\bipoint KH} - \scal{\bipoint KA}{\bipoint KH}}
+           {\scal{\bipoint AB}{\bipoint KH}}
+\]
+We can now determine if $\gl$ is an "interesting" intersection, i.e., one that
+intersects the cone behind the sphere when seen from the camera.  First, assume
+that $\point A$ and $\point B$ are in the same order as $\point S$ and $\point T$
+on $\straightline AB$.  Then we have $\gs <= \gt$ and the intersection is farther
+than $\point T$ (as seen from the camera) if and only if $\gt < \gl$.  Conversely, if $\point A$ and
+$\point B$ are in the reverse order as $\point S$ and $\point T$ on
+$\straightline AB$ we have $\gt <= \gs$ and intersection is farther
+than $\point T$ if and only if $\gl < \gt$
+
+There is another special case to handle: if the line $\straightline AB$ is in
+"hyperbolic" position, i.e. intersects both halves of the cone, then one value
+of $\gl$ is smaller than $\gs$ and one value is greater than $\gs$.  Exactly one
+of the values of $\gl$ will be retained by the preceding analysis, and we need
+to add an extra $\gl$ equal to an infinity with the sign of $\gt - gs$ to
+account for the fact that all the points farther than $\point T$ are hidden
+by the cone.
 
 To complete the analysis we need to compute the intersection of the sphere (not the cone) with the
 line $\straightline AB$. $\point Q$ is on the sphere, thus\[
