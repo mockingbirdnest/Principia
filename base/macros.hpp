@@ -152,13 +152,6 @@ inline void noreturn() { std::exit(0); }
 #  define GUARDED_BY(x)
 #endif
 
-#define VLOG_AND_RETURN(verboselevel, expression)                  \
-  do {                                                             \
-    auto const& value__ = (expression);                            \
-    VLOG(verboselevel) << __FUNCTION__ << " returns " << value__;  \
-    return value__;                                                \
-  } while (false)
-
 // Unicode.
 #if OS_WIN
 #  define UNICODE_PATH(x) u ## x

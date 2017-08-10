@@ -244,9 +244,6 @@ Ephemeris<Frame>::Ephemeris(
         inserted.first->second.get();
     CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
-    VLOG(1) << "Constructed trajectory " << trajectory
-            << " for body with mass " << body->mass();
-
     if (body->is_oblate()) {
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
@@ -522,7 +519,6 @@ template<typename Frame>
 void Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
-  VLOG(1) << __FUNCTION__ << " " << NAMED(t);
   if (empty() || t > t_max()) {
     Prolong(t);
   }

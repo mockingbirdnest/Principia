@@ -395,9 +395,6 @@ class Plugin {
       Index celestial_index,
       std::experimental::optional<Index> const& parent_index);
 
-  not_null<std::unique_ptr<Vessel>> const& find_vessel_by_guid_or_die(
-      GUID const& vessel_guid) const;
-
   // Computes the value returned by |PlanetariumRotation|.  Must be called
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();

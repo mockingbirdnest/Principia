@@ -109,7 +109,6 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
         it.time(),
         BarycentricToPlotting(it.time())(it.degrees_of_freedom()));
   }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
   return trajectory;
 }
 
@@ -154,7 +153,6 @@ Renderer::RenderPlottingTrajectoryInWorld(
             navigation_degrees_of_freedom.velocity())};
     trajectory->Append(it.time(), world_degrees_of_freedom);
   }
-  VLOG(1) << "Returning a " << trajectory->Size() << "-point trajectory";
   return trajectory;
 }
 
