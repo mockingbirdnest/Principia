@@ -25,7 +25,7 @@ location of the camera.
 
 We start our analysis by eliminating a case that would cause anomalies in the
 computations below.  If:\[
-\scal{\bipoint KC}{\bipoint KC} < R^2
+\scal{\bipoint KC}{\bipoint KC} < $R$^2
 \]
 then the camera is inside the sphere and the segment is hidden irrespective of
 its position.
@@ -102,15 +102,13 @@ We have:
 \end{align*}
 and:
 \begin{align*}
-\scal{\bipoint HM}{\bipoint HM} &= \frac{r^2} {sin^2 \gq} &= \frac{r^2} {1 - cos^2 \gq}
+\scal{\bipoint HM}{\bipoint HM} &= \frac{{r^2} {sin^2 \gq}} &= \frac{{r^2} {1 - cos^2 \gq}}
 \end{align*}
 Eliminating $\bipoint HM$ we obtain the following conditions on $\ga$ for
 $\point H$ to be in the position indicated above:
 \begin{align*}
 \ga < 0\\
-\ga^2 > r^2 \frac{\scal{\bipoint KB}{\bipoint KB}}
-                 {\scal{\bipoint KA}{\bipoint KA}\scal{\bipoint KB}{\bipoint KB} -
-                  {\scal{\bipoint KA}{\bipoint KB}}^2}\text.
+\ga^2 > r^2 \frac{\scal{\bipoint KB}{\bipoint KB} {\scal{\bipoint KA}{\bipoint KA}\scal{\bipoint KB}{\bipoint KB} - {\scal{\bipoint KA}{\bipoint KB}}^2}\text.
 \end{align*}
 We have similar conditions on $\gb$ for the circle to be outside the wedge
 $\plane KAB$ and tangent to $\bipoint KA$.
@@ -181,9 +179,8 @@ intersection of $\straightline AB$ with the line orthogonal to $\straightline KH
 at $\point K$.  We locate $\point S$ on $\straightline AB$ as follows:\[
 \bipoint KS = \bipoint KA + \gs \bipoint AB\text.
 \]
-Noting that $\scal{\bipoint KS}{\bipoint KH} = 0$ we obtain:\[
-\gs = -\frac{\scal{\bipoint KA}{\bipoint KH}}
-            {\scal{\bipoint AB}{\bipoint KH}}
+Noting that $\scal{\bipoint KS}{\bipoint KH} &= 0$ we obtain:\[
+\gs &= -\frac{\scal{\bipoint KA}{\bipoint KH} \scal{\bipoint AB}{\bipoint KH}}
 \]
 Now let $\point T$ be the intersection of $\straightline AB$ with the line
 orthogonal to $\straightline KH$ at $\point P$.  We locate $\point T$ on
@@ -193,9 +190,8 @@ $\straightline AB$ similarly:\[
 We have:\[
 \bipoint PT = \bipoint KA + \gt \bipoint AB - \bipoint KH + \bipoint PH
 \]
-Noting that $\scal{\bipoint PT}{\bipoint KH} = 0$ we obtain:\[
-\gt = \frac{\scal{\bipoint KH}{\bipoint KH} - \scal{\bipoint PH}{\bipoint KH} - \scal{\bipoint KA}{\bipoint KH}}
-           {\scal{\bipoint AB}{\bipoint KH}}
+Noting that $\scal{\bipoint PT}{\bipoint KH} &= 0$ we obtain:\[
+\gt = \frac{{\scal{\bipoint KH}{\bipoint KH} - \scal{\bipoint PH}{\bipoint KH} - \scal{\bipoint KA}{\bipoint KH}} \scal{\bipoint AB}{\bipoint KH}}
 \]
 We can now determine if $\gl$ is an "interesting" intersection, i.e., one that
 intersects the cone behind the sphere when seen from the camera.  First, assume
