@@ -27,11 +27,16 @@ struct DoublePrecision final {
   explicit constexpr DoublePrecision(T const& value);
 
   // Compensated summation.  This is less precise, but more efficient, than
-  // conversion followed by |operator+=|.
+  // |operator-=| or |operator+=|.  Unlike |QuickTwoSum|, these functions don't
+  // DCHECK their argument, so the caller must ensure that |right| is small
+  // enough.
+  DoublePrecision<T>& Decrement(Difference<T> const& right);
   DoublePrecision<T>& Increment(Difference<T> const& right);
 
   DoublePrecision<T>& operator+=(DoublePrecision<Difference<T>> const& right);
+  DoublePrecision<T>& operator+=(Difference<T> const& right);
   DoublePrecision<T>& operator-=(DoublePrecision<Difference<T>> const& right);
+  DoublePrecision<T>& operator-=(Difference<T> const& right);
 
   void WriteToMessage(not_null<serialization::DoublePrecision*> message) const;
   static DoublePrecision ReadFromMessage(
@@ -91,10 +96,16 @@ DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
+template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
+                                     U const& right);
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
+                                            U const& right);
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
