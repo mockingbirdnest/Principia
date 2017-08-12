@@ -1,7 +1,6 @@
 \documentclass[10pt, a4paper, twoside]{basestyle}
-\usepackage{tikz}
-\usetikzlibrary{calc}
-\usetikzlibrary{intersections}
+\usepackage{tkz-euclide}
+\usetkzobj{all}
 \usepackage[Mathematics]{semtex}
 
 %%%% Shorthands.
@@ -251,6 +250,32 @@ $\gt < \gl$.  Conversely, if $\point A$ and $\point B$ are in the reverse order
 as $\point S$ and $\point T$ on $\straightline AB$ we have $\gt \leq \gs$ and
 the intersection is farther than $\point T$ if and only if $\gl < \gt$
 
+\marginfig[Definition2 of $\point S$ and $\point T$.\label{figST}]{
+\begin{tikzpicture}[scale=0.5]
+\tkzInit[ymin=-5,ymax=12,xmin=-4,xmax=6]\tkzClip
+\tkzDefPoint(2,11){A}
+\tkzDefPoint(3,8){B}
+\tkzDefPoint(0,0){C}
+\tkzDefPoint(0,0){H}
+\tkzDefPoint(0,6){K}
+\tkzDefPoint(2.598,1.5){P}
+\tkzDefPoint(-2.598,1.5){P2}
+\tkzDefPoint(3.666,6){S}
+\tkzDefPoint(5.166,1.5){T}
+
+\tkzDrawPoints(A,B,C,H,K,P,S,T)
+\tkzLabelPoints(A,B,C,H,K,P,S,T)
+
+\tkzDrawLine[add=0.2 and 3](A,B)
+\tkzDrawLine(C,K)
+\tkzDrawLine[add=1 and 1](K,P)
+\tkzDrawLine[add=1 and 1](K,P2)
+\tkzDrawLine(K,S)
+\tkzDrawLine[add=1 and 0.2](P,T)
+
+\tkzDrawCircle[R](C, 3cm)
+\end{tikzpicture}
+}
 There is another special case to handle: if the line $\straightline AB$ is in
 "hyperbolic" position, i.e. intersects both halves of the cone, then one value
 of $\gl$ is smaller than $\gs$ and one value is greater than $\gs$.  Exactly one
