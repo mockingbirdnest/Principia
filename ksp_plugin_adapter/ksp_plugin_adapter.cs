@@ -123,7 +123,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Texture surface_navball_texture_;
   private UnityEngine.Texture target_navball_texture_;
   private bool navball_changed_ = true;
-  private FlightGlobals.SpeedDisplayModes previous_display_mode_;
+  private FlightGlobals.SpeedDisplayModes? previous_display_mode_;
   private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
@@ -513,6 +513,7 @@ public partial class PrincipiaPluginAdapter
                                      plugin_,
                                      UpdateRenderingFrame,
                                      "Plotting frame"));
+      previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
       flight_planner_.reset(new FlightPlanner(this, plugin_));
 
@@ -709,7 +710,7 @@ public partial class PrincipiaPluginAdapter
         }
       }
 
-      if (navball_changed_) {
+      if (navball_changed_ && previous_display_mode_ != null) {
         // Texture the ball.
         navball_changed_ = false;
         if (plotting_frame_selector_.get().target_override) {
@@ -879,6 +880,7 @@ public partial class PrincipiaPluginAdapter
       must_set_plotting_frame_ = false;
       plotting_frame_selector_.reset(new ReferenceFrameSelector(
           this, plugin_, UpdateRenderingFrame, "Plotting frame"));
+      previous_display_mode_ = null;
     }
 
     if (PluginRunning()) {
@@ -1818,6 +1820,7 @@ public partial class PrincipiaPluginAdapter
     map_renderer_ = null;
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
+    previous_display_mode_ = null;
     flight_planner_.reset();
     navball_changed_ = true;
   }
