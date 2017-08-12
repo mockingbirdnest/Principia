@@ -15,7 +15,7 @@
 
 \title{%
 \textdisplay{%
-Documentation for the hiding computations in Planetarium%
+Hiding Computations in Projection%
 }%
 }
 \author{Pascal~Leroy (pleroy)}
@@ -101,6 +101,45 @@ have
 \scal{\bipoint KA}{\bipoint KB} = \norm {\bipoint KA} \norm {\bipoint KB}
                                   \cos \gq
 \]
+\marginfig[Circle outside of the wedge $\plane KAB$.\label{figOutside}]{
+\begin{tikzpicture}[scale=0.5]
+\tkzInit[ymin=-7,ymax=8,xmin=-1,xmax=9]\tkzClip
+\tkzDefPoint(3,5){A}
+\tkzDefPoint(8,0){B}
+\tkzDefPoint(4,-3){H}
+\tkzDefPoint(0,0){K}
+
+\tkzDefLine[orthogonal=through H](K,B) \tkzGetPoint{h1}
+\tkzInterLL(H,h1)(K,B) \tkzGetPoint{N}
+
+\tkzDefLine[parallel=through H](K,A) \tkzGetPoint{h2}
+\tkzInterLL(H,h2)(K,B) \tkzGetPoint{M}
+
+\tkzDefPointWith[linear,K=2](H,M) \tkzGetPoint{m}
+
+\tkzDrawPoints(A,B,H,K,M,N)
+\tkzLabelPoint[left](A){$\point A$}
+\tkzLabelPoint[above](B){$\point B$}
+\tkzLabelPoint[left](H){$\point H$}
+\tkzLabelPoint[above left](K){$\point K$}
+\tkzLabelPoint[below right](M){$\point M$}
+\tkzLabelPoint[above left](N){$\point N$}
+
+\tkzDrawLine(K,A)
+\tkzDrawLine(K,B)
+\tkzDrawLine(H,N)
+\tkzDrawLine[add=0.2 and 0.5](H,M)
+
+\tkzDrawCircle[R](H,3cm)
+
+\tkzMarkRightAngle[size=0.5](H,N,M)
+\tkzMarkAngle[size=0.5](B,K,A)
+\tkzLabelAngle(A,K,B){$\gq$}
+\tkzMarkAngle[size=0.5](B,M,m)
+\tkzLabelAngle(B,M,m){$\gq$}
+
+\end{tikzpicture}
+}
 Assume that $\point H$ is outside the wedge $\plane KAB$ and in a position where
 the circle is tangent to $\straightline KB$ at point $\point N$.  Let $\point M$
 be the point where $\point H$ projects on $\bipoint KB$ parallel to
@@ -195,7 +234,7 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \begin{tikzpicture}[scale=0.5]
 \tkzInit[ymin=-5,ymax=12,xmin=-4,xmax=6]\tkzClip
 \tkzDefPoint(2,11){A}
-\tkzDefPoint(3,8){B}
+\tkzDefPoint(5,-4){B}
 \tkzDefPoint(0,0){H}
 \tkzDefPoint(0,6){K}
 \tkzDefPoint(2.598,1.5){P}
@@ -213,9 +252,9 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \tkzLabelPoint[left](B){$\point B$}
 \tkzLabelPoint[left](H){$\point H$}
 \tkzLabelPoint[left](K){$\point K$}
-\tkzLabelPoint[above left](T){$\point T$}
-\tkzLabelPoint[above right](P){$\point P$}
+\tkzLabelPoint[below left](P){$\point P$}
 \tkzLabelPoint[above right](S){$\point S$}
+\tkzLabelPoint[above right](T){$\point T$}
 
 \tkzDrawLine[add=0.2 and 3](A,B)
 \tkzDrawLine(H,K)
