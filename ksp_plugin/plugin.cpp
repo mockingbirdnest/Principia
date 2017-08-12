@@ -635,7 +635,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     Index const parent_index,
     GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  not_null<std::unique_ptr<Vessel>> const& vessel = 
+  not_null<std::unique_ptr<Vessel>> const& vessel =
       FindOrDie(vessels_, vessel_guid);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
