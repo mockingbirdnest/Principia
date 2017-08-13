@@ -109,6 +109,8 @@ $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 
 \tkzDefPointWith[linear,K=2](H,M) \tkzGetPoint{m}
 
+\tkzDefPointBy[rotation=center H angle -130](N) \tkzGetPoint{r}
+
 \tkzDrawPoints(A,B,H,K,M,N)
 \tkzLabelPoint[left](A){$\point A$}
 \tkzLabelPoint[above](B){$\point B$}
@@ -121,6 +123,9 @@ $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 \tkzDrawLine(K,B)
 \tkzDrawLine(H,N)
 \tkzDrawLine[add=0.2 and 0.5](H,M)
+
+\tkzDrawSegment[style=dashed](H,r)
+\tkzLabelSegment[above right](H,r){$r$}
 
 \tkzDrawCircle[R](H,3cm)
 
@@ -175,10 +180,12 @@ $\plane KAB$ and tangent to $\bipoint KA$.
 \tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
 \tkzInterLL(K,P)(A,B) \tkzGetPoint{Q}
 
+\tkzDefPointBy[rotation=center H angle -130](P) \tkzGetPoint{r}
+
 \tkzDrawPoints(A,B,H,K,P,P',Q)
 \tkzLabelPoint[below left](A){$\point A$}
 \tkzLabelPoint[above left](B){$\point B$}
-\tkzLabelPoint[above](H){$\point H$}
+\tkzLabelPoint[below](H){$\point H$}
 \tkzLabelPoint[left](K){$\point K$}
 \tkzLabelPoint[above left](P){$\point P$}
 \tkzLabelPoint[below right](P'){$\point P'$}
@@ -190,6 +197,9 @@ $\plane KAB$ and tangent to $\bipoint KA$.
 \tkzDrawLine(K,B)
 \tkzDrawLine(K,P')
 \tkzDrawLine(K,Q)
+
+\tkzDrawSegment[style=dashed](H,r)
+\tkzLabelSegment[left](H,r){$r$}
 
 \tkzDrawCircle[R](H,3cm)
 
@@ -280,6 +290,8 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \tkzDefLine[orthogonal=through K](K,H) \tkzGetPoint{k}
 \tkzInterLL(K,k)(A,B) \tkzGetPoint{S}
 
+\tkzDefPointBy[rotation=center H angle -80](P) \tkzGetPoint{r}
+
 \tkzDrawPoints(A,B,H,K,P,S,T)
 \tkzLabelPoint[left](A){$\point A$}
 \tkzLabelPoint[left](B){$\point B$}
@@ -295,6 +307,9 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \tkzDrawLine[add=1 and 1](K,P2)
 \tkzDrawLine[add=0.05 and 0.2](K,S)
 \tkzDrawLine[add=2.2 and 0.2](P,T)
+
+\tkzDrawSegment[style=dashed](H,r)
+\tkzLabelSegment[above right](H,r){$r$}
 
 \tkzDrawCircle[R](H,3cm)
 
@@ -356,10 +371,12 @@ by the cone.
 \tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
 \tkzInterLC[R](A,B)(H,3cm) \tkzGetPoints{Q'}{Q}
 
+\tkzDefPointBy[rotation=center H angle 100](Q') \tkzGetPoint{r}
+
 \tkzDrawPoints(A,B,H,K,P,P',Q,Q')
 \tkzLabelPoint[below left](A){$\point A$}
 \tkzLabelPoint[below right](B){$\point B$}
-\tkzLabelPoint[above](H){$\point H$}
+\tkzLabelPoint[left](H){$\point H$}
 \tkzLabelPoint[left](K){$\point K$}
 \tkzLabelPoint[left](P){$\point P$}
 \tkzLabelPoint[right](P'){$\point P'$}
@@ -371,6 +388,9 @@ by the cone.
 \tkzDrawLine(K,B)
 \tkzDrawLine[add=-0.9 and 0.1](K,P)
 \tkzDrawLine[add=-0.9 and 0.1](K,P')
+
+\tkzDrawSegment[style=dashed](H,r)
+\tkzLabelSegment[left](H,r){$r$}
 
 \tkzDrawCircle[R](H,3cm)
 
