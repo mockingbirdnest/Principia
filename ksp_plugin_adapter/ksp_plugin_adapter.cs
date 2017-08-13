@@ -1625,7 +1625,7 @@ public partial class PrincipiaPluginAdapter
                         i);
                 GLLines.PlotAndDeleteRP2Lines(
                     rp2_lines_iterator,
-                    is_burn ? XKCDColors.Rose : XKCDColors.PeriwinkleBlue,
+                    is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
                     is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
               }
               if (is_burn) {
