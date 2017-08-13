@@ -101,8 +101,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
 
   auto const rp2_lines = PlotMethod0(begin, end, now, reverse);
 
-  int skipped = 0;
-  int total = 0;
   RP2Lines<Length, Camera> new_rp2_lines;
   for (auto const& rp2_line : rp2_lines) {
     RP2Line<Length, Camera> new_rp2_line;
@@ -121,15 +119,10 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
         start_rp2_point = rp2_point;
       } else if (i == rp2_line.size() - 1) {
         new_rp2_line.push_back(rp2_point);
-      } else {
-        ++skipped;
       }
-      ++total;
     }
     new_rp2_lines.push_back(std::move(new_rp2_line));
   }
-  LOG(INFO) << "PlotMethod1 skipped " << skipped << " points out of " << total
-            << ", emitting " << total - skipped << " points";
   return new_rp2_lines;
 }
 
@@ -177,7 +170,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
   std::experimental::optional<Position<Navigation>> last_endpoint;
 
   int steps_accepted = 0;
-  int steps_attempted = 0;
 
   goto estimate_tan²_error;
 
@@ -210,7 +202,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       estimated_tan²_error =
           perspective_.Tan²AngularDistance(extrapolated_position, position) /
           16;
-      ++steps_attempted;
     } while (estimated_tan²_error > tan²_angular_resolution);
     ++steps_accepted;
 
@@ -240,8 +231,6 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       last_endpoint = segment.second;
     }
   }
-  LOG(INFO) << "PlotMethod2 took " << steps_accepted << " steps, attempted "
-            << steps_attempted << " steps";
   return lines;
 }
 
