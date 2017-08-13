@@ -40,12 +40,18 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
-  private bool use_cayley_plotting_ = true;
+#endif
+  private bool use_cayley_plotting_ = false;
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
-  private bool use_чебышёв_plotting_ = false;
+#endif
+  private bool use_чебышёв_plotting_ = true;
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
-  private int чебышёв_plotting_method_ = 1;
+#endif
+  private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
@@ -204,6 +210,21 @@ public partial class PrincipiaPluginAdapter
       bad_installation_popup_ =
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
+    }
+#if KSP_VERSION_1_2_2
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 2 ||
+        Versioning.Revision != 2) {
+      string expected_version = "1.2.2";
+#elif KSP_VERSION_1_3
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 3 ||
+        Versioning.Revision != 0) {
+      string expected_version = "1.3.0";
+#endif
+      Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
+                Versioning.version_minor + "." + Versioning.Revision +
+                "; this build targets " + expected_version + ".");
     }
     map_node_pool_ = new MapNodePool();
   }
@@ -1519,7 +1540,7 @@ public partial class PrincipiaPluginAdapter
                     чебышёв_plotting_method_,
                     main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Banana,
+                                          XKCDColors.Lime,
                                           GLLines.Style.FADED);
           }
           RenderPredictionMarkers(main_vessel_guid, sun_world_position);
@@ -1537,7 +1558,7 @@ public partial class PrincipiaPluginAdapter
                     чебышёв_plotting_method_,
                     main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Cerise,
+                                          XKCDColors.Fuchsia,
                                           GLLines.Style.SOLID);
           }
           string target_id =
@@ -1558,7 +1579,7 @@ public partial class PrincipiaPluginAdapter
                       чебышёв_plotting_method_,
                       target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Orange,
+                                            XKCDColors.Goldenrod,
                                             GLLines.Style.FADED);
             }
             RenderPredictionMarkers(target_id, sun_world_position);
@@ -1575,7 +1596,7 @@ public partial class PrincipiaPluginAdapter
                       чебышёв_plotting_method_,
                       target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Raspberry,
+                                            XKCDColors.LightMauve,
                                             GLLines.Style.SOLID);
             }
           }
@@ -1610,7 +1631,7 @@ public partial class PrincipiaPluginAdapter
                         i);
                 GLLines.PlotAndDeleteRP2Lines(
                     rp2_lines_iterator,
-                    is_burn ? XKCDColors.Grapefruit : XKCDColors.Blueberry,
+                    is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
                     is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
               }
               if (is_burn) {
@@ -2043,6 +2064,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LoggingSettings() {
+#if SELECTABLE_PLOT_METHOD
     using (new HorizontalLayout()) {
       use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
           use_cayley_plotting_, "Cayley plotting");
@@ -2058,6 +2080,7 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+#endif
     using (new HorizontalLayout()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
