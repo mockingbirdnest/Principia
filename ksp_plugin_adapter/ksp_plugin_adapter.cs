@@ -40,11 +40,17 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
+#endif
   private bool use_cayley_plotting_ = false;
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
+#endif
   private bool use_чебышёв_plotting_ = true;
+#if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
+#endif
   private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
 
@@ -2058,6 +2064,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void LoggingSettings() {
+#if SELECTABLE_PLOT_METHOD
     using (new HorizontalLayout()) {
       use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
           use_cayley_plotting_, "Cayley plotting");
@@ -2073,6 +2080,7 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+#endif
     using (new HorizontalLayout()) {
       UnityEngine.GUILayout.Label(text : "Verbose level:");
       if (UnityEngine.GUILayout.Button(
