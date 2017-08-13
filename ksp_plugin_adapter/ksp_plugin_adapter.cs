@@ -41,11 +41,11 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Rect main_window_rectangle_;
 
   [KSPField(isPersistant = true)]
-  private bool use_cayley_plotting_ = true;
+  private bool use_cayley_plotting_ = false;
   [KSPField(isPersistant = true)]
-  private bool use_чебышёв_plotting_ = false;
+  private bool use_чебышёв_plotting_ = true;
   [KSPField(isPersistant = true)]
-  private int чебышёв_plotting_method_ = 1;
+  private int чебышёв_plotting_method_ = 2;
   private const int чебышёв_plotting_methods_count = 3;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
