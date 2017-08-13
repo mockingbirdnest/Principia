@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
       
-  private const String next_release_name = "Чебышёв";
-  private const int next_release_lunation_number = 218;
+  private const String next_release_name = "Cesàro";
+  private const int next_release_lunation_number = 219;
   private DateTimeOffset next_release_date =
-      new DateTimeOffset(2017, 08, 21, 18, 30, 11, TimeSpan.Zero);
+      new DateTimeOffset(2017, 09, 20, 05, 31, 00, TimeSpan.Zero);
 
   private const String principia_key = "serialized_plugin";
   private const String principia_initial_state_config_name =
