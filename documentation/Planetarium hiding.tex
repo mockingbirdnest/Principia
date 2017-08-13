@@ -21,13 +21,21 @@ Hiding Computations in Projection%
 \author{Pascal~Leroy (pleroy)}
 \begin{document}
 \maketitle
-Notation: $\point A$ and $\point B$ are the extremities of the segment;
-$\point C$ is the centre of the sphere; $R$ is the radius of the sphere;
-$\point K$ is the location of the camera.
+This document describes the computations that are performed by the method
+VisibleSegments of class Perspective to determine what are the parts of a
+segment that are hidden by a sphere when seen from a pinhole camera.
+Figure~\ref{fig3d} illustrates an example of the problem.  The points drawn in
+black define the problem: $\point A$ and $\point B$ are the extremities of the
+segment; $\point C$ is the centre of the sphere; $R$ is the radius of the
+sphere; and $\point K$ is the location of the camera.  The points drawn in red
+will be computed as part of the resolution.  Of particular interest is
+$\point H$, the projection of $\point C$ on the plane $\plane KAB$.
 \begin{figure}[htb!]
 \centering
 \includegraphics[scale=0.35]{Perspective-hiding-3d}
-\caption{Presentation of the problem.\label{fig3d}}
+\caption{A 3-dimensional example.  In this case, the only segment visible from
+$\point K$ is the part of $\straightline AB$ between $\point B$ and the red
+point immediately to its left.\label{fig3d}}
 \end{figure}
 
 \subsection*{Camera inside the sphere}
@@ -38,7 +46,8 @@ computations below.  If\[
 then the camera is inside the sphere and the segment is hidden irrespective of
 its position.
 
-Next, consider the plane that contains $\point K$ and is orthogonal to
+\subsection*{Sphere behind the camera}
+Consider next the plane that contains $\point K$ and is orthogonal to
 $\bipoint KC$; it separates the entire space into two half-spaces.  If the
 segment $\bipoint AB$ is entirely within the half-space that does not contain
 $\point C$ then the segment is not hidden.  This is the case if the following
