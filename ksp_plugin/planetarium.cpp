@@ -21,6 +21,10 @@ using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
 
+namespace {
+constexpr int max_plot_method_2_steps = 10'000;
+}  // namespace
+
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& angular_resolution,
                                     Angle const& field_of_view)
@@ -43,7 +47,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
     Instant const& now,
-    bool const reverse) const {
+    bool const /*reverse*/) const {
   auto const plottable_begin =
       begin.trajectory()->LowerBound(plotting_frame_->t_min());
   auto const plottable_end =
@@ -181,7 +185,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   goto estimate_tan²_error;
 
-  while (steps_accepted < 10'000 &&
+  while (steps_accepted < max_plot_method_2_steps &&
          direction * (previous_time - final_time) < Time{}) {
     do {
       // One square root because we have squared errors, another one because the
