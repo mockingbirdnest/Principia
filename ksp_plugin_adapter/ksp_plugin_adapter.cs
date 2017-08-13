@@ -205,6 +205,21 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
+#if KSP_VERSION_1_2_2
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 2 ||
+        Versioning.Revision != 2) {
+      string expected_version = "1.2.2";
+#elif KSP_VERSION_1_3
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 3 ||
+        Versioning.Revision != 0) {
+      string expected_version = "1.3.0";
+#endif
+      Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
+                Versioning.version_minor + "." + Versioning.Revision +
+                "; this build targets " + expected_version + ".");
+    }
     map_node_pool_ = new MapNodePool();
   }
 
