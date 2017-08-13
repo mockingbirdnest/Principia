@@ -93,14 +93,6 @@ Let's look at a figure in the plane $\plane KAB$ when the sphere intersects
 that plane.  Let $r$ be the radius of the intersection circle; it is such that
 $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 
-If the circle doesn't intersect the wedge $\plane KAB$ then the segment
-$\straightline AB$ is entirely visible.  To find if this is the case, first
-observe that, if $\gq$ is the angle between $\bipoint KA$ and $\bipoint KB$, we
-have
-\[
-\scal{\bipoint KA}{\bipoint KB} = \norm {\bipoint KA} \norm {\bipoint KB}
-                                  \cos \gq
-\]
 \marginfig[Circle outside of the wedge $\plane KAB$.\label{figOutside}]{
 \begin{tikzpicture}[scale=0.5]
 \tkzInit[ymin=-7,ymax=8,xmin=-1,xmax=9]\tkzClip
@@ -140,6 +132,14 @@ have
 
 \end{tikzpicture}
 }
+If the circle doesn't intersect the wedge $\plane KAB$ then the segment
+$\straightline AB$ is entirely visible.  To find if this is the case, first
+observe that, if $\gq$ is the angle between $\bipoint KA$ and $\bipoint KB$, we
+have
+\[
+\scal{\bipoint KA}{\bipoint KB} = \norm {\bipoint KA} \norm {\bipoint KB}
+                                  \cos \gq
+\]
 Assume that $\point H$ is outside the wedge $\plane KAB$ and in a position where
 the circle is tangent to $\straightline KB$ at point $\point N$.  Let $\point M$
 be the point where $\point H$ projects on $\bipoint KB$ parallel to
@@ -164,6 +164,39 @@ $\point H$ to be in the position indicated above
 We have similar conditions on $\gb$ for the circle to be outside the wedge
 $\plane KAB$ and tangent to $\bipoint KA$.
 
+\marginfig[Construction of $\point P$.\label{figP}]{
+\begin{tikzpicture}[scale=0.5]
+\tkzInit[ymin=-5,ymax=10,xmin=-4,xmax=6]\tkzClip
+\tkzDefPoint(-3,9){A}
+\tkzDefPoint(5.5,9){B}
+\tkzDefPoint(2,5){H}
+\tkzDefPoint(0,-4){K}
+
+\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
+\tkzInterLL(K,P)(A,B) \tkzGetPoint{Q}
+
+\tkzDrawPoints(A,B,H,K,P,P',Q)
+\tkzLabelPoint[below left](A){$\point A$}
+\tkzLabelPoint[above left](B){$\point B$}
+\tkzLabelPoint[above](H){$\point H$}
+\tkzLabelPoint[left](K){$\point K$}
+\tkzLabelPoint[above left](P){$\point P$}
+\tkzLabelPoint[below right](P'){$\point P'$}
+\tkzLabelPoint[above right](Q){$\point Q$}
+
+\tkzDrawLine[add=0.05 and 0.05](A,B)
+\tkzDrawLine(H,P)
+\tkzDrawLine(K,A)
+\tkzDrawLine(K,B)
+\tkzDrawLine(K,P')
+\tkzDrawLine(K,Q)
+
+\tkzDrawCircle[R](H,3cm)
+
+\tkzMarkRightAngle[size=0.5](K,P,H)
+
+\end{tikzpicture}
+}
 The next step is to find out the extension of the wedge formed by the circle
 when seen from $\point K$.  Let $\point P$ be a point where a line
 going through $K$ is tangent to the circle, and let $\point Q$ be the point 
@@ -311,6 +344,38 @@ to add an extra $\gl$ equal to an infinity with the sign of $\gt - \gs$ to
 account for the fact that all the points farther than $\point T$ are hidden
 by the cone.
 
+
+\marginfig[Intersection with the sphere.\label{figSphere}]{
+\begin{tikzpicture}[scale=0.5]
+\tkzInit[ymin=-5,ymax=10,xmin=-3.8,xmax=6.2]\tkzClip
+\tkzDefPoint(-3,5){A}
+\tkzDefPoint(5.5,5){B}
+\tkzDefPoint(2,7){H}
+\tkzDefPoint(0,-4){K}
+
+\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P'}{P}
+\tkzInterLC[R](A,B)(H,3cm) \tkzGetPoints{Q'}{Q}
+
+\tkzDrawPoints(A,B,H,K,P,P',Q,Q')
+\tkzLabelPoint[below left](A){$\point A$}
+\tkzLabelPoint[below right](B){$\point B$}
+\tkzLabelPoint[above](H){$\point H$}
+\tkzLabelPoint[left](K){$\point K$}
+\tkzLabelPoint[left](P){$\point P$}
+\tkzLabelPoint[right](P'){$\point P'$}
+\tkzLabelPoint[below left](Q){$\point Q$}
+\tkzLabelPoint[above left](Q'){$\point Q'$}
+
+\tkzDrawLine[add=0.05 and 0.05](A,B)
+\tkzDrawLine(K,A)
+\tkzDrawLine(K,B)
+\tkzDrawLine[add=-0.9 and 0.1](K,P)
+\tkzDrawLine[add=-0.9 and 0.1](K,P')
+
+\tkzDrawCircle[R](H,3cm)
+
+\end{tikzpicture}
+}
 To complete the analysis we need to compute the intersection $\point Q$ of the
 sphere (not the cone) with the line $\straightline AB$. $\point Q$ is on the
 sphere, thus
