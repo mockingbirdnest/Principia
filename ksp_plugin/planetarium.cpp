@@ -13,12 +13,17 @@ namespace internal_planetarium {
 
 using geometry::Position;
 using geometry::RP2Line;
+using geometry::Sign;
 using geometry::Velocity;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
 using quantities::Tan;
 using quantities::Time;
+
+namespace {
+constexpr int max_plot_method_2_steps = 10'000;
+}  // namespace
 
 Planetarium::Parameters::Parameters(double const sphere_radius_multiplier,
                                     Angle const& angular_resolution,
@@ -41,7 +46,8 @@ Planetarium::Planetarium(
 RP2Lines<Length, Camera> Planetarium::PlotMethod0(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now) const {
+    Instant const& now,
+    bool const /*reverse*/) const {
   auto const plottable_begin =
       begin.trajectory()->LowerBound(plotting_frame_->t_min());
   auto const plottable_end =
@@ -90,13 +96,14 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
 RP2Lines<Length, Camera> Planetarium::PlotMethod1(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now) const {
+    Instant const& now,
+    bool const reverse) const {
   Length const focal_plane_tolerance =
       perspective_.focal() * parameters_.tan_angular_resolution_;
   auto const focal_plane_tolerance² =
       focal_plane_tolerance * focal_plane_tolerance;
 
-  auto const rp2_lines = PlotMethod0(begin, end, now);
+  auto const rp2_lines = PlotMethod0(begin, end, now, reverse);
 
   int skipped = 0;
   int total = 0;
@@ -133,7 +140,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
 RP2Lines<Length, Camera> Planetarium::PlotMethod2(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now) const {
+    Instant const& now,
+    bool const reverse) const {
   RP2Lines<Length, Camera> lines;
   if (begin == end) {
     return lines;
@@ -145,9 +153,12 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Pow<2>(parameters_.tan_angular_resolution_);
   auto const plottable_spheres = ComputePlottableSpheres(now);
   auto const& trajectory = *begin.trajectory();
-  auto const final_time = std::min(last.time(), plotting_frame_->t_max());
-  auto previous_time = std::max(begin.time(), plotting_frame_->t_min());
-  if (final_time <= previous_time) {
+  auto const begin_time = std::max(begin.time(), plotting_frame_->t_min());
+  auto const last_time = std::min(last.time(), plotting_frame_->t_max());
+  auto const final_time = reverse ? begin_time : last_time;
+  auto previous_time = reverse ? last_time : begin_time;
+  Sign const direction = reverse ? Sign(-1) : Sign(1);
+  if (direction * (final_time - previous_time) <= Time{}) {
     return lines;
   }
   RigidMotion<Barycentric, Navigation> to_plotting_frame_at_t =
@@ -174,7 +185,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   goto estimate_tan²_error;
 
-  while (previous_time < final_time) {
+  while (steps_accepted < max_plot_method_2_steps &&
+         direction * (previous_time - final_time) < Time{}) {
     do {
       // One square root because we have squared errors, another one because the
       // errors are quadratic in time (in other words, two square roots because
@@ -183,7 +195,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
       Δt *= 0.9 * Sqrt(Sqrt(tan²_angular_resolution / estimated_tan²_error));
     estimate_tan²_error:
       t = previous_time + Δt;
-      if (t > final_time) {
+      if (direction * (t - final_time) > Time{}) {
         t = final_time;
         Δt = t - previous_time;
       }
