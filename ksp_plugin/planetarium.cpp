@@ -181,8 +181,8 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   goto estimate_tan²_error;
 
-  while (direction * (previous_time - final_time) < Time{} &&
-         steps_accepted < 10'000) {
+  while (steps_accepted < 10'000 &&
+         direction * (previous_time - final_time) < Time{}) {
     do {
       // One square root because we have squared errors, another one because the
       // errors are quadratic in time (in other words, two square roots because
