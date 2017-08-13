@@ -348,7 +348,7 @@ class FlightPlanner : WindowRenderer {
   internal static string FormatPositiveTimeSpan (TimeSpan span) {
     return (GameSettings.KERBIN_TIME
                 ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
-                      " d6 " + (span.Hours % 6).ToString("0;0" + " h ")
+                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
                 : span.Days.ToString("000;000") + " d " +
                       span.Hours.ToString("00;00") + " h ") +
            span.Minutes.ToString("00;00") + " min " +
