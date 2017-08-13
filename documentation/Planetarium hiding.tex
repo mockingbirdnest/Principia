@@ -237,8 +237,8 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \tkzDefPoint(5,-4){B}
 \tkzDefPoint(0,0){H}
 \tkzDefPoint(0,6){K}
-\tkzDefPoint(2.598,1.5){P}
-\tkzDefPoint(-2.598,1.5){P2}
+
+\tkzTangent[from with R=K](H,3cm) \tkzGetPoints{P2}{P}
 
 \tkzDefLine[orthogonal=through P](K,H) \tkzGetPoint{p}
 \tkzInterLL(P,p)(A,B) \tkzGetPoint{T}
@@ -261,7 +261,7 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 \tkzDrawLine[add=1 and 1](K,P)
 \tkzDrawLine[add=1 and 1](K,P2)
 \tkzDrawLine[add=0.05 and 0.2](K,S)
-\tkzDrawLine[add=1.2 and 0.2](P,T)
+\tkzDrawLine[add=2.2 and 0.2](P,T)
 
 \tkzDrawCircle[R](H,3cm)
 
