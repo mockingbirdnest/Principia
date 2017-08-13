@@ -1519,7 +1519,7 @@ public partial class PrincipiaPluginAdapter
                     чебышёв_plotting_method_,
                     main_vessel_guid);
             GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Banana,
+                                          XKCDColors.Lime,
                                           GLLines.Style.FADED);
           }
           RenderPredictionMarkers(main_vessel_guid, sun_world_position);
@@ -1558,7 +1558,7 @@ public partial class PrincipiaPluginAdapter
                       чебышёв_plotting_method_,
                       target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Orange,
+                                            XKCDColors.Banana,
                                             GLLines.Style.FADED);
             }
             RenderPredictionMarkers(target_id, sun_world_position);
@@ -1575,7 +1575,7 @@ public partial class PrincipiaPluginAdapter
                       чебышёв_plotting_method_,
                       target_id);
               GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Raspberry,
+                                            XKCDColors.Peach,
                                             GLLines.Style.SOLID);
             }
           }
@@ -1610,7 +1610,7 @@ public partial class PrincipiaPluginAdapter
                         i);
                 GLLines.PlotAndDeleteRP2Lines(
                     rp2_lines_iterator,
-                    is_burn ? XKCDColors.Grapefruit : XKCDColors.Blueberry,
+                    is_burn ? XKCDColors.Orange : XKCDColors.Blueberry,
                     is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
               }
               if (is_burn) {
