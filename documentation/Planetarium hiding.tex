@@ -2,6 +2,8 @@
 \usepackage{tkz-euclide}
 \usetkzobj{all}
 \usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
 
 %%%% Shorthands.
 
@@ -117,9 +119,9 @@ If the sphere intersects $\plane KAB$, then the intersection is a circle whose
 radius we denote by $r$ in the rest of this analysis.  The radius is such that
 $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 
-\subsection*{An optimization where the circle is outside of the wedge
-$\plane KAB$}
-\marginfig[Circle outside of the wedge $\plane KAB$.\label{figOutside}]{
+\subsection*{An optimization where the circle is outside the wedge $\plane KAB$}
+\marginfig[Circle lying outside the wedge $\plane KAB$ on the side of
+$\straightline KB$.\label{figOutside}]{
 \begin{tikzpicture}[scale=0.5]
 \tkzInit[ymin=-7,ymax=8,xmin=-1,xmax=9]
 \tkzClip
@@ -183,19 +185,20 @@ have
 \]
 Let $\point M$ be the point where $\point H$ projects on $\straightline KB$
 parallel to $\straightline KA$.  Since $\ga$ and $\gb$ are the coordinates of
-$\bipoint KH$ in basis $\tuple{\bipoint KA, \bipoint KB}$, we
+$\bipoint KH$ in the basis $\tuple{\bipoint KA, \bipoint KB}$, we
 have
-\[
-{\bipoint HM} = \ga {\bipoint KA}\text,
-\]
+\begin{equation}
+{\bipoint HM} = \ga {\bipoint KA} \label{eqnhm1}\text,
+\end{equation}
 and elementary trigonometry in the triangle $\plane HNM$ yields
-\[
+\begin{equation}
 \scal{\bipoint HM}{\bipoint HM} = \frac{r^2} {\sin^2 \gq} =
                                   \frac{r^2} {1 - \cos^2 \gq}
-\]
-Eliminating $\bipoint HM$ between these two equations we obtain the following
-conditions on $\ga$ for $\point H$ to be in the position shown in
-figure~\ref{figOutside}:
+                                  \label{eqnhm2}\text.
+\end{equation}
+Eliminating $\bipoint HM$ between equations (\ref{eqnhm1}) and (\ref{eqnhm2}) we
+obtain the following conditions on $\ga$ for $\point H$ to be outside the wedge
+$\plane KAB$ on the side of $\straightline KB$:
 \begin{align*}
 \ga &\leq 0\\
 \ga^2 &\geq r^2 \frac{\squarenorm{\bipoint KB}}
@@ -203,10 +206,12 @@ figure~\ref{figOutside}:
                       \pascal{\squarenorm{\bipoint KB}} -
                      {\pascal{\scal{\bipoint KA}{\bipoint KB}}}^2}\text.
 \end{align*}
-We have similar conditions on $\gb$ for the circle to be outside the wedge
-$\plane KAB$ and tangent to $\straightline KA$.
+It's straightforward to prove similar conditions on $\gb$ for the circle to be
+outside the wedge $\plane KAB$ on the side of $\straightline KA$.
 
-\marginfig[Construction of $\point P$.\label{figP}]{
+\subsection*{Construction of the cone}
+\marginfig[Construction of $\point P$ and $\point P'$ and of the cone.
+\label{figP}]{
 \begin{tikzpicture}[scale=0.5]
 \tkzInit[ymin=-5,ymax=10,xmin=-4,xmax=6]
 \tkzClip
@@ -245,39 +250,52 @@ $\plane KAB$ and tangent to $\straightline KA$.
 
 \end{tikzpicture}
 }
-The next step is to find out the extension of the wedge formed by the circle
+Remember that the circle of centre $\point H$ and radius $r$ is the intersection
+of the sphere with the plane $\plane KAB$.  As shown on figure~\ref{fig3d},
+hiding is determined by the cone of apex $\point K$ tangent to the sphere.  This
+cone intersects $\plane KAB$ in two straight lines that go through $\point K$
+and are tangent to the circle at points $\point P$ and $\point P'$.  In this
+section we are going to determine the coordinates of $\point P$ and $\point P'$
+in the basis $\tuple{\bipoint KA, \bipoint KB}$.  Figure~\ref{figP} illustrates
+the construction of these points.
+
+(The next step is to find out the extension of the wedge formed by the circle
 when seen from $\point K$.  Let $\point P$ be a point where a line
 going through $K$ is tangent to the circle, and let $\point Q$ be the point 
 where $\straightline KP$ intersects $\straightline AB$; it may be between
-$\point K$ and $\point P$ or behind $\point P$.
+$\point K$ and $\point P$ or behind $\point P$.)Move!
 
-We need to find $\point P$. It is defined by two equations
-\begin{align*}
-\squarenorm{\bipoint PH} &= r^2\\
-\scal{\bipoint PH}{\bipoint KP} &= 0\text.
-\end{align*}
-The second equation may be rewritten
+$\point P$ is characterized by the two equations:
+\begin{align}
+\squarenorm{\bipoint PH} &= r^2 \label{eqnp1}\\
+\scal{\bipoint PH}{\bipoint KP} &= 0 \label{eqnp2}\text.
+\end{align}
+Equation (\ref{eqnp2}) may be rewritten as
 \[
-\scal{\bipoint PH}{\pascal{\bipoint KH + \bipoint HP}} = 0
+\scal{\bipoint PH}{\pascal{\bipoint KH + \bipoint HP}} = 0\text,
 \]
-from which we obtain
-\[
-\scal{\bipoint PH}{\bipoint KH} = r^2\text.
-\]
-Let $\gg$ and $\gd$ be the coordinates of $\bipoint PH$ in $\plane KAB$\[
+which yields, when combined with equation (\ref{eqnp1})
+\begin{equation}
+\scal{\bipoint PH}{\bipoint KH} = r^2 \label{eqnp3}\text.
+\end{equation}
+Define now $\gg$ and $\gd$ to be the coordinates of $\bipoint PH$ in
+$\tuple{\bipoint KA, \bipoint KB}$\[
 \bipoint PH = \gg {\bipoint KA} + \gd {\bipoint KB}\text.
 \]
-The second equation is linear\[
+Equation (\ref{eqnp3}) is linear in the coordinates of $\point P$ and can be
+rewritten as\[
 \gg\scal{\bipoint KA}{\bipoint KH} + \gd\scal{\bipoint KB}{\bipoint KH} =
-r^2\text,
-\]
-thus\[
-\gg = \frac{r^2 - \gd \scal{\bipoint KB}{\bipoint KH}}
-           {\scal{\bipoint KA}{\bipoint KH}}\text.
+r^2\text.
 \]
 Note that $\scal{\bipoint KA}{\bipoint KH}$ and
 $\scal{\bipoint KB}{\bipoint KH}$ cannot both be $0$ unless $\point K$ is on
-$\straightline AB$.  The first equation is quadratic\[
+$\straightline AB$, so we can either express $\gg$ as a function of $\gd$ or
+vice-versa.  If we do the former we obtain\[
+\gg = \frac{r^2 - \gd \scal{\bipoint KB}{\bipoint KH}}
+           {\scal{\bipoint KA}{\bipoint KH}}\text.
+\]
+Equation (\ref{eqnp1}) is quadratic in the coordinates of $\point P$ and can be
+rewritten as\[
 \pa{\gg\bipoint KA + \gd \bipoint KB}^2 = r^2\text.
 \]
 Pluging the value of $\gg$ above we get
@@ -287,12 +305,12 @@ Pluging the value of $\gg$ above we get
  2\pascal{\scal{\bipoint KA}{\bipoint KB}}
   \pascal{\scal{\bipoint KA}{\bipoint KH}}
   \pascal{\scal{\bipoint KB}{\bipoint KH}} +
- \squarenorm{\bipoint KA} \pascal{\scal{\bipoint KB}{\bipoint KH}}^2} &+\\
+ \squarenorm{\bipoint KA} \pascal{\scal{\bipoint KB}{\bipoint KH}}^2} +&\\
 2\gd r^2\pa{
  \pascal{\scal{\bipoint KA}{\bipoint KB}}
  \pascal{\scal{\bipoint KA}{\bipoint KH}} -
  \pascal{\squarenorm{\bipoint KA}}
- \pascal{\scal{\bipoint KB}{\bipoint KH}}} &+\\
+ \pascal{\scal{\bipoint KB}{\bipoint KH}}} +&\\
 r^2\pa{
  r^2\pascal{\squarenorm{\bipoint KA}} -
  \pascal{\scal{\bipoint KA}{\bipoint KH}}^2} &= 0\text.
