@@ -22,14 +22,18 @@ Hiding Computations in Projection%
 \begin{document}
 \maketitle
 This document describes the computations that are performed by the method
-VisibleSegments of class Perspective to determine what are the parts of a
-segment that are hidden by a sphere when seen from a pinhole camera.
+VisibleSegments of class Perspective to determine the parts of a segment that
+are hidden by a sphere when seen from a pinhole camera.
+
 Figure~\ref{fig3d} illustrates an example of the problem.  The points drawn in
 black define the problem: $\point A$ and $\point B$ are the extremities of the
 segment; $\point C$ is the centre of the sphere; $R$ is the radius of the
 sphere; and $\point K$ is the location of the camera.  The points drawn in red
-will be computed as part of the resolution.  Of particular interest is
-$\point H$, the projection of $\point C$ on the plane $\plane KAB$.
+will be computed as part of the resolution.  Of particular interest is the plane
+$\plane KAB$, in which we willl do much of the analysis below.  The figure shows
+the circle formed by the intersection of this plane with the sphere, as well as
+$\point H$, the center of that circle and the projection of $\point C$ on
+$\plane KAB$.
 \begin{figure}[htb!]
 \centering
 \includegraphics[scale=0.35]{Perspective-hiding-3d}
@@ -40,41 +44,46 @@ point immediately to its left.\label{fig3d}}
 
 \subsection*{Camera inside the sphere}
 We start our analysis by eliminating a case that would cause anomalies in the
-computations below.  If\[
+analysis below.  If\[
 \scal{\bipoint KC}{\bipoint KC} < R^2
 \]
 then the camera is inside the sphere and the segment is hidden irrespective of
 its position.
 
-\subsection*{Sphere behind the camera}
-Consider next the plane that contains $\point K$ and is orthogonal to
-$\bipoint KC$; it separates the entire space into two half-spaces.  If the
-segment $\bipoint AB$ is entirely within the half-space that does not contain
-$\point C$ then the segment is not hidden.  This is the case if the following
-inequalities are both true
+\subsection*{Sphere and segment in distinct half-spaces}
+Consider the plane containing $\point K$ and orthogonal to $\straightline KC$;
+it separates the entire space into two half-spaces.  If the segment
+$\straightline AB$ is entirely within the half-space that does not contain
+$\point C$ then the segment is not hidden (remember that $\point K$ is not
+inside the sphere).  This is the case if the following inequalities are both
+true:
 \begin{align*}
 \scal{\bipoint KA}{\bipoint KC} &< 0\\
 \scal{\bipoint KB}{\bipoint KC} &< 0\text.
 \end{align*}
 
-For simplicity we will do the rest of our analysis in the plane $\plane KAB$.
-We will use $\tuple{\bipoint KA, \bipoint KB}$ as a basis of that plane.
+\subsection*{Projection of $\point C$ on $\plane KAB$}
+For simplicity we will do the rest of our analysis in the plane $\plane KAB$ and
+we will often use $\tuple{\bipoint KA, \bipoint KB}$ as a basis of that plane.
 Let $\point H$ be the orthogonal projection of $\point C$ on $\plane KAB$.
-Define $\ga$, $\gb$ to be its coordinates in $\plane KAB$\[
+and define $\ga$, $\gb$ to be its coordinates in
+$\tuple{\bipoint KA, \bipoint KB}$
+\[
 \bipoint KH = \ga \bipoint KA + \gb \bipoint KB\text.
 \]
-Note that $\bipoint KH = \bipoint KC + \bipoint CH$. By its definition,
-$\bipoint CH$ is orthogonal to both $\bipoint KA$ and $\bipoint KB$
+Note that $\bipoint KH = \bipoint KC + \bipoint CH$. By definition,
+$\bipoint CH$ is orthogonal to both $\bipoint KA$ and $\bipoint KB$:
 \begin{align*}
 \scal{\bipoint KA}{\bipoint CH} &= 0\\
-\scal{\bipoint KB}{\bipoint CH} &= 0\text,
+\scal{\bipoint KB}{\bipoint CH} &= 0\text.
 \end{align*}
-or
+Decomposing $\bipoint CH$ we obtain:
 \begin{align*}
 \scal{\bipoint KA}{\bipoint KH} &= \scal{\bipoint KA}{\bipoint KC}\\
 \scal{\bipoint KB}{\bipoint KH} &= \scal{\bipoint KB}{\bipoint KC}\text.
 \end{align*}
-Expanding $\bipoint KH$ gives a linear system of two equations with two unknowns
+Expanding $\bipoint KH$ on the basis $\tuple{\bipoint KA, \bipoint KB}$ gives a
+linear system of two equations with two unknowns:
 \begin{align*}
 \ga \scal{\bipoint KA}{\bipoint KA} + \gb \scal{\bipoint KA}{\bipoint KB}
     &= \scal{\bipoint KA}{\bipoint KC}\\
@@ -82,11 +91,11 @@ Expanding $\bipoint KH$ gives a linear system of two equations with two unknowns
     &= \scal{\bipoint KB}{\bipoint KC}\text.
 \end{align*}
 The determinant of this system is\[
-D = \pascal{\squarenorm{\bipoint KA}} \pascal{\squarenorm{\bipoint KB}}
-    - \pascal{\scal{\bipoint KA}{\bipoint KB}}^2\text,
+D = \pascal{\squarenorm{\bipoint KA}} \pascal{\squarenorm{\bipoint KB}} -
+    \pascal{\scal{\bipoint KA}{\bipoint KB}}^2\text,
 \]
 which is non-zero if and only if $\point A \neq \point B$. The solutions are
-thus
+thus:
 \begin{align*}
 \ga &= \frac
   {\pascal{\squarenorm{\bipoint KB}} \pascal{\scal{\bipoint KA}{\bipoint KC}} -
@@ -99,18 +108,21 @@ thus
    \pascal{\scal{\bipoint KA}{\bipoint KC}}}
   {D}\text.
 \end{align*}
-Now that $\bipoint KH$ is determined we can compute
-$\bipoint CH = \bipoint KH - \bipoint KC$.  If
-$\squarenorm{\bipoint CH} \geq R^2$, the sphere is either tangent to
-the plane $\plane KAB$ or doesn't intersect it. Thus, there is no hiding.
+Once $\bipoint KH$ is determined we can compute $\bipoint CH =
+\bipoint KH - \bipoint KC$.  If $\squarenorm{\bipoint CH} \geq R^2$, the sphere
+is either tangent to the plane $\plane KAB$ or doesn't intersect it. In these
+cases, there is no hiding.
 
-Let's look at a figure in the plane $\plane KAB$ when the sphere intersects
-that plane.  Let $r$ be the radius of the intersection circle; it is such that
+If the sphere intersects $\plane KAB$, then the intersection is a circle whose
+radius we denote by $r$ in the rest of this analysis.  The radius is such that
 $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 
+\subsection*{An optimization where the circle is outside of the wedge
+$\plane KAB$}
 \marginfig[Circle outside of the wedge $\plane KAB$.\label{figOutside}]{
 \begin{tikzpicture}[scale=0.5]
-\tkzInit[ymin=-7,ymax=8,xmin=-1,xmax=9]\tkzClip
+\tkzInit[ymin=-7,ymax=8,xmin=-1,xmax=9]
+\tkzClip
 \tkzDefPoint(3,5){A}
 \tkzDefPoint(8,0){B}
 \tkzDefPoint(4,-3){H}
@@ -152,41 +164,52 @@ $r^2 = R^2 - \squarenorm{\bipoint CH}$.
 
 \end{tikzpicture}
 }
-If the circle doesn't intersect the wedge $\plane KAB$ then the segment
-$\straightline AB$ is entirely visible.  To find if this is the case, first
-observe that, if $\gq$ is the angle between $\bipoint KA$ and $\bipoint KB$, we
+A useful optimization at this stage is to determine if the circle intersects the
+wedge $\plane KAB$.  If it does not, then there is no hiding and the segment
+$\straightline AB$ is entirely visible.  This can happen because the circle is
+away from the wedge on the side of $\straightline KA$ or because it is away from
+the wedge on the side of $\straightline KB$.  Figure~\ref{figOutside}
+illustrates the latter case: note that the circle must not intersect
+$\straightline KB$, so the distance between $\point H$ and $\straightline KB$
+must be at least $r$; the figure shows the case where the circle is tangent to
+$\straightline KB$ at $\point N$, which is the one that interests us in this
+section.
+
+Observe that, if $\gq$ is the angle between $\bipoint KA$ and $\bipoint KB$, we
 have
 \[
-\scal{\bipoint KA}{\bipoint KB} = \norm {\bipoint KA} \norm {\bipoint KB}
+\scal{\bipoint KA}{\bipoint KB} = \norm{\bipoint KA} \norm{\bipoint KB}
                                   \cos \gq
 \]
-Assume that $\point H$ is outside the wedge $\plane KAB$ and in a position where
-the circle is tangent to $\straightline KB$ at point $\point N$.  Let $\point M$
-be the point where $\point H$ projects on $\bipoint KB$ parallel to
-$\bipoint KA$.  We have
+Let $\point M$ be the point where $\point H$ projects on $\straightline KB$
+parallel to $\straightline KA$.  Since $\ga$ and $\gb$ are the coordinates of
+$\bipoint KH$ in basis $\tuple{\bipoint KA, \bipoint KB}$, we
+have
 \[
-{\bipoint HM} = \ga {\bipoint KA}
+{\bipoint HM} = \ga {\bipoint KA}\text,
 \]
-and
+and elementary trigonometry in the triangle $\plane HNM$ yields
 \[
 \scal{\bipoint HM}{\bipoint HM} = \frac{r^2} {\sin^2 \gq} =
                                   \frac{r^2} {1 - \cos^2 \gq}
 \]
-Eliminating $\bipoint HM$ we obtain the following conditions on $\ga$ for
-$\point H$ to be in the position indicated above
+Eliminating $\bipoint HM$ between these two equations we obtain the following
+conditions on $\ga$ for $\point H$ to be in the position shown in
+figure~\ref{figOutside}:
 \begin{align*}
-\ga &< 0\\
-\ga^2 &> r^2 \frac{\scal{\bipoint KB}{\bipoint KB}}
-                  {(\scal{\bipoint KA}{\bipoint KA})
-                   (\scal{\bipoint KB}{\bipoint KB}) -
-                  {(\scal{\bipoint KA}{\bipoint KB}})^2}\text.
+\ga &\leq 0\\
+\ga^2 &\geq r^2 \frac{\squarenorm{\bipoint KB}}
+                     {\pascal{\squarenorm{\bipoint KA}}
+                      \pascal{\squarenorm{\bipoint KB}} -
+                     {\pascal{\scal{\bipoint KA}{\bipoint KB}}}^2}\text.
 \end{align*}
 We have similar conditions on $\gb$ for the circle to be outside the wedge
-$\plane KAB$ and tangent to $\bipoint KA$.
+$\plane KAB$ and tangent to $\straightline KA$.
 
 \marginfig[Construction of $\point P$.\label{figP}]{
 \begin{tikzpicture}[scale=0.5]
-\tkzInit[ymin=-5,ymax=10,xmin=-4,xmax=6]\tkzClip
+\tkzInit[ymin=-5,ymax=10,xmin=-4,xmax=6]
+\tkzClip
 \tkzDefPoint(-3,9){A}
 \tkzDefPoint(5.5,9){B}
 \tkzDefPoint(2,5){H}
@@ -290,7 +313,8 @@ Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
 
 \marginfig[Definition of $\point S$ and $\point T$.\label{figST}]{
 \begin{tikzpicture}[scale=0.5]
-\tkzInit[ymin=-5,ymax=12,xmin=-4,xmax=6]\tkzClip
+\tkzInit[ymin=-5,ymax=12,xmin=-4,xmax=6]
+\tkzClip
 \tkzDefPoint(2,11){A}
 \tkzDefPoint(5,-4){B}
 \tkzDefPoint(0,0){H}
@@ -377,7 +401,8 @@ by the cone.
 
 \marginfig[Intersection with the sphere.\label{figSphere}]{
 \begin{tikzpicture}[scale=0.5]
-\tkzInit[ymin=-5,ymax=10,xmin=-3.8,xmax=6.2]\tkzClip
+\tkzInit[ymin=-5,ymax=10,xmin=-3.8,xmax=6.2]
+\tkzClip
 \tkzDefPoint(-3,5){A}
 \tkzDefPoint(5.5,5){B}
 \tkzDefPoint(2,7){H}
