@@ -152,7 +152,8 @@ TEST_F(PlanetariumTest, PlotMethod0) {
   auto const rp2_lines =
       planetarium.PlotMethod0(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),
-                              t0_ + 10 * Second);
+                              t0_ + 10 * Second,
+                              /*reverse=*/false);
 
   // Because of the way the trajectory was constructed we have two lines which
   // meet in front of the camera and are separated by a hole behind the planet.
@@ -192,7 +193,8 @@ TEST_F(PlanetariumTest, PlotMethod1) {
   auto const rp2_lines =
       planetarium.PlotMethod1(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),
-                              t0_ + 10 * Second);
+                              t0_ + 10 * Second,
+                              /*reverse=*/false);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
   EXPECT_THAT(rp2_lines[0], SizeIs(4954));
@@ -222,7 +224,8 @@ TEST_F(PlanetariumTest, PlotMethod2) {
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),
-                              t0_ + 10 * Second);
+                              t0_ + 10 * Second,
+                              /*reverse=*/false);
 
   EXPECT_THAT(rp2_lines, SizeIs(1));
   EXPECT_THAT(rp2_lines[0], SizeIs(43));
@@ -276,7 +279,8 @@ TEST_F(PlanetariumTest, RealSolarSystem) {
   auto const rp2_lines =
       planetarium.PlotMethod2(discrete_trajectory->Begin(),
                               discrete_trajectory->End(),
-                              discrete_trajectory->last().time());
+                              discrete_trajectory->last().time(),
+                              /*reverse=*/false);
 
   EXPECT_EQ(2, rp2_lines.size());
   EXPECT_EQ(2, rp2_lines[0].size());

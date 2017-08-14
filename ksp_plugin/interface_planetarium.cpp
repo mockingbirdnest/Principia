@@ -48,14 +48,15 @@ RP2Lines<Length, Camera> PlotMethodN(
     int const method,
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end,
-    Instant const& now) {
+    Instant const& now,
+    bool const reverse) {
   switch (method) {
     case 0:
-      return planetarium.PlotMethod0(begin, end, now);
+      return planetarium.PlotMethod0(begin, end, now, reverse);
     case 1:
-      return planetarium.PlotMethod1(begin, end, now);
+      return planetarium.PlotMethod1(begin, end, now, reverse);
     case 2:
-      return planetarium.PlotMethod2(begin, end, now);
+      return planetarium.PlotMethod2(begin, end, now, reverse);
     default:
       LOG(FATAL) << "Unexpected method " << method;
       base::noreturn();
@@ -158,12 +159,13 @@ Iterator* principia__PlanetariumPlotFlightPlanSegment(
   // start and we fail.
   if (index % 2 == 0 ||
       segment_begin == segment_end ||
-      segment_begin.time() >= plugin->CurrentTime()) {
+      segment_begin.time() >= plugin->renderer().GetPlottingFrame()->t_min()) {
      rp2_lines = PlotMethodN(*planetarium,
                              method,
                              segment_begin,
                              segment_end,
-                             plugin->CurrentTime());
+                             plugin->CurrentTime(),
+                             /*reverse=*/false);
   }
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
@@ -184,7 +186,8 @@ Iterator* principia__PlanetariumPlotPrediction(
                                      method,
                                      prediction.Begin(),
                                      prediction.End(),
-                                     plugin->CurrentTime());
+                                     plugin->CurrentTime(),
+                                     /*reverse=*/false);
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 
@@ -204,7 +207,8 @@ Iterator* principia__PlanetariumPlotPsychohistory(
                                      method,
                                      psychohistory.Begin(),
                                      psychohistory.End(),
-                                     plugin->CurrentTime());
+                                     plugin->CurrentTime(),
+                                     /*reverse=*/true);
   return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
 }
 

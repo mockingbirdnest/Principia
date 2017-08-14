@@ -71,19 +71,22 @@ class Planetarium {
   RP2Lines<Length, Camera> PlotMethod0(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Instant const& now) const;
+      Instant const& now,
+      bool reverse) const;
 
   // A method that coalesces segments until they are larger than the angular
   // resolution.
   RP2Lines<Length, Camera> PlotMethod1(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Instant const& now) const;
+      Instant const& now,
+      bool reverse) const;
 
   RP2Lines<Length, Camera> PlotMethod2(
       DiscreteTrajectory<Barycentric>::Iterator const& begin,
       DiscreteTrajectory<Barycentric>::Iterator const& end,
-      Instant const& now) const;
+      Instant const& now,
+      bool reverse) const;
 
  private:
   // Computes the coordinates of the spheres that represent the |ephemeris_|

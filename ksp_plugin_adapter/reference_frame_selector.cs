@@ -46,7 +46,7 @@ class ReferenceFrameSelector : WindowRenderer {
       }
     }
     selected_celestial =
-        FlightGlobals.currentMainBody ?? Planetarium.fetch.Sun;
+        FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
     for (CelestialBody celestial = selected_celestial;
          celestial.orbit != null;
          celestial = celestial.orbit.referenceBody) {

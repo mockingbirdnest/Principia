@@ -205,7 +205,7 @@ internal static class GLLines {
                 rp2_line_iterator.IteratorGetRP2LineXY());
             if (previous_rp2_point.HasValue) {
               if (style == Style.FADED) {
-                colour.a = (float)(4 * index + size) / (float)(5 * size);
+                colour.a = 1 - (float)(4 * index) / (float)(5 * size);
                 UnityEngine.GL.Color(colour);
               }
               if (style != Style.DASHED || index % 2 == 1) {
