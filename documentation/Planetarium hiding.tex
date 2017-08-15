@@ -320,9 +320,9 @@ Since $\point Q$ is on $\straightline AB$ there is a $\gl$ such that\[
 \]
 or equivalently
 \begin{equation}
-\bipoint KQ - \bipoint KA = \gl \bipoint AB \label{eqnq}\text.
+\bipoint KQ - \bipoint KA = \gl \bipoint AB \label{eqnq1}\text.
 \end{equation}
-We can take the scalar product of equation (\ref{eqnq}) with $\bipoint PH$, and,
+We can take the scalar product of equation (\ref{eqnq1}) with $\bipoint PH$, and,
 noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we obtain\[
 -\scal{\bipoint KA}{\bipoint PH} = \gl \scal{\bipoint AB}{\bipoint PH}
 \text{, or, }
@@ -487,32 +487,35 @@ extra value of $\gl$ equal to an infinity with the sign of $\gt - \gs$.
 
 \end{tikzpicture}
 }
-\subsection
+\subsection*{Intersection with the circle}
 To complete the analysis we need to compute the intersection $\point Q$ of the
-sphere (not the cone) with the line $\straightline AB$. $\point Q$ is on the
-sphere, thus
+circle with the line $\straightline AB$. $\point Q$ is on the circle, thus
+\begin{equation}
+\squarenorm{\bipoint HQ} = r^2 \label{eqnq2}\text;
+\end{equation}
+it is also on the line $\straightline AB$ and therefore there is a $\gm$ such
+that
 \[
-\squarenorm{\bipoint CQ} = R^2\text.
-\]
-It is also on the line $\straightline AB$ thus\[
 \bipoint KQ = \bipoint KA + \gm \bipoint AB\text.
 \]
-We have\[
-\bipoint CQ = \bipoint KQ - \bipoint KC =
-  \bipoint KA + \gm \bipoint AB - \bipoint KC =
-  \bipoint CA + \gm \bipoint AB\text,
+We can rewrite $\bipoint HQ$ as follows\[
+\bipoint HQ = \bipoint KQ - \bipoint KH =
+  \bipoint KA + \gm \bipoint AB - \bipoint KH =
+  \bipoint HA + \gm \bipoint AB\text.
 \]
-and therefore\[
-R^2 = \pascal{\bipoint CA + \gm \bipoint AB}^2\text,
+Inserting this value in equation (\ref{eqnq2}) we obtain\[
+r^2 = \pascal{\bipoint HA + \gm \bipoint AB}^2\text,
 \]
 meaning that $\gm$ is a solution of\[
-\gm \squarenorm{\bipoint AB} + 2 \gm \scal{\bipoint CA}{\bipoint AB}
-+ \squarenorm{\bipoint CA} - R^2 = 0\text.
+\gm \squarenorm{\bipoint AB} + 2 \gm \scal{\bipoint HA}{\bipoint AB}
++ \squarenorm{\bipoint HA} - R^2 = 0\text.
 \]
-Depending on the location of the segment with respect to the sphere, there can
-be $0$, $1$, or $2$ intersections.
+Depending on the location of $\straightline AB$ with respect to the circle,
+there can be $0$, $1$, or $2$ intersections.
 
+\subsection*{Concluding the analysis}
 If we take the union of the values of $\gl$ and $\gm$ and order them, it is
-straightforward to find the visible segments. Remember that $0<\gl,\gm<1$ for
-points that are in the segment $\straightline AB$.
+straightforward to find the visible segments by remembering that
+$0 \leq \gl,\gm \leq 1$ for the points that are in the segment
+$\straightline AB$.
 \end{document}
