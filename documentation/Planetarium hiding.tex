@@ -259,12 +259,6 @@ section we are going to determine the coordinates of $\point P$ and $\point P'$
 in the basis $\tuple{\bipoint KA, \bipoint KB}$.  Figure~\ref{figP} illustrates
 the construction of these points.
 
-(The next step is to find out the extension of the wedge formed by the circle
-when seen from $\point K$.  Let $\point P$ be a point where a line
-going through $K$ is tangent to the circle, and let $\point Q$ be the point 
-where $\straightline KP$ intersects $\straightline AB$; it may be between
-$\point K$ and $\point P$ or behind $\point P$.)Move!
-
 $\point P$ is characterized by the two equations:
 \begin{align}
 \squarenorm{\bipoint PH} &= r^2 \label{eqnp1}\\
@@ -316,13 +310,20 @@ r^2\pa{
  \pascal{\scal{\bipoint KA}{\bipoint KH}}^2} &= 0\text.
 \end{align*}
 This equation always has two solutions because the sphere intersects
-$\plane KAB$.  Having determined $\bipoint PH$, we can find $\point Q$.
-$\point Q$ is on the line $\straightline AB$, thus\[
+$\plane KAB$.
+\subsection*{Intersection of the cone and the line $\straightline AB$}
+Having determined the location of points $\point P$ and $\point P'$ we need to
+find the points $\point Q$ and $\point Q'$ where the lines $\straightline KP$
+and $\straightline KP'$, respectively, intersect the line $\straightline AB$.
+Since $\point Q$ is on $\straightline AB$ there is a $\gl$ such that\[
 \bipoint AQ = \gl \bipoint AB\text,
-\] which can be written \[
-\bipoint KQ - \bipoint KA = \gl \bipoint AB\text.
 \]
-Noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we have\[
+or equivalently
+\begin{equation}
+\bipoint KQ - \bipoint KA = \gl \bipoint AB \label{eqnq}\text.
+\end{equation}
+We can take the scalar product of equation (\ref{eqnq}) with $\bipoint PH$, and,
+noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we obtain\[
 -\scal{\bipoint KA}{\bipoint PH} = \gl \scal{\bipoint AB}{\bipoint PH}
 \text{, or, }
 \gl = -\frac{\scal{\bipoint KA}{\bipoint PH}}{\scal{\bipoint AB}{\bipoint PH}}
