@@ -329,6 +329,13 @@ noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we obtain\[
 \gl = -\frac{\scal{\bipoint KA}{\bipoint PH}}{\scal{\bipoint AB}{\bipoint PH}}
 \text.
 \]
+Obviously there is a similar equation with $\point P'$ which may be used to
+compute $\gl'$, the position of $\point Q'$ on $\straightline AB$.
+
+The point $\point Q$ is in the segment $\straightline AB$ if and only if
+$0 \leq \gl \leq 1$.  This does not tell us, however, where $\point Q$ is
+located with respect to the cone, to the sphere, or for that matter if it is
+in front or behind the camera.  This is what we need to determine next.
 
 \marginfig[Definition of $\point S$ and $\point T$.\label{figST}]{
 \begin{tikzpicture}[scale=0.5]
@@ -348,14 +355,17 @@ noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we obtain\[
 \tkzDefLine[orthogonal=through K](K,H) \tkzGetPoint{k}
 \tkzInterLL(K,k)(A,B) \tkzGetPoint{S}
 
+\tkzInterLL(K,P)(A,B) \tkzGetPoint{Q}
+
 \tkzDefPointBy[rotation=center H angle -80](P) \tkzGetPoint{r}
 
-\tkzDrawPoints(A,B,H,K,P,S,T)
+\tkzDrawPoints(A,B,H,K,P,Q,S,T)
 \tkzLabelPoint[left](A){$\point A$}
 \tkzLabelPoint[left](B){$\point B$}
 \tkzLabelPoint[left](H){$\point H$}
 \tkzLabelPoint[left](K){$\point K$}
 \tkzLabelPoint[below left](P){$\point P$}
+\tkzLabelPoint[left](Q){$\point Q$}
 \tkzLabelPoint[above right](S){$\point S$}
 \tkzLabelPoint[above right](T){$\point T$}
 
@@ -376,47 +386,69 @@ noting that $\bipoint KQ$ is orthogonal to $\bipoint PH$ we obtain\[
 
 \end{tikzpicture}
 }
-Having determined the values of $\gl$ we need to find out where $\point Q$ is
-located with respect to the segment $\bipoint AB$.  Let $\point S$ be the
+\subsection*{Location of $\point Q$ and $\point Q'$}
+Having computed the values of $\gl$ we need to determine where $\point Q$ is
+located with respect to the cone, the sphere and the camera.  To do this we are
+going to define two new points, $\point S$ and $\point T$, as shown on
+figure~\ref{figST}.  $\point S$ is the intersection of $\straightline AB$ with
+the line orthogonal to $\straightline KH$ at $\point K$.  $\point T$ is the
 intersection of $\straightline AB$ with the line orthogonal to
-$\straightline KH$ at $\point K$.  We locate $\point S$ on $\straightline AB$ as
-follows\[
+$\straightline KH$ at $\point P$.  We are going to find the positions of
+$\point S$ and $\point T$ on $\straightline AB$, and, by comparing then with
+$\gl$, figure out the location of $\point Q$ with respect to $\point S$ and
+$\point T$.
+
+We locate $\point S$ on $\straightline AB$ as follows\[
 \bipoint KS = \bipoint KA + \gs \bipoint AB\text.
 \]
-Noting that $\scal{\bipoint KS}{\bipoint KH} = 0$ we obtain\[
+Taking the scalar product of this equation with $\bipoint KH$, and noting that
+$\bipoint KS$ is orthogonal to $\bipoint KH$ we obtain\[
 \gs = -\frac{\scal{\bipoint KA}{\bipoint KH}}
             {\scal{\bipoint AB}{\bipoint KH}}
 \]
-Now let $\point T$ be the intersection of $\straightline AB$ with the line
-orthogonal to $\straightline KH$ at $\point P$.  We locate $\point T$ on
-$\straightline AB$ similarly\[
+Similarly, we locate $\point T$ on $\straightline AB$ as\[
 \bipoint KT = \bipoint KA + \gt \bipoint AB\text.
 \]
-We have\[
+Since $\bipoint KT = \bipoint KH + \bipoint HP + \bipoint PT$ this can be
+written\[
 \bipoint PT = \bipoint KA + \gt \bipoint AB - \bipoint KH + \bipoint PH
 \]
-Noting that $\scal{\bipoint PT}{\bipoint KH} = 0$ we obtain\[
+Again, taking the scalar product of this equation with $\bipoint KH$, and noting
+that $\bipoint KT$ is orthogonal to $\bipoint KH$ we obtain\[
 \gt = \frac{\scal{\bipoint KH}{\bipoint KH} - \scal{\bipoint PH}{\bipoint KH} -
             \scal{\bipoint KA}{\bipoint KH}}
            {\scal{\bipoint AB}{\bipoint KH}}
 \]
-We can now determine if $\gl$ is an ``interesting'' intersection, i.e., one that
-intersects the cone behind the sphere when seen from the camera.  First, assume
-that $\point A$ and $\point B$ are in the same order as $\point S$ and
-$\point T$ on $\straightline AB$.  Then we have $\gs \leq \gt$ and the
-intersection is farther than $\point T$ (as seen from the camera) if and only if
-$\gt < \gl$.  Conversely, if $\point A$ and $\point B$ are in the reverse order
+We can now determine if $\point Q$ (or alternatively, $\gl$) is an
+``interesting'' intersection, i.e., one that intersects the cone behind the
+sphere when seen from the camera.  That's because the location of $\point S$ let
+us separate what is behind the camera from what is in front of the camera, and
+the location of $\point T$ determines where the cone starts (points in front
+of $\point T$ cannot be in the cone, although they can be in the sphere).
+
+First, assume that $\point A$ and $\point B$ are in the same order as $\point S$
+and $\point T$ on $\straightline AB$.  Then we have $\gs \leq \gt$ and the
+intersection $\point Q$ is farther than $\point T$ (as seen from the camera) if
+and only if $\gt < \gl$.  $\point Q$ is located on the cone and it is an
+interesting intersection (and it participates in hiding) if it falls within the
+segment $\straightline AB$.  This is the situation illustrated in
+figure~\ref{figST}.
+
+Conversely, if $\point A$ and $\point B$ are in the reverse order
 as $\point S$ and $\point T$ on $\straightline AB$ we have $\gt \leq \gs$ and
-the intersection is farther than $\point T$ if and only if $\gl < \gt$
+the intersection is farther than $\point T$ if and only if $\gl < \gt$.
 
-There is another special case to handle: if the line $\straightline AB$ is in
-"hyperbolic" position, i.e. intersects both halves of the cone, then one value
-of $\gl$ is smaller than $\gs$ and one value is greater than $\gs$.  Exactly one
-of the values of $\gl$ will be retained by the preceding analysis, and we need
-to add an extra $\gl$ equal to an infinity with the sign of $\gt - \gs$ to
-account for the fact that all the points farther than $\point T$ are hidden
-by the cone.
+The same analysis must be performed for $\gl'$ corresponding to $\point Q'$.
 
+\subsection*{Point at infinity}
+There is another special case that requires some care: if the line 
+$\straightline AB$ is in ``hyperbolic'' position, i.e., intersects both halves
+of the cone, then one of the values $\gl$, $\gl'$ is smaller than $\gs$ and the
+other is greater than $\gs$ (this is the situation shown in figure~\ref{figST}).
+Exactly one of $\gl$, $\gl'$ will be retained by the preceding analysis.  To
+account for the fact that the points farther than $\point Q$ (such as $\point B$
+in figure~\ref{figST}) are inside the cone, we need to add to our analysis an
+extra value of $\gl$ equal to an infinity with the sign of $\gt - \gs$.
 
 \marginfig[Intersection with the sphere.\label{figSphere}]{
 \begin{tikzpicture}[scale=0.5]
@@ -455,6 +487,7 @@ by the cone.
 
 \end{tikzpicture}
 }
+\subsection
 To complete the analysis we need to compute the intersection $\point Q$ of the
 sphere (not the cone) with the line $\straightline AB$. $\point Q$ is on the
 sphere, thus
