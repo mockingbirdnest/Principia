@@ -266,20 +266,8 @@ void Vessel::UpdatePrediction(Instant const& last_time) {
   FlowPrediction(last_time);
 }
 
-DiscreteTrajectory<Barycentric>::Iterator Vessel::last_authoritative() const {
-  auto it = psychohistory_->last();
-  if (!psychohistory_is_authoritative_) {
-    --it;
-  }
-  return it;
-}
-
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
   return *psychohistory_;
-}
-
-bool Vessel::psychohistory_is_authoritative() const {
-  return psychohistory_is_authoritative_;
 }
 
 void Vessel::WriteToMessage(
@@ -407,6 +395,14 @@ void Vessel::FlowPrediction(Instant const& time) {
         /*last_point_only=*/false);
     }
   }
+}
+
+DiscreteTrajectory<Barycentric>::Iterator Vessel::last_authoritative() const {
+  auto it = psychohistory_->last();
+  if (!psychohistory_is_authoritative_) {
+    --it;
+  }
+  return it;
 }
 
 }  // namespace internal_vessel
