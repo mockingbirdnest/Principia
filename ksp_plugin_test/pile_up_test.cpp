@@ -575,7 +575,7 @@ TEST_F(PileUpTest, Serialization) {
   EXPECT_EQ(2, message.part_id_size());
   EXPECT_EQ(part_id1_, message.part_id(0));
   EXPECT_EQ(part_id2_, message.part_id(1));
-  EXPECT_EQ(1, message.psychohistory().timeline_size());
+  EXPECT_EQ(1, message.history().timeline_size());
   EXPECT_EQ(2, message.actual_part_degrees_of_freedom().size());
   EXPECT_TRUE(message.apparent_part_degrees_of_freedom().empty());
 
