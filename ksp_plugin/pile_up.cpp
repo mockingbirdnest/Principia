@@ -154,7 +154,7 @@ void PileUp::AdvanceTime(Instant const& t) {
       // fixed-step integration.
       // TODO(phl): Consider not setting |last_point_only| below as we would be
       // fine with multiple points in the |psychohistory_| once all the classes
-      // has been changed.
+      // have been changed.
       CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_,
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
@@ -300,6 +300,8 @@ PileUp PileUp::ReadFromMessage(
       pile_up->psychohistory_ =
           pile_up->history_->NewForkWithCopy(history_begin_time);
       pile_up->history_->ForgetAfter(history_begin_time);
+    } else {
+      pile_up->psychohistory_ = pile_up->history_->NewForkAtLast();
     }
   } else {
     DiscreteTrajectory<Barycentric>* psychohistory = nullptr;

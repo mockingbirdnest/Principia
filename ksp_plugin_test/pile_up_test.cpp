@@ -69,7 +69,7 @@ class TestablePileUp : public PileUp {
   }
 
   not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
-    return check_not_null(psychohistory_);
+    return psychohistory_;
   }
 
   PartTo<DegreesOfFreedom<RigidPileUp>> const&
@@ -594,6 +594,50 @@ TEST_F(PileUpTest, Serialization) {
   serialization::PileUp second_message;
   p.WriteToMessage(&second_message);
   EXPECT_THAT(message, EqualsProto(second_message));
+}
+
+TEST_F(PileUpTest, SerializationCompatibility) {
+  MockEphemeris<Barycentric> ephemeris;
+  p1_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
+  p2_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  TestablePileUp pile_up({&p1_, &p2_},
+                         astronomy::J2000,
+                         DefaultProlongationParameters(),
+                         DefaultHistoryParameters(),
+                         &ephemeris);
+
+  serialization::PileUp message;
+  pile_up.WriteToMessage(&message);
+
+  // Clear the children to simulate pre-Cesàro serialization.
+  message.mutable_history()->clear_children();
+
+  auto const part_id_to_part = [this](PartId const part_id) {
+    if (part_id == part_id1_) {
+      return &p1_;
+    }
+    if (part_id == part_id2_) {
+      return &p2_;
+    }
+    LOG(FATAL) << "Unexpected part id " << part_id;
+    base::noreturn();
+  };
+  auto p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
+
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillOnce(DoAll(
+          AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
+              Barycentric::origin +
+                  Displacement<Barycentric>({1.0 * Metre,
+                                             14.0 * Metre,
+                                             31.0 / 3.0 * Metre}),
+              Velocity<Barycentric>({10.0 * Metre / Second,
+                                     140.0 * Metre / Second,
+                                     310.0 / 3.0 * Metre / Second}))),
+          Return(true)));
+  p.AdvanceTime(astronomy::J2000 + 1 * Second);
 }
 
 }  // namespace internal_pile_up
