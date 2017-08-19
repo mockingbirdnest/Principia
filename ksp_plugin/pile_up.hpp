@@ -105,7 +105,8 @@ class PileUp {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory,
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+      DiscreteTrajectory<Barycentric>* psychohistory,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
@@ -121,14 +122,21 @@ class PileUp {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
-  // TODO(phl): replace by an instance.  Specifically, this should contain
-  // either an adaptive step instance (if the last call to AdvanceTime occurred
-  // with nonzero intrinsic force), or a fixed step instance otherwise (with the
-  // prolongation being computed by an instance local to the body of
-  // |AdvanceTime|).
-  // |psychohistory_.Size()| is either 1 or 2.  The first point is
-  // authoritative, and the second point, if any, is not.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
+  // The |history_| is the past trajectory of the pile-up.  It is normally
+  // integrated with a fixed step using |fixed_instance_|, except in the
+  // presence of intrinsic acceleration.  It is authoritative in the sense that
+  // it is never going to change.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+
+  // The |psychohistory_| is the recent past trajectory of the pile-up.  Since
+  // we need to draw something between the last point of the |history_| and the
+  // current time, we must have a bit of trajectory that may not cover an entire
+  // fixed step.  This part is the |psychohistory_|, and it is forked at the end
+  // of the |history_|.  It is not authoritative in the sense that it may not
+  // match the |history_| that we'll ultimately compute.  The name comes from
+  // the fact that we are trying to predict the future, but since we are not as
+  // good as Hari Seldon we only do it over a short period of time.
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed

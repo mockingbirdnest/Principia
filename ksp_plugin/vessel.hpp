@@ -138,10 +138,7 @@ class Vessel {
 
   virtual void UpdatePrediction(Instant const& last_time);
 
-  // Returns the last authoritative point of the psychohistory.
-  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
-  virtual bool psychohistory_is_authoritative() const;
 
   // The vessel must satisfy |is_initialized()|.
   virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
@@ -168,6 +165,9 @@ class Vessel {
       bool authoritative);
 
   void FlowPrediction(Instant const& time);
+
+  // Returns the last authoritative point of the psychohistory.
+  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
 
   GUID const guid_;
   std::string name_;

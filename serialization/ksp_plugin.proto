@@ -63,12 +63,15 @@ message PileUp {
   repeated fixed32 part_id = 1;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 3;
-  required DiscreteTrajectory psychohistory = 4;
+  required DiscreteTrajectory history = 4;
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;
+
+  // Pre-Cesàro.
+  reserved "psychohistory";
 }
 
 message Plugin {

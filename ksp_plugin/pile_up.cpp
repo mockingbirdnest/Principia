@@ -37,7 +37,7 @@ PileUp::PileUp(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
-      psychohistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -47,7 +47,7 @@ PileUp::PileUp(
   mass_ = calculator.weight();
   intrinsic_force_ = total_intrinsic_force;
   DegreesOfFreedom<Barycentric> const barycentre = calculator.Get();
-  psychohistory_->Append(t, barycentre);
+  history_->Append(t, barycentre);
 
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up{
       RigidTransformation<Barycentric, RigidPileUp>{
@@ -61,6 +61,7 @@ PileUp::PileUp(
         part,
         barycentric_to_pile_up(part->degrees_of_freedom()));
   }
+  psychohistory_ = history_->NewForkAtLast();
 }
 
 void PileUp::set_mass(Mass const& mass) {
@@ -133,72 +134,76 @@ void PileUp::DeformPileUpIfNeeded() {
 }
 
 void PileUp::AdvanceTime(Instant const& t) {
-  CHECK_GE(psychohistory_->Size(), 1);
-  CHECK_LE(psychohistory_->Size(), 2);
+  CHECK_NOTNULL(psychohistory_);
 
-  bool last_point_is_authoritative = true;
-
+  auto const history_last = history_->last();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
-    // Remove the non-authoritative point.
-    auto const last_authoritative = psychohistory_->Begin();
-    psychohistory_->ForgetAfter(last_authoritative.time());
-    CHECK_EQ(psychohistory_->Size(), 1);
-
+    // Remove the fork.
+    history_->DeleteFork(psychohistory_);
     if (fixed_instance_ == nullptr) {
       fixed_instance_ = ephemeris_->NewInstance(
-          {psychohistory_.get()},
+          {history_.get()},
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           fixed_step_parameters_);
     }
-    CHECK_LT(psychohistory_->last().time(), t);
+    CHECK_LT(history_->last().time(), t);
     ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
-    if (psychohistory_->last().time() < t) {
+    psychohistory_ = history_->NewForkAtLast();
+    if (history_->last().time() < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
+      // TODO(phl): Consider not setting |last_point_only| below as we would be
+      // fine with multiple points in the |psychohistory_| once all the classes
+      // have been changed.
       CHECK(ephemeris_->FlowWithAdaptiveStep(
-                psychohistory_.get(),
+                psychohistory_,
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                 t,
                 adaptive_step_parameters_,
                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
                 /*last_point_only=*/true));
-      last_point_is_authoritative = false;
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
     // time we go through this function.  It will be re-created as needed.
     fixed_instance_ = nullptr;
-    // We make the existing last point authoritative, i.e. we do not remove it.
-    // If it was already authoritative nothing happens, if it was not, we
-    // integrate on top of it, and it gets appended authoritatively to the part
-    // tails.
+    // We make the |psychohistory_|, if any, authoritative, i.e. append it to
+    // the end of the |history_|. We integrate on top of it, and it gets
+    // appended authoritatively to the part tails.
+    auto const psychohistory_end = psychohistory_->End();
+    auto it = psychohistory_->Fork();
+    for (++it; it != psychohistory_end; ++it) {
+      history_->Append(it.time(), it.degrees_of_freedom());
+    }
+    history_->DeleteFork(psychohistory_);
+
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
     CHECK(ephemeris_->FlowWithAdaptiveStep(
-              psychohistory_.get(),
+              history_.get(),
               intrinsic_acceleration,
               t,
               adaptive_step_parameters_,
               Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
               /*last_point_only=*/false));
+    psychohistory_ = history_->NewForkAtLast();
   }
 
+  CHECK_NOTNULL(psychohistory_);
+
+  // Append the |history_| authoritatively to the parts' tails and the
+  // |psychohistory_| non-authoritatively.
+  auto const history_end = history_->End();
   auto const psychohistory_end = psychohistory_->End();
-  auto psychohistory_last = psychohistory_->last();
-  auto it = psychohistory_->Begin();
-  ++it;
-  for (; it != psychohistory_end; ++it) {
-    AppendToPartTails(it,
-                      /*authoritative=*/it != psychohistory_last ||
-                                        last_point_is_authoritative);
+  auto it = history_last;
+  for (++it; it != history_end; ++it) {
+    AppendToPartTails(it, /*authoritative=*/true);
   }
-  psychohistory_->ForgetBefore(last_point_is_authoritative
-                                   ? psychohistory_last.time()
-                                   : (--psychohistory_last).time());
-  CHECK(last_point_is_authoritative ? psychohistory_->Size() == 1
-                                    : psychohistory_->Size() == 2)
-      << NAMED(last_point_is_authoritative) << ", "
-      << NAMED(psychohistory_->Size());
+  it = psychohistory_->Fork();
+  for (++it; it != psychohistory_end; ++it) {
+    AppendToPartTails(it, /*authoritative=*/false);
+  }
+  history_->ForgetBefore(psychohistory_->Fork().time());
 }
 
 void PileUp::NudgeParts() const {
@@ -229,8 +234,8 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
   }
   mass_.WriteToMessage(message->mutable_mass());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
-  psychohistory_->WriteToMessage(message->mutable_psychohistory(),
-                                 /*forks=*/{});
+  history_->WriteToMessage(message->mutable_history(),
+                           /*forks=*/{psychohistory_});
   for (auto const& pair : actual_part_degrees_of_freedom_) {
     auto const part = pair.first;
     auto const& degrees_of_freedom = pair.second;
@@ -261,17 +266,49 @@ PileUp PileUp::ReadFromMessage(
 
   bool const is_pre_cartan = !message.has_adaptive_step_parameters() ||
                              !message.has_fixed_step_parameters();
+  bool const is_pre_cesàro = message.history().children().empty();
   std::unique_ptr<PileUp> pile_up;
-  if (is_pre_cartan) {
-    pile_up = std::unique_ptr<PileUp>(
-        new PileUp(std::move(parts),
-                   DefaultProlongationParameters(),
-                   DefaultHistoryParameters(),
-                   DiscreteTrajectory<Barycentric>::ReadFromMessage(
-                       message.psychohistory(),
-                       /*forks=*/{}),
-                   ephemeris));
+  if (is_pre_cesàro) {
+    if (is_pre_cartan) {
+      pile_up = std::unique_ptr<PileUp>(
+          new PileUp(std::move(parts),
+                     DefaultProlongationParameters(),
+                     DefaultHistoryParameters(),
+                     DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                         message.history(),
+                         /*forks=*/{}),
+                     /*psychohistory=*/nullptr,
+                     ephemeris));
+    } else {
+      pile_up = std::unique_ptr<PileUp>(
+        new PileUp(
+            std::move(parts),
+            Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
+                message.adaptive_step_parameters()),
+            Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
+                message.fixed_step_parameters()),
+            DiscreteTrajectory<Barycentric>::ReadFromMessage(
+                message.history(),
+                /*forks=*/{}),
+            /*psychohistory=*/nullptr,
+            ephemeris));
+    }
+    // Fork a psychohistory for compatibility if there is a non-authoritative
+    // point.
+    if (pile_up->history_->Size() == 2) {
+      Instant const history_begin_time = pile_up->history_->Begin().time();
+      pile_up->psychohistory_ =
+          pile_up->history_->NewForkWithCopy(history_begin_time);
+      pile_up->history_->ForgetAfter(history_begin_time);
+    } else {
+      pile_up->psychohistory_ = pile_up->history_->NewForkAtLast();
+    }
   } else {
+    DiscreteTrajectory<Barycentric>* psychohistory = nullptr;
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history =
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(
+            message.history(),
+            /*forks=*/{&psychohistory});
     pile_up = std::unique_ptr<PileUp>(
       new PileUp(
           std::move(parts),
@@ -279,9 +316,8 @@ PileUp PileUp::ReadFromMessage(
               message.adaptive_step_parameters()),
           Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
               message.fixed_step_parameters()),
-          DiscreteTrajectory<Barycentric>::ReadFromMessage(
-              message.psychohistory(),
-              /*forks=*/{}),
+          std::move(history),
+          psychohistory,
           ephemeris));
   }
 
@@ -310,13 +346,15 @@ PileUp::PileUp(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory,
-    not_null<Ephemeris<Barycentric>*> ephemeris)
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+    DiscreteTrajectory<Barycentric>* const psychohistory,
+    not_null<Ephemeris<Barycentric>*> const ephemeris)
     : parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
-      psychohistory_(std::move(psychohistory)) {}
+      history_(std::move(history)),
+      psychohistory_(psychohistory) {}
 
 void PileUp::AppendToPartTails(
     DiscreteTrajectory<Barycentric>::Iterator const it,
