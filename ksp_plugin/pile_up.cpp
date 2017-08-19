@@ -152,27 +152,27 @@ void PileUp::AdvanceTime(Instant const& t) {
     if (history_->last().time() < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
       // fixed-step integration.
+      // TODO(phl): Consider not setting |last_point_only| below as we would be
+      // fine with multiple points in the |psychohistory_| once all the classes
+      // has been changed.
       CHECK(ephemeris_->FlowWithAdaptiveStep(
                 psychohistory_,
                 Ephemeris<Barycentric>::NoIntrinsicAcceleration,
                 t,
                 adaptive_step_parameters_,
                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                /*last_point_only=*/true));//TODO(phl):why?
+                /*last_point_only=*/true));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
     // time we go through this function.  It will be re-created as needed.
     fixed_instance_ = nullptr;
-    //TODO(phl):comment
-    // We make the existing last point authoritative, i.e. we do not remove it.
-    // If it was already authoritative nothing happens, if it was not, we
-    // integrate on top of it, and it gets appended authoritatively to the part
-    // tails.
+    // We make the |psychohistory_|, if any, authoritative, i.e. append it to
+    // the end of the |history_|. We integrate on top of it, and it gets
+    // appended authoritatively to the part tails.
     auto const psychohistory_end = psychohistory_->End();
     auto it = psychohistory_->Fork();
-    ++it;
-    for (; it != psychohistory_end; ++it) {
+    for (++it; it != psychohistory_end; ++it) {
       history_->Append(it.time(), it.degrees_of_freedom());
     }
     history_->DeleteFork(psychohistory_);
@@ -190,6 +190,9 @@ void PileUp::AdvanceTime(Instant const& t) {
   }
 
   CHECK_NOTNULL(psychohistory_);
+
+  // Append the |history_| authoritatively to the parts' tails and the
+  // |psychohistory_| non-authoritatively.
   auto const history_end = history_->End();
   auto const psychohistory_end = psychohistory_->End();
   auto it = history_last;
