@@ -1,3 +1,4 @@
+﻿
 #include "ksp_plugin/pile_up.hpp"
 
 #include <limits>
@@ -611,7 +612,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);
 
-  // Clear the children to simulate pre-Ces�ro serialization.
+  // Clear the children to simulate pre-Cesàro serialization.
   message.mutable_history()->clear_children();
 
   auto const part_id_to_part = [this](PartId const part_id) {
