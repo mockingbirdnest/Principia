@@ -342,16 +342,16 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
-  auto psychohistory = pile_up.psychohistory();
+  auto history = pile_up.psychohistory()->parent();
   auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
   EXPECT_CALL(ephemeris,
-              NewInstance(ElementsAre(pile_up.psychohistory()), _, _))
+              NewInstance(ElementsAre(history), _, _))
       .WillOnce(Return(ByMove(std::move(instance))));
   EXPECT_CALL(ephemeris, FlowWithFixedStep(_, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(
-              &psychohistory,
+              &history,
               astronomy::J2000 + 0.4 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +
@@ -361,7 +361,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                          140.1 * Metre / Second,
                                          310.1 / 3.0 * Metre / Second}))),
           AppendToDiscreteTrajectory(
-              &psychohistory,
+              &history,
               astronomy::J2000 + 0.8 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +

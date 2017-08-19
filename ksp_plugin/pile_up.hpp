@@ -106,6 +106,7 @@ class PileUp {
           adaptive_step_parameters,
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+      DiscreteTrajectory<Barycentric>* psychohistory,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
   void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
@@ -130,7 +131,7 @@ class PileUp {
   // authoritative, and the second point, if any, is not.
   //TODO(phl): comments
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
-  DiscreteTrajectory<Barycentric>* psychohistory_;
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed
