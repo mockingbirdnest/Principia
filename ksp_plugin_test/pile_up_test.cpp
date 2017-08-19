@@ -21,6 +21,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::check_not_null;
 using base::make_not_null_unique;
 using geometry::Displacement;
 using geometry::Position;
@@ -68,7 +69,7 @@ class TestablePileUp : public PileUp {
   }
 
   not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
-    return psychohistory_.get();
+    return check_not_null(psychohistory_);
   }
 
   PartTo<DegreesOfFreedom<RigidPileUp>> const&
