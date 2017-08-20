@@ -80,19 +80,38 @@ Part::degrees_of_freedom() const {
 }
 
 DiscreteTrajectory<Barycentric>& Part::tail() {
-  return *tail_;
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
+  }
+  return *psychohistory_;
 }
 
 DiscreteTrajectory<Barycentric> const& Part::tail() const {
-  return *tail_;
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
+  }
+  return *psychohistory_;
 }
 
 bool Part::tail_is_authoritative() const {
-  return tail_is_authoritative_;
+  return psychohistory_.Fork() == psychohistory_.last();
+}
+void Part::AppendToHistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  if (history_ == nullptr) {
+    history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
+  }
+  history_->Append(time, degrees_of_freedom);
 }
 
-void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
-  tail_is_authoritative_ = tail_is_authoritative;
+void Part::AppendToPsychohistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
+  }
+  psychohistory_->Append(time, degrees_of_freedom);
 }
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {

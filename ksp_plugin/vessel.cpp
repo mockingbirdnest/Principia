@@ -209,7 +209,7 @@ void Vessel::AdvanceTime() {
       CHECK_EQ(at_end_of_tail, it == tails[i]);
       CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
-        part.tail().ForgetBefore(astronomy::InfiniteFuture);
+        part.tail().ForgetAfter(astronomy::InfinitePast);
       } else {
         ++it;
       }
