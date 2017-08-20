@@ -100,7 +100,8 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
  private:
-  //TODO(phl):comment
+  // A pointer to a member function of |Part| used to append a point to either
+  // trajectory (history or psychohistory).
   using AppendToPartTrajectory =
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 

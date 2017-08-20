@@ -77,12 +77,18 @@ class Part final {
   DiscreteTrajectory<Barycentric>& tail();
 
   // True if and only if the last point of the tail is authoritative, i.e.,
-  // corresponds to a point in the psychohistory of the enclosing Part.
+  // corresponds to a point in the psychohistory of the enclosing |Vessel|.
   bool tail_is_authoritative() const;
 
-  //TODO(phl):comment
-  void AppendToHistory(Instant const& time,
-                       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  // Appends a point to the history or psychohistory of this part.  These
+  // temporarily hold the trajectory of the part and are constructed by
+  // |PileUp::AdvanceTime|.  They are consumed by |Vessel::AdvanceTime| for the
+  // containing |Vessel|.
+  // Note that |AppendToHistory| clears the psychohistory so the order of the
+  // calls matter.
+  void AppendToHistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
   void AppendToPsychohistory(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
@@ -126,7 +132,9 @@ class Part final {
   DegreesOfFreedom<Barycentric> degrees_of_freedom_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
-  //TODO(phl):invariants
+  // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
+  // as needed by |AppendToPsychohistory| or by |tail|.  That's because
+  // |FortAtLast| is relatively expensive so we only call it when necessary.
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
