@@ -93,6 +93,9 @@ class Part final {
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
 
+  // Clears the history and psychohistory.
+  void ClearHistory();
+
   // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
 
@@ -132,10 +135,14 @@ class Part final {
   DegreesOfFreedom<Barycentric> degrees_of_freedom_;
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
+
+  // The |history_| always has a point at time -∞, as this makes it convenient
+  // to hook the |psychohistory_| even if these is no actual point in the
+  // |history_|.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
   // as needed by |AppendToPsychohistory| or by |tail|.  That's because
   // |FortAtLast| is relatively expensive so we only call it when necessary.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular

@@ -33,6 +33,8 @@ Part::Part(
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
   CHECK_GT(mass_, Mass{}) << ShortDebugString();
+  history_->Append(astronomy::InfinitePast,
+                   {Barycentric::origin, Velocity<Barycentric>()});
 }
 
 Part::~Part() {
@@ -105,6 +107,13 @@ void Part::AppendToPsychohistory(
     psychohistory_ = history_->NewForkAtLast();
   }
   psychohistory_->Append(time, degrees_of_freedom);
+}
+
+void Part::ClearHistory() {
+  if (psychohistory_ != nullptr) {
+    history_->DeleteFork(psychohistory_);
+  }
+  history_->ForgetAfter(astronomy::InfinitePast);
 }
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
