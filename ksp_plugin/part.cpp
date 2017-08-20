@@ -181,7 +181,7 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     // The |prehistory_| and |history_| have been created by the constructor
     // above.  Construct the various trajectories from the |tail|.
     for (auto it = tail->Begin(); it != tail->End(); ++it) {
-      if (it == tail->last() && ! message.tail_is_authoritative()) {
+      if (it == tail->last() && !message.tail_is_authoritative()) {
         part->AppendToPsychohistory(it.time(), it.degrees_of_freedom());
       } else {
         part->AppendToHistory(it.time(), it.degrees_of_freedom());
