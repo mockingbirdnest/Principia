@@ -51,15 +51,15 @@ message Part {
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;
-  required DiscreteTrajectory history = 7;
+  required DiscreteTrajectory prehistory = 7;
+  optional bool tail_is_authoritative = 8;  // Pre-Cesàro.
 
   // Pre-Cardano.
   reserved 3;
   reserved "gravitational_acceleration_to_be_applied_by_ksp";
 
   // Pre-Cesàro.
-  reserved 8;
-  reserved "tail", "tail_is_authoritative";
+  reserved "tail";
 }
 
 message PileUp {

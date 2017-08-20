@@ -261,7 +261,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
           Return(true)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
-  EXPECT_EQ(1, p1_.tail().Size());
+  EXPECT_EQ(2, p1_.tail().Size());
   EXPECT_TRUE(p1_.tail_is_authoritative());
   EXPECT_THAT(
       p1_.tail().last().degrees_of_freedom(),
@@ -274,7 +274,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
                                       1010.0 / 9.0 * Metre / Second}), 1)));
-  EXPECT_EQ(1, p2_.tail().Size());
+  EXPECT_EQ(2, p2_.tail().Size());
   EXPECT_TRUE(p2_.tail_is_authoritative());
   EXPECT_THAT(
       p2_.tail().last().degrees_of_freedom(),
@@ -384,10 +384,10 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
           Return(true)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
-  EXPECT_EQ(3, p1_.tail().Size());
+  EXPECT_EQ(4, p1_.tail().Size());
   EXPECT_FALSE(p1_.tail_is_authoritative());
   EXPECT_THAT(
-      p1_.tail().Begin().degrees_of_freedom(),
+      (++p1_.tail().Begin()).degrees_of_freedom(),
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-24.1 / 9.0 * Metre,
@@ -399,7 +399,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               1010.3 / 9.0 * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      (++p1_.tail().Begin()).degrees_of_freedom(),
+      (++(++p1_.tail().Begin())).degrees_of_freedom(),
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-23.2 / 9.0 * Metre,
@@ -421,10 +421,10 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
                                       1010.0 / 9.0 * Metre / Second}), 1)));
-  EXPECT_EQ(3, p2_.tail().Size());
+  EXPECT_EQ(4, p2_.tail().Size());
   EXPECT_FALSE(p2_.tail_is_authoritative());
   EXPECT_THAT(
-      p2_.tail().Begin().degrees_of_freedom(),
+      (++p2_.tail().Begin()).degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.9 / 9.0 * Metre,
@@ -435,7 +435,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.3 / 3.0 * Metre / Second,
                                       890.3 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      (++p2_.tail().Begin()).degrees_of_freedom(),
+      (++(++p2_.tail().Begin())).degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {27.8 / 9.0 * Metre,

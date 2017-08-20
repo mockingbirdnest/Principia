@@ -77,7 +77,11 @@ TEST_F(PartTest, Serialization) {
                    multivector().vector().y().quantity().magnitude());
   EXPECT_EQ(6, message.degrees_of_freedom().t2().
                    multivector().vector().z().quantity().magnitude());
-  EXPECT_EQ(1, message.history().timeline_size());
+  EXPECT_EQ(1, message.prehistory().timeline_size());
+  EXPECT_EQ(1, message.prehistory().children_size());
+  EXPECT_EQ(1, message.prehistory().children(0).trajectories_size());
+  EXPECT_EQ(1,
+            message.prehistory().children(0).trajectories(0).timeline_size());
 
   auto const p = Part::ReadFromMessage(message, /*deletion_callback=*/nullptr);
   EXPECT_EQ(part_.mass(), p->mass());

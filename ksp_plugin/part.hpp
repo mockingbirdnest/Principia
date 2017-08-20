@@ -136,10 +136,14 @@ class Part final {
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
 
-  // The |history_| always has a point at time -∞, as this makes it convenient
-  // to hook the |psychohistory_| even if these is no actual point in the
-  // |history_|.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  // The |prehistory_| always has a single point at time -∞.  It sole purpose is
+  // to make it convenient to hook the |psychohistory_| even if these is no
+  // point in the |history_| (it's not possible to fork-at-last an empty root
+  // trajectory, but it works for a non-root).
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+  // The |history_| is nearly always not null, except in some transient
+  // situations.  It's a fork of the |prehistory_|.
+  DiscreteTrajectory<Barycentric>* history_ = nullptr;
   // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
   // as needed by |AppendToPsychohistory| or by |tail|.  That's because
   // |FortAtLast| is relatively expensive so we only call it when necessary.
