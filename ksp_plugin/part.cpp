@@ -29,7 +29,7 @@ Part::Part(
       name_(name),
       mass_(mass),
       degrees_of_freedom_(degrees_of_freedom),
-      tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
   CHECK_GT(mass_, Mass{}) << ShortDebugString();
@@ -81,26 +81,19 @@ Part::degrees_of_freedom() const {
 
 DiscreteTrajectory<Barycentric>& Part::tail() {
   if (psychohistory_ == nullptr) {
-    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
-  }
-  return *psychohistory_;
-}
-
-DiscreteTrajectory<Barycentric> const& Part::tail() const {
-  if (psychohistory_ == nullptr) {
-    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
+    psychohistory_ = history_->NewForkAtLast();
   }
   return *psychohistory_;
 }
 
 bool Part::tail_is_authoritative() const {
-  return psychohistory_.Fork() == psychohistory_.last();
+  return psychohistory_->Fork() == psychohistory_->last();
 }
 void Part::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
-  if (history_ == nullptr) {
-    history_ = std::make_unique<DiscreteTrajectory<Barycentric>>();
+  if (psychohistory_ != nullptr) {
+    history_->DeleteFork(psychohistory_);
   }
   history_->Append(time, degrees_of_freedom);
 }
@@ -109,7 +102,7 @@ void Part::AppendToPsychohistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
   if (psychohistory_ == nullptr) {
-    psychohistory_ = CHECK_NOTNULL(history_)->NewForkAtLast();
+    psychohistory_ = history_->NewForkAtLast();
   }
   psychohistory_->Append(time, degrees_of_freedom);
 }
@@ -153,8 +146,13 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
     message->set_containing_pile_up(containing_pile_up_->distance_from_begin());
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
-  tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
-  message->set_tail_is_authoritative(tail_is_authoritative_);
+  if (psychohistory_ == nullptr) {
+    history_->WriteToMessage(message->mutable_history(),
+                             /*forks=*/{});
+  } else {
+    history_->WriteToMessage(message->mutable_history(),
+                             /*forks=*/{psychohistory_});
+  }
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
@@ -169,9 +167,9 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
                                  std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
-  part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
-                                                                 /*forks=*/{});
-  part->set_tail_is_authoritative(message.tail_is_authoritative());
+  part->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+      message.history(),
+      /*forks=*/{&part->psychohistory_});
   return part;
 }
 

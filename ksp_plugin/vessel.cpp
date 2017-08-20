@@ -183,7 +183,7 @@ void Vessel::AdvanceTime() {
   its.reserve(parts_.size());
   tails.reserve(parts_.size());
   for (auto const& pair : parts_) {
-    Part const& part = *pair.second;
+    Part& part = *pair.second;
     CHECK(!part.tail().Empty()) << part.ShortDebugString()
                                 << " " << ShortDebugString();
     its.push_back(part.tail().Begin());

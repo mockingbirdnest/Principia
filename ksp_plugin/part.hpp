@@ -75,7 +75,6 @@ class Part final {
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It is read and
   // cleared by |Vessel::AdvanceTime| for the containing |Vessel|.
   DiscreteTrajectory<Barycentric>& tail();
-  DiscreteTrajectory<Barycentric> const& tail() const;
 
   // True if and only if the last point of the tail is authoritative, i.e.,
   // corresponds to a point in the psychohistory of the enclosing Part.
@@ -128,7 +127,7 @@ class Part final {
 
   // See the comments in pile_up.hpp for an explanation of the terminology.
   //TODO(phl):invariants
-  std::unique_ptr<DiscreteTrajectory<Barycentric>> history_;
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
