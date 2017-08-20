@@ -77,7 +77,7 @@ class Part final {
   DiscreteTrajectory<Barycentric>& tail();
 
   // True if and only if the last point of the tail is authoritative, i.e.,
-  // corresponds to a point in the psychohistory of the enclosing |Vessel|.
+  // corresponds to a point in the history of the enclosing |Vessel|.
   bool tail_is_authoritative() const;
 
   // Appends a point to the history or psychohistory of this part.  These
@@ -137,7 +137,7 @@ class Part final {
   // See the comments in pile_up.hpp for an explanation of the terminology.
 
   // The |prehistory_| always has a single point at time -∞.  It sole purpose is
-  // to make it convenient to hook the |psychohistory_| even if these is no
+  // to make it convenient to hook the |psychohistory_| even if there is no
   // point in the |history_| (it's not possible to fork-at-last an empty root
   // trajectory, but it works for a non-root).
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
@@ -146,7 +146,7 @@ class Part final {
   DiscreteTrajectory<Barycentric>* history_ = nullptr;
   // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
   // as needed by |AppendToPsychohistory| or by |tail|.  That's because
-  // |FortAtLast| is relatively expensive so we only call it when necessary.
+  // |NewForkAtLast| is relatively expensive so we only call it when necessary.
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
