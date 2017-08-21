@@ -93,12 +93,18 @@ DiscreteTrajectory<Barycentric>::Iterator Part::history_end() {
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_begin() {
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = history_->NewForkAtLast();
+  }
   // Make sure that we skip the fork, which may be the point of the prehistory.
   auto it = psychohistory_->Fork();
   return ++it;
 }
 
 DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_end() {
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = history_->NewForkAtLast();
+  }
   return psychohistory_->End();
 }
 

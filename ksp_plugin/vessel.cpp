@@ -248,7 +248,7 @@ void Vessel::WriteToMessage(
     CHECK(Contains(parts_, part_id));
     message->add_kept_parts(part_id);
   }
-  history_->WriteToMessage(message->mutable_psychohistory(),
+  history_->WriteToMessage(message->mutable_history(),
                            /*forks=*/{psychohistory_});
   prediction_->WriteToMessage(message->mutable_prediction(),
                               /*forks=*/{});
@@ -262,6 +262,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     not_null<Celestial const*> const parent,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void(PartId)> const& deletion_callback) {
+  bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   auto vessel = make_not_null_unique<Vessel>(
@@ -285,12 +286,33 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     CHECK(Contains(vessel->parts_, part_id));
     vessel->kept_parts_.insert(part_id);
   }
-  //TODO(phl):compatibility
-  vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
-      message.psychohistory(),
-      /*forks=*/{&vessel->psychohistory_});
-  vessel->psychohistory_is_authoritative_ =
-      message.psychohistory_is_authoritative();
+
+  if (is_pre_cesàro) {
+    auto const psychohistory =
+        DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
+                                                         /*forks=*/{});
+    // The |history_| and |psychohistory_| have been created by the constructor
+    // above.  Reconstruct them from the |psychohistory|.
+    vessel->history_->DeleteFork(vessel->psychohistory_);
+    for (auto it = psychohistory->Begin(); it != psychohistory->End(); ++it) {
+      if (it == psychohistory->last() &&
+          !message.psychohistory_is_authoritative()) {
+        vessel->psychohistory_ = vessel->history_->NewForkAtLast();
+        vessel->psychohistory_->Append(it.time(), it.degrees_of_freedom());
+      } else {
+        vessel->history_->Append(it.time(), it.degrees_of_freedom());
+      }
+    }
+    if (message.psychohistory_is_authoritative()) {
+      vessel->psychohistory_ = vessel->history_->NewForkAtLast();
+    }
+  } else {
+    vessel->psychohistory_ = nullptr;
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*forks=*/{&vessel->psychohistory_});
+  }
+
   vessel->prediction_ =
       DiscreteTrajectory<Barycentric>::ReadFromMessage(message.prediction(),
                                                        /*forks=*/{});
