@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <functional>
 #include <list>
 #include <map>
 
@@ -99,6 +100,11 @@ class PileUp {
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
  private:
+  // A pointer to a member function of |Part| used to append a point to either
+  // trajectory (history or psychohistory).
+  using AppendToPartTrajectory =
+      void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
+
   // For deserialization.
   PileUp(
       std::list<not_null<Part*>>&& parts,
@@ -109,8 +115,8 @@ class PileUp {
       DiscreteTrajectory<Barycentric>* psychohistory,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
-  void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
-                         bool authoritative) const;
+  template<AppendToPartTrajectory append_to_part_trajectory>
+  void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
   std::list<not_null<Part*>> parts_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;

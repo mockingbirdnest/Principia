@@ -183,10 +183,12 @@ void Vessel::AdvanceTime() {
   its.reserve(parts_.size());
   tails.reserve(parts_.size());
   for (auto const& pair : parts_) {
-    Part const& part = *pair.second;
+    Part& part = *pair.second;
     CHECK(!part.tail().Empty()) << part.ShortDebugString()
                                 << " " << ShortDebugString();
-    its.push_back(part.tail().Begin());
+    auto part_tail_begin = part.tail().Begin();
+    ++part_tail_begin;
+    its.push_back(part_tail_begin);
     tails.push_back(part.tail().last());
   }
 
@@ -209,7 +211,7 @@ void Vessel::AdvanceTime() {
       CHECK_EQ(at_end_of_tail, it == tails[i]);
       CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
       if (at_end_of_tail) {
-        part.tail().ForgetBefore(astronomy::InfiniteFuture);
+        part.ClearHistory();
       } else {
         ++it;
       }
@@ -229,7 +231,7 @@ void Vessel::AdvanceTime() {
 }
 
 void Vessel::ForgetBefore(Instant const& time) {
-  // Make sure that the psychohistory keep at least an authoritative point (and
+  // Make sure that the psychohistory keeps at least an authoritative point (and
   // possibly a non-authoritative one).  We cannot use the parts because they
   // may have been moved to the future already.
   psychohistory_->ForgetBefore(std::min(time, last_authoritative().time()));

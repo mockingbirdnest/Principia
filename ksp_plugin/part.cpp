@@ -29,10 +29,13 @@ Part::Part(
       name_(name),
       mass_(mass),
       degrees_of_freedom_(degrees_of_freedom),
-      tail_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      prehistory_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       subset_node_(make_not_null_unique<Subset<Part>::Node>()),
       deletion_callback_(std::move(deletion_callback)) {
   CHECK_GT(mass_, Mass{}) << ShortDebugString();
+  prehistory_->Append(astronomy::InfinitePast,
+                      {Barycentric::origin, Velocity<Barycentric>()});
+  history_ = prehistory_->NewForkAtLast();
 }
 
 Part::~Part() {
@@ -80,19 +83,39 @@ Part::degrees_of_freedom() const {
 }
 
 DiscreteTrajectory<Barycentric>& Part::tail() {
-  return *tail_;
-}
-
-DiscreteTrajectory<Barycentric> const& Part::tail() const {
-  return *tail_;
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = history_->NewForkAtLast();
+  }
+  return *psychohistory_;
 }
 
 bool Part::tail_is_authoritative() const {
-  return tail_is_authoritative_;
+  return psychohistory_->Fork() == psychohistory_->last();
+}
+void Part::AppendToHistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  if (psychohistory_ != nullptr) {
+    history_->DeleteFork(psychohistory_);
+  }
+  history_->Append(time, degrees_of_freedom);
 }
 
-void Part::set_tail_is_authoritative(bool const tail_is_authoritative) {
-  tail_is_authoritative_ = tail_is_authoritative;
+void Part::AppendToPsychohistory(
+    Instant const& time,
+    DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {
+  if (psychohistory_ == nullptr) {
+    psychohistory_ = history_->NewForkAtLast();
+  }
+  psychohistory_->Append(time, degrees_of_freedom);
+}
+
+void Part::ClearHistory() {
+  if (psychohistory_ != nullptr) {
+    history_->DeleteFork(psychohistory_);
+  }
+  prehistory_->DeleteFork(history_);
+  history_ = prehistory_->NewForkAtLast();
 }
 
 void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
@@ -134,13 +157,14 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
     message->set_containing_pile_up(containing_pile_up_->distance_from_begin());
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
-  tail_->WriteToMessage(message->mutable_tail(), /*forks=*/{});
-  message->set_tail_is_authoritative(tail_is_authoritative_);
+  prehistory_->WriteToMessage(message->mutable_prehistory(),
+                              /*forks=*/{history_, psychohistory_});
 }
 
 not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
     serialization::Part const& message,
     std::function<void()> deletion_callback) {
+  bool const is_pre_cesàro = message.has_tail_is_authoritative();
   not_null<std::unique_ptr<Part>> part =
       make_not_null_unique<Part>(message.part_id(),
                                  message.name(),
@@ -150,9 +174,25 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
                                  std::move(deletion_callback));
   part->increment_intrinsic_force(
       Vector<Force, Barycentric>::ReadFromMessage(message.intrinsic_force()));
-  part->tail_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(message.tail(),
-                                                                 /*forks=*/{});
-  part->set_tail_is_authoritative(message.tail_is_authoritative());
+  if (is_pre_cesàro) {
+    auto tail = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.prehistory(),
+        /*forks=*/{});
+    // The |prehistory_| and |history_| have been created by the constructor
+    // above.  Construct the various trajectories from the |tail|.
+    for (auto it = tail->Begin(); it != tail->End(); ++it) {
+      if (it == tail->last() && !message.tail_is_authoritative()) {
+        part->AppendToPsychohistory(it.time(), it.degrees_of_freedom());
+      } else {
+        part->AppendToHistory(it.time(), it.degrees_of_freedom());
+      }
+    }
+  } else {
+    part->history_ = nullptr;
+    part->prehistory_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.prehistory(),
+        /*forks=*/{&part->history_, &part->psychohistory_});
+  }
   return part;
 }
 

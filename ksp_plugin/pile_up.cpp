@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/pile_up.hpp"
 
+#include <functional>
 #include <list>
 #include <map>
 
@@ -25,6 +26,9 @@ using geometry::RigidTransformation;
 using geometry::Velocity;
 using physics::DegreesOfFreedom;
 using physics::RigidMotion;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
+using ::std::placeholders::_3;
 
 PileUp::PileUp(
     std::list<not_null<Part*>>&& parts,
@@ -197,11 +201,11 @@ void PileUp::AdvanceTime(Instant const& t) {
   auto const psychohistory_end = psychohistory_->End();
   auto it = history_last;
   for (++it; it != history_end; ++it) {
-    AppendToPartTails(it, /*authoritative=*/true);
+    AppendToPart<&Part::AppendToHistory>(it);
   }
   it = psychohistory_->Fork();
   for (++it; it != psychohistory_end; ++it) {
-    AppendToPartTails(it, /*authoritative=*/false);
+    AppendToPart<&Part::AppendToPsychohistory>(it);
   }
   history_->ForgetBefore(psychohistory_->Fork().time());
 }
@@ -356,9 +360,8 @@ PileUp::PileUp(
       history_(std::move(history)),
       psychohistory_(psychohistory) {}
 
-void PileUp::AppendToPartTails(
-    DiscreteTrajectory<Barycentric>::Iterator const it,
-    bool const authoritative) const {
+template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
+void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   auto const& pile_up_dof = it.degrees_of_freedom();
   RigidMotion<Barycentric, RigidPileUp> const barycentric_to_pile_up(
       RigidTransformation<Barycentric, RigidPileUp>(
@@ -369,10 +372,10 @@ void PileUp::AppendToPartTails(
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    part->tail().Append(it.time(),
-                        pile_up_to_barycentric(
-                            FindOrDie(actual_part_degrees_of_freedom_, part)));
-    part->set_tail_is_authoritative(authoritative);
+    (part->*append_to_part_trajectory)(
+        it.time(),
+        pile_up_to_barycentric(
+            FindOrDie(actual_part_degrees_of_freedom_, part)));
   }
 }
 

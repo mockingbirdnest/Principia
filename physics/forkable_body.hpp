@@ -398,7 +398,8 @@ void Forkable<Tr4jectory, It3rator>::DeleteAllForksAfter(Instant const& time) {
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   CHECK(is_root() || time >= ForkableTraits<Tr4jectory>::time(Fork().current_))
-      << "DeleteAllForksAfter before the fork time";
+      << "DeleteAllForksAfter before the fork time " << time << " vs. "
+      << ForkableTraits<Tr4jectory>::time(Fork().current_);
   auto const it = children_.upper_bound(time);
   children_.erase(it, children_.end());
 }

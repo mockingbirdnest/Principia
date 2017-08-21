@@ -28,6 +28,7 @@ namespace internal_part {
 using base::IteratorOn;
 using base::not_null;
 using base::Subset;
+using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
@@ -74,12 +75,26 @@ class Part final {
   // to |PileUp::AdvanceTime| for the containing |PileUp|.  It is read and
   // cleared by |Vessel::AdvanceTime| for the containing |Vessel|.
   DiscreteTrajectory<Barycentric>& tail();
-  DiscreteTrajectory<Barycentric> const& tail() const;
 
   // True if and only if the last point of the tail is authoritative, i.e.,
-  // corresponds to a point in the psychohistory of the enclosing Part.
+  // corresponds to a point in the history of the enclosing |Vessel|.
   bool tail_is_authoritative() const;
-  void set_tail_is_authoritative(bool tail_is_authoritative);
+
+  // Appends a point to the history or psychohistory of this part.  These
+  // temporarily hold the trajectory of the part and are constructed by
+  // |PileUp::AdvanceTime|.  They are consumed by |Vessel::AdvanceTime| for the
+  // containing |Vessel|.
+  // Note that |AppendToHistory| clears the psychohistory so the order of the
+  // calls matter.
+  void AppendToHistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+  void AppendToPsychohistory(
+      Instant const& time,
+      DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
+
+  // Clears the history and psychohistory.
+  void ClearHistory();
 
   // Requires |!is_piled_up()|.
   void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
@@ -118,8 +133,21 @@ class Part final {
       containing_pile_up_;
 
   DegreesOfFreedom<Barycentric> degrees_of_freedom_;
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> tail_;
-  bool tail_is_authoritative_ = false;
+
+  // See the comments in pile_up.hpp for an explanation of the terminology.
+
+  // The |prehistory_| always has a single point at time -∞.  It sole purpose is
+  // to make it convenient to hook the |psychohistory_| even if there is no
+  // point in the |history_| (it's not possible to fork-at-last an empty root
+  // trajectory, but it works for a non-root).
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prehistory_;
+  // The |history_| is nearly always not null, except in some transient
+  // situations.  It's a fork of the |prehistory_|.
+  DiscreteTrajectory<Barycentric>* history_ = nullptr;
+  // The |psychohistory_| is destroyed by |AppendToHistory| and is recreated
+  // as needed by |AppendToPsychohistory| or by |tail|.  That's because
+  // |NewForkAtLast| is relatively expensive so we only call it when necessary.
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // TODO(egg): we may want to keep track of the moment of inertia, angular
   // momentum, etc.
