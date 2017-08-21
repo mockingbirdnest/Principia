@@ -129,7 +129,7 @@ TEST_F(VesselTest, KeepAndFreeParts) {
 
 TEST_F(VesselTest, PreparePsychohistory) {
   EXPECT_TRUE(vessel_.psychohistory().Empty());
-  vessel_.PreparePsychohistory(astronomy::J2000 + 1 * Second);
+  vessel_.PrepareHistory(astronomy::J2000 + 1 * Second);
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
             vessel_.psychohistory().last().time());
@@ -147,7 +147,7 @@ TEST_F(VesselTest, PreparePsychohistory) {
 }
 
 TEST_F(VesselTest, AdvanceTime) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   p1_->tail().Append(
       astronomy::J2000 + 0.5 * Second,
@@ -213,7 +213,7 @@ TEST_F(VesselTest, AdvanceTime) {
 }
 
 TEST_F(VesselTest, Prediction) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillOnce(
@@ -260,7 +260,7 @@ TEST_F(VesselTest, Prediction) {
 }
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_CALL(ephemeris_, t_max())
       .WillOnce(Return(astronomy::J2000 + 0.5 * Second));
@@ -316,7 +316,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 }
 
 TEST_F(VesselTest, FlightPlan) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))

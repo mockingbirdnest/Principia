@@ -468,7 +468,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel)) {
-      vessel->PreparePsychohistory(vessel_time);
+      vessel->PrepareHistory(vessel_time);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));

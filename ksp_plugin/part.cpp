@@ -82,16 +82,26 @@ Part::degrees_of_freedom() const {
   return degrees_of_freedom_;
 }
 
-DiscreteTrajectory<Barycentric>& Part::tail() {
-  if (psychohistory_ == nullptr) {
-    psychohistory_ = history_->NewForkAtLast();
-  }
-  return *psychohistory_;
+DiscreteTrajectory<Barycentric>::Iterator Part::history_begin() {
+  // Make sure that we skip the point of the prehistory.
+  auto it = history_->Fork();
+  return ++it;
 }
 
-bool Part::tail_is_authoritative() const {
-  return psychohistory_->Fork() == psychohistory_->last();
+DiscreteTrajectory<Barycentric>::Iterator Part::history_end() {
+  return history_->End();
 }
+
+DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_begin() {
+  // Make sure that we skip the fork, which may be the point of the prehistory.
+  auto it = psychohistory_->Fork();
+  return ++it;
+}
+
+DiscreteTrajectory<Barycentric>::Iterator Part::psychohistory_end() {
+  return psychohistory_->End();
+}
+
 void Part::AppendToHistory(
     Instant const& time,
     DegreesOfFreedom<Barycentric> const& degrees_of_freedom) {

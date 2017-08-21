@@ -178,56 +178,17 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
-  CHECK(!parts_.empty());
-  std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
-  std::vector<DiscreteTrajectory<Barycentric>::Iterator> tails;
-  its.reserve(parts_.size());
-  tails.reserve(parts_.size());
+  history_->DeleteFork(psychohistory_);
+  AppendToVesselTrajectory(&Part::history_begin,
+                           &Part::history_end,
+                           *history_);
+  psychohistory_ = history_->NewForkAtLast();
+  AppendToVesselTrajectory(&Part::psychohistory_begin,
+                           &Part::psychohistory_end,
+                           *psychohistory_);
   for (auto const& pair : parts_) {
     Part& part = *pair.second;
-    CHECK(!part.tail().Empty()) << part.ShortDebugString()
-                                << " " << ShortDebugString();
-    auto part_tail_begin = part.tail().Begin();
-    ++part_tail_begin;
-    its.push_back(part_tail_begin);
-    tails.push_back(part.tail().last());
-  }
-
-  Part const& first_part = *parts_.begin()->second;
-  bool const tail_is_authoritative = first_part.tail_is_authoritative();
-
-  // Loop over the times of the tails.
-  for (;;) {
-    Instant const first_time = its[0].time();
-    bool const at_end_of_tail = its[0] == tails[0];
-
-    // Loop over the parts at a given time.
-    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
-    int i = 0;
-    for (auto const& pair : parts_) {
-      Part& part = *pair.second;
-      auto& it = its[i];
-      calculator.Add(it.degrees_of_freedom(), part.mass());
-      CHECK_EQ(first_time, it.time());
-      CHECK_EQ(at_end_of_tail, it == tails[i]);
-      CHECK_EQ(tail_is_authoritative, part.tail_is_authoritative());
-      if (at_end_of_tail) {
-        part.ClearHistory();
-      } else {
-        ++it;
-      }
-      ++i;
-    }
-    DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
-        calculator.Get();
-    AppendToPsychohistory(
-        first_time,
-        vessel_degrees_of_freedom,
-        /*authoritative=*/!at_end_of_tail || tail_is_authoritative);
-
-    if (at_end_of_tail) {
-      return;
-    }
+    part.ClearHistory();
   }
 }
 
@@ -361,16 +322,52 @@ Vessel::Vessel()
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
-void Vessel::AppendToPsychohistory(
-    Instant const& time,
-    DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-    bool const authoritative) {
-  if (!psychohistory_is_authoritative_) {
-    CHECK(!psychohistory_->Empty());
-    psychohistory_->ForgetAfter((--psychohistory_->last()).time());
+void Vessel::AppendToVesselTrajectory(
+    TrajectoryIterator const part_trajectory_begin,
+    TrajectoryIterator const part_trajectory_end,
+    DiscreteTrajectory<Barycentric>& trajectory) {
+  CHECK(!parts_.empty());
+  std::vector<DiscreteTrajectory<Barycentric>::Iterator> its;
+  std::vector<DiscreteTrajectory<Barycentric>::Iterator> ends;
+  its.reserve(parts_.size());
+  ends.reserve(parts_.size());
+  for (auto const& pair : parts_) {
+    Part& part = *pair.second;
+    its.push_back((part.*part_trajectory_begin)());
+    ends.push_back((part.*part_trajectory_end)());
+    CHECK(its.back() != ends.back()) << part.ShortDebugString() << " "
+                                     << ShortDebugString();
   }
-  psychohistory_->Append(time, degrees_of_freedom);
-  psychohistory_is_authoritative_ = authoritative;
+
+  // Loop over the times of the trajectory.
+  for (;;) {
+    auto it0 = its[0];
+    Instant const first_time = it0.time();
+    ++it0;
+    bool const at_end_of_part_trajectory = it0 == ends[0];
+
+    // Loop over the parts at a given time.
+    BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
+    int i = 0;
+    for (auto const& pair : parts_) {
+      Part& part = *pair.second;
+      auto& it = its[i];
+      calculator.Add(it.degrees_of_freedom(), part.mass());
+      CHECK_EQ(first_time, it.time());
+      ++it;
+      CHECK_EQ(at_end_of_part_trajectory, it == ends[i]);
+      ++i;
+    }
+
+    // Append the parts' barycentre to the trajectory.
+    DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
+        calculator.Get();
+    trajectory.Append(first_time, vessel_degrees_of_freedom);
+
+    if (at_end_of_part_trajectory) {
+      return;
+    }
+  }
 }
 
 void Vessel::FlowPrediction(Instant const& time) {

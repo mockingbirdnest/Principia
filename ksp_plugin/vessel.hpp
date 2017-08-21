@@ -159,10 +159,12 @@ class Vessel {
   Vessel();
 
  private:
-  void AppendToPsychohistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-      bool authoritative);
+  using TrajectoryIterator =
+      DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
+
+  void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
+                                TrajectoryIterator part_trajectory_end,
+                                DiscreteTrajectory<Barycentric>& trajectory);
 
   void FlowPrediction(Instant const& time);
 
