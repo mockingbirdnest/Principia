@@ -91,9 +91,8 @@ class Vessel {
 
   // If the history is empty, appends a single authoritative point to it,
   // computed as the barycentre of all parts.  |parts_| must not be empty.
-  // After this call, |history_| is never empty again.
-  // TODO(egg): ... except ForgetBefore.  This will break things, so
-  // ForgetBefore should not clear the history altogether.
+  // After this call, |history_| is never empty again and the psychohistory is
+  // usable.
   virtual void PrepareHistory(Instant const& t);
 
   // Returns the part with the given ID.  Such a part must have been added using

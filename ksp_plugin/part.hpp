@@ -71,7 +71,9 @@ class Part final {
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
-  //TODO(phl):comment
+  // Return iterators to the beginning and end of the history and psychohistory
+  // of the part, respectively.  Either trajectory may be empty, but they are
+  // not both empty.
   DiscreteTrajectory<Barycentric>::Iterator history_begin();
   DiscreteTrajectory<Barycentric>::Iterator history_end();
   DiscreteTrajectory<Barycentric>::Iterator psychohistory_begin();
