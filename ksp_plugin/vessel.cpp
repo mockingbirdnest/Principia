@@ -38,7 +38,7 @@ Vessel::Vessel(GUID const& guid,
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  psychohistory_ = history_->NewForkAtLast();
+  // Can't create the |psychohistory_| here because |history_| is empty;
 }
 
 Vessel::~Vessel() {
@@ -134,7 +134,9 @@ void Vessel::PrepareHistory(Instant const& t) {
     ForAllParts([&calculator](Part& part) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
     });
+    CHECK(psychohistory_ == nullptr);
     history_->Append(t, calculator.Get());
+    psychohistory_ = history_->NewForkAtLast();
   }
 }
 
@@ -291,9 +293,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     auto const psychohistory =
         DiscreteTrajectory<Barycentric>::ReadFromMessage(message.history(),
                                                          /*forks=*/{});
-    // The |history_| and |psychohistory_| have been created by the constructor
-    // above.  Reconstruct them from the |psychohistory|.
-    vessel->history_->DeleteFork(vessel->psychohistory_);
+    // The |history_| has been created by the constructor above.  Reconstruct
+    // it from the |psychohistory|.
     for (auto it = psychohistory->Begin(); it != psychohistory->End(); ++it) {
       if (it == psychohistory->last() &&
           !message.psychohistory_is_authoritative()) {
@@ -307,7 +308,6 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
   } else {
-    vessel->psychohistory_ = nullptr;
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
@@ -357,16 +357,14 @@ void Vessel::AppendToVesselTrajectory(
     Part& part = *pair.second;
     its.push_back((part.*part_trajectory_begin)());
     ends.push_back((part.*part_trajectory_end)());
-    CHECK(its.back() != ends.back()) << part.ShortDebugString() << " "
-                                     << ShortDebugString();
   }
 
   // Loop over the times of the trajectory.
   for (;;) {
-    auto it0 = its[0];
-    Instant const first_time = it0.time();
-    ++it0;
+    auto const& it0 = its[0];
     bool const at_end_of_part_trajectory = it0 == ends[0];
+    Instant const first_time = at_end_of_part_trajectory ? Instant()
+                                                         : it0.time();
 
     // Loop over the parts at a given time.
     BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
@@ -374,21 +372,23 @@ void Vessel::AppendToVesselTrajectory(
     for (auto const& pair : parts_) {
       Part& part = *pair.second;
       auto& it = its[i];
-      calculator.Add(it.degrees_of_freedom(), part.mass());
-      CHECK_EQ(first_time, it.time());
-      ++it;
       CHECK_EQ(at_end_of_part_trajectory, it == ends[i]);
+      if (!at_end_of_part_trajectory) {
+        calculator.Add(it.degrees_of_freedom(), part.mass());
+        CHECK_EQ(first_time, it.time());
+        ++it;
+      }
       ++i;
+    }
+
+    if (at_end_of_part_trajectory) {
+      return;
     }
 
     // Append the parts' barycentre to the trajectory.
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     trajectory.Append(first_time, vessel_degrees_of_freedom);
-
-    if (at_end_of_part_trajectory) {
-      return;
-    }
   }
 }
 

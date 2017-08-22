@@ -127,8 +127,7 @@ TEST_F(VesselTest, KeepAndFreeParts) {
   EXPECT_EQ(part_id2_, vessel_.part(part_id2_)->part_id());
 }
 
-TEST_F(VesselTest, PreparePsychohistory) {
-  EXPECT_TRUE(vessel_.psychohistory().Empty());
+TEST_F(VesselTest, PrepareHistory) {
   vessel_.PrepareHistory(astronomy::J2000 + 1 * Second);
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,

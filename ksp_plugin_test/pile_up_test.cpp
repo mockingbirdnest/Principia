@@ -435,7 +435,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.3 / 3.0 * Metre / Second,
                                       890.3 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      (++p1_.history_begin()).degrees_of_freedom(),
+      (++p2_.history_begin()).degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {27.8 / 9.0 * Metre,

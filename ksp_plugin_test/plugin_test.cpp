@@ -469,16 +469,19 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
 #if defined(WE_LOVE_228)
-  EXPECT_EQ(3, vessel_0_history.timeline_size());
+  EXPECT_EQ(2, vessel_0_history.timeline_size());
   Instant const t0 =
       Instant() +
       vessel_0_history.timeline(0).instant().scalar().magnitude() * Second;
   Instant const t1 =
       Instant() +
       vessel_0_history.timeline(1).instant().scalar().magnitude() * Second;
+  EXPECT_EQ(1, vessel_0_history.children_size());
+  EXPECT_EQ(1, vessel_0_history.children(0).trajectories(0).timeline_size());
   Instant const t2 =
       Instant() +
-      vessel_0_history.timeline(2).instant().scalar().magnitude() * Second;
+      vessel_0_history.children(0).trajectories(0).timeline(0).
+          instant().scalar().magnitude() * Second;
   // |t0| and |t1| are part of the history and may not be exactly aligned.  |t2|
   // is not authoritative and is exactly aligned.
   EXPECT_THAT(t0,
