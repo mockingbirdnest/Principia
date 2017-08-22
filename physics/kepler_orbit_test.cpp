@@ -170,6 +170,49 @@ class KeplerOrbitTest : public ::testing::Test {
     return elements;
   }
 
+  // An ellipse with a = 1 au, e very close to 1.
+  static KeplerianElements<ICRFJ2000Equator> NearlyParabolicEllipse() {
+    KeplerianElements<ICRFJ2000Equator> elements;
+    // This is about half the precision at 1, which maximizes the error in the
+    // naïve evaluation of 1 - (1 - ε)².  Note the 1 - (1 - x), to ensure that
+    // (1 - ε) is exact.
+    // Note that [1 - (1 - ε)²] = [[2ε] - [ε²]], where [] denotes rounding.
+    constexpr double ε = 1 - (1 - 2e-9);
+    constexpr double ε² = ε * ε;
+    constexpr double ε³ = ε * ε * ε;
+    constexpr double ε⁴ = ε² * ε²;
+    elements.eccentricity = 1 - ε;
+    elements.asymptotic_true_anomaly = -NaN<Angle>();
+    elements.turning_angle = -NaN<Angle>();
+    elements.semimajor_axis = 1 * AstronomicalUnit;
+    elements.specific_energy =
+        -0.5 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+    elements.characteristic_energy =
+        -1 * Pow<2>(AstronomicalUnit) / Pow<2>(JulianYear);
+    elements.period = 2 * π * JulianYear;
+    elements.mean_motion = 1 * Radian / JulianYear;
+    elements.hyperbolic_mean_motion = -NaN<AngularFrequency>();
+    elements.hyperbolic_excess_velocity = -NaN<Speed>();
+    elements.semiminor_axis = Sqrt(2 * ε - ε²) * AstronomicalUnit;
+    elements.impact_parameter = -NaN<Length>();
+    elements.semilatus_rectum = (2 * ε - ε²) * AstronomicalUnit;
+    elements.specific_angular_momentum =
+        Sqrt(2 * ε - ε²) * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+    elements.periapsis_distance = ε * AstronomicalUnit;
+    elements.apoapsis_distance = (2 - ε) * AstronomicalUnit;
+
+    elements.inclination = 1 * Degree;
+    elements.longitude_of_ascending_node = 0.5 * Radian;
+    elements.argument_of_periapsis = 0.5 * Radian;
+    elements.longitude_of_periapsis = 1 * Radian;
+
+    elements.true_anomaly = π / 2 * Radian;
+    // This series gives the correctly-rounded result.
+    elements.mean_anomaly = Sqrt(32 * ε³ / 9 - 16 * ε⁴ / 15) * Radian;
+    elements.hyperbolic_mean_anomaly = +NaN<Angle>();
+    return elements;
+  }
+
   static void ExpectConicParametersAlmostEqual(
       KeplerianElements<ICRFJ2000Equator> const& actual,
       KeplerianElements<ICRFJ2000Equator> const& expected,
@@ -1535,6 +1578,34 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificAngularMomentum) {
                                    /*specific_angular_momentum_ulps=*/0,
                                    /*periapsis_distance_ulps=*/1,
                                    /*apoapsis_distance_ulps=*/1);
+}
+
+// Tests that emphasize ill-conditioning.
+
+TEST_F(KeplerOrbitTest,
+       NearlyParabolicEllipseFromEccentricityAndSemimajorAxis) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, semimajor_axis, NearlyParabolicEllipse());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/NearlyParabolicEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2539776,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/5263508,
+                                   /*specific_angular_momentum_ulps=*/2939388,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
+
 }
 
 }  // namespace internal_kepler_orbit
