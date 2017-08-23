@@ -207,7 +207,8 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.longitude_of_periapsis = 1 * Radian;
 
     elements.true_anomaly = π / 2 * Radian;
-    // This series gives the correctly-rounded result.
+    // This expression gives the correctly-rounded result for a true anomaly of
+    // π / 2, and is off by 0.96 ULPs for a true anomaly of [π / 2].
     elements.mean_anomaly = Sqrt(32 * ε³ / 9 - 16 * ε⁴ / 15) * Radian;
     elements.hyperbolic_mean_anomaly = +NaN<Angle>();
     return elements;
@@ -1605,7 +1606,106 @@ TEST_F(KeplerOrbitTest,
                                    /*specific_angular_momentum_ulps=*/2939388,
                                    /*periapsis_distance_ulps=*/0,
                                    /*apoapsis_distance_ulps=*/0);
+}
 
+TEST_F(KeplerOrbitTest,
+       NearlyParabolicEllipseFromEccentricityAndSemiminorAxis) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, semiminor_axis, NearlyParabolicEllipse());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/NearlyParabolicEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/0,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/5263508,
+                                   /*specific_angular_momentum_ulps=*/2939388,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
+}
+
+TEST_F(KeplerOrbitTest,
+       NearlyParabolicEllipseFromEccentricityAndSemilatusRectum) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, semilatus_rectum, NearlyParabolicEllipse());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/NearlyParabolicEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2539776,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/1);
+}
+
+TEST_F(KeplerOrbitTest,
+       NearlyParabolicEllipseFromEccentricityAndPeriapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, periapsis_distance, NearlyParabolicEllipse());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/NearlyParabolicEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2539776,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/0,
+                                   /*specific_angular_momentum_ulps=*/0,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
+}
+
+TEST_F(KeplerOrbitTest,
+       NearlyParabolicEllipseFromEccentricityAndApoapsisDistance) {
+  KeplerianElements<ICRFJ2000Equator> const elements =
+      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+          eccentricity, apoapsis_distance, NearlyParabolicEllipse());
+  ExpectConicParametersAlmostEqual(/*actual=*/elements,
+                                   /*expected=*/NearlyParabolicEllipse(),
+                                   /*eccentrity_ulps=*/0,
+                                   /*asymptotic_true_anomaly_ulps=*/0,
+                                   /*turning_angle_ulps=*/0,
+                                   /*semimajor_axis_ulps=*/0,
+                                   /*specific_energy_ulps=*/1,
+                                   /*characteristic_energy_ulps=*/1,
+                                   /*mean_motion_ulps=*/1,
+                                   /*period_ulps=*/0,
+                                   /*hyperbolic_mean_motion_ulps=*/0,
+                                   /*hyperbolic_excess_velocity_ulps=*/0,
+                                   /*semiminor_axis_ulps=*/2539776,
+                                   /*impact_parameter_ulps=*/0,
+                                   /*semilatus_rectum_ulps=*/1,
+                                   /*specific_angular_momentum_ulps=*/1,
+                                   /*periapsis_distance_ulps=*/0,
+                                   /*apoapsis_distance_ulps=*/0);
 }
 
 }  // namespace internal_kepler_orbit
