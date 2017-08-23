@@ -89,12 +89,11 @@ class Vessel {
 
   virtual void ClearAllIntrinsicForces();
 
-  // If the psychohistory is empty, appends a single authoritative point to it,
+  // If the history is empty, appends a single authoritative point to it,
   // computed as the barycentre of all parts.  |parts_| must not be empty.
-  // After this call, |psychohistory_| is never empty again.
-  // TODO(egg): ... except ForgetBefore.  This will break things, so
-  // ForgetBefore should not clear the psychohistory altogether.
-  virtual void PreparePsychohistory(Instant const& t);
+  // After this call, |history_| is never empty again and the psychohistory is
+  // usable.
+  virtual void PrepareHistory(Instant const& t);
 
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
@@ -159,15 +158,14 @@ class Vessel {
   Vessel();
 
  private:
-  void AppendToPsychohistory(
-      Instant const& time,
-      DegreesOfFreedom<Barycentric> const& degrees_of_freedom,
-      bool authoritative);
+  using TrajectoryIterator =
+      DiscreteTrajectory<Barycentric>::Iterator (Part::*)();
+
+  void AppendToVesselTrajectory(TrajectoryIterator part_trajectory_begin,
+                                TrajectoryIterator part_trajectory_end,
+                                DiscreteTrajectory<Barycentric>& trajectory);
 
   void FlowPrediction(Instant const& time);
-
-  // Returns the last authoritative point of the psychohistory.
-  DiscreteTrajectory<Barycentric>::Iterator last_authoritative() const;
 
   GUID const guid_;
   std::string name_;
@@ -182,9 +180,9 @@ class Vessel {
   std::map<PartId, not_null<std::unique_ptr<Part>>> parts_;
   std::set<PartId> kept_parts_;
 
-  // The psychohistory contains at least one authoritative point.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
-  bool psychohistory_is_authoritative_ = true;
+  // See the comments in pile_up.hpp for an explanation of the terminology.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
 

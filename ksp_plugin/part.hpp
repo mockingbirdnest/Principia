@@ -71,14 +71,13 @@ class Part final {
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom);
   DegreesOfFreedom<Barycentric> const& degrees_of_freedom() const;
 
-  // This temporarily holds the trajectory followed by the part during the call
-  // to |PileUp::AdvanceTime| for the containing |PileUp|.  It is read and
-  // cleared by |Vessel::AdvanceTime| for the containing |Vessel|.
-  DiscreteTrajectory<Barycentric>& tail();
-
-  // True if and only if the last point of the tail is authoritative, i.e.,
-  // corresponds to a point in the history of the enclosing |Vessel|.
-  bool tail_is_authoritative() const;
+  // Return iterators to the beginning and end of the history and psychohistory
+  // of the part, respectively.  Either trajectory may be empty, but they are
+  // not both empty.
+  DiscreteTrajectory<Barycentric>::Iterator history_begin();
+  DiscreteTrajectory<Barycentric>::Iterator history_end();
+  DiscreteTrajectory<Barycentric>::Iterator psychohistory_begin();
+  DiscreteTrajectory<Barycentric>::Iterator psychohistory_end();
 
   // Appends a point to the history or psychohistory of this part.  These
   // temporarily hold the trajectory of the part and are constructed by

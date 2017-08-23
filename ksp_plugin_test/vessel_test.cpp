@@ -127,9 +127,8 @@ TEST_F(VesselTest, KeepAndFreeParts) {
   EXPECT_EQ(part_id2_, vessel_.part(part_id2_)->part_id());
 }
 
-TEST_F(VesselTest, PreparePsychohistory) {
-  EXPECT_TRUE(vessel_.psychohistory().Empty());
-  vessel_.PreparePsychohistory(astronomy::J2000 + 1 * Second);
+TEST_F(VesselTest, PrepareHistory) {
+  vessel_.PrepareHistory(astronomy::J2000 + 1 * Second);
   EXPECT_EQ(1, vessel_.psychohistory().Size());
   EXPECT_EQ(astronomy::J2000 + 1 * Second,
             vessel_.psychohistory().last().time());
@@ -147,9 +146,9 @@ TEST_F(VesselTest, PreparePsychohistory) {
 }
 
 TEST_F(VesselTest, AdvanceTime) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
-  p1_->tail().Append(
+  p1_->AppendToHistory(
       astronomy::J2000 + 0.5 * Second,
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin + Displacement<Barycentric>(
@@ -157,7 +156,7 @@ TEST_F(VesselTest, AdvanceTime) {
           Velocity<Barycentric>({10.1 * Metre / Second,
                                  20.1 * Metre / Second,
                                  30.1 * Metre / Second})));
-  p1_->tail().Append(
+  p1_->AppendToHistory(
       astronomy::J2000 + 1.0 * Second,
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin + Displacement<Barycentric>(
@@ -165,7 +164,7 @@ TEST_F(VesselTest, AdvanceTime) {
           Velocity<Barycentric>({10.2 * Metre / Second,
                                  20.2 * Metre / Second,
                                  30.2 * Metre / Second})));
-  p2_->tail().Append(
+  p2_->AppendToHistory(
       astronomy::J2000 + 0.5 * Second,
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin + Displacement<Barycentric>(
@@ -173,7 +172,7 @@ TEST_F(VesselTest, AdvanceTime) {
           Velocity<Barycentric>({60.1 * Metre / Second,
                                  50.1 * Metre / Second,
                                  40.1 * Metre / Second})));
-  p2_->tail().Append(
+  p2_->AppendToHistory(
       astronomy::J2000 + 1.0 * Second,
       DegreesOfFreedom<Barycentric>(
           Barycentric::origin + Displacement<Barycentric>(
@@ -213,7 +212,7 @@ TEST_F(VesselTest, AdvanceTime) {
 }
 
 TEST_F(VesselTest, Prediction) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillOnce(
@@ -260,7 +259,7 @@ TEST_F(VesselTest, Prediction) {
 }
 
 TEST_F(VesselTest, PredictBeyondTheInfinite) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_CALL(ephemeris_, t_max())
       .WillOnce(Return(astronomy::J2000 + 0.5 * Second));
@@ -316,7 +315,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
 }
 
 TEST_F(VesselTest, FlightPlan) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
@@ -332,7 +331,7 @@ TEST_F(VesselTest, FlightPlan) {
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
-  vessel_.PreparePsychohistory(astronomy::J2000);
+  vessel_.PrepareHistory(astronomy::J2000);
 
   serialization::Vessel message;
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
@@ -342,7 +341,7 @@ TEST_F(VesselTest, SerializationSuccess) {
                            DefaultPredictionParameters());
 
   vessel_.WriteToMessage(&message);
-  EXPECT_TRUE(message.has_psychohistory());
+  EXPECT_TRUE(message.has_history());
   EXPECT_TRUE(message.has_flight_plan());
 
   auto const v = Vessel::ReadFromMessage(
