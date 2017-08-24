@@ -1,6 +1,8 @@
 
 #include "base/thread_pool.hpp"
 
+#include <vector>
+
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 

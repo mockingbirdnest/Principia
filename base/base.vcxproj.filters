@@ -178,7 +178,7 @@
     <ClCompile Include="array_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="thread_pool.cpp">
+    <ClCompile Include="thread_pool_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
