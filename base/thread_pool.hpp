@@ -14,14 +14,14 @@ namespace base {
 template<typename T>
 class ThreadPool final {
  public:
-  // Construct a pool with the given number of threads.
+  // Constructs a pool with the given number of threads.
   explicit ThreadPool(std::int64_t pool_size);
 
   ~ThreadPool();
 
-  // Add a call to the execution queue, and returns a future that the client may
-  // use to wait until execution of |function| has completed and to extract the
-  // result.
+  // Adds a call to the execution queue, and returns a future that the client
+  // may use to wait until execution of |function| has completed and to extract
+  // the result.
   std::future<T> Add(std::function<T()> function);
 
  private:
