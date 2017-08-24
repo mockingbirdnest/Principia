@@ -173,13 +173,13 @@ class KeplerOrbitTest : public ::testing::Test {
   // An ellipse with a = 1 au, e very close to 1.
   static KeplerianElements<ICRFJ2000Equator> NearlyParabolicEllipse() {
     KeplerianElements<ICRFJ2000Equator> elements;
-    // This is about half the precision at 1, which maximizes the error in the
-    // naïve evaluation of 1 - (1 - ε)².  Note the 1 - (1 - x), to ensure that
+    // This is about half the bits at 1, which maximizes the error in the naïve
+    // evaluation of 1 - (1 - ε)².  Note the 1 - (1 - x), to ensure that
     // (1 - ε) is exact.
     // Note that [1 - (1 - ε)²] = [[2ε] - [ε²]], where [] denotes rounding.
     constexpr double ε = 1 - (1 - 2e-9);
     constexpr double ε² = ε * ε;
-    constexpr double ε³ = ε * ε * ε;
+    constexpr double ε³ = ε² * ε;
     constexpr double ε⁴ = ε² * ε²;
     elements.eccentricity = 1 - ε;
     elements.asymptotic_true_anomaly = -NaN<Angle>();
