@@ -30,7 +30,7 @@ class ThreadPool final {
 
   std::mutex lock_;
   bool shutdown_ = false;
-  std::queue<Call> calls_;
+  std::deque<Call> calls_;
   std::condition_variable has_calls_;
 
   std::list<std::thread> threads_;

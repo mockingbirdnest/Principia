@@ -29,7 +29,7 @@ TEST_F(FunctionTest, MovableFunction) {
       [i = std::make_unique<int>()](std::unique_ptr<int> p) {
     ++*i;
     *p += *i;
-    return std::move(p);
+    return p;
   };
   EXPECT_THAT(*μ(std::make_unique<int>(3)), Eq(4));
   EXPECT_THAT(*μ(std::make_unique<int>(0)), Eq(2));

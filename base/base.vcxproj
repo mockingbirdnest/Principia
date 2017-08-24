@@ -316,6 +316,7 @@
     <ClCompile Include="status.cpp" />
     <ClCompile Include="status_or_test.cpp" />
     <ClCompile Include="status_test.cpp" />
+    <ClCompile Include="thread_pool.cpp" />
     <ClCompile Include="version.generated.cc" />
   </ItemGroup>
   <ItemGroup>
