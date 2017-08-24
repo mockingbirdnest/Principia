@@ -10,15 +10,17 @@ namespace base {
 class ThreadPoolTest : public ::testing::Test {
  protected:
   ThreadPoolTest() : pool_(std::thread::hardware_concurrency()) {
-    LOG(WARNING) << "Concurrency is " << std::thread::hardware_concurrency();
+    LOG(ERROR) << "Concurrency is " << std::thread::hardware_concurrency();
   }
 
   ThreadPool<void> pool_;
 };
 
+// Check that execution occurs in parallel.  If things were sequential, the
+// integers in |numbers| would be non-decreasing.
 TEST_F(ThreadPoolTest, ParallelExecution) {
-  static constexpr int number_of_calls = 100;
-  static constexpr int number_of_iterations = 100;
+  static constexpr int number_of_calls = 1000;
+  static constexpr int number_of_iterations = 1000;
 
   std::vector<std::int64_t> numbers(number_of_calls * number_of_iterations, 0);
   std::vector<std::future<void>> futures;
@@ -40,7 +42,7 @@ TEST_F(ThreadPoolTest, ParallelExecution) {
       decreasing = true;
     }
   }
-  CHECK(decreasing);
+  EXPECT_TRUE(decreasing);
 }
 
 }  // namespace base
