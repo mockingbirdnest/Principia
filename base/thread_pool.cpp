@@ -19,16 +19,15 @@ class ThreadPoolTest : public ::testing::Test {
 // Check that execution occurs in parallel.  If things were sequential, the
 // integers in |numbers| would be non-decreasing.
 TEST_F(ThreadPoolTest, ParallelExecution) {
-  static constexpr int number_of_calls = 1000;
-  static constexpr int number_of_iterations = 1000;
+  static constexpr int number_of_calls = 1'000'000;
 
-  std::vector<std::int64_t> numbers(number_of_calls * number_of_iterations, 0);
+  std::mutex lock;
+  std::vector<std::int64_t> numbers;
   std::vector<std::future<void>> futures;
   for (std::int64_t i = 0; i < number_of_calls; ++i) {
-    futures.push_back(pool_.Add([i, &numbers]() {
-      for (std::int64_t j = 0; j < number_of_iterations; ++j) {
-        numbers[i * number_of_iterations + j] = i;
-      }
+    futures.push_back(pool_.Add([i, &lock, &numbers]() {
+      std::lock_guard<std::mutex> l(lock);
+      numbers.push_back(i);
     }));
   }
 
@@ -38,7 +37,7 @@ TEST_F(ThreadPoolTest, ParallelExecution) {
 
   bool decreasing = false;
   for (std::int64_t i = 1; i < numbers.size(); ++i) {
-    if (numbers[i] < numbers[i + 1]) {
+    if (numbers[i] < numbers[i - 1]) {
       decreasing = true;
     }
   }
