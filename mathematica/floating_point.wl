@@ -61,7 +61,7 @@ Representation[x_]:=Block[
 sign=Sign[x];
 magnitude=Abs[x];
 If[magnitude==\[Infinity],
-(2^exponentBits-1)2^(significandBits-1),
+sign(2^exponentBits-1)2^(significandBits-1),
 If[x==0,0,
 {\[Mu],e}=mantissaExponent12[magnitude];
 If[e<=-bias,
