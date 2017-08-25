@@ -57,29 +57,34 @@ TowardNegativeInfinity=Floor;
 
 mantissaExponent12[x_]:={#[[1]]*2,#[[2]]-1}&[MantissaExponent[x,2]];
 Representation[x_]:=Block[
-{\[Mu],e},
-If[x==\[Infinity],
+{sign,magnitude,\[Mu],e},
+sign=Sign[x];
+magnitude=Abs[x];
+If[magnitude==\[Infinity],
 (2^exponentBits-1)2^(significandBits-1),
 If[x==0,0,
-{\[Mu],e}=mantissaExponent12[x];
+{\[Mu],e}=mantissaExponent12[magnitude];
 If[e<=-bias,
 2^(significandBits-1) 2^(e+bias-1) \[Mu],
-2^(significandBits-1) (\[Mu]-1)+2^(significandBits-1) (e+bias)
+sign(2^(significandBits-1) (\[Mu]-1)+2^(significandBits-1) (e+bias))
 ]]]];
 FromRepresentation[n_]:=Block[
-{\[Mu],e},
-\[Mu]=Mod[n,2^(significandBits-1)];
-e=IntegerPart[n/2^(significandBits-1)];
+{sign,magnitude,\[Mu],e},
+sign=Sign[n];
+magnitude=Abs[n];
+\[Mu]=Mod[magnitude,2^(significandBits-1)];
+e=IntegerPart[magnitude/2^(significandBits-1)];
 If[e==0,
 \[Mu]/2^(significandBits-1) 2^(1-bias),
-(1+\[Mu]/2^(significandBits-1))2^(e-bias)]];
-CorrectlyRound[x_]:=If[x==\[Infinity],\[Infinity],If[#>=2^(bias+1),\[Infinity],#]&@FromRepresentation[correctlyRoundRepresentation[Representation[x]]]];
+sign(1+\[Mu]/2^(significandBits-1))2^(e-bias)]];
+CorrectlyRound[x_]:=If[x==\[Infinity]||x==-\[Infinity],x,If[Abs[#]>=2^(bias+1),Sign[x]\[Infinity],#]&@FromRepresentation[correctlyRoundRepresentation[Representation[x]]]];
 UlpDistance[x_,y_]:=Abs[Representation[x]-Representation[y]]
 
 
-Bits[n_]:=IntegerString[IntegerPart[Representation[n]/2^(significandBits-1)],2,exponentBits]<>
-"|"<>IntegerString[Mod[IntegerPart[Representation[n]],2^(significandBits-1)],2,significandBits-1]<>
-";"<>If[FractionalPart[Representation[n]]==0,"",ToString/@RealDigits[N[FractionalPart[Representation[n]],5],2,10,-1][[1]]<>"\[Ellipsis]"];
+Bits[n_]:=If[n>=0,"0","1"]<>
+"|"<>IntegerString[IntegerPart[Representation[Abs[n]]/2^(significandBits-1)],2,exponentBits]<>
+"|"<>IntegerString[Mod[IntegerPart[Representation[Abs[n]]],2^(significandBits-1)],2,significandBits-1]<>
+";"<>If[FractionalPart[Representation[Abs[n]]]==0,"",ToString/@RealDigits[N[FractionalPart[Representation[Abs[n]]],5],2,10,-1][[1]]<>"\[Ellipsis]"];
 
 
 smol=-12;
@@ -116,7 +121,7 @@ EndPackage[]
 
 
 (* ::Code:: *)
-(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]]}//Column*)
+(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]],Bits[-Sqrt[2]],Bits[\[LeftAngleBracket]-Sqrt[2]\[RightAngleBracket]]}//Column*)
 
 
 (* ::Code:: *)
@@ -131,7 +136,7 @@ EndPackage[]
 
 
 (* ::Code:: *)
-(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]]}//Column*)
+(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]],Bits[-Sqrt[2]],Bits[\[LeftAngleBracket]-Sqrt[2]\[RightAngleBracket]]}//Column*)
 
 
 (* ::Code:: *)
@@ -147,4 +152,4 @@ EndPackage[]
 
 
 (* ::Code:: *)
-(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]]}//Column*)
+(*{Bits[Sqrt[2]],Bits[\[LeftAngleBracket]Sqrt[2]\[RightAngleBracket]],Bits[-Sqrt[2]],Bits[\[LeftAngleBracket]-Sqrt[2]\[RightAngleBracket]]}//Column*)
