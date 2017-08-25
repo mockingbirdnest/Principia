@@ -19,7 +19,7 @@ class ThreadPoolTest : public ::testing::Test {
 };
 
 // Check that execution occurs in parallel.  If things were sequential, the
-// integers in |numbers| would be non-decreasing.
+// integers in |numbers| would be monotonically increasing.
 TEST_F(ThreadPoolTest, ParallelExecution) {
   static constexpr int number_of_calls = 1'000'000;
 
@@ -37,13 +37,13 @@ TEST_F(ThreadPoolTest, ParallelExecution) {
     future.wait();
   }
 
-  bool decreasing = false;
+  bool monotonically_increasing = true;
   for (std::int64_t i = 1; i < numbers.size(); ++i) {
     if (numbers[i] < numbers[i - 1]) {
-      decreasing = true;
+      monotonically_increasing = false;
     }
   }
-  EXPECT_TRUE(decreasing);
+  EXPECT_FALSE(monotonically_increasing);
 }
 
 }  // namespace base
