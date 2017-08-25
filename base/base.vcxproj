@@ -296,6 +296,8 @@
     <ClInclude Include="status_or.hpp" />
     <ClInclude Include="status_or_body.hpp" />
     <ClInclude Include="not_constructible.hpp" />
+    <ClInclude Include="thread_pool.hpp" />
+    <ClInclude Include="thread_pool_body.hpp" />
     <ClInclude Include="unique_ptr_logging.hpp" />
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
@@ -314,6 +316,7 @@
     <ClCompile Include="status.cpp" />
     <ClCompile Include="status_or_test.cpp" />
     <ClCompile Include="status_test.cpp" />
+    <ClCompile Include="thread_pool_test.cpp" />
     <ClCompile Include="version.generated.cc" />
   </ItemGroup>
   <ItemGroup>
