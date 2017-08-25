@@ -214,11 +214,6 @@ class Plugin {
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Advances time to |current_time_| for all pile ups that are not already
-  // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.
-  virtual void CatchUpLaggingVessels();
-
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
@@ -248,6 +243,11 @@ class Plugin {
   // vessel if the pile up is not there already, and advances time to
   // |current_time_| on that vessel.
   virtual void CatchUpVessel(GUID const& vessel_guid);
+
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.
+  virtual void CatchUpLaggingVessels();
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;

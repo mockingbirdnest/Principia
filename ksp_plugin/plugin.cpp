@@ -531,26 +531,6 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::CatchUpLaggingVessels() {
-  CHECK(!initializing_);
-
-  for (PileUp& pile_up : pile_ups_) {
-    if (pile_up.time() < current_time_) {
-      pile_up.DeformPileUpIfNeeded();
-      pile_up.AdvanceTime(current_time_);
-      // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
-      // anymore, it could be part of |PileUp::AdvanceTime|.
-      pile_up.NudgeParts();
-    }
-  }
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
-      vessel.AdvanceTime();
-    }
-  }
-}
-
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
     PartId const part_id,
     PartId const part_at_origin) const {
@@ -619,6 +599,23 @@ void Plugin::CatchUpVessel(GUID const& vessel_guid) {
     }
   });
   vessel.AdvanceTime();
+}
+
+void Plugin::CatchUpLaggingVessels() {
+  CHECK(!initializing_);
+  for (PileUp& pile_up : pile_ups_) {
+    if (pile_up.time() < current_time_) {
+      pile_up.DeformPileUpIfNeeded();
+      pile_up.AdvanceTime(current_time_);
+      pile_up.NudgeParts();
+    }
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    if (vessel.psychohistory().last().time() < current_time_) {
+      vessel.AdvanceTime();
+    }
+  }
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
