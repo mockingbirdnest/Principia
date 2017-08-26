@@ -133,6 +133,8 @@ public partial class PrincipiaPluginAdapter
   private ReferenceFrameSelector.FrameType last_non_surface_frame_type_ =
       ReferenceFrameSelector.FrameType.BODY_CENTRED_NON_ROTATING;
 
+  List<IntPtr> vessel_futures_ = new List<IntPtr>();
+
   // The RSAS is the component of the stock KSP autopilot that deals with
   // orienting the vessel towards a specific direction (e.g. prograde).
   // It is, as usual for KSP, an ineffable acronym; it is however likely derived
@@ -1228,6 +1230,32 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void ObscenelyEarly() {
+    if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
+            OrbitDriver.UpdateMode.TRACK_Phys &&
+        FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
+            OrbitDriver.UpdateMode.IDLE) {
+      Log.Info("Skipping AdvanceTime while waiting for the vessel to be " +
+               "fully ready (see #1421).");
+    } else {
+      if (PluginRunning()) {
+        double plugin_time = plugin_.CurrentTime();
+        double universal_time = Planetarium.GetUniversalTime();
+        time_is_advancing_ = time_is_advancing(universal_time);
+        if (time_is_advancing_) {
+          plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+          if (!is_post_apocalyptic_) {
+            is_post_apocalyptic_ |=
+                plugin_.HasEncounteredApocalypse(out revelation_);
+          }
+          foreach (var vessel in FlightGlobals.Vessels) {
+            if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
+              vessel_futures_.Add(plugin_.FutureCatchUpVessel(vessel.id.ToString()));
+            }
+          }
+        }
+      }
+    }
     foreach (var vessel in
              FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
@@ -1240,31 +1268,9 @@ public partial class PrincipiaPluginAdapter
             OrbitDriver.UpdateMode.TRACK_Phys &&
         FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
             OrbitDriver.UpdateMode.IDLE) {
-      Log.Info("Skipping AdvanceTime and SetBodyFrames while waiting for the " +
-               "vessel to be fully ready (see #1421).");
+      Log.Info("Skipping SetBodyFrames while waiting for the vessel to be " +
+               "fully ready (see #1421).");
     } else {
-      if (PluginRunning()) {
-        double plugin_time = plugin_.CurrentTime();
-        double universal_time = Planetarium.GetUniversalTime();
-        time_is_advancing_ = time_is_advancing(universal_time);
-        if (time_is_advancing_) {
-          plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-          if (!is_post_apocalyptic_) {
-            is_post_apocalyptic_ |=
-                plugin_.HasEncounteredApocalypse(out revelation_);
-          }
-          var futures = new List<IntPtr>();
-          foreach (var vessel in FlightGlobals.Vessels) {
-            if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
-              futures.Add(plugin_.FutureCatchUpVessel(vessel.id.ToString()));
-            }
-          }
-          foreach (var f in futures) {
-            var future = f;
-            Interface.FutureWait(ref future);
-          }
-        }
-      }
       SetBodyFrames();
     }
     // Unfortunately there is no way to get scheduled between Planetarium and
@@ -1289,6 +1295,11 @@ public partial class PrincipiaPluginAdapter
 
   private void Early() {
     if (PluginRunning()) {
+      foreach (var f in vessel_futures_) {
+        var future = f;
+        Interface.FutureWait(ref future);
+      }
+      vessel_futures_.Clear();
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }
