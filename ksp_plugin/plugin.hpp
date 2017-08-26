@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <future>
 #include <limits>
 #include <list>
 #include <map>
@@ -11,6 +12,7 @@
 #include <vector>
 
 #include "base/monostable.hpp"
+#include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/perspective.hpp"
@@ -44,6 +46,7 @@ namespace internal_plugin {
 
 using base::not_null;
 using base::Subset;
+using base::ThreadPool;
 using geometry::AffineMap;
 using geometry::Displacement;
 using geometry::Instant;
@@ -214,11 +217,6 @@ class Plugin {
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom);
 
-  // Advances time to |current_time_| for all pile ups that are not already
-  // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.
-  virtual void CatchUpLaggingVessels();
-
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
@@ -246,8 +244,17 @@ class Plugin {
 
   // Advances time to |current_time_| on the pile up containing the given
   // vessel if the pile up is not there already, and advances time to
-  // |current_time_| on that vessel.
-  virtual void CatchUpVessel(GUID const& vessel_guid);
+  // |current_time_| on that vessel.  This operation is asynchronous: the caller
+  // must wait on the returned future before using the trajectories of the
+  // vessel.  The caller must ensure that the vessels don't change while this
+  // method is running.
+  virtual not_null<std::unique_ptr<std::future<void>>> CatchUpVessel(
+      GUID const& vessel_guid);
+
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.
+  virtual void CatchUpLaggingVessels();
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -449,6 +456,9 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
   Time prediction_length_ = 1 * Hour;
+
+  // The thread pool for advancing vessels.
+  ThreadPool<void> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
   std::experimental::optional<Rotation<Barycentric, AliceSun>>

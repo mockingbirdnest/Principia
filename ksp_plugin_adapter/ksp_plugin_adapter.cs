@@ -1253,10 +1253,15 @@ public partial class PrincipiaPluginAdapter
             is_post_apocalyptic_ |=
                 plugin_.HasEncounteredApocalypse(out revelation_);
           }
+          var futures = new List<IntPtr>();
           foreach (var vessel in FlightGlobals.Vessels) {
             if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
-              plugin_.CatchUpVessel(vessel.id.ToString());
+              futures.Add(plugin_.FutureCatchUpVessel(vessel.id.ToString()));
             }
+          }
+          foreach (var f in futures) {
+            var future = f;
+            Interface.FutureWait(ref future);
           }
         }
       }
