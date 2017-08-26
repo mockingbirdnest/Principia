@@ -102,6 +102,7 @@ Plugin::Plugin(std::string const& game_epoch,
     : history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
+      vessel_thread_pool_(/*pool_size=*/1),
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(ParseTT(game_epoch)),
       current_time_(ParseTT(solar_system_epoch)) {
@@ -583,32 +584,48 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   loaded_vessels_.clear();
 }
 
-void Plugin::CatchUpVessel(GUID const& vessel_guid) {
+not_null<std::unique_ptr<std::future<void>>> Plugin::CatchUpVessel(
+    GUID const& vessel_guid) {
   CHECK(!initializing_);
-  Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
-  vessel.ForSomePart([this](Part& part) {
-    auto const pile_up = part.containing_pile_up()->iterator();
-    // This may be false, if we have already caught up the pile up as part of
-    // |CatchUpVessel| for another vessel in the pile up.
-    if (pile_up->time() < current_time_) {
-      // TODO(egg): this should probably check that deformation is not needed
-      // instead.
-      pile_up->DeformPileUpIfNeeded();
-      pile_up->AdvanceTime(current_time_);
-      pile_up->NudgeParts();
-    }
-  });
-  vessel.AdvanceTime();
+
+  return make_not_null_unique<std::future<void>>(
+      vessel_thread_pool_.Add([this, vessel_guid]() {
+        Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+        vessel.ForSomePart([this](Part& part) {
+          auto const pile_up = part.containing_pile_up()->iterator();
+          // This may be false, if we have already caught up the pile up as part
+          // of |CatchUpVessel| for another vessel in the pile up.
+          if (pile_up->time() < current_time_) {
+            // TODO(egg): this should probably check that deformation is not
+            // needed instead.
+            pile_up->DeformPileUpIfNeeded();
+            pile_up->AdvanceTime(current_time_);
+            pile_up->NudgeParts();
+          }
+        });
+        vessel.AdvanceTime();
+      }));
 }
 
 void Plugin::CatchUpLaggingVessels() {
   CHECK(!initializing_);
+
+  // Start all the integrations in parallel.
+  std::vector<std::future<void>> futures;
   for (PileUp& pile_up : pile_ups_) {
-    if (pile_up.time() < current_time_) {
-      pile_up.DeformPileUpIfNeeded();
-      pile_up.AdvanceTime(current_time_);
-      pile_up.NudgeParts();
-    }
+    futures.emplace_back(
+        vessel_thread_pool_.Add([this, &pile_up]() {
+          if (pile_up.time() < current_time_) {
+            pile_up.DeformPileUpIfNeeded();
+            pile_up.AdvanceTime(current_time_);
+            pile_up.NudgeParts();
+          }
+        }));
+  }
+
+  // Wait for the integrations to finish before updating the vessels.
+  for (auto const& future : futures) {
+    future.wait();
   }
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
@@ -1193,7 +1210,8 @@ Plugin::Plugin(
     Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters)
     : history_parameters_(history_parameters),
       prolongation_parameters_(prolongation_parameters),
-      prediction_parameters_(prediction_parameters) {}
+      prediction_parameters_(prediction_parameters),
+      vessel_thread_pool_(/*pool_size=*/1) {}
 
 void Plugin::InitializeIndices(
     std::string const& name,
