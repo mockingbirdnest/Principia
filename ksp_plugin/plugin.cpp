@@ -610,8 +610,8 @@ void Plugin::CatchUpLaggingVessels() {
   for (PileUp& pile_up : pile_ups_) {
     futures.emplace_back(
         vessel_thread_pool_.Add([this, &pile_up]() {
-          // Note that there cannot be contention in the following method
-          // no two pile-ups are advance at the same time.
+          // Note that there cannot be contention in the following method as
+          // no two pile-ups are advanced at the same time.
           pile_up.DeformAndAdvanceTime(current_time_);
         }));
   }
