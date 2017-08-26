@@ -19,9 +19,7 @@ std::future<void> const* principia__FutureCatchUpVessel(
 
 void principia__FutureWait(std::future<void> const** const future) {
   journal::Method<journal::FutureWait> m({future}, {future});
-  CHECK_NOTNULL(future);
-  CHECK_NOTNULL(*future)->wait();
-  TakeOwnership(future);
+  TakeOwnership(future)->wait();
   return m.Return();
 }
 
