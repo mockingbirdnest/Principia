@@ -117,7 +117,9 @@ EndPackage[]
 (*UlpPlot[{*)
 (*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]-#[[2]]\[RightAngleBracket]\[LeftAngleBracket]#[[1]]+#[[2]]\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
 (*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]^2\[RightAngleBracket]-\[LeftAngleBracket]#[[2]]^2\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
-(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs}]*)
+(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs},*)
+(*PlotLabel->"Forward error in the computation of \!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\) in binary32, rounding to nearest, ties to even",*)
+(*ChartLegends->{"\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]x - y\[RightAngleBracket] \[LeftAngleBracket]x + y\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]\*SuperscriptBox[\(x\), \(2\)]\[RightAngleBracket] - \[LeftAngleBracket]\*SuperscriptBox[\(y\), \(2\)]\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\)\[RightAngleBracket]"}]*)
 
 
 (* ::Code:: *)
@@ -132,7 +134,9 @@ EndPackage[]
 (* ::Code:: *)
 (*UlpPlot[{UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]-#[[2]]\[RightAngleBracket]\[LeftAngleBracket]#[[1]]+#[[2]]\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
 (*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]^2\[RightAngleBracket]-\[LeftAngleBracket]#[[2]]^2\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
-(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs}]*)
+(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs},*)
+(*PlotLabel->"Forward error in the computation of \!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\) in binary32, rounding toward +\[Infinity]",*)
+(*ChartLegends->{"\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]x - y\[RightAngleBracket] \[LeftAngleBracket]x + y\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]\*SuperscriptBox[\(x\), \(2\)]\[RightAngleBracket] - \[LeftAngleBracket]\*SuperscriptBox[\(y\), \(2\)]\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\)\[RightAngleBracket]"}]*)
 
 
 (* ::Code:: *)
@@ -148,7 +152,9 @@ EndPackage[]
 (* ::Code:: *)
 (*UlpPlot[{UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]-#[[2]]\[RightAngleBracket]\[LeftAngleBracket]#[[1]]+#[[2]]\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
 (*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[\[LeftAngleBracket]\[LeftAngleBracket]#[[1]]^2\[RightAngleBracket]-\[LeftAngleBracket]#[[2]]^2\[RightAngleBracket]\[RightAngleBracket]]\[RightAngleBracket]]&/@inputs,*)
-(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs}]*)
+(*UlpDistance[Sqrt[#[[1]]^2-#[[2]]^2],\[LeftAngleBracket]Sqrt[#[[1]]^2-#[[2]]^2]\[RightAngleBracket]]&/@inputs},*)
+(*PlotLabel->"Forward error in the computation of \!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\) in binary64, rounding to nearest, ties to even",*)
+(*ChartLegends->{"\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]x - y\[RightAngleBracket] \[LeftAngleBracket]x + y\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\[LeftAngleBracket]\[LeftAngleBracket]\*SuperscriptBox[\(x\), \(2\)]\[RightAngleBracket] - \[LeftAngleBracket]\*SuperscriptBox[\(y\), \(2\)]\[RightAngleBracket]\[RightAngleBracket]\)]\)\[RightAngleBracket]","\[LeftAngleBracket]\!\(\*SqrtBox[\(\*SuperscriptBox[\(x\), \(2\)] - \*SuperscriptBox[\(y\), \(2\)]\)]\)\[RightAngleBracket]"}]*)
 
 
 (* ::Code:: *)
