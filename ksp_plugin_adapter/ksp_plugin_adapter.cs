@@ -473,19 +473,19 @@ public partial class PrincipiaPluginAdapter
     GameEvents.onHideUI.Add(HideGUI);
     // Timing0, -8008 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.ObscenelyEarly,
-                                 DisableVesselPrecalculate);
+                                 ObscenelyEarly);
     // TimingPre, -101 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Precalc,
-                                 SetBodyFramesAndPrecalculateVessels);
+                                 Precalc);
     // Timing1, -99 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
-                                 UpdateVesselOrbits);
+                                 Early);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
-                                 ReportVesselsAndParts);
+                                 FashionablyLate);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
-                                 StorePartDegreesOfFreedom);
+                                 BetterLateThanNever);
   }
 
   public override void OnSave(ConfigNode node) {
@@ -972,16 +972,16 @@ public partial class PrincipiaPluginAdapter
     WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,
-                                    DisableVesselPrecalculate);
+                                    ObscenelyEarly);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Precalc,
-                                    SetBodyFramesAndPrecalculateVessels);
+                                    Precalc);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
-                                    UpdateVesselOrbits);
+                                    Early);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
-                                    ReportVesselsAndParts);
+                                    FashionablyLate);
     TimingManager.FixedUpdateRemove(
         TimingManager.TimingStage.BetterLateThanNever,
-        StorePartDegreesOfFreedom);
+        BetterLateThanNever);
   }
 
   #endregion
@@ -1227,14 +1227,14 @@ public partial class PrincipiaPluginAdapter
   } catch (Exception e) { Log.Fatal(e.ToString()); }
   }
 
-  private void DisableVesselPrecalculate() {
+  private void ObscenelyEarly() {
     foreach (var vessel in
              FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
     }
   }
 
-  private void SetBodyFramesAndPrecalculateVessels() {
+  private void Precalc() {
     if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
         FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
             OrbitDriver.UpdateMode.TRACK_Phys &&
@@ -1287,14 +1287,14 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void UpdateVesselOrbits() {
+  private void Early() {
     if (PluginRunning()) {
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }
   }
 
-  private void ReportVesselsAndParts() {
+  private void FashionablyLate() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the
     // FlightIntegrator's FixedUpdate (while we are yielding).
@@ -1326,7 +1326,7 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void StorePartDegreesOfFreedom() {
+  private void BetterLateThanNever() {
     if (PluginRunning()) {
       part_id_to_degrees_of_freedom_.Clear();
       foreach (Vessel vessel in
