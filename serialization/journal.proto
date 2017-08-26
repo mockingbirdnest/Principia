@@ -690,16 +690,16 @@ message FutureCatchUpVessel {
   optional Return return = 3;
 }
 
-message FutureDelete {
+message FutureWait {
   extend Method {
-    optional FutureDelete extension = 5140;
+    optional FutureWait extension = 5140;
   }
   message In {
-    required fixed64 iterator = 1 [(pointer_to) = "std::future<void> const",
-                                   (is_consumed) = true];
+    required fixed64 future = 1 [(pointer_to) = "std::future<void> const",
+                                 (is_consumed) = true];
   }
   message Out {
-    required fixed64 iterator = 1 [(pointer_to) = "std::future<void> const"];
+    required fixed64 future = 1 [(pointer_to) = "std::future<void> const"];
   }
   optional In in = 1;
   optional Out out = 2;

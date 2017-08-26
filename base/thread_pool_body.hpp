@@ -16,8 +16,8 @@ void ExecuteAndSetValue(std::function<T()> const& function,
 }
 
 template<>
-void ExecuteAndSetValue<void>(std::function<void()> const& function,
-                              std::promise<void>& promise) {
+inline void ExecuteAndSetValue<void>(std::function<void()> const& function,
+                                     std::promise<void>& promise) {
   function();
   promise.set_value();
 }
