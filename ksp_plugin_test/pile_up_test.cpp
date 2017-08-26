@@ -58,8 +58,12 @@ using ::testing::_;
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
-  using PileUp::PileUp;
   using RigidPileUp = PileUp::RigidPileUp;
+
+  using PileUp::PileUp;
+  using PileUp::DeformPileUpIfNeeded;
+  using PileUp::AdvanceTime;
+  using PileUp::NudgeParts;
 
   Mass const& mass() const {
     return mass_;
@@ -639,7 +643,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
           Return(true)));
-  p.AdvanceTime(astronomy::J2000 + 1 * Second);
+  p.DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
 }
 
 }  // namespace internal_pile_up

@@ -4,6 +4,7 @@
 #include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -66,32 +67,11 @@ class PileUp {
       not_null<Part*> part,
       DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
 
-  // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
-  // translating the *apparent* degrees of freedom so that their centre of mass
-  // matches that computed by integration.
-  // |SetPartApparentDegreesOfFreedom| must have been called for each part in
-  // the pile-up, or for none.
-  // The degrees of freedom set by this method are used by |NudgeParts|.
-  // NOTE(egg): Eventually, this will also change their velocities and angular
-  // velocities so that the angular momentum matches that which has been
-  // computed for |this| |PileUp|.
-  void DeformPileUpIfNeeded();
-
-  // Flows the history authoritatively as far as possible up to |t|, advances
-  // the histories of the parts and updates the degrees of freedom of the parts
-  // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
-  // and of its parts have a (possibly ahistorical) final point exactly at |t|.
-  void AdvanceTime(Instant const& t);
-
-  // Adjusts the degrees of freedom of all parts in this pile up based on the
-  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
-  // |RigidPileUp| degrees of freedom of the parts, as set by
-  // |DeformPileUpIfNeeded|.
-  void NudgeParts() const;
-
-  // Returns the last |Instant| passed to |AdvanceTime|.  Note that this may
-  // correspond to a non-authoritative point.
-  Instant const& time();
+  // Deforms the pile-up, advances the time, and nudges the parts, in sequence.
+  // Does nothing if the psychohistory is already advanced beyond |t|.  Several
+  // executions of this method may happen concurrently on multiple threads, but
+  // not concurrently with any other method of this class.
+  void DeformAndAdvanceTime(Instant const& t);
 
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
   static PileUp ReadFromMessage(
@@ -115,8 +95,34 @@ class PileUp {
       DiscreteTrajectory<Barycentric>* psychohistory,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
+  // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
+  // translating the *apparent* degrees of freedom so that their centre of mass
+  // matches that computed by integration.
+  // |SetPartApparentDegreesOfFreedom| must have been called for each part in
+  // the pile-up, or for none.
+  // The degrees of freedom set by this method are used by |NudgeParts|.
+  // NOTE(egg): Eventually, this will also change their velocities and angular
+  // velocities so that the angular momentum matches that which has been
+  // computed for |this| |PileUp|.
+  void DeformPileUpIfNeeded();
+
+  // Flows the history authoritatively as far as possible up to |t|, advances
+  // the histories of the parts and updates the degrees of freedom of the parts
+  // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
+  // and of its parts have a (possibly ahistorical) final point exactly at |t|.
+  void AdvanceTime(Instant const& t);
+
+  // Adjusts the degrees of freedom of all parts in this pile up based on the
+  // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
+  // |RigidPileUp| degrees of freedom of the parts, as set by
+  // |DeformPileUpIfNeeded|.
+  void NudgeParts() const;
+
   template<AppendToPartTrajectory append_to_part_trajectory>
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
+
+  // Wrapped in a |unique_ptr| to be moveable.
+  not_null<std::unique_ptr<std::mutex>> lock_;
 
   std::list<not_null<Part*>> parts_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;

@@ -11,6 +11,8 @@
 namespace principia {
 namespace base {
 
+// A pool of threads that are created at construction and to which functions can
+// be added for asynchronous execution.  This class is thread-safe.
 template<typename T>
 class ThreadPool final {
  public:

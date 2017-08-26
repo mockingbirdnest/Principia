@@ -37,7 +37,8 @@ PileUp::PileUp(
         adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     not_null<Ephemeris<Barycentric>*> const ephemeris)
-    : parts_(std::move(parts)),
+    : lock_(make_not_null_unique<std::mutex>()),
+      parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
@@ -92,124 +93,6 @@ void PileUp::SetPartApparentDegreesOfFreedom(
                   << degrees_of_freedom;
 }
 
-void PileUp::DeformPileUpIfNeeded() {
-  if (apparent_part_degrees_of_freedom_.empty()) {
-    return;
-  }
-  // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
-  // all the parts.
-  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
-  for (not_null<Part*> const part : parts_) {
-    CHECK(Contains(apparent_part_degrees_of_freedom_, part));
-  }
-
-  // Compute the apparent centre of mass of the parts.
-  BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
-    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
-  }
-  auto const apparent_centre_of_mass = calculator.Get();
-
-  // A motion that maps the apparent centre of mass of the parts to the actual
-  // centre of mass of the pile-up.
-  RigidTransformation<ApparentBubble, RigidPileUp> const
-      apparent_bubble_to_pile_up_transformation(
-          apparent_centre_of_mass.position(),
-          RigidPileUp::origin,
-          Identity<ApparentBubble, RigidPileUp>().Forget());
-  RigidMotion<ApparentBubble, RigidPileUp> const
-      apparent_bubble_to_pile_up_motion(
-          apparent_bubble_to_pile_up_transformation,
-          AngularVelocity<ApparentBubble>(),
-          apparent_centre_of_mass.velocity());
-
-  // Now update the positions of the parts in the pile-up frame.
-  actual_part_degrees_of_freedom_.clear();
-  for (auto const& pair : apparent_part_degrees_of_freedom_) {
-    auto const part = pair.first;
-    auto const& apparent_part_degrees_of_freedom = pair.second;
-    actual_part_degrees_of_freedom_.emplace(
-        part,
-        apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));
-  }
-  apparent_part_degrees_of_freedom_.clear();
-}
-
-void PileUp::AdvanceTime(Instant const& t) {
-  CHECK_NOTNULL(psychohistory_);
-
-  auto const history_last = history_->last();
-  if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
-    // Remove the fork.
-    history_->DeleteFork(psychohistory_);
-    if (fixed_instance_ == nullptr) {
-      fixed_instance_ = ephemeris_->NewInstance(
-          {history_.get()},
-          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-          fixed_step_parameters_);
-    }
-    CHECK_LT(history_->last().time(), t);
-    ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
-    psychohistory_ = history_->NewForkAtLast();
-    if (history_->last().time() < t) {
-      // Do not clear the |fixed_instance_| here, we will use it for the next
-      // fixed-step integration.
-      // TODO(phl): Consider not setting |last_point_only| below as we would be
-      // fine with multiple points in the |psychohistory_| once all the classes
-      // have been changed.
-      CHECK(ephemeris_->FlowWithAdaptiveStep(
-                psychohistory_,
-                Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                t,
-                adaptive_step_parameters_,
-                Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                /*last_point_only=*/true));
-    }
-  } else {
-    // Destroy the fixed instance, it wouldn't be correct to use it the next
-    // time we go through this function.  It will be re-created as needed.
-    fixed_instance_ = nullptr;
-    // We make the |psychohistory_|, if any, authoritative, i.e. append it to
-    // the end of the |history_|. We integrate on top of it, and it gets
-    // appended authoritatively to the part tails.
-    auto const psychohistory_end = psychohistory_->End();
-    auto it = psychohistory_->Fork();
-    for (++it; it != psychohistory_end; ++it) {
-      history_->Append(it.time(), it.degrees_of_freedom());
-    }
-    history_->DeleteFork(psychohistory_);
-
-    auto const a = intrinsic_force_ / mass_;
-    auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    CHECK(ephemeris_->FlowWithAdaptiveStep(
-              history_.get(),
-              intrinsic_acceleration,
-              t,
-              adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-              /*last_point_only=*/false));
-    psychohistory_ = history_->NewForkAtLast();
-  }
-
-  CHECK_NOTNULL(psychohistory_);
-
-  // Append the |history_| authoritatively to the parts' tails and the
-  // |psychohistory_| non-authoritatively.
-  auto const history_end = history_->End();
-  auto const psychohistory_end = psychohistory_->End();
-  auto it = history_last;
-  for (++it; it != history_end; ++it) {
-    AppendToPart<&Part::AppendToHistory>(it);
-  }
-  it = psychohistory_->Fork();
-  for (++it; it != psychohistory_end; ++it) {
-    AppendToPart<&Part::AppendToPsychohistory>(it);
-  }
-  history_->ForgetBefore(psychohistory_->Fork().time());
-}
-
 void PileUp::NudgeParts() const {
   auto const actual_centre_of_mass =
       psychohistory_->last().degrees_of_freedom();
@@ -228,8 +111,13 @@ void PileUp::NudgeParts() const {
   }
 }
 
-Instant const& PileUp::time() {
-  return psychohistory_->last().time();
+void PileUp::DeformAndAdvanceTime(Instant const& t) {
+  std::lock_guard<std::mutex> l(*lock_);
+  if (psychohistory_->last().time() < t) {
+    DeformPileUpIfNeeded();
+    AdvanceTime(t);
+    NudgeParts();
+  }
 }
 
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
@@ -353,12 +241,131 @@ PileUp::PileUp(
     not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
     DiscreteTrajectory<Barycentric>* const psychohistory,
     not_null<Ephemeris<Barycentric>*> const ephemeris)
-    : parts_(std::move(parts)),
+    : lock_(make_not_null_unique<std::mutex>()),
+      parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
       history_(std::move(history)),
       psychohistory_(psychohistory) {}
+
+void PileUp::DeformPileUpIfNeeded() {
+  if (apparent_part_degrees_of_freedom_.empty()) {
+    return;
+  }
+  // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
+  // all the parts.
+  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
+  for (not_null<Part*> const part : parts_) {
+    CHECK(Contains(apparent_part_degrees_of_freedom_, part));
+  }
+
+  // Compute the apparent centre of mass of the parts.
+  BarycentreCalculator<DegreesOfFreedom<ApparentBubble>, Mass> calculator;
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
+    calculator.Add(apparent_part_degrees_of_freedom, part->mass());
+  }
+  auto const apparent_centre_of_mass = calculator.Get();
+
+  // A motion that maps the apparent centre of mass of the parts to the actual
+  // centre of mass of the pile-up.
+  RigidTransformation<ApparentBubble, RigidPileUp> const
+      apparent_bubble_to_pile_up_transformation(
+          apparent_centre_of_mass.position(),
+          RigidPileUp::origin,
+          Identity<ApparentBubble, RigidPileUp>().Forget());
+  RigidMotion<ApparentBubble, RigidPileUp> const
+      apparent_bubble_to_pile_up_motion(
+          apparent_bubble_to_pile_up_transformation,
+          AngularVelocity<ApparentBubble>(),
+          apparent_centre_of_mass.velocity());
+
+  // Now update the positions of the parts in the pile-up frame.
+  actual_part_degrees_of_freedom_.clear();
+  for (auto const& pair : apparent_part_degrees_of_freedom_) {
+    auto const part = pair.first;
+    auto const& apparent_part_degrees_of_freedom = pair.second;
+    actual_part_degrees_of_freedom_.emplace(
+        part,
+        apparent_bubble_to_pile_up_motion(apparent_part_degrees_of_freedom));
+  }
+  apparent_part_degrees_of_freedom_.clear();
+}
+
+void PileUp::AdvanceTime(Instant const& t) {
+  CHECK_NOTNULL(psychohistory_);
+
+  auto const history_last = history_->last();
+  if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
+    // Remove the fork.
+    history_->DeleteFork(psychohistory_);
+    if (fixed_instance_ == nullptr) {
+      fixed_instance_ = ephemeris_->NewInstance(
+          {history_.get()},
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          fixed_step_parameters_);
+    }
+    CHECK_LT(history_->last().time(), t);
+    ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
+    psychohistory_ = history_->NewForkAtLast();
+    if (history_->last().time() < t) {
+      // Do not clear the |fixed_instance_| here, we will use it for the next
+      // fixed-step integration.
+      // TODO(phl): Consider not setting |last_point_only| below as we would be
+      // fine with multiple points in the |psychohistory_| once all the classes
+      // have been changed.
+      CHECK(ephemeris_->FlowWithAdaptiveStep(
+                psychohistory_,
+                Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                t,
+                adaptive_step_parameters_,
+                Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+                /*last_point_only=*/true));
+    }
+  } else {
+    // Destroy the fixed instance, it wouldn't be correct to use it the next
+    // time we go through this function.  It will be re-created as needed.
+    fixed_instance_ = nullptr;
+    // We make the |psychohistory_|, if any, authoritative, i.e. append it to
+    // the end of the |history_|. We integrate on top of it, and it gets
+    // appended authoritatively to the part tails.
+    auto const psychohistory_end = psychohistory_->End();
+    auto it = psychohistory_->Fork();
+    for (++it; it != psychohistory_end; ++it) {
+      history_->Append(it.time(), it.degrees_of_freedom());
+    }
+    history_->DeleteFork(psychohistory_);
+
+    auto const a = intrinsic_force_ / mass_;
+    auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
+    CHECK(ephemeris_->FlowWithAdaptiveStep(
+              history_.get(),
+              intrinsic_acceleration,
+              t,
+              adaptive_step_parameters_,
+              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+              /*last_point_only=*/false));
+    psychohistory_ = history_->NewForkAtLast();
+  }
+
+  CHECK_NOTNULL(psychohistory_);
+
+  // Append the |history_| authoritatively to the parts' tails and the
+  // |psychohistory_| non-authoritatively.
+  auto const history_end = history_->End();
+  auto const psychohistory_end = psychohistory_->End();
+  auto it = history_last;
+  for (++it; it != history_end; ++it) {
+    AppendToPart<&Part::AppendToHistory>(it);
+  }
+  it = psychohistory_->Fork();
+  for (++it; it != psychohistory_end; ++it) {
+    AppendToPart<&Part::AppendToPsychohistory>(it);
+  }
+  history_->ForgetBefore(psychohistory_->Fork().time());
+}
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>
 void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {

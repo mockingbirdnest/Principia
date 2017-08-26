@@ -593,15 +593,10 @@ not_null<std::unique_ptr<std::future<void>>> Plugin::CatchUpVessel(
         Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
         vessel.ForSomePart([this](Part& part) {
           auto const pile_up = part.containing_pile_up()->iterator();
-          // This may be false, if we have already caught up the pile up as part
-          // of |CatchUpVessel| for another vessel in the pile up.
-          if (pile_up->time() < current_time_) {
-            // TODO(egg): this should probably check that deformation is not
-            // needed instead.
-            pile_up->DeformPileUpIfNeeded();
-            pile_up->AdvanceTime(current_time_);
-            pile_up->NudgeParts();
-          }
+          // Note that there can be contention in the following method if the
+          // caller is catching-up two vessels belonging to the same pile-up in
+          // parallel.
+          pile_up->DeformAndAdvanceTime(current_time_);
         });
         vessel.AdvanceTime();
       }));
@@ -615,11 +610,9 @@ void Plugin::CatchUpLaggingVessels() {
   for (PileUp& pile_up : pile_ups_) {
     futures.emplace_back(
         vessel_thread_pool_.Add([this, &pile_up]() {
-          if (pile_up.time() < current_time_) {
-            pile_up.DeformPileUpIfNeeded();
-            pile_up.AdvanceTime(current_time_);
-            pile_up.NudgeParts();
-          }
+          // Note that there cannot be contention in the following method
+          // no two pile-ups are advance at the same time.
+          pile_up.DeformAndAdvanceTime(current_time_);
         }));
   }
 
