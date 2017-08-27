@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <algorithm>
 #include <chrono>
 
 #include "journal/method.hpp"
@@ -15,35 +16,28 @@ using quantities::si::Nano;
 using quantities::si::Second;
 
 namespace {
-constexpr int window_size = 500;
-int window_index = 0;
-Time total_Δt;
-Time min_Δt = Infinity<Time>();
-Time max_Δt = -Infinity<Time>();
-std::chrono::steady_clock::time_point time_of_last_promise_batch;
-bool last_call_was_a_promise = false;
-}  // namespace
+std::chrono::steady_clock::time_point monitor_start_time;
+bool is_monitor_running = false;
 
-std::future<void> const* principia__FutureCatchUpVessel(
-    Plugin* const plugin,
-    char const* const vessel_guid) {
-  journal::Method<journal::FutureCatchUpVessel> m({plugin, vessel_guid});
-  if (!last_call_was_a_promise) {
-    last_call_was_a_promise = true;
-    time_of_last_promise_batch = std::chrono::steady_clock::now();
+void StartMonitoring() {
+  if (!is_monitor_running) {
+    is_monitor_running = true;
+    monitor_start_time = std::chrono::steady_clock::now();
   }
-  CHECK_NOTNULL(plugin);
-  CHECK_NOTNULL(vessel_guid);
-  auto future = plugin->CatchUpVessel(vessel_guid);
-  return m.Return(future.release());
 }
 
-void principia__FutureWait(std::future<void> const** const future) {
-  journal::Method<journal::FutureWait> m({future}, {future});
-  if (last_call_was_a_promise) {
-    last_call_was_a_promise = false;
-    auto const Δt = std::chrono::nanoseconds(std::chrono::steady_clock::now() -
-                    time_of_last_promise_batch).count() * Nano(Second);
+void StopMonitoring() {
+  constexpr int window_size = 500;
+  static int window_index = 0;
+  static Time total_Δt;
+  static Time min_Δt = Infinity<Time>();
+  static Time max_Δt = -Infinity<Time>();
+  if (is_monitor_running) {
+    is_monitor_running = false;
+    auto const Δt =
+        std::chrono::nanoseconds(
+            std::chrono::steady_clock::now() - monitor_start_time).count() *
+        Nano(Second);
     min_Δt = std::min(min_Δt, Δt);
     max_Δt = std::max(max_Δt, Δt);
     total_Δt += Δt;
@@ -56,6 +50,24 @@ void principia__FutureWait(std::future<void> const** const future) {
       total_Δt = Time();
     }
   }
+}
+
+}  // namespace
+
+std::future<void> const* principia__FutureCatchUpVessel(
+    Plugin* const plugin,
+    char const* const vessel_guid) {
+  journal::Method<journal::FutureCatchUpVessel> m({plugin, vessel_guid});
+  void StartMonitoring();
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(vessel_guid);
+  auto future = plugin->CatchUpVessel(vessel_guid);
+  return m.Return(future.release());
+}
+
+void principia__FutureWait(std::future<void> const** const future) {
+  journal::Method<journal::FutureWait> m({future}, {future});
+  StopMonitoring();
   TakeOwnership(future)->wait();
   return m.Return();
 }
