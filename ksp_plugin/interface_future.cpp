@@ -1,7 +1,6 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
-#include <array>
 #include <chrono>
 
 #include "journal/method.hpp"
