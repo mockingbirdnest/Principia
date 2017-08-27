@@ -579,9 +579,9 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     vessel->ClearAllIntrinsicForces();
   }
 
-  ephemeris_->Prolong(current_time_);
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  ephemeris_->Prolong(current_time_);
   UpdatePlanetariumRotation();
   loaded_vessels_.clear();
 }
