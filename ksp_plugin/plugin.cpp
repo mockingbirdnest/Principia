@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include <set>
@@ -102,7 +103,8 @@ Plugin::Plugin(std::string const& game_epoch,
     : history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
-      vessel_thread_pool_(/*pool_size=*/1),
+      vessel_thread_pool_(
+          /*pool_size=*/2 * std::thread::hardware_concurrency()),
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(ParseTT(game_epoch)),
       current_time_(ParseTT(solar_system_epoch)) {
