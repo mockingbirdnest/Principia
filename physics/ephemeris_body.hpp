@@ -13,6 +13,7 @@
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
+#include "base/shared_lock_guard.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "integrators/integrators.hpp"
@@ -31,6 +32,7 @@ namespace internal_ephemeris {
 using astronomy::J2000;
 using base::FindOrDie;
 using base::make_not_null_unique;
+using base::shared_lock_guard;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -284,6 +286,7 @@ not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
+  shared_lock_guard<std::shared_mutex> l(lock_);
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
     if (trajectory->empty()) {
@@ -295,6 +298,7 @@ bool Ephemeris<Frame>::empty() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
+  shared_lock_guard<std::shared_mutex> l(lock_);
   Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
@@ -307,6 +311,7 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
+  shared_lock_guard<std::shared_mutex> l(lock_);
   Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
@@ -363,8 +368,9 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // after |t_max()|.  In this case we want to make sure that the integrator
   // makes progress.
   Instant t_final;
-  if (t <= instance_->time().value) {
-    t_final = instance_->time().value + parameters_.step_;
+  Instant const instance_time = this->instance_time();
+  if (t <= instance_time) {
+    t_final = instance_time + parameters_.step_;
   } else {
     t_final = t;
   }
@@ -373,6 +379,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
   while (t_max() < t) {
+    std::lock_guard<std::shared_mutex> l(lock_);
     instance_->Solve(t_final);
     t_final += parameters_.step_;
   }
@@ -449,7 +456,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // forward.  We use |last_state_.time.value| because this is always finite,
   // contrary to |t_max()|, which is -∞ when |empty()|.
   Instant const t_final =
-      std::min(std::max(instance_->time().value +
+      std::min(std::max(instance_time() +
                             max_ephemeris_steps * parameters_.step(),
                         trajectory_last_time + parameters_.step()),
                t);
@@ -852,6 +859,12 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
 }
 
 template<typename Frame>
+Instant Ephemeris<Frame>::instance_time() const {
+  shared_lock_guard<std::shared_mutex> l(lock_);
+  return instance_->time().value;
+}
+
+template<typename Frame>
 template<bool body1_is_oblate,
          bool body2_is_oblate,
          typename MassiveBodyConstPtr>
@@ -930,7 +943,10 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
-  Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
+  Position<Frame> const position1 = [this, b1, &t]() {
+    shared_lock_guard<std::shared_mutex> l(lock_);
+    return trajectories_[b1]->EvaluatePosition(t);
+  }();
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1080,6 +1096,15 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
 template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::NoIntrinsicAccelerations;
+#if defined(WE_LOVE_228)
+template<typename Frame>
+thread_local std::experimental::optional<
+    typename Ephemeris<Frame>::NewtonianMotionEquation::SystemState>
+    Ephemeris<Frame>::last_state_228_;
+template<typename Frame>
+thread_local std::vector<not_null<DiscreteTrajectory<Frame>*>>
+    Ephemeris<Frame>::trajectories_228_;
+#endif
 
 }  // namespace internal_ephemeris
 }  // namespace physics
