@@ -292,6 +292,8 @@
     <ClInclude Include="pull_serializer_body.hpp" />
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
+    <ClInclude Include="shared_lock_guard.hpp" />
+    <ClInclude Include="shared_lock_guard_body.hpp" />
     <ClInclude Include="status.hpp" />
     <ClInclude Include="status_or.hpp" />
     <ClInclude Include="status_or_body.hpp" />

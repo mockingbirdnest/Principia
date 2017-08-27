@@ -6,6 +6,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -41,6 +42,10 @@ using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
 
+// Note on thread-safety: the integration functions (Prolong, FlowWithFixedStep,
+// FlowWithAdaptiveStep) can be called concurrently as long as their parameters
+// designated distinct objects.  No guarantee is offered for the other
+// functions.
 template<typename Frame>
 class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
@@ -136,12 +141,12 @@ class Ephemeris {
       not_null<MassiveBody const*> body) const;
 
   // Returns true if at least one of the trajectories is empty.
-  virtual bool empty() const;
+  virtual bool empty() const EXCLUDES(lock_);
 
   // The maximum of the |t_min|s of the trajectories.
-  virtual Instant t_min() const;
+  virtual Instant t_min() const EXCLUDES(lock_);
   // The mimimum of the |t_max|s of the trajectories.
-  virtual Instant t_max() const;
+  virtual Instant t_max() const EXCLUDES(lock_);
 
   virtual FixedStepSizeIntegrator<NewtonianMotionEquation> const&
   planetary_integrator() const;
@@ -152,7 +157,7 @@ class Ephemeris {
   virtual void ForgetBefore(Instant const& t);
 
   // Prolongs the ephemeris up to at least |t|.  After the call, |t_max() >= t|.
-  virtual void Prolong(Instant const& t);
+  virtual void Prolong(Instant const& t) EXCLUDES(lock_);
 
   // Creates an instance suitable for integrating the given |trajectories| with
   // their |intrinsic_accelerations| using a fixed-step integrator parameterized
@@ -207,7 +212,7 @@ class Ephemeris {
   virtual Vector<Acceleration, Frame>
   ComputeGravitationalAccelerationOnMassiveBody(
       not_null<MassiveBody const*> body,
-      Instant const& t) const;
+      Instant const& t) const REQUIRES_SHARED(lock_);
 
   // Computes the apsides of the relative trajectory of |body1| and |body2}.
   // Appends to the given trajectories two point for each apsis, one for |body1|
@@ -250,12 +255,20 @@ class Ephemeris {
   };
 
   void AppendMassiveBodiesState(
-      typename NewtonianMotionEquation::SystemState const& state);
+      typename NewtonianMotionEquation::SystemState const& state)
+      REQUIRES(lock_);
   static void AppendMasslessBodiesState(
       typename NewtonianMotionEquation::SystemState const& state,
       std::vector<not_null<DiscreteTrajectory<Frame>*>> const& trajectories);
 
-  Checkpoint GetCheckpoint();
+  Checkpoint GetCheckpoint() REQUIRES_SHARED(lock_);
+
+  // Same as t_max, but |lock_| must be held.
+  Instant t_max_locked() const REQUIRES_SHARED(lock_);
+
+  // Note the return by copy: the returned value is usable even if the
+  // |instance_| is being integrated.
+  Instant instance_time() const EXCLUDES(lock_);
 
   // Computes the accelerations between one body, |body1| (with index |b1| in
   // the |positions| and |accelerations| arrays) and the bodies |bodies2| (with
@@ -286,7 +299,8 @@ class Ephemeris {
       MassiveBody const& body1,
       std::size_t const b1,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
@@ -299,7 +313,8 @@ class Ephemeris {
   void ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      EXCLUDES(lock_);
 
   // Same as above, but the massless bodies have intrinsic accelerations.
   // |intrinsic_accelerations| may be empty.
@@ -315,6 +330,11 @@ class Ephemeris {
       Speed const& speed_integration_tolerance,
       Time const& current_step_size,
       typename NewtonianMotionEquation::SystemStateError const& error);
+
+  // Guards |instance_|, |trajectories_|, and |bodies_to_trajectories_| during
+  // integration.  Note that the thread-safety annotations are incomplete
+  // because we do not attempt to protect all the operations, only integration.
+  mutable std::shared_mutex lock_;
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
@@ -349,9 +369,11 @@ class Ephemeris {
 
 #if defined(WE_LOVE_228)
   // https://m.popkey.co/6bee24/6GJWk.gif.
-  std::experimental::optional<typename NewtonianMotionEquation::SystemState>
+  static thread_local std::experimental::optional<
+      typename NewtonianMotionEquation::SystemState>
       last_state_228_;
-  std::vector<not_null<DiscreteTrajectory<Frame>*>> trajectories_228_;
+  static thread_local std::vector<not_null<DiscreteTrajectory<Frame>*>>
+      trajectories_228_;
 #endif
 };
 
