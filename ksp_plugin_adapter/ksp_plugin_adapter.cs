@@ -388,6 +388,18 @@ public partial class PrincipiaPluginAdapter
     return active_vessel != null && is_manageable(active_vessel);
   }
 
+  private double UpcomingUniversalTime() {
+    var planetarium = Planetarium.fetch;
+    if (planetarium == null) {
+      return HighLogic.CurrentGame.UniversalTime;
+    } else {
+      return planetarium.pause
+                 ? planetarium.time
+                 : planetarium.time +
+                   planetarium.fixedDeltaTime * planetarium.timeScale;
+    }
+  }
+
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
@@ -1240,7 +1252,7 @@ public partial class PrincipiaPluginAdapter
     } else {
       if (PluginRunning()) {
         double plugin_time = plugin_.CurrentTime();
-        double universal_time = Planetarium.GetUniversalTime();
+        double universal_time = UpcomingUniversalTime();
         time_is_advancing_ = time_is_advancing(universal_time);
         if (time_is_advancing_) {
           plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
@@ -1250,7 +1262,8 @@ public partial class PrincipiaPluginAdapter
           }
           foreach (var vessel in FlightGlobals.Vessels) {
             if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
-              vessel_futures_.Add(plugin_.FutureCatchUpVessel(vessel.id.ToString()));
+              vessel_futures_.Add(
+                  plugin_.FutureCatchUpVessel(vessel.id.ToString()));
             }
           }
         }

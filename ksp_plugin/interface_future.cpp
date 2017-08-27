@@ -17,9 +17,8 @@ using quantities::si::Second;
 
 namespace {
 constexpr int window_size = 500;
-std::array<Time, window_size> Δt_window;
 int window_index = 0;
-Time average_Δt;
+Time total_Δt;
 Time min_Δt = Infinity<Time>();
 Time max_Δt = -Infinity<Time>();
 std::chrono::steady_clock::time_point time_of_last_promise_batch;
@@ -48,13 +47,14 @@ void principia__FutureWait(std::future<void> const** const future) {
                     time_of_last_promise_batch).count() * Nano(Second);
     min_Δt = std::min(min_Δt, Δt);
     max_Δt = std::max(max_Δt, Δt);
-    average_Δt += (Δt - Δt_window[window_index]) / window_size;
+    total_Δt += Δt;
     ++window_index %= window_size;
     if (window_index == 0) {
       LOG(INFO) << "min = " << min_Δt << ", max = " << max_Δt
-                << u8", μ = " << average_Δt;
+                << u8", μ = " << total_Δt / window_size;
       min_Δt = Infinity<Time>();
       max_Δt = -Infinity<Time>();
+      total_Δt = Time();
     }
   }
   TakeOwnership(future)->wait();
