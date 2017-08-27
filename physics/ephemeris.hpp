@@ -263,6 +263,9 @@ class Ephemeris {
 
   Checkpoint GetCheckpoint() REQUIRES_SHARED(lock_);
 
+  // Same as t_max, but |lock_| must be held.
+  Instant t_max_locked() const REQUIRES_SHARED(lock_);
+
   // Note the return by copy: the returned value is usable even if the
   // |instance_| is being integrated.
   Instant instance_time() const EXCLUDES(lock_);

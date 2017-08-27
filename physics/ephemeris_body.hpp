@@ -312,14 +312,7 @@ Instant Ephemeris<Frame>::t_min() const {
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
   shared_lock_guard<std::shared_mutex> l(lock_);
-  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
-  for (auto const& pair : bodies_to_trajectories_) {
-    auto const& trajectory = pair.second;
-    t_max = std::min(t_max, trajectory->t_max());
-  }
-  // Here we may have a checkpoint after |t_max| if the checkpointed state was
-  // not yet incorporated in a series.
-  return t_max;
+  return t_max_locked();
 }
 
 template<typename Frame>
@@ -830,7 +823,8 @@ void Ephemeris<Frame>::AppendMassiveBodiesState(
       checkpoints_.empty()
           ? astronomy::InfinitePast
           : checkpoints_.back().instance->time().value;
-  if (t_max() - t_last_intermediate_state > max_time_between_checkpoints) {
+  if (t_max_locked() - t_last_intermediate_state >
+      max_time_between_checkpoints) {
     checkpoints_.push_back(GetCheckpoint());
   }
 }
@@ -856,6 +850,18 @@ typename Ephemeris<Frame>::Checkpoint Ephemeris<Frame>::GetCheckpoint() {
     checkpoints.push_back(trajectory->GetCheckpoint());
   }
   return Checkpoint({instance_->Clone(), checkpoints});
+}
+
+template<typename Frame>
+Instant Ephemeris<Frame>::t_max_locked() const {
+  Instant t_max = bodies_to_trajectories_.begin()->second->t_max();
+  for (auto const& pair : bodies_to_trajectories_) {
+    auto const& trajectory = pair.second;
+    t_max = std::min(t_max, trajectory->t_max());
+  }
+  // Here we may have a checkpoint after |t_max| if the checkpointed state was
+  // not yet incorporated in a series.
+  return t_max;
 }
 
 template<typename Frame>
