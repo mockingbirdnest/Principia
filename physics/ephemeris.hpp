@@ -300,7 +300,7 @@ class Ephemeris {
       std::size_t const b1,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
-      EXCLUDES(lock_);
+      REQUIRES_SHARED(lock_);
 
   // Computes the accelerations between all the massive bodies in |bodies_|.
   void ComputeMassiveBodiesGravitationalAccelerations(
@@ -313,7 +313,8 @@ class Ephemeris {
   void ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      std::vector<Vector<Acceleration, Frame>>& accelerations) const
+      EXCLUDES(lock_);
 
   // Same as above, but the massless bodies have intrinsic accelerations.
   // |intrinsic_accelerations| may be empty.

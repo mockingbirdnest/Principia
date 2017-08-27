@@ -371,8 +371,8 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // Perform the integration.  Note that we may have to iterate until |t_max()|
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
-  while (t_max() < t) {
-    std::lock_guard<std::shared_mutex> l(lock_);
+  std::lock_guard<std::shared_mutex> l(lock_);
+  while (t_max_locked() < t) {
     instance_->Solve(t_final);
     t_final += parameters_.step_;
   }
@@ -949,10 +949,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     std::vector<Position<Frame>> const& positions,
     std::vector<Vector<Acceleration, Frame>>& accelerations) const {
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
-  Position<Frame> const position1 = [this, b1, &t]() {
-    shared_lock_guard<std::shared_mutex> l(lock_);
-    return trajectories_[b1]->EvaluatePosition(t);
-  }();
+  Position<Frame> const position1 = trajectories_[b1]->EvaluatePosition(t);
 
   for (std::size_t b2 = 0; b2 < positions.size(); ++b2) {
     // A vector from the center of |b2| to the center of |b1|.
@@ -1035,6 +1032,7 @@ void Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
   CHECK_EQ(positions.size(), accelerations.size());
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
 
+  shared_lock_guard<std::shared_mutex> l(lock_);
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
