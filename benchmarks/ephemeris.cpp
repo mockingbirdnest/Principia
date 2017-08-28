@@ -51,6 +51,7 @@ using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order12;
 using quantities::DebugString;
+using quantities::Frequency;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Sqrt;
@@ -58,6 +59,7 @@ using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::bipm::NauticalMile;
 using quantities::si::AstronomicalUnit;
+using quantities::si::Hertz;
 using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Milli;
@@ -305,6 +307,9 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   }
 
   ThreadPool<void> pool(/*pool_size=*/state.range_y());
+  static constexpr int warp_factor = 6E6;
+  static constexpr Frequency refresh_frequency = 50 * Hertz;
+  static constexpr Time step = warp_factor / refresh_frequency;
   Instant final_time = epoch;
   while (state.KeepRunning()) {
     state.PauseTiming();
@@ -319,7 +324,7 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
               Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
               /*step=*/10 * Second)));
     }
-    final_time += 100'000 * Second;
+    final_time += step;
     state.ResumeTiming();
 
     std::vector<std::future<void>> futures;
