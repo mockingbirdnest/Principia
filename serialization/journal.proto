@@ -96,7 +96,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5140.
+  extensions 5000 to 5999;  // Last used: 5142.
 }
 
 message AdvanceTime {
@@ -1110,6 +1110,18 @@ message LogWarning {
     required string text = 1;
   }
   optional In in = 1;
+}
+
+message MonitorStart {
+  extend Method {
+    optional MonitorStart extension = 5141;
+  }
+}
+
+message MonitorStop {
+  extend Method {
+    optional MonitorStop extension = 5142;
+  }
 }
 
 message NavballOrientation {
