@@ -17,15 +17,20 @@ using quantities::si::Second;
 namespace {
 std::chrono::steady_clock::time_point monitor_start_time;
 bool is_monitor_running = false;
+}  // namespace
 
-void StartMonitoring() {
+
+// No journalling to avoid overhead from that; these functions have no side
+// effects aside from logging changing and the internal state of the monitor.
+
+void principia__MonitorStart() {
   if (!is_monitor_running) {
     is_monitor_running = true;
     monitor_start_time = std::chrono::steady_clock::now();
   }
 }
 
-void StopMonitoring() {
+void principia__MonitorStop() {
   constexpr int window_size = 500;
   static int window_index = 0;
   static Time total_Δt;
@@ -49,20 +54,6 @@ void StopMonitoring() {
       total_Δt = Time();
     }
   }
-}
-
-}  // namespace
-
-
-// No journalling to avoid overhead from that; these functions have no side
-// effects aside from logging changing and the internal state of the monitor.
-
-void principia__MonitorStart() {
-  StartMonitoring();
-}
-
-void principia__MonitorStop() {
-  StopMonitoring();
 }
 
 }  // namespace interface
