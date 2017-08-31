@@ -50,6 +50,7 @@
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
+    <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />
@@ -86,6 +87,7 @@
     <ClInclude Include="mock_vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="3 vessels.proto.bin" />
     <None Include="simple_plugin.proto.bin" />
     <None Include="simple_plugin.proto.hex" />
   </ItemGroup>
@@ -140,6 +142,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
@@ -153,10 +156,13 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
@@ -170,10 +176,13 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\generate_version_translation_unit.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
@@ -187,11 +196,14 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\generate_version_translation_unit.props" />
     <Import Project="..\define_ndebug.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\google_benchmark.props" />
     <Import Project="..\warnings_as_errors.props" />
     <Import Project="..\third_party_optional.props" />
     <Import Project="..\suppress_useless_warnings.props" />
@@ -205,6 +217,8 @@
     <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
+    <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
+    <Import Project="..\..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="..\generate_version_translation_unit.props" />
     <Import Project="..\define_ndebug.props" />
   </ImportGroup>
