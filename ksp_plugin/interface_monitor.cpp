@@ -1,5 +1,5 @@
 ﻿
-#include "ksp_plugin/interface.hpp
+#include "ksp_plugin/interface.hpp"
 
 #include <chrono>
 
@@ -18,7 +18,6 @@ namespace {
 std::chrono::steady_clock::time_point monitor_start_time;
 bool is_monitor_running = false;
 }  // namespace
-
 
 // No journalling to avoid overhead from that; these functions have no side
 // effects aside from logging changing and the internal state of the monitor.
