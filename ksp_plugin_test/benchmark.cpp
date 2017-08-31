@@ -1,6 +1,9 @@
 
 #include "ksp_plugin/plugin.hpp"
 
+#include <string>
+#include <vector>
+
 #include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
