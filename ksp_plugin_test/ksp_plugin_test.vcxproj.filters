@@ -191,7 +191,7 @@
     <None Include="simple_plugin.proto.hex">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="3 vessels.proto.hex">
+    <None Include="3 vessels.proto.bin">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -87,7 +87,7 @@
     <ClInclude Include="mock_vessel.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="3 vessels.proto.hex" />
+    <None Include="3 vessels.proto.bin" />
     <None Include="simple_plugin.proto.bin" />
     <None Include="simple_plugin.proto.hex" />
   </ItemGroup>
