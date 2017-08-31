@@ -207,8 +207,8 @@ Length SolarSystem<Frame>::mean_radius(std::string const& name) const {
 
 template<typename Frame>
 not_null<MassiveBody const*> SolarSystem<Frame>::massive_body(
-    Ephemeris<Frame> const & ephemeris,
-    std::string const & name) const {
+    Ephemeris<Frame> const& ephemeris,
+    std::string const& name) const {
   return ephemeris.bodies()[index(name)];
 }
 
@@ -223,8 +223,8 @@ not_null<RotatingBody<Frame> const*> SolarSystem<Frame>::rotating_body(
 
 template<typename Frame>
 ContinuousTrajectory<Frame> const& SolarSystem<Frame>::trajectory(
-    Ephemeris<Frame> const & ephemeris,
-    std::string const & name) const {
+    Ephemeris<Frame> const& ephemeris,
+    std::string const& name) const {
   MassiveBody const* const body = ephemeris.bodies()[index(name)];
   return *ephemeris.trajectory(body);
 }
