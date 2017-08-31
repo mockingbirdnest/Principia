@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <limits>
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
