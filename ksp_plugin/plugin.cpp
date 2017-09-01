@@ -1206,7 +1206,8 @@ Plugin::Plugin(
     : history_parameters_(history_parameters),
       prolongation_parameters_(prolongation_parameters),
       prediction_parameters_(prediction_parameters),
-      vessel_thread_pool_(/*pool_size=*/1) {}
+      vessel_thread_pool_(
+          /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
 void Plugin::InitializeIndices(
     std::string const& name,

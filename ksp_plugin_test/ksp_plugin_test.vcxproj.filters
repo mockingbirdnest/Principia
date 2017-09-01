@@ -158,6 +158,9 @@
     <ClCompile Include="..\ksp_plugin\interface_monitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="benchmark.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">
@@ -189,6 +192,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="simple_plugin.proto.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="3 vessels.proto.bin">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
