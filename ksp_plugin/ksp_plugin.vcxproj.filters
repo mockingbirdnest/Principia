@@ -148,6 +148,9 @@
     <ClCompile Include="interface_future.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="interface_monitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\serialization\journal.proto" />
