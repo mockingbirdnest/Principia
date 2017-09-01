@@ -1,6 +1,7 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <algorithm>
 #include <chrono>
 
 #include "quantities/quantities.hpp"
