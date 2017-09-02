@@ -566,8 +566,6 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
-    Interface.MonitorSetName(12, "OnGUI");
-    Interface.MonitorStart(12);
     if (bad_installation_popup_ != null) {
       UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
       // No-one seems to understand what |anchorMin| and |anchorMax| do at this
@@ -653,12 +651,9 @@ public partial class PrincipiaPluginAdapter
 
       render_windows();
     }
-    Interface.MonitorStop(12);
   }
 
   private void LateUpdate() {
-    Interface.MonitorSetName(13, "LateUpdate");
-    Interface.MonitorStart(13);
     if (map_renderer_ == null) {
       map_renderer_ =
           PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
@@ -909,7 +904,6 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
-    Interface.MonitorStop(13);
   }
 
   private void FixedUpdate() {
@@ -925,8 +919,6 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (PluginRunning()) {
-      Interface.MonitorSetName(5, "FixedUpdate");
-      Interface.MonitorStart(5);
       double universal_time = Planetarium.GetUniversalTime();
 
       plugin_.SetMainBody(
@@ -979,7 +971,6 @@ public partial class PrincipiaPluginAdapter
       // and eventually the physics simulation.
       StartCoroutine(
           AdvanceAndNudgeVesselsAfterPhysicsSimulation(universal_time));
-      Interface.MonitorStop(5);
     }
   }
 
@@ -1023,9 +1014,6 @@ public partial class PrincipiaPluginAdapter
     }
 
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
-
-    Interface.MonitorSetName(6, "InsertOrKeepVessels etc.");
-    Interface.MonitorStart(6);
 
     // NOTE(egg): Inserting vessels and parts has to occur in
     // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
@@ -1127,16 +1115,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    Interface.MonitorStop(6);
-
-    
-    Interface.MonitorSetName(7, "PrepareToReportCollisions");
-    Interface.MonitorStart(7);
     plugin_.PrepareToReportCollisions();
-    Interface.MonitorStop(7);
 
-    Interface.MonitorSetName(8, "ReportCollisions");
-    Interface.MonitorStart(8);
     // The collisions are reported and stored into |currentCollisions| in
     // OnCollisionEnter|Stay|Exit, which occurred while we yielded.
     // Here, the |currentCollisions| are the collisions that occurred in the
@@ -1172,15 +1152,9 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
-    Interface.MonitorStop(8);
 
-    Interface.MonitorSetName(9, "FreeVesselsAndPartsAndCollectPileUps");
-    Interface.MonitorStart(9);
     plugin_.FreeVesselsAndPartsAndCollectPileUps(Δt);
-    Interface.MonitorStop(9);
 
-    Interface.MonitorSetName(10, "SetPartApparentDegreesOfFreedom");
-    Interface.MonitorStart(10);
     foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
       if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
         continue;
@@ -1196,12 +1170,8 @@ public partial class PrincipiaPluginAdapter
                    p = (XYZ)(Vector3d)part.rb.velocity});
       }
     }
-    Interface.MonitorStop(10);
 
-    Interface.MonitorSetName(11, "CatchUpLaggingVessels");
-    Interface.MonitorStart(11);
     plugin_.CatchUpLaggingVessels();
-    Interface.MonitorStop(11);
 
     // We don't want to do too many things here, since all the KSP classes
     // still think they're in the preceding step.  We only nudge the Unity
@@ -1285,19 +1255,12 @@ public partial class PrincipiaPluginAdapter
         double universal_time = UpcomingUniversalTime();
         time_is_advancing_ = time_is_advancing(universal_time);
         if (time_is_advancing_) {
-
-          Interface.MonitorSetName(0, "AdvanceTime");
-          Interface.MonitorStart(0);
           plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-          Interface.MonitorStop(0);
           if (!is_post_apocalyptic_) {
             is_post_apocalyptic_ |=
                 plugin_.HasEncounteredApocalypse(out revelation_);
           }
-          Interface.MonitorSetName(
-              1,
-              "CatchUpVessel, SetBodyFrames, precalc.MainPhysics");
-          Interface.MonitorStart(1);
+          Interface.MonitorStart();
           foreach (var vessel in FlightGlobals.Vessels) {
             if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
               vessel_futures_.Add(
@@ -1351,12 +1314,9 @@ public partial class PrincipiaPluginAdapter
         Interface.FutureWait(ref future);
       }
       vessel_futures_.Clear();
-      Interface.MonitorStop(1);
-      Interface.MonitorSetName(2, "UpdateVessel");
-      Interface.MonitorStart(2);
+      Interface.MonitorStop();
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
-      Interface.MonitorStop(2);
     }
   }
 
@@ -1374,8 +1334,6 @@ public partial class PrincipiaPluginAdapter
         Log.Info("Reinstating stock gravity");
         PhysicsGlobals.GraviticForceMultiplier = 1;
       }
-      Interface.MonitorSetName(3, "StoreForces");
-      Interface.MonitorStart(3);
       part_id_to_intrinsic_force_.Clear();
       part_id_to_intrinsic_forces_.Clear();
       foreach (Vessel vessel in
@@ -1390,15 +1348,12 @@ public partial class PrincipiaPluginAdapter
                                              part.forces.ToArray());
           }
         }
-        Interface.MonitorStop(3);
       }
     }
   }
 
   private void BetterLateThanNever() {
     if (PluginRunning()) {
-      Interface.MonitorSetName(4, "StorePartDegreesOfFreedom");
-      Interface.MonitorStart(4);
       part_id_to_degrees_of_freedom_.Clear();
       foreach (Vessel vessel in
                FlightGlobals.Vessels.Where(v => is_manageable(v) &&
@@ -1411,7 +1366,6 @@ public partial class PrincipiaPluginAdapter
                      p = (XYZ)(Vector3d)part.rb.velocity});
         }
       }
-      Interface.MonitorStop(4);
     }
   }
 
@@ -1457,8 +1411,6 @@ public partial class PrincipiaPluginAdapter
 
   private void RotateGalaxyCube() {
     if (PluginRunning()) {
-    Interface.MonitorSetName(15, "RotateGalaxyCube");
-    Interface.MonitorStart(15);
       var initial_rotation =
           UnityEngine.QuaternionD.Inverse(Planetarium.Rotation) *
           (UnityEngine.QuaternionD)
@@ -1467,7 +1419,6 @@ public partial class PrincipiaPluginAdapter
           (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
           initial_rotation;
     }
-    Interface.MonitorStop(15);
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
@@ -1579,8 +1530,6 @@ public partial class PrincipiaPluginAdapter
     if (!PluginRunning()) {
       return;
     }
-    Interface.MonitorSetName(14, "RenderTrajectories");
-    Interface.MonitorStart(14);
     foreach (var celestial in FlightGlobals.Bodies.Where(
                                   c => c.MapObject?.uiNode != null)) {
       celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
@@ -1747,7 +1696,6 @@ public partial class PrincipiaPluginAdapter
     } else {
       map_node_pool_.Clear();
     }
-    Interface.MonitorStop(14);
   }
 
   private void RenderPredictionMarkers(String vessel_guid,
