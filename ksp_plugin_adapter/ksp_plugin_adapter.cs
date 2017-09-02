@@ -566,6 +566,8 @@ public partial class PrincipiaPluginAdapter
   // http://docs.unity3d.com/Manual/ExecutionOrder.html
 
   private void OnGUI() {
+    Interface.MonitorSetName(12, "OnGUI");
+    Interface.MonitorStart(12);
     if (bad_installation_popup_ != null) {
       UnityEngine.Debug.LogError("Spawning: " + bad_installation_popup_);
       // No-one seems to understand what |anchorMin| and |anchorMax| do at this
@@ -651,9 +653,12 @@ public partial class PrincipiaPluginAdapter
 
       render_windows();
     }
+    Interface.MonitorStop(12);
   }
 
   private void LateUpdate() {
+    Interface.MonitorSetName(13, "LateUpdate");
+    Interface.MonitorStart(13);
     if (map_renderer_ == null) {
       map_renderer_ =
           PlanetariumCamera.Camera.gameObject.AddComponent<RenderingActions>();
@@ -904,6 +909,7 @@ public partial class PrincipiaPluginAdapter
         }
       }
     }
+    Interface.MonitorStop(13);
   }
 
   private void FixedUpdate() {
@@ -1451,6 +1457,8 @@ public partial class PrincipiaPluginAdapter
 
   private void RotateGalaxyCube() {
     if (PluginRunning()) {
+    Interface.MonitorSetName(15, "RotateGalaxyCube");
+    Interface.MonitorStart(15);
       var initial_rotation =
           UnityEngine.QuaternionD.Inverse(Planetarium.Rotation) *
           (UnityEngine.QuaternionD)
@@ -1459,6 +1467,7 @@ public partial class PrincipiaPluginAdapter
           (UnityEngine.QuaternionD)plugin_.CelestialSphereRotation() *
           initial_rotation;
     }
+    Interface.MonitorStop(15);
   }
 
   private void RemoveStockTrajectoriesIfNeeded(Vessel vessel) {
@@ -1570,6 +1579,8 @@ public partial class PrincipiaPluginAdapter
     if (!PluginRunning()) {
       return;
     }
+    Interface.MonitorSetName(14, "RenderTrajectories");
+    Interface.MonitorStart(14);
     foreach (var celestial in FlightGlobals.Bodies.Where(
                                   c => c.MapObject?.uiNode != null)) {
       celestial.MapObject.uiNode.OnClick -= OnCelestialNodeClick;
@@ -1736,6 +1747,7 @@ public partial class PrincipiaPluginAdapter
     } else {
       map_node_pool_.Clear();
     }
+    Interface.MonitorStop(14);
   }
 
   private void RenderPredictionMarkers(String vessel_guid,
