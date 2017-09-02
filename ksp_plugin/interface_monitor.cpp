@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <string>
 #include <type_traits>
 
 #include "quantities/quantities.hpp"
