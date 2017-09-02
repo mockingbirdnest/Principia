@@ -71,8 +71,8 @@ void principia__MonitorStop(int const i) {
     ++monitor.window_index %= window_size;
     if (monitor.window_index == 0) {
       LOG(INFO) << "[Monitor " << i
-                <<(monitor.name == nullptr ? "" : ": " + *monitor.name) << "] "
-                << "min = " << monitor.min_Δt << ", max = " << monitor.max_Δt
+                << (monitor.name == nullptr ? "" : (": " + *monitor.name))
+                << "] min = " << monitor.min_Δt << ", max = " << monitor.max_Δt
                 << u8", μ = " << monitor.total_Δt / window_size;
       monitor.min_Δt = Infinity<Time>();
       monitor.max_Δt = -Infinity<Time>();
