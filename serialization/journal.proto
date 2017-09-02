@@ -96,7 +96,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5142.
+  extensions 5000 to 5999;  // Last used: 5143.
 }
 
 message AdvanceTime {
