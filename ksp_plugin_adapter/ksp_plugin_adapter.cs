@@ -1260,7 +1260,6 @@ public partial class PrincipiaPluginAdapter
             is_post_apocalyptic_ |=
                 plugin_.HasEncounteredApocalypse(out revelation_);
           }
-          Interface.MonitorStart();
           foreach (var vessel in FlightGlobals.Vessels) {
             if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
               vessel_futures_.Add(
@@ -1314,7 +1313,6 @@ public partial class PrincipiaPluginAdapter
         Interface.FutureWait(ref future);
       }
       vessel_futures_.Clear();
-      Interface.MonitorStop();
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }
