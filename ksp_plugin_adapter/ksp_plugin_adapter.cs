@@ -26,7 +26,6 @@ public partial class PrincipiaPluginAdapter
       "principia_initial_state";
   private const String principia_gravity_model_config_name =
       "principia_gravity_model";
-  private const double Δt = 10;
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
