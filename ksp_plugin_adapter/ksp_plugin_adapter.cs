@@ -16,15 +16,15 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
       
-  private const String next_release_name = "Cesàro";
-  private const int next_release_lunation_number = 219;
-  private DateTimeOffset next_release_date =
+  private const String next_release_name_ = "Cesàro";
+  private const int next_release_lunation_number_ = 219;
+  private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2017, 09, 20, 05, 31, 00, TimeSpan.Zero);
 
-  private const String principia_key = "serialized_plugin";
-  private const String principia_initial_state_config_name =
+  private const String principia_key_ = "serialized_plugin";
+  private const String principia_initial_state_config_name_ =
       "principia_initial_state";
-  private const String principia_gravity_model_config_name =
+  private const String principia_gravity_model_config_name_ =
       "principia_gravity_model";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
@@ -511,7 +511,7 @@ public partial class PrincipiaPluginAdapter
         if (serialization == null) {
           break;
         }
-        node.AddValue(principia_key, serialization);
+        node.AddValue(principia_key_, serialization);
       }
     }
   }
@@ -522,7 +522,7 @@ public partial class PrincipiaPluginAdapter
       journaling_ = true;
       Log.ActivateRecorder(true);
     }
-    if (node.HasValue(principia_key)) {
+    if (node.HasValue(principia_key_)) {
       Cleanup();
       SetRotatingFrameThresholds();
       RemoveBuggyTidalLocking();
@@ -532,7 +532,7 @@ public partial class PrincipiaPluginAdapter
       Log.SetVerboseLogging(verbose_logging_);
 
       IntPtr deserializer = IntPtr.Zero;
-      String[] serializations = node.GetValues(principia_key);
+      String[] serializations = node.GetValues(principia_key_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
         Interface.DeserializePlugin(serialization,
@@ -1895,12 +1895,12 @@ public partial class PrincipiaPluginAdapter
       if (!PluginRunning()) {
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
-      if (DateTimeOffset.Now > next_release_date) {
+      if (DateTimeOffset.Now > next_release_date_) {
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
-            next_release_lunation_number +
+            next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
-            next_release_name + ".");
+            next_release_name_ + ".");
       }
       String version;
       String unused_build_date;
@@ -2251,9 +2251,9 @@ public partial class PrincipiaPluginAdapter
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
     var gravity_model_configs =
-        GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name);
+        GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name_);
     var cartesian_configs =
-        GameDatabase.Instance.GetConfigs(principia_initial_state_config_name);
+        GameDatabase.Instance.GetConfigs(principia_initial_state_config_name_);
     if (gravity_model_configs.Length == 1) {
       name_to_gravity_model =
           gravity_model_configs[0].config.GetNodes("body").
@@ -2272,7 +2272,7 @@ public partial class PrincipiaPluginAdapter
       }
       try {
         ConfigNode initial_states = GameDatabase.Instance.GetConfigs(
-            principia_initial_state_config_name)[0].config;
+            principia_initial_state_config_name_)[0].config;
         plugin_ =
             Interface.NewPlugin(initial_states.GetValue("game_epoch"),
                                 initial_states.GetValue("solar_system_epoch"),
