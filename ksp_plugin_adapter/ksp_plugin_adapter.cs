@@ -1121,8 +1121,8 @@ public partial class PrincipiaPluginAdapter
     // Here, the |currentCollisions| are the collisions that occurred in the
     // physics simulation, which is why we report them before calling
     // |AdvanceTime|.
-    foreach (Vessel vessel1 in FlightGlobals.VesselsLoaded) {
-      if (plugin_.HasVessel(vessel1.id.ToString()) && !vessel1.packed) {
+    foreach (Vessel vessel1 in FlightGlobals.Vessels.Where(v => !v.packed)) {
+      if (plugin_.HasVessel(vessel1.id.ToString())) {
         if (vessel1.isEVA && vessel1.evaController.OnALadder) {
           var vessel2 = vessel1.evaController.LadderPart.vessel;
           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
@@ -1154,8 +1154,8 @@ public partial class PrincipiaPluginAdapter
 
     plugin_.FreeVesselsAndPartsAndCollectPileUps(Δt);
 
-    foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
-      if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+    foreach (Vessel vessel in FlightGlobals.Vessels.Where(v => !v.packed)) {
+      if (!plugin_.HasVessel(vessel.id.ToString())) {
         continue;
       }
       foreach (Part part in vessel.parts) {
@@ -1179,11 +1179,11 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(FlightGlobals.ActiveVessel.id.ToString())) {
       Vector3d q_correction_at_root_part = Vector3d.zero;
       Vector3d v_correction_at_root_part = Vector3d.zero;
-      foreach (Vessel vessel in FlightGlobals.VesselsLoaded) {
+      foreach (Vessel vessel in FlightGlobals.Vessels.Where(v => !v.packed)) {
         // TODO(egg): if I understand anything, there should probably be a
         // special treatment for loaded packed vessels.  I don't understand
         // anything though.
-        if (vessel.packed || !plugin_.HasVessel(vessel.id.ToString())) {
+        if (!plugin_.HasVessel(vessel.id.ToString())) {
           continue;
         }
         foreach (Part part in vessel.parts) {

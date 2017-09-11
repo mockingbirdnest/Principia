@@ -247,7 +247,13 @@ PileUp::PileUp(
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
       history_(std::move(history)),
-      psychohistory_(psychohistory) {}
+      psychohistory_(psychohistory) {
+  LOG(ERROR) << "Constructing pile up at " << this;
+}
+
+PileUp::~PileUp() {
+  LOG(ERROR) << "Destroying pile up at " << this;
+}
 
 void PileUp::DeformPileUpIfNeeded() {
   if (apparent_part_degrees_of_freedom_.empty()) {
@@ -255,7 +261,10 @@ void PileUp::DeformPileUpIfNeeded() {
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
   // all the parts.
-  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
+  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size()) << "\n"
+      << [&](){std::string l = ""; for (auto& part : parts_) {l += part->ShortDebugString() + ",";}return l;}() << ";\n"
+      << [&](){std::string l = ""; for (auto& pair : apparent_part_degrees_of_freedom_) {l += pair.first->ShortDebugString() + ",";}return l;}() << ";\n"
+      << NAMED(this);
   for (not_null<Part*> const part : parts_) {
     CHECK(Contains(apparent_part_degrees_of_freedom_, part));
   }

@@ -49,7 +49,7 @@ class PileUp {
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
-  virtual ~PileUp() = default;
+  virtual ~PileUp();
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;

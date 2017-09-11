@@ -89,6 +89,15 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
     parts_.front()->clear_pile_up();
     other.parts_.front()->clear_pile_up();
   }
+  LOG(ERROR) << "<<< MERGING";
+  for (auto const part : parts_) {
+  LOG(ERROR) << part->ShortDebugString();
+  }
+  LOG(ERROR) << "=== WITH";
+  for (auto const part : other.parts_) {
+  LOG(ERROR) << part->ShortDebugString();
+  }
+  LOG(ERROR) << ">>>";
   parts_.splice(parts_.end(), other.parts_);
   total_mass_ += other.total_mass_;
   total_intrinsic_force_ += other.total_intrinsic_force_;
