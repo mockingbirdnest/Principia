@@ -460,6 +460,7 @@ void Plugin::PrepareToReportCollisions() {
 void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
   Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
   Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
+  LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and " << p2.ShortDebugString();
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
