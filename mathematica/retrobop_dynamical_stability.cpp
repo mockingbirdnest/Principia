@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/array.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
@@ -20,6 +21,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -424,10 +426,15 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 }  // namespace
 
 void PlotPredictableYears() {
-  auto const ephemeris = MakeEphemeris(
-      ReadSystem(system_file),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
-      step);
+  auto system = physics::SolarSystem<Barycentric>(
+          SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+          SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
+  astronomy::StabilizeKSP(system);
+  auto const ephemeris = system.MakeEphemeris(
+      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          step));
 
   for (int i = 1; i <= 5; ++i) {
     ephemeris->Prolong(ksp_epoch + i * JulianYear);
@@ -447,6 +454,41 @@ void PlotPredictableYears() {
   FillPositions(
       *ephemeris, ksp_epoch, 5 * JulianYear, barycentric_positions_5_year);
 
+  Instant t = ksp_epoch;
+  std::vector<double> bop_ν;
+  std::vector<double> bop_jacobi_ν;
+  for (int n = 0; t < ksp_epoch + 5 * JulianYear; ++n, t = ksp_epoch + n * Minute) {
+    {
+      // KSP's osculating elements.
+      auto const bop_elements =
+          KeplerOrbit<Barycentric>(
+              *ephemeris->bodies()[Jool],
+              MasslessBody(),
+              EvaluateDegreesOfFreedom(*ephemeris, Bop, t) -
+                  EvaluateDegreesOfFreedom(*ephemeris, Jool, t), t)
+              .elements_at_epoch();
+      bop_ν.emplace_back(*bop_elements.mean_motion / (Radian / Second));
+    }
+
+    {
+      BarycentreCalculator<DegreesOfFreedom<Barycentric>,
+                           GravitationalParameter>
+          innermost_jool_system;
+      for (auto const celestial : {Jool, Laythe, Vall, Tylo}) {
+        innermost_jool_system.Add(
+            EvaluateDegreesOfFreedom(*ephemeris, celestial, t),
+            ephemeris->bodies()[celestial]->gravitational_parameter());
+      }
+      auto const bop_jacobi_elements =
+          KeplerOrbit<Barycentric>(MassiveBody(innermost_jool_system.weight()),
+                                   *ephemeris->bodies()[Bop],
+                                   EvaluateDegreesOfFreedom(*ephemeris, Bop, t) -
+                                       innermost_jool_system.Get(),
+                                   t).elements_at_epoch();
+      bop_jacobi_ν.emplace_back(*bop_jacobi_elements.mean_motion / (Radian / Second));
+    }
+  }
+  {
   OFStream file(TEMP_DIR / "retrobop_predictable_years.generated.wl");
   file << Assign("barycentricPositions1",
                  ExpressIn(Metre, barycentric_positions_1_year));
@@ -454,6 +496,11 @@ void PlotPredictableYears() {
                  ExpressIn(Metre, barycentric_positions_2_year));
   file << Assign("barycentricPositions5",
                  ExpressIn(Metre, barycentric_positions_5_year));
+                 }
+
+  OFStream file(TEMP_DIR / "retrobop_predictable_years_frequencies.generated.wl");
+  file << Assign("bopMeanMotions", bop_ν);
+  file << Assign("bopJacobiMeanMotions", bop_jacobi_ν);
 }
 
 void PlotCentury() {
