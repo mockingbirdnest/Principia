@@ -458,9 +458,14 @@ void Plugin::PrepareToReportCollisions() {
 }
 
 void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
-  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
-  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
-  LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and " << p2.ShortDebugString();
+  Vessel const& v1 = *FindOrDie(part_id_to_vessel_, part1);
+  Vessel const& v2 = *FindOrDie(part_id_to_vessel_, part2);
+  Part& p1 = *v1.part(part1);
+  Part& p2 = *v2.part(part2);
+  LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and "
+            << p2.ShortDebugString();
+  CHECK(v1.WillKeepPart(part1)) << p1.ShortDebugString() << " will vanish";
+  CHECK(v2.WillKeepPart(part2)) << p2.ShortDebugString() << " will vanish";
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
