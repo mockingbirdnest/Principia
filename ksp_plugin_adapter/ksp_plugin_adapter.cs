@@ -1143,7 +1143,9 @@ public partial class PrincipiaPluginAdapter
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
-            if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString())) {
+            if (part2?.State != PartStates.DEAD &&
+                vessel2 != null &&
+                plugin_.HasVessel(vessel2.id.ToString())) {
               plugin_.ReportCollision(closest_physical_parent(part1).flightID,
                                       closest_physical_parent(part2).flightID);
             }
