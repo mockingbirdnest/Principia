@@ -43,6 +43,7 @@ PileUp::PileUp(
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+  LOG(INFO) << "Constructing pile up at " << this;
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -247,12 +248,10 @@ PileUp::PileUp(
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
       history_(std::move(history)),
-      psychohistory_(psychohistory) {
-  LOG(ERROR) << "Constructing pile up at " << this;
-}
+      psychohistory_(psychohistory) {}
 
 PileUp::~PileUp() {
-  LOG(ERROR) << "Destroying pile up at " << this;
+  LOG(INFO) << "Destroying pile up at " << this;
 }
 
 void PileUp::DeformPileUpIfNeeded() {
