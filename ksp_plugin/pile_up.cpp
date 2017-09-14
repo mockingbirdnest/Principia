@@ -260,10 +260,10 @@ void PileUp::DeformPileUpIfNeeded() {
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
   // all the parts.
-  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size()) << "\n"
-      << [&](){std::string l = ""; for (auto& part : parts_) {l += part->ShortDebugString() + ",";}return l;}() << ";\n"
-      << [&](){std::string l = ""; for (auto& pair : apparent_part_degrees_of_freedom_) {l += pair.first->ShortDebugString() + ",";}return l;}() << ";\n"
-      << NAMED(this);
+  // TODO(egg): I'd like to log some useful information on check failure, but I
+  // need clean way of getting the debug strings of all parts (rather than giant
+  // self-evaluating lambdas).
+  CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
   for (not_null<Part*> const part : parts_) {
     CHECK(Contains(apparent_part_degrees_of_freedom_, part));
   }
