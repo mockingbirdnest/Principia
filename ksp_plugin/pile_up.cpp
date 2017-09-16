@@ -43,6 +43,7 @@ PileUp::PileUp(
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+  LOG(INFO) << "Constructing pile up at " << this;
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
   for (not_null<Part*> const part : parts_) {
@@ -249,12 +250,19 @@ PileUp::PileUp(
       history_(std::move(history)),
       psychohistory_(psychohistory) {}
 
+PileUp::~PileUp() {
+  LOG(INFO) << "Destroying pile up at " << this;
+}
+
 void PileUp::DeformPileUpIfNeeded() {
   if (apparent_part_degrees_of_freedom_.empty()) {
     return;
   }
   // A consistency check that |SetPartApparentDegreesOfFreedom| was called for
   // all the parts.
+  // TODO(egg): I'd like to log some useful information on check failure, but I
+  // need a clean way of getting the debug strings of all parts (rather than
+  // giant self-evaluating lambdas).
   CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
   for (not_null<Part*> const part : parts_) {
     CHECK(Contains(apparent_part_degrees_of_freedom_, part));

@@ -81,8 +81,11 @@ class Vessel {
   // Prevents the part with the given ID from being removed in the next call to
   // |FreeParts|.
   virtual void KeepPart(PartId id);
+  // Whether |KeepPart| was called with this |id| since the last call to
+  // |FreeParts|.
+  virtual bool WillKeepPart(PartId id) const;
   // Removes any part for which |KeepPart| has not been called since the last
-  // call to |FreePart|.  Checks that there are still parts left after the
+  // call to |FreeParts|.  Checks that there are still parts left after the
   // removals; thus a call to |AddPart| must occur before |FreeParts| is first
   // called.
   virtual void FreeParts();

@@ -103,6 +103,10 @@ void Vessel::KeepPart(PartId const id) {
   kept_parts_.insert(id);
 }
 
+bool Vessel::WillKeepPart(PartId const id) const {
+  return Contains(kept_parts_, id);
+}
+
 void Vessel::FreeParts() {
   CHECK_LE(kept_parts_.size(), parts_.size());
   for (auto it = parts_.begin(); it != parts_.end();) {
