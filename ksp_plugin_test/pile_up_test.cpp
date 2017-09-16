@@ -1,3 +1,4 @@
+﻿
 #include "ksp_plugin/pile_up.hpp"
 
 #include <limits>
@@ -21,6 +22,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::check_not_null;
 using base::make_not_null_unique;
 using geometry::Displacement;
 using geometry::Position;
@@ -56,8 +58,12 @@ using ::testing::_;
 // A helper class to expose the internal state of a pile-up for testing.
 class TestablePileUp : public PileUp {
  public:
-  using PileUp::PileUp;
   using RigidPileUp = PileUp::RigidPileUp;
+
+  using PileUp::PileUp;
+  using PileUp::DeformPileUpIfNeeded;
+  using PileUp::AdvanceTime;
+  using PileUp::NudgeParts;
 
   Mass const& mass() const {
     return mass_;
@@ -68,7 +74,7 @@ class TestablePileUp : public PileUp {
   }
 
   not_null<DiscreteTrajectory<Barycentric>*> psychohistory() const {
-    return psychohistory_.get();
+    return psychohistory_;
   }
 
   PartTo<DegreesOfFreedom<RigidPileUp>> const&
@@ -259,10 +265,10 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
           Return(true)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
-  EXPECT_EQ(1, p1_.tail().Size());
-  EXPECT_TRUE(p1_.tail_is_authoritative());
+  EXPECT_EQ(++p1_.history_begin(), p1_.history_end());
+  EXPECT_EQ(p1_.psychohistory_begin(), p1_.psychohistory_end());
   EXPECT_THAT(
-      p1_.tail().last().degrees_of_freedom(),
+      p1_.history_begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {-25.0 / 9.0 * Metre,
@@ -272,10 +278,10 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
                                       1010.0 / 9.0 * Metre / Second}), 1)));
-  EXPECT_EQ(1, p2_.tail().Size());
-  EXPECT_TRUE(p2_.tail_is_authoritative());
+  EXPECT_EQ(++p2_.history_begin(), p2_.history_end());
+  EXPECT_EQ(p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
-      p2_.tail().last().degrees_of_freedom(),
+      p2_.history_begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.0 / 9.0 * Metre,
@@ -341,16 +347,16 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
 
   CheckPreAdvanceTimeInvariants(pile_up);
 
-  auto psychohistory = pile_up.psychohistory();
+  auto history = pile_up.psychohistory()->parent();
   auto instance = make_not_null_unique<MockFixedStepSizeIntegrator<
       Ephemeris<Barycentric>::NewtonianMotionEquation>::MockInstance>();
   EXPECT_CALL(ephemeris,
-              NewInstance(ElementsAre(pile_up.psychohistory()), _, _))
+              NewInstance(ElementsAre(history), _, _))
       .WillOnce(Return(ByMove(std::move(instance))));
   EXPECT_CALL(ephemeris, FlowWithFixedStep(_, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(
-              &psychohistory,
+              &history,
               astronomy::J2000 + 0.4 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +
@@ -360,7 +366,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                          140.1 * Metre / Second,
                                          310.1 / 3.0 * Metre / Second}))),
           AppendToDiscreteTrajectory(
-              &psychohistory,
+              &history,
               astronomy::J2000 + 0.8 * Second,
               DegreesOfFreedom<Barycentric>(
                   Barycentric::origin +
@@ -382,10 +388,10 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
           Return(true)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
-  EXPECT_EQ(3, p1_.tail().Size());
-  EXPECT_FALSE(p1_.tail_is_authoritative());
+  EXPECT_EQ(++(++p1_.history_begin()), p1_.history_end());
+  EXPECT_EQ(++p1_.psychohistory_begin(), p1_.psychohistory_end());
   EXPECT_THAT(
-      p1_.tail().Begin().degrees_of_freedom(),
+      p1_.history_begin().degrees_of_freedom(),
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-24.1 / 9.0 * Metre,
@@ -397,7 +403,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               1010.3 / 9.0 * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      (++p1_.tail().Begin()).degrees_of_freedom(),
+      (++p1_.history_begin()).degrees_of_freedom(),
       Componentwise(
           AlmostEquals(Barycentric::origin +
                            Displacement<Barycentric>({-23.2 / 9.0 * Metre,
@@ -409,7 +415,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                               1010.6 / 9.0 * Metre / Second}),
                        1)));
   EXPECT_THAT(
-      p1_.tail().last().degrees_of_freedom(),
+      p1_.psychohistory_begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {-25.0 / 9.0 * Metre,
@@ -419,10 +425,10 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                      {-250.0 / 9.0 * Metre / Second,
                                       400.0 / 3.0 * Metre / Second,
                                       1010.0 / 9.0 * Metre / Second}), 1)));
-  EXPECT_EQ(3, p2_.tail().Size());
-  EXPECT_FALSE(p2_.tail_is_authoritative());
+  EXPECT_EQ(++(++p2_.history_begin()), p2_.history_end());
+  EXPECT_EQ(++p2_.psychohistory_begin(), p2_.psychohistory_end());
   EXPECT_THAT(
-      p2_.tail().Begin().degrees_of_freedom(),
+      p2_.history_begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.9 / 9.0 * Metre,
@@ -433,7 +439,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.3 / 3.0 * Metre / Second,
                                       890.3 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      (++p2_.tail().Begin()).degrees_of_freedom(),
+      (++p2_.history_begin()).degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {27.8 / 9.0 * Metre,
@@ -444,7 +450,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                                       430.6 / 3.0 * Metre / Second,
                                       890.6 / 9.0 * Metre / Second}), 1)));
   EXPECT_THAT(
-      p2_.tail().last().degrees_of_freedom(),
+      p2_.psychohistory_begin().degrees_of_freedom(),
       Componentwise(AlmostEquals(Barycentric::origin +
                                      Displacement<Barycentric>(
                                          {26.0 / 9.0 * Metre,
@@ -574,7 +580,7 @@ TEST_F(PileUpTest, Serialization) {
   EXPECT_EQ(2, message.part_id_size());
   EXPECT_EQ(part_id1_, message.part_id(0));
   EXPECT_EQ(part_id2_, message.part_id(1));
-  EXPECT_EQ(1, message.psychohistory().timeline_size());
+  EXPECT_EQ(1, message.history().timeline_size());
   EXPECT_EQ(2, message.actual_part_degrees_of_freedom().size());
   EXPECT_TRUE(message.apparent_part_degrees_of_freedom().empty());
 
@@ -593,6 +599,51 @@ TEST_F(PileUpTest, Serialization) {
   serialization::PileUp second_message;
   p.WriteToMessage(&second_message);
   EXPECT_THAT(message, EqualsProto(second_message));
+}
+
+TEST_F(PileUpTest, SerializationCompatibility) {
+  MockEphemeris<Barycentric> ephemeris;
+  p1_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
+  p2_.increment_intrinsic_force(
+      Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  TestablePileUp pile_up({&p1_, &p2_},
+                         astronomy::J2000,
+                         DefaultProlongationParameters(),
+                         DefaultHistoryParameters(),
+                         &ephemeris);
+
+  serialization::PileUp message;
+  pile_up.WriteToMessage(&message);
+
+  // Clear the children to simulate pre-Cesàro serialization.
+  message.mutable_history()->clear_children();
+  EXPECT_EQ(1, message.history().timeline_size());
+
+  auto const part_id_to_part = [this](PartId const part_id) {
+    if (part_id == part_id1_) {
+      return &p1_;
+    }
+    if (part_id == part_id2_) {
+      return &p2_;
+    }
+    LOG(FATAL) << "Unexpected part id " << part_id;
+    base::noreturn();
+  };
+  auto p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
+
+  EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
+      .WillOnce(DoAll(
+          AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(
+              Barycentric::origin +
+                  Displacement<Barycentric>({1.0 * Metre,
+                                             14.0 * Metre,
+                                             31.0 / 3.0 * Metre}),
+              Velocity<Barycentric>({10.0 * Metre / Second,
+                                     140.0 * Metre / Second,
+                                     310.0 / 3.0 * Metre / Second}))),
+          Return(true)));
+  p.DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
 }
 
 }  // namespace internal_pile_up

@@ -96,7 +96,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5138.
+  extensions 5000 to 5999;  // Last used: 5143.
 }
 
 message AdvanceTime {
@@ -117,17 +117,6 @@ message CatchUpLaggingVessels {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-  }
-  optional In in = 1;
-}
-
-message CatchUpVessel {
-  extend Method {
-    optional CatchUpVessel extension = 5129;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required string vessel_guid = 2;
   }
   optional In in = 1;
 }
@@ -685,6 +674,37 @@ message FreeVesselsAndPartsAndCollectPileUps {
   optional In in = 1;
 }
 
+message FutureCatchUpVessel {
+  extend Method {
+    optional FutureCatchUpVessel extension = 5139;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    required string vessel_guid = 2;
+  }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "std::future<void> const",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message FutureWait {
+  extend Method {
+    optional FutureWait extension = 5140;
+  }
+  message In {
+    required fixed64 future = 1 [(pointer_to) = "std::future<void> const",
+                                 (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 future = 1 [(pointer_to) = "std::future<void> const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
 message GetBufferDuration {
   extend Method {
     optional GetBufferDuration extension = 5005;
@@ -1088,6 +1108,37 @@ message LogWarning {
   }
   message In {
     required string text = 1;
+  }
+  optional In in = 1;
+}
+
+message MonitorSetName {
+  extend Method {
+    optional MonitorSetName extension = 5143;
+  }
+  message In {
+    required int32 i = 1;
+    required string name = 2;
+  }
+  optional In in = 1;
+}
+
+message MonitorStart {
+  extend Method {
+    optional MonitorStart extension = 5141;
+  }
+  message In {
+    required int32 i = 1;
+  }
+  optional In in = 1;
+}
+
+message MonitorStop {
+  extend Method {
+    optional MonitorStop extension = 5142;
+  }
+  message In {
+    required int32 i = 1;
   }
   optional In in = 1;
 }

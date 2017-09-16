@@ -51,24 +51,29 @@ message Part {
   required Multivector intrinsic_force = 5;
   optional int32 containing_pile_up = 6;
   optional Pair degrees_of_freedom = 1;
-  required DiscreteTrajectory tail = 7;
-  required bool tail_is_authoritative = 8;
+  required DiscreteTrajectory prehistory = 7;
+  optional bool tail_is_authoritative = 8;  // Pre-Cesàro.
 
   // Pre-Cardano.
   reserved 3;
   reserved "gravitational_acceleration_to_be_applied_by_ksp";
+  // Pre-Cesàro.
+  reserved "tail";
 }
 
 message PileUp {
   repeated fixed32 part_id = 1;
   required Quantity mass = 2;
   required Multivector intrinsic_force = 3;
-  required DiscreteTrajectory psychohistory = 4;
+  required DiscreteTrajectory history = 4;
   map<fixed32, Pair> actual_part_degrees_of_freedom = 5;
   map<fixed32, Pair> apparent_part_degrees_of_freedom = 6;
   // Added in Cartan.
   optional Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 7;
   optional Ephemeris.FixedStepParameters fixed_step_parameters = 8;
+
+  // Pre-Cesàro.
+  reserved "psychohistory";
 }
 
 message Plugin {
@@ -127,8 +132,8 @@ message Vessel {
       prediction_adaptive_step_parameters = 10;
   repeated Part parts = 14;
   repeated fixed32 kept_parts = 15;
-  required DiscreteTrajectory psychohistory = 16;
-  required bool psychohistory_is_authoritative = 17;
+  required DiscreteTrajectory history = 16;
+  optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
   required DiscreteTrajectory prediction = 18;
   optional FlightPlan flight_plan = 4;
 
@@ -137,10 +142,11 @@ message Vessel {
   reserved "/*prediction*/", "history_and_prolongation", "owned_prolongation";
   // Pre-Cardano.
   reserved 6, 7, 8, 9, 11, 12;
-  reserved "history",
-           "prolongation_adaptive_step_parameters",
+  reserved "prolongation_adaptive_step_parameters",
            "history_fixed_step_parameters",
            "prediction_last_time",
            "is_dirty",
            "prediction_fork_time";
+  // Pre-Cesàro.
+  reserved "psychohistory";
 }

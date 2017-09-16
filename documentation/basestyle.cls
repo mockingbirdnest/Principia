@@ -49,18 +49,6 @@
   Ligatures={TeX, Common, Discretionary}, 
   Contextuals=WordFinal
                         ]{Linux Libertine Display O}
-\newfontface\textsfshadow[
-  Mapping=tex-text, 
-  Ligatures={TeX, Common},
-  Numbers={OldStyle, Proportional},
-  Contextuals=WordFinal
-            ]{Linux Biolinum Shadow O}
-\newfontface\textsfoutline[
-  Mapping=tex-text, 
-  Ligatures={TeX, Common},
-  Numbers={OldStyle, Proportional},
-  Contextuals=WordFinal
-            ]{Linux Biolinum Outline O}
 
 \setsansfont[
   Mapping=tex-text, 

@@ -3,7 +3,7 @@
 These instructions are for Visual Studio 2015, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
-We assume a working installation of Kerbal Space Program version 1.1.2 is
+We assume a working installation of Kerbal Space Program version 1.3 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
@@ -42,7 +42,8 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 ### KSP and Unity assemblies
 
-Copy these assemblies to the directory `<root>\KSP Assemblies`.
+Copy these assemblies to the directory `<root>\KSP Assemblies\1.3`.
+In order to build for KSP 1.2.2, copy the corresponding KSP 1.2.2 assemblies to `<root>\KSP Assemblies\1.2.2`.
 
 ### Downloading the Google libraries
 

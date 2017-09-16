@@ -147,17 +147,20 @@ inline void noreturn() { std::exit(0); }
 // Thread-safety analysis.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
-#  define GUARDED_BY(x) THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(x))
+#  define EXCLUDES(...) \
+       THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
+#  define GUARDED_BY(...) \
+       THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(__VA_ARGS__))
+#  define REQUIRES(...) \
+       THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
+#  define REQUIRES_SHARED(...) \
+       THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
 #else
+#  define EXCLUDES(x)
 #  define GUARDED_BY(x)
+#  define REQUIRES(x)
+#  define REQUIRES_SHARED(x)
 #endif
-
-#define VLOG_AND_RETURN(verboselevel, expression)                  \
-  do {                                                             \
-    auto const& value__ = (expression);                            \
-    VLOG(verboselevel) << __FUNCTION__ << " returns " << value__;  \
-    return value__;                                                \
-  } while (false)
 
 // Unicode.
 #if OS_WIN

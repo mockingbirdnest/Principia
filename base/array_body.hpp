@@ -97,7 +97,7 @@ BoundedArray<Element, max_size>::rend() const {
 template<typename Element, std::int32_t max_size>
 typename BoundedArray<Element, max_size>::reference
 BoundedArray<Element, max_size>::front() {
-  return data_.front()
+  return data_.front();
 }
 
 template<typename Element, std::int32_t max_size>

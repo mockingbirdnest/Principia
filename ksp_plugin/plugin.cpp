@@ -10,6 +10,7 @@
 #include <list>
 #include <map>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 #include <set>
@@ -102,6 +103,8 @@ Plugin::Plugin(std::string const& game_epoch,
     : history_parameters_(DefaultHistoryParameters()),
       prolongation_parameters_(DefaultProlongationParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
+      vessel_thread_pool_(
+          /*pool_size=*/2 * std::thread::hardware_concurrency()),
       planetarium_rotation_(planetarium_rotation),
       game_epoch_(ParseTT(game_epoch)),
       current_time_(ParseTT(solar_system_epoch)) {
@@ -268,8 +271,6 @@ bool Plugin::HasEncounteredApocalypse(std::string* const details) const {
 
 void Plugin::UpdateCelestialHierarchy(Index const celestial_index,
                                       Index const parent_index) const {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(celestial_index) << '\n' << NAMED(parent_index);
   CHECK(!initializing_);
   FindOrDie(celestials_, celestial_index)->set_parent(
       FindOrDie(celestials_, parent_index).get());
@@ -334,10 +335,6 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
                                 Index const parent_index,
                                 bool const loaded,
                                 bool& inserted) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(vessel_guid) << '\n'
-          << NAMED(parent_index) << '\n'
-          << NAMED(loaded) << '\n';
   CHECK(!initializing_);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
@@ -373,8 +370,7 @@ void Plugin::InsertUnloadedPart(
     std::string const& name,
     GUID const& vessel_guid,
     RelativeDegreesOfFreedom<AliceSun> const& from_parent) {
-  not_null<Vessel*> const vessel =
-      find_vessel_by_guid_or_die(vessel_guid).get();
+  not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   RelativeDegreesOfFreedom<Barycentric> const relative =
       PlanetariumRotation().Inverse()(from_parent);
   ephemeris_->Prolong(current_time_);
@@ -397,8 +393,7 @@ void Plugin::InsertOrKeepLoadedPart(
     DegreesOfFreedom<World> const& main_body_degrees_of_freedom,
     DegreesOfFreedom<World> const& part_degrees_of_freedom,
     Time const& Δt) {
-  not_null<Vessel*> const vessel =
-      find_vessel_by_guid_or_die(vessel_guid).get();
+  not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   CHECK(is_loaded(vessel));
 
   auto it = part_id_to_vessel_.find(part_id);
@@ -463,8 +458,14 @@ void Plugin::PrepareToReportCollisions() {
 }
 
 void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
-  Part& p1 = *FindOrDie(part_id_to_vessel_, part1)->part(part1);
-  Part& p2 = *FindOrDie(part_id_to_vessel_, part2)->part(part2);
+  Vessel const& v1 = *FindOrDie(part_id_to_vessel_, part1);
+  Vessel const& v2 = *FindOrDie(part_id_to_vessel_, part2);
+  Part& p1 = *v1.part(part1);
+  Part& p2 = *v2.part(part2);
+  LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and "
+            << p2.ShortDebugString();
+  CHECK(v1.WillKeepPart(part1)) << p1.ShortDebugString() << " will vanish";
+  CHECK(v2.WillKeepPart(part2)) << p2.ShortDebugString() << " will vanish";
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
 }
 
@@ -476,7 +477,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel)) {
-      vessel->PreparePsychohistory(vessel_time);
+      vessel->PrepareHistory(vessel_time);
       ++it;
     } else {
       CHECK(!is_loaded(vessel));
@@ -539,26 +540,6 @@ void Plugin::SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
-void Plugin::CatchUpLaggingVessels() {
-  CHECK(!initializing_);
-
-  for (PileUp& pile_up : pile_ups_) {
-    if (pile_up.time() < current_time_) {
-      pile_up.DeformPileUpIfNeeded();
-      pile_up.AdvanceTime(current_time_);
-      // TODO(egg): now that |NudgeParts| doesn't need the bubble barycentre
-      // anymore, it could be part of |PileUp::AdvanceTime|.
-      pile_up.NudgeParts();
-    }
-  }
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
-      vessel.AdvanceTime();
-    }
-  }
-}
-
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
     PartId const part_id,
     PartId const part_at_origin) const {
@@ -597,8 +578,6 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
-  VLOG(1) << __FUNCTION__ << '\n'
-          << NAMED(t) << '\n' << NAMED(planetarium_rotation);
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
@@ -606,32 +585,55 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
     vessel->ClearAllIntrinsicForces();
   }
 
-  ephemeris_->Prolong(current_time_);
-  VLOG(1) << "Time has been advanced" << '\n'
-          << "from : " << current_time_ << '\n'
-          << "to   : " << t;
   current_time_ = t;
   planetarium_rotation_ = planetarium_rotation;
+  ephemeris_->Prolong(current_time_);
   UpdatePlanetariumRotation();
   loaded_vessels_.clear();
 }
 
-void Plugin::CatchUpVessel(GUID const& vessel_guid) {
+not_null<std::unique_ptr<std::future<void>>> Plugin::CatchUpVessel(
+    GUID const& vessel_guid) {
   CHECK(!initializing_);
-  Vessel& vessel = *find_vessel_by_guid_or_die(vessel_guid);
-  vessel.ForSomePart([this](Part& part) {
-    auto const pile_up = part.containing_pile_up()->iterator();
-    // This may be false, if we have already caught up the pile up as part of
-    // |CatchUpVessel| for another vessel in the pile up.
-    if (pile_up->time() < current_time_) {
-      // TODO(egg): this should probably check that deformation is not needed
-      // instead.
-      pile_up->DeformPileUpIfNeeded();
-      pile_up->AdvanceTime(current_time_);
-      pile_up->NudgeParts();
+
+  return make_not_null_unique<std::future<void>>(
+      vessel_thread_pool_.Add([this, vessel_guid]() {
+        Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+        vessel.ForSomePart([this](Part& part) {
+          auto const pile_up = part.containing_pile_up()->iterator();
+          // Note that there can be contention in the following method if the
+          // caller is catching-up two vessels belonging to the same pile-up in
+          // parallel.
+          pile_up->DeformAndAdvanceTime(current_time_);
+        });
+        vessel.AdvanceTime();
+      }));
+}
+
+void Plugin::CatchUpLaggingVessels() {
+  CHECK(!initializing_);
+
+  // Start all the integrations in parallel.
+  std::vector<std::future<void>> futures;
+  for (PileUp& pile_up : pile_ups_) {
+    futures.emplace_back(
+        vessel_thread_pool_.Add([this, &pile_up]() {
+          // Note that there cannot be contention in the following method as
+          // no two pile-ups are advanced at the same time.
+          pile_up.DeformAndAdvanceTime(current_time_);
+        }));
+  }
+
+  // Wait for the integrations to finish before updating the vessels.
+  for (auto const& future : futures) {
+    future.wait();
+  }
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    if (vessel.psychohistory().last().time() < current_time_) {
+      vessel.AdvanceTime();
     }
-  });
-  vessel.AdvanceTime();
+  }
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {
@@ -649,7 +651,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
     GUID const& vessel_guid) const {
   CHECK(!initializing_);
   not_null<std::unique_ptr<Vessel>> const& vessel =
-      find_vessel_by_guid_or_die(vessel_guid);
+      FindOrDie(vessels_, vessel_guid);
   not_null<Celestial const*> parent =
       FindOrDie(celestials_, parent_index).get();
   if (vessel->parent() != parent) {
@@ -660,9 +662,6 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::VesselFromParent(
       vessel->parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
-  VLOG(1) << "Vessel " << vessel->ShortDebugString()
-          << " is at parent degrees of freedom + " << barycentric_result
-          << " Barycentre (" << result << " AliceSun)";
   return result;
 }
 
@@ -678,15 +677,12 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
       celestial.parent()->current_degrees_of_freedom(current_time_);
   RelativeDegreesOfFreedom<AliceSun> const result =
       PlanetariumRotation()(barycentric_result);
-  VLOG(1) << "Celestial at index " << celestial_index
-          << " is at parent degrees of freedom + " << barycentric_result
-          << " Barycentre (" << result << " AliceSun)";
   return result;
 }
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->UpdatePrediction(
+  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(
       current_time_ + prediction_length_);
 }
 
@@ -694,7 +690,7 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
                               Instant const& final_time,
                               Mass const& initial_mass) const {
   CHECK(!initializing_);
-  find_vessel_by_guid_or_die(vessel_guid)->CreateFlightPlan(
+  FindOrDie(vessels_, vessel_guid)->CreateFlightPlan(
       final_time,
       initial_mass,
       prediction_parameters_);
@@ -806,7 +802,7 @@ bool Plugin::HasVessel(GUID const& vessel_guid) const {
 
 not_null<Vessel*> Plugin::GetVessel(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  return find_vessel_by_guid_or_die(vessel_guid).get();
+  return FindOrDie(vessels_, vessel_guid).get();
 }
 
 not_null<std::unique_ptr<Planetarium>> Plugin::NewPlanetarium(
@@ -876,8 +872,7 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
                              Index const reference_body_index) {
   not_null<Celestial const*> const celestial =
       FindOrDie(celestials_, reference_body_index).get();
-  not_null<Vessel*> const vessel =
-      find_vessel_by_guid_or_die(vessel_guid).get();
+  not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
   // Make sure that the current time is covered by the prediction.
   if (current_time_ > vessel->prediction().t_max()) {
     vessel->UpdatePrediction(current_time_ + prediction_length_);
@@ -985,19 +980,19 @@ std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(
 
 Vector<double, World> Plugin::VesselTangent(GUID const& vessel_guid) const {
   return renderer_->FrenetToWorld(
-      *find_vessel_by_guid_or_die(vessel_guid),
+      *FindOrDie(vessels_, vessel_guid),
       PlanetariumRotation())(Vector<double, Frenet<Navigation>>({1, 0, 0}));
 }
 
 Vector<double, World> Plugin::VesselNormal(GUID const& vessel_guid) const {
   return renderer_->FrenetToWorld(
-      *find_vessel_by_guid_or_die(vessel_guid),
+      *FindOrDie(vessels_, vessel_guid),
       PlanetariumRotation())(Vector<double, Frenet<Navigation>>({0, 1, 0}));
 }
 
 Vector<double, World> Plugin::VesselBinormal(GUID const& vessel_guid) const {
   return renderer_->FrenetToWorld(
-      *find_vessel_by_guid_or_die(vessel_guid),
+      *FindOrDie(vessels_, vessel_guid),
       PlanetariumRotation())(Vector<double, Frenet<Navigation>>({0, 0, 1}));
 }
 
@@ -1014,7 +1009,7 @@ Velocity<World> Plugin::UnmanageableVesselVelocity(
 }
 
 Velocity<World> Plugin::VesselVelocity(GUID const& vessel_guid) const {
-  Vessel const& vessel = *find_vessel_by_guid_or_die(vessel_guid);
+  Vessel const& vessel = *FindOrDie(vessels_, vessel_guid);
   auto const& last = vessel.psychohistory().last();
   return VesselVelocity(last.time(), last.degrees_of_freedom());
 }
@@ -1216,7 +1211,9 @@ Plugin::Plugin(
     Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters)
     : history_parameters_(history_parameters),
       prolongation_parameters_(prolongation_parameters),
-      prediction_parameters_(prediction_parameters) {}
+      prediction_parameters_(prediction_parameters),
+      vessel_thread_pool_(
+          /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
 void Plugin::InitializeIndices(
     std::string const& name,
@@ -1232,12 +1229,6 @@ void Plugin::InitializeIndices(
   std::tie(std::ignore, inserted) =
       parents_.emplace(celestial_index, parent_index);
   CHECK(inserted) << celestial_index;
-}
-
-not_null<std::unique_ptr<Vessel>> const& Plugin::find_vessel_by_guid_or_die(
-    GUID const& vessel_guid) const {
-  VLOG(1) << __FUNCTION__ << '\n' << NAMED(vessel_guid);
-  VLOG_AND_RETURN(1, FindOrDie(vessels_, vessel_guid));
 }
 
 void Plugin::UpdatePlanetariumRotation() {

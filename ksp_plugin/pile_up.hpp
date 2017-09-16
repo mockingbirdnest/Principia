@@ -1,8 +1,10 @@
 ﻿
 #pragma once
 
+#include <functional>
 #include <list>
 #include <map>
+#include <mutex>
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -47,7 +49,7 @@ class PileUp {
       Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
       not_null<Ephemeris<Barycentric>*> ephemeris);
 
-  virtual ~PileUp() = default;
+  virtual ~PileUp();
 
   // This class is moveable.
   PileUp(PileUp&& pile_up) = default;
@@ -64,6 +66,34 @@ class PileUp {
   void SetPartApparentDegreesOfFreedom(
       not_null<Part*> part,
       DegreesOfFreedom<ApparentBubble> const& degrees_of_freedom);
+
+  // Deforms the pile-up, advances the time, and nudges the parts, in sequence.
+  // Does nothing if the psychohistory is already advanced beyond |t|.  Several
+  // executions of this method may happen concurrently on multiple threads, but
+  // not concurrently with any other method of this class.
+  void DeformAndAdvanceTime(Instant const& t);
+
+  void WriteToMessage(not_null<serialization::PileUp*> message) const;
+  static PileUp ReadFromMessage(
+      serialization::PileUp const& message,
+      std::function<not_null<Part*>(PartId)> const& part_id_to_part,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
+
+ private:
+  // A pointer to a member function of |Part| used to append a point to either
+  // trajectory (history or psychohistory).
+  using AppendToPartTrajectory =
+      void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
+
+  // For deserialization.
+  PileUp(
+      std::list<not_null<Part*>>&& parts,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          adaptive_step_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
+      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+      DiscreteTrajectory<Barycentric>* psychohistory,
+      not_null<Ephemeris<Barycentric>*> ephemeris);
 
   // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
@@ -88,28 +118,11 @@ class PileUp {
   // |DeformPileUpIfNeeded|.
   void NudgeParts() const;
 
-  // Returns the last |Instant| passed to |AdvanceTime|.  Note that this may
-  // correspond to a non-authoritative point.
-  Instant const& time();
+  template<AppendToPartTrajectory append_to_part_trajectory>
+  void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
-  void WriteToMessage(not_null<serialization::PileUp*> message) const;
-  static PileUp ReadFromMessage(
-      serialization::PileUp const& message,
-      std::function<not_null<Part*>(PartId)> const& part_id_to_part,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
-
- private:
-  // For deserialization.
-  PileUp(
-      std::list<not_null<Part*>>&& parts,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
-
-  void AppendToPartTails(DiscreteTrajectory<Barycentric>::Iterator it,
-                         bool authoritative) const;
+  // Wrapped in a |unique_ptr| to be moveable.
+  not_null<std::unique_ptr<std::mutex>> lock_;
 
   std::list<not_null<Part*>> parts_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
@@ -121,14 +134,21 @@ class PileUp {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
-  // TODO(phl): replace by an instance.  Specifically, this should contain
-  // either an adaptive step instance (if the last call to AdvanceTime occurred
-  // with nonzero intrinsic force), or a fixed step instance otherwise (with the
-  // prolongation being computed by an instance local to the body of
-  // |AdvanceTime|).
-  // |psychohistory_.Size()| is either 1 or 2.  The first point is
-  // authoritative, and the second point, if any, is not.
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> psychohistory_;
+  // The |history_| is the past trajectory of the pile-up.  It is normally
+  // integrated with a fixed step using |fixed_instance_|, except in the
+  // presence of intrinsic acceleration.  It is authoritative in the sense that
+  // it is never going to change.
+  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
+
+  // The |psychohistory_| is the recent past trajectory of the pile-up.  Since
+  // we need to draw something between the last point of the |history_| and the
+  // current time, we must have a bit of trajectory that may not cover an entire
+  // fixed step.  This part is the |psychohistory_|, and it is forked at the end
+  // of the |history_|.  It is not authoritative in the sense that it may not
+  // match the |history_| that we'll ultimately compute.  The name comes from
+  // the fact that we are trying to predict the future, but since we are not as
+  // good as Hari Seldon we only do it over a short period of time.
+  DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
   // When present, this instance is used to integrate the trajectory of this
   // pile-up using a fixed-step integrator.  This instance is destroyed

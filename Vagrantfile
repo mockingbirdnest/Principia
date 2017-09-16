@@ -1,11 +1,14 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Note: Use 'sudo su' in the ubuntu machine before make'ing.
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/zesty64"
-  config.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
 
-  script = <<SCRIPT
+  config.vm.define "ubuntu" do |ubuntu|
+    ubuntu.vm.box = "ubuntu/zesty64"
+    ubuntu.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
+
+    script = <<SCRIPT
 echo Provisioning Principia
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 echo "deb http://download.mono-project.com/repo/debian wheezy main" | tee /etc/apt/sources.list.d/mono-xamarin.list
@@ -29,10 +32,11 @@ cd principia
 if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reinstall."; else ./install_deps.sh; fi
 SCRIPT
 
-  config.vm.provision "shell", inline: script
+    ubuntu.vm.provision "shell", inline: script
 
-  config.vm.provider "virtualbox" do |v|
-    v.memory = 2048
-    v.cpus = 4
+    ubuntu.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 4
+    end
   end
 end
