@@ -387,18 +387,6 @@ public partial class PrincipiaPluginAdapter
     return active_vessel != null && is_manageable(active_vessel);
   }
 
-  private double UpcomingUniversalTime() {
-    var planetarium = Planetarium.fetch;
-    if (planetarium == null) {
-      return HighLogic.CurrentGame.UniversalTime;
-    } else {
-      return planetarium.pause
-                 ? planetarium.time
-                 : planetarium.time +
-                   planetarium.fixedDeltaTime * planetarium.timeScale;
-    }
-  }
-
   private void OverrideRSASTarget(FlightCtrlState state) {
     if (override_rsas_target_ && FlightGlobals.ActiveVessel.Autopilot.Enabled) {
       FlightGlobals.ActiveVessel.Autopilot.SAS.SetTargetOrientation(
@@ -1243,33 +1231,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void ObscenelyEarly() {
-    if (FlightGlobals.ActiveVessel?.situation == Vessel.Situations.PRELAUNCH &&
-        FlightGlobals.ActiveVessel?.orbitDriver?.lastMode ==
-            OrbitDriver.UpdateMode.TRACK_Phys &&
-        FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
-            OrbitDriver.UpdateMode.IDLE) {
-      Log.Info("Skipping AdvanceTime while waiting for the vessel to be " +
-               "fully ready (see #1421).");
-    } else {
-      if (PluginRunning()) {
-        double plugin_time = plugin_.CurrentTime();
-        double universal_time = UpcomingUniversalTime();
-        time_is_advancing_ = time_is_advancing(universal_time);
-        if (time_is_advancing_) {
-          plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
-          if (!is_post_apocalyptic_) {
-            is_post_apocalyptic_ |=
-                plugin_.HasEncounteredApocalypse(out revelation_);
-          }
-          foreach (var vessel in FlightGlobals.Vessels) {
-            if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
-              vessel_futures_.Add(
-                  plugin_.FutureCatchUpVessel(vessel.id.ToString()));
-            }
-          }
-        }
-      }
-    }
     foreach (var vessel in
              FlightGlobals.Vessels.Where(vessel => vessel.precalc != null)) {
       vessel.precalc.enabled = false;
@@ -1282,9 +1243,24 @@ public partial class PrincipiaPluginAdapter
             OrbitDriver.UpdateMode.TRACK_Phys &&
         FlightGlobals.ActiveVessel?.orbitDriver?.updateMode ==
             OrbitDriver.UpdateMode.IDLE) {
-      Log.Info("Skipping SetBodyFrames while waiting for the vessel to be " +
-               "fully ready (see #1421).");
+      Log.Info("Skipping AdvanceTime and SetBodyFrames while waiting for the " +
+               "vessel to be fully ready (see #1421).");
     } else {
+      double universal_time = Planetarium.GetUniversalTime();
+      time_is_advancing_ = time_is_advancing(universal_time);
+      if (time_is_advancing_) {
+        plugin_.AdvanceTime(universal_time, Planetarium.InverseRotAngle);
+        if (!is_post_apocalyptic_) {
+          is_post_apocalyptic_ |=
+              plugin_.HasEncounteredApocalypse(out revelation_);
+        }
+        foreach (var vessel in FlightGlobals.Vessels) {
+          if (vessel.packed && plugin_.HasVessel(vessel.id.ToString())) {
+            vessel_futures_.Add(
+                plugin_.FutureCatchUpVessel(vessel.id.ToString()));
+          }
+        }
+      }
       SetBodyFrames();
     }
     // Unfortunately there is no way to get scheduled between Planetarium and
