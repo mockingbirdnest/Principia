@@ -19,7 +19,7 @@ public partial class PrincipiaPluginAdapter
   private const String next_release_name_ = "Chasles";
   private const int next_release_lunation_number_ = 220;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2017, 10, 19, 19, 22, 00, TimeSpan.Zero);
+      new DateTimeOffset(2017, 10, 19, 19, 12, 00, TimeSpan.Zero);
 
   private const String principia_key_ = "serialized_plugin";
   private const String principia_initial_state_config_name_ =
