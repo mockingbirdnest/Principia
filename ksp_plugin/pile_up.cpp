@@ -387,7 +387,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
   for (not_null<Part*> const part : parts_) {
-    (part->*append_to_part_trajectory)(
+    (static_cast<Part*>(part)->*append_to_part_trajectory)(
         it.time(),
         pile_up_to_barycentric(
             FindOrDie(actual_part_degrees_of_freedom_, part)));

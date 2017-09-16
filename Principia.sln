@@ -91,6 +91,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Setup Files", "Setup Files"
 	ProjectSection(SolutionItems) = preProject
 		documentation\Setup Files\chromium.patch = documentation\Setup Files\chromium.patch
 		documentation\Setup Files\chromium_sparse_checkout.txt = documentation\Setup Files\chromium_sparse_checkout.txt
+		Makefile = Makefile
 		Vagrantfile = Vagrantfile
 	EndProjectSection
 EndProject
