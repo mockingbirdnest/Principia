@@ -2031,12 +2031,6 @@ public partial class PrincipiaPluginAdapter
   private void LoggingSettings() {
 #if SELECTABLE_PLOT_METHOD
     using (new HorizontalLayout()) {
-      use_cayley_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_cayley_plotting_, "Cayley plotting");
-      use_чебышёв_plotting_ = UnityEngine.GUILayout.Toggle(
-          use_чебышёв_plotting_, "Чебышёв plotting");
-    }
-    using (new HorizontalLayout()) {
       UnityEngine.GUILayout.Label("Чебышёв plotting method:");
       for (int i = 0; i < чебышёв_plotting_methods_count; ++i) {
         if (UnityEngine.GUILayout.Toggle(чебышёв_plotting_method_ == i,
