@@ -253,43 +253,6 @@ class PluginTest : public testing::Test {
     return time + step * plugin_->Δt();
   }
 
-  // Keeps the vessel with the given |guid| during the next call to
-  // |AdvanceTime|.  The vessel must be present.
-  void KeepVessel(GUID const& guid) {
-    bool inserted;
-    plugin_->InsertOrKeepVessel(guid,
-                                "v" + guid,
-                                SolarSystemFactory::Earth,
-                                /*loaded=*/false,
-                                inserted);
-    EXPECT_FALSE(inserted) << guid;
-  }
-
-  // Inserts a vessel with the given |guid| and makes it a satellite of Earth
-  // with relative position |satellite_initial_displacement_| and velocity
-  // |satellite_initial_velocity_|.  The vessel must not already be present.
-  // Increments the counter |number_of_new_vessels|.
-  void InsertVessel(GUID const& guid,
-                    PartId const& part_id,
-                    std::size_t& number_of_new_vessels,
-                    Instant const& time) {
-    bool inserted;
-    plugin_->InsertOrKeepVessel(guid,
-                                "v" + guid,
-                                SolarSystemFactory::Earth,
-                                /*loaded=*/false,
-                                inserted);
-    EXPECT_TRUE(inserted) << guid;
-    EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(time)).RetiresOnSaturation();
-    plugin_->InsertUnloadedPart(
-        part_id,
-        "p" + std::to_string(part_id),
-        guid,
-        RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
-                                           satellite_initial_velocity_));
-    ++number_of_new_vessels;
-  }
-
   void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
@@ -1053,6 +1016,7 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
         VanishesBefore(initial_from_parent.velocity().Norm(), 718, 422847));
   }
 }
+
 TEST_F(PluginTest, Navball) {
   // Create a plugin with planetarium rotation 0.
   Plugin plugin(initial_time_,
@@ -1099,6 +1063,53 @@ TEST_F(PluginTest, Navball) {
   EXPECT_THAT(
       AbsoluteError(z_world, navball->FromThisFrame(World::origin)(z_navball)),
       VanishesBefore(1, 4));
+}
+
+TEST_F(PluginTest, NavballTargetVessel) {
+  GUID const guid = "Target Vessel";
+  PartId const part_id = 666;
+
+  Plugin plugin(initial_time_,
+                initial_time_,
+                0 * Radian);
+
+  serialization::GravityModel::Body gravity_model;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name                    : "Sun"
+         gravitational_parameter : "1 m^3/s^2"
+         reference_instant       : "JD2451545.0"
+         mean_radius             : "1 m"
+         axis_right_ascension    : "0 deg"
+         axis_declination        : "90 deg"
+         reference_angle         : "0 deg"
+         angular_frequency       : "1 rad/s")",
+      &gravity_model));
+  plugin.InsertCelestialAbsoluteCartesian(
+      SolarSystemFactory::Sun,
+      /*parent_index=*/std::experimental::nullopt,
+      gravity_model,
+      solar_system_->cartesian_initial_state_message(
+          SolarSystemFactory::name(SolarSystemFactory::Sun)));
+  plugin.EndInitialization();
+
+  bool inserted;
+  plugin.InsertOrKeepVessel(guid,
+                            "v" + guid,
+                            SolarSystemFactory::Sun,
+                            /*loaded=*/false,
+                            inserted);
+  plugin.InsertUnloadedPart(
+      part_id,
+      "part",
+      guid,
+      RelativeDegreesOfFreedom<AliceSun>(satellite_initial_displacement_,
+                                         satellite_initial_velocity_));
+  plugin.PrepareToReportCollisions();
+  plugin.FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));
+
+  plugin.SetTargetVessel(guid, SolarSystemFactory::Sun);
+  plugin.AdvanceTime(plugin.CurrentTime() + 12 * Hour, 0 * Radian);
+  plugin.NavballFrameField(World::origin)->FromThisFrame(World::origin);
 }
 
 TEST_F(PluginTest, Frenet) {
