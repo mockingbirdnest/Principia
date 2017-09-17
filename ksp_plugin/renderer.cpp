@@ -118,9 +118,7 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
         break;
       }
     }
-    trajectory->Append(
-        t,
-        BarycentricToPlotting(it.time())(it.degrees_of_freedom()));
+    trajectory->Append(t, BarycentricToPlotting(t)(it.degrees_of_freedom()));
   }
   return trajectory;
 }
