@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <experimental/optional>
+#include <functional>
 #include <memory>
 
 #include "base/not_null.hpp"
@@ -48,12 +49,13 @@ class Renderer {
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
   // Overrides the current plotting frame with one that is centred on the given
-  // |vessel|.  When using the operations below with a target vessel, the client
-  // must ensure that the |time| is covered by the vessel's prediction.
+  // |vessel|.  The time returned by |prediction_last_time| is used to prolong
+  // the prediction of the |vessel| when needed.
   virtual void SetTargetVessel(
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
-      not_null<Ephemeris<Barycentric> const*> ephemeris);
+      not_null<Ephemeris<Barycentric> const*> ephemeris,
+      std::function<Instant()> prediction_last_time);
 
   // Reverts to frame last set by |SetPlottingFrame|.  The second version only
   // has an effect if the given |vessel| is the current target vessel.
@@ -64,6 +66,11 @@ class Renderer {
   virtual bool HasTargetVessel() const;
   virtual Vessel& GetTargetVessel();
   virtual Vessel const& GetTargetVessel() const;
+
+  // If there is a target vessel, returns its prediction after extending it up
+  // to |time|.
+  virtual DiscreteTrajectory<Barycentric> const& GetTargetVesselPrediction(
+      Instant const& time) const;
 
   // Returns a trajectory in |World| corresponding to the trajectory defined by
   // |begin| and |end|, as seen in the current plotting frame.  In this function
@@ -165,18 +172,25 @@ class Renderer {
       not_null<Ephemeris<Barycentric> const*> ephemeris);
 
  private:
+  struct Target {
+    Target(not_null<Vessel*> vessel,
+           not_null<Celestial const*> celestial,
+           not_null<Ephemeris<Barycentric> const*> ephemeris,
+           std::function<Instant()> prediction_last_time);
+    not_null<Vessel*> const vessel;
+    not_null<Celestial const*> const celestial;
+    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
+    std::function<Instant()> prediction_last_time;
+  };
+
+  // Returns a plotting frame suitable for evaluation at |time|, possibly by
+  // extending the prediction if there is a target vessel.
+  not_null<NavigationFrame const*> GetPlottingFrame(Instant const& time) const;
+
   not_null<Celestial const*> const sun_;
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;
 
-  struct Target {
-    Target(not_null<Vessel*> vessel,
-           not_null<Celestial const*> celestial,
-           not_null<Ephemeris<Barycentric> const*> ephemeris);
-    not_null<Vessel*> const vessel;
-    not_null<Celestial const*> const celestial;
-    not_null<std::unique_ptr<NavigationFrame>> const target_frame;
-  };
   std::experimental::optional<Target> target_;
 };
 

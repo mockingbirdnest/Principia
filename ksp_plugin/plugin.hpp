@@ -406,10 +406,6 @@ class Plugin {
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();
 
-  // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
-  // while retaining a timeout.
-  void UpdatePredictionForRendering(std::int64_t size) const;
-
   Velocity<World> VesselVelocity(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const;

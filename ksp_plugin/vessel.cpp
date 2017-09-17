@@ -229,9 +229,17 @@ void Vessel::DeleteFlightPlan() {
 }
 
 void Vessel::UpdatePrediction(Instant const& last_time) {
-  prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-  auto const last = psychohistory_->last();
-  prediction_->Append(last.time(), last.degrees_of_freedom());
+  // TODO(phl): The prediction should probably be a fork of the psychohistory.
+  auto const psychohistory_last = psychohistory_->last();
+  auto const prediction_begin = prediction_->Begin();
+  if (prediction_->Empty() ||
+      prediction_begin.time() != psychohistory_last.time() ||
+      prediction_begin.degrees_of_freedom() !=
+          psychohistory_last.degrees_of_freedom()) {
+    prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
+    prediction_->Append(psychohistory_last.time(),
+                        psychohistory_last.degrees_of_freedom());
+  }
   FlowPrediction(last_time);
 }
 
