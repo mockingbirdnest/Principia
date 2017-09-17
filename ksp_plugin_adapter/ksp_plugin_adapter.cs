@@ -39,7 +39,6 @@ public partial class PrincipiaPluginAdapter
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
 
-  private bool use_чебышёв_plotting_ = true;
 #if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
 #endif
@@ -1588,7 +1587,7 @@ public partial class PrincipiaPluginAdapter
               Vector3d position_at_start =
                   (Vector3d)rendered_segments.
                       IteratorGetDiscreteTrajectoryXYZ();
-              if (use_чебышёв_plotting_) {
+              {
                 IntPtr rp2_lines_iterator =
                     planetarium.PlanetariumPlotFlightPlanSegment(
                         plugin_,
