@@ -53,7 +53,7 @@ using World = Frame<serialization::Frame::TestTag,
 
 class DoublePrecisionTest : public ::testing::Test {};
 
-TEST_F(DoublePrecisionTest, CompensatedSummation) {
+TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
   Position<World> const initial =
       World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
   DoublePrecision<Position<World>> accumulator(initial);
@@ -69,7 +69,23 @@ TEST_F(DoublePrecisionTest, CompensatedSummation) {
   EXPECT_THAT(accumulator.error.coordinates().x, Eq(0 * Metre));
 }
 
-TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummation) {
+TEST_F(DoublePrecisionTest, CompensatedSummationDecrement) {
+  Position<World> const initial =
+      World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre});
+  DoublePrecision<Position<World>> accumulator(initial);
+  Displacement<World> const δ({ε / 4 * Metre, 0 * Metre, 0 * Metre});
+  for (int i = 0; i < 4; ++i) {
+    accumulator.Decrement(δ);
+    if (i < 1) {
+      EXPECT_THAT(accumulator.value, Eq(initial));
+    }
+  }
+  EXPECT_THAT((accumulator.value - World::origin).coordinates().x,
+              Eq((1 - ε) * Metre));
+  EXPECT_THAT(accumulator.error.coordinates().x, Eq(0 * Metre));
+}
+
+TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummationIncrement) {
   Length const x = (1 + ε) * Metre;
   Point<Length> const zero;
   for (bool const cancellation : {true, false}) {
@@ -85,6 +101,29 @@ TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummation) {
     accumulator.Increment(+y);
     if (cancellation) {
       EXPECT_THAT(accumulator.value - zero, Eq(ε² * Metre));
+    } else {
+      EXPECT_THAT(accumulator.value - zero, Eq(0 * Metre));
+    }
+    EXPECT_THAT(accumulator.error, Eq(0 * Metre));
+  }
+}
+
+TEST_F(DoublePrecisionTest, IllConditionedCompensatedSummationDecrement) {
+  Length const x = (1 + ε) * Metre;
+  Point<Length> const zero;
+  for (bool const cancellation : {true, false}) {
+    Length const y = cancellation ? ε * x : π * x;
+    DoublePrecision<Point<Length>> accumulator;
+    accumulator.Decrement(+x);
+    accumulator.Decrement(-y);
+    accumulator.Decrement(+x);
+    accumulator.Decrement(-y);
+    accumulator.Decrement(-x);
+    accumulator.Decrement(+y);
+    accumulator.Decrement(-x);
+    accumulator.Decrement(+y);
+    if (cancellation) {
+      EXPECT_THAT(accumulator.value - zero, Eq(-ε² * Metre));
     } else {
       EXPECT_THAT(accumulator.value - zero, Eq(0 * Metre));
     }
@@ -129,6 +168,24 @@ TEST_F(DoublePrecisionTest, LongAddPositions) {
                                {ε * Metre, 2 * ε * Metre, 2 * ε * Metre})));
   EXPECT_THAT(accumulated_displacement.error,
               Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
+}
+
+TEST_F(DoublePrecisionTest, DoubleSingle) {
+  DoublePrecision<double> x;
+  x.value = 1.0;
+  x.error = ε²;
+  x += -1.0;
+  EXPECT_THAT(x.value, Eq(ε²));
+  EXPECT_THAT(x.error, Eq(0.0));
+  x -= -1.0;
+  EXPECT_THAT(x.value, Eq(1.0));
+  EXPECT_THAT(x.error, Eq(ε²));
+  DoublePrecision<double> y = x - 1.0;
+  EXPECT_THAT(y.value, Eq(ε²));
+  EXPECT_THAT(y.error, Eq(0.0));
+  DoublePrecision<double> z = y + 1.0;
+  EXPECT_THAT(z.value, Eq(1.0));
+  EXPECT_THAT(z.error, Eq(ε²));
 }
 
 TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {

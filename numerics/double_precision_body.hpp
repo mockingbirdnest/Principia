@@ -51,11 +51,22 @@ constexpr DoublePrecision<T>::DoublePrecision(T const& value)
       error() {}
 
 template <typename T>
+DoublePrecision<T>& DoublePrecision<T>::Decrement(Difference<T> const& right) {
+  // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
+  // This is equivalent to |QuickTwoSum(value, error - right)|.
+  T const temp = value;
+  Difference<T> const y = error - right;
+  value = temp + y;
+  error = (temp - value) + y;
+  return *this;
+}
+
+template <typename T>
 DoublePrecision<T>& DoublePrecision<T>::Increment(Difference<T> const& right) {
   // See Higham, Accuracy and Stability of Numerical Algorithms, Algorithm 4.2.
-  // This is equivalent to |QuickTwoSum(value, right + error)|.
+  // This is equivalent to |QuickTwoSum(value, error + right)|.
   T const temp = value;
-  Difference<T> const y = right + error;
+  Difference<T> const y = error + right;
   value = temp + y;
   error = (temp - value) + y;
   return *this;
@@ -69,8 +80,22 @@ DoublePrecision<T>& DoublePrecision<T>::operator+=(
 }
 
 template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator+=(
+    Difference<T> const& right) {
+  *this = *this + right;
+  return *this;
+}
+
+template<typename T>
 DoublePrecision<T>& DoublePrecision<T>::operator-=(
     DoublePrecision<Difference<T>> const& right) {
+  *this = *this - right;
+  return *this;
+}
+
+template<typename T>
+DoublePrecision<T>& DoublePrecision<T>::operator-=(
+    Difference<T> const& right) {
   *this = *this - right;
   return *this;
 }
@@ -219,12 +244,26 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
+DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
+                                     U const& right) {
+  auto const sum = TwoSum(left.value, right);
+  return QuickTwoSum(sum.value, sum.error + left.error);
+}
+
+template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
   // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
   // Computations, algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
+}
+
+template<typename T, typename U>
+DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
+                                            U const& right) {
+  auto const sum = TwoDifference(left.value, right);
+  return QuickTwoSum(sum.value, sum.error + left.error);
 }
 
 template<typename T>
