@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/renderer.hpp"
 
+#include <algorithm>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
