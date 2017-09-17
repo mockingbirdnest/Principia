@@ -792,14 +792,6 @@ void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__SetPredictionLength(Plugin* const plugin,
-                                    double const t) {
-  journal::Method<journal::SetPredictionLength> m({plugin, t});
-  CHECK_NOTNULL(plugin);
-  plugin->SetPredictionLength(t * Second);
-  return m.Return();
-}
-
 // Make it so that all log messages of at least |min_severity| are logged to
 // stderr (in addition to logging to the usual log file(s)).
 void principia__SetStderrLogging(int const min_severity) {

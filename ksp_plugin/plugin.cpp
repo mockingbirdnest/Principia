@@ -51,6 +51,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
+using astronomy::InfiniteFuture;
 using astronomy::ParseTT;
 using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
@@ -682,8 +683,7 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
 
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(
-      current_time_ + prediction_length_);
+  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(InfiniteFuture);
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -777,10 +777,6 @@ void Plugin::ComputeAndRenderNodes(
                    PlanetariumRotation());
 }
 
-void Plugin::SetPredictionLength(Time const& t) {
-  prediction_length_ = t;
-}
-
 void Plugin::SetPredictionAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         prediction_adaptive_step_parameters) {
@@ -868,12 +864,7 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
   not_null<Celestial const*> const celestial =
       FindOrDie(celestials_, reference_body_index).get();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
-  renderer_->SetTargetVessel(vessel,
-                             celestial,
-                             ephemeris_.get(),
-                             /*prediction_last_time=*/[this]() {
-                               return current_time_ + prediction_length_;
-                             });
+  renderer_->SetTargetVessel(vessel, celestial, ephemeris_.get());
 }
 
 std::unique_ptr<FrameField<World, Navball>> Plugin::NavballFrameField(

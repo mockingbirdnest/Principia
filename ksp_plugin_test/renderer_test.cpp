@@ -100,10 +100,7 @@ TEST_F(RendererTest, TargetVessel) {
   EXPECT_CALL(vessel, prediction())
       .WillRepeatedly(ReturnRef(vessel_trajectory));
 
-  renderer_.SetTargetVessel(&vessel,
-                            &celestial_,
-                            &ephemeris,
-                            /*prediction_last_time=*/[this]() { return t0_; });
+  renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   EXPECT_TRUE(renderer_.HasTargetVessel());
   EXPECT_THAT(renderer_.GetTargetVessel(), Ref(vessel));
   MockVessel other_vessel;
@@ -111,10 +108,7 @@ TEST_F(RendererTest, TargetVessel) {
   EXPECT_THAT(renderer_.GetTargetVessel(), Ref(vessel));
   renderer_.ClearTargetVesselIf(&vessel);
   EXPECT_FALSE(renderer_.HasTargetVessel());
-  renderer_.SetTargetVessel(&vessel,
-                            &celestial_,
-                            &ephemeris,
-                            /*prediction_last_time=*/[this]() { return t0_; });
+  renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   renderer_.ClearTargetVessel();
   EXPECT_FALSE(renderer_.HasTargetVessel());
 }
@@ -231,10 +225,7 @@ TEST_F(RendererTest, RenderBarycentricTrajectoryInPlottingWithTargetVessel) {
             Velocity<Barycentric>())));
   }
 
-  renderer_.SetTargetVessel(&vessel,
-                            &celestial_,
-                            &ephemeris,
-                            /*prediction_last_time=*/[this]() { return t0_; });
+  renderer_.SetTargetVessel(&vessel, &celestial_, &ephemeris);
   auto const rendered_trajectory =
       renderer_.RenderBarycentricTrajectoryInPlotting(
           trajectory_to_render.Begin(),

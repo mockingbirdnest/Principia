@@ -41,13 +41,11 @@ not_null<NavigationFrame const*> Renderer::GetPlottingFrame() const {
 void Renderer::SetTargetVessel(
     not_null<Vessel*> const vessel,
     not_null<Celestial const*> const celestial,
-    not_null<Ephemeris<Barycentric> const*> const ephemeris,
-    std::function<Instant()> prediction_last_time) {
+    not_null<Ephemeris<Barycentric> const*> const ephemeris) {
   if (!target_ ||
       target_->vessel != vessel ||
       target_->celestial != celestial) {
-    target_.emplace(
-        vessel, celestial, ephemeris, std::move(prediction_last_time));
+    target_.emplace(vessel, celestial, ephemeris);
   }
 }
 
@@ -78,8 +76,7 @@ Vessel const& Renderer::GetTargetVessel() const {
 DiscreteTrajectory<Barycentric> const& Renderer::GetTargetVesselPrediction(
     Instant const& time) const {
   CHECK(target_);
-  target_->vessel->UpdatePrediction(
-      std::max(time, target_->prediction_last_time()));
+  target_->vessel->UpdatePrediction(time);
   // The prediction may not have been prolonged to |time| if we are near a
   // singularity.
   CHECK_LE(time, target_->vessel->prediction().last().time());
@@ -109,11 +106,14 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+  if (target_ && begin != end) {
+    auto last = end;
+    --last;
+    target_->vessel->UpdatePrediction(last.time());
+  }
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();
     if (target_) {
-      target_->vessel->UpdatePrediction(
-          std::max(t, target_->prediction_last_time()));
       if (t < target_->vessel->prediction().t_min()) {
         continue;
       } else if (t > target_->vessel->prediction().t_max()) {
@@ -301,8 +301,7 @@ not_null<std::unique_ptr<Renderer>> Renderer::ReadFromMessage(
 Renderer::Target::Target(
     not_null<Vessel*> const vessel,
     not_null<Celestial const*> const celestial,
-    not_null<Ephemeris<Barycentric> const*> const ephemeris,
-    std::function<Instant()> prediction_last_time)
+    not_null<Ephemeris<Barycentric> const*> const ephemeris)
     : vessel(vessel),
       celestial(celestial),
       target_frame(
@@ -310,8 +309,7 @@ Renderer::Target::Target(
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
               ephemeris,
               [this]() -> auto& { return this->vessel->prediction(); },
-              celestial->body())),
-      prediction_last_time(std::move(prediction_last_time)) {}
+              celestial->body())) {}
 
 not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
     Instant const& time) const {

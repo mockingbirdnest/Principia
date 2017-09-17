@@ -850,13 +850,13 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillOnce(DoAll(SaveArg<0>(&trajectories),
                       Return(ByMove(std::move(instance)))));
   EXPECT_CALL(plugin_->mock_ephemeris(), t_max())
-      .WillRepeatedly(Return(Instant()));
+      .WillRepeatedly(Return(Instant() + 12 * Hour));
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), trajectory(_))
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(false)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())

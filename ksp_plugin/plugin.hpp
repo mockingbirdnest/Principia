@@ -312,8 +312,6 @@ class Plugin {
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
 
-  virtual void SetPredictionLength(Time const& t);
-
   virtual void SetPredictionAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           prediction_adaptive_step_parameters);
@@ -451,7 +449,6 @@ class Plugin {
   Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
-  Time prediction_length_ = 1 * Hour;
 
   // The thread pool for advancing vessels.
   ThreadPool<void> vessel_thread_pool_;

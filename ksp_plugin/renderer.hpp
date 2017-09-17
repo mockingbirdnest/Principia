@@ -49,13 +49,11 @@ class Renderer {
   virtual not_null<NavigationFrame const*> GetPlottingFrame() const;
 
   // Overrides the current plotting frame with one that is centred on the given
-  // |vessel|.  The time returned by |prediction_last_time| is used to prolong
-  // the prediction of the |vessel| when needed.
+  // |vessel|.
   virtual void SetTargetVessel(
       not_null<Vessel*> vessel,
       not_null<Celestial const*> celestial,
-      not_null<Ephemeris<Barycentric> const*> ephemeris,
-      std::function<Instant()> prediction_last_time);
+      not_null<Ephemeris<Barycentric> const*> ephemeris);
 
   // Reverts to frame last set by |SetPlottingFrame|.  The second version only
   // has an effect if the given |vessel| is the current target vessel.
@@ -175,12 +173,10 @@ class Renderer {
   struct Target {
     Target(not_null<Vessel*> vessel,
            not_null<Celestial const*> celestial,
-           not_null<Ephemeris<Barycentric> const*> ephemeris,
-           std::function<Instant()> prediction_last_time);
+           not_null<Ephemeris<Barycentric> const*> ephemeris);
     not_null<Vessel*> const vessel;
     not_null<Celestial const*> const celestial;
     not_null<std::unique_ptr<NavigationFrame>> const target_frame;
-    std::function<Instant()> prediction_last_time;
   };
 
   // Returns a plotting frame suitable for evaluation at |time|, possibly by

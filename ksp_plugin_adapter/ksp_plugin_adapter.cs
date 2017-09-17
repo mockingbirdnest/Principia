@@ -936,7 +936,6 @@ public partial class PrincipiaPluginAdapter
                       prediction_length_tolerance_index_]};
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             main_vessel.id.ToString(), adaptive_step_parameters);
-        plugin_.SetPredictionLength(double.PositiveInfinity);
         plugin_.UpdatePrediction(main_vessel.id.ToString());
         string target_id =
             FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
