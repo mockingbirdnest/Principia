@@ -711,6 +711,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
+  plugin.UpdatePrediction(vessel_guid);
   auto const& prediction =
       plugin.GetVessel(vessel_guid)->prediction();
   auto const rendered_prediction =

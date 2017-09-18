@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using astronomy::InfiniteFuture;
 using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -333,13 +335,13 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(astronomy::InfiniteFuture);
+    vessel->FlowPrediction(InfiniteFuture);
   } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
     vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
-    vessel->FlowPrediction(astronomy::InfiniteFuture);
+    vessel->FlowPrediction(InfiniteFuture);
   } else {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
