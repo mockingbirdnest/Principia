@@ -30,7 +30,8 @@ class shared_lock_guard final {
 #else
 
 using shared_mutex = std::mutex;
-using shared_lock_guard = std::lock_guard;
+template<typename Mutex>
+using shared_lock_guard = std::lock_guard<Mutex>;
 
 #endif
 
