@@ -1572,18 +1572,6 @@ message UpdateCelestialHierarchy {
   optional In in = 1;
 }
 
-message UpdatePrediction {
-  extend Method {
-    optional UpdatePrediction extension = 5033;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
-                                 (is_subject) = true];
-    required string vessel_guid = 2;
-  }
-  optional In in = 1;
-}
-
 message VesselBinormal {
   extend Method {
     optional VesselBinormal extension = 5055;

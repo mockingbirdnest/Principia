@@ -278,9 +278,6 @@ class Plugin {
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
-  // Updates the prediction for the vessel with guid |vessel_guid|.
-  void UpdatePrediction(GUID const& vessel_guid) const;
-
   virtual void CreateFlightPlan(GUID const& vessel_guid,
                                 Instant const& final_time,
                                 Mass const& initial_mass) const;

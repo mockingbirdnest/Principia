@@ -402,7 +402,6 @@ TEST_F(PluginTest, Serialization) {
                              inserted);
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
   plugin->CatchUpLaggingVessels();
-  plugin->UpdatePrediction(satellite);
   plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
 
   plugin->CreateFlightPlan(satellite, HistoryTime(time, 7), 4 * Kilogram);
@@ -894,7 +893,6 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
   plugin_->CatchUpLaggingVessels();
-  plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
                               SolarSystemFactory::Earth,

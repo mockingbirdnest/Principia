@@ -138,7 +138,9 @@ class Vessel {
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();
 
-  virtual void UpdatePrediction(Instant const& last_time);
+  // Tries to extend the prediction up to and including |last_time|.  May not be
+  // able to do it next to a singularity.
+  virtual void FlowPrediction(Instant const& last_time);
 
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
 
@@ -168,8 +170,6 @@ class Vessel {
                                 TrajectoryIterator part_trajectory_end,
                                 DiscreteTrajectory<Barycentric>& trajectory);
 
-  void FlowPrediction(Instant const& time);
-
   GUID const guid_;
   std::string name_;
 
@@ -187,7 +187,8 @@ class Vessel {
   not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history_;
   DiscreteTrajectory<Barycentric>* psychohistory_ = nullptr;
 
-  not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> prediction_;
+  // The |prediction_| is forked off the end of the |psychohistory_|.
+  DiscreteTrajectory<Barycentric>* prediction_ = nullptr;
 
   std::unique_ptr<FlightPlan> flight_plan_;
 };

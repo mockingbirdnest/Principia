@@ -76,7 +76,7 @@ Vessel const& Renderer::GetTargetVessel() const {
 DiscreteTrajectory<Barycentric> const& Renderer::GetTargetVesselPrediction(
     Instant const& time) const {
   CHECK(target_);
-  target_->vessel->UpdatePrediction(time);
+  target_->vessel->FlowPrediction(time);
   // The prediction may not have been prolonged to |time| if we are near a
   // singularity.
   CHECK_LE(time, target_->vessel->prediction().last().time());
@@ -109,7 +109,7 @@ Renderer::RenderBarycentricTrajectoryInPlotting(
   if (target_ && begin != end) {
     auto last = end;
     --last;
-    target_->vessel->UpdatePrediction(last.time());
+    target_->vessel->FlowPrediction(last.time());
   }
   for (auto it = begin; it != end; ++it) {
     Instant const& t = it.time();

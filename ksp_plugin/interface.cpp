@@ -838,13 +838,5 @@ void principia__UpdateCelestialHierarchy(Plugin const* const plugin,
   return m.Return();
 }
 
-void principia__UpdatePrediction(Plugin const* const plugin,
-                                 char const* const vessel_guid) {
-  journal::Method<journal::UpdatePrediction> m({plugin, vessel_guid});
-  CHECK_NOTNULL(plugin);
-  plugin->UpdatePrediction(vessel_guid);
-  return m.Return();
-}
-
 }  // namespace interface
 }  // namespace principia

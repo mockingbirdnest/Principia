@@ -681,11 +681,6 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
-void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
-  CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(InfiniteFuture);
-}
-
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
                               Instant const& final_time,
                               Mass const& initial_mass) const {
