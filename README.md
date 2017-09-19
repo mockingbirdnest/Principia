@@ -1,6 +1,6 @@
 # Principia
 
-**Cesàro, the September version of Principia, is available.  It has performance improvements and bug fixes and supports both 1.2.2 and 1.3.  Download it [here for 1.2.2](https://goo.gl/8B3Qfm) and [here for 1.3](https://goo.gl/feQStR).**		
+**[Cesàro](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#ces%C3%A0ro), the September version of Principia, is available.  It has performance improvements and bug fixes and supports both 1.2.2 and 1.3.  Download it [here for 1.2.2](https://goo.gl/8B3Qfm) and [here for 1.3](https://goo.gl/feQStR).**		
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
