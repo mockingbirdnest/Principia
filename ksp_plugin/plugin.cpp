@@ -681,6 +681,22 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
+void Plugin::SetPredictionAdaptiveStepParameters(
+    GUID const& vessel_guid,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prediction_adaptive_step_parameters) const {
+  // If there is a target vessel, it is integrated with the same parameters as
+  // the given (current) vessel.  This makes it possible to plot things like the
+  // closest approaches.
+  if (renderer_->HasTargetVessel()) {
+    renderer_->GetTargetVessel().set_prediction_adaptive_step_parameters(
+        prediction_adaptive_step_parameters);
+  }
+  FindOrDie(vessels_, vessel_guid)
+      ->set_prediction_adaptive_step_parameters(
+          prediction_adaptive_step_parameters);
+}
+
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
   FindOrDie(vessels_, vessel_guid)->UpdatePrediction(InfiniteFuture);
