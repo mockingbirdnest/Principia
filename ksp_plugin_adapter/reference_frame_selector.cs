@@ -348,7 +348,9 @@ class ReferenceFrameSelector : WindowRenderer {
         if (UnityEngine.GUILayout.Button(button_text,
                                          UnityEngine.GUILayout.Width(offset))) {
           Shrink();
-          expanded_[celestial] = !expanded_[celestial];
+          if (!celestial.is_leaf()) {
+            expanded_[celestial] = !expanded_[celestial];
+          }
         }
       }
       if (UnityEngine.GUILayout.Toggle(selected_celestial == celestial,
