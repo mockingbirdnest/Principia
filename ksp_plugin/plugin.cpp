@@ -686,8 +686,8 @@ void Plugin::SetPredictionAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         prediction_adaptive_step_parameters) const {
   // If there is a target vessel, it is integrated with the same parameters as
-  // the given (current) vessel.  This makes it possible to plot things like the
-  // closest approaches.
+  // the given (current) vessel.  This makes it possible to the prediction of
+  // the current vessel.
   if (renderer_->HasTargetVessel()) {
     renderer_->GetTargetVessel().set_prediction_adaptive_step_parameters(
         prediction_adaptive_step_parameters);
