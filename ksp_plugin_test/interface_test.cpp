@@ -485,11 +485,6 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, PredictionGettersAndSetters) {
-  EXPECT_CALL(*plugin_, SetPredictionLength(42 * Second));
-  principia__SetPredictionLength(plugin_.get(), 42);
-}
-
 TEST_F(InterfaceTest, NavballOrientation) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =

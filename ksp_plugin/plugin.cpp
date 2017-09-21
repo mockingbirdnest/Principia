@@ -51,6 +51,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
+using astronomy::InfiniteFuture;
 using astronomy::ParseTT;
 using astronomy::KSPStockSystemFingerprint;
 using astronomy::KSPStabilizedSystemFingerprint;
@@ -680,10 +681,25 @@ RelativeDegreesOfFreedom<AliceSun> Plugin::CelestialFromParent(
   return result;
 }
 
+void Plugin::SetPredictionAdaptiveStepParameters(
+    GUID const& vessel_guid,
+    Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        prediction_adaptive_step_parameters) const {
+  // If there is a target vessel, it is integrated with the same parameters as
+  // the given (current) vessel.  This makes it possible to plot the prediction
+  // of the current vessel.
+  if (renderer_->HasTargetVessel()) {
+    renderer_->GetTargetVessel().set_prediction_adaptive_step_parameters(
+        prediction_adaptive_step_parameters);
+  }
+  FindOrDie(vessels_, vessel_guid)
+      ->set_prediction_adaptive_step_parameters(
+          prediction_adaptive_step_parameters);
+}
+
 void Plugin::UpdatePrediction(GUID const& vessel_guid) const {
   CHECK(!initializing_);
-  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(
-      current_time_ + prediction_length_);
+  FindOrDie(vessels_, vessel_guid)->UpdatePrediction(InfiniteFuture);
 }
 
 void Plugin::CreateFlightPlan(GUID const& vessel_guid,
@@ -730,11 +746,10 @@ void Plugin::ComputeAndRenderClosestApproaches(
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& closest_approaches) const {
   CHECK(renderer_->HasTargetVessel());
-  UpdatePredictionForRendering(begin.trajectory()->Size());
 
   DiscreteTrajectory<Barycentric> apoapsides_trajectory;
   DiscreteTrajectory<Barycentric> periapsides_trajectory;
-  ComputeApsides(renderer_->GetTargetVessel().prediction(),
+  ComputeApsides(renderer_->GetTargetVesselPrediction(current_time_),
                  begin,
                  end,
                  apoapsides_trajectory,
@@ -754,10 +769,6 @@ void Plugin::ComputeAndRenderNodes(
     Position<World> const& sun_world_position,
     std::unique_ptr<DiscreteTrajectory<World>>& ascending,
     std::unique_ptr<DiscreteTrajectory<World>>& descending) const {
-  if (renderer_->HasTargetVessel()) {
-    UpdatePredictionForRendering(begin.trajectory()->Size());
-  }
-
   auto const trajectory_in_plotting =
       renderer_->RenderBarycentricTrajectoryInPlotting(begin, end);
   DiscreteTrajectory<Navigation> ascending_trajectory;
@@ -780,10 +791,6 @@ void Plugin::ComputeAndRenderNodes(
                    descending_trajectory.End(),
                    sun_world_position,
                    PlanetariumRotation());
-}
-
-void Plugin::SetPredictionLength(Time const& t) {
-  prediction_length_ = t;
 }
 
 void Plugin::SetPredictionAdaptiveStepParameters(
@@ -873,11 +880,6 @@ void Plugin::SetTargetVessel(GUID const& vessel_guid,
   not_null<Celestial const*> const celestial =
       FindOrDie(celestials_, reference_body_index).get();
   not_null<Vessel*> const vessel = FindOrDie(vessels_, vessel_guid).get();
-  // Make sure that the current time is covered by the prediction.
-  if (current_time_ > vessel->prediction().t_max()) {
-    vessel->UpdatePrediction(current_time_ + prediction_length_);
-  }
-
   renderer_->SetTargetVessel(vessel, celestial, ephemeris_.get());
 }
 
@@ -1253,15 +1255,6 @@ void Plugin::UpdatePlanetariumRotation() {
           Bivector<double, PlanetariumFrame>({0, 0, 1}),
           DefinesFrame<AliceSun>{}) *
       to_planetarium;
-}
-
-void Plugin::UpdatePredictionForRendering(std::int64_t const size) const {
-  auto& vessel = renderer_->GetTargetVessel();
-  auto parameters = vessel.prediction_adaptive_step_parameters();
-  // Adding one to ensure that we set a strictly positive max_steps.
-  parameters.set_max_steps(size + 1);
-  vessel.set_prediction_adaptive_step_parameters(parameters);
-  vessel.UpdatePrediction(current_time_ + prediction_length_);
 }
 
 Velocity<World> Plugin::VesselVelocity(

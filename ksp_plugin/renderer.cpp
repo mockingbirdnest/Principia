@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/renderer.hpp"
 
+#include <algorithm>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/apsides.hpp"
@@ -40,7 +42,6 @@ void Renderer::SetTargetVessel(
     not_null<Vessel*> const vessel,
     not_null<Celestial const*> const celestial,
     not_null<Ephemeris<Barycentric> const*> const ephemeris) {
-  CHECK(!vessel->prediction().Empty());
   if (!target_ ||
       target_->vessel != vessel ||
       target_->celestial != celestial) {
@@ -72,6 +73,16 @@ Vessel const& Renderer::GetTargetVessel() const {
   return *target_->vessel;
 }
 
+DiscreteTrajectory<Barycentric> const& Renderer::GetTargetVesselPrediction(
+    Instant const& time) const {
+  CHECK(target_);
+  target_->vessel->UpdatePrediction(time);
+  // The prediction may not have been prolonged to |time| if we are near a
+  // singularity.
+  CHECK_LE(time, target_->vessel->prediction().last().time());
+  return target_->vessel->prediction();
+}
+
 not_null<std::unique_ptr<DiscreteTrajectory<World>>>
 Renderer::RenderBarycentricTrajectoryInWorld(
     Instant const& time,
@@ -94,20 +105,22 @@ not_null<std::unique_ptr<DiscreteTrajectory<Navigation>>>
 Renderer::RenderBarycentricTrajectoryInPlotting(
     DiscreteTrajectory<Barycentric>::Iterator const& begin,
     DiscreteTrajectory<Barycentric>::Iterator const& end) const {
-  CHECK(!target_ || !target_->vessel->prediction().Empty());
-
   auto trajectory = make_not_null_unique<DiscreteTrajectory<Navigation>>();
+  if (target_ && begin != end) {
+    auto last = end;
+    --last;
+    target_->vessel->UpdatePrediction(last.time());
+  }
   for (auto it = begin; it != end; ++it) {
+    Instant const& t = it.time();
     if (target_) {
-      if (it.time() < target_->vessel->prediction().t_min()) {
+      if (t < target_->vessel->prediction().t_min()) {
         continue;
-      } else if (it.time() > target_->vessel->prediction().t_max()) {
+      } else if (t > target_->vessel->prediction().t_max()) {
         break;
       }
     }
-    trajectory->Append(
-        it.time(),
-        BarycentricToPlotting(it.time())(it.degrees_of_freedom()));
+    trajectory->Append(t, BarycentricToPlotting(t)(it.degrees_of_freedom()));
   }
   return trajectory;
 }
@@ -158,7 +171,7 @@ Renderer::RenderPlottingTrajectoryInWorld(
 
 RigidMotion<Barycentric, Navigation> Renderer::BarycentricToPlotting(
     Instant const& time) const {
-  return GetPlottingFrame()->ToThisFrameAtTime(time);
+  return GetPlottingFrame(time)->ToThisFrameAtTime(time);
 }
 
 RigidTransformation<Barycentric, World> Renderer::BarycentricToWorld(
@@ -187,7 +200,6 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
     NavigationManœuvre const& manœuvre,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   Instant const initial_time = manœuvre.initial_time();
-  NavigationFrame const& plotting_frame = *GetPlottingFrame();
   return PlottingToWorld(time, planetarium_rotation) *
          BarycentricToPlotting(initial_time).orthogonal_map() *
          manœuvre.FrenetFrame();
@@ -204,8 +216,9 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
       BarycentricToPlotting(time)(barycentric_degrees_of_freedom);
   Rotation<Frenet<Navigation>, Navigation> const
       frenet_frame_to_plotting_frame =
-          GetPlottingFrame()->FrenetFrame(time,
-                                          plotting_frame_degrees_of_freedom);
+          GetPlottingFrame(time)->FrenetFrame(
+              time,
+              plotting_frame_degrees_of_freedom);
 
   return PlottingToWorld(time, planetarium_rotation) *
          frenet_frame_to_plotting_frame.Forget();
@@ -230,7 +243,7 @@ OrthogonalMap<Frenet<Navigation>, World> Renderer::FrenetToWorld(
 
 OrthogonalMap<Navigation, Barycentric> Renderer::PlottingToBarycentric(
     Instant const& time) const {
-  return GetPlottingFrame()->FromThisFrameAtTime(time).orthogonal_map();
+  return GetPlottingFrame(time)->FromThisFrameAtTime(time).orthogonal_map();
 }
 
 RigidTransformation<Navigation, World> Renderer::PlottingToWorld(
@@ -238,7 +251,8 @@ RigidTransformation<Navigation, World> Renderer::PlottingToWorld(
     Position<World> const& sun_world_position,
     Rotation<Barycentric, AliceSun> const& planetarium_rotation) const {
   return BarycentricToWorld(time, sun_world_position, planetarium_rotation) *
-         GetPlottingFrame()->FromThisFrameAtTime(time).rigid_transformation();
+         GetPlottingFrame(time)->
+             FromThisFrameAtTime(time).rigid_transformation();
 }
 
 OrthogonalMap<Navigation, World> Renderer::PlottingToWorld(
@@ -293,9 +307,17 @@ Renderer::Target::Target(
       target_frame(
           make_not_null_unique<
               BodyCentredBodyDirectionDynamicFrame<Barycentric, Navigation>>(
-                  ephemeris,
-                  [this]() -> auto& { return this->vessel->prediction(); },
-                  celestial->body())) {}
+              ephemeris,
+              [this]() -> auto& { return this->vessel->prediction(); },
+              celestial->body())) {}
+
+not_null<NavigationFrame const*> Renderer::GetPlottingFrame(
+    Instant const& time) const {
+  if (target_) {
+    GetTargetVesselPrediction(time);
+  }
+  return GetPlottingFrame();
+}
 
 }  // namespace internal_renderer
 }  // namespace ksp_plugin

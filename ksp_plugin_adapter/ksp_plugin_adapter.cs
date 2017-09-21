@@ -928,7 +928,6 @@ public partial class PrincipiaPluginAdapter
                       prediction_length_tolerance_index_]};
         plugin_.VesselSetPredictionAdaptiveStepParameters(
             main_vessel.id.ToString(), adaptive_step_parameters);
-        plugin_.SetPredictionLength(double.PositiveInfinity);
         plugin_.UpdatePrediction(main_vessel.id.ToString());
         string target_id =
             FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
@@ -944,7 +943,7 @@ public partial class PrincipiaPluginAdapter
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
-      // Now we let the game and Unity do their thing. among other things,
+      // Now we let the game and Unity do their thing.  Among other things,
       // the FashionablyLate callbacks, including ReportNonConservativeForces,
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.

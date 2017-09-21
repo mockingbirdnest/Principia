@@ -278,6 +278,11 @@ class Plugin {
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
+  virtual void SetPredictionAdaptiveStepParameters(
+      GUID const& vessel_guid,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters) const;
+
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
 
@@ -311,8 +316,6 @@ class Plugin {
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
-
-  virtual void SetPredictionLength(Time const& t);
 
   virtual void SetPredictionAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -406,10 +409,6 @@ class Plugin {
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();
 
-  // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
-  // while retaining a timeout.
-  void UpdatePredictionForRendering(std::int64_t size) const;
-
   Velocity<World> VesselVelocity(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const;
@@ -455,7 +454,6 @@ class Plugin {
   Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
-  Time prediction_length_ = 1 * Hour;
 
   // The thread pool for advancing vessels.
   ThreadPool<void> vessel_thread_pool_;
