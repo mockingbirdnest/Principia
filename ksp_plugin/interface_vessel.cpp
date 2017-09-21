@@ -70,9 +70,9 @@ void principia__VesselSetPredictionAdaptiveStepParameters(
   journal::Method<journal::VesselSetPredictionAdaptiveStepParameters> m(
       {plugin, vessel_guid, adaptive_step_parameters});
   CHECK_NOTNULL(plugin);
-  plugin->GetVessel(vessel_guid)
-      ->set_prediction_adaptive_step_parameters(
-          FromAdaptiveStepParameters(adaptive_step_parameters));
+  plugin->SetPredictionAdaptiveStepParameters(
+      vessel_guid,
+      FromAdaptiveStepParameters(adaptive_step_parameters));
   return m.Return();
 }
 
