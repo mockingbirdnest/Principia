@@ -134,7 +134,7 @@ message Vessel {
   repeated fixed32 kept_parts = 15;
   required DiscreteTrajectory history = 16;
   optional bool psychohistory_is_authoritative = 17;  // Pre-Cesàro.
-  required DiscreteTrajectory prediction = 18;
+  optional DiscreteTrajectory prediction = 18;  // Pre-Chasles.
   optional FlightPlan flight_plan = 4;
 
   // Pre-Буняковский.

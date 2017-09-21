@@ -296,8 +296,10 @@ std::int64_t Forkable<Tr4jectory, It3rator>::Size() const {
   // Go up the ancestry chain adding the sizes.
   Tr4jectory const* parent = ancestor->parent_;
   while (parent != nullptr) {
-    size += std::distance(parent->timeline_begin(),
-                          *ancestor->position_in_parent_timeline_) + 1;
+    if (!parent->timeline_empty()) {
+      size += std::distance(parent->timeline_begin(),
+                            *ancestor->position_in_parent_timeline_) + 1;
+    }
     ancestor = parent;
     parent = ancestor->parent_;
   }
@@ -307,7 +309,7 @@ std::int64_t Forkable<Tr4jectory, It3rator>::Size() const {
 
 template<typename Tr4jectory, typename It3rator>
 bool Forkable<Tr4jectory, It3rator>::Empty() const {
-  // If this object has an ancestor surely it is hook off of a point in some
+  // If this object has an ancestor surely it is hooked off of a point in some
   // timeline, so this object is not empty.
   return timeline_empty() && parent_ == nullptr;
 }

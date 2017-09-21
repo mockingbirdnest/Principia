@@ -34,7 +34,7 @@ class MockVessel : public Vessel {
 
   MOCK_METHOD0(DeleteFlightPlan, void());
 
-  MOCK_METHOD1(UpdatePrediction, void(Instant const& last_time));
+  MOCK_METHOD1(FlowPrediction, void(Instant const& last_time));
 
   MOCK_CONST_METHOD0(psychohistory, DiscreteTrajectory<Barycentric> const&());
   MOCK_CONST_METHOD0(psychohistory_is_authoritative, bool());

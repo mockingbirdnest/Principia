@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/epoch.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -16,6 +17,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
+using astronomy::InfiniteFuture;
 using base::Contains;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -36,9 +38,9 @@ Vessel::Vessel(GUID const& guid,
       prediction_adaptive_step_parameters_(prediction_adaptive_step_parameters),
       parent_(parent),
       ephemeris_(ephemeris),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  // Can't create the |psychohistory_| here because |history_| is empty;
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+  // Can't create the |psychohistory_| and |prediction_| here because |history_|
+  // is empty;
 }
 
 Vessel::~Vessel() {
@@ -141,6 +143,7 @@ void Vessel::PrepareHistory(Instant const& t) {
     CHECK(psychohistory_ == nullptr);
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
+    prediction_ = psychohistory_->NewForkAtLast();
   }
 }
 
@@ -192,6 +195,8 @@ void Vessel::AdvanceTime() {
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,
                            *psychohistory_);
+  prediction_ = psychohistory_->NewForkAtLast();
+
   for (auto const& pair : parts_) {
     Part& part = *pair.second;
     part.ClearHistory();
@@ -200,10 +205,9 @@ void Vessel::AdvanceTime() {
 
 void Vessel::ForgetBefore(Instant const& time) {
   // Make sure that the history keeps at least one (authoritative) point and
-  // don't change the psychohistory.  We cannot use the parts because they may
-  // have been moved to the future already.
+  // don't change the psychohistory or prediction.  We cannot use the parts
+  // because they may have been moved to the future already.
   history_->ForgetBefore(std::min(time, history_->last().time()));
-  prediction_->ForgetBefore(time);
   if (flight_plan_ != nullptr) {
     flight_plan_->ForgetBefore(time, [this]() { flight_plan_.reset(); });
   }
@@ -228,19 +232,30 @@ void Vessel::DeleteFlightPlan() {
   flight_plan_.reset();
 }
 
-void Vessel::UpdatePrediction(Instant const& last_time) {
-  // TODO(phl): The prediction should probably be a fork of the psychohistory.
-  auto const psychohistory_last = psychohistory_->last();
-  auto const prediction_begin = prediction_->Begin();
-  if (prediction_->Empty() ||
-      prediction_begin.time() != psychohistory_last.time() ||
-      prediction_begin.degrees_of_freedom() !=
-          psychohistory_last.degrees_of_freedom()) {
-    prediction_ = make_not_null_unique<DiscreteTrajectory<Barycentric>>();
-    prediction_->Append(psychohistory_last.time(),
-                        psychohistory_last.degrees_of_freedom());
+void Vessel::FlowPrediction(Instant const& time) {
+  if (time > prediction_->last().time()) {
+    bool const finite_time = IsFinite(time - prediction_->last().time());
+    Instant const t = finite_time ? time : ephemeris_->t_max();
+    // This will not prolong the ephemeris if |time| is infinite (but it may do
+    // so if it is finite).
+    bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
+        prediction_,
+        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+        t,
+        prediction_adaptive_step_parameters_,
+        FlightPlan::max_ephemeris_steps_per_frame,
+        /*last_point_only=*/false);
+    if (!finite_time && reached_t) {
+      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
+      ephemeris_->FlowWithAdaptiveStep(
+        prediction_,
+        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+        time,
+        prediction_adaptive_step_parameters_,
+        FlightPlan::max_ephemeris_steps_per_frame,
+        /*last_point_only=*/false);
+    }
   }
-  FlowPrediction(last_time);
 }
 
 DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
@@ -263,9 +278,7 @@ void Vessel::WriteToMessage(
     message->add_kept_parts(part_id);
   }
   history_->WriteToMessage(message->mutable_history(),
-                           /*forks=*/{psychohistory_});
-  prediction_->WriteToMessage(message->mutable_prediction(),
-                              /*forks=*/{});
+                           /*forks=*/{psychohistory_, prediction_});
   if (flight_plan_ != nullptr) {
     flight_plan_->WriteToMessage(message->mutable_flight_plan());
   }
@@ -277,6 +290,8 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
+  bool const is_pre_chasles = message.has_prediction();
+
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
   auto vessel = make_not_null_unique<Vessel>(
@@ -319,15 +334,20 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     if (message.psychohistory_is_authoritative()) {
       vessel->psychohistory_ = vessel->history_->NewForkAtLast();
     }
-  } else {
+    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    vessel->FlowPrediction(InfiniteFuture);
+  } else if (is_pre_chasles) {
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_});
+    vessel->prediction_ = vessel->psychohistory_->NewForkAtLast();
+    vessel->FlowPrediction(InfiniteFuture);
+  } else {
+    vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+        message.history(),
+        /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
   }
 
-  vessel->prediction_ =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(message.prediction(),
-                                                       /*forks=*/{});
   if (message.has_flight_plan()) {
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
@@ -353,8 +373,7 @@ Vessel::Vessel()
       prediction_adaptive_step_parameters_(DefaultPredictionParameters()),
       parent_(testing_utilities::make_not_null<Celestial const*>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
-      prediction_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {}
 
 void Vessel::AppendToVesselTrajectory(
     TrajectoryIterator const part_trajectory_begin,
@@ -401,32 +420,6 @@ void Vessel::AppendToVesselTrajectory(
     DegreesOfFreedom<Barycentric> const vessel_degrees_of_freedom =
         calculator.Get();
     trajectory.Append(first_time, vessel_degrees_of_freedom);
-  }
-}
-
-void Vessel::FlowPrediction(Instant const& time) {
-  if (time > prediction_->last().time()) {
-    bool const finite_time = IsFinite(time - prediction_->last().time());
-    Instant const t = finite_time ? time : ephemeris_->t_max();
-    // This will not prolong the ephemeris if |time| is infinite (but it may do
-    // so if it is finite).
-    bool const reached_t = ephemeris_->FlowWithAdaptiveStep(
-        prediction_.get(),
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        t,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
-    if (!finite_time && reached_t) {
-      // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
-      ephemeris_->FlowWithAdaptiveStep(
-        prediction_.get(),
-        Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-        time,
-        prediction_adaptive_step_parameters_,
-        FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
-    }
   }
 }
 
