@@ -100,7 +100,12 @@ R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
 
 template<typename Scalar>
 Scalar R3Element<Scalar>::Norm() const {
-  return quantities::Sqrt(Dot(*this, *this));
+  return quantities::Sqrt(Norm²());
+}
+
+template<typename Scalar>
+Square<Scalar> R3Element<Scalar>::Norm²() const {
+  return x * x + y * y + z * z;
 }
 
 template<typename Scalar>

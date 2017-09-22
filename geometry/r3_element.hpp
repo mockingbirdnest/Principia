@@ -19,6 +19,7 @@ using quantities::Angle;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
+using quantities::Square;
 
 template<typename Scalar>
 struct SphericalCoordinates;
@@ -41,6 +42,7 @@ struct R3Element final {
   R3Element& operator/=(double right);
 
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   // Uses the x-y plane as the equator, the x-axis as the reference direction on
   // the equator, and the z-axis as the north pole.

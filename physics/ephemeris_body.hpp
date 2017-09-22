@@ -77,12 +77,11 @@ template<typename Frame>
 FORCE_INLINE Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Order2ZonalAcceleration(OblateBody<Frame> const& body,
                         Displacement<Frame> const& r,
-                        Exponentiation<Length, -2> const& one_over_r_squared,
-                        Exponentiation<Length, -3> const& one_over_r_cubed) {
+                        Exponentiation<Length, -2> const& one_over_r²,
+                        Exponentiation<Length, -3> const& one_over_r³) {
   Vector<double, Frame> const& axis = body.polar_axis();
   Length const r_axis_projection = InnerProduct(axis, r);
-  auto const j2_over_r_fifth =
-      body.j2_over_μ() * one_over_r_cubed * one_over_r_squared;
+  auto const j2_over_r_fifth = body.j2_over_μ() * one_over_r³ * one_over_r²;
   Vector<Quotient<Acceleration,
                   GravitationalParameter>, Frame> const axis_effect =
       (-3 * j2_over_r_fifth * r_axis_projection) * axis;
@@ -90,8 +89,7 @@ Order2ZonalAcceleration(OblateBody<Frame> const& body,
                   GravitationalParameter>, Frame> const radial_effect =
       (j2_over_r_fifth *
            (-1.5 +
-            7.5 * r_axis_projection *
-                  r_axis_projection * one_over_r_squared)) * r;
+            7.5 * r_axis_projection * r_axis_projection * one_over_r²)) * r;
   return axis_effect + radial_effect;
 }
 
@@ -894,23 +892,22 @@ void Ephemeris<Frame>::
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
-    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
-    // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
+    Square<Length> const Δq² = Δq.Norm²();
+    // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
     // non-oblate path slower.
-    Exponentiation<Length, -3> const one_over_Δq_cubed =
-        Sqrt(Δq_squared) / (Δq_squared * Δq_squared);
+    Exponentiation<Length, -3> const one_over_Δq³ = Sqrt(Δq²) / (Δq² * Δq²);
 
-    auto const μ1_over_Δq_cubed = μ1 * one_over_Δq_cubed;
-    acceleration_on_b2 += Δq * μ1_over_Δq_cubed;
+    auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
+    acceleration_on_b2 += Δq * μ1_over_Δq³;
 
     // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
     // sive corporum duorum actiones in se mutuo semper esse æquales &
     // in partes contrarias dirigi.
-    auto const μ2_over_Δq_cubed = μ2 * one_over_Δq_cubed;
-    acceleration_on_b1 -= Δq * μ2_over_Δq_cubed;
+    auto const μ2_over_Δq³ = μ2 * one_over_Δq³;
+    acceleration_on_b1 -= Δq * μ2_over_Δq³;
 
     if (body1_is_oblate || body2_is_oblate) {
-      Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
+      Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       if (body1_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
@@ -918,8 +915,8 @@ void Ephemeris<Frame>::
                 Order2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
-                    one_over_Δq_squared,
-                    one_over_Δq_cubed);
+                    one_over_Δq²,
+                    one_over_Δq³);
         acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
         acceleration_on_b2 += μ1 * order_2_zonal_effect1;
       }
@@ -930,8 +927,8 @@ void Ephemeris<Frame>::
                 Order2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
-                    one_over_Δq_squared,
-                    one_over_Δq_cubed);
+                    one_over_Δq²,
+                    one_over_Δq³);
         acceleration_on_b1 += μ2 * order_2_zonal_effect2;
         acceleration_on_b2 -= μ1 * order_2_zonal_effect2;
       }
@@ -955,25 +952,25 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
-    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
-    // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
+    Square<Length> const Δq² = Δq.Norm²();
+    // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
     // non-oblate path slower.
-    Exponentiation<Length, -3> const one_over_Δq_cubed =
-        Sqrt(Δq_squared) / (Δq_squared * Δq_squared);
+    Exponentiation<Length, -3> const one_over_Δq³ =
+        Sqrt(Δq²) / (Δq² * Δq²);
 
-    auto const μ1_over_Δq_cubed = μ1 * one_over_Δq_cubed;
-    accelerations[b2] += Δq * μ1_over_Δq_cubed;
+    auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
+    accelerations[b2] += Δq * μ1_over_Δq³;
 
     if (body1_is_oblate) {
-      Exponentiation<Length, -2> const one_over_Δq_squared = 1 / Δq_squared;
+      Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           order_2_zonal_effect1 =
               Order2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
-                  one_over_Δq_squared,
-                  one_over_Δq_cubed);
+                  one_over_Δq²,
+                  one_over_Δq³);
       accelerations[b2] += μ1 * order_2_zonal_effect1;
     }
   }

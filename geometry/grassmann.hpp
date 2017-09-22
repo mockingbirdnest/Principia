@@ -24,6 +24,7 @@ using quantities::Angle;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
+using quantities::Square;
 
 // A multivector of rank |rank| on a three-dimensional real inner product
 // space bearing the dimensionality of |Scalar|, i.e., an element of
@@ -41,6 +42,7 @@ class Multivector<Scalar, Frame, 1> final {
 
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   template<typename S>
   Multivector OrthogonalizationAgainst(
@@ -78,6 +80,7 @@ class Multivector<Scalar, Frame, 2> final {
 
   R3Element<Scalar> const& coordinates() const;
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   template<typename S>
   Multivector OrthogonalizationAgainst(
@@ -111,6 +114,7 @@ class Multivector<Scalar, Frame, 3> final {
 
   Scalar const& coordinates() const;
   Scalar Norm() const;
+  Square<Scalar> Norm²() const;
 
   void WriteToMessage(not_null<serialization::Multivector*> message) const;
   static Multivector ReadFromMessage(serialization::Multivector const& message);

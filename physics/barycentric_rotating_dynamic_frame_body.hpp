@@ -155,8 +155,7 @@ BarycentricRotatingDynamicFrame<InertialFrame, ThisFrame>::MotionOfThisFrame(
       to_this_frame.angular_velocity_of_to_frame();
   Variation<AngularVelocity<InertialFrame>> const
       angular_acceleration_of_to_frame =
-          (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) /
-          InnerProduct(r, r);
+          (Wedge(r, r̈) * Radian - 2 * ω * InnerProduct(r, ṙ)) / r.Norm²();
 
   Vector<Acceleration, InertialFrame> const acceleration_of_to_frame_origin =
       Barycentre<Vector<Acceleration, InertialFrame>, GravitationalParameter>(
@@ -187,8 +186,7 @@ ComputeAngularDegreesOfFreedom(
   rotation = Rotation<InertialFrame, ThisFrame>(Normalize(reference_direction),
                                                 Normalize(reference_normal),
                                                 Normalize(reference_binormal));
-  angular_velocity = reference_binormal * Radian /
-                     InnerProduct(reference_direction, reference_direction);
+  angular_velocity = reference_binormal * Radian / reference_direction.Norm²();
 }
 
 }  // namespace internal_barycentric_rotating_dynamic_frame

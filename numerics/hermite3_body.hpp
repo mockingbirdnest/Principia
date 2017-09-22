@@ -34,16 +34,14 @@ Hermite3<Argument, Value>::Hermite3(
     return;
   }
   auto const one_over_Δargument = 1.0 / Δargument;
-  auto const one_over_Δargument_squared =
-      one_over_Δargument * one_over_Δargument;
-  auto const one_over_Δargument_cubed =
-      one_over_Δargument * one_over_Δargument_squared;
+  auto const one_over_Δargument² = one_over_Δargument * one_over_Δargument;
+  auto const one_over_Δargument³ =
+      one_over_Δargument * one_over_Δargument²;
   Difference<Value> const Δvalue = values.second - values.first;
-  a2_ = 3.0 * Δvalue * one_over_Δargument_squared -
+  a2_ = 3.0 * Δvalue * one_over_Δargument² -
             (2.0 * derivatives.first + derivatives.second) * one_over_Δargument;
-  a3_ = -2.0 * Δvalue * one_over_Δargument_cubed +
-            (derivatives.first + derivatives.second) *
-                one_over_Δargument_squared;
+  a3_ = -2.0 * Δvalue * one_over_Δargument³ +
+            (derivatives.first + derivatives.second) * one_over_Δargument²;
 }
 
 template<typename Argument, typename Value>
