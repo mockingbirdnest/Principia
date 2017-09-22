@@ -69,6 +69,21 @@ Scalar Multivector<Scalar, Frame, 3>::Norm() const {
 }
 
 template<typename Scalar, typename Frame>
+Square<Scalar> Multivector<Scalar, Frame, 1>::Norm²() const {
+  return coordinates_.Norm²();
+}
+
+template<typename Scalar, typename Frame>
+Square<Scalar> Multivector<Scalar, Frame, 2>::Norm²() const {
+  return coordinates_.Norm²();
+}
+
+template<typename Scalar, typename Frame>
+Square<Scalar> Multivector<Scalar, Frame, 3>::Norm²() const {
+  return coordinates_ * coordinates_;
+}
+
+template<typename Scalar, typename Frame>
 template<typename S>
 Multivector<Scalar, Frame, 1>
     Multivector<Scalar, Frame, 1>::OrthogonalizationAgainst(

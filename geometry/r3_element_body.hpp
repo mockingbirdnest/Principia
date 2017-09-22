@@ -104,6 +104,11 @@ Scalar R3Element<Scalar>::Norm() const {
 }
 
 template<typename Scalar>
+Square<Scalar> R3Element<Scalar>::Norm²() const {
+  return Dot(*this, *this);
+}
+
+template<typename Scalar>
 SphericalCoordinates<Scalar> R3Element<Scalar>::ToSpherical() const {
   SphericalCoordinates<Scalar> result;
   result.radius = Norm();
