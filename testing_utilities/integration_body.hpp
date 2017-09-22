@@ -80,7 +80,7 @@ void ComputeGravitationalAcceleration(
     GravitationalParameter const& μ1 = bodies[b1].gravitational_parameter();
     for (int b2 = 0; b2 < b1; ++b2) {
       Displacement<Frame> const Δq = q[b1] - q[b2];
-      Square<Length> const r_squared = InnerProduct(Δq, Δq);
+      Square<Length> const r_squared = Δq.Norm²();
       Exponentiation<Length, -3> const one_over_r_cubed =
           Sqrt(r_squared) / (r_squared * r_squared);
       {

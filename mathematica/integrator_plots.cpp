@@ -384,7 +384,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
       t0 + 8 * (2 * π * Radian) / *orbit.elements_at_epoch().mean_motion;
 
   SpecificEnergy const initial_specific_energy =
-      InnerProduct(initial_dof.velocity(), initial_dof.velocity()) / 2 -
+      initial_dof.velocity().Norm²() / 2 -
       μ / initial_dof.displacement().Norm();
 
   auto const compute_error = [&orbit, μ, initial_specific_energy](
@@ -398,8 +398,7 @@ void GenerateKeplerProblemWorkErrorGraphs(double const eccentricity) {
     return WorkErrorGraphGenerator<SpecificEnergy>::Errors{
         AbsoluteError(expected_dof.displacement(), q),
         AbsoluteError(expected_dof.velocity(), v),
-        AbsoluteError(initial_specific_energy,
-                      InnerProduct(v, v) / 2 - μ / q.Norm())};
+        AbsoluteError(initial_specific_energy, v.Norm²() / 2 - μ / q.Norm())};
   };
 
   WorkErrorGraphGenerator<SpecificEnergy> generator(

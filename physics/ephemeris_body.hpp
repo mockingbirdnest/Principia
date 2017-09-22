@@ -894,7 +894,7 @@ void Ephemeris<Frame>::
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
-    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
+    Square<Length> const Δq_squared = Δq.Norm²();
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
     // non-oblate path slower.
     Exponentiation<Length, -3> const one_over_Δq_cubed =
@@ -955,7 +955,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     // A vector from the center of |b2| to the center of |b1|.
     Displacement<Frame> const Δq = position1 - positions[b2];
 
-    Square<Length> const Δq_squared = InnerProduct(Δq, Δq);
+    Square<Length> const Δq_squared = Δq.Norm²();
     // NOTE(phl): Don't try to compute one_over_Δq_squared here, it makes the
     // non-oblate path slower.
     Exponentiation<Length, -3> const one_over_Δq_cubed =
