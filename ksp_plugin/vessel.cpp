@@ -352,7 +352,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->flight_plan_ = FlightPlan::ReadFromMessage(message.flight_plan(),
                                                        ephemeris);
   }
-  return std::move(vessel);
+  return vessel;
 }
 
 void Vessel::FillContainingPileUpsFromMessage(
