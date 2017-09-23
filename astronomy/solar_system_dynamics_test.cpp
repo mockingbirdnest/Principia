@@ -1,6 +1,4 @@
 ﻿
-#pragma once
-
 #include <algorithm>
 #include <experimental/filesystem>
 #include <experimental/optional>
