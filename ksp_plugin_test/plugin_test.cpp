@@ -907,7 +907,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   auto const rendered_prediction =
       plugin_->renderer().RenderBarycentricTrajectoryInWorld(
           plugin_->CurrentTime(),
-          prediction.Begin(),
+          prediction.Fork(),
           prediction.End(),
           World::origin,
           plugin_->PlanetariumRotation());
