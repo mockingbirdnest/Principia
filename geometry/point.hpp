@@ -113,6 +113,8 @@ std::ostream& operator<<(std::ostream& out, Point<Vector> const& point);
 using internal_point::Point;
 
 // Specialize BarycentreCalculator to make it applicable to Points.
+namespace internal_barycentre_calculator {
+
 template<typename Vector, typename Weight>
 class BarycentreCalculator<Point<Vector>, Weight> final {
  public:
@@ -125,10 +127,11 @@ class BarycentreCalculator<Point<Vector>, Weight> final {
 
  private:
   bool empty_ = true;
-  decltype(std::declval<Vector>() * std::declval<Weight>()) weighted_sum_;
+  Product<Vector, Weight> weighted_sum_;
   Weight weight_;
 };
 
+}  // namespace internal_barycentre_calculator
 }  // namespace geometry
 }  // namespace principia
 

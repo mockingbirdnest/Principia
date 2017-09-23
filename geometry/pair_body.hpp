@@ -95,34 +95,28 @@ typename enable_if_vector<Pair<T1, T2>>::type operator-(
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<Scalar>() * std::declval<T1>()),
-         decltype(std::declval<Scalar>() * std::declval<T2>())>>::type
+    Pair<Product<Scalar, T1>, Product<Scalar, T2>>>::type
 operator*(Scalar const left, Pair<T1, T2> const& right) {
-  return Pair<decltype(std::declval<Scalar>() * std::declval<T1>()),
-              decltype(std::declval<Scalar>() * std::declval<T2>())>(
-      left * right.t1_, left * right.t2_);
+  return Pair<Product<Scalar, T1>, Product<Scalar, T2>>(left * right.t1_,
+                                                        left * right.t2_);
 }
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-         decltype(std::declval<T2>() * std::declval<Scalar>())>>::type
+    Pair<Product<T1, Scalar>, Product<T2, Scalar>>>::type
 operator*(Pair<T1, T2> const& left, Scalar const right) {
-  return Pair<decltype(std::declval<T1>() * std::declval<Scalar>()),
-              decltype(std::declval<T2>() * std::declval<Scalar>())>(
-      left.t1_ * right, left.t2_ * right);
+  return Pair<Product<T1, Scalar>, Product<T2, Scalar>>(left.t1_ * right,
+                                                        left.t2_ * right);
 }
 
 template<typename Scalar, typename T1, typename T2>
 typename enable_if_vector<
     Pair<T1, T2>,
-    Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
-         decltype(std::declval<T2>() / std::declval<Scalar>())>>::type
+    Pair<Quotient<T1, Scalar>, Quotient<T2, Scalar>>>::type
 operator/(Pair<T1, T2> const& left, Scalar const right) {
-  return Pair<decltype(std::declval<T1>() / std::declval<Scalar>()),
-              decltype(std::declval<T2>() / std::declval<Scalar>())>(
-      left.t1_ / right, left.t2_ / right);
+  return Pair<Quotient<T1, Scalar>, Quotient<T2, Scalar>>(left.t1_ / right,
+                                                          left.t2_ / right);
 }
 
 template<typename T1, typename T2>
