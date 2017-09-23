@@ -258,7 +258,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       [](std::string const& expr) {
         return "*" + expr;
       };
-  field_cxx_optional_pointer_fn_[descriptor] = [this, cxx_type, descriptor](
+  field_cxx_optional_pointer_fn_[descriptor] = [cxx_type](
       std::string const& condition,
       std::string const& expr) {
     // Tricky.  We need a heap allocation to obtain a pointer to the value.

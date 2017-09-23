@@ -157,7 +157,7 @@ class KSPResonanceTest : public ::testing::Test {
                          Instant const t) const {
     Periods actual_periods;
 
-    auto const position = [this, &ephemeris](
+    auto const position = [&ephemeris](
         not_null<MassiveBody const*> body, Instant const& t) {
       return ephemeris.trajectory(body)->EvaluatePosition(t);
     };
@@ -169,7 +169,7 @@ class KSPResonanceTest : public ::testing::Test {
       return result.Get();
     };
     auto const barycentric_position =
-        [this, &barycentre, &ephemeris, &position](
+        [&barycentre, &position](
         not_null<MassiveBody const*> body,
         Instant const& t) {
       return position(body, t) - barycentre(t);
@@ -178,7 +178,7 @@ class KSPResonanceTest : public ::testing::Test {
     LOG(INFO) << "Periods at " << t;
     for (auto const moon : {laythe_, vall_, tylo_, pol_, bop_}) {
       auto const moon_y =
-          [this, &barycentric_position, moon](Instant const& t) {
+          [&barycentric_position, moon](Instant const& t) {
         return barycentric_position(moon, t).coordinates().y;
       };
 
