@@ -4,8 +4,13 @@
 #include <vector>
 #include <utility>
 
+#include "quantities/named_quantities.hpp"
+
 namespace principia {
 namespace geometry {
+namespace internal_barycentre_calculator {
+
+using quantities::Product;
 
 // |Vector| must be a vector space over the field |Scalar|.
 template<typename Vector, typename Scalar>
@@ -21,7 +26,7 @@ class BarycentreCalculator final {
 
  private:
   bool empty_ = true;
-  decltype(std::declval<Vector>() * std::declval<Scalar>()) weighted_sum_;
+  Product<Vector, Scalar> weighted_sum_;
   Scalar weight_;
 };
 
@@ -31,6 +36,11 @@ T Barycentre(std::pair<T, T> const& ts,
              std::pair<Scalar, Scalar> const& weights);
 template<typename T, typename Scalar, template<typename...> class Container>
 T Barycentre(Container<T> const& ts, Container<Scalar> const& weights);
+
+}  // namespace internal_barycentre_calculator
+
+using internal_barycentre_calculator::Barycentre;
+using internal_barycentre_calculator::BarycentreCalculator;
 
 }  // namespace geometry
 }  // namespace principia
