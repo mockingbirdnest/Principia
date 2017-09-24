@@ -39,7 +39,7 @@ class Renderer {
  public:
   Renderer(not_null<Celestial const*> sun,
            not_null<std::unique_ptr<NavigationFrame>> plotting_frame);
- 
+
   virtual ~Renderer() = default;
 
   // Changes the plotting frame of the renderer.
