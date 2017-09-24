@@ -44,11 +44,11 @@ typename SpecialSecondOrderDifferentialEquation<Position>::SystemState
 SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
         serialization::SystemState const& message) {
   SystemState system_state;
-  for (auto const p : message.position()) {
+  for (auto const& p : message.position()) {
     system_state.positions.push_back(
         DoublePrecision<Position>::ReadFromMessage(p));
   }
-  for (auto const v : message.velocity()) {
+  for (auto const& v : message.velocity()) {
     system_state.velocities.push_back(
         DoublePrecision<Velocity>::ReadFromMessage(v));
   }
