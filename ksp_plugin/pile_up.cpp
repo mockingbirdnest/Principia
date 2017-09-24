@@ -46,7 +46,7 @@ PileUp::PileUp(
   LOG(INFO) << "Constructing pile up at " << this;
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
-  for (not_null<Part*> const part : parts_) {
+  for (not_null<Part*> const& part : parts_) {
     total_intrinsic_force += part->intrinsic_force();
     calculator.Add(part->degrees_of_freedom(), part->mass());
   }
@@ -62,7 +62,7 @@ PileUp::PileUp(
           Identity<Barycentric, RigidPileUp>().Forget()},
       AngularVelocity<Barycentric>{},
       barycentre.velocity()};
-  for (not_null<Part*> const part : parts_) {
+  for (not_null<Part*> const& part : parts_) {
     actual_part_degrees_of_freedom_.emplace(
         part,
         barycentric_to_pile_up(part->degrees_of_freedom()));
@@ -106,7 +106,7 @@ void PileUp::NudgeParts() const {
       AngularVelocity<Barycentric>(),
       actual_centre_of_mass.velocity()};
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
-  for (not_null<Part*> const part : parts_) {
+  for (not_null<Part*> const& part : parts_) {
     part->set_degrees_of_freedom(pile_up_to_barycentric(
         FindOrDie(actual_part_degrees_of_freedom_, part)));
   }
@@ -122,7 +122,7 @@ void PileUp::DeformAndAdvanceTime(Instant const& t) {
 }
 
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
-  for (auto const part : parts_) {
+  for (auto const& part : parts_) {
     message->add_part_id(part->part_id());
   }
   mass_.WriteToMessage(message->mutable_mass());
@@ -264,7 +264,7 @@ void PileUp::DeformPileUpIfNeeded() {
   // need a clean way of getting the debug strings of all parts (rather than
   // giant self-evaluating lambdas).
   CHECK_EQ(parts_.size(), apparent_part_degrees_of_freedom_.size());
-  for (not_null<Part*> const part : parts_) {
+  for (not_null<Part*> const& part : parts_) {
     CHECK(Contains(apparent_part_degrees_of_freedom_, part));
   }
 
@@ -386,7 +386,7 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
       AngularVelocity<Barycentric>{},
       pile_up_dof.velocity());
   auto const pile_up_to_barycentric = barycentric_to_pile_up.Inverse();
-  for (not_null<Part*> const part : parts_) {
+  for (not_null<Part*> const& part : parts_) {
     (static_cast<Part*>(part)->*append_to_part_trajectory)(
         it.time(),
         pile_up_to_barycentric(
