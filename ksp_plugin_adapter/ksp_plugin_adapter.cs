@@ -512,6 +512,10 @@ public partial class PrincipiaPluginAdapter
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  FashionablyLate);
+    // TimingFI, 9.  Note that we cannot call the callback FlightIntegrator as
+    // that would collide with the type.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FlightIntegrator,
+                                 JaiFailliAttendre);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
@@ -1316,6 +1320,53 @@ public partial class PrincipiaPluginAdapter
           if (part.forces.Count > 0) {
             part_id_to_intrinsic_forces_.Add(part.flightID,
                                              part.forces.ToArray());
+          }
+        }
+      }
+    }
+  }
+
+  private void JaiFailliAttendre() {
+    // We fetch the forces from stock aerodynamics, which does not use
+    // |Part.AddForce| etc.
+    if (PluginRunning()) {
+      foreach (Vessel vessel in
+               FlightGlobals.Vessels.Where(v => is_manageable(v) &&
+                                                !v.packed)) {
+        foreach (Part part in vessel.parts) {
+          Part physical_parent = closest_physical_parent(part);
+          if (part.bodyLiftLocalVector != UnityEngine.Vector3.zero ||
+              part.dragVector != UnityEngine.Vector3.zero) {
+            if (part_id_to_intrinsic_forces_.ContainsKey(
+                    physical_parent.flightID)) {
+              var previous_holder =
+                  part_id_to_intrinsic_forces_[physical_parent.flightID];
+              part_id_to_intrinsic_forces_[physical_parent.flightID] =
+                  new Part.ForceHolder[previous_holder.Length + 2];
+              previous_holder.CopyTo(
+                  part_id_to_intrinsic_forces_[physical_parent.flightID],
+                  0);
+            } else {
+              part_id_to_intrinsic_forces_.Add(physical_parent.flightID,
+                                               new Part.ForceHolder[2]);
+            }
+            int lift_index = part_id_to_intrinsic_forces_[
+                                 physical_parent.flightID].Length - 2;
+            int drag_index = lift_index + 1;
+            part_id_to_intrinsic_forces_[physical_parent.flightID][lift_index] =
+                new Part.ForceHolder {
+                  force = part.partTransform.TransformDirection(
+                              part.bodyLiftLocalVector),
+                  pos = part.partTransform.TransformPoint(
+                            part.bodyLiftLocalPosition)};
+            part_id_to_intrinsic_forces_[physical_parent.flightID][drag_index] =
+                new Part.ForceHolder {
+                  force = -part.dragVectorDir * part.dragScalar,
+                  pos = (physical_parent != part &&
+                         PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                            ? physical_parent.rb.worldCenterOfMass
+                            : part.partTransform.TransformPoint(
+                                  part.CoPOffset)};
           }
         }
       }
