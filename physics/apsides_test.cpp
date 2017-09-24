@@ -130,7 +130,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
   previous_time = std::experimental::nullopt;
   std::experimental::optional<Position<World>> previous_position;
-  for (auto const pair : all_apsides) {
+  for (auto const& pair : all_apsides) {
     Instant const time = pair.first;
     Position<World> const position = pair.second.position();
     if (previous_time) {
