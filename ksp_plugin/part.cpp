@@ -154,7 +154,7 @@ bool Part::is_piled_up() const {
 void Part::clear_pile_up() {
   if (is_piled_up()) {
     IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Part*> const part : pile_up.iterator()->parts()) {
+    for (not_null<Part*> const& part : pile_up.iterator()->parts()) {
       LOG(INFO) << "Removing part " << part->ShortDebugString()
                 << " from its pile up at " << &*pile_up.iterator();
       part->containing_pile_up_ = std::experimental::nullopt;
