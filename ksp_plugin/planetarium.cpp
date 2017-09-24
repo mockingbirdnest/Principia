@@ -245,7 +245,7 @@ std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
   std::vector<Sphere<Navigation>> plottable_spheres;
 
   auto const& bodies = ephemeris_->bodies();
-  for (auto const& body : bodies) {
+  for (not_null<MassiveBody const*> const body : bodies) {
     auto const trajectory = ephemeris_->trajectory(body);
     Length const mean_radius = body->mean_radius();
     Position<Barycentric> const centre_in_barycentric =

@@ -96,7 +96,7 @@ class KSPResonanceTest : public ::testing::Test {
     jool_system_ = {jool_, laythe_, vall_, tylo_, bop_, pol_};
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
-    for (auto const& moon : joolian_moons_) {
+    for (not_null<MassiveBody const*> const moon : joolian_moons_) {
       auto const elements = solar_system_.MakeKeplerianElements(
           solar_system_.keplerian_initial_state_message(moon->name()).
               elements());
@@ -133,12 +133,12 @@ class KSPResonanceTest : public ::testing::Test {
 
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
-      for (auto const& body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
       barycentric_positions.emplace_back();
-      for (auto const& body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         // TODO(egg): when our dynamic frames support that, it would make sense
         // to use a nonrotating dynamic frame centred at the barycentre of the
         // Jool system, instead of computing the barycentre and difference
@@ -163,7 +163,7 @@ class KSPResonanceTest : public ::testing::Test {
     };
     auto const barycentre = [this, &position](Instant const& t) {
       BarycentreCalculator<Position<KSP>, Mass> result;
-      for (auto const& body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         result.Add(position(body, t), body->mass());
       }
       return result.Get();
