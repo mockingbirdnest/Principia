@@ -370,6 +370,8 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
+  const double manageability_altitude_threshold = 300 /*m*/;
+
   private string UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
@@ -378,24 +380,21 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING && vessel.packed &&
-           (vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude ||
+          (vessel.situation == Vessel.Situations.FLYING &&
+           (vessel.altitude > manageability_altitude_threshold ||
             vessel.altitude == -vessel.mainBody.Radius)))) {
       reasons.Add("vessel situation is " + vessel.situation +
                   " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
                   " at an altitude of " + vessel.altitude + " m above " +
                   vessel.mainBody.NameWithArticle() + " whose threshold is " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
+                  manageability_altitude_threshold + " m");
     }
     if (!vessel.packed &&
-        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
+        vessel.altitude <= manageability_altitude_threshold) {
       reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
                   " m above " + vessel.mainBody.NameWithArticle() +
                   ", below the threshold of " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
-    }
-    if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
-      reasons.Add("vessel is unpacked and frame is rotating");
+                  manageability_altitude_threshold + " m");
     }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
