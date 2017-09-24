@@ -51,7 +51,7 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
                             fixed_step_parameters,
                             ephemeris);
     auto const it = pile_ups->begin();
-    for (not_null<Part*> const part : it->parts()) {
+    for (not_null<Part*> const& part : it->parts()) {
       part->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
     }
   }
