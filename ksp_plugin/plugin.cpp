@@ -490,7 +490,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(kept_vessels_.empty());
 
   // Free old parts.
-  for (not_null<Vessel*> const& vessel : loaded_vessels_) {
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
   }
 
@@ -582,7 +582,7 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   CHECK(!initializing_);
   CHECK_GT(t, current_time_);
 
-  for (not_null<Vessel*> const& vessel : loaded_vessels_) {
+  for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->ClearAllIntrinsicForces();
   }
 
