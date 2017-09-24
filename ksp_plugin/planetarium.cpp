@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "geometry/point.hpp"
+#include "physics/massive_body.hpp"
 #include "quantities/elementary_functions.hpp"
 
 namespace principia {
@@ -15,6 +16,7 @@ using geometry::Position;
 using geometry::RP2Line;
 using geometry::Sign;
 using geometry::Velocity;
+using physics::MassiveBody;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Sqrt;
@@ -245,7 +247,7 @@ std::vector<Sphere<Navigation>> Planetarium::ComputePlottableSpheres(
   std::vector<Sphere<Navigation>> plottable_spheres;
 
   auto const& bodies = ephemeris_->bodies();
-  for (auto const body : bodies) {
+  for (not_null<MassiveBody const*> const body : bodies) {
     auto const trajectory = ephemeris_->trajectory(body);
     Length const mean_radius = body->mean_radius();
     Position<Barycentric> const centre_in_barycentric =

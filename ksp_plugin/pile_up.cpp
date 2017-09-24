@@ -122,7 +122,7 @@ void PileUp::DeformAndAdvanceTime(Instant const& t) {
 }
 
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
-  for (auto const part : parts_) {
+  for (not_null<Part*> const part : parts_) {
     message->add_part_id(part->part_id());
   }
   mass_.WriteToMessage(message->mutable_mass());
