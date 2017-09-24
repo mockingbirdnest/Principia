@@ -30,7 +30,7 @@ char const out_message_name[] = "Out";
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
   bool is_first = true;
-  for (auto const vi : v) {
+  for (auto const& vi : v) {
     if (vi.empty()) {
       continue;
     }
