@@ -298,6 +298,43 @@ public partial class PrincipiaPluginAdapter
     body.CBUpdate();
   }
 
+  private void UpdatePredictions() {
+    Vessel main_vessel = FlightGlobals.ActiveVessel ??
+                  space_tracking?.SelectedVessel;
+    bool ready_to_draw_active_vessel_trajectory =
+        main_vessel != null &&
+        MapView.MapIsEnabled &&
+        plugin_.HasVessel(main_vessel.id.ToString());
+
+    if (ready_to_draw_active_vessel_trajectory) {
+      // TODO(egg): make the speed tolerance independent.  Also max_steps.
+      AdaptiveStepParameters adaptive_step_parameters =
+          plugin_.VesselGetPredictionAdaptiveStepParameters(
+              main_vessel.id.ToString());
+      adaptive_step_parameters =
+          new AdaptiveStepParameters {
+            integrator_kind = adaptive_step_parameters.integrator_kind,
+            max_steps = (Int64)prediction_steps_[prediction_steps_index_],
+            length_integration_tolerance =
+                prediction_length_tolerances_[
+                    prediction_length_tolerance_index_],
+            speed_integration_tolerance =
+                prediction_length_tolerances_[
+                    prediction_length_tolerance_index_]};
+      plugin_.VesselSetPredictionAdaptiveStepParameters(
+          main_vessel.id.ToString(), adaptive_step_parameters);
+      plugin_.UpdatePrediction(main_vessel.id.ToString());
+      string target_id =
+          FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
+      if (!plotting_frame_selector_.get().target_override &&
+          target_id != null && plugin_.HasVessel(target_id)) {
+        plugin_.VesselSetPredictionAdaptiveStepParameters(
+            target_id, adaptive_step_parameters);
+        plugin_.UpdatePrediction(target_id);
+      }
+    }
+  }
+
   private void UpdateVessel(Vessel vessel, double universal_time) {
      if (plugin_.HasVessel(vessel.id.ToString())) {
        QP from_parent = plugin_.VesselFromParent(
@@ -904,40 +941,6 @@ public partial class PrincipiaPluginAdapter
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      Vessel main_vessel = FlightGlobals.ActiveVessel ??
-                           space_tracking?.SelectedVessel;
-      bool ready_to_draw_active_vessel_trajectory =
-          main_vessel != null &&
-          MapView.MapIsEnabled &&
-          plugin_.HasVessel(main_vessel.id.ToString());
-
-      if (ready_to_draw_active_vessel_trajectory) {
-        // TODO(egg): make the speed tolerance independent.  Also max_steps.
-        AdaptiveStepParameters adaptive_step_parameters =
-            plugin_.VesselGetPredictionAdaptiveStepParameters(
-                main_vessel.id.ToString());
-        adaptive_step_parameters =
-            new AdaptiveStepParameters {
-              integrator_kind = adaptive_step_parameters.integrator_kind,
-              max_steps = (Int64)prediction_steps_[prediction_steps_index_],
-              length_integration_tolerance =
-                  prediction_length_tolerances_[
-                      prediction_length_tolerance_index_],
-              speed_integration_tolerance =
-                  prediction_length_tolerances_[
-                      prediction_length_tolerance_index_]};
-        plugin_.VesselSetPredictionAdaptiveStepParameters(
-            main_vessel.id.ToString(), adaptive_step_parameters);
-        plugin_.UpdatePrediction(main_vessel.id.ToString());
-        string target_id =
-            FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-        if (!plotting_frame_selector_.get().target_override &&
-            target_id != null && plugin_.HasVessel(target_id)) {
-          plugin_.VesselSetPredictionAdaptiveStepParameters(
-              target_id, adaptive_step_parameters);
-          plugin_.UpdatePrediction(target_id);
-        }
-      }
       plugin_.ForgetAllHistoriesBefore(universal_time -
                                        history_lengths_[history_length_index_]);
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
@@ -1152,6 +1155,8 @@ public partial class PrincipiaPluginAdapter
     }
 
     plugin_.CatchUpLaggingVessels();
+
+    UpdatePredictions();
 
     // We don't want to do too many things here, since all the KSP classes
     // still think they're in the preceding step.  We only nudge the Unity

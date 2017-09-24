@@ -717,7 +717,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   auto const rendered_prediction =
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),
-          prediction.Begin(),
+          prediction.Fork(),
           prediction.End(),
           World::origin,
           plugin.PlanetariumRotation());

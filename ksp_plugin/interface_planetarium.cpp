@@ -184,7 +184,7 @@ Iterator* principia__PlanetariumPlotPrediction(
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   auto const rp2_lines = PlotMethodN(*planetarium,
                                      method,
-                                     prediction.Begin(),
+                                     prediction.Fork(),
                                      prediction.End(),
                                      plugin->CurrentTime(),
                                      /*reverse=*/false);

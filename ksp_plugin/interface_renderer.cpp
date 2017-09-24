@@ -54,7 +54,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Begin(),
+                                  prediction.Fork(),
                                   prediction.End(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   rendered_apoapsides,
@@ -102,7 +102,7 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
-  plugin->ComputeAndRenderNodes(prediction.Begin(),
+  plugin->ComputeAndRenderNodes(prediction.Fork(),
                                 prediction.End(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 rendered_ascending,
