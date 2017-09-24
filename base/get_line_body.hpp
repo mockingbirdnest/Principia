@@ -17,10 +17,10 @@ std::string GetLineWithSize(std::size_t const size, std::ifstream& stream) {
     stream.clear();
     std::string string_buffer(buffer.get());
     string_buffer += GetLineWithSize(2 * size, stream);
-    return std::move(string_buffer);
+    return string_buffer;
   } else {
     std::string string_buffer(buffer.get());
-    return std::move(string_buffer);
+    return string_buffer;
   }
 }
 

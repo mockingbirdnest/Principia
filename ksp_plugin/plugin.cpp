@@ -1203,7 +1203,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   }
 
   plugin->initializing_.Flop();
-  return std::move(plugin);
+  return plugin;
 }
 
 Plugin::Plugin(
