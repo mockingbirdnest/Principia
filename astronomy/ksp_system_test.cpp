@@ -279,7 +279,8 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     {
       BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
           innermost_jool_system;
-      for (not_null<MassiveBody const*> const body : {jool_, laythe_, vall_, tylo_}) {
+      for (not_null<MassiveBody const*> const body :
+               {jool_, laythe_, vall_, tylo_}) {
         innermost_jool_system.Add(degrees_of_freedom(body),
                                   body->gravitational_parameter());
       }
