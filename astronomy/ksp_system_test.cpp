@@ -152,12 +152,12 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
           };
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
-      for (auto const body : jool_system_) {
+      for (auto const& body : jool_system_) {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
       container.emplace_back();
-      for (auto const body : jool_system_) {
+      for (auto const& body : jool_system_) {
         container.back().emplace_back(
             (position(body) - jool_system_barycentre.Get()) / Metre);
       }
@@ -226,7 +226,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
   std::vector<double> tylo_bop_separations_in_m;
   std::vector<double> pol_bop_separations_in_m;
 
-  for (auto const moon : joolian_moons_) {
+  for (auto const& moon : joolian_moons_) {
     last_separation_changes.emplace(moon, Sign(+1));
   }
   for (int n = 0;
@@ -242,7 +242,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
         };
     auto const jool_position = position(jool_);
 
-    for (auto const moon : joolian_moons_) {
+    for (auto const& moon : joolian_moons_) {
       Length const separation = (jool_position - position(moon)).Norm();
       Sign const separation_change = Sign(separation - last_separations[moon]);
       if (separation_change != last_separation_changes.at(moon)) {
@@ -279,7 +279,7 @@ TEST_F(KSPSystemTest, KerbalSystem) {
     {
       BarycentreCalculator<DegreesOfFreedom<KSP>, GravitationalParameter>
           innermost_jool_system;
-      for (auto const body : {jool_, laythe_, vall_, tylo_}) {
+      for (auto const& body : {jool_, laythe_, vall_, tylo_}) {
         innermost_jool_system.Add(degrees_of_freedom(body),
                                   body->gravitational_parameter());
       }
