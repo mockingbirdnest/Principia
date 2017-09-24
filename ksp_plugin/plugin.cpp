@@ -497,7 +497,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // Bind the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
-    vessel.ForSomePart([this, &vessel](Part& first_part) {
+    vessel.ForSomePart([&vessel](Part& first_part) {
       vessel.ForAllParts([&first_part](Part& part) {
         Subset<Part>::Unite(Subset<Part>::Find(first_part),
                             Subset<Part>::Find(part));
