@@ -509,6 +509,9 @@ public partial class PrincipiaPluginAdapter
     // Timing1, -99 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
                                  Early);
+    // Timing2, -1 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Earlyish,
+                                 Earlyish);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  FashionablyLate);
@@ -516,6 +519,9 @@ public partial class PrincipiaPluginAdapter
     // that would collide with the type.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FlightIntegrator,
                                  JaiFailliAttendre);
+    // Timing4, 19.
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late,
+                                    Late);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
@@ -975,8 +981,13 @@ public partial class PrincipiaPluginAdapter
                                     Precalc);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
                                     Early);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Earlyish,
+                                    Earlyish);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     FashionablyLate);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FlightIntegrator,
+                                    JaiFailliAttendre);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late, Late);
     TimingManager.FixedUpdateRemove(
         TimingManager.TimingStage.BetterLateThanNever,
         BetterLateThanNever);
@@ -1294,6 +1305,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void Earlyish() {}
+
   private void FashionablyLate() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the
@@ -1372,6 +1385,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
   }
+
+  private void Late() {}
 
   private void BetterLateThanNever() {
     if (PluginRunning()) {
