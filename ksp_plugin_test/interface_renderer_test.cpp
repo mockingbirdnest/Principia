@@ -46,10 +46,6 @@ Index const celestial_index = 1;
 Index const parent_index = 2;
 Index const unused = 666;
 
-int const trajectory_size = 10;
-
-XYZ parent_position = {4, 5, 6};
-
 }  // namespace
 
 class InterfaceRendererTest : public ::testing::Test {
