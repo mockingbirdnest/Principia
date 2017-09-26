@@ -520,8 +520,7 @@ public partial class PrincipiaPluginAdapter
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FlightIntegrator,
                                  JaiFailliAttendre);
     // Timing4, 19.
-    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late,
-                                    Late);
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Late, Late);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
@@ -1390,11 +1389,13 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void Late() {
-    if (FlightGlobals.RefFrameIsRotating) {
-      plugin_.SetWorldRotationalReferenceFrame(
-          FlightGlobals.currentMainBody.flightGlobalsIndex);
-    } else {
-      plugin_.ClearWorldRotationalReferenceFrame();
+    if (PluginRunning()) {
+      if (FlightGlobals.RefFrameIsRotating) {
+        plugin_.SetWorldRotationalReferenceFrame(
+            FlightGlobals.currentMainBody.flightGlobalsIndex);
+      } else {
+        plugin_.ClearWorldRotationalReferenceFrame();
+      }
     }
   }
 
