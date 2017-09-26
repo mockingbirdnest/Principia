@@ -232,6 +232,13 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                            FromGameTime(*plugin, time))));
 }
 
+void principia__ClearWorldRotationalReferenceFrame(Plugin* const plugin) {
+  journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->ClearWorldRotationalReferenceFrame();
+  return m.Return();
+}
+
 double principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -814,6 +821,14 @@ void principia__SetSuppressedLogging(int const min_severity) {
 void principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
+}
+
+void principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
+                                                 int const index) {
+  journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
 

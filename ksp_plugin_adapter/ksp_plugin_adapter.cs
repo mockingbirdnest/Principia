@@ -1386,7 +1386,14 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
-  private void Late() {}
+  private void Late() {
+    if (FlightGlobals.RefFrameIsRotating) {
+      plugin_.SetWorldRotationalReferenceFrame(
+          FlightGlobals.currentMainBody.flightGlobalsIndex);
+    } else {
+      plugin_.ClearWorldRotationalReferenceFrame();
+    }
+  }
 
   private void BetterLateThanNever() {
     if (PluginRunning()) {

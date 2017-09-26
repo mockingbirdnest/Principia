@@ -327,6 +327,15 @@ Time Plugin::CelestialRotationPeriod(Index const celestial_index) const {
   return 2 * π * Radian / body.angular_frequency();
 }
 
+void Plugin::ClearWorldRotationalReferenceFrame() {
+  angular_velocity_of_world_ = AngularVelocity<Barycentric>();
+}
+
+void Plugin::SetWorldRotationalReferenceFrame(Index const celestial_index) {
+  SetMainBody(celestial_index);
+  angular_velocity_of_world_ = main_body_->angular_velocity();
+}
+
 Index Plugin::CelestialIndexOfBody(MassiveBody const& body) const {
   return FindOrDie(name_to_index_, body.name());
 }
@@ -421,9 +430,10 @@ void Plugin::InsertOrKeepLoadedPart(
             MainBodyCentred::origin,
             main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
-        AngularVelocity<World>(),
+        renderer_->BarycentricToWorld(PlanetariumRotation())(
+            angular_velocity_of_world_),
         main_body_degrees_of_freedom.velocity()};
-    auto const world_to_barycentric =
+    auto const world_to_barycentric_motion =
         main_body_frame.FromThisFrameAtTime(previous_time) *
         world_to_main_body_centred;
 
@@ -431,7 +441,7 @@ void Plugin::InsertOrKeepLoadedPart(
             part_id,
             name,
             mass,
-            world_to_barycentric(part_degrees_of_freedom));
+            world_to_barycentric_motion(part_degrees_of_freedom));
   }
   vessel->KeepPart(part_id);
   not_null<Part*> part = vessel->part(part_id);
@@ -531,7 +541,8 @@ void Plugin::SetPartApparentDegreesOfFreedom(
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
-      AngularVelocity<World>{},
+      renderer_->BarycentricToWorld(PlanetariumRotation())(
+          angular_velocity_of_world_),
       Velocity<World>{}};
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
@@ -552,7 +563,7 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
           world_origin.position(),
           World::origin,
           renderer_->BarycentricToWorld(PlanetariumRotation())},
-      AngularVelocity<Barycentric>{},
+      angular_velocity_of_world_,
       world_origin.velocity()};
   return barycentric_to_world(FindOrDie(part_id_to_vessel_, part_id)->
                                   part(part_id)->
