@@ -219,7 +219,8 @@ class Plugin {
   // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+      DegreesOfFreedom<World> const& degrees_of_freedom,
+      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the

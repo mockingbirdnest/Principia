@@ -1010,6 +1010,11 @@ public partial class PrincipiaPluginAdapter
 
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
+    QP main_body_degrees_of_freedom =
+        new QP{q = (XYZ)(FlightGlobals.currentMainBody ??
+                             FlightGlobals.GetHomeBody()).position,
+               p = (XYZ)(-krakensbane.FrameVel)};
+
     // NOTE(egg): Inserting vessels and parts has to occur in
     // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
     // the physics step.  See also #1281.
@@ -1030,9 +1035,6 @@ public partial class PrincipiaPluginAdapter
                                  !vessel.packed,
                                  out inserted);
       if (!vessel.packed) {
-        QP main_body_degrees_of_freedom =
-            new QP{q = (XYZ)vessel.mainBody.position,
-                   p = (XYZ)(-krakensbane.FrameVel)};
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
           QP degrees_of_freedom;
           if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
@@ -1164,7 +1166,8 @@ public partial class PrincipiaPluginAdapter
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
-                   p = (XYZ)(Vector3d)part.rb.velocity});
+                   p = (XYZ)(Vector3d)part.rb.velocity},
+            main_body_degrees_of_freedom);
       }
     }
 
