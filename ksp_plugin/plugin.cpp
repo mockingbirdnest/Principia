@@ -431,7 +431,7 @@ void Plugin::InsertOrKeepLoadedPart(
             main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
         renderer_->BarycentricToWorld(PlanetariumRotation())(
-            angular_velocity_of_world_),
+            -angular_velocity_of_world_),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric_motion =
         main_body_frame.FromThisFrameAtTime(previous_time) *
@@ -545,7 +545,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
       renderer_->BarycentricToWorld(PlanetariumRotation())(
-          angular_velocity_of_world_),
+          -angular_velocity_of_world_),
       main_body_degrees_of_freedom.velocity()};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
