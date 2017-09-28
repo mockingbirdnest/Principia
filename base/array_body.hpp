@@ -45,7 +45,7 @@ Array<Element> UniqueArray<Element>::get() const {
 template<typename Element, std::int32_t max_size>
 template<typename... Args>
 constexpr BoundedArray<Element, max_size>::BoundedArray(Args&&... args)
-    : data_{std::forward<Args>(args)...},
+    : data_{{std::forward<Args>(args)...}},
       size_(sizeof...(args)) {}
 
 template<typename Element, std::int32_t max_size>
