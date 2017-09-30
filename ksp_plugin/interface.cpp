@@ -232,6 +232,13 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                            FromGameTime(*plugin, time))));
 }
 
+void principia__ClearWorldRotationalReferenceFrame(Plugin* const plugin) {
+  journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->ClearWorldRotationalReferenceFrame();
+  return m.Return();
+}
+
 double principia__CurrentTime(Plugin const* const plugin) {
   journal::Method<journal::CurrentTime> m({plugin});
   CHECK_NOTNULL(plugin);
@@ -780,15 +787,18 @@ void principia__SetMainBody(Plugin* const plugin, int const index) {
   return m.Return();
 }
 
-void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
-                                                PartId const part_id,
-                                                QP const degrees_of_freedom) {
+void principia__SetPartApparentDegreesOfFreedom(
+    Plugin* const plugin,
+    PartId const part_id,
+    QP const degrees_of_freedom,
+    QP const main_body_degrees_of_freedom) {
   journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
-      {plugin, part_id, degrees_of_freedom});
+      {plugin, part_id, degrees_of_freedom, main_body_degrees_of_freedom});
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentDegreesOfFreedom(
       part_id,
-      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom));
+      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
+      FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
   return m.Return();
 }
 
@@ -814,6 +824,14 @@ void principia__SetSuppressedLogging(int const min_severity) {
 void principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
+}
+
+void principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
+                                                 int const index) {
+  journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
 

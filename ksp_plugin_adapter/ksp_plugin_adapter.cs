@@ -370,6 +370,8 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
+  const double manageability_altitude_threshold = 300 /*m*/;
+
   private string UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
@@ -378,24 +380,21 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING && vessel.packed &&
-           (vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude ||
+          (vessel.situation == Vessel.Situations.FLYING &&
+           (vessel.altitude > manageability_altitude_threshold ||
             vessel.altitude == -vessel.mainBody.Radius)))) {
       reasons.Add("vessel situation is " + vessel.situation +
                   " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
                   " at an altitude of " + vessel.altitude + " m above " +
                   vessel.mainBody.NameWithArticle() + " whose threshold is " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
+                  manageability_altitude_threshold + " m");
     }
     if (!vessel.packed &&
-        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
+        vessel.altitude <= manageability_altitude_threshold) {
       reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
                   " m above " + vessel.mainBody.NameWithArticle() +
                   ", below the threshold of " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
-    }
-    if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
-      reasons.Add("vessel is unpacked and frame is rotating");
+                  manageability_altitude_threshold + " m");
     }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
@@ -510,9 +509,18 @@ public partial class PrincipiaPluginAdapter
     // Timing1, -99 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
                                  Early);
+    // Timing2, -1 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Earlyish,
+                                 Earlyish);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  FashionablyLate);
+    // TimingFI, 9.  Note that we cannot call the callback FlightIntegrator as
+    // that would collide with the type.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FlightIntegrator,
+                                 JaiFailliAttendre);
+    // Timing4, 19.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Late, Late);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
@@ -972,8 +980,13 @@ public partial class PrincipiaPluginAdapter
                                     Precalc);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
                                     Early);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Earlyish,
+                                    Earlyish);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     FashionablyLate);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FlightIntegrator,
+                                    JaiFailliAttendre);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late, Late);
     TimingManager.FixedUpdateRemove(
         TimingManager.TimingStage.BetterLateThanNever,
         BetterLateThanNever);
@@ -996,6 +1009,11 @@ public partial class PrincipiaPluginAdapter
 
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
+    QP main_body_degrees_of_freedom =
+        new QP{q = (XYZ)(FlightGlobals.currentMainBody ??
+                             FlightGlobals.GetHomeBody()).position,
+               p = (XYZ)(-krakensbane.FrameVel)};
+
     // NOTE(egg): Inserting vessels and parts has to occur in
     // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
     // the physics step.  See also #1281.
@@ -1016,9 +1034,6 @@ public partial class PrincipiaPluginAdapter
                                  !vessel.packed,
                                  out inserted);
       if (!vessel.packed) {
-        QP main_body_degrees_of_freedom =
-            new QP{q = (XYZ)vessel.mainBody.position,
-                   p = (XYZ)(-krakensbane.FrameVel)};
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
           QP degrees_of_freedom;
           if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
@@ -1150,7 +1165,8 @@ public partial class PrincipiaPluginAdapter
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
-                   p = (XYZ)(Vector3d)part.rb.velocity});
+                   p = (XYZ)(Vector3d)part.rb.velocity},
+            main_body_degrees_of_freedom);
       }
     }
 
@@ -1291,6 +1307,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void Earlyish() {}
+
   private void FashionablyLate() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the
@@ -1319,6 +1337,64 @@ public partial class PrincipiaPluginAdapter
                                              part.forces.ToArray());
           }
         }
+      }
+    }
+  }
+
+  private void JaiFailliAttendre() {
+    // We fetch the forces from stock aerodynamics, which does not use
+    // |Part.AddForce| etc.
+    if (PluginRunning()) {
+      foreach (Vessel vessel in
+               FlightGlobals.Vessels.Where(v => is_manageable(v) &&
+                                                !v.packed)) {
+        foreach (Part part in vessel.parts) {
+          Part physical_parent = closest_physical_parent(part);
+          if (part.bodyLiftLocalVector != UnityEngine.Vector3.zero ||
+              part.dragVector != UnityEngine.Vector3.zero) {
+            if (part_id_to_intrinsic_forces_.ContainsKey(
+                    physical_parent.flightID)) {
+              var previous_holder =
+                  part_id_to_intrinsic_forces_[physical_parent.flightID];
+              part_id_to_intrinsic_forces_[physical_parent.flightID] =
+                  new Part.ForceHolder[previous_holder.Length + 2];
+              previous_holder.CopyTo(
+                  part_id_to_intrinsic_forces_[physical_parent.flightID],
+                  0);
+            } else {
+              part_id_to_intrinsic_forces_.Add(physical_parent.flightID,
+                                               new Part.ForceHolder[2]);
+            }
+            int lift_index = part_id_to_intrinsic_forces_[
+                                 physical_parent.flightID].Length - 2;
+            int drag_index = lift_index + 1;
+            part_id_to_intrinsic_forces_[physical_parent.flightID][lift_index] =
+                new Part.ForceHolder {
+                  force = part.partTransform.TransformDirection(
+                              part.bodyLiftLocalVector),
+                  pos = part.partTransform.TransformPoint(
+                            part.bodyLiftLocalPosition)};
+            part_id_to_intrinsic_forces_[physical_parent.flightID][drag_index] =
+                new Part.ForceHolder {
+                  force = -part.dragVectorDir * part.dragScalar,
+                  pos = (physical_parent != part &&
+                         PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                            ? physical_parent.rb.worldCenterOfMass
+                            : part.partTransform.TransformPoint(
+                                  part.CoPOffset)};
+          }
+        }
+      }
+    }
+  }
+
+  private void Late() {
+    if (PluginRunning()) {
+      if (FlightGlobals.RefFrameIsRotating) {
+        plugin_.SetWorldRotationalReferenceFrame(
+            FlightGlobals.currentMainBody.flightGlobalsIndex);
+      } else {
+        plugin_.ClearWorldRotationalReferenceFrame();
       }
     }
   }

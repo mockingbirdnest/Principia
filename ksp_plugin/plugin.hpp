@@ -48,6 +48,7 @@ using base::not_null;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -144,6 +145,9 @@ class Plugin {
   virtual Angle CelestialInitialRotation(Index celestial_index) const;
   virtual Time CelestialRotationPeriod(Index celestial_index) const;
 
+  virtual void ClearWorldRotationalReferenceFrame();
+  virtual void SetWorldRotationalReferenceFrame(Index celestial_index);
+
   virtual Index CelestialIndexOfBody(MassiveBody const& body) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
@@ -215,7 +219,8 @@ class Plugin {
   // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+      DegreesOfFreedom<World> const& degrees_of_freedom,
+      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
@@ -225,7 +230,8 @@ class Plugin {
       PartId part_at_origin) const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
-  // |Index|, identifying the origin of |World| with that of |Bubble|.
+  // |Index|, identifying the origin of |World| with the centre of mass of the
+  // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
       PartId part_at_origin,
@@ -472,6 +478,7 @@ class Plugin {
   std::unique_ptr<Renderer> renderer_;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+  AngularVelocity<Barycentric> angular_velocity_of_world_;
 
   // Do not |erase| from this list, use |Part::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;
