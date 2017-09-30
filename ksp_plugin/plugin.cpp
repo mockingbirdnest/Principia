@@ -590,7 +590,6 @@ DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
 
 // TODO(egg): the following function is a near-exact replica of the preceding
 // one.  Factorize.
-
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
     PartId const part_at_origin,
