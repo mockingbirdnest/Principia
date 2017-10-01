@@ -587,6 +587,7 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
       barycentric_to_main_body_motion(
           FindOrDie(part_id_to_vessel_, reference_part_id)->
               part(reference_part_id)->degrees_of_freedom());
+
   RigidTransformation<MainBodyCentred, World> const
       main_body_to_world_rigid_transformation = [&]() {
     if (main_body_centre.has_value()) {
@@ -604,13 +605,20 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
                      barycentric_to_main_body_rotation.Inverse()};
     }
   }();
-
-  RigidMotion<MainBodyCentred, World> const main_body_to_world{
-      main_body_to_world_rigid_transformation,
-      barycentric_to_main_body_rotation(angular_velocity_of_world_),
-      /*velocity_of_to_frame_origin=*/reference_part_is_unmoving
-          ? reference_part_degrees_of_freedom.velocity()
-          : Velocity<MainBodyCentred>()};
+  RigidMotion<MainBodyCentred, World> const main_body_to_world = [&](){
+    if (reference_part_is_unmoving) {
+      return RigidMotion<World, MainBodyCentred>{
+          main_body_to_world_rigid_transformation.Inverse(),
+          -(main_body_to_world_rigid_transformation.linear_map() *
+                barycentric_to_main_body_rotation)(angular_velocity_of_world_),
+      /*velocity_of_to_frame_origin=*/Velocity<World>()}.Inverse();
+    } else {
+      return RigidMotion<MainBodyCentred, World>{
+          main_body_to_world_rigid_transformation,
+          barycentric_to_main_body_rotation(angular_velocity_of_world_),
+          reference_part_degrees_of_freedom.velocity()};
+    }
+  }();
   return main_body_to_world * barycentric_to_main_body_motion;
 }
 
