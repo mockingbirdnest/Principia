@@ -1194,7 +1194,15 @@ public partial class PrincipiaPluginAdapter
           }
           QP part_actual_degrees_of_freedom =
               plugin_.GetPartActualDegreesOfFreedom(
-                  part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+                  part.flightID,
+          new Origin{reference_part_is_at_origin  =
+                         FloatingOrigin.fetch.continuous,
+                     reference_part_is_unmoving =
+                         krakensbane_.FrameVel != Vector3d.zero,
+                     main_body_centre_in_world =
+                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                     reference_part_id =
+                         FlightGlobals.ActiveVessel.rootPart.flightID});
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
@@ -1219,7 +1227,14 @@ public partial class PrincipiaPluginAdapter
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-          FlightGlobals.ActiveVessel.rootPart.flightID,
+          new Origin{reference_part_is_at_origin  =
+                         FloatingOrigin.fetch.continuous,
+                     reference_part_is_unmoving =
+                         krakensbane_.FrameVel != Vector3d.zero,
+                     main_body_centre_in_world =
+                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                     reference_part_id =
+                         FlightGlobals.ActiveVessel.rootPart.flightID},
           universal_time);
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
@@ -1924,6 +1939,12 @@ public partial class PrincipiaPluginAdapter
       Interface.GetVersion(build_date: out unused_build_date,
                            version: out version);
       UnityEngine.GUILayout.TextArea(version);
+      UnityEngine.GUILayout.TextArea(
+      "Root part distance from origin: " +
+      FlightGlobals.ActiveVessel?.rootPart?.transform?.position.magnitude);
+      UnityEngine.GUILayout.TextArea(
+      "Root part speed: " +
+      FlightGlobals.ActiveVessel?.rootPart?.rb?.velocity.magnitude);
       bool changed_history_length = false;
       Selector(history_lengths_,
                ref history_length_index_,

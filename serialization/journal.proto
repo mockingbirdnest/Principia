@@ -78,6 +78,13 @@ message NavigationManoeuvreFrenetTrihedron {
   required XYZ tangent = 3;
 }
 
+message Origin {
+  required bool reference_part_is_at_origin = 1;
+  required bool reference_part_is_unmoving = 2;
+  required fixed32 reference_part_id = 3;
+  required XYZ main_body_centre_in_world = 4;
+}
+
 message QP {
   required XYZ q = 1;
   required XYZ p = 2;
@@ -208,7 +215,7 @@ message CelestialWorldDegreesOfFreedom {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required int32 index = 2;
-    required fixed32 part_at_origin = 3;
+    required Origin origin = 5;
     required double time = 4;
   }
   message Return {
@@ -743,7 +750,7 @@ message GetPartActualDegreesOfFreedom {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required fixed32 part_id = 2;
-    required fixed32 part_at_origin = 3;
+    required Origin origin = 4;
   }
   message Return {
     required QP result = 1;

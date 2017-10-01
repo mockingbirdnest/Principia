@@ -221,15 +221,23 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                              int const index,
-                                             PartId const part_at_origin,
+                                             Origin const origin,
                                              double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
-      {plugin, index, part_at_origin, time});
+      {plugin, index, origin, time});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToQP(plugin->CelestialWorldDegreesOfFreedom(
-                           index,
-                           part_at_origin,
-                           FromGameTime(*plugin, time))));
+  return m.Return(ToQP(
+      plugin->CelestialWorldDegreesOfFreedom(
+          index,
+          plugin->BarycentricToWorld(
+              origin.reference_part_is_unmoving,
+              origin.reference_part_id,
+              origin.reference_part_is_at_origin
+                  ? std::experimental::nullopt
+                  : std::experimental::make_optional(
+                        FromXYZ<Position<World>>(
+                            origin.main_body_centre_in_world))),
+          FromGameTime(*plugin, time))));
 }
 
 void principia__ClearWorldRotationalReferenceFrame(Plugin* const plugin) {
@@ -367,12 +375,21 @@ int principia__GetBufferedLogging() {
 
 QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
                                             PartId const part_id,
-                                            PartId const part_at_origin) {
+                                            Origin const origin) {
   journal::Method<journal::GetPartActualDegreesOfFreedom> m(
-      {plugin, part_id, part_at_origin});
+      {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToQP(plugin->GetPartActualDegreesOfFreedom(part_id, part_at_origin)));
+  return m.Return(ToQP(
+      plugin->GetPartActualDegreesOfFreedom(
+          part_id,
+          plugin->BarycentricToWorld(
+              origin.reference_part_is_unmoving,
+              origin.reference_part_id,
+              origin.reference_part_is_at_origin
+                  ? std::experimental::nullopt
+                  : std::experimental::make_optional(
+                        FromXYZ<Position<World>>(
+                            origin.main_body_centre_in_world))))));
 }
 
 int principia__GetStderrLogging() {
