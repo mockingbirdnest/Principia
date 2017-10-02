@@ -418,9 +418,9 @@ void Plugin::InsertOrKeepLoadedPart(
     }
   } else {
     Instant const previous_time = current_time_ - Δt;
-    enum class LocalTag { tag };
-    using MainBodyCentred =
-        geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
+    OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
+        Exp(Δt * angular_velocity_of_world_).Forget();
+    // TODO(egg): Can we use |BarycentricToWorld| here?
     BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
         main_body_frame{ephemeris_.get(),
                         FindOrDie(celestials_, main_body_index)->body()};
@@ -429,9 +429,10 @@ void Plugin::InsertOrKeepLoadedPart(
             main_body_degrees_of_freedom.position(),
             MainBodyCentred::origin,
             main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
+                Δplanetarium_rotation.Inverse() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
-        renderer_->BarycentricToWorld(PlanetariumRotation())(
-            -angular_velocity_of_world_),
+            (renderer_->BarycentricToWorld(PlanetariumRotation()) *
+                 Δplanetarium_rotation)(-angular_velocity_of_world_),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric_motion =
         main_body_frame.FromThisFrameAtTime(previous_time) *
@@ -558,45 +559,26 @@ void Plugin::SetPartApparentDegreesOfFreedom(
 
 DegreesOfFreedom<World> Plugin::GetPartActualDegreesOfFreedom(
     PartId const part_id,
-    PartId const part_at_origin) const {
-  enum class LocalTag { tag };
-  using MainBodyCentred =
-      geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
-  BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
-      main_body_frame{ephemeris_.get(), main_body_};
-
-  auto const barycentric_to_main_body_motion =
-      main_body_frame.ToThisFrameAtTime(current_time_);
-  // In coordinates, this rotation is the identity.
-  auto const barycentric_to_main_body_rotation =
-      barycentric_to_main_body_motion.rigid_transformation().linear_map();
-  auto const world_origin = barycentric_to_main_body_motion(
-      FindOrDie(part_id_to_vessel_, part_at_origin)->part(part_at_origin)->
-          degrees_of_freedom());
-
-  RigidMotion<MainBodyCentred, World> const main_body_to_world{
-      RigidTransformation<MainBodyCentred, World>{
-          world_origin.position(),
-          World::origin,
-          renderer_->BarycentricToWorld(PlanetariumRotation()) *
-              barycentric_to_main_body_rotation.Inverse()},
-      barycentric_to_main_body_rotation(angular_velocity_of_world_),
-      world_origin.velocity()};
-
-  return (main_body_to_world * barycentric_to_main_body_motion)(
+    RigidMotion<Barycentric, World> const& barycentric_to_world) const {
+  return barycentric_to_world(
              FindOrDie(part_id_to_vessel_,
                        part_id)->part(part_id)->degrees_of_freedom());
 }
 
-// TODO(egg): the following function is a near-exact replica of the preceding
-// one.  Factorize.
 DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
     Index const index,
-    PartId const part_at_origin,
+    RigidMotion<Barycentric, World> const& barycentric_to_world,
     Instant const& time) const {
-  enum class LocalTag { tag };
-  using MainBodyCentred =
-      geometry::Frame<LocalTag, LocalTag::tag, /*frame_is_inertial=*/false>;
+  return barycentric_to_world(
+             FindOrDie(celestials_, index)->
+                 trajectory().EvaluateDegreesOfFreedom(time));
+}
+
+RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
+    bool const reference_part_is_unmoving,
+    PartId const reference_part_id,
+    std::experimental::optional<Position<World>> const&
+        main_body_centre) const {
   BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(), main_body_};
 
@@ -605,22 +587,43 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
   // In coordinates, this rotation is the identity.
   auto const barycentric_to_main_body_rotation =
       barycentric_to_main_body_motion.rigid_transformation().linear_map();
-  auto const world_origin = barycentric_to_main_body_motion(
-      FindOrDie(part_id_to_vessel_, part_at_origin)->part(part_at_origin)->
-          degrees_of_freedom());
+  auto const reference_part_degrees_of_freedom =
+      barycentric_to_main_body_motion(
+          FindOrDie(part_id_to_vessel_, reference_part_id)->
+              part(reference_part_id)->degrees_of_freedom());
 
-  RigidMotion<MainBodyCentred, World> const main_body_to_world{
-      RigidTransformation<MainBodyCentred, World>{
-          world_origin.position(),
-          World::origin,
-          renderer_->BarycentricToWorld(PlanetariumRotation()) *
-              barycentric_to_main_body_rotation.Inverse()},
-      barycentric_to_main_body_rotation(angular_velocity_of_world_),
-      world_origin.velocity()};
-
-  return (main_body_to_world * barycentric_to_main_body_motion)(
-      FindOrDie(celestials_, index)->
-          trajectory().EvaluateDegreesOfFreedom(time));
+  RigidTransformation<MainBodyCentred, World> const
+      main_body_to_world_rigid_transformation = [&]() {
+    if (main_body_centre.has_value()) {
+      return RigidTransformation<World, MainBodyCentred>{
+                 *main_body_centre,
+                 MainBodyCentred::origin,
+                 barycentric_to_main_body_rotation *
+                     renderer_->WorldToBarycentric(
+                         PlanetariumRotation())}.Inverse();
+    } else {
+      return RigidTransformation<MainBodyCentred, World>{
+                 reference_part_degrees_of_freedom.position(),
+                 World::origin,
+                 renderer_->BarycentricToWorld(PlanetariumRotation()) *
+                     barycentric_to_main_body_rotation.Inverse()};
+    }
+  }();
+  RigidMotion<MainBodyCentred, World> const main_body_to_world = [&]() {
+    if (reference_part_is_unmoving) {
+      return RigidMotion<MainBodyCentred, World>{
+          main_body_to_world_rigid_transformation,
+          barycentric_to_main_body_rotation(angular_velocity_of_world_),
+          reference_part_degrees_of_freedom.velocity()};
+    } else {
+      return RigidMotion<World, MainBodyCentred>{
+          main_body_to_world_rigid_transformation.Inverse(),
+          -(main_body_to_world_rigid_transformation.linear_map() *
+                barycentric_to_main_body_rotation)(angular_velocity_of_world_),
+      /*velocity_of_to_frame_origin=*/Velocity<World>()}.Inverse();
+    }
+  }();
+  return main_body_to_world * barycentric_to_main_body_motion;
 }
 
 void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {

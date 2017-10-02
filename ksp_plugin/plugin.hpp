@@ -70,6 +70,7 @@ using physics::Frenet;
 using physics::HierarchicalSystem;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::Angle;
 using quantities::Force;
@@ -227,15 +228,21 @@ class Plugin {
   // |part_at_origin|.
   virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
       PartId part_id,
-      PartId part_at_origin) const;
+      RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
   // |Index|, identifying the origin of |World| with the centre of mass of the
   // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
-      PartId part_at_origin,
+      RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
+
+  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
+      bool reference_part_is_unmoving,
+      PartId reference_part_id,
+      std::experimental::optional<Position<World>> const&
+          main_body_centre) const;
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
