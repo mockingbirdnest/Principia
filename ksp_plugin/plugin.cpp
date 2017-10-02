@@ -418,6 +418,8 @@ void Plugin::InsertOrKeepLoadedPart(
     }
   } else {
     Instant const previous_time = current_time_ - Δt;
+    auto const Δplanetarium_rotation =
+        Exp(Δt * angular_velocity_of_world_).Forget();
     BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
         main_body_frame{ephemeris_.get(),
                         FindOrDie(celestials_, main_body_index)->body()};
@@ -426,9 +428,10 @@ void Plugin::InsertOrKeepLoadedPart(
             main_body_degrees_of_freedom.position(),
             MainBodyCentred::origin,
             main_body_frame.ToThisFrameAtTime(previous_time).orthogonal_map() *
+                Δplanetarium_rotation.Inverse() *
                 renderer_->WorldToBarycentric(PlanetariumRotation())},
-        renderer_->BarycentricToWorld(PlanetariumRotation())(
-            -angular_velocity_of_world_),
+            (renderer_->BarycentricToWorld(PlanetariumRotation()) *
+                 Δplanetarium_rotation)(-angular_velocity_of_world_),
         main_body_degrees_of_freedom.velocity()};
     auto const world_to_barycentric_motion =
         main_body_frame.FromThisFrameAtTime(previous_time) *
@@ -607,16 +610,16 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
   }();
   RigidMotion<MainBodyCentred, World> const main_body_to_world = [&](){
     if (reference_part_is_unmoving) {
+      return RigidMotion<MainBodyCentred, World>{
+          main_body_to_world_rigid_transformation,
+          barycentric_to_main_body_rotation(angular_velocity_of_world_),
+          reference_part_degrees_of_freedom.velocity()};
+    } else {
       return RigidMotion<World, MainBodyCentred>{
           main_body_to_world_rigid_transformation.Inverse(),
           -(main_body_to_world_rigid_transformation.linear_map() *
                 barycentric_to_main_body_rotation)(angular_velocity_of_world_),
       /*velocity_of_to_frame_origin=*/Velocity<World>()}.Inverse();
-    } else {
-      return RigidMotion<MainBodyCentred, World>{
-          main_body_to_world_rigid_transformation,
-          barycentric_to_main_body_rotation(angular_velocity_of_world_),
-          reference_part_degrees_of_freedom.velocity()};
     }
   }();
   return main_body_to_world * barycentric_to_main_body_motion;
