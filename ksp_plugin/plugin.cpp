@@ -418,8 +418,9 @@ void Plugin::InsertOrKeepLoadedPart(
     }
   } else {
     Instant const previous_time = current_time_ - Δt;
-    auto const Δplanetarium_rotation =
+    OrthogonalMap<Barycentric, Barycentric> const Δplanetarium_rotation =
         Exp(Δt * angular_velocity_of_world_).Forget();
+    // TODO(egg): Can we use |BarycentricToWorld| here?
     BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
         main_body_frame{ephemeris_.get(),
                         FindOrDie(celestials_, main_body_index)->body()};
@@ -608,7 +609,7 @@ RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
                      barycentric_to_main_body_rotation.Inverse()};
     }
   }();
-  RigidMotion<MainBodyCentred, World> const main_body_to_world = [&](){
+  RigidMotion<MainBodyCentred, World> const main_body_to_world = [&]() {
     if (reference_part_is_unmoving) {
       return RigidMotion<MainBodyCentred, World>{
           main_body_to_world_rigid_transformation,
