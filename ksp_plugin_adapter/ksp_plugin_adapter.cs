@@ -396,6 +396,9 @@ public partial class PrincipiaPluginAdapter
                   ", below the threshold of " +
                   manageability_altitude_threshold + " m");
     }
+    if (!vessel.packed && TouchesTheGround(vessel)) {
+      reasons.Add("vessel is unpacked and touches the ground");
+    }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
     }
@@ -413,6 +416,18 @@ public partial class PrincipiaPluginAdapter
   private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null && is_manageable(active_vessel);
+  }
+
+  private bool TouchesTheGround(Vessel vessel) {
+    return vessel.parts
+        .Where(part =>
+               part.Modules.OfType<ModuleWheelBase>()
+                   .Where(wheel => wheel.isGrounded)
+                   .Any() ||
+               part.currentCollisions
+                   .Where(collider => collider.gameObject.layer == 15)
+                   .Any())
+        .Any();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
