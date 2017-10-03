@@ -370,8 +370,6 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
-  const double manageability_altitude_threshold = 300 /*m*/;
-
   private string UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
@@ -380,21 +378,8 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING &&
-           (vessel.altitude > manageability_altitude_threshold ||
-            vessel.altitude == -vessel.mainBody.Radius)))) {
-      reasons.Add("vessel situation is " + vessel.situation +
-                  " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
-                  " at an altitude of " + vessel.altitude + " m above " +
-                  vessel.mainBody.NameWithArticle() + " whose threshold is " +
-                  manageability_altitude_threshold + " m");
-    }
-    if (!vessel.packed &&
-        vessel.altitude <= manageability_altitude_threshold) {
-      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
-                  " m above " + vessel.mainBody.NameWithArticle() +
-                  ", below the threshold of " +
-                  manageability_altitude_threshold + " m");
+          vessel.situation == Vessel.Situations.FLYING)) {
+      reasons.Add("vessel situation is " + vessel.situation);
     }
     if (!vessel.packed && TouchesTheGround(vessel)) {
       reasons.Add("vessel is unpacked and touches the ground");
@@ -564,7 +549,6 @@ public partial class PrincipiaPluginAdapter
     }
     if (node.HasValue(principia_key_)) {
       Cleanup();
-      SetRotatingFrameThresholds();
       RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
       Log.SetSuppressedLogging(suppressed_logging_);
@@ -2295,7 +2279,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetPlugin() {
     Cleanup();
-    SetRotatingFrameThresholds();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
@@ -2439,31 +2422,6 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame"));
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
-  }
-
-  private void SetRotatingFrameThresholds() {
-    ApplyToBodyTree(
-        body => {
-          double timewarp_limit = body.timeWarpAltitudeLimits[1];
-          if (timewarp_limit == 0) {
-            Log.Error("The timewarp limit for " + body.NameWithArticle() +
-                      " vanishes");
-            if (body.atmosphereDepth == 0) {
-              Log.Error(body.NameWithArticle() +
-                        " is airless, setting the manageability" +
-                        " threshold to 10 km to allow landings");
-              timewarp_limit = 10e3;
-            }
-          }
-          body.inverseRotThresholdAltitude =
-                (float)Math.Max(timewarp_limit,
-                                body.atmosphereDepth);
-          Log.Info("Set manageability threshold for " + body.NameWithArticle() +
-                   " to " + body.inverseRotThresholdAltitude +
-                   " m; its atmosphere extends to " + body.atmosphereDepth +
-                   " m and timewarp is allowed above " +
-                   body.timeWarpAltitudeLimits[1] + " m");
-        });
   }
 
   private void RemoveBuggyTidalLocking() {
