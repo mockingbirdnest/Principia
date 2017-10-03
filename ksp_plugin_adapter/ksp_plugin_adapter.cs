@@ -1404,7 +1404,7 @@ public partial class PrincipiaPluginAdapter
 
   private void Late() {
     if (PluginRunning()) {
-      if (FlightGlobals.RefFrameIsRotating) {
+      if (FlightGlobals.currentMainBody?.inverseRotation == true) {
         plugin_.SetWorldRotationalReferenceFrame(
             FlightGlobals.currentMainBody.flightGlobalsIndex);
       } else {
