@@ -381,6 +381,14 @@ public partial class PrincipiaPluginAdapter
           vessel.situation == Vessel.Situations.FLYING)) {
       reasons.Add("vessel situation is " + vessel.situation);
     }
+    double height;
+    double vertical_speed;
+    if (!vessel.packed &&
+        JustAboveTheGround(vessel, out height, out vertical_speed)) {
+      reasons.Add("vessel is " + height +
+                  " m above ground with a vertical speed of " + vertical_speed +
+                  " m/s");
+    }
     if (!vessel.packed && TouchesTheGround(vessel)) {
       reasons.Add("vessel is unpacked and touches the ground");
     }
@@ -401,6 +409,15 @@ public partial class PrincipiaPluginAdapter
   private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null && is_manageable(active_vessel);
+  }
+
+  private bool JustAboveTheGround(Vessel vessel,
+                                  out double height,
+                                  out double vertical_speed) {
+    height = vessel.altitude - vessel.terrainAltitude;
+    vertical_speed = vessel.verticalSpeed;
+    double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+    return height + vertical_speed * Δt < 0;
   }
 
   private bool TouchesTheGround(Vessel vessel) {
@@ -1139,6 +1156,12 @@ public partial class PrincipiaPluginAdapter
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
+            if (vessel2 == vessel1) {
+              // All parts in a vessel are in the same pile up, so there is no
+              // point in reporting this collision; this also causes issues
+              // where disappearing kerbals collide with themselves.
+              continue;
+            }
             if (part2?.State != PartStates.DEAD &&
                 vessel2 != null &&
                 plugin_.HasVessel(vessel2.id.ToString())) {
