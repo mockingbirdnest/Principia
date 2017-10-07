@@ -17,11 +17,9 @@ using physics::Ephemeris;
 
 namespace base {
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part,
-                                     bool const grounded)
+Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part)
     : total_mass_(part->mass()),
-      total_intrinsic_force_(part->intrinsic_force()),
-      grounded_(grounded) {
+      total_intrinsic_force_(part->intrinsic_force()) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->iterator()->parts().size() - 1;
   }
@@ -45,15 +43,15 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
   grounded_ |= other.grounded_;
 }
 
-void Subset<ksp_plugin::Part>::Properties::Ground() {
+void Subset<Part>::Properties::Ground() {
   grounded_ = true;
 }
 
-bool Subset<ksp_plugin::Part>::Properties::grounded() const {
+bool Subset<Part>::Properties::grounded() const {
   return grounded_;
 }
 
-void Subset<ksp_plugin::Part>::Properties::Collect(
+void Subset<Part>::Properties::Collect(
     not_null<PileUps*> const pile_ups,
     Instant const& t,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -84,7 +82,7 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
   }
 }
 
-bool Subset<ksp_plugin::Part>::Properties::SubsetsOfSamePileUp(
+bool Subset<Part>::Properties::SubsetsOfSamePileUp(
     Properties const& left,
     Properties const& right) {
   return left.SubsetOfExistingPileUp() && right.SubsetOfExistingPileUp() &&
@@ -92,15 +90,15 @@ bool Subset<ksp_plugin::Part>::Properties::SubsetsOfSamePileUp(
              right.parts_.front()->containing_pile_up()->iterator();
 }
 
-bool Subset<ksp_plugin::Part>::Properties::EqualsExistingPileUp() const {
+bool Subset<Part>::Properties::EqualsExistingPileUp() const {
   return SubsetOfExistingPileUp() && missing_ == 0;
 }
 
-bool Subset<ksp_plugin::Part>::Properties::SubsetOfExistingPileUp() const {
+bool Subset<Part>::Properties::SubsetOfExistingPileUp() const {
   return parts_.front()->is_piled_up();
 }
 
-bool Subset<ksp_plugin::Part>::Properties::StrictSubsetOfExistingPileUp()
+bool Subset<Part>::Properties::StrictSubsetOfExistingPileUp()
     const {
   return SubsetOfExistingPileUp() && missing_ > 0;
 }

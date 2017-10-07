@@ -34,7 +34,7 @@ class Subset<ksp_plugin::Part>::Properties final {
   using PileUps = std::list<ksp_plugin::PileUp>;
 
  public:
-  Properties(not_null<ksp_plugin::Part*> part, bool grounded);
+  explicit Properties(not_null<ksp_plugin::Part*> part);
 
   // If |*this| and |other| are subsets of different |PileUp|s, or one is a
   // subset and not the other, the relevant |PileUp|s are erased.

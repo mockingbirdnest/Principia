@@ -454,9 +454,7 @@ void Plugin::PrepareToReportCollisions() {
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
     vessel.ForAllParts(
-        [](Part& part) {
-      Subset<Part>::MakeSingleton(part, &part, /*grounded=*/false);
-    });
+        [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
   }
 }
 
