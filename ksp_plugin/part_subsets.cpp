@@ -49,6 +49,10 @@ void Subset<ksp_plugin::Part>::Properties::Ground() {
   grounded_ = true;
 }
 
+bool Subset<ksp_plugin::Part>::Properties::grounded() const {
+  return grounded_;
+}
+
 void Subset<ksp_plugin::Part>::Properties::Collect(
     not_null<PileUps*> const pile_ups,
     Instant const& t,

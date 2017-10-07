@@ -483,8 +483,30 @@ void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
 void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(!initializing_);
 
+  // Bind the vessels.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([&vessel](Part& first_part) {
+      vessel.ForAllParts([&first_part](Part& part) {
+        Subset<Part>::Unite(Subset<Part>::Find(first_part),
+                            Subset<Part>::Find(part));
+      });
+    });
+  }
+
+  // Don't keep the grounded vessels.
+  for (auto const& pair : vessels_) {
+    not_null<Vessel*> const vessel = pair.second.get();
+    vessel->ForSomePart([this, vessel](Part& part) {
+      if (Subset<Part>::Find(part).properties().grounded()) {
+        kept_vessels_.erase(vessel);
+      }
+    });
+  }
+
+  // Remove the vessels that we don't want to keep.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
-    not_null<Vessel*> vessel = it->second.get();
+    not_null<Vessel*> const vessel = it->second.get();
     Instant const vessel_time =
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     if (kept_vessels_.erase(vessel)) {
@@ -504,24 +526,13 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     vessel->FreeParts();
   }
 
-  // Bind the vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel](Part& first_part) {
-      vessel.ForAllParts([&first_part](Part& part) {
-        Subset<Part>::Unite(Subset<Part>::Find(first_part),
-                            Subset<Part>::Find(part));
-      });
-    });
-  }
-
   // We only need to collect one part per vessel, since the other parts are in
   // the same subset.
   for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
+    not_null<Vessel*> const vessel = pair.second.get();
     Instant const vessel_time =
-        is_loaded(&vessel) ? current_time_ - Δt : current_time_;
-    vessel.ForSomePart([&vessel_time, this](Part& first_part) {
+        is_loaded(vessel) ? current_time_ - Δt : current_time_;
+    vessel->ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           &pile_ups_,
           vessel_time,
