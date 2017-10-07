@@ -15,11 +15,45 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
-      
+
   private const String next_release_name_ = "Chasles";
   private const int next_release_lunation_number_ = 220;
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2017, 10, 19, 19, 12, 00, TimeSpan.Zero);
+
+  // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
+  // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
+  // actual name is commented.
+  private enum UnityLayers {
+    TransparentFX = 1,
+    IgnoreRaycast = 2,  // Ignore Raycast
+    Water = 3,
+    UI = 5,
+    PartListIcons = 8,  // PartsList_Icons
+    Atmosphere = 9,
+    ScaledScenery = 10,  // Scaled Scenery
+    UIDialog = 11,
+    UIVectors = 12,
+    UIMask = 13,
+    Screens = 14,
+    LocalScenery = 15,  // Local Scenery
+    Kerbals = 16,
+    EVA = 17,
+    SkySphere = 18,
+    PhysicalObjects = 19,
+    InternalSpace = 20,  // Internal Space
+    PartTriggers = 21,  // Part Triggers
+    KerbalInstructors = 22,
+    AeroFXIgnore = 23,
+    MapFX = 24,
+    UIAdditional = 25,
+    WheelCollidersIgnore = 26,
+    WheelColliders = 27,  // wheelColliders
+    TerrainColliders = 28,
+    DragRender = 29,
+    SurfaceFX = 30,
+    Vectors = 31,
+  };
 
   private const String principia_key_ = "serialized_plugin";
   private const String principia_initial_state_config_name_ =
@@ -370,8 +404,6 @@ public partial class PrincipiaPluginAdapter
     return UnmanageabilityReasons(vessel) == null;
   }
 
-  const double manageability_altitude_threshold = 300 /*m*/;
-
   private string UnmanageabilityReasons(Vessel vessel) {
     List<string> reasons = new List<string>(capacity : 3);
     if (vessel.state == Vessel.State.DEAD) {
@@ -380,21 +412,19 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING &&
-           (vessel.altitude > manageability_altitude_threshold ||
-            vessel.altitude == -vessel.mainBody.Radius)))) {
-      reasons.Add("vessel situation is " + vessel.situation +
-                  " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
-                  " at an altitude of " + vessel.altitude + " m above " +
-                  vessel.mainBody.NameWithArticle() + " whose threshold is " +
-                  manageability_altitude_threshold + " m");
+          vessel.situation == Vessel.Situations.FLYING)) {
+      reasons.Add("vessel situation is " + vessel.situation);
     }
+    double height;
+    double vertical_speed;
     if (!vessel.packed &&
-        vessel.altitude <= manageability_altitude_threshold) {
-      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
-                  " m above " + vessel.mainBody.NameWithArticle() +
-                  ", below the threshold of " +
-                  manageability_altitude_threshold + " m");
+        JustAboveTheGround(vessel, out height, out vertical_speed)) {
+      reasons.Add("vessel is " + height +
+                  " m above ground with a vertical speed of " + vertical_speed +
+                  " m/s");
+    }
+    if (!vessel.packed && TouchesTheGround(vessel)) {
+      reasons.Add("vessel is unpacked and touches the ground");
     }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
@@ -413,6 +443,28 @@ public partial class PrincipiaPluginAdapter
   private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null && is_manageable(active_vessel);
+  }
+
+  private bool JustAboveTheGround(Vessel vessel,
+                                  out double height,
+                                  out double vertical_speed) {
+    height = vessel.altitude - vessel.terrainAltitude;
+    vertical_speed = vessel.verticalSpeed;
+    double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+    return height + vertical_speed * Δt < 0;
+  }
+
+  private bool TouchesTheGround(Vessel vessel) {
+    return vessel.parts
+        .Where(part =>
+               part.Modules.OfType<ModuleWheelBase>()
+                   .Where(wheel => wheel.isGrounded)
+                   .Any() ||
+               part.currentCollisions
+                   .Where(collider => collider.gameObject.layer ==
+                                      (int)UnityLayers.LocalScenery)
+                   .Any())
+        .Any();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -549,7 +601,6 @@ public partial class PrincipiaPluginAdapter
     }
     if (node.HasValue(principia_key_)) {
       Cleanup();
-      SetRotatingFrameThresholds();
       RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
       Log.SetSuppressedLogging(suppressed_logging_);
@@ -1140,6 +1191,12 @@ public partial class PrincipiaPluginAdapter
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
+            if (vessel2 == vessel1) {
+              // All parts in a vessel are in the same pile up, so there is no
+              // point in reporting this collision; this also causes issues
+              // where disappearing kerbals collide with themselves.
+              continue;
+            }
             if (part2?.State != PartStates.DEAD &&
                 vessel2 != null &&
                 plugin_.HasVessel(vessel2.id.ToString())) {
@@ -1405,7 +1462,7 @@ public partial class PrincipiaPluginAdapter
 
   private void Late() {
     if (PluginRunning()) {
-      if (FlightGlobals.RefFrameIsRotating) {
+      if (FlightGlobals.currentMainBody?.inverseRotation == true) {
         plugin_.SetWorldRotationalReferenceFrame(
             FlightGlobals.currentMainBody.flightGlobalsIndex);
       } else {
@@ -2280,7 +2337,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetPlugin() {
     Cleanup();
-    SetRotatingFrameThresholds();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
@@ -2424,31 +2480,6 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame"));
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
-  }
-
-  private void SetRotatingFrameThresholds() {
-    ApplyToBodyTree(
-        body => {
-          double timewarp_limit = body.timeWarpAltitudeLimits[1];
-          if (timewarp_limit == 0) {
-            Log.Error("The timewarp limit for " + body.NameWithArticle() +
-                      " vanishes");
-            if (body.atmosphereDepth == 0) {
-              Log.Error(body.NameWithArticle() +
-                        " is airless, setting the manageability" +
-                        " threshold to 10 km to allow landings");
-              timewarp_limit = 10e3;
-            }
-          }
-          body.inverseRotThresholdAltitude =
-                (float)Math.Max(timewarp_limit,
-                                body.atmosphereDepth);
-          Log.Info("Set manageability threshold for " + body.NameWithArticle() +
-                   " to " + body.inverseRotThresholdAltitude +
-                   " m; its atmosphere extends to " + body.atmosphereDepth +
-                   " m and timewarp is allowed above " +
-                   body.timeWarpAltitudeLimits[1] + " m");
-        });
   }
 
   private void RemoveBuggyTidalLocking() {
