@@ -96,7 +96,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5143.
+  extensions 5000 to 5999;  // Last used: 5144.
 }
 
 message AdvanceTime {
@@ -1359,9 +1359,21 @@ message RenderedPredictionNodes {
   optional Out out = 2;
 }
 
-message ReportCollision {
+message ReportGroundCollision {
   extend Method {
-    optional ReportCollision extension = 5103;
+    optional ReportGroundCollision extension = 5144;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed32 part_id = 2;
+  }
+  optional In in = 1;
+}
+
+message ReportPartCollision {
+  extend Method {
+    optional ReportPartCollision extension = 5103;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",

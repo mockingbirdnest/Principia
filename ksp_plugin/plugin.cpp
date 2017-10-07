@@ -454,11 +454,21 @@ void Plugin::PrepareToReportCollisions() {
     // here; but then I don't think I want to pass this by pointer, it's quite
     // convenient everywhere else...
     vessel.ForAllParts(
-        [](Part& part) { Subset<Part>::MakeSingleton(part, &part); });
+        [](Part& part) {
+      Subset<Part>::MakeSingleton(part, &part, /*grounded=*/false);
+    });
   }
 }
 
-void Plugin::ReportCollision(PartId const part1, PartId const part2) const {
+void Plugin::ReportGroundCollision(PartId const part) const {
+  Vessel const& v = *FindOrDie(part_id_to_vessel_, part);
+  Part& p = *v.part(part);
+  LOG(INFO) << "Collision between " << p.ShortDebugString()
+            << " and the ground.";
+  Subset<Part>::Find(p).mutable_properties().Ground();
+}
+
+void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
   Vessel const& v1 = *FindOrDie(part_id_to_vessel_, part1);
   Vessel const& v2 = *FindOrDie(part_id_to_vessel_, part2);
   Part& p1 = *v1.part(part1);

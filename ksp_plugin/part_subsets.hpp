@@ -34,7 +34,7 @@ class Subset<ksp_plugin::Part>::Properties final {
   using PileUps = std::list<ksp_plugin::PileUp>;
 
  public:
-  Properties(not_null<ksp_plugin::Part*> part);
+  Properties(not_null<ksp_plugin::Part*> part, bool grounded);
 
   // If |*this| and |other| are subsets of different |PileUp|s, or one is a
   // subset and not the other, the relevant |PileUp|s are erased.
@@ -42,6 +42,12 @@ class Subset<ksp_plugin::Part>::Properties final {
   // missing parts.
   // Maintains |parts_| by joining the lists.
   void MergeWith(Properties& other);
+
+  // "And what's this thing coming toward me very fast? So big and flat and
+  // round, it needs a big wide sounding name like 'Ow', 'Ownge', 'Round',
+  // 'Ground'! That's it! Ground! Ha! I wonder if it'll be friends with me?
+  // Hello, Ground!"
+  void Ground();
 
   // If |collected_|, performs no action.
   // Otherwise, sets |collected_|, and:
@@ -89,6 +95,8 @@ class Subset<ksp_plugin::Part>::Properties final {
   // The sum of the |intrinsic_force|s on the |parts_|.
   geometry::Vector<quantities::Force, ksp_plugin::Barycentric>
       total_intrinsic_force_;
+  // Whether the subset touches the ground.
+  bool grounded_ = false;
 };
 
 }  // namespace base
