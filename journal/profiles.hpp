@@ -23,6 +23,7 @@ using interface::Iterator;
 using interface::NavigationFrameParameters;
 using interface::NavigationManoeuvre;
 using interface::NavigationManoeuvreFrenetTrihedron;
+using interface::Origin;
 using interface::QP;
 using interface::WXYZ;
 using interface::XY;

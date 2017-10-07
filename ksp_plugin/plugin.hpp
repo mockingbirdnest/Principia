@@ -48,6 +48,7 @@ using base::not_null;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -69,6 +70,7 @@ using physics::Frenet;
 using physics::HierarchicalSystem;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::Angle;
 using quantities::Force;
@@ -144,6 +146,9 @@ class Plugin {
   virtual Angle CelestialInitialRotation(Index celestial_index) const;
   virtual Time CelestialRotationPeriod(Index celestial_index) const;
 
+  virtual void ClearWorldRotationalReferenceFrame();
+  virtual void SetWorldRotationalReferenceFrame(Index celestial_index);
+
   virtual Index CelestialIndexOfBody(MassiveBody const& body) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
@@ -218,21 +223,29 @@ class Plugin {
   // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+      DegreesOfFreedom<World> const& degrees_of_freedom,
+      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
   virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
       PartId part_id,
-      PartId part_at_origin) const;
+      RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
-  // |Index|, identifying the origin of |World| with that of |Bubble|.
+  // |Index|, identifying the origin of |World| with the centre of mass of the
+  // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
-      PartId part_at_origin,
+      RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
+
+  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
+      bool reference_part_is_unmoving,
+      PartId reference_part_id,
+      std::experimental::optional<Position<World>> const&
+          main_body_centre) const;
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
@@ -475,6 +488,7 @@ class Plugin {
   std::unique_ptr<Renderer> renderer_;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+  AngularVelocity<Barycentric> angular_velocity_of_world_;
 
   // Do not |erase| from this list, use |Part::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;

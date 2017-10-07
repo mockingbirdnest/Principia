@@ -84,6 +84,10 @@ using Camera = Frame<serialization::Frame::PluginTag,
 using NavigationFrame = DynamicFrame<Barycentric, Navigation>;
 using NavigationManœuvre = Manœuvre<Barycentric, Navigation>;
 
+// The body-centred non-rotating frame for the current main body.
+using MainBodyCentred = Frame<serialization::Frame::PluginTag,
+                              serialization::Frame::MAIN_BODY_CENTRED, false>;
+
 // The map between the vector spaces of |WorldSun| and |AliceSun|.
 Permutation<WorldSun, AliceSun> const sun_looking_glass(
     Permutation<WorldSun, AliceSun>::CoordinatePermutation::XZY);
@@ -97,6 +101,7 @@ using internal_frames::Barycentric;
 using internal_frames::BodyWorld;
 using internal_frames::Camera;
 using internal_frames::CelestialSphere;
+using internal_frames::MainBodyCentred;
 using internal_frames::Navball;
 using internal_frames::Navigation;
 using internal_frames::NavigationFrame;

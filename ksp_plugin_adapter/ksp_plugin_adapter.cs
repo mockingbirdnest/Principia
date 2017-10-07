@@ -15,11 +15,45 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
-      
+
   private const String next_release_name_ = "Chasles";
   private const int next_release_lunation_number_ = 220;
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2017, 10, 19, 19, 12, 00, TimeSpan.Zero);
+
+  // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
+  // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
+  // actual name is commented.
+  private enum UnityLayers {
+    TransparentFX = 1,
+    IgnoreRaycast = 2,  // Ignore Raycast
+    Water = 3,
+    UI = 5,
+    PartListIcons = 8,  // PartsList_Icons
+    Atmosphere = 9,
+    ScaledScenery = 10,  // Scaled Scenery
+    UIDialog = 11,
+    UIVectors = 12,
+    UIMask = 13,
+    Screens = 14,
+    LocalScenery = 15,  // Local Scenery
+    Kerbals = 16,
+    EVA = 17,
+    SkySphere = 18,
+    PhysicalObjects = 19,
+    InternalSpace = 20,  // Internal Space
+    PartTriggers = 21,  // Part Triggers
+    KerbalInstructors = 22,
+    AeroFXIgnore = 23,
+    MapFX = 24,
+    UIAdditional = 25,
+    WheelCollidersIgnore = 26,
+    WheelColliders = 27,  // wheelColliders
+    TerrainColliders = 28,
+    DragRender = 29,
+    SurfaceFX = 30,
+    Vectors = 31,
+  };
 
   private const String principia_key_ = "serialized_plugin";
   private const String principia_initial_state_config_name_ =
@@ -378,24 +412,19 @@ public partial class PrincipiaPluginAdapter
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
-          (vessel.situation == Vessel.Situations.FLYING && vessel.packed &&
-           (vessel.altitude > vessel.mainBody.inverseRotThresholdAltitude ||
-            vessel.altitude == -vessel.mainBody.Radius)))) {
-      reasons.Add("vessel situation is " + vessel.situation +
-                  " and vessel is " + (vessel.packed ? "packed" : "unpacked") +
-                  " at an altitude of " + vessel.altitude + " m above " +
-                  vessel.mainBody.NameWithArticle() + " whose threshold is " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
+          vessel.situation == Vessel.Situations.FLYING)) {
+      reasons.Add("vessel situation is " + vessel.situation);
     }
+    double height;
+    double vertical_speed;
     if (!vessel.packed &&
-        vessel.altitude <= vessel.mainBody.inverseRotThresholdAltitude) {
-      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
-                  " m above " + vessel.mainBody.NameWithArticle() +
-                  ", below the threshold of " +
-                  vessel.mainBody.inverseRotThresholdAltitude + " m");
+        JustAboveTheGround(vessel, out height, out vertical_speed)) {
+      reasons.Add("vessel is " + height +
+                  " m above ground with a vertical speed of " + vertical_speed +
+                  " m/s");
     }
-    if (!vessel.packed && FlightGlobals.RefFrameIsRotating) {
-      reasons.Add("vessel is unpacked and frame is rotating");
+    if (!vessel.packed && TouchesTheGround(vessel)) {
+      reasons.Add("vessel is unpacked and touches the ground");
     }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
@@ -414,6 +443,28 @@ public partial class PrincipiaPluginAdapter
   private bool has_active_manageable_vessel() {
     Vessel active_vessel = FlightGlobals.ActiveVessel;
     return active_vessel != null && is_manageable(active_vessel);
+  }
+
+  private bool JustAboveTheGround(Vessel vessel,
+                                  out double height,
+                                  out double vertical_speed) {
+    height = vessel.altitude - vessel.terrainAltitude;
+    vertical_speed = vessel.verticalSpeed;
+    double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
+    return height + vertical_speed * Δt < 0;
+  }
+
+  private bool TouchesTheGround(Vessel vessel) {
+    return vessel.parts
+        .Where(part =>
+               part.Modules.OfType<ModuleWheelBase>()
+                   .Where(wheel => wheel.isGrounded)
+                   .Any() ||
+               part.currentCollisions
+                   .Where(collider => collider.gameObject.layer ==
+                                      (int)UnityLayers.LocalScenery)
+                   .Any())
+        .Any();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -510,9 +561,18 @@ public partial class PrincipiaPluginAdapter
     // Timing1, -99 on the script execution order page.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Early,
                                  Early);
+    // Timing2, -1 on the script execution order page.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Earlyish,
+                                 Earlyish);
     // Timing3, 7.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FashionablyLate,
                                  FashionablyLate);
+    // TimingFI, 9.  Note that we cannot call the callback FlightIntegrator as
+    // that would collide with the type.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.FlightIntegrator,
+                                 JaiFailliAttendre);
+    // Timing4, 19.
+    TimingManager.FixedUpdateAdd(TimingManager.TimingStage.Late, Late);
     // Timing5, 8008.
     TimingManager.FixedUpdateAdd(TimingManager.TimingStage.BetterLateThanNever,
                                  BetterLateThanNever);
@@ -541,7 +601,6 @@ public partial class PrincipiaPluginAdapter
     }
     if (node.HasValue(principia_key_)) {
       Cleanup();
-      SetRotatingFrameThresholds();
       RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
       Log.SetSuppressedLogging(suppressed_logging_);
@@ -972,8 +1031,13 @@ public partial class PrincipiaPluginAdapter
                                     Precalc);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Early,
                                     Early);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Earlyish,
+                                    Earlyish);
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FashionablyLate,
                                     FashionablyLate);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.FlightIntegrator,
+                                    JaiFailliAttendre);
+    TimingManager.FixedUpdateRemove(TimingManager.TimingStage.Late, Late);
     TimingManager.FixedUpdateRemove(
         TimingManager.TimingStage.BetterLateThanNever,
         BetterLateThanNever);
@@ -996,6 +1060,11 @@ public partial class PrincipiaPluginAdapter
 
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
 
+    QP main_body_degrees_of_freedom =
+        new QP{q = (XYZ)(FlightGlobals.currentMainBody ??
+                             FlightGlobals.GetHomeBody()).position,
+               p = (XYZ)(-krakensbane.FrameVel)};
+
     // NOTE(egg): Inserting vessels and parts has to occur in
     // |WaitForFixedUpdate|, since some may be destroyed (by collisions) during
     // the physics step.  See also #1281.
@@ -1016,9 +1085,6 @@ public partial class PrincipiaPluginAdapter
                                  !vessel.packed,
                                  out inserted);
       if (!vessel.packed) {
-        QP main_body_degrees_of_freedom =
-            new QP{q = (XYZ)vessel.mainBody.position,
-                   p = (XYZ)(-krakensbane.FrameVel)};
         foreach (Part part in vessel.parts.Where((part) => part.rb != null)) {
           QP degrees_of_freedom;
           if (part_id_to_degrees_of_freedom_.ContainsKey(part.flightID)) {
@@ -1125,6 +1191,12 @@ public partial class PrincipiaPluginAdapter
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
+            if (vessel2 == vessel1) {
+              // All parts in a vessel are in the same pile up, so there is no
+              // point in reporting this collision; this also causes issues
+              // where disappearing kerbals collide with themselves.
+              continue;
+            }
             if (part2?.State != PartStates.DEAD &&
                 vessel2 != null &&
                 plugin_.HasVessel(vessel2.id.ToString())) {
@@ -1151,7 +1223,8 @@ public partial class PrincipiaPluginAdapter
             part.flightID,
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
-                   p = (XYZ)(Vector3d)part.rb.velocity});
+                   p = (XYZ)(Vector3d)part.rb.velocity},
+            main_body_degrees_of_freedom);
       }
     }
 
@@ -1179,7 +1252,15 @@ public partial class PrincipiaPluginAdapter
           }
           QP part_actual_degrees_of_freedom =
               plugin_.GetPartActualDegreesOfFreedom(
-                  part.flightID, FlightGlobals.ActiveVessel.rootPart.flightID);
+                  part.flightID,
+          new Origin{reference_part_is_at_origin  =
+                         FloatingOrigin.fetch.continuous,
+                     reference_part_is_unmoving =
+                         krakensbane_.FrameVel != Vector3d.zero,
+                     main_body_centre_in_world =
+                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                     reference_part_id =
+                         FlightGlobals.ActiveVessel.rootPart.flightID});
           if (part == FlightGlobals.ActiveVessel.rootPart) {
             q_correction_at_root_part =
                 (Vector3d)part_actual_degrees_of_freedom.q - part.rb.position;
@@ -1204,7 +1285,14 @@ public partial class PrincipiaPluginAdapter
       }
       QP main_body_dof = plugin_.CelestialWorldDegreesOfFreedom(
           FlightGlobals.ActiveVessel.mainBody.flightGlobalsIndex,
-          FlightGlobals.ActiveVessel.rootPart.flightID,
+          new Origin{reference_part_is_at_origin  =
+                         FloatingOrigin.fetch.continuous,
+                     reference_part_is_unmoving =
+                         krakensbane_.FrameVel != Vector3d.zero,
+                     main_body_centre_in_world =
+                         (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
+                     reference_part_id =
+                         FlightGlobals.ActiveVessel.rootPart.flightID},
           universal_time);
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
@@ -1292,6 +1380,8 @@ public partial class PrincipiaPluginAdapter
     }
   }
 
+  private void Earlyish() {}
+
   private void FashionablyLate() {
     // We fetch the forces from the census of nonconservatives here;
     // part.forces, part.force, and part.torque are cleared by the
@@ -1320,6 +1410,64 @@ public partial class PrincipiaPluginAdapter
                                              part.forces.ToArray());
           }
         }
+      }
+    }
+  }
+
+  private void JaiFailliAttendre() {
+    // We fetch the forces from stock aerodynamics, which does not use
+    // |Part.AddForce| etc.
+    if (PluginRunning()) {
+      foreach (Vessel vessel in
+               FlightGlobals.Vessels.Where(v => is_manageable(v) &&
+                                                !v.packed)) {
+        foreach (Part part in vessel.parts) {
+          Part physical_parent = closest_physical_parent(part);
+          if (part.bodyLiftLocalVector != UnityEngine.Vector3.zero ||
+              part.dragVector != UnityEngine.Vector3.zero) {
+            if (part_id_to_intrinsic_forces_.ContainsKey(
+                    physical_parent.flightID)) {
+              var previous_holder =
+                  part_id_to_intrinsic_forces_[physical_parent.flightID];
+              part_id_to_intrinsic_forces_[physical_parent.flightID] =
+                  new Part.ForceHolder[previous_holder.Length + 2];
+              previous_holder.CopyTo(
+                  part_id_to_intrinsic_forces_[physical_parent.flightID],
+                  0);
+            } else {
+              part_id_to_intrinsic_forces_.Add(physical_parent.flightID,
+                                               new Part.ForceHolder[2]);
+            }
+            int lift_index = part_id_to_intrinsic_forces_[
+                                 physical_parent.flightID].Length - 2;
+            int drag_index = lift_index + 1;
+            part_id_to_intrinsic_forces_[physical_parent.flightID][lift_index] =
+                new Part.ForceHolder {
+                  force = part.partTransform.TransformDirection(
+                              part.bodyLiftLocalVector),
+                  pos = part.partTransform.TransformPoint(
+                            part.bodyLiftLocalPosition)};
+            part_id_to_intrinsic_forces_[physical_parent.flightID][drag_index] =
+                new Part.ForceHolder {
+                  force = -part.dragVectorDir * part.dragScalar,
+                  pos = (physical_parent != part &&
+                         PhysicsGlobals.ApplyDragToNonPhysicsPartsAtParentCoM)
+                            ? physical_parent.rb.worldCenterOfMass
+                            : part.partTransform.TransformPoint(
+                                  part.CoPOffset)};
+          }
+        }
+      }
+    }
+  }
+
+  private void Late() {
+    if (PluginRunning()) {
+      if (FlightGlobals.currentMainBody?.inverseRotation == true) {
+        plugin_.SetWorldRotationalReferenceFrame(
+            FlightGlobals.currentMainBody.flightGlobalsIndex);
+      } else {
+        plugin_.ClearWorldRotationalReferenceFrame();
       }
     }
   }
@@ -1849,6 +1997,14 @@ public partial class PrincipiaPluginAdapter
       Interface.GetVersion(build_date: out unused_build_date,
                            version: out version);
       UnityEngine.GUILayout.TextArea(version);
+      UnityEngine.GUILayout.TextArea(
+          "Root part distance from origin: " +
+          FlightGlobals.ActiveVessel?.rootPart?.transform?.position.magnitude);
+      UnityEngine.GUILayout.TextArea(
+          "Root part speed: " +
+          FlightGlobals.ActiveVessel?.rootPart?.rb?.velocity.magnitude);
+      UnityEngine.GUILayout.TextArea(
+          "Krakensbane FrameVel: " + krakensbane_?.FrameVel);
       bool changed_history_length = false;
       Selector(history_lengths_,
                ref history_length_index_,
@@ -2182,7 +2338,6 @@ public partial class PrincipiaPluginAdapter
 
   private void ResetPlugin() {
     Cleanup();
-    SetRotatingFrameThresholds();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
@@ -2326,31 +2481,6 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame"));
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
-  }
-
-  private void SetRotatingFrameThresholds() {
-    ApplyToBodyTree(
-        body => {
-          double timewarp_limit = body.timeWarpAltitudeLimits[1];
-          if (timewarp_limit == 0) {
-            Log.Error("The timewarp limit for " + body.NameWithArticle() +
-                      " vanishes");
-            if (body.atmosphereDepth == 0) {
-              Log.Error(body.NameWithArticle() +
-                        " is airless, setting the manageability" +
-                        " threshold to 10 km to allow landings");
-              timewarp_limit = 10e3;
-            }
-          }
-          body.inverseRotThresholdAltitude =
-                (float)Math.Max(timewarp_limit,
-                                body.atmosphereDepth);
-          Log.Info("Set manageability threshold for " + body.NameWithArticle() +
-                   " to " + body.inverseRotThresholdAltitude +
-                   " m; its atmosphere extends to " + body.atmosphereDepth +
-                   " m and timewarp is allowed above " +
-                   body.timeWarpAltitudeLimits[1] + " m");
-        });
   }
 
   private void RemoveBuggyTidalLocking() {
