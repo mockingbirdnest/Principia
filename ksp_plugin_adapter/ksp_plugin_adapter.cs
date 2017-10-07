@@ -15,11 +15,45 @@ namespace ksp_plugin_adapter {
 public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
-      
+
   private const String next_release_name_ = "Chasles";
   private const int next_release_lunation_number_ = 220;
   private DateTimeOffset next_release_date_ =
       new DateTimeOffset(2017, 10, 19, 19, 12, 00, TimeSpan.Zero);
+
+  // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
+  // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
+  // actual name is commented.
+  private enum UnityLayers {
+    TransparentFX = 1,
+    IgnoreRaycast = 2,  // Ignore Raycast
+    Water = 3,
+    UI = 5,
+    PartListIcons = 8,  // PartsList_Icons
+    Atmosphere = 9,
+    ScaledScenery = 10,  // Scaled Scenery
+    UIDialog = 11,
+    UIVectors = 12,
+    UIMask = 13,
+    Screens = 14,
+    LocalScenery = 15,  // Local Scenery
+    Kerbals = 16,
+    EVA = 17,
+    SkySphere = 18,
+    PhysicalObjects = 19,
+    InternalSpace = 20,  // Internal Space
+    PartTriggers = 21,  // Part Triggers
+    KerbalInstructors = 22,
+    AeroFXIgnore = 23,
+    MapFX = 24,
+    UIAdditional = 25,
+    WheelCollidersIgnore = 26,
+    WheelColliders = 27,  // wheelColliders
+    TerrainColliders = 28,
+    DragRender = 29,
+    SurfaceFX = 30,
+    Vectors = 31,
+  };
 
   private const String principia_key_ = "serialized_plugin";
   private const String principia_initial_state_config_name_ =
@@ -427,7 +461,8 @@ public partial class PrincipiaPluginAdapter
                    .Where(wheel => wheel.isGrounded)
                    .Any() ||
                part.currentCollisions
-                   .Where(collider => collider.gameObject.layer == 15)
+                   .Where(collider => collider.gameObject.layer ==
+                                      (int)UnityLayers.LocalScenery)
                    .Any())
         .Any();
   }
