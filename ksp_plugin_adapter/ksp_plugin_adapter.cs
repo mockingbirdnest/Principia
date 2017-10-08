@@ -400,6 +400,14 @@ public partial class PrincipiaPluginAdapter
     return part.rb ? part : closest_physical_parent(part.parent);
   }
 
+  // Whether the given kerbal is clambering, i.e., climbing something that's not
+  // a ladder.
+  private bool is_clambering(KerbalEVA kerbal) {
+    return kerbal.fsm.CurrentState == kerbal.st_clamber_acquireP1 ||
+           kerbal.fsm.CurrentState == kerbal.st_clamber_acquireP2 ||
+           kerbal.fsm.CurrentState == kerbal.st_clamber_acquireP3;
+  }
+
   private bool is_manageable(Vessel vessel) {
     return UnmanageabilityReasons(vessel) == null;
   }
@@ -1169,16 +1177,21 @@ public partial class PrincipiaPluginAdapter
     // Here, the |currentCollisions| are the collisions that occurred in the
     // physics simulation, which is why we report them before calling
     // |AdvanceTime|.
-    foreach (Vessel vessel1 in FlightGlobals.Vessels.Where(v => !v.packed)) {
+    foreach (Vessel vessel1 in
+             FlightGlobals.Vessels.Where(v => !v.packed && is_manageable(v))) {
       if (plugin_.HasVessel(vessel1.id.ToString())) {
-        if (vessel1.isEVA && vessel1.evaController.OnALadder) {
-          var vessel2 = vessel1.evaController.LadderPart.vessel;
-          if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
-              !vessel2.packed) {
+        if (vessel1.isEVA && (vessel1.evaController.OnALadder ||
+                              is_clambering(vessel1.evaController))) {
+          var vessel2 = vessel1.evaController.LadderPart?.vessel;
+          if (vessel2 != null && !vessel2.packed && is_manageable(vessel2)) {
             plugin_.ReportPartCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
                     vessel1.evaController.LadderPart).flightID);
+          } else {
+            // vessel1 is either clambering (quite likely on the ground or on a
+            // grounded vessel), or climbing a ladder on an unmanaged vessel.
+            plugin_.ReportGroundCollision(vessel1.rootPart.flightID);
           }
         }
         foreach (Part part1 in vessel1.parts) {
@@ -1197,12 +1210,15 @@ public partial class PrincipiaPluginAdapter
               // where disappearing kerbals collide with themselves.
               continue;
             }
-            if (part2?.State != PartStates.DEAD &&
-                vessel2 != null &&
-                plugin_.HasVessel(vessel2.id.ToString())) {
-              plugin_.ReportPartCollision(
-                  closest_physical_parent(part1).flightID,
-                  closest_physical_parent(part2).flightID);
+            if (vessel2 != null) {
+              if (is_manageable(vessel2)) {
+                plugin_.ReportPartCollision(
+                    closest_physical_parent(part1).flightID,
+                    closest_physical_parent(part2).flightID);
+              } else {
+                plugin_.ReportGroundCollision(
+                    closest_physical_parent(part1).flightID);
+              }
             }
           }
         }
