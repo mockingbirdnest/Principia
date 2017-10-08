@@ -522,7 +522,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
       vessel->PrepareHistory(vessel_time);
       ++it;
     } else {
-      CHECK(!is_loaded(vessel));
+      loaded_vessels_.erase(vessel);
       LOG(INFO) << "Removing vessel " << vessel->ShortDebugString();
       renderer_->ClearTargetVesselIf(vessel);
       it = vessels_.erase(it);
