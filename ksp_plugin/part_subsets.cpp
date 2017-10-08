@@ -17,16 +17,41 @@ using physics::Ephemeris;
 
 namespace base {
 
-Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part) {
+Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part)
+    : total_mass_(part->mass()),
+      total_intrinsic_force_(part->intrinsic_force()) {
   if (part->is_piled_up()) {
     missing_ = part->containing_pile_up()->iterator()->parts().size() - 1;
   }
   parts_.emplace_back(part);
-  total_mass_ = part->mass();
-  total_intrinsic_force_ = part->intrinsic_force();
 }
 
-void Subset<ksp_plugin::Part>::Properties::Collect(
+void Subset<Part>::Properties::MergeWith(Properties& other) {
+  if (SubsetsOfSamePileUp(*this, other)) {
+    // The subsets |*this| and |other| are disjoint.
+    CHECK_EQ(missing_ - other.parts_.size(),
+             other.missing_ - parts_.size());
+    missing_ -= other.parts_.size();
+    CHECK_GE(missing_, 0);
+  } else {
+    parts_.front()->clear_pile_up();
+    other.parts_.front()->clear_pile_up();
+  }
+  parts_.splice(parts_.end(), other.parts_);
+  total_mass_ += other.total_mass_;
+  total_intrinsic_force_ += other.total_intrinsic_force_;
+  grounded_ |= other.grounded_;
+}
+
+void Subset<Part>::Properties::Ground() {
+  grounded_ = true;
+}
+
+bool Subset<Part>::Properties::grounded() const {
+  return grounded_;
+}
+
+void Subset<Part>::Properties::Collect(
     not_null<PileUps*> const pile_ups,
     Instant const& t,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -57,7 +82,7 @@ void Subset<ksp_plugin::Part>::Properties::Collect(
   }
 }
 
-bool Subset<ksp_plugin::Part>::Properties::SubsetsOfSamePileUp(
+bool Subset<Part>::Properties::SubsetsOfSamePileUp(
     Properties const& left,
     Properties const& right) {
   return left.SubsetOfExistingPileUp() && right.SubsetOfExistingPileUp() &&
@@ -65,33 +90,17 @@ bool Subset<ksp_plugin::Part>::Properties::SubsetsOfSamePileUp(
              right.parts_.front()->containing_pile_up()->iterator();
 }
 
-bool Subset<ksp_plugin::Part>::Properties::EqualsExistingPileUp() const {
+bool Subset<Part>::Properties::EqualsExistingPileUp() const {
   return SubsetOfExistingPileUp() && missing_ == 0;
 }
 
-bool Subset<ksp_plugin::Part>::Properties::SubsetOfExistingPileUp() const {
+bool Subset<Part>::Properties::SubsetOfExistingPileUp() const {
   return parts_.front()->is_piled_up();
 }
 
-bool Subset<ksp_plugin::Part>::Properties::StrictSubsetOfExistingPileUp()
+bool Subset<Part>::Properties::StrictSubsetOfExistingPileUp()
     const {
   return SubsetOfExistingPileUp() && missing_ > 0;
-}
-
-void Subset<Part>::Properties::MergeWith(Properties& other) {
-  if (SubsetsOfSamePileUp(*this, other)) {
-    // The subsets |*this| and |other| are disjoint.
-    CHECK_EQ(missing_ - other.parts_.size(),
-             other.missing_ - parts_.size());
-    missing_ -= other.parts_.size();
-    CHECK_GE(missing_, 0);
-  } else {
-    parts_.front()->clear_pile_up();
-    other.parts_.front()->clear_pile_up();
-  }
-  parts_.splice(parts_.end(), other.parts_);
-  total_mass_ += other.total_mass_;
-  total_intrinsic_force_ += other.total_intrinsic_force_;
 }
 
 }  // namespace base

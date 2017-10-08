@@ -1175,7 +1175,7 @@ public partial class PrincipiaPluginAdapter
           var vessel2 = vessel1.evaController.LadderPart.vessel;
           if (vessel2 != null && plugin_.HasVessel(vessel2.id.ToString()) &&
               !vessel2.packed) {
-            plugin_.ReportCollision(
+            plugin_.ReportPartCollision(
                 vessel1.rootPart.flightID,
                 closest_physical_parent(
                     vessel1.evaController.LadderPart).flightID);
@@ -1200,8 +1200,9 @@ public partial class PrincipiaPluginAdapter
             if (part2?.State != PartStates.DEAD &&
                 vessel2 != null &&
                 plugin_.HasVessel(vessel2.id.ToString())) {
-              plugin_.ReportCollision(closest_physical_parent(part1).flightID,
-                                      closest_physical_parent(part2).flightID);
+              plugin_.ReportPartCollision(
+                  closest_physical_parent(part1).flightID,
+                  closest_physical_parent(part2).flightID);
             }
           }
         }

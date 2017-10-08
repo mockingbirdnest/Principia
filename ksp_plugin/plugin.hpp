@@ -203,17 +203,21 @@ class Plugin {
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls
   // to |IncrementPartIntrinsicForce|, and before the calls to
-  // |ReportCollision|.
+  // |ReportGroundCollision| or |ReportPartCollision|.
   virtual void PrepareToReportCollisions();
 
-  // Notifies |this| that the given vessels are touching, and should gravitate
+  // Notifies |this| that the given part is touching the ground.
+  virtual void ReportGroundCollision(PartId part) const;
+
+  // Notifies |this| that the given parts are touching, and should gravitate
   // as part of a single rigid body.
-  virtual void ReportCollision(PartId part1, PartId part2) const;
+  virtual void ReportPartCollision(PartId part1, PartId part2) const;
 
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
-  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
-  // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
-  // and updates the list of |pile_ups_| according to the reported collisions.
+  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the
+  // vessels which transitively touch the ground.  Destroys the parts in loaded
+  // vessels for which |InsertOrKeepLoadedPart| has not been called.  Updates
+  // the list of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
   // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the

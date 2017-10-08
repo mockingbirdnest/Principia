@@ -728,11 +728,18 @@ void principia__PrepareToReportCollisions(Plugin* const plugin) {
   return m.Return();
 }
 
-void principia__ReportCollision(Plugin const* const plugin,
-                                PartId const part1_id,
-                                PartId const part2_id) {
-  journal::Method<journal::ReportCollision> m({plugin, part1_id, part2_id});
-  CHECK_NOTNULL(plugin)->ReportCollision(part1_id, part2_id);
+void principia__ReportGroundCollision(Plugin const* const plugin,
+                                      uint32_t const part_id) {
+  journal::Method<journal::ReportGroundCollision> m({plugin, part_id});
+  CHECK_NOTNULL(plugin)->ReportGroundCollision(part_id);
+  return m.Return();
+}
+
+void principia__ReportPartCollision(Plugin const* const plugin,
+                                    PartId const part1_id,
+                                    PartId const part2_id) {
+  journal::Method<journal::ReportPartCollision> m({plugin, part1_id, part2_id});
+  CHECK_NOTNULL(plugin)->ReportPartCollision(part1_id, part2_id);
   return m.Return();
 }
 
