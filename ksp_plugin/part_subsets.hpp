@@ -43,10 +43,10 @@ class Subset<ksp_plugin::Part>::Properties final {
   // Maintains |parts_| by joining the lists.
   void MergeWith(Properties& other);
 
-  // "What’s this thing suddenly coming towards me very fast? Very very fast.
+  // “What’s this thing suddenly coming towards me very fast? Very very fast.
   // So big and flat and round, it needs a big wide sounding name like … ow …
   // ound … round … ground! That’s it! That’s a good name – ground!  I wonder if
-  // it will be friends with me?"
+  // it will be friends with me?”
   void Ground();
   bool grounded() const;
 
