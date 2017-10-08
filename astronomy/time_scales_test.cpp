@@ -50,9 +50,9 @@ TEST_F(TimeScalesDeathTest, WarWasBeginning) {
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2017-12-31T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2017-12-31T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2018-01-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2018-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2018-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2018-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
@@ -93,12 +93,12 @@ static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 // Check that week dates that go to the previous year work.
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
 
-constexpr Instant j2000_utc = "2000-01-01T00:00:00"_UTC;
-constexpr Instant j2000_utc_from_ut1 =
-    "2000-01-01T00:00:00.355"_UT1 + 509.4 * Micro(Second);
+constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
+constexpr Instant mjd51544_utc_from_ut1 =
+    "2000-01-01T00:00:00,355"_UT1 + 473.0 * Micro(Second);
 
-static_assert(j2000_utc - j2000_utc_from_ut1 < 1 * Nano(Second), "");
-static_assert(j2000_utc - j2000_utc_from_ut1 > -1 * Nano(Second), "");
+static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second), "");
+static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second), "");
 
 }  // namespace
 
