@@ -492,27 +492,6 @@ void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
 void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(!initializing_);
 
-  // Bind the vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    vessel.ForSomePart([&vessel](Part& first_part) {
-      vessel.ForAllParts([&first_part](Part& part) {
-        Subset<Part>::Unite(Subset<Part>::Find(first_part),
-                            Subset<Part>::Find(part));
-      });
-    });
-  }
-
-  // Don't keep the grounded vessels.
-  for (auto const& pair : vessels_) {
-    not_null<Vessel*> const vessel = pair.second.get();
-    vessel->ForSomePart([this, vessel](Part& part) {
-      if (Subset<Part>::Find(part).properties().grounded()) {
-        kept_vessels_.erase(vessel);
-      }
-    });
-  }
-
   // Remove the vessels that we don't want to keep.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> const vessel = it->second.get();
@@ -533,6 +512,36 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   // Free old parts.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
+  }
+
+  // Bind the vessels.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    vessel.ForSomePart([&vessel](Part& first_part) {
+      vessel.ForAllParts([&first_part](Part& part) {
+        Subset<Part>::Unite(Subset<Part>::Find(first_part),
+                            Subset<Part>::Find(part));
+      });
+    });
+  }
+
+  // Don't keep the grounded vessels.
+  {
+    VesselSet grounded_vessels;
+    for (auto const& pair : vessels_) {
+      not_null<Vessel*> const vessel = pair.second.get();
+      vessel->ForSomePart([this, vessel, &grounded_vessels](Part& part) {
+        if (Subset<Part>::Find(part).properties().grounded()) {
+          grounded_vessels.insert(vessel);
+        }
+      });
+    }
+    for (not_null<Vessel*> const vessel : grounded_vessels) {
+      loaded_vessels_.erase(vessel);
+      LOG(INFO) << "Removing grounded vessel " << vessel->ShortDebugString();
+      renderer_->ClearTargetVesselIf(vessel);
+      CHECK_EQ(vessels_.erase(vessel->guid()), 1);
+    }
   }
 
   // We only need to collect one part per vessel, since the other parts are in
