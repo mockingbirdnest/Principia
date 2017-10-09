@@ -417,11 +417,21 @@ public partial class PrincipiaPluginAdapter
     if (vessel.state == Vessel.State.DEAD) {
       reasons.Add("vessel is dead");
     }
+    if (vessel.id == Guid.Empty) {
+      reasons.Add("vessel has an empty GUID");
+    }
     if (!(vessel.situation == Vessel.Situations.SUB_ORBITAL ||
           vessel.situation == Vessel.Situations.ORBITING ||
           vessel.situation == Vessel.Situations.ESCAPING ||
           vessel.situation == Vessel.Situations.FLYING)) {
       reasons.Add("vessel situation is " + vessel.situation);
+    }
+    if (!vessel.packed && vessel.mainBody.atmosphere &&
+        vessel.altitude <= vessel.mainBody.atmosphereDepth) {
+      reasons.Add("vessel is unpacked at an altitude of " + vessel.altitude +
+                  " m above " + vessel.mainBody.NameWithArticle() +
+                  " whose atmosphere extends to " +
+                  vessel.mainBody.atmosphereDepth + " m");
     }
     double height;
     double vertical_speed;
