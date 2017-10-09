@@ -484,6 +484,10 @@ void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
   Part& p2 = *v2.part(part2);
   LOG(INFO) << "Collision between " << p1.ShortDebugString() << " and "
             << p2.ShortDebugString();
+  CHECK(Contains(kept_vessels_, &v1)) << v1.ShortDebugString()
+                                      << " will vanish";
+  CHECK(Contains(kept_vessels_, &v2)) << v2.ShortDebugString()
+                                      << " will vanish";
   CHECK(v1.WillKeepPart(part1)) << p1.ShortDebugString() << " will vanish";
   CHECK(v2.WillKeepPart(part2)) << p2.ShortDebugString() << " will vanish";
   Subset<Part>::Unite(Subset<Part>::Find(p1), Subset<Part>::Find(p2));
