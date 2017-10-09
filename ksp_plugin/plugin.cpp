@@ -492,7 +492,10 @@ void Plugin::ReportPartCollision(PartId const part1, PartId const part2) const {
 void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   CHECK(!initializing_);
 
-  // Remove the vessels that we don't want to keep.
+  // Remove the vessels that we don't want to keep.  Vessels that are not kept
+  // have had no reported collisions, so their part subsets do not intersect
+  // with the subsets in kept vessels, and none of the part subsets that remain
+  // contain deleted parts.
   for (auto it = vessels_.cbegin(); it != vessels_.cend();) {
     not_null<Vessel*> const vessel = it->second.get();
     Instant const vessel_time =
@@ -509,12 +512,14 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
   }
   CHECK(kept_vessels_.empty());
 
-  // Free old parts.
+  // Free old parts.  This must be done before binding the vessels, otherwise
+  // the part subsets for the affected vessels will contain deleted parts.
   for (not_null<Vessel*> const vessel : loaded_vessels_) {
     vessel->FreeParts();
   }
 
-  // Bind the vessels.
+  // Bind the vessels.  This guarantees that all part subsets are disjoint
+  // unions of vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     vessel.ForSomePart([&vessel](Part& first_part) {
@@ -525,8 +530,13 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     });
   }
 
-  // Don't keep the grounded vessels.
+  // Don't keep the grounded vessels.  This only destroys entire part subsets,
+  // since being grounded is a subset property, and at this point part subsets
+  // are disjoint unions of vessels.
   {
+    // Note that we need to go through an intermediate set, since destroying a
+    // vessel destroys its parts, which invalidates the intrusive |Subset| data
+    // structure.
     VesselSet grounded_vessels;
     for (auto const& pair : vessels_) {
       not_null<Vessel*> const vessel = pair.second.get();
