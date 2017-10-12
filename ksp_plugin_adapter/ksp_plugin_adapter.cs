@@ -441,9 +441,6 @@ public partial class PrincipiaPluginAdapter
                   " m above ground with a vertical speed of " + vertical_speed +
                   " m/s");
     }
-    if (!vessel.packed && TouchesTheGround(vessel)) {
-      reasons.Add("vessel is unpacked and touches the ground");
-    }
     if (vessel.isEVA && vessel.evaController?.Ready == false) {
       reasons.Add("vessel is an unready Kerbal");
     }
@@ -470,19 +467,6 @@ public partial class PrincipiaPluginAdapter
     vertical_speed = vessel.verticalSpeed;
     double Δt = Planetarium.TimeScale * Planetarium.fetch.fixedDeltaTime;
     return height + vertical_speed * Δt < 0;
-  }
-
-  private bool TouchesTheGround(Vessel vessel) {
-    return vessel.parts
-        .Where(part =>
-               part.Modules.OfType<ModuleWheelBase>()
-                   .Where(wheel => wheel.isGrounded)
-                   .Any() ||
-               part.currentCollisions
-                   .Where(collider => collider.gameObject.layer ==
-                                      (int)UnityLayers.LocalScenery)
-                   .Any())
-        .Any();
   }
 
   private void OverrideRSASTarget(FlightCtrlState state) {
@@ -1201,11 +1185,28 @@ public partial class PrincipiaPluginAdapter
           } else {
             // vessel1 is either clambering (quite likely on the ground or on a
             // grounded vessel), or climbing a ladder on an unmanaged vessel.
+            Log.Info("Reporting " +
+                     (is_clambering(vessel1.evaController)
+                          ? "clambering"
+                          : "climbing an unmanaged ladder"));
             plugin_.ReportGroundCollision(vessel1.rootPart.flightID);
           }
         }
         foreach (Part part1 in vessel1.parts) {
+          if (part1.Modules.OfType<ModuleWheelBase>()
+                           .Where(wheel => wheel.isGrounded)
+                           .Any()) {
+            Log.Info("Reporting grounded wheel");
+            plugin_.ReportGroundCollision(
+                closest_physical_parent(part1).flightID);
+          }
           foreach (var collider in part1.currentCollisions) {
+            if (collider.gameObject.layer == (int)UnityLayers.LocalScenery) {
+              Log.Info("Reporting collision with local scenery " +
+                       collider.name);
+              plugin_.ReportGroundCollision(
+                  closest_physical_parent(part1).flightID);
+            }
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next
@@ -1226,6 +1227,8 @@ public partial class PrincipiaPluginAdapter
                     closest_physical_parent(part1).flightID,
                     closest_physical_parent(part2).flightID);
               } else {
+                Log.Info("Reporting collision with the unmanageable vessel " +
+                         vessel2.vesselName);
                 plugin_.ReportGroundCollision(
                     closest_physical_parent(part1).flightID);
               }
