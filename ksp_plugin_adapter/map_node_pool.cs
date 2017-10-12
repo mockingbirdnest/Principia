@@ -59,14 +59,21 @@ internal class MapNodePool {
       node_properties.time = apsis_iterator.IteratorGetDiscreteTrajectoryTime();
 
       if (pool_index_ == nodes_.Count) {
-        AddMapNodeToPool();
+        nodes_.Add(MakePoolNode());
+      } else if (properties_[nodes_[pool_index_]].object_type != type) {
+        // Do not reuse a node for different types, as this results in
+        // overlapping labels on KSP 1.3, e.g. a closest approach marker that
+        // also says "Ap" and "DN".
+        nodes_[pool_index_].Terminate();
+        properties_.Remove(nodes_[pool_index_]);
+        nodes_[pool_index_] = MakePoolNode();
       }
       properties_[nodes_[pool_index_++]] = node_properties;
     }
     Interface.IteratorDelete(ref apsis_iterator);
   }
 
-  private void AddMapNodeToPool() {
+  private KSP.UI.Screens.Mapview.MapNode MakePoolNode() {
     var new_node = KSP.UI.Screens.Mapview.MapNode.Create(
         "apsis",
         // If we see this colour, something has gone wrong.
@@ -206,7 +213,7 @@ internal class MapNodePool {
         (KSP.UI.Screens.Mapview.MapNode node) =>
         ScaledSpace.LocalToScaledSpace(
             properties_[node].world_position);
-    nodes_.Add(new_node);
+    return new_node;
   }
 
   private struct MapNodeProperties {
