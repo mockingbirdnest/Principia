@@ -80,7 +80,7 @@ void principia__RenderedPredictionClosestApproaches(
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
-      prediction.Begin(),
+      prediction.Fork(),
       prediction.End(),
       FromXYZ<Position<World>>(sun_world_position),
       rendered_closest_approaches);

@@ -202,14 +202,21 @@ Iterator* principia__PlanetariumPlotPsychohistory(
                                                             vessel_guid});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(planetarium);
-  auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  auto const rp2_lines = PlotMethodN(*planetarium,
-                                     method,
-                                     psychohistory.Begin(),
-                                     psychohistory.End(),
-                                     plugin->CurrentTime(),
-                                     /*reverse=*/true);
-  return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+
+  // Do not plot the psychohistory when there is a target vessel as it is
+  // misleading.
+  if (plugin->renderer().HasTargetVessel()) {
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>({}));
+  } else {
+    auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
+    auto const rp2_lines = PlotMethodN(*planetarium,
+                                       method,
+                                       psychohistory.Begin(),
+                                       psychohistory.End(),
+                                       plugin->CurrentTime(),
+                                       /*reverse=*/true);
+    return m.Return(new TypedIterator<RP2Lines<Length, Camera>>(rp2_lines));
+  }
 }
 
 }  // namespace interface
