@@ -52,17 +52,20 @@ TEST_F(IdentityTest, Determinant) {
 }
 
 TEST_F(IdentityTest, AppliedToVector) {
-  EXPECT_THAT(Id::Identity()(vector_).coordinates(),
+  Id identity;
+  EXPECT_THAT(identity(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(IdentityTest, AppliedToBivector) {
-  EXPECT_THAT(Id::Identity()(bivector_).coordinates(),
+  Id identity;
+  EXPECT_THAT(identity(bivector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(IdentityTest, AppliedToTrivector) {
-  EXPECT_THAT(Id::Identity()(trivector_).coordinates(),
+  Id identity;
+  EXPECT_THAT(identity(trivector_).coordinates(),
               Eq(4.0 * Metre));
 }
 
@@ -71,7 +74,8 @@ TEST_F(IdentityTest, Inverse) {
   Vector<quantities::Length, World2> const vector2 =
       Vector<quantities::Length, World2>(
           R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-  EXPECT_THAT(Id::Identity().Inverse()(vector2).coordinates(),
+  Id identity;
+  EXPECT_THAT(identity.Inverse()(vector2).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
   Id id;
   Identity<World1, World1> const identity1 = id.Inverse() * id;
@@ -81,7 +85,8 @@ TEST_F(IdentityTest, Inverse) {
 }
 
 TEST_F(IdentityTest, Forget) {
-  EXPECT_THAT(Id::Identity().Forget()(vector_).coordinates(),
+  Id identity;
+  EXPECT_THAT(identity.Forget()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
