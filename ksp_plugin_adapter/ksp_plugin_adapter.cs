@@ -2026,14 +2026,6 @@ public partial class PrincipiaPluginAdapter
       Interface.GetVersion(build_date: out unused_build_date,
                            version: out version);
       UnityEngine.GUILayout.TextArea(version);
-      UnityEngine.GUILayout.TextArea(
-          "Root part distance from origin: " +
-          FlightGlobals.ActiveVessel?.rootPart?.transform?.position.magnitude);
-      UnityEngine.GUILayout.TextArea(
-          "Root part speed: " +
-          FlightGlobals.ActiveVessel?.rootPart?.rb?.velocity.magnitude);
-      UnityEngine.GUILayout.TextArea(
-          "Krakensbane FrameVel: " + krakensbane_?.FrameVel);
       bool changed_history_length = false;
       Selector(history_lengths_,
                ref history_length_index_,
