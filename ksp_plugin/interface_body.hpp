@@ -84,8 +84,7 @@ struct XYZConverter<Velocity<Frame>> {
 };
 
 inline bool NaNIndependentEq(double const left, double const right) {
-  bool const eq = (left == right) || (std::isnan(left) && std::isnan(right));
-  LOG_IF(ERROR, eq) << left << " " << right;
+  return (left == right) || (std::isnan(left) && std::isnan(right));
 }
 
 template<typename T>

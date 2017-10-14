@@ -592,12 +592,6 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
                                0,
                                &deserializer,
                                &plugin);
-  Plugin* mutable_plugin = const_cast<Plugin*>(plugin);
-  principia__AdvanceTime(
-      mutable_plugin, principia__CurrentTime(plugin) + 1e6, 0.0);
-  for (auto const& pair : plugin->vessels_) {
-    principia__UpdatePrediction(mutable_plugin, pair.first.c_str());
-  }
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
