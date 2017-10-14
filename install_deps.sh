@@ -11,7 +11,7 @@ BASE_FLAGS="-fPIC -O3 -g"
 
 PLATFORM=$(uname -s)
 if [ "$PLATFORM" == "Darwin" ]; then
-    C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.7 -arch x86_64"
+    C_FLAGS="$BASE_FLAGS -mmacosx-version-min=10.11 -arch x86_64"
 elif [ "$PLATFORM" == "Linux" ]; then
 	BITNESS=$(uname -m)
 	if [ "$BITNESS" == "x86_64" ]; then
