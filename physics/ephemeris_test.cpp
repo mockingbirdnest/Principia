@@ -497,9 +497,10 @@ TEST_P(EphemerisTest, EarthProbe) {
   }
   // The solution is a line, so the rounding errors dominate.  Different
   // compilers result in different errors and thus different numbers of steps.
-  EXPECT_THAT(probe_positions.size(), AnyOf(Eq(434), Eq(419), Eq(-1)));
+  EXPECT_THAT(probe_positions.size(),
+              AnyOf(Eq(434), Eq(419), Eq(400), Eq(379), Eq(-1)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 194, 207));
+              AlmostEquals(1.00 * period * v_probe, 194, 235));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -650,9 +651,9 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
 #endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe1, 40, 63));
+              AlmostEquals(1.00 * period * v_probe1, 40, 70));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe2, 1));
+              AlmostEquals(1.00 * period * v_probe2, 1, 2));
   EXPECT_THAT(probe1_positions.back().coordinates().y,
               Eq(q_probe1));
   EXPECT_THAT(probe2_positions.back().coordinates().y,
