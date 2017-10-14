@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "physics/continuous_trajectory.hpp"
+
 #include <algorithm>
 #include <limits>
 #include <sstream>
@@ -10,7 +12,6 @@
 #include "astronomy/epoch.hpp"
 #include "glog/stl_logging.h"
 #include "numerics/ulp_distance.hpp"
-#include "physics/continuous_trajectory.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {

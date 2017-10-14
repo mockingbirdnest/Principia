@@ -110,21 +110,20 @@ TEST_F(PlayerTest, DISABLED_Debug) {
   serialization::Method method_in;
   {
     auto* extension = method_in.MutableExtension(
-        serialization::AdvanceTime::extension);
+        serialization::UpdatePrediction::extension);
     auto* in = extension->mutable_in();
-    in->set_plugin(239018496);
-    in->set_t(55066.065156232558);
-    in->set_planetarium_rotation(-220.16314278280507);
+    in->set_plugin(25543983152);
+    in->set_vessel_guid("1ba916b3-ec0f-494a-a5bb-74956b745a58");
   }
   serialization::Method method_out_return;
   {
     auto* extension = method_out_return.MutableExtension(
-        serialization::AdvanceTime::extension);
+        serialization::UpdatePrediction::extension);
   }
   LOG(ERROR) << "Running unpaired method:\n" << method_in.DebugString();
-  CHECK(RunIfAppropriate<AdvanceTime>(method_in,
-                                      method_out_return,
-                                      player));
+  CHECK(RunIfAppropriate<UpdatePrediction>(method_in,
+                                           method_out_return,
+                                           player));
 #endif
 }
 
