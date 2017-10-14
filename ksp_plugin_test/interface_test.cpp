@@ -582,7 +582,7 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
-      R"(P:\Public Mockingbird\Principia\Crashes\1422\persistent.proto.hex)");
+      R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
   principia__DeserializePlugin(
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),
@@ -592,6 +592,12 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
                                0,
                                &deserializer,
                                &plugin);
+  Plugin* mutable_plugin = const_cast<Plugin*>(plugin);
+  principia__AdvanceTime(
+      mutable_plugin, principia__CurrentTime(plugin) + 1e6, 0.0);
+  for (auto const& pair : plugin->vessels_) {
+    principia__UpdatePrediction(mutable_plugin, pair.first.c_str());
+  }
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
