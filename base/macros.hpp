@@ -229,9 +229,5 @@ template_and_class_key declared_name;                \
 }                                                    \
 using internal_##package_name::declared_name
 
-// We preserve issue #228 in Bourbaki because we don't have trajectory
-// decimation yet.
-#define WE_LOVE_228
-
 }  // namespace base
 }  // namespace principia

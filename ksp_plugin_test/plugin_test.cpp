@@ -453,12 +453,12 @@ TEST_F(PluginTest, Serialization) {
               AllOf(Gt(HistoryTime(time, 6) - step), Le(HistoryTime(time, 6))));
   EXPECT_EQ(HistoryTime(time, 6), t2);
 #else
-  EXPECT_EQ(3, vessel_0_psychohistory.timeline_size());
+  EXPECT_EQ(4, vessel_0_history.timeline_size());
   Instant const t0 =
       Instant() +
-      vessel_0_psychohistory.timeline(0).instant().scalar().magnitude() *
-          Second;
-  EXPECT_EQ((HistoryTime(time, 4), t0);
+      vessel_0_history.timeline(0).instant().scalar().magnitude() * Second;
+  EXPECT_THAT(t0,
+              AllOf(Gt(HistoryTime(time, 3) - step), Le(HistoryTime(time, 3))));
 #endif
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
