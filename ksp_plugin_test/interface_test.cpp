@@ -582,7 +582,7 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
-      R"(P:\Public Mockingbird\Principia\Crashes\1422\persistent.proto.hex)");
+      R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
   principia__DeserializePlugin(
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),

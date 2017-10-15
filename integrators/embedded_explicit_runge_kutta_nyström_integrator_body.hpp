@@ -211,7 +211,7 @@ Instance::Solve(Instant const& t_final) {
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages; ++i) {
-        Instant const t_stage = t.value + c[i] * h;
+        Instant const t_stage = t.value + (t.error + c[i] * h);
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
