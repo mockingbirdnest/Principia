@@ -403,7 +403,7 @@ class Plugin {
   static not_null<std::unique_ptr<Plugin>> ReadFromMessage(
       serialization::Plugin const& message);
 
- private:
+ //private:
   using GUIDToOwnedVessel = std::map<GUID, not_null<std::unique_ptr<Vessel>>>;
   using IndexToOwnedCelestial =
       std::map<Index, not_null<std::unique_ptr<Celestial>>>;
