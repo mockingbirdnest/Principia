@@ -55,6 +55,12 @@ class BurnEditor {
     ComputeEngineCharacteristics();
   }
 
+  enum BurnType {
+    ActiveEngines,
+    ActiveRCS,
+    InstantImpulse
+  }
+
   // Renders the |BurnEditor|.  Returns true if and only if the settings were
   // changed.
   public bool Render(bool enabled) {
@@ -71,20 +77,29 @@ class BurnEditor {
         first_time_rendering = false;
         changed = true;
         engine_warning_ = "";
+        burn_type_ = BurnType.ActiveEngines;
         ComputeEngineCharacteristics();
       }
       if (enabled) {
+        Func<BurnType, string, string> format_burn_type_text = (target_type, text) => {
+          return (burn_type_ == target_type ? "<color=green>" : "")
+                + text
+                + (burn_type_ == target_type ? "</color>" : "");
+        };
         using (new HorizontalLayout()) {
-          if (UnityEngine.GUILayout.Button("Active Engines")) {
+          if (UnityEngine.GUILayout.Button(format_burn_type_text(BurnType.ActiveEngines, "Active Engines"))) {
             engine_warning_ = "";
+            burn_type_ = BurnType.ActiveEngines;
             ComputeEngineCharacteristics();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button("Active RCS")) {
+          } else if (UnityEngine.GUILayout.Button(format_burn_type_text(BurnType.ActiveRCS, "Active RCS"))) {
             engine_warning_ = "";
+            burn_type_ = BurnType.ActiveRCS;
             ComputeRCSCharacteristics();
             changed = true;
-          } else if (UnityEngine.GUILayout.Button("Instant Impulse")) {
+          } else if (UnityEngine.GUILayout.Button(format_burn_type_text(BurnType.InstantImpulse, "Instant Impulse"))) {
             engine_warning_ = "";
+            burn_type_ = BurnType.InstantImpulse;
             UseTheForceLuke();
             changed = true;
           }
@@ -238,10 +253,6 @@ class BurnEditor {
     // less than 2 ** 32 s, |Δv(initial_time + duration)| does not overflow if
     // Δv is less than 100 km/s, and that |initial_time + duration| does not
     // fully cancel if Δv is more than 1 mm/s.
-    // TODO(egg): Before the C* release, add a persisted flag to indicate to the
-    // user that we are not using the craft's engines (we can also use that
-    // flag to remember whether the burn was created for active engines or
-    // active RCS).
     const double range = 1000;
     thrust_in_kilonewtons_ = initial_mass_in_tonnes_ * range * scale;
     specific_impulse_in_seconds_g0_ = range;
@@ -257,6 +268,7 @@ class BurnEditor {
   private double specific_impulse_in_seconds_g0_;
   private double duration_;
   private double initial_mass_in_tonnes_;
+  private BurnType burn_type_;
 
   private bool first_time_rendering = true;
 
