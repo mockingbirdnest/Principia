@@ -91,6 +91,15 @@ inline std::string ToMathematica(double const& real) {
   }
 }
 
+template<typename T>
+std::string ToMathematica(R3Element<T> const& r3_element) {
+  std::vector<std::string> expressions;
+  expressions.emplace_back(ToMathematica(r3_element.x));
+  expressions.emplace_back(ToMathematica(r3_element.y));
+  expressions.emplace_back(ToMathematica(r3_element.z));
+  return Apply("List", expressions);
+}
+
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity) {
   std::string s = DebugString(quantity);
@@ -107,12 +116,7 @@ std::string ToMathematica(Quantity<D> const& quantity) {
 
 template<typename S, typename F>
 std::string ToMathematica(Vector<S, F> const & vector) {
-  auto const& coordinates = vector.coordinates();
-  std::vector<std::string> expressions;
-  expressions.emplace_back(ToMathematica(coordinates.x));
-  expressions.emplace_back(ToMathematica(coordinates.y));
-  expressions.emplace_back(ToMathematica(coordinates.z));
-  return Apply("List", expressions);
+  return ToMathematica(vector.coordinates());
 }
 
 template<typename V>

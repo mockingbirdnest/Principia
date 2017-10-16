@@ -7,6 +7,7 @@
 
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
+#include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -14,6 +15,7 @@ namespace mathematica {
 namespace internal_mathematica {
 
 using geometry::Point;
+using geometry::R3Element;
 using geometry::Vector;
 using quantities::Quantity;
 using quantities::Quotient;
@@ -36,6 +38,9 @@ template<typename T>
 std::string ToMathematica(std::vector<T> const& list);
 
 std::string ToMathematica(double const& real);
+
+template<typename T>
+std::string ToMathematica(R3Element<T> const& r3_element);
 
 template<typename D>
 std::string ToMathematica(Quantity<D> const& quantity);
