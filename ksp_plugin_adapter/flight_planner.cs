@@ -39,6 +39,14 @@ class FlightPlanner : WindowRenderer {
                               func       : RenderPlanner,
                               text       : "Flight plan",
                               options    : UnityEngine.GUILayout.MinWidth(500));
+      const float min_width_on_screen = 50;
+      const float min_height_on_screen = 50;
+      window_rectangle_.x = UnityEngine.Mathf.Clamp(window_rectangle_.x,
+                                                    min_width_on_screen - window_rectangle_.width,
+                                                    UnityEngine.Screen.width - min_width_on_screen);
+      window_rectangle_.y = UnityEngine.Mathf.Clamp(window_rectangle_.y,
+                                                    min_height_on_screen - window_rectangle_.height,
+                                                    UnityEngine.Screen.height - min_height_on_screen);
       window_rectangle_.InputLock(this);
     } else {
       WindowUtilities.ClearLock(this);
