@@ -44,12 +44,12 @@ class FlightPlanner : WindowRenderer {
       window_rectangle_.x =
           UnityEngine.Mathf.Clamp(
               window_rectangle_.x,
-              min_width_on_screen - window_rectangle_.width,
+              -window_rectangle_.width + min_width_on_screen,
               UnityEngine.Screen.width - min_width_on_screen);
       window_rectangle_.y =
           UnityEngine.Mathf.Clamp(
               window_rectangle_.y,
-              min_height_on_screen - window_rectangle_.height,
+              -window_rectangle_.height + min_height_on_screen,
               UnityEngine.Screen.height - min_height_on_screen);
       window_rectangle_.InputLock(this);
     } else {
