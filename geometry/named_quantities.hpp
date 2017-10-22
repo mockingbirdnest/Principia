@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/void_if_exists.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
@@ -9,6 +10,27 @@
 
 namespace principia {
 namespace geometry {
+
+// A trait to treat types that have a norm uniformly (using Abs for quantities
+// or double, and Norm for multivectors).
+template<typename T,
+         typename =
+             base::void_if_exists<decltype(quantities::Abs(std::declval<T>()))>>
+struct Normed : base::not_constructible {
+  using NormType = T;
+  static NormType Norm(T const& vector) {
+    return quantities::Abs(vector);
+  }
+};
+
+template<typename T>
+struct Normed<T, base::void_if_exists<decltype(std::declval<T>().Norm())>>
+    : base::not_constructible {
+  using NormType = decltype(std::declval<T>().Norm());
+  static NormType Norm(T const& vector) {
+    return vector.Norm();
+  }
+};
 
 using Instant = Point<quantities::Time>;
 template<typename Frame>

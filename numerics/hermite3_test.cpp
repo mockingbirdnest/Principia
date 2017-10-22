@@ -1,6 +1,8 @@
 ﻿
 #include "numerics/hermite3.hpp"
 
+#include <utility>
+
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
@@ -16,11 +18,21 @@ using geometry::Instant;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
+using quantities::AngularFrequency;
+using quantities::Cos;
 using quantities::Length;
+using quantities::Pow;
+using quantities::Sin;
+using quantities::si::Centi;
 using quantities::si::Metre;
+using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 
 namespace numerics {
 
@@ -80,6 +92,52 @@ TEST_F(Hermite3Test, Conditioning) {
   EXPECT_GT(0 * Metre, h.Evaluate(t0_ + 19418869.842261545 * Second));
   EXPECT_EQ(2.3308208035605881e-12 * Metre / Second,
             h.EvaluateDerivative(t0_ + 19418861.806896236 * Second));
+}
+
+TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
+  std::vector<std::pair<double, double>> samples;
+  for (double i = 2; i < 10; i += 1) {
+    samples.push_back({1 / i, Pow<4>(1 / i)});
+  }
+  const auto not_a_quartic =
+      Hermite3<double, double>(/*arguments=*/{0, 1},
+                               /*values=*/{0, 1},
+                               /*derivatives=*/{0, 4});
+  // |not_a_quartic| has a root at 1/2, where the error is maximal.
+  EXPECT_THAT(not_a_quartic.LInfinityError(
+      samples,
+      /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+      /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
+      Eq(1 / 16.0));
+}
+
+TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
+  std::vector<std::pair<Instant, Position<World>>> samples;
+  Instant const t0;
+  Instant const tmax = t0 + π / 2 * Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  for (Instant t = t0; t <= tmax; t += 1 / 32.0 * Second) {
+    samples.push_back(
+    {t, World::origin + Displacement<World>({Cos(ω * (t - t0)) * Metre,
+                                             Sin(ω * (t - t0)) * Metre,
+                                             0 * Metre})});
+  }
+  const auto not_a_quartic = Hermite3<Instant, Position<World>>(
+      /*arguments=*/{t0, tmax},
+      /*values=*/
+      {World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
+       World::origin + Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre})},
+      /*derivatives=*/
+      {Velocity<World>(
+           {0 * Metre / Second, 1 * Metre / Second, 0 * Metre / Second}),
+       Velocity<World>(
+           {-1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})});
+  EXPECT_THAT(
+      not_a_quartic.LInfinityError(
+          samples,
+        /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+        /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
+      AllOf(Gt(1 * Centi(Metre)), Lt(2 * Centi(Metre))));
 }
 
 }  // namespace numerics

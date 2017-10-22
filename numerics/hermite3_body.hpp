@@ -63,6 +63,21 @@ BoundedArray<Argument, 2> Hermite3<Argument, Value>::FindExtrema() const {
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
 }
 
+template<typename Argument, typename Value>
+template<typename Samples, typename GetArgument, typename GetValue>
+typename Normed<Difference<Value>>::NormType
+Hermite3<Argument, Value>::LInfinityError(Samples const& samples,
+                                          GetArgument get_argument,
+                                          GetValue get_value) const {
+  typename Normed<Difference<Value>>::NormType result{};
+  for (const auto& sample : samples) {
+    result = std::max(result,
+                      Normed<Difference<Value>>::Norm(
+                          Evaluate(get_argument(sample)) - get_value(sample)));
+  }
+  return result;
+}
+
 }  // namespace internal_hermite3
 }  // namespace numerics
 }  // namespace principia
