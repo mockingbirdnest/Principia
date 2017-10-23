@@ -3,6 +3,7 @@
 
 #include "numerics/hermite3.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 

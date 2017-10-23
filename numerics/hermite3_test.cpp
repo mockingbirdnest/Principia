@@ -2,6 +2,7 @@
 #include "numerics/hermite3.hpp"
 
 #include <utility>
+#include <vector>
 
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
