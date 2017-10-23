@@ -114,17 +114,16 @@ TEST_F(Hermite3Test, OneDimensionalInterpolationError) {
 
 TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
   std::vector<std::pair<Instant, Position<World>>> samples;
-  Instant const t0;
-  Instant const tmax = t0 + π / 2 * Second;
+  Instant const tmax = t0_ + π / 2 * Second;
   AngularFrequency const ω = 1 * Radian / Second;
-  for (Instant t = t0; t <= tmax; t += 1 / 32.0 * Second) {
+  for (Instant t = t0_; t <= tmax; t += 1 / 32.0 * Second) {
     samples.push_back(
-    {t, World::origin + Displacement<World>({Cos(ω * (t - t0)) * Metre,
-                                             Sin(ω * (t - t0)) * Metre,
+    {t, World::origin + Displacement<World>({Cos(ω * (t - t0_)) * Metre,
+                                             Sin(ω * (t - t0_)) * Metre,
                                              0 * Metre})});
   }
   const auto not_a_quartic = Hermite3<Instant, Position<World>>(
-      /*arguments=*/{t0, tmax},
+      /*arguments=*/{t0_, tmax},
       /*values=*/
       {World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
        World::origin + Displacement<World>({0 * Metre, 1 * Metre, 0 * Metre})},
