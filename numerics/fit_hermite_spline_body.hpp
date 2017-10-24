@@ -36,42 +36,45 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
       std::is_same<Derivative1, Derivative<Value, Argument>>::value,
       "Inconsistent types for |get_argument|, |get_value|, and "
       "|get_derivative|");
-  std::ptrdiff_t const size = samples.end() - samples.begin();
-  auto interpolate_range =
-      [get_argument, get_value, get_derivative](Iterator begin, Iterator end) {
-        auto const last = --end;
-        return Hermite3<Argument, Value>(
-            {get_argument(*begin), get_argument(*last)},
-            {get_value(*begin), get_value(*last)},
-            {get_derivative(*begin), get_derivative(*last)});
-      };
   static_assert(
       std::is_same<ErrorType, typename Normed<Value>::NormType>::value,
       "|tolerance| must have the same type as a distance between values");
+
+  std::ptrdiff_t const size = samples.end() - samples.begin();
   if (size < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
     // estimate the error.
     return {};
   }
-  if (interpolate_range(samples.begin(), samples.end())
-          .LInfinityError(Range(samples.begin(), samples.end()),
-                          get_argument,
-                          get_value) < tolerance) {
+
+  auto interpolation_error = [get_argument, get_value, get_derivative](
+                                 Iterator begin, Iterator last) {
+    return Hermite3<Argument, Value>(
+               {get_argument(*begin), get_argument(*last)},
+               {get_value(*begin), get_value(*last)},
+               {get_derivative(*begin), get_derivative(*last)})
+        .LInfinityError(Range(begin, last + 1), get_argument, get_value);
+  };
+
+  auto const last = samples.end() - 1;
+  if (interpolation_error(samples.begin(), last) < tolerance) {
     // A single polynomial fits the entire range, so we have no way of knowing
     // whether it is the largest polynomial that will fit the range.
     return {};
   } else {
-    auto lower = samples.begin();
-    auto upper = samples.end();
+    // Look for the longest polynomial that will fit the beginning within
+    // |tolerance|.
+    // Invariant: The Hermite interpolant on [samples.begin(), lower] is below
+    // the tolerance, the Hermite interpolant on [samples.begin(), upper] is
+    // above.
+    auto lower = samples.begin() + 1;
+    auto upper = last;
     for (;;) {
       auto const middle = lower + (upper - lower) / 2;
       if (middle == lower) {
         break;
       }
-      if (interpolate_range(lower, middle).LInfinityError(Range(lower, middle),
-                                                          get_argument,
-                                                          get_value) <
-          tolerance) {
+      if (interpolation_error(samples.begin(), middle) < tolerance) {
         lower = middle;
       } else {
         upper = middle;
