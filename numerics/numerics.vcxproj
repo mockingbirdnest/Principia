@@ -255,6 +255,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="fit_hermite_spline.hpp" />
+    <ClInclude Include="fit_hermite_spline_body.hpp" />
     <ClInclude Include="fixed_arrays.hpp" />
     <ClInclude Include="fixed_arrays_body.hpp" />
     <ClInclude Include="double_precision.hpp" />
