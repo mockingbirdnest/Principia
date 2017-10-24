@@ -3,12 +3,14 @@
 #include <list>
 #include <type_traits>
 
+#include "base/ranges.hpp"
 #include "numerics/hermite3.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_fit_hermite_spline {
 
+using base::Range;
 using geometry::Normed;
 using quantities::Derivative;
 
