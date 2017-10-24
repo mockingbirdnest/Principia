@@ -19,18 +19,21 @@ template<typename Samples,
          typename GetValue,
          typename GetDerivative,
          typename ErrorType>
-std::list<typename Samples::iterator> FitHermiteSpline(
+std::list<typename Samples::const_iterator> FitHermiteSpline(
     Samples const& samples,
     GetArgument get_argument,
     GetValue get_value,
     GetDerivative get_derivative,
     ErrorType tolerance) {
-  using Iterator = typename Samples::iterator;
-  using Argument = decltype(get_argument(*samples.begin()));
-  using Value = decltype(get_value(*samples.begin()));
-  using GetDerivative = decltype(get_derivative(*samples.begin()));
+  using Iterator = typename Samples::const_iterator;
+  using Argument = std::remove_const_t<
+      std::remove_reference_t<decltype(get_argument(*samples.begin()))>>;
+  using Value = std::remove_const_t<
+      std::remove_reference_t<decltype(get_value(*samples.begin()))>>;
+  using Derivative1 = std::remove_const_t<
+      std::remove_reference_t<decltype(get_derivative(*samples.begin()))>>;
   static_assert(
-      std::is_same<GetDerivative, Derivative<Value, Argument>>,
+      std::is_same<Derivative1, Derivative<Value, Argument>>::value,
       "Inconsistent types for |get_argument|, |get_value|, and "
       "|get_derivative|");
   std::ptrdiff_t const size = samples.end() - samples.begin();
@@ -43,15 +46,17 @@ std::list<typename Samples::iterator> FitHermiteSpline(
             {get_derivative(*begin), get_derivative(*last)});
       };
   static_assert(
-      std::is_same<ErrorType, Normed<Value>::NormType>::value,
+      std::is_same<ErrorType, typename Normed<Value>::NormType>::value,
       "|tolerance| must have the same type as a distance between values");
   if (size < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
     // estimate the error.
     return {};
   }
-  if (interpolate_range(begin, end).LInfinityError(
-          Range(begin, end), get_argument, get_value) < tolerance) {
+  if (interpolate_range(samples.begin(), samples.end())
+          .LInfinityError(Range(samples.begin(), samples.end()),
+                          get_argument,
+                          get_value) < tolerance) {
     // A single polynomial fits the entire range, so we have no way of knowing
     // whether it is the largest polynomial that will fit the range.
     return {};

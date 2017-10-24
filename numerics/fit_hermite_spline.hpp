@@ -21,7 +21,7 @@ template<typename Samples,
          typename GetValue,
          typename GetDerivative,
          typename ErrorType>
-std::list<typename Samples::iterator> FitHermiteSpline(
+std::list<typename Samples::const_iterator> FitHermiteSpline(
     Samples const& samples,
     GetArgument get_argument,
     GetValue get_value,

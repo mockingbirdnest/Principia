@@ -7,11 +7,14 @@ namespace base {
 template<typename Iterator>
 class IterableRange {
  public:
+  using const_iterator = Iterator;
+
   IterableRange(Iterator begin, Iterator end) : begin_(begin), end_(end) {}
-  Iterator begin() {
+
+  Iterator begin() const {
     return begin_;
   }
-  Iterator end() {
+  Iterator end() const {
     return end_;
   }
 
