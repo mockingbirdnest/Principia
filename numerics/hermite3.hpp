@@ -44,8 +44,8 @@ class Hermite3 final {
   template<typename Samples, typename GetArgument, typename GetValue>
   typename Normed<Difference<Value>>::NormType LInfinityError(
       Samples const& samples,
-      GetArgument get_argument,
-      GetValue get_value) const;
+      GetArgument const& get_argument,
+      GetValue const& get_value) const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;

@@ -118,11 +118,11 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
   AngularFrequency const ω = 1 * Radian / Second;
   for (Instant t = t0_; t <= tmax; t += 1 / 32.0 * Second) {
     samples.push_back(
-    {t, World::origin + Displacement<World>({Cos(ω * (t - t0_)) * Metre,
-                                             Sin(ω * (t - t0_)) * Metre,
-                                             0 * Metre})});
+        {t, World::origin + Displacement<World>({Cos(ω * (t - t0_)) * Metre,
+                                                 Sin(ω * (t - t0_)) * Metre,
+                                                 0 * Metre})});
   }
-  const auto not_a_quartic = Hermite3<Instant, Position<World>>(
+  const auto not_a_circle = Hermite3<Instant, Position<World>>(
       /*arguments=*/{t0_, tmax},
       /*values=*/
       {World::origin + Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}),
@@ -133,10 +133,10 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
        Velocity<World>(
            {-1 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})});
   EXPECT_THAT(
-      not_a_quartic.LInfinityError(
+      not_a_circle.LInfinityError(
           samples,
-        /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
-        /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
+          /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
+          /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
       AllOf(Gt(1 * Centi(Metre)), Lt(2 * Centi(Metre))));
 }
 
