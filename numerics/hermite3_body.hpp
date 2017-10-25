@@ -68,8 +68,8 @@ template<typename Argument, typename Value>
 template<typename Samples, typename GetArgument, typename GetValue>
 typename Normed<Difference<Value>>::NormType
 Hermite3<Argument, Value>::LInfinityError(Samples const& samples,
-                                          GetArgument get_argument,
-                                          GetValue get_value) const {
+                                          GetArgument const& get_argument,
+                                          GetValue const& get_value) const {
   typename Normed<Difference<Value>>::NormType result{};
   for (const auto& sample : samples) {
     result = std::max(result,
