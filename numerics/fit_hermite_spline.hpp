@@ -23,10 +23,10 @@ template<typename Samples,
          typename ErrorType>
 std::list<typename Samples::const_iterator> FitHermiteSpline(
     Samples const& samples,
-    GetArgument get_argument,
-    GetValue get_value,
-    GetDerivative get_derivative,
-    ErrorType tolerance);
+    GetArgument const& get_argument,
+    GetValue const& get_value,
+    GetDerivative const& get_derivative,
+    ErrorType const& tolerance);
 
 }  // namespace internal_fit_hermite_spline
 
