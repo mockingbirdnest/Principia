@@ -26,12 +26,9 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     GetDerivative const& get_derivative,
     ErrorType const& tolerance) {
   using Iterator = typename Samples::const_iterator;
-  using Argument = std::remove_const_t<
-      std::remove_reference_t<decltype(get_argument(*samples.begin()))>>;
-  using Value = std::remove_const_t<
-      std::remove_reference_t<decltype(get_value(*samples.begin()))>>;
-  using Derivative1 = std::remove_const_t<
-      std::remove_reference_t<decltype(get_derivative(*samples.begin()))>>;
+  using Argument = std::decay_t<decltype(get_argument(*samples.begin()))>;
+  using Value = std::decay_t<decltype(get_value(*samples.begin()))>;
+  using Derivative1 = std::decay_t<decltype(get_derivative(*samples.begin()))>;
   static_assert(
       std::is_same<Derivative1, Derivative<Value, Argument>>::value,
       "Inconsistent types for |get_argument|, |get_value|, and "
