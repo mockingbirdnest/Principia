@@ -293,6 +293,7 @@
     <ClInclude Include="push_deserializer.hpp" />
     <ClInclude Include="push_deserializer_body.hpp" />
     <ClInclude Include="ranges.hpp" />
+    <ClInclude Include="ranges_body.hpp" />
     <ClInclude Include="shared_lock_guard.hpp" />
     <ClInclude Include="shared_lock_guard_body.hpp" />
     <ClInclude Include="status.hpp" />

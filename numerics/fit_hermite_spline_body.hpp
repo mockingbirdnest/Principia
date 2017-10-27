@@ -37,8 +37,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
       std::is_same<ErrorType, typename Normed<Value>::NormType>::value,
       "|tolerance| must have the same type as a distance between values");
 
-  std::ptrdiff_t const size = samples.end() - samples.begin();
-  if (size < 3) {
+  if (samples.size() < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
     // estimate the error.
     return {};

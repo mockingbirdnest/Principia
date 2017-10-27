@@ -149,6 +149,9 @@
     <ClInclude Include="ranges.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ranges_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
