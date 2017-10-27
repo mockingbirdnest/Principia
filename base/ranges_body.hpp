@@ -6,7 +6,7 @@ namespace principia {
 namespace base {
 
 template<typename Iterator>
-IterableRange<Iterator>::IterableRange(Iterator begin, Iterator end)
+IterableRange<Iterator>::IterableRange(Iterator const begin, Iterator const end)
     : begin_(begin), end_(end) {}
 
 template<typename Iterator>
@@ -43,6 +43,11 @@ template<typename Iterator>
 bool IterableRange<Iterator>::empty() const {
   return begin_ == end_;
 };
+
+template<typename Iterator>
+IterableRange<Iterator> Range(Iterator const begin, Iterator const end) {
+  return IterableRange<Iterator>(begin, end);
+}
 
 }  // namespace base
 }  // namespace principia

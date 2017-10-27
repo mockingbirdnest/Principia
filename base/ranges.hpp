@@ -46,9 +46,7 @@ class IterableRange {
 };
 
 template<typename Iterator>
-IterableRange<Iterator> Range(Iterator begin, Iterator end) {
-  return IterableRange<Iterator>(begin, end);
-}
+IterableRange<Iterator> Range(Iterator begin, Iterator end);
 
 }  // namespace base
 }  // namespace principia
