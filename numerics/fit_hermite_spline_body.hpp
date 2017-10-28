@@ -58,12 +58,12 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     // whether it is the largest polynomial that will fit the range.
     return {};
   } else {
-    // Look for the longest polynomial that will fit the beginning within
+    // Look for a cubic that fits the beginning within |tolerance| and
+    // such the cubic fitting one more sample would not fit the samples within
     // |tolerance|.
-    // This will find a locally longest such polynomial, but we hope that the
-    // error often grows with the number of points fitted, so that it does not
-    // matter much.  In any case, the chosen polynomial does fit the beginning
-    // of |samples| within |tolerance|.
+    // Note that there may be more than one cubic satisfying this property;
+    // ideally we would like to find the longest one, but this would be costly,
+    // and we expect little gains from this in practice.
 
     // Invariant: The Hermite interpolant on [samples.begin(), lower] is below
     // the tolerance, the Hermite interpolant on [samples.begin(), upper] is
