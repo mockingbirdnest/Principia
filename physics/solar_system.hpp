@@ -104,7 +104,8 @@ class SolarSystem final {
 
   // Constructs a hierarchical system for a solar system defined by keplerian
   // elements.
-  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem();
+  not_null<std::unique_ptr<HierarchicalSystem<Frame>>> MakeHierarchicalSystem()
+      const;
 
   // Utilities for patching the internal protocol buffers after initialization.
   void RemoveMassiveBody(std::string const& name);

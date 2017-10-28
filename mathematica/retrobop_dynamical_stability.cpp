@@ -159,10 +159,13 @@ std::unique_ptr<Message> Read(std::ifstream& file) {
 }
 
 HierarchicalSystem<Barycentric>::BarycentricSystem MakeStabilizedKSPSystem() {
-  auto system = physics::SolarSystem<Barycentric>(
-          SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
-          SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
-  astronomy::StabilizeKSP(system);
+  static auto const& system = *[]() {
+    auto* const system = new physics::SolarSystem<Barycentric>(
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
+    astronomy::StabilizeKSP(*system);
+    return system;
+  }();
   return system.MakeHierarchicalSystem()->ConsumeBarycentricSystem();
 }
 

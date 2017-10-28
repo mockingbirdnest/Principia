@@ -343,7 +343,7 @@ SolarSystem<Frame>::MakeOblateBody(
 
 template<typename Frame>
 not_null<std::unique_ptr<HierarchicalSystem<Frame>>>
-SolarSystem<Frame>::MakeHierarchicalSystem() {
+SolarSystem<Frame>::MakeHierarchicalSystem() const {
   // First, construct all the bodies and find the primary body of the system.
   std::string primary;
   std::map<std::string,
