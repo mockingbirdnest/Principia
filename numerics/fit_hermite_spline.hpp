@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <list>
 
@@ -9,13 +9,16 @@ namespace numerics {
 namespace internal_fit_hermite_spline {
 
 // Given |samples| for which the arguments, values, and derivatives can be
-// obtained via the given functors, returns iterators for which an interpolating
-// Hermite spline "barely" satisfies the tolerance. The result contains only
-// right endpoints of interpolated intervals (i.e., the first interpolating
-// polynomial is [begin, result.front()]).  It may not contain |--end|, if the
-// resulting polynomial would have an error too small before the tolerance: in
-// particular the result may be empty.  |Samples| must be have random access
-// iterators.
+// obtained via the given functors, returns a sequence of iterators
+// (it₀, it₁, it₂, ..., itᵣ) such that, with it₋₁ = samples.begin(),
+// for all integers it in [0, r], the |Hermite3| interpolation of
+// (*itᵢ₋₁, *itᵢ) fits |samples| within |tolerance|, but the interpolation
+// of (*itᵢ₋₁, *(it + 1)ᵢ) does not, i.e., the iterators delimit "maximal"
+// fitting polynomials.
+// Note that it follows from the above that itᵣ < samples.end() - 1, so that at
+// not all of |samples| is fitted maximally.  This function further guarantees
+// that the |Hermite3| interpolation of (*itᵣ, *(samples.end() - 1)) fits
+// |samples| within |tolerance|.
 template<typename Samples,
          typename GetArgument,
          typename GetValue,

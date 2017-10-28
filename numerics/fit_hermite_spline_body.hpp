@@ -63,7 +63,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     // |tolerance|.
     // Note that there may be more than one cubic satisfying this property;
     // ideally we would like to find the longest one, but this would be costly,
-    // and we expect little gains from this in practice.
+    // and we do not expect significant gains from this in practice.
 
     // Invariant: The Hermite interpolant on [samples.begin(), lower] is below
     // the tolerance, the Hermite interpolant on [samples.begin(), upper] is
