@@ -204,15 +204,15 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Angle const true_anomaly =
       positive_angle(OrientedAngleBetween(periapsis, r, x_wedge_y));
 
-  SpecificEnergy const ε = InnerProduct(v, v) / 2 - μ / r.Norm();
+  SpecificEnergy const ε = v.Norm²() / 2 - μ / r.Norm();
   double const e = eccentricity_vector.Norm();
 
   // We have h, e, and ε.  There are three ways of computing each of b, r_pe,
   // and r_ap from that (from any two of the elements we have), but only one is
   // well-conditioned for all eccentricities.
-  Length const b = Sqrt(-InnerProduct(h, h) / (2 * ε)) * Radian;
-  Length const impact_parameter = Sqrt(InnerProduct(h, h) / (2 * ε)) * Radian;
-  Length const r_pe = InnerProduct(h, h) / ((1 + e) * μ) * Pow<2>(Radian);
+  Length const b = Sqrt(-h.Norm²() / (2 * ε)) * Radian;
+  Length const impact_parameter = Sqrt(h.Norm²() / (2 * ε)) * Radian;
+  Length const r_pe = h.Norm²() / ((1 + e) * μ) * Pow<2>(Radian);
   Length const r_ap = - μ * (1 + e) / (2 * ε);
 
   elements_at_epoch_.eccentricity                = e;

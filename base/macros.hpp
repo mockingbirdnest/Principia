@@ -169,6 +169,11 @@ inline void noreturn() { std::exit(0); }
 #  define UNICODE_PATH(x) u8 ## x
 #endif
 
+// Mutex.
+#if !OS_MACOSX
+#  define HAS_SHARED_MUTEX 1
+#endif
+
 #define NAMED(expression) #expression << ": " << (expression)
 
 // A macro to allow glog checking within C++11 constexpr code.  If |condition|
@@ -223,10 +228,6 @@ namespace internal_##package_name {                  \
 template_and_class_key declared_name;                \
 }                                                    \
 using internal_##package_name::declared_name
-
-// We preserve issue #228 in Bourbaki because we don't have trajectory
-// decimation yet.
-#define WE_LOVE_228
 
 }  // namespace base
 }  // namespace principia

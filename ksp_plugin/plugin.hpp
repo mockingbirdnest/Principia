@@ -48,6 +48,7 @@ using base::not_null;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
+using geometry::AngularVelocity;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::OrthogonalMap;
@@ -69,6 +70,7 @@ using physics::Frenet;
 using physics::HierarchicalSystem;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
+using physics::RigidMotion;
 using physics::RotatingBody;
 using quantities::Angle;
 using quantities::Force;
@@ -144,6 +146,9 @@ class Plugin {
   virtual Angle CelestialInitialRotation(Index celestial_index) const;
   virtual Time CelestialRotationPeriod(Index celestial_index) const;
 
+  virtual void ClearWorldRotationalReferenceFrame();
+  virtual void SetWorldRotationalReferenceFrame(Index celestial_index);
+
   virtual Index CelestialIndexOfBody(MassiveBody const& body) const;
 
   // Inserts a new vessel with GUID |vessel_guid| if it does not already exist,
@@ -198,38 +203,50 @@ class Plugin {
   // Calls |MakeSingleton| for all parts in loaded vessels, enabling the use of
   // union-find for pile up construction.  This must be called after the calls
   // to |IncrementPartIntrinsicForce|, and before the calls to
-  // |ReportCollision|.
+  // |ReportGroundCollision| or |ReportPartCollision|.
   virtual void PrepareToReportCollisions();
 
-  // Notifies |this| that the given vessels are touching, and should gravitate
+  // Notifies |this| that the given part is touching the ground.
+  virtual void ReportGroundCollision(PartId part) const;
+
+  // Notifies |this| that the given parts are touching, and should gravitate
   // as part of a single rigid body.
-  virtual void ReportCollision(PartId part1, PartId part2) const;
+  virtual void ReportPartCollision(PartId part1, PartId part2) const;
 
   // Destroys the vessels for which |InsertOrKeepVessel| has not been called
-  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the parts
-  // in loaded vessels for which |InsertOrKeepLoadedPart| has not been called,
-  // and updates the list of |pile_ups_| according to the reported collisions.
+  // since the last call to |FreeVesselsAndCollectPileUps|, as well as the
+  // vessels which transitively touch the ground.  Destroys the parts in loaded
+  // vessels for which |InsertOrKeepLoadedPart| has not been called.  Updates
+  // the list of |pile_ups_| according to the reported collisions.
   virtual void FreeVesselsAndPartsAndCollectPileUps(Time const& Δt);
 
   // Calls |SetPartApparentDegreesOfFreedom| on the pile-up containing the
   // relevant part.  This part must be in a loaded vessel.
   virtual void SetPartApparentDegreesOfFreedom(
       PartId part_id,
-      DegreesOfFreedom<World> const& degrees_of_freedom);
+      DegreesOfFreedom<World> const& degrees_of_freedom,
+      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
   // |part_at_origin|.
   virtual DegreesOfFreedom<World> GetPartActualDegreesOfFreedom(
       PartId part_id,
-      PartId part_at_origin) const;
+      RigidMotion<Barycentric, World> const& barycentric_to_world) const;
 
   // Returns the |World| degrees of freedom of the |Celestial| with the given
-  // |Index|, identifying the origin of |World| with that of |Bubble|.
+  // |Index|, identifying the origin of |World| with the centre of mass of the
+  // |Part| with the given |PartId|.
   virtual DegreesOfFreedom<World> CelestialWorldDegreesOfFreedom(
       Index const index,
-      PartId part_at_origin,
+      RigidMotion<Barycentric, World> const& barycentric_to_world,
       Instant const& time) const;
+
+  virtual RigidMotion<Barycentric, World> BarycentricToWorld(
+      bool reference_part_is_unmoving,
+      PartId reference_part_id,
+      std::experimental::optional<Position<World>> const&
+          main_body_centre) const;
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
@@ -278,6 +295,11 @@ class Plugin {
   virtual RelativeDegreesOfFreedom<AliceSun> CelestialFromParent(
       Index celestial_index) const;
 
+  virtual void SetPredictionAdaptiveStepParameters(
+      GUID const& vessel_guid,
+      Ephemeris<Barycentric>::AdaptiveStepParameters const&
+          prediction_adaptive_step_parameters) const;
+
   // Updates the prediction for the vessel with guid |vessel_guid|.
   void UpdatePrediction(GUID const& vessel_guid) const;
 
@@ -311,8 +333,6 @@ class Plugin {
       Position<World> const& sun_world_position,
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
-
-  virtual void SetPredictionLength(Time const& t);
 
   virtual void SetPredictionAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
@@ -406,10 +426,6 @@ class Plugin {
   // whenever |main_body_| or |planetarium_rotation_| changes.
   void UpdatePlanetariumRotation();
 
-  // NOTE(egg): this is an ugly hack to try to get a long enough trajectory
-  // while retaining a timeout.
-  void UpdatePredictionForRendering(std::int64_t size) const;
-
   Velocity<World> VesselVelocity(
       Instant const& time,
       DegreesOfFreedom<Barycentric> const& degrees_of_freedom) const;
@@ -455,7 +471,6 @@ class Plugin {
   Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
-  Time prediction_length_ = 1 * Hour;
 
   // The thread pool for advancing vessels.
   ThreadPool<void> vessel_thread_pool_;
@@ -474,6 +489,7 @@ class Plugin {
   std::unique_ptr<Renderer> renderer_;
 
   RotatingBody<Barycentric> const* main_body_ = nullptr;
+  AngularVelocity<Barycentric> angular_velocity_of_world_;
 
   // Do not |erase| from this list, use |Part::clear_pile_up| instead.
   std::list<PileUp> pile_ups_;

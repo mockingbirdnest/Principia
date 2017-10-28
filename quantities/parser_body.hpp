@@ -21,7 +21,7 @@ struct ExtractDimensions {};
 template<>
 struct ExtractDimensions<double> {
   static constexpr RuntimeDimensions dimensions() {
-    return {0, 0, 0, 0, 0, 0, 0, 0};
+    return {{0, 0, 0, 0, 0, 0, 0, 0}};
   }
 };
 
@@ -43,14 +43,14 @@ struct ExtractDimensions<
                                              LuminousIntensityExponent,
                                              AngleExponent>>> {
   static constexpr RuntimeDimensions dimensions() {
-    return {LengthExponent,
-            MassExponent,
-            TimeExponent,
-            CurrentExponent,
-            TemperatureExponent,
-            AmountExponent,
-            LuminousIntensityExponent,
-            AngleExponent};
+    return {{LengthExponent,
+             MassExponent,
+             TimeExponent,
+             CurrentExponent,
+             TemperatureExponent,
+             AmountExponent,
+             LuminousIntensityExponent,
+             AngleExponent}};
   }
 };
 

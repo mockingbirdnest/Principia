@@ -30,7 +30,7 @@ char const out_message_name[] = "Out";
 std::string Join(std::vector<std::string> const& v, std::string const& joiner) {
   std::string joined;
   bool is_first = true;
-  for (auto const vi : v) {
+  for (auto const& vi : v) {
     if (vi.empty()) {
       continue;
     }
@@ -258,7 +258,7 @@ void JournalProtoProcessor::ProcessOptionalNonStringField(
       [](std::string const& expr) {
         return "*" + expr;
       };
-  field_cxx_optional_pointer_fn_[descriptor] = [this, cxx_type, descriptor](
+  field_cxx_optional_pointer_fn_[descriptor] = [cxx_type](
       std::string const& condition,
       std::string const& expr) {
     // Tricky.  We need a heap allocation to obtain a pointer to the value.

@@ -97,7 +97,7 @@ double Perspective<FromFrame, ToFrame>::Tan²AngularDistance(
   auto const v1 = to_camera_(p1) - ToFrame::origin;
   auto const v2 = to_camera_(p2) - ToFrame::origin;
   auto const wedge = Wedge(v1, v2);
-  return InnerProduct(wedge, wedge) / Pow<2>(InnerProduct(v1, v2));
+  return wedge.Norm²() / Pow<2>(InnerProduct(v1, v2));
 }
 
 template<typename FromFrame, typename ToFrame>
@@ -109,10 +109,9 @@ bool Perspective<FromFrame, ToFrame>::IsHiddenBySphere(
   Displacement<FromFrame> const centre_to_point = point - sphere.centre();
 
   auto const& r² = sphere.radius²();
-  auto const camera_to_centre² = InnerProduct(camera_to_centre,
-                                              camera_to_centre);
-  auto const camera_to_point² = InnerProduct(camera_to_point, camera_to_point);
-  auto const centre_to_point² = InnerProduct(centre_to_point, centre_to_point);
+  auto const camera_to_centre² = camera_to_centre.Norm²();
+  auto const camera_to_point² = camera_to_point.Norm²();
+  auto const centre_to_point² = centre_to_point.Norm²();
 
   // If the point lies in the sphere then surely it is hidden.
   bool const is_in_sphere = centre_to_point² < r²;
@@ -126,8 +125,7 @@ bool Perspective<FromFrame, ToFrame>::IsHiddenBySphere(
 
   // This implicitly gives the cosine of the angle between the centre and the
   // point as seen from the camera.
-  auto const inner_product =
-      InnerProduct(camera_to_point, camera_to_centre);
+  auto const inner_product = InnerProduct(camera_to_point, camera_to_centre);
 
   // This effectively compares the square cosines of (1) the angle between the
   // centre and the point as seen from the camera and (2) the angle of the cone.
@@ -153,7 +151,7 @@ double Perspective<FromFrame, ToFrame>::SphereSin²HalfAngle(
   Position<FromFrame> const& K = camera_;
   Position<FromFrame> const& C = sphere.centre();
   Displacement<FromFrame> const KC = C - K;
-  auto const KC² = InnerProduct(KC, KC);
+  auto const KC² = KC.Norm²();
   // Return 1.0 if the camera is within the sphere.
   return std::min(1.0, sphere.radius²() / KC²);
 }
@@ -177,7 +175,7 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   // Bail out if the camera is inside the sphere: the segment is completely
   // hidden.  This is not a common situation, but it would cause no end of
   // trouble below, so we might as well handle it first.
-  auto const KC² = InnerProduct(KC, KC);
+  auto const KC² = KC.Norm²();
   if (KC² <= sphere.radius²()) {
     return {};
   }
@@ -196,8 +194,8 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   // where ɑ and β are computed by solving the linear system:
   //   KA·KH = KA·KC = ɑ * KA² + β * KA·KB
   //   KB·KH = KB·KC = ɑ * KA·KB + β * KB²
-  auto const KA² = InnerProduct(KA, KA);
-  auto const KB² = InnerProduct(KB, KB);
+  auto const KA² = KA.Norm²();
+  auto const KB² = KB.Norm²();
   auto const KAKB = InnerProduct(KA, KB);
 
   auto const determinant = KA² * KB² - KAKB * KAKB;
@@ -208,7 +206,7 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   // The basic check: if H is outside or on the sphere, the sphere doesn't
   // intersect the plane KAB and therefore there is no hiding.
   Displacement<FromFrame> const CH = KH - KC;
-  auto const CH² = InnerProduct(CH, CH);
+  auto const CH² = CH.Norm²();
   if (CH² >= sphere.radius²()) {
     return {segment};
   }
@@ -270,7 +268,7 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   bool λ_lt_σ = false;
   bool λ_gt_σ = false;
   double infinity = 0.0;  // Might be NaN in cases where it's not used.
-  auto const KH² = InnerProduct(KH, KH);
+  auto const KH² = KH.Norm²();
   for (double const δ : δs) {
     double const γ = (r² - δ * KBKH) / KAKH;
     Displacement<FromFrame> const PH = γ * KA + δ * KB;
@@ -308,8 +306,8 @@ Perspective<FromFrame, ToFrame>::VisibleSegments(
   // where μ is computed by solving a quadratic equation:
   //   CQ² = R² = (KQ - KC)² = (μ * AB - AC)²
   Displacement<FromFrame> const AC = C - A;
-  auto const AB² = InnerProduct(AB, AB);
-  auto const AC² = InnerProduct(AC, AC);
+  auto const AB² = AB.Norm²();
+  auto const AC² = AC.Norm²();
   auto const ABAC = InnerProduct(AB, AC);
 
   BoundedArray<double, 2> const μs =

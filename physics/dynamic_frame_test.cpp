@@ -39,8 +39,8 @@ using Helical =
 Vector<Acceleration, Circular> Gravity(Instant const& t,
                                        Position<Circular> const& q) {
   Displacement<Circular> const r = q - Circular::origin;
-  auto const r2 = InnerProduct(r, r);
-  return -SIUnit<GravitationalParameter>() * r / (Sqrt(r2) * r2);
+  auto const r² = r.Norm²();
+  return -SIUnit<GravitationalParameter>() * r / (Sqrt(r²) * r²);
 }
 
 // An inertial frame.

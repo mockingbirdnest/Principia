@@ -15,7 +15,7 @@ PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
 MOCK_TRANSLATION_UNITS         := $(wildcard */mock_*.cpp)
-BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp)
+BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp */benchmark.cpp)
 TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
 TEST_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(MOCK_TRANSLATION_UNITS)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
@@ -67,7 +67,7 @@ TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
 INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
 SHARED_ARGS   := \
-	-std=c++14 -stdlib=libc++ -O3 -g                                        \
+	-std=c++1z -stdlib=libc++ -O3 -g                                        \
 	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer              \
 	-Wall -Wpedantic                                                        \
 	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'   \
@@ -87,7 +87,7 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    SHARED_ARGS += -mmacosx-version-min=10.7 -arch x86_64
+    SHARED_ARGS += -mmacosx-version-min=10.11 -arch x86_64
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib
 endif

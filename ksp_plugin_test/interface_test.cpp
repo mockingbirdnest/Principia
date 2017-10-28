@@ -485,11 +485,6 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
 }
 
-TEST_F(InterfaceTest, PredictionGettersAndSetters) {
-  EXPECT_CALL(*plugin_, SetPredictionLength(42 * Second));
-  principia__SetPredictionLength(plugin_.get(), 42);
-}
-
 TEST_F(InterfaceTest, NavballOrientation) {
   StrictMock<MockDynamicFrame<Barycentric, Navigation>>* const
      mock_navigation_frame =
@@ -587,7 +582,7 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
-      R"(P:\Public Mockingbird\Principia\Crashes\1422\persistent.proto.hex)");
+      R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
   principia__DeserializePlugin(
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),

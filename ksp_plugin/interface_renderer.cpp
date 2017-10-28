@@ -40,26 +40,6 @@ NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
   return m.Return(GetRenderer(plugin).GetPlottingFrame());
 }
 
-Iterator* principia__RenderedPrediction(Plugin* const plugin,
-                                        char const* const vessel_guid,
-                                        XYZ const sun_world_position) {
-  journal::Method<journal::RenderedPrediction> m({plugin,
-                                                  vessel_guid,
-                                                  sun_world_position});
-  CHECK_NOTNULL(plugin);
-  auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
-  auto rendered_trajectory =
-      GetRenderer(plugin).RenderBarycentricTrajectoryInWorld(
-          plugin->CurrentTime(),
-          prediction.Begin(),
-          prediction.End(),
-          FromXYZ<Position<World>>(sun_world_position),
-          plugin->PlanetariumRotation());
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory),
-      plugin));
-}
-
 void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                           char const* const vessel_guid,
                                           int const celestial_index,
@@ -74,7 +54,7 @@ void principia__RenderedPredictionApsides(Plugin const* const plugin,
   std::unique_ptr<DiscreteTrajectory<World>> rendered_apoapsides;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_periapsides;
   plugin->ComputeAndRenderApsides(celestial_index,
-                                  prediction.Begin(),
+                                  prediction.Fork(),
                                   prediction.End(),
                                   FromXYZ<Position<World>>(sun_world_position),
                                   rendered_apoapsides,
@@ -100,7 +80,7 @@ void principia__RenderedPredictionClosestApproaches(
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_closest_approaches;
   plugin->ComputeAndRenderClosestApproaches(
-      prediction.Begin(),
+      prediction.Fork(),
       prediction.End(),
       FromXYZ<Position<World>>(sun_world_position),
       rendered_closest_approaches);
@@ -122,7 +102,7 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   auto const& prediction = plugin->GetVessel(vessel_guid)->prediction();
   std::unique_ptr<DiscreteTrajectory<World>> rendered_ascending;
   std::unique_ptr<DiscreteTrajectory<World>> rendered_descending;
-  plugin->ComputeAndRenderNodes(prediction.Begin(),
+  plugin->ComputeAndRenderNodes(prediction.Fork(),
                                 prediction.End(),
                                 FromXYZ<Position<World>>(sun_world_position),
                                 rendered_ascending,
@@ -134,26 +114,6 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
       check_not_null(std::move(rendered_descending)),
       plugin);
   return m.Return();
-}
-
-Iterator* principia__RenderedVesselTrajectory(Plugin const* const plugin,
-                                              char const* const vessel_guid,
-                                              XYZ const sun_world_position) {
-  journal::Method<journal::RenderedVesselTrajectory> m({plugin,
-                                                        vessel_guid,
-                                                        sun_world_position});
-  CHECK_NOTNULL(plugin);
-  auto const& psychohistory = plugin->GetVessel(vessel_guid)->psychohistory();
-  auto rendered_trajectory =
-      GetRenderer(plugin).RenderBarycentricTrajectoryInWorld(
-          plugin->CurrentTime(),
-          psychohistory.Begin(),
-          psychohistory.End(),
-          FromXYZ<Position<World>>(sun_world_position),
-          plugin->PlanetariumRotation());
-  return m.Return(new TypedIterator<DiscreteTrajectory<World>>(
-      std::move(rendered_trajectory),
-      plugin));
 }
 
 // |navigation_frame| must not be null.  No transfer of ownership of

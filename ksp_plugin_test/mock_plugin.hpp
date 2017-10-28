@@ -68,8 +68,6 @@ class MockPlugin : public Plugin {
                           Instant const& final_time,
                           Mass const& initial_mass));
 
-  MOCK_METHOD1(SetPredictionLength, void(Time const& t));
-
   MOCK_METHOD1(SetPredictionAdaptiveStepParameters,
                void(Ephemeris<Barycentric>::AdaptiveStepParameters const&
                         prediction_adaptive_step_parameters));

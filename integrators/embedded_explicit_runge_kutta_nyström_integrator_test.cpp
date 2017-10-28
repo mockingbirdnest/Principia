@@ -316,11 +316,11 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   auto const outcome = instance->Solve(t_final);
 
   EXPECT_EQ(termination_condition::VanishingStepSize, outcome.error());
-  EXPECT_EQ(130, solution.size());
+  EXPECT_EQ(132, solution.size());
   EXPECT_THAT(solution.back().time.value - t_initial,
-              AlmostEquals(t_singular - t_initial, 20));
+              AlmostEquals(t_singular - t_initial, 15));
   EXPECT_THAT(solution.back().positions.back().value,
-              AlmostEquals(specific_impulse * initial_mass / mass_flow, 711));
+              AlmostEquals(specific_impulse * initial_mass / mass_flow, 540));
 }
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {

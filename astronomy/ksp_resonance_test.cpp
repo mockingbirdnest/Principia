@@ -96,7 +96,7 @@ class KSPResonanceTest : public ::testing::Test {
     jool_system_ = {jool_, laythe_, vall_, tylo_, bop_, pol_};
     joolian_moons_ = {laythe_, vall_, tylo_, bop_, pol_};
 
-    for (auto const moon : joolian_moons_) {
+    for (not_null<MassiveBody const*> const moon : joolian_moons_) {
       auto const elements = solar_system_.MakeKeplerianElements(
           solar_system_.keplerian_initial_state_message(moon->name()).
               elements());
@@ -133,12 +133,12 @@ class KSPResonanceTest : public ::testing::Test {
 
       BarycentreCalculator<Position<KSP>, GravitationalParameter>
           jool_system_barycentre;
-      for (auto const body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         jool_system_barycentre.Add(position(body),
                                    body->gravitational_parameter());
       }
       barycentric_positions.emplace_back();
-      for (auto const body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         // TODO(egg): when our dynamic frames support that, it would make sense
         // to use a nonrotating dynamic frame centred at the barycentre of the
         // Jool system, instead of computing the barycentre and difference
@@ -157,19 +157,19 @@ class KSPResonanceTest : public ::testing::Test {
                          Instant const t) const {
     Periods actual_periods;
 
-    auto const position = [this, &ephemeris](
+    auto const position = [&ephemeris](
         not_null<MassiveBody const*> body, Instant const& t) {
       return ephemeris.trajectory(body)->EvaluatePosition(t);
     };
     auto const barycentre = [this, &position](Instant const& t) {
       BarycentreCalculator<Position<KSP>, Mass> result;
-      for (auto const body : jool_system_) {
+      for (not_null<MassiveBody const*> const body : jool_system_) {
         result.Add(position(body, t), body->mass());
       }
       return result.Get();
     };
     auto const barycentric_position =
-        [this, &barycentre, &ephemeris, &position](
+        [&barycentre, &position](
         not_null<MassiveBody const*> body,
         Instant const& t) {
       return position(body, t) - barycentre(t);
@@ -178,7 +178,7 @@ class KSPResonanceTest : public ::testing::Test {
     LOG(INFO) << "Periods at " << t;
     for (auto const moon : {laythe_, vall_, tylo_, pol_, bop_}) {
       auto const moon_y =
-          [this, &barycentric_position, moon](Instant const& t) {
+          [&barycentric_position, moon](Instant const& t) {
         return barycentric_position(moon, t).coordinates().y;
       };
 

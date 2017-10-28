@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include "physics/apsides.hpp"
@@ -51,8 +52,7 @@ void ComputeApsides(Trajectory<Frame> const& reference,
         reference.EvaluateDegreesOfFreedom(time);
     RelativeDegreesOfFreedom<Frame> const relative =
         degrees_of_freedom - body_degrees_of_freedom;
-    Square<Length> const squared_distance =
-        InnerProduct(relative.displacement(), relative.displacement());
+    Square<Length> const squared_distance = relative.displacement().Norm²();
     // This is the derivative of |squared_distance|.
     Variation<Square<Length>> const squared_distance_derivative =
         2.0 * InnerProduct(relative.displacement(), relative.velocity());

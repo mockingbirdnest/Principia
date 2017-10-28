@@ -704,10 +704,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
 
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
-  plugin.SetPredictionLength(2 * π * Second);
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
-      /*max_steps=*/1000,
+      /*max_steps=*/14,
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
   plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
@@ -718,7 +717,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
   auto const rendered_prediction =
       plugin.renderer().RenderBarycentricTrajectoryInWorld(
           plugin.CurrentTime(),
-          prediction.Begin(),
+          prediction.Fork(),
           prediction.End(),
           World::origin,
           plugin.PlanetariumRotation());
@@ -739,7 +738,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
-      AllOf(Gt(2 * Milli(Metre)), Lt(3 * Milli(Metre))));
+      AllOf(Gt(31 * Milli(Metre)), Lt(32 * Milli(Metre))));
 }
 
 }  // namespace internal_plugin

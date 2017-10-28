@@ -217,6 +217,8 @@ using internal_pair::Pair;
 using internal_pair::vector_of;
 
 // Specialize BarycentreCalculator to make it applicable to Pairs.
+namespace internal_barycentre_calculator {
+
 template<typename T1, typename T2, typename Weight>
 class BarycentreCalculator<Pair<T1, T2>, Weight> final {
  public:
@@ -229,10 +231,8 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
 
  private:
   bool empty_ = true;
-  decltype(std::declval<typename vector_of<T1>::type>() *
-            std::declval<Weight>()) t1_weighted_sum_;
-  decltype(std::declval<typename vector_of<T2>::type>() *
-            std::declval<Weight>()) t2_weighted_sum_;
+  Product<typename vector_of<T1>::type, Weight> t1_weighted_sum_;
+  Product<typename vector_of<T2>::type, Weight> t2_weighted_sum_;
   Weight weight_;
 
   // We need reference values to convert points into vectors, if needed.  We
@@ -242,6 +242,7 @@ class BarycentreCalculator<Pair<T1, T2>, Weight> final {
   static T2 const reference_t2_;
 };
 
+}  // namespace internal_barycentre_calculator
 }  // namespace geometry
 
 // Reopen the base namespace to make Pairs of vectors mappable.

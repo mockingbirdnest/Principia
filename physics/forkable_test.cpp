@@ -229,6 +229,18 @@ TEST_F(ForkableTest, ForkSuccess) {
   EXPECT_THAT(times, ElementsAre(t1_, t2_, t4_));
 }
 
+TEST_F(ForkableTest, Size) {
+  EXPECT_TRUE(trajectory_.Empty());
+  trajectory_.push_back(t1_);
+  EXPECT_EQ(1, trajectory_.Size());
+  not_null<FakeTrajectory*> const fork1 =
+      trajectory_.NewFork(trajectory_.timeline_find(t1_));
+  EXPECT_EQ(1, fork1->Size());
+  not_null<FakeTrajectory*> const fork2 = fork1->NewFork(fork1->timeline_end());
+  fork2->push_back(t2_);
+  EXPECT_EQ(2, fork2->Size());
+}
+
 TEST_F(ForkableTest, ForkAtLast) {
   trajectory_.push_back(t1_);
   trajectory_.push_back(t2_);

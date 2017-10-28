@@ -1,6 +1,6 @@
 # Principia
 
-**Чебышёв, the August version of Principia, is available, coincident with the [total eclipse](http://i.imgur.com/0pGNL7K.png).  It has major performance improvements and supports both 1.2.2 and 1.3.  Download it [here for 1.2.2](https://goo.gl/pGjxXw) and [here for 1.3](https://goo.gl/ycMXJz).**
+**[Chasles](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#chasles), the October version of Principia, is available.  It fixes a long-standing issues when landing on celestials that don't have an atmosphere. Download it [here for 1.2.2](https://goo.gl/u2tF2Y), [here for 1.3.0](https://goo.gl/jHTJvv), and [here for 1.3.1](https://goo.gl/aTQKdj).**	
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
@@ -16,4 +16,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/pGjxXw), [here for 1.3](https://goo.gl/ycMXJz) or, if you don't trust our binary, build the mod from the [Чебышёв](https://github.com/mockingbirdnest/Principia/releases/tag/2017082119-Чебышёв) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/u2tF2Y), [here for 1.3.0](https://goo.gl/jHTJvv), and [here for 1.3.1](https://goo.gl/aTQKdj).  Or, if you don't trust our binary, build the mod from the [Chasles](https://github.com/mockingbirdnest/Principia/releases/tag/2017101919-Chasles) release.

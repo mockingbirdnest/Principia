@@ -47,22 +47,21 @@ class IdentityTest : public testing::Test {
 using IdentityDeathTest = IdentityTest;
 
 TEST_F(IdentityTest, Determinant) {
-  Id identity;
-  EXPECT_TRUE(identity.Determinant().Positive());
+  EXPECT_TRUE(Id().Determinant().Positive());
 }
 
 TEST_F(IdentityTest, AppliedToVector) {
-  EXPECT_THAT(Id::Identity()(vector_).coordinates(),
+  EXPECT_THAT(Id()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(IdentityTest, AppliedToBivector) {
-  EXPECT_THAT(Id::Identity()(bivector_).coordinates(),
+  EXPECT_THAT(Id()(bivector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 
 TEST_F(IdentityTest, AppliedToTrivector) {
-  EXPECT_THAT(Id::Identity()(trivector_).coordinates(),
+  EXPECT_THAT(Id()(trivector_).coordinates(),
               Eq(4.0 * Metre));
 }
 
@@ -71,7 +70,7 @@ TEST_F(IdentityTest, Inverse) {
   Vector<quantities::Length, World2> const vector2 =
       Vector<quantities::Length, World2>(
           R3(1.0 * Metre, 2.0 * Metre, 3.0 * Metre));
-  EXPECT_THAT(Id::Identity().Inverse()(vector2).coordinates(),
+  EXPECT_THAT(Id().Inverse()(vector2).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
   Id id;
   Identity<World1, World1> const identity1 = id.Inverse() * id;
@@ -81,7 +80,7 @@ TEST_F(IdentityTest, Inverse) {
 }
 
 TEST_F(IdentityTest, Forget) {
-  EXPECT_THAT(Id::Identity().Forget()(vector_).coordinates(),
+  EXPECT_THAT(Id().Forget()(vector_).coordinates(),
               Eq<R3>({1.0 * Metre, 2.0 * Metre, 3.0 * Metre}));
 }
 

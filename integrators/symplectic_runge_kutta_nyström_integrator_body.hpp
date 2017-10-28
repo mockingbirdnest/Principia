@@ -110,7 +110,7 @@ Instance::Solve(Instant const& t_final) {
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      equation.compute_acceleration(t.value + c[i] * h, q_stage, g);
+      equation.compute_acceleration(t.value + (t.error + c[i] * h), q_stage, g);
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b[i] * g[k];

@@ -55,7 +55,7 @@ constexpr Instant FromTAI(quantities::Time const& tai) {
 
 // Utilities for modern UTC (since 1972).
 
-constexpr std::array<int, (2017 - 1972) * 2 + 1> leap_seconds = {{
+constexpr std::array<int, (2018 - 1972) * 2> leap_seconds = {{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -101,7 +101,7 @@ constexpr std::array<int, (2017 - 1972) * 2 + 1> leap_seconds = {{
     +0, +0,  // 2014
     +1, +0,  // 2015
     +0, +1,  // 2016
-    +0,      // 2017
+    +0, +0,  // 2017
 }};
 
 // Returns +1 if a positive leap second was inserted at the end of the given

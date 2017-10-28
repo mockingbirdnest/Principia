@@ -1,6 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# Note: Use 'sudo su' in the ubuntu machine before make'ing.
 Vagrant.configure("2") do |config|
 
   config.vm.define "ubuntu" do |ubuntu|

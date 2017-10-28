@@ -221,15 +221,30 @@ WXYZ principia__CelestialSphereRotation(Plugin const* const plugin) {
 
 QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
                                              int const index,
-                                             PartId const part_at_origin,
+                                             Origin const origin,
                                              double const time) {
   journal::Method<journal::CelestialWorldDegreesOfFreedom> m(
-      {plugin, index, part_at_origin, time});
+      {plugin, index, origin, time});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToQP(plugin->CelestialWorldDegreesOfFreedom(
-                           index,
-                           part_at_origin,
-                           FromGameTime(*plugin, time))));
+  return m.Return(ToQP(
+      plugin->CelestialWorldDegreesOfFreedom(
+          index,
+          plugin->BarycentricToWorld(
+              origin.reference_part_is_unmoving,
+              origin.reference_part_id,
+              origin.reference_part_is_at_origin
+                  ? std::experimental::nullopt
+                  : std::experimental::make_optional(
+                        FromXYZ<Position<World>>(
+                            origin.main_body_centre_in_world))),
+          FromGameTime(*plugin, time))));
+}
+
+void principia__ClearWorldRotationalReferenceFrame(Plugin* const plugin) {
+  journal::Method<journal::ClearWorldRotationalReferenceFrame> m({plugin});
+  CHECK_NOTNULL(plugin);
+  plugin->ClearWorldRotationalReferenceFrame();
+  return m.Return();
 }
 
 double principia__CurrentTime(Plugin const* const plugin) {
@@ -360,12 +375,21 @@ int principia__GetBufferedLogging() {
 
 QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
                                             PartId const part_id,
-                                            PartId const part_at_origin) {
+                                            Origin const origin) {
   journal::Method<journal::GetPartActualDegreesOfFreedom> m(
-      {plugin, part_id, part_at_origin});
+      {plugin, part_id, origin});
   CHECK_NOTNULL(plugin);
-  return m.Return(
-      ToQP(plugin->GetPartActualDegreesOfFreedom(part_id, part_at_origin)));
+  return m.Return(ToQP(
+      plugin->GetPartActualDegreesOfFreedom(
+          part_id,
+          plugin->BarycentricToWorld(
+              origin.reference_part_is_unmoving,
+              origin.reference_part_id,
+              origin.reference_part_is_at_origin
+                  ? std::experimental::nullopt
+                  : std::experimental::make_optional(
+                        FromXYZ<Position<World>>(
+                            origin.main_body_centre_in_world))))));
 }
 
 int principia__GetStderrLogging() {
@@ -704,11 +728,18 @@ void principia__PrepareToReportCollisions(Plugin* const plugin) {
   return m.Return();
 }
 
-void principia__ReportCollision(Plugin const* const plugin,
-                                PartId const part1_id,
-                                PartId const part2_id) {
-  journal::Method<journal::ReportCollision> m({plugin, part1_id, part2_id});
-  CHECK_NOTNULL(plugin)->ReportCollision(part1_id, part2_id);
+void principia__ReportGroundCollision(Plugin const* const plugin,
+                                      uint32_t const part_id) {
+  journal::Method<journal::ReportGroundCollision> m({plugin, part_id});
+  CHECK_NOTNULL(plugin)->ReportGroundCollision(part_id);
+  return m.Return();
+}
+
+void principia__ReportPartCollision(Plugin const* const plugin,
+                                    PartId const part1_id,
+                                    PartId const part2_id) {
+  journal::Method<journal::ReportPartCollision> m({plugin, part1_id, part2_id});
+  CHECK_NOTNULL(plugin)->ReportPartCollision(part1_id, part2_id);
   return m.Return();
 }
 
@@ -780,23 +811,18 @@ void principia__SetMainBody(Plugin* const plugin, int const index) {
   return m.Return();
 }
 
-void principia__SetPartApparentDegreesOfFreedom(Plugin* const plugin,
-                                                PartId const part_id,
-                                                QP const degrees_of_freedom) {
+void principia__SetPartApparentDegreesOfFreedom(
+    Plugin* const plugin,
+    PartId const part_id,
+    QP const degrees_of_freedom,
+    QP const main_body_degrees_of_freedom) {
   journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
-      {plugin, part_id, degrees_of_freedom});
+      {plugin, part_id, degrees_of_freedom, main_body_degrees_of_freedom});
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentDegreesOfFreedom(
       part_id,
-      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom));
-  return m.Return();
-}
-
-void principia__SetPredictionLength(Plugin* const plugin,
-                                    double const t) {
-  journal::Method<journal::SetPredictionLength> m({plugin, t});
-  CHECK_NOTNULL(plugin);
-  plugin->SetPredictionLength(t * Second);
+      FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
+      FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
   return m.Return();
 }
 
@@ -822,6 +848,14 @@ void principia__SetSuppressedLogging(int const min_severity) {
 void principia__SetVerboseLogging(int const level) {
   journal::Method<journal::SetVerboseLogging> m({level});
   FLAGS_v = level;
+  return m.Return();
+}
+
+void principia__SetWorldRotationalReferenceFrame(Plugin* const plugin,
+                                                 int const index) {
+  journal::Method<journal::SetWorldRotationalReferenceFrame> m({plugin, index});
+  CHECK_NOTNULL(plugin);
+  plugin->SetWorldRotationalReferenceFrame(index);
   return m.Return();
 }
 
