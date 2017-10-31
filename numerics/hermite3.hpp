@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/array.hpp"
+#include "geometry/named_quantities.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
@@ -13,6 +14,8 @@ namespace internal_hermite3 {
 
 using base::BoundedArray;
 using quantities::Derivative;
+using quantities::Difference;
+using geometry::Normed;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
@@ -32,6 +35,17 @@ class Hermite3 final {
 
   // The result is sorted.
   BoundedArray<Argument, 2> FindExtrema() const;
+
+  // |samples| must be a container; |get_argument| and |get_value| on the
+  // elements of |samples| must return |Argument| and |Value| respectively
+  // (possibly by reference or const-reference)
+  // Returns the largest error (in the given |norm|) between this polynomial and
+  // the given |samples|.
+  template<typename Samples, typename GetArgument, typename GetValue>
+  typename Normed<Difference<Value>>::NormType LInfinityError(
+      Samples const& samples,
+      GetArgument const& get_argument,
+      GetValue const& get_value) const;
 
  private:
   using Derivative2 = Derivative<Derivative1, Argument>;

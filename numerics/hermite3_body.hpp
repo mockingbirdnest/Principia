@@ -3,6 +3,7 @@
 
 #include "numerics/hermite3.hpp"
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -61,6 +62,21 @@ template<typename Argument, typename Value>
 BoundedArray<Argument, 2> Hermite3<Argument, Value>::FindExtrema() const {
   return SolveQuadraticEquation<Argument, Derivative1>(
       arguments_.first, a1_, 2.0 * a2_, 3.0 * a3_);
+}
+
+template<typename Argument, typename Value>
+template<typename Samples, typename GetArgument, typename GetValue>
+typename Normed<Difference<Value>>::NormType
+Hermite3<Argument, Value>::LInfinityError(Samples const& samples,
+                                          GetArgument const& get_argument,
+                                          GetValue const& get_value) const {
+  typename Normed<Difference<Value>>::NormType result{};
+  for (const auto& sample : samples) {
+    result = std::max(result,
+                      Normed<Difference<Value>>::Norm(
+                          Evaluate(get_argument(sample)) - get_value(sample)));
+  }
+  return result;
 }
 
 }  // namespace internal_hermite3

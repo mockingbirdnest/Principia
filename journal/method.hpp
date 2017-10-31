@@ -6,6 +6,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/void_if_exists.hpp"
 
 namespace principia {
 namespace journal {
@@ -13,6 +14,7 @@ namespace internal_method {
 
 using base::not_constructible;
 using base::not_null;
+using base::void_if_exists;
 
 // The parameter |Profile| is expected to have the following structure:
 //
@@ -35,9 +37,6 @@ using base::not_null;
 //    static void Run(Message const& message,
 //                    not_null<Player::PointerMap*> pointer_map);
 //  };
-
-template<typename T>
-using void_if_exists = void;
 
 template<typename P, typename = void>
 struct has_in : std::false_type, not_constructible {};
