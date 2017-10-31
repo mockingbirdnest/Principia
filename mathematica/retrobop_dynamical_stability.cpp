@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/array.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
@@ -20,6 +21,7 @@
 #include "ksp_plugin/frames.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -128,9 +130,6 @@ constexpr std::array<char const*, 17> names = {
     "Eeloo",
 };
 
-std::experimental::filesystem::path const system_file =
-    SOLUTION_DIR / "mathematica" / "ksp_fixed_system.proto.hex";
-
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
 constexpr Time step = 5 * Minute;
@@ -159,22 +158,15 @@ std::unique_ptr<Message> Read(std::ifstream& file) {
   return std::move(message);
 }
 
-HierarchicalSystem<Barycentric>::BarycentricSystem ReadSystem(
-    std::experimental::filesystem::path const& filename) {
-  std::ifstream input_file(filename, std::ios::in);
-  CHECK(!input_file.fail());
-  HierarchicalSystem<Barycentric>::BarycentricSystem system;
-  for (auto body = Read<serialization::MassiveBody>(input_file);
-       body != nullptr;
-       body = Read<serialization::MassiveBody>(input_file)) {
-    auto const degrees_of_freedom = Read<serialization::Pair>(input_file);
-    CHECK(degrees_of_freedom != nullptr);
-    system.bodies.push_back(MassiveBody::ReadFromMessage(*body));
-    system.degrees_of_freedom.push_back(
-        DegreesOfFreedom<Barycentric>::ReadFromMessage(*degrees_of_freedom));
-  }
-  input_file.close();
-  return system;
+HierarchicalSystem<Barycentric>::BarycentricSystem MakeStabilizedKSPSystem() {
+  static auto const& system = *[]() {
+    auto* const system = new physics::SolarSystem<Barycentric>(
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt");
+    astronomy::StabilizeKSP(*system);
+    return system;
+  }();
+  return system.MakeHierarchicalSystem()->ConsumeBarycentricSystem();
 }
 
 Position<Barycentric> EvaluatePosition(Ephemeris<Barycentric> const& ephemeris,
@@ -239,7 +231,7 @@ MakePerturbedEphemerides(int const count,
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> result;
   for (int i = 0; i < count; ++i) {
     HierarchicalSystem<Barycentric>::BarycentricSystem system =
-        ReadSystem(system_file);
+        MakeStabilizedKSPSystem();
     for (Celestial const celestial : jool_system) {
       system.degrees_of_freedom[celestial] = {
           system.degrees_of_freedom[celestial].position() +
@@ -425,7 +417,7 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 
 void PlotPredictableYears() {
   auto const ephemeris = MakeEphemeris(
-      ReadSystem(system_file),
+      MakeStabilizedKSPSystem(),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
 
@@ -458,18 +450,18 @@ void PlotPredictableYears() {
 
 void PlotCentury() {
   ProduceCenturyPlots(*MakeEphemeris(
-      ReadSystem(system_file),
+      MakeStabilizedKSPSystem(),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step));
 }
 
 void AnalyseGlobalError() {
   auto const reference_ephemeris = MakeEphemeris(
-      ReadSystem(system_file),
+      MakeStabilizedKSPSystem(),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step);
   std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
-      ReadSystem(system_file),
+      MakeStabilizedKSPSystem(),
       integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
@@ -591,7 +583,7 @@ void StatisticallyAnalyseStability() {
         t,
         yearly_allowed_numerical_error
       ]() {
-        auto system = ReadSystem(system_file);
+        auto system = MakeStabilizedKSPSystem();
         for (auto const celestial : celestials) {
           system.degrees_of_freedom[celestial] =
               EvaluateDegreesOfFreedom(*ephemeris,
