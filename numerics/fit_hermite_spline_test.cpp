@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/fit_hermite_spline.hpp"
 
+#include <list>
 #include <vector>
 
 #include "gmock/gmock.h"

@@ -9,6 +9,7 @@ namespace base {
 template<typename Iterator>
 class IterableRange {
   using IteratorTraits = std::iterator_traits<Iterator>;
+
  public:
   static_assert(
       std::is_base_of<std::forward_iterator_tag,

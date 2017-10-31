@@ -42,7 +42,7 @@ typename IterableRange<Iterator>::size_type IterableRange<Iterator>::size()
 template<typename Iterator>
 bool IterableRange<Iterator>::empty() const {
   return begin_ == end_;
-};
+}
 
 template<typename Iterator>
 IterableRange<Iterator> Range(Iterator const begin, Iterator const end) {
