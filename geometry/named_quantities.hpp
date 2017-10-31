@@ -18,18 +18,14 @@ template<typename T,
              base::void_if_exists<decltype(quantities::Abs(std::declval<T>()))>>
 struct Normed : base::not_constructible {
   using NormType = T;
-  static NormType Norm(T const& vector) {
-    return quantities::Abs(vector);
-  }
+  static NormType Norm(T const& vector);
 };
 
 template<typename T>
 struct Normed<T, base::void_if_exists<decltype(std::declval<T>().Norm())>>
     : base::not_constructible {
   using NormType = decltype(std::declval<T>().Norm());
-  static NormType Norm(T const& vector) {
-    return vector.Norm();
-  }
+  static NormType Norm(T const& vector);
 };
 
 using Instant = Point<quantities::Time>;
@@ -51,3 +47,5 @@ using RigidTransformation =
 
 }  // namespace geometry
 }  // namespace principia
+
+#include "geometry/named_quantities_body.hpp"
