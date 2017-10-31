@@ -45,32 +45,35 @@ class FitHermiteSplineTest : public ::testing::Test {
 
 TEST_F(FitHermiteSplineTest, Sinusoid) {
   AngularFrequency const ω = 1 * Radian / Second;
-  auto const f = [ω, this](Instant const t) {
+  auto const f = [ω, this](Instant const& t) {
     return Cos(ω * (t - t0_)) * Metre;
   };
-  auto const df = [ω, this](Instant const t) {
+  auto const df = [ω, this](Instant const& t) {
     return -ω * Sin(ω *(t - t0_)) * Metre / Radian;
   };
-  auto t = DoublePrecision<Instant>(t0_);
   std::vector<Sample> samples;
-  for (; t.value < t0_ + π / 2 * Second; t.Increment(100 * Milli(Second))) {
-    samples.push_back({t.value, f(t.value), df(t.value)});
-  }
-  for (; t.value < t0_ + π * Second; t.Increment(20 * Milli(Second))) {
-    samples.push_back({t.value, f(t.value), df(t.value)});
+  {
+    auto t = DoublePrecision<Instant>(t0_);
+    for (; t.value < t0_ + π / 2 * Second; t.Increment(100 * Milli(Second))) {
+      samples.push_back({t.value, f(t.value), df(t.value)});
+    }
+    for (; t.value < t0_ + π * Second; t.Increment(20 * Milli(Second))) {
+      samples.push_back({t.value, f(t.value), df(t.value)});
+    }
   }
   std::list<std::vector<Sample>::const_iterator> const interpolation_points =
-      FitHermiteSpline(samples,
-                       [](auto&& sample) -> auto&& { return sample.t; },
-                       [](auto&& sample) -> auto&& { return sample.x; },
-                       [](auto&& sample) -> auto&& { return sample.v; },
-                       1 * Centi(Metre));
+      FitHermiteSpline<Instant, Length>(
+          samples,
+          [](auto&& sample) -> auto&& { return sample.t; },
+          [](auto&& sample) -> auto&& { return sample.x; },
+          [](auto&& sample) -> auto&& { return sample.v; },
+          1 * Centi(Metre));
 
   // Note that gmock doesn't do decltypes, so we can't pass a λ directly.
   // Also note that |Pointee| doesn't work with iterators, so
   // |Pointee(Field(&Sample::t, _))| is not an option.
   std::function<Instant(std::vector<Sample>::const_iterator)> const get_time =
-      [](auto it) { return it->t; };
+      [](auto const it) { return it->t; };
   EXPECT_THAT(interpolation_points,
               ElementsAre(ResultOf(get_time, Eq(t0_ + 1.5 * Second)),
                           ResultOf(get_time, Eq(t0_ + 3.06 * Second))));

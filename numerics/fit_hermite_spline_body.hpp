@@ -12,30 +12,18 @@ namespace internal_fit_hermite_spline {
 
 using base::Range;
 using geometry::Normed;
-using quantities::Derivative;
 
-template<typename Samples,
-         typename GetArgument,
-         typename GetValue,
-         typename GetDerivative,
-         typename ErrorType>
+template<typename Argument, typename Value, typename Samples>
 std::list<typename Samples::const_iterator> FitHermiteSpline(
     Samples const& samples,
-    GetArgument const& get_argument,
-    GetValue const& get_value,
-    GetDerivative const& get_derivative,
-    ErrorType const& tolerance) {
+    std::function<Argument const&(typename Samples::value_type const&)> const&
+        get_argument,
+    std::function<Value const&(typename Samples::value_type const&)> const&
+        get_value,
+    std::function<Derivative<Value, Argument> const&(
+        typename Samples::value_type const&)> const& get_derivative,
+    typename Normed<Difference<Value>>::NormType const& tolerance) {
   using Iterator = typename Samples::const_iterator;
-  using Argument = std::decay_t<decltype(get_argument(*samples.begin()))>;
-  using Value = std::decay_t<decltype(get_value(*samples.begin()))>;
-  using Derivative1 = std::decay_t<decltype(get_derivative(*samples.begin()))>;
-  static_assert(
-      std::is_same<Derivative1, Derivative<Value, Argument>>::value,
-      "Inconsistent types for |get_argument|, |get_value|, and "
-      "|get_derivative|");
-  static_assert(
-      std::is_same<ErrorType, typename Normed<Value>::NormType>::value,
-      "|tolerance| must have the same type as a distance between values");
 
   if (samples.size() < 3) {
     // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
@@ -43,7 +31,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     return {};
   }
 
-  auto interpolation_error = [get_argument, get_value, get_derivative](
+  auto interpolation_error = [get_argument, get_derivative, get_value](
                                  Iterator begin, Iterator last) {
     return Hermite3<Argument, Value>(
                {get_argument(*begin), get_argument(*last)},

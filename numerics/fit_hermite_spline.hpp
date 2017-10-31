@@ -8,6 +8,10 @@ namespace principia {
 namespace numerics {
 namespace internal_fit_hermite_spline {
 
+using quantities::Derivative;
+using quantities::Difference;
+using geometry::Normed;
+
 // Given |samples| for which the arguments, values, and derivatives can be
 // obtained via the given functors, returns a sequence of iterators
 // (it₀, it₁, it₂, ..., itᵣ) such that, with it₋₁ = samples.begin(),
@@ -19,17 +23,16 @@ namespace internal_fit_hermite_spline {
 // not all of |samples| is fitted maximally.  This function further guarantees
 // that the |Hermite3| interpolation of (*itᵣ, *(samples.end() - 1)) fits
 // |samples| within |tolerance|.
-template<typename Samples,
-         typename GetArgument,
-         typename GetValue,
-         typename GetDerivative,
-         typename ErrorType>
+template<typename Argument, typename Value, typename Samples>
 std::list<typename Samples::const_iterator> FitHermiteSpline(
     Samples const& samples,
-    GetArgument const& get_argument,
-    GetValue const& get_value,
-    GetDerivative const& get_derivative,
-    ErrorType const& tolerance);
+    std::function<Argument const&(typename Samples::value_type const&)> const&
+        get_argument,
+    std::function<Value const&(typename Samples::value_type const&)> const&
+        get_value,
+    std::function<Derivative<Value, Argument> const&(
+        typename Samples::value_type const&)> const& get_derivative,
+    typename Normed<Difference<Value>>::NormType const& tolerance);
 
 }  // namespace internal_fit_hermite_spline
 
