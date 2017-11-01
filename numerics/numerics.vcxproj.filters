@@ -53,6 +53,12 @@
     <ClInclude Include="ulp_distance_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="fit_hermite_spline.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fit_hermite_spline_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -68,6 +74,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="double_precision_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fit_hermite_spline_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
