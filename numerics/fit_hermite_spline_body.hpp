@@ -1,3 +1,4 @@
+﻿
 #pragma once
 
 #include <list>
@@ -60,6 +61,12 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     auto upper = last;
     for (;;) {
       auto const middle = lower + (upper - lower) / 2;
+      // Note that lower ≤ middle ≤ upper.
+      // If middle - lower > 0, upper - lower > 0,
+      // therefore (upper - lower) / 2  < upper - lower, thus
+      // middle < upper.  It follows that upper - lower strictly decreases in
+      // this iteration, since we assign middle to either lower or upper.
+      // We exit when middle == lower, so the algorithm terminates.
       if (middle == lower) {
         break;
       }
