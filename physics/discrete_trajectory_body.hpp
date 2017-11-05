@@ -208,7 +208,25 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   // entry and all the entries that follow it.  This preserves any entry with
   // time == |time|.
   auto const it = timeline_.upper_bound(time);
+  if (downsampling_.has_value()) {
+    if (downsampling_->start_of_dense_timeline >= it) {
+      // The start of the dense timeline will be invalidated.
+      if (it == timeline_.begin()) {
+        // The timeline will be empty after erasing.
+        downsampling_->start_of_dense_timeline = timeline_.end();
+      } else {
+        downsampling_->start_of_dense_timeline = it;
+        --downsampling_->start_of_dense_timeline;
+      }
+    }
+  }
   timeline_.erase(it, timeline_.end());
+  if (downsampling_.has_value()) {
+    downsampling_->dense_intervals =
+        std::distance(downsampling_->start_of_dense_timeline,
+                      timeline_.cend()) -
+        1;
+  }
 }
 
 template<typename Frame>
@@ -218,6 +236,14 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // Get an iterator denoting the first entry with time >= |time|.  Remove all
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto it = timeline_.lower_bound(time);
+  if (downsampling_.has_value() &&
+      downsampling_->start_of_dense_timeline < it) {
+    // The start of the dense timeline will be invalidated.
+    downsampling_->start_of_dense_timeline = it;
+    downsampling_->dense_intervals =
+        std::distance(downsampling_->start_of_dense_timeline,
+                      timeline_.cend()) - 1;
+  }
   timeline_.erase(timeline_.begin(), it);
 }
 
