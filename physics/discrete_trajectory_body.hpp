@@ -258,7 +258,8 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
   downsampling_.emplace();
   downsampling_->start_of_dense_timeline = timeline_.begin();
   downsampling_->dense_intervals =
-      std::distance(start_of_dense_timeline, timeline_.cend()) - 1;
+      std::distance(downsampling_->start_of_dense_timeline,
+                    timeline_.cend()) - 1;
   downsampling_->max_dense_intervals = max_dense_intervals;
   downsampling_->tolerance = tolerance;
 }

@@ -31,6 +31,7 @@ using geometry::Point;
 using geometry::Position;
 using geometry::R3Element;
 using geometry::Vector;
+using numerics::DoublePrecision;
 using quantities::AngularFrequency;
 using quantities::Cos;
 using quantities::Length;
@@ -39,6 +40,8 @@ using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Time;
 using quantities::si::Metre;
+using quantities::si::Micro;
+using quantities::si::Milli;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::EqualsProto;
@@ -47,10 +50,14 @@ using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 using ::testing::AllOf;
+using ::testing::Contains;
+using ::testing::Each;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::Ge;
+using ::testing::Gt;
 using ::testing::Le;
+using ::testing::Lt;
 using ::testing::Pair;
 using ::testing::Ref;
 
@@ -861,6 +868,40 @@ TEST_F(DiscreteTrajectoryTest, QuadrilateralCircle) {
   EXPECT_THAT(max_r_error, AllOf(Ge(0.014), Le(0.016)));
   EXPECT_THAT(max_v_error, AllOf(Ge(0.011), Le(0.013)));
 }
+
+TEST_F(DiscreteTrajectoryTest, Downsampling) {
+  DiscreteTrajectory<World> circle;
+  DiscreteTrajectory<World> downsampled_circle;
+  downsampled_circle.SetDownsampling(/*max_dense_intervals=*/50,
+                                     /*tolerance=*/1 * Milli(Metre));
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Speed const v = ω * r / Radian;
+  for (auto t = DoublePrecision<Instant>(t0_);
+       t.value <= t0_ + 10 * Second;
+       t.Increment(10 * Milli(Second))) {
+    DegreesOfFreedom<World> const dof =
+        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
+                                              r * Sin(ω * (t.value - t0_)),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
+                          v * Cos(ω * (t.value - t0_)),
+                          0 * Metre / Second}}};
+    circle.Append(t.value, dof);
+    downsampled_circle.Append(t.value, dof);
+  }
+  EXPECT_THAT(circle.Size(), Eq(1001));
+  EXPECT_THAT(downsampled_circle.Size(), Eq(77));
+  std::vector<Length> errors;
+  for (auto it = circle.Begin(); it != circle.End(); ++it) {
+    errors.push_back((downsampled_circle.EvaluatePosition(it.time()) -
+                      it.degrees_of_freedom().position()).Norm());
+  }
+  EXPECT_THAT(errors, Each(Lt(1 * Milli(Metre))));
+  EXPECT_THAT(errors, Contains(Gt(9 * Micro(Metre))))
+      << *std::max_element(errors.begin(), errors.end());
+}
+
 
 }  // namespace internal_discrete_trajectory
 }  // namespace physics
