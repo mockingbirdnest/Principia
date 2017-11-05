@@ -409,6 +409,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
   }
   if (message.has_downsampling()) {
     CHECK(is_root());
+    downsampling_.emplace();
     if (message.downsampling().has_start_of_dense_timeline()) {
       downsampling_->start_of_dense_timeline =
           timeline_.find(Instant::ReadFromMessage(

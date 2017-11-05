@@ -902,6 +902,52 @@ TEST_F(DiscreteTrajectoryTest, Downsampling) {
       << *std::max_element(errors.begin(), errors.end());
 }
 
+TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
+  DiscreteTrajectory<World> circle;
+  auto deserialized_circle = make_not_null_unique<DiscreteTrajectory<World>>();
+  circle.SetDownsampling(/*max_dense_intervals=*/50,
+                         /*tolerance=*/1 * Milli(Metre));
+  deserialized_circle->SetDownsampling(/*max_dense_intervals=*/50,
+                                     /*tolerance=*/1 * Milli(Metre));
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Speed const v = ω * r / Radian;
+  auto t = DoublePrecision<Instant>(t0_);
+  for (; t.value <= t0_ + 5 * Second; t.Increment(10 * Milli(Second))) {
+    DegreesOfFreedom<World> const dof =
+        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
+                                              r * Sin(ω * (t.value - t0_)),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
+                          v * Cos(ω * (t.value - t0_)),
+                          0 * Metre / Second}}};
+    circle.Append(t.value, dof);
+    deserialized_circle->Append(t.value, dof);
+  }
+  serialization::DiscreteTrajectory message;
+  deserialized_circle->WriteToMessage(&message, /*forks=*/{});
+  deserialized_circle =
+      DiscreteTrajectory<World>::ReadFromMessage(message, /*forks=*/{});
+  for (; t.value <= t0_ + 10 * Second; t.Increment(10 * Milli(Second))) {
+    DegreesOfFreedom<World> const dof =
+        {World::origin + Displacement<World>{{r * Cos(ω * (t.value - t0_)),
+                                              r * Sin(ω * (t.value - t0_)),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * (t.value - t0_)),
+                          v * Cos(ω * (t.value - t0_)),
+                          0 * Metre / Second}}};
+    circle.Append(t.value, dof);
+    deserialized_circle->Append(t.value, dof);
+  }
+  EXPECT_THAT(circle.Size(), Eq(77));
+  EXPECT_THAT(deserialized_circle->Size(), Eq(circle.Size()));
+  for (auto it1 = circle.Begin(), it2 = deserialized_circle->Begin();
+       it1 != circle.End();
+       ++it1, ++it2) {
+    EXPECT_EQ(it1.time(), it2.time());
+    EXPECT_EQ(it1.degrees_of_freedom(), it2.degrees_of_freedom());
+  }
+}
 
 }  // namespace internal_discrete_trajectory
 }  // namespace physics
