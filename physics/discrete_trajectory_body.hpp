@@ -367,7 +367,18 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     degrees_of_freedom.WriteToMessage(
         instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
   }
-  // TODO(egg): write |downsampling_|.
+  if (downsampling_.has_value()) {
+    if (downsampling_->start_of_dense_timeline != timeline_.end()) {
+      downsampling_->start_of_dense_timeline->first.WriteToMessage(
+          message->mutable_downsampling()->mutable_start_of_dense_timeline());
+    } else {
+      message->mutable_downsampling()->clear_start_of_dense_timeline();
+    }
+    message->mutable_downsampling()->set_max_dense_intervals(
+        downsampling_->max_dense_intervals);
+    downsampling_->tolerance.WriteToMessage(
+        message->mutable_downsampling()->mutable_tolerance());
+  }
 }
 
 template<typename Frame>
@@ -381,7 +392,23 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
-  // TODO(egg): restore |downsampling_|
+  if (message.has_downsampling()) {
+    if (message.downsampling().has_start_of_dense_timeline()) {
+      downsampling_->start_of_dense_timeline =
+          timeline_.find(Instant::ReadFromMessage(
+              message.downsampling().start_of_dense_timeline()));
+      CHECK(downsampling_->start_of_dense_timeline != timeline_.end());
+    } else {
+      downsampling_->start_of_dense_timeline = timeline_.end();
+    }
+    downsampling_->dense_intervals =
+        std::distance(downsampling_->start_of_dense_timeline,
+                      timeline_.cend()) - 1;
+    downsampling_->max_dense_intervals =
+        message.downsampling().max_dense_intervals();
+    downsampling_->tolerance =
+        Length::ReadFromMessage(message.downsampling().tolerance());
+  }
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
                                                                  forks);
 }
