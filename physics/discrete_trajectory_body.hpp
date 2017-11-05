@@ -11,6 +11,7 @@
 #include "astronomy/epoch.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "numerics/fit_hermite_spline.hpp"
 
 namespace principia {
 namespace physics {
@@ -54,6 +55,7 @@ namespace internal_discrete_trajectory {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
+using numerics::FitHermiteSpline;
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
@@ -158,6 +160,44 @@ void DiscreteTrajectory<Frame>::Append(
   CHECK(--timeline_.end() == it)
       << "Append out of order at " << time << ", last time is "
       << (--timeline_.end())->first;
+  if (downsampling_.has_value()) {
+    if (timeline_.size() == 1) {
+      downsampling_->start_of_dense_timeline = timeline_.begin();
+      downsampling_->dense_intervals = 0;
+    } else {
+      CheckNoForksBefore(last().time());
+      ++downsampling_->dense_intervals;
+      if (downsampling_->dense_intervals ==
+          downsampling_->max_dense_intervals) {
+        std::vector<TimelineConstIterator> dense_iterators;
+        dense_iterators.reserve(downsampling_->max_dense_intervals + 1);
+        for (TimelineConstIterator it = downsampling_->start_of_dense_timeline;
+             it != timeline_.end();
+             ++it) {
+          dense_iterators.push_back(it);
+        }
+        auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
+            dense_iterators,
+            [](auto&& it) -> auto&& { return it->first; },
+            [](auto&& it) -> auto&& { return it->second.position(); },
+            [](auto&& it) -> auto&& { return it->second.velocity(); },
+            downsampling_->tolerance);
+        if (right_endpoints.empty()) {
+          right_endpoints.push_back(dense_iterators.end() - 1);
+        }
+        TimelineConstIterator left = downsampling_->start_of_dense_timeline;
+        for (const auto& it_in_dense_iterators : right_endpoints) {
+          TimelineConstIterator const right = *it_in_dense_iterators;
+          timeline_.erase(++left, right);
+          left = right;
+        }
+        downsampling_->start_of_dense_timeline = left;
+        downsampling_->dense_intervals =
+            std::distance(downsampling_->start_of_dense_timeline,
+                          timeline_.cend()) - 1;
+      }
+    }
+  }
 }
 
 template<typename Frame>

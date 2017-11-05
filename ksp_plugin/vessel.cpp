@@ -187,10 +187,26 @@ bool Vessel::has_flight_plan() const {
 }
 
 void Vessel::AdvanceTime() {
+  // Note that the first |DeleteFork| is technically unneeded, but ensures that
+  // |prediction_| is null rather than dangling.
+  psychohistory_->DeleteFork(prediction_);
   history_->DeleteFork(psychohistory_);
   AppendToVesselTrajectory(&Part::history_begin,
                            &Part::history_end,
                            *history_);
+  // if ([some counter] >= 10'000) {
+  //   some_counter -= 10'000;
+  //   auto last = history_->last();
+  //   for (int i = 0; i < some_counter; ++i) {
+  //     --last;
+  //   }
+  //   // Here, the distance between start_of_dense_history_ and last is 10'000.
+  //   auto const new_start_of_dense_history =
+  //       history_->DownsampleFrom(start_of_dense_history_, [some args]);
+  //   if (new_start_of_dense_history == start_of_dense_history_) {
+  //     history_.DropBetween(start_of_dense_history_, history_->last());
+  //   }
+  // }
   psychohistory_ = history_->NewForkAtLast();
   AppendToVesselTrajectory(&Part::psychohistory_begin,
                            &Part::psychohistory_end,

@@ -174,6 +174,13 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   std::int64_t timeline_size() const override;
 
  private:
+  struct Downsampling {
+    TimelineConstIterator start_of_dense_timeline;
+    std::int64_t dense_intervals;
+    std::int64_t max_dense_intervals;
+    Length tolerance;
+  };
+
   // This trajectory need not be a root.
   void WriteSubTreeToMessage(
       not_null<serialization::DiscreteTrajectory*> message,
@@ -191,6 +198,8 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
       Instant const& time) const;
 
   Timeline timeline_;
+
+  std::experimental::optional<Downsampling> downsampling_;
 
   template<typename, typename>
   friend class internal_forkable::ForkableIterator;
