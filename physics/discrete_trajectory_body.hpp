@@ -209,7 +209,8 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   // time == |time|.
   auto const it = timeline_.upper_bound(time);
   if (downsampling_.has_value()) {
-    if (downsampling_->start_of_dense_timeline >= it) {
+    if (it != timeline_.end() &&
+        downsampling_->start_of_dense_timeline->first >= it->first) {
       // The start of the dense timeline will be invalidated.
       if (it == timeline_.begin()) {
         // The timeline will be empty after erasing.
@@ -237,7 +238,8 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // the entries that precede it.  This preserves any entry with time == |time|.
   auto it = timeline_.lower_bound(time);
   if (downsampling_.has_value() &&
-      downsampling_->start_of_dense_timeline < it) {
+      (it == timeline_.end() ||
+       downsampling_->start_of_dense_timeline->first < it->first)) {
     // The start of the dense timeline will be invalidated.
     downsampling_->start_of_dense_timeline = it;
     downsampling_->dense_intervals =
@@ -365,6 +367,7 @@ void DiscreteTrajectory<Frame>::WriteSubTreeToMessage(
     degrees_of_freedom.WriteToMessage(
         instantaneous_degrees_of_freedom->mutable_degrees_of_freedom());
   }
+  // TODO(egg): write |downsampling_|.
 }
 
 template<typename Frame>
@@ -378,6 +381,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
            DegreesOfFreedom<Frame>::ReadFromMessage(
                timeline_it->degrees_of_freedom()));
   }
+  // TODO(egg): restore |downsampling_|
   Forkable<DiscreteTrajectory, Iterator>::FillSubTreeFromMessage(message,
                                                                  forks);
 }

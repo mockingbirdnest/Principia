@@ -175,9 +175,18 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
  private:
   struct Downsampling {
+    // An iterator to the first point of the timeline which is not the left
+    // endpoint of a downsampled interval.  Not |timeline_.end()| if the
+    // timeline is nonempty.
     TimelineConstIterator start_of_dense_timeline;
+    // |std::distance(start_of_dense_timeline, timeline_.cend()) - 1|.  Kept as
+    // an optimization for |Append| as it can be maintained by incrementing,
+    // whereas |std::distance| is linear in the value of the result.
     std::int64_t dense_intervals;
+    // The maximal value that |dense_intervals| is allowed to reach before
+    // downsampling occurs.
     std::int64_t max_dense_intervals;
+    // The tolerance for downsampling with |FitHermiteSpline|.
     Length tolerance;
   };
 

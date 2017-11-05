@@ -69,6 +69,12 @@ message DiscreteTrajectory {
     required Point fork_time = 1;
     repeated DiscreteTrajectory trajectories = 2;
   }
+  message Downsampling {
+    // The instant of the iterator, or null if it is the end of the timeline.
+    optional Point start_of_dense_timeline = 1;
+    required int64 max_dense_intervals = 2;
+    required Quantity tolerance = 3;
+  }
   repeated Litter children = 1;
   repeated InstantaneousDegreesOfFreedom timeline = 2;
   repeated int32 fork_position = 3;
