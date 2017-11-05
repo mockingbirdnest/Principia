@@ -131,6 +131,14 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // |time|.  This trajectory must be a root.
   void ForgetBefore(Instant const& time);
 
+  // This trajectory must be root, and must not be already downsampling.
+  // Following this call, this trajectory must not have forks when calling
+  // |Append|.  Occasionally removes intermediate points from the trajectory
+  // when |Append|ing, ensuring that |EvaluatePosition| returns a result within
+  // |tolerance| of the missing points.  |max_dense_intervals| is the largest
+  // number of points that can be added before removal is considered.
+  void SetDownsampling(std::int64_t max_dense_intervals, Length tolerance);
+
   // Implementation of the interface |Trajectory|.
 
   // The bounds are the times of |Begin()| and |last()| if this trajectory is

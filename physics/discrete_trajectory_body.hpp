@@ -250,6 +250,20 @@ void DiscreteTrajectory<Frame>::ForgetBefore(Instant const& time) {
 }
 
 template<typename Frame>
+void DiscreteTrajectory<Frame>::SetDownsampling(
+    std::int64_t const max_dense_intervals,
+    Length const tolerance) {
+  CHECK(is_root());
+  CHECK(!downsampling_.has_value());
+  downsampling_.emplace();
+  downsampling_->start_of_dense_timeline = timeline_.begin();
+  downsampling_->dense_intervals =
+      std::distance(start_of_dense_timeline, timeline_.cend()) - 1;
+  downsampling_->max_dense_intervals = max_dense_intervals;
+  downsampling_->tolerance = tolerance;
+}
+
+template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {
   return this->Empty() ? InfiniteFuture : this->Begin().time();
 }
@@ -393,6 +407,7 @@ void DiscreteTrajectory<Frame>::FillSubTreeFromMessage(
                timeline_it->degrees_of_freedom()));
   }
   if (message.has_downsampling()) {
+    CHECK(is_root());
     if (message.downsampling().has_start_of_dense_timeline()) {
       downsampling_->start_of_dense_timeline =
           timeline_.find(Instant::ReadFromMessage(
