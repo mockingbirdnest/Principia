@@ -168,6 +168,7 @@ void DiscreteTrajectory<Frame>::Append(
       downsampling_->increment_dense_intervals(timeline_);
       if (downsampling_->reached_max_dense_intervals()) {
         std::vector<TimelineConstIterator> dense_iterators;
+        // This contains points, hence one more than intervals.
         dense_iterators.reserve(downsampling_->max_dense_intervals() + 1);
         for (TimelineConstIterator it =
                  downsampling_->start_of_dense_timeline();
@@ -205,26 +206,24 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   // time == |time|.
   auto const first_removed_in_timeline = timeline_.upper_bound(time);
   Instant const& first_removed_time = first_removed_in_timeline->first;
-  std::experimental::optional<TimelineConstIterator>
-      new_start_of_dense_timeline;
   if (downsampling_.has_value()) {
     if (first_removed_in_timeline != timeline_.end() &&
         downsampling_->first_dense_time() >= first_removed_time) {
       // The start of the dense timeline will be invalidated.
       if (first_removed_in_timeline == timeline_.begin()) {
         // The timeline will be empty after erasing.
-        new_start_of_dense_timeline = timeline_.end();
+        downsampling_->set_start_of_dense_timeline(timeline_.end(), timeline_);
       } else {
         auto last_kept_in_timeline = first_removed_in_timeline;
         --last_kept_in_timeline;
-        new_start_of_dense_timeline = last_kept_in_timeline;
+        downsampling_->set_start_of_dense_timeline(last_kept_in_timeline,
+                                                   timeline_);
       }
     }
   }
   timeline_.erase(first_removed_in_timeline, timeline_.end());
-  if (downsampling_.has_value() && new_start_of_dense_timeline.has_value()) {
-    downsampling_->set_start_of_dense_timeline(*new_start_of_dense_timeline,
-                                               timeline_);
+  if (downsampling_.has_value()) {
+    downsampling_->recount_dense_intervals(timeline_);
   }
 }
 
