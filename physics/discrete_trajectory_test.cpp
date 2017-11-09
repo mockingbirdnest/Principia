@@ -971,13 +971,9 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
     circle.Append(t, dof);
     forgotten_circle.Append(t, dof);
   }
-  // There is no lower_bound and upper_bound in DiscreteTrajectory, so we
-  // iterate to find a point after 5 s.
-  auto it = forgotten_circle.Begin();
-  for (; it.time() < t0_ + 5 * Second; ++it) {}
-  forgotten_circle.ForgetAfter(it.time());
-  t = it.time();
-  for (/*t += 10 * Milli(Second)*/; t <= t0_ + 10 * Second;
+  forgotten_circle.ForgetAfter(t0_ + 5 * Second);
+  t = forgotten_circle.last().time();
+  for (t += 10 * Milli(Second); t <= t0_ + 10 * Second;
        t += 10 * Milli(Second)) {
     DegreesOfFreedom<World> const dof =
         {World::origin + Displacement<World>{{r * Cos(ω * (t - t0_)),
@@ -990,12 +986,12 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   }
   EXPECT_THAT(circle.Size(), Eq(77));
   EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
-  for (auto it1 = circle.Begin(), it2 = forgotten_circle.Begin();
-       it1 != circle.End();
-       ++it1, ++it2) {
-    EXPECT_EQ(it1.time(), it2.time());
-    EXPECT_EQ(it1.degrees_of_freedom(), it2.degrees_of_freedom());
+  std::vector<Length> errors;
+  for (auto it = forgotten_circle.Begin(); it != forgotten_circle.End(); ++it) {
+    errors.push_back((circle.Find(it.time()).degrees_of_freedom().position() -
+                      it.degrees_of_freedom().position()).Norm());
   }
+  EXPECT_THAT(errors, Each(Eq(0 * Metre)));
 }
 
 }  // namespace internal_discrete_trajectory
