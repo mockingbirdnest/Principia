@@ -955,7 +955,7 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
   circle.SetDownsampling(/*max_dense_intervals=*/50,
                          /*tolerance=*/1 * Milli(Metre));
   forgotten_circle.SetDownsampling(/*max_dense_intervals=*/50,
-                                     /*tolerance=*/1 * Milli(Metre));
+                                   /*tolerance=*/1 * Milli(Metre));
   AngularFrequency const ω = 3 * Radian / Second;
   Length const r = 2 * Metre;
   Speed const v = ω * r / Radian;

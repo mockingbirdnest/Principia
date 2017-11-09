@@ -198,7 +198,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
                                  Timeline const& timeline);
 
     // Sets |dense_intervals_| to
-    // |std::distance(start_of_dense_timeline, timeline.end()) - 1|.  This is
+    // |std::distance(start_of_dense_timeline_, timeline.end()) - 1|.  This is
     // linear in the value of |dense_intervals_|.
     void RecountDenseIntervals(Timeline const& timeline);
     // Increments |dense_intervals_|.  The caller must ensure that this is
