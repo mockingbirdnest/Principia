@@ -208,12 +208,14 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
   Instant const& first_removed_time = first_removed_in_timeline->first;
   if (downsampling_.has_value()) {
     if (first_removed_in_timeline != timeline_.end() &&
-        downsampling_->first_dense_time() >= first_removed_time) {
+        first_removed_time <= downsampling_->first_dense_time()) {
       // The start of the dense timeline will be invalidated.
       if (first_removed_in_timeline == timeline_.begin()) {
         // The timeline will be empty after erasing.
         downsampling_->set_start_of_dense_timeline(timeline_.end(), timeline_);
       } else {
+        // Further points will be appended to the last remaining point, so this
+        // is where the dense timeline will begin.
         auto last_kept_in_timeline = first_removed_in_timeline;
         --last_kept_in_timeline;
         downsampling_->set_start_of_dense_timeline(last_kept_in_timeline,
@@ -252,7 +254,7 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
   CHECK(is_root());
   CHECK(!downsampling_.has_value());
   downsampling_.emplace(
-      timeline_.begin(), max_dense_intervals, tolerance, timeline_);
+      max_dense_intervals, tolerance, timeline_.begin(), timeline_);
 }
 
 template<typename Frame>
@@ -446,7 +448,7 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
   TimelineConstIterator start_of_dense_timeline;
   if (message.has_start_of_dense_timeline()) {
     start_of_dense_timeline = timeline.find(
-        Length::ReadFromMessage(message.start_of_dense_timeline()));
+        Instant::ReadFromMessage(message.start_of_dense_timeline()));
     CHECK(start_of_dense_timeline != timeline.end());
   } else {
     start_of_dense_timeline = timeline.end();
@@ -454,7 +456,7 @@ DiscreteTrajectory<Frame>::Downsampling::ReadFromMessage(
   return Downsampling(message.max_dense_intervals(),
                       Length::ReadFromMessage(message.tolerance()),
                       start_of_dense_timeline,
-                      timeline)
+                      timeline);
 }
 
 template<typename Frame>

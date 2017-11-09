@@ -949,6 +949,55 @@ TEST_F(DiscreteTrajectoryTest, DownsamplingSerialization) {
   }
 }
 
+TEST_F(DiscreteTrajectoryTest, DownsamplingForgetAfter) {
+  DiscreteTrajectory<World> circle;
+  DiscreteTrajectory<World> forgotten_circle;
+  circle.SetDownsampling(/*max_dense_intervals=*/50,
+                         /*tolerance=*/1 * Milli(Metre));
+  forgotten_circle.SetDownsampling(/*max_dense_intervals=*/50,
+                                     /*tolerance=*/1 * Milli(Metre));
+  AngularFrequency const ω = 3 * Radian / Second;
+  Length const r = 2 * Metre;
+  Speed const v = ω * r / Radian;
+  auto t = t0_;
+  for (; t <= t0_ + 10 * Second; t += 10 * Milli(Second)) {
+    DegreesOfFreedom<World> const dof =
+        {World::origin + Displacement<World>{{r * Cos(ω * (t - t0_)),
+                                              r * Sin(ω * (t - t0_)),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * (t - t0_)),
+                          v * Cos(ω * (t - t0_)),
+                          0 * Metre / Second}}};
+    circle.Append(t, dof);
+    forgotten_circle.Append(t, dof);
+  }
+  // There is no lower_bound and upper_bound in DiscreteTrajectory, so we
+  // iterate to find a point after 5 s.
+  auto it = forgotten_circle.Begin();
+  for (; it.time() < t0_ + 5 * Second; ++it) {}
+  forgotten_circle.ForgetAfter(it.time());
+  t = it.time();
+  for (/*t += 10 * Milli(Second)*/; t <= t0_ + 10 * Second;
+       t += 10 * Milli(Second)) {
+    DegreesOfFreedom<World> const dof =
+        {World::origin + Displacement<World>{{r * Cos(ω * (t - t0_)),
+                                              r * Sin(ω * (t - t0_)),
+                                              0 * Metre}},
+         Velocity<World>{{-v * Sin(ω * (t - t0_)),
+                          v * Cos(ω * (t - t0_)),
+                          0 * Metre / Second}}};
+    forgotten_circle.Append(t, dof);
+  }
+  EXPECT_THAT(circle.Size(), Eq(77));
+  EXPECT_THAT(forgotten_circle.Size(), Eq(circle.Size()));
+  for (auto it1 = circle.Begin(), it2 = forgotten_circle.Begin();
+       it1 != circle.End();
+       ++it1, ++it2) {
+    EXPECT_EQ(it1.time(), it2.time());
+    EXPECT_EQ(it1.degrees_of_freedom(), it2.degrees_of_freedom());
+  }
+}
+
 }  // namespace internal_discrete_trajectory
 }  // namespace physics
 }  // namespace principia
