@@ -182,20 +182,56 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   std::int64_t timeline_size() const override;
 
  private:
-  struct Downsampling {
+  class Downsampling {
+   public:
+    Downsampling(std::int64_t max_dense_intervals,
+                 Length tolerance,
+                 TimelineConstIterator start_of_dense_timeline,
+                 Timeline const& timeline);
+
+    TimelineConstIterator start_of_dense_timeline() const;
+    // |start_of_dense_timeline()->first|, for readability.
+    Instant const& first_dense_time() const;
+    // Keeps |dense_intervals_| consistent with the new
+    // |start_of_dense_timeline_|.
+    void set_start_of_dense_timeline(TimelineConstIterator value,
+                                     Timeline const& timeline);
+
+    // Sets |dense_intervals_| to
+    // |std::distance(start_of_dense_timeline, timeline.end()) - 1|.  This is
+    // linear in the value of |dense_intervals_|.
+    void recount_dense_intervals(Timeline const& timeline);
+    // Increments |dense_intervals_|.  The caller must ensure that this is
+    // equivalent to |recount_dense_intervals(timeline)|.  This is checked in
+    // debug mode.
+    void increment_dense_intervals(Timeline const& timeline);
+
+    std::int64_t max_dense_intervals() const;
+    bool reached_max_dense_intervals() const;
+
+    Length tolerance() const;
+
+    void WriteToMessage(
+        not_null<serialization::DiscreteTrajectory::Downsampling*> message,
+        Timeline const& timeline) const;
+    static Downsampling ReadFromMessage(
+        serialization::DiscreteTrajectory::Downsampling const& message,
+        Timeline const& timeline);
+
+   private:
+    // The maximal value that |dense_intervals| is allowed to reach before
+    // downsampling occurs.
+    std::int64_t const max_dense_intervals_;
+    // The tolerance for downsampling with |FitHermiteSpline|.
+    Length const tolerance_;
     // An iterator to the first point of the timeline which is not the left
     // endpoint of a downsampled interval.  Not |timeline_.end()| if the
     // timeline is nonempty.
-    TimelineConstIterator start_of_dense_timeline;
+    TimelineConstIterator start_of_dense_timeline_;
     // |std::distance(start_of_dense_timeline, timeline_.cend()) - 1|.  Kept as
     // an optimization for |Append| as it can be maintained by incrementing,
     // whereas |std::distance| is linear in the value of the result.
-    std::int64_t dense_intervals;
-    // The maximal value that |dense_intervals| is allowed to reach before
-    // downsampling occurs.
-    std::int64_t max_dense_intervals;
-    // The tolerance for downsampling with |FitHermiteSpline|.
-    Length tolerance;
+    std::int64_t dense_intervals_;
   };
 
   // This trajectory need not be a root.
