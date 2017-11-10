@@ -25,6 +25,10 @@ using geometry::BarycentreCalculator;
 using geometry::Position;
 using quantities::IsFinite;
 using quantities::Time;
+using quantities::si::Metre;
+
+constexpr std::int64_t max_dense_intervals = 10'000;
+constexpr Length downsampling_tolerance = 10 * Metre;
 
 Vessel::Vessel(GUID const& guid,
                std::string const& name,
@@ -39,6 +43,7 @@ Vessel::Vessel(GUID const& guid,
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+  history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
 }
@@ -291,6 +296,7 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     std::function<void(PartId)> const& deletion_callback) {
   bool const is_pre_cesàro = message.has_psychohistory_is_authoritative();
   bool const is_pre_chasles = message.has_prediction();
+  bool const is_pre_陈景润 = !message.history().has_downsampling();
 
   // NOTE(egg): for now we do not read the |MasslessBody| as it can contain no
   // information.
@@ -346,6 +352,11 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
     vessel->history_ = DiscreteTrajectory<Barycentric>::ReadFromMessage(
         message.history(),
         /*forks=*/{&vessel->psychohistory_, &vessel->prediction_});
+  }
+
+  if (is_pre_陈景润) {
+    vessel->history_->SetDownsampling(max_dense_intervals,
+                                      downsampling_tolerance);
   }
 
   if (message.has_flight_plan()) {
