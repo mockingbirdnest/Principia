@@ -210,7 +210,7 @@ void DiscreteTrajectory<Frame>::ForgetAfter(Instant const& time) {
           ? nullptr
           : &first_removed_in_timeline->first;
   if (downsampling_.has_value()) {
-    if (first_removed_in_timeline != timeline_.end() &&
+    if (first_removed_time != nullptr &&
         *first_removed_time <= downsampling_->first_dense_time()) {
       // The start of the dense timeline will be invalidated.
       if (first_removed_in_timeline == timeline_.begin()) {
