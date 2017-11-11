@@ -1206,17 +1206,17 @@ public partial class PrincipiaPluginAdapter
                 closest_physical_parent(part1).flightID);
           }
           foreach (var collider in part1.currentCollisions) {
-            if (collider.gameObject.layer == (int)UnityLayers.LocalScenery) {
-              Log.Info("Reporting collision with local scenery " +
-                       collider.name);
-              plugin_.ReportGroundCollision(
-                  closest_physical_parent(part1).flightID);
-            }
             if (collider == null) {
               // This happens, albeit quite rarely, see #1447.  When it happens,
               // the null collider remains in |currentCollisions| until the next
               // scene change, so we do not log, otherwise we would spam.
               continue;
+            }
+            if (collider.gameObject.layer == (int)UnityLayers.LocalScenery) {
+              Log.Info("Reporting collision with local scenery " +
+                       collider.name);
+              plugin_.ReportGroundCollision(
+                  closest_physical_parent(part1).flightID);
             }
             var part2 = collider.gameObject.GetComponentUpwards<Part>();
             var vessel2 = part2?.vessel;
