@@ -44,7 +44,6 @@ Vessel::Vessel(GUID const& guid,
       parent_(parent),
       ephemeris_(ephemeris),
       history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
-  history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
   // Can't create the |psychohistory_| and |prediction_| here because |history_|
   // is empty;
 }
@@ -147,6 +146,7 @@ void Vessel::PrepareHistory(Instant const& t) {
       calculator.Add(part.degrees_of_freedom(), part.mass());
     });
     CHECK(psychohistory_ == nullptr);
+    history_->SetDownsampling(max_dense_intervals, downsampling_tolerance);
     history_->Append(t, calculator.Get());
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
