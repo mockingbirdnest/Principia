@@ -24,6 +24,7 @@ using base::make_not_null_unique;
 using geometry::BarycentreCalculator;
 using geometry::Position;
 using quantities::IsFinite;
+using quantities::Length;
 using quantities::Time;
 using quantities::si::Metre;
 
