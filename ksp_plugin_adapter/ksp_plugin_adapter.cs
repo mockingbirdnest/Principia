@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String next_release_name_ = "陈景润";
-  private const int next_release_lunation_number_ = 221;
+  private const String next_release_name_ = "Christoffel";
+  private const int next_release_lunation_number_ = 222;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2017, 11, 18, 11, 42, 00, TimeSpan.Zero);
+      new DateTimeOffset(2017, 12, 18, 06, 31, 00, TimeSpan.Zero);
 
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
@@ -2020,11 +2020,20 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
       if (DateTimeOffset.Now > next_release_date_) {
+#if KSP_VERSION_1_3_0
+        UnityEngine.GUILayout.TextArea(
+            "Announcement: the new moon of lunation number " +
+            next_release_lunation_number_ +
+            " has come; please update KSP to version 1.3.1, " +
+            "and download the latest Principia release, " +
+            next_release_name_ + ".");
+#else
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
             next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
+#endif
       }
       String version;
       String unused_build_date;
