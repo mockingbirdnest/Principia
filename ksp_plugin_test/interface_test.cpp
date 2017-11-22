@@ -5,7 +5,6 @@
 #include <string>
 
 #include "astronomy/epoch.hpp"
-#include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -21,7 +20,6 @@
 #include "ksp_plugin_test/mock_plugin.hpp"
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
-#include "mathematica/mathematica.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
@@ -66,7 +64,6 @@ using ksp_plugin::WorldSun;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::CoordinateFrameField;
 using physics::DegreesOfFreedom;
-using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Frenet;
 using physics::MassiveBody;
@@ -581,30 +578,6 @@ TEST_F(InterfaceTest, DeserializePlugin) {
   principia__DeletePlugin(&plugin);
 }
 
-void OutputTrajectory(DiscreteTrajectory<Barycentric> const& trajectory,
-                      int const index_begin,
-                      int const index_end,
-                      std::string const& variable) {
-  using DoF = std::tuple<double, R3Element<double>, R3Element<double>>;
-  std::vector<DoF> dofs;
-  int index = 0;
-  for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
-    if (index >= index_begin && index < index_end) {
-      auto const& time = it.time();
-      auto const& degrees_of_freedom = it.degrees_of_freedom();
-      auto const& position = degrees_of_freedom.position();
-      auto const& velocity = degrees_of_freedom.velocity();
-      dofs.emplace_back(
-          (time - Instant()) / Second,
-          ((position - Barycentric::origin) / Metre).coordinates(),
-          (velocity / (Metre / Second)).coordinates());
-    }
-    ++index;
-  }
-  base::OFStream file(TEMP_DIR / (variable + ".generated.wl"));
-  file << mathematica::Assign(variable, dofs);
-}
-
 // Use for debugging saves given by users.
 TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
@@ -627,14 +600,6 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
     Vessel const& vessel = *pair.second;
     LOG(ERROR) << guid << " name: " << vessel.name()
                        << " size: " << vessel.psychohistory().Size();
-    if (guid == "769ebeb1-3081-43bd-8aa8-54be84ac6f20") {
-      OutputTrajectory(
-          vessel.psychohistory(), 0, 10'000, "psychohistorybegin");
-      OutputTrajectory(
-          vessel.psychohistory(), 500'000, 510'000, "psychohistorymid");
-      OutputTrajectory(
-          vessel.psychohistory(), 900'000, 910'000, "psychohistoryend");
-    }
   }
 
   principia__DeletePlugin(&plugin);
