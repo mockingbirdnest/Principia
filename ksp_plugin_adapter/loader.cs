@@ -24,13 +24,12 @@ internal static class Loader {
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
         can_determine_cxx_installed = true;
-        is_cxx_installed = () => IsVCRedistInstalled(is_32_bit);
+        is_cxx_installed = () => IsVCRedistInstalled();
         required_cxx_packages =
             "the Visual C++ Redistributable Packages for Visual Studio " +
-            "2015 on " + (is_32_bit ? "x86" : "x64");
+            "2015 on x64";
         possible_dll_paths =
-            new String[] {@"GameData\Principia\" +
-                          (is_32_bit ? "Win32" : "x64") + @"\principia.dll"};
+            new String[] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
       // (we probably don't actually encounter |PlatformID.MacOSX|.
@@ -41,7 +40,7 @@ internal static class Loader {
             @"GameData/Principia/MacOS64/principia.so"};
         can_determine_cxx_installed = false;
         is_cxx_installed = null;
-        required_cxx_packages = "libc++ and libc++abi 3.5-2";
+        required_cxx_packages = "libc++ and libc++abi 3.9.1-2";
         break;
       default:
         return "The operating system " + Environment.OSVersion +
@@ -62,24 +61,21 @@ internal static class Loader {
                ", were not found.";
       } else {
         return "An unknown error occurred; detected OS " +
-               Environment.OSVersion + " " + (is_32_bit ? "32" : "64") +
-               "-bit; tried loading dll at '" +
+               Environment.OSVersion + " 64-bit; tried loading dll at '" +
                String.Join("', '", possible_dll_paths) + "'. Note that " +
                required_cxx_packages + " are required.";
       }
     }
   }
 
-  private static bool IsVCRedistInstalled(bool is_32_bit) {
-    // NOTE(phl): These GUIDs are specific to:
-    //   Microsoft Visual C++ 2015 Redistributable (x64) - 14.0.24212
+  private static bool IsVCRedistInstalled() {
+    // NOTE(phl): This GUID is specific to:
     //   Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.24212
-    // They will need to be updated when new versions of Visual C++
+    // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
          @"Software\Classes\Installer\Dependencies\" +
-             (is_32_bit ? "{462f63a8-6347-4894-a1b3-dbfe3a4c981d}"
-                        : "{323dad84-0974-4d90-a1c1-e006c7fdbb7d}"),
+             "{323dad84-0974-4d90-a1c1-e006c7fdbb7d}",
          writable : false);
     if (key == null) {
       return false;
