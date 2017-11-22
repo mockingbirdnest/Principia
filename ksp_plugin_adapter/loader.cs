@@ -18,13 +18,11 @@ internal static class Loader {
              "use the 64-bit KSP executable.";
     }
     String[] possible_dll_paths = null;
-    bool can_determine_cxx_installed;
-    Func<bool> is_cxx_installed;
+    bool? is_cxx_installed;
     string required_cxx_packages;
     switch (Environment.OSVersion.Platform) {
       case PlatformID.Win32NT:
-        can_determine_cxx_installed = true;
-        is_cxx_installed = () => IsVCRedistInstalled();
+        is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
             "the Visual C++ Redistributable Packages for Visual Studio " +
             "2015 on x64";
@@ -38,7 +36,6 @@ internal static class Loader {
         possible_dll_paths = new String[] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
-        can_determine_cxx_installed = false;
         is_cxx_installed = null;
         required_cxx_packages = "libc++ and libc++abi 3.9.1-2";
         break;
@@ -56,7 +53,7 @@ internal static class Loader {
       return null;
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);
-      if (can_determine_cxx_installed && !is_cxx_installed()) {
+      if (is_cxx_installed == false) {
         return "Dependencies, namely " + required_cxx_packages +
                ", were not found.";
       } else {
