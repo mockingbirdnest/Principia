@@ -47,7 +47,6 @@ using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
-using ksp_plugin::GUID;
 using ksp_plugin::Index;
 using ksp_plugin::MakeNavigationManœuvre;
 using ksp_plugin::MockManœuvre;
@@ -583,7 +582,7 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
-      R"(P:\Public Mockingbird\Principia\Saves\Do we love 228\persistent.proto.hex)");
+      R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
   principia__DeserializePlugin(
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),
@@ -594,14 +593,6 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
                                &deserializer,
                                &plugin);
   EXPECT_THAT(plugin, NotNull());
-
-  for (auto const& pair : plugin->vessels_) {
-    GUID const guid = pair.first;
-    Vessel const& vessel = *pair.second;
-    LOG(ERROR) << guid << " name: " << vessel.name()
-                       << " size: " << vessel.psychohistory().Size();
-  }
-
   principia__DeletePlugin(&plugin);
 }
 
