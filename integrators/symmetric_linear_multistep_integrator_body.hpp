@@ -16,6 +16,7 @@ namespace internal_symmetric_linear_multistep_integrator {
 
 using base::make_not_null_unique;
 using geometry::QuantityOrMultivectorSerializer;
+using numerics::TwoProduct;
 
 int const startup_step_divisor = 16;
 
@@ -308,14 +309,17 @@ Instance::ComputeVelocity(int const dimension) {
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = current_state.velocities[d];
     auto it = previous_steps_.rbegin();
-    Displacement weighted_displacement;
-    for (int i = 0; i < backward_difference.numerators.size; ++i) {
+    DoublePrecision<Displacement> weighted_displacement;
+    for (int i = 0; i < backward_difference.numerators.size; ++i, ++it) {
       double const numerator = backward_difference.numerators[i];
-      weighted_displacement += numerator * it->displacements[d].value;
-      ++it;
+      weighted_displacement += TwoProduct(numerator,
+                                          it->displacements[d].value);
+      weighted_displacement.Increment(numerator * it->displacements[d].error);
     }
+    DCHECK(it == previous_steps_.rend());
     velocity = DoublePrecision<Velocity>(
-        weighted_displacement / (step * backward_difference.denominator));
+        (weighted_displacement.value + weighted_displacement.error) /
+        (step * backward_difference.denominator));
   }
 }
 
