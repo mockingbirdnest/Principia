@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "base/status.hpp"
-#include "integrators/adams_moulton_integrator.hpp"
+#include "integrators/backward_difference.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
 #include "numerics/fixed_arrays.hpp"
@@ -90,9 +90,9 @@ class SymmetricLinearMultistepIntegrator
     // updated more frequently than once every |instance.step_|.
     void StartupSolve(Instant const& t_final);
 
-    // Performs the velocity integration, i.e. one step of the Adams-Moulton
-    // method using the accelerations computed by the main integrator.
-    void VelocitySolve(int dimension);
+    // Performs the velocity computation, i.e. a backward difference using the
+    // positions computed by the main integrator.
+    void ComputeVelocity(int dimension);
 
     static void FillStepFromSystemState(ODE const& equation,
                                         typename ODE::SystemState const& state,
@@ -124,7 +124,7 @@ class SymmetricLinearMultistepIntegrator
       Time const& step) const override;
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
-  AdamsMoulton<velocity_order_> const& velocity_integrator_;
+  BackwardDifference<velocity_order_> const& backward_difference_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
