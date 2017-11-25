@@ -798,9 +798,9 @@ void JournalProtoProcessor::ProcessReturn(Descriptor const* descriptor) {
         field_cxx_inserter_fn_[field_descriptor](cxx_field_getter, "result");
   } else if (!field_options.HasExtension(journal::serialization::omit_check)) {
     cxx_run_body_epilog_[descriptor] =
-        "  PRINCIPIA_CHECK_EQ(" +
+        "  CHECK(" +
         field_cxx_deserializer_fn_[field_descriptor](cxx_field_getter) +
-        ", result);\n";
+        " == result);\n";
   } else {
     CHECK(field_options.GetExtension(journal::serialization::omit_check))
       << field_descriptor->full_name() << " has incorrect (omit_check) option";
