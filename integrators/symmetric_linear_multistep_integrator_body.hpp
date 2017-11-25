@@ -310,13 +310,24 @@ Instance::ComputeVelocity(int const dimension) {
     DoublePrecision<Velocity>& velocity = current_state.velocities[d];
     auto it = previous_steps_.rbegin();
     DoublePrecision<Displacement> weighted_displacement;
-    for (int i = 0; i < backward_difference.numerators.size; ++i, ++it) {
-      double const numerator = backward_difference.numerators[i];
-      weighted_displacement += TwoProduct(numerator,
-                                          it->displacements[d].value);
-      weighted_displacement.Increment(numerator * it->displacements[d].error);
+
+    // The computation below is fraught with difficulties because the naïve
+    // formula has massive cancellations and would need to be computed with
+    // double precision multiplications.  Instead, we compute differences of
+    // consecutive positions exactly.  These quantities are of the order of the
+    // final result so it's acceptable to perform ordinary multiplications on
+    // them.
+    double numerator = 0.0;
+    DoublePrecision<Displacement> current_displacement = it->displacements[d];
+    for (int i = 0; i < backward_difference.numerators.size - 1; ++i) {
+      numerator += backward_difference.numerators[i];
+      ++it;
+      DoublePrecision<Displacement> next_displacement = it->displacements[d];
+      weighted_displacement +=
+          numerator * (current_displacement - next_displacement).value;
+      current_displacement = next_displacement;
     }
-    DCHECK(it == previous_steps_.rend());
+
     velocity = DoublePrecision<Velocity>(
         (weighted_displacement.value + weighted_displacement.error) /
         (step * backward_difference.denominator));
