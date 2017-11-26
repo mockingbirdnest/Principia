@@ -56,8 +56,7 @@ std::uint64_t SerializePointer(T* t) {
 
 }  // namespace
 
-#define PRINCIPIA_CHECK_EQ(a, b)
-//CHECK((a) == (b))
+#define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
 
 #include "journal/profiles.generated.cc"
 

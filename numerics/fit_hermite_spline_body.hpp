@@ -59,10 +59,8 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     // above.
     auto lower = samples.begin() + 1;
     auto upper = last;
-    auto middle = last;
-    quantities::Length l;
     for (;;) {
-      middle = lower + (upper - lower) / 2;
+      auto const middle = lower + (upper - lower) / 2;
       // Note that lower ≤ middle ≤ upper.
       // If middle - lower > 0, upper - lower > 0,
       // therefore (upper - lower) / 2  < upper - lower, thus
@@ -72,8 +70,7 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
       if (middle == lower) {
         break;
       }
-      l = interpolation_error(samples.begin(), middle);
-      if (l < tolerance) {
+      if (interpolation_error(samples.begin(), middle) < tolerance) {
         lower = middle;
       } else {
         upper = middle;

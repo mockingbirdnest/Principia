@@ -16,7 +16,6 @@ namespace internal_symmetric_linear_multistep_integrator {
 
 using base::make_not_null_unique;
 using geometry::QuantityOrMultivectorSerializer;
-using numerics::TwoProduct;
 
 int const startup_step_divisor = 16;
 

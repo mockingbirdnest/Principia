@@ -9,13 +9,9 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "base/file.hpp"
 #include "geometry/named_quantities.hpp"
-#include "geometry/r3_element.hpp"
 #include "glog/logging.h"
-#include "mathematica/mathematica.hpp"
 #include "numerics/fit_hermite_spline.hpp"
-#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
@@ -59,11 +55,7 @@ namespace internal_discrete_trajectory {
 using astronomy::InfiniteFuture;
 using astronomy::InfinitePast;
 using base::make_not_null_unique;
-using base::OFStream;
-using geometry::R3Element;
 using numerics::FitHermiteSpline;
-using quantities::si::Metre;
-using quantities::si::Second;
 
 template<typename Frame>
 typename DiscreteTrajectory<Frame>::Iterator
@@ -184,25 +176,6 @@ void DiscreteTrajectory<Frame>::Append(
              ++it) {
           dense_iterators.push_back(it);
         }
-
-        {
-          OFStream file(TEMP_DIR / "hermite.generated.wl");
-          std::vector<double> times;
-          std::vector<R3Element<double>> positions;
-          std::vector<R3Element<double>> velocities;
-          for (auto const it : dense_iterators) {
-            times.push_back((it->first - Instant()) / Second);
-            positions.push_back(
-                (it->second.position() - Position<Frame>()).coordinates() /
-                Metre);
-            velocities.push_back(it->second.velocity().coordinates() /
-                                 (Metre / Second));
-          }
-          file << mathematica::Assign("times", times);
-          file << mathematica::Assign("positions", positions);
-          file << mathematica::Assign("velocities", velocities);
-        }
-
         auto right_endpoints = FitHermiteSpline<Instant, Position<Frame>>(
             dense_iterators,
             [](auto&& it) -> auto&& { return it->first; },
