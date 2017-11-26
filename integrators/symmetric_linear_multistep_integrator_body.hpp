@@ -316,7 +316,8 @@ Instance::ComputeVelocity(int const dimension) {
     // double precision multiplications.  Instead, we compute differences of
     // consecutive positions exactly.  These quantities are of the order of the
     // final result so it's acceptable to perform ordinary multiplications on
-    // them.
+    // them.  We take advantage of the fact that the numerators sum to 0 to skip
+    // the last term.
     double numerator = 0.0;
     DoublePrecision<Displacement> current_displacement = it->displacements[d];
     for (int i = 0; i < backward_difference.numerators.size - 1; ++i) {
