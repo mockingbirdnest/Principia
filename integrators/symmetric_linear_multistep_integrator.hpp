@@ -99,7 +99,7 @@ class SymmetricLinearMultistepIntegrator
                                         Step& step);
 
     int startup_step_index_ = 0;
-    std::list<Step> previous_steps_;  // At most |order_ - 1| elements.
+    std::list<Step> previous_steps_;  // At most |order_| elements.
     SymmetricLinearMultistepIntegrator const& integrator_;
     friend class SymmetricLinearMultistepIntegrator;
   };
