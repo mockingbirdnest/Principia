@@ -423,8 +423,11 @@ std::ostream& operator<<(std::ostream& stream,
 // Not testing QuinlanTremaine1990Order14 as its characteristics cannot even be
 // computed.
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
+  // The |beginning_of_convergence| below were carefully chosen using
+  // Mathematica to only select the domain where |p| and |step| are properly
+  // correlated.
   return {INSTANCE(Quinlan1999Order8A,
-                   0.1 * Second,
+                   0.07 * Second,
                    1.00044972306534419e-13 * Metre,
                    1.00211505760228192e-13 * Metre / Second,
                    1.28234199303634000e-06 * Joule),
@@ -434,17 +437,17 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    1.15522175159199492e-13 * Metre / Second,
                    1.38325316967335965e-06 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
-                   0.12 * Second,
+                   0.1 * Second,
                    9.98298665955132947e-14 * Metre,
                    1.01483058068119192e-13 * Metre / Second,
                    1.30814851206917382e-06 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
-                   0.15 * Second,
+                   0.12 * Second,
                    9.96980276113390573e-14 * Metre,
                    1.44356748776885979e-13 * Metre / Second,
                    4.83412812002370629e-08 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
-                   0.145 * Second,
+                   0.21 * Second,
                    9.90457715843717779e-14 * Metre,
                    3.20708737344688188e-13 * Metre / Second,
                    1.91471027921608083e-09 * Joule)};
