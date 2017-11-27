@@ -252,7 +252,7 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  // We cannot really explain the order of convergence of v.
+  EXPECT_THAT(RelativeError(integrator.order, v_convergence_order), Lt(0.035));
   EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
 #endif
 }
@@ -432,17 +432,17 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    1.00211505760228192e-13 * Metre / Second,
                    1.28234199303634000e-06 * Joule),
           INSTANCE(Quinlan1999Order8B,
-                   0.15 * Second,
+                   0.055 * Second,
                    9.97882332320898513e-14 * Metre,
                    1.15522175159199492e-13 * Metre / Second,
                    1.38325316967335965e-06 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
-                   0.1 * Second,
+                   0.3 * Second,
                    9.98298665955132947e-14 * Metre,
                    1.01483058068119192e-13 * Metre / Second,
                    1.30814851206917382e-06 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
-                   0.12 * Second,
+                   0.3 * Second,
                    9.96980276113390573e-14 * Metre,
                    1.44356748776885979e-13 * Metre / Second,
                    4.83412812002370629e-08 * Joule),

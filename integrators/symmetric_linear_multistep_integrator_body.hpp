@@ -111,7 +111,6 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
     // Create a new step in the instance.
     t.Increment(h);
-    previous_steps_.pop_front();
     previous_steps_.emplace_back();
     Step& current_step = previous_steps_.back();
     current_step.time = t;
@@ -134,7 +133,9 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
                                   positions,
                                   current_step.accelerations);
 
+    //TODO(phl):comments
     ComputeVelocity(dimension);
+    previous_steps_.pop_front();
 
     // Inform the caller of the new state.
     current_state.time = t;
@@ -363,7 +364,7 @@ SymmetricLinearMultistepIntegrator(
           SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
       backward_difference_(
-          FirstDerivativeBackwardDifference<velocity_order_>()),
+          FirstDerivativeBackwardDifference<order_>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {

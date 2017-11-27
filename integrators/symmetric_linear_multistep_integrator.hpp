@@ -34,10 +34,6 @@ class SymmetricLinearMultistepIntegrator
     : public FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>> {
   static constexpr int half_order_ = order_ / 2 + 1;
-  // The velocity is evaluated for a single step, and for a method of order
-  // n a single step has order n + 1.  This declaration gives us the velocity
-  // with order |order_|.
-  static constexpr int velocity_order_ = order_ - 1;
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
   using AppendState = typename Integrator<ODE>::AppendState;
@@ -124,7 +120,7 @@ class SymmetricLinearMultistepIntegrator
       Time const& step) const override;
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
-  BackwardDifference<velocity_order_> const& backward_difference_;
+  BackwardDifference<order_> const& backward_difference_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
