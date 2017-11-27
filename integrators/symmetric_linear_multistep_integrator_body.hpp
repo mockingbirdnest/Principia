@@ -306,7 +306,7 @@ Instance::ComputeVelocity(int const dimension) {
 
   // For the computation of the velocity we use a difference formula as
   // recommended by Hairer and Lubich (2004), Symmetric multistep methods over
-  // long times, only we use a backward difference, not a centered difference,
+  // long times, only we use a backward difference, not a centred difference,
   // because we have not computed the future yet.
   auto const& backward_difference = integrator_.backward_difference_;
 
