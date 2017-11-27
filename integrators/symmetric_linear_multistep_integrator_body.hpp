@@ -133,7 +133,9 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
                                   positions,
                                   current_step.accelerations);
 
-    //TODO(phl):comments
+    // Note that we only delete the oldest step *after* computing the velocity.
+    // This means that the velocity computation has access to |order_ + 1|
+    // points and can therefore be of order |order_|.
     ComputeVelocity(dimension);
     previous_steps_.pop_front();
 
@@ -301,6 +303,11 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::ComputeVelocity(int const dimension) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
+
+  // For the computation of the velocity we use a difference formula as
+  // recommended by Hairer and Lubich (2004), Symmetric multistep methods over
+  // long times, only we use a backward difference, not a centered difference,
+  // because we have not computed the future yet.
   auto const& backward_difference = integrator_.backward_difference_;
 
   auto& current_state = this->current_state_;
