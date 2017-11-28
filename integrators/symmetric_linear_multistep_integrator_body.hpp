@@ -111,7 +111,6 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
     // Create a new step in the instance.
     t.Increment(h);
-    previous_steps_.pop_front();
     previous_steps_.emplace_back();
     Step& current_step = previous_steps_.back();
     current_step.time = t;
@@ -134,7 +133,11 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
                                   positions,
                                   current_step.accelerations);
 
-    VelocitySolve(dimension);
+    // Note that we only delete the oldest step *after* computing the velocity.
+    // This means that the velocity computation has access to |order_ + 1|
+    // points and can therefore be of order |order_|.
+    ComputeVelocity(dimension);
+    previous_steps_.pop_front();
 
     // Inform the caller of the new state.
     current_state.time = t;
@@ -297,10 +300,15 @@ Instance::StartupSolve(Instant const& t_final) {
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
-Instance::VelocitySolve(int const dimension) {
+Instance::ComputeVelocity(int const dimension) {
+  using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
-  using Acceleration = typename ODE::Acceleration;
-  auto const& velocity_integrator = integrator_.velocity_integrator_;
+
+  // For the computation of the velocity we use a difference formula as
+  // recommended by Hairer and Lubich (2004), Symmetric multistep methods over
+  // long times, only we use a backward difference, not a centred difference,
+  // because we have not computed the future yet.
+  auto const& backward_difference = integrator_.backward_difference_;
 
   auto& current_state = this->current_state_;
   auto const& step = this->step_;
@@ -308,14 +316,29 @@ Instance::VelocitySolve(int const dimension) {
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = current_state.velocities[d];
     auto it = previous_steps_.rbegin();
-    Acceleration weighted_acceleration;
-    for (int i = 0; i < velocity_integrator.numerators.size; ++i) {
-      double const numerator = velocity_integrator.numerators[i];
-      weighted_acceleration += numerator * it->accelerations[d];
+    DoublePrecision<Displacement> weighted_displacement;
+
+    // The computation below is fraught with difficulties because the naïve
+    // formula has massive cancellations and would need to be computed with
+    // double precision multiplications.  Instead, we compute differences of
+    // consecutive positions exactly.  These quantities are of the order of the
+    // final result so it's acceptable to perform ordinary multiplications on
+    // them.  We take advantage of the fact that the numerators sum to 0 to skip
+    // the last term.
+    double numerator = 0.0;
+    DoublePrecision<Displacement> current_displacement = it->displacements[d];
+    for (int i = 0; i < backward_difference.numerators.size - 1; ++i) {
+      numerator += backward_difference.numerators[i];
       ++it;
+      DoublePrecision<Displacement> next_displacement = it->displacements[d];
+      weighted_displacement +=
+          numerator * (current_displacement - next_displacement).value;
+      current_displacement = next_displacement;
     }
-    velocity.Increment(step * weighted_acceleration /
-                       velocity_integrator.denominator);
+
+    velocity = DoublePrecision<Velocity>(
+        (weighted_displacement.value + weighted_displacement.error) /
+        (step * backward_difference.denominator));
   }
 }
 
@@ -347,7 +370,8 @@ SymmetricLinearMultistepIntegrator(
     : FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
-      velocity_integrator_(AdamsMoultonOrder<velocity_order_>()),
+      backward_difference_(
+          FirstDerivativeBackwardDifference<order_>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {

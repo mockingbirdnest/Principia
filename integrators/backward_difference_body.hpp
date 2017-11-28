@@ -4,6 +4,10 @@
 namespace principia {
 namespace integrators {
 
+// The coefficients below were computed with Mathematica using the algorithm in
+// Fornberg (1988), Generation of Finite Difference Formulas on Arbitrarily
+// Spaced Grids.
+
 template<>
 inline BackwardDifference<1> const& FirstDerivativeBackwardDifference<1>() {
   static BackwardDifference<1> const backward_difference{{1.0, -1.0}, 1.0};
