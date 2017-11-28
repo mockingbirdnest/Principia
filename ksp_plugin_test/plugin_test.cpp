@@ -431,35 +431,12 @@ TEST_F(PluginTest, Serialization) {
   EXPECT_TRUE(message.vessel(0).vessel().has_flight_plan());
   EXPECT_TRUE(message.vessel(0).vessel().has_history());
   auto const& vessel_0_history = message.vessel(0).vessel().history();
-#if defined(WE_LOVE_228)
-  EXPECT_EQ(2, vessel_0_history.timeline_size());
-  Instant const t0 =
-      Instant() +
-      vessel_0_history.timeline(0).instant().scalar().magnitude() * Second;
-  Instant const t1 =
-      Instant() +
-      vessel_0_history.timeline(1).instant().scalar().magnitude() * Second;
-  EXPECT_EQ(1, vessel_0_history.children_size());
-  EXPECT_EQ(1, vessel_0_history.children(0).trajectories(0).timeline_size());
-  Instant const t2 =
-      Instant() +
-      vessel_0_history.children(0).trajectories(0).timeline(0).
-          instant().scalar().magnitude() * Second;
-  // |t0| and |t1| are part of the history and may not be exactly aligned.  |t2|
-  // is not authoritative and is exactly aligned.
-  EXPECT_THAT(t0,
-              AllOf(Gt(HistoryTime(time, 3) - step), Le(HistoryTime(time, 3))));
-  EXPECT_THAT(t1,
-              AllOf(Gt(HistoryTime(time, 6) - step), Le(HistoryTime(time, 6))));
-  EXPECT_EQ(HistoryTime(time, 6), t2);
-#else
   EXPECT_EQ(4, vessel_0_history.timeline_size());
   Instant const t0 =
       Instant() +
       vessel_0_history.timeline(0).instant().scalar().magnitude() * Second;
   EXPECT_THAT(t0,
               AllOf(Gt(HistoryTime(time, 3) - step), Le(HistoryTime(time, 3))));
-#endif
   EXPECT_TRUE(message.has_renderer());
   EXPECT_TRUE(message.renderer().has_plotting_frame());
   EXPECT_TRUE(message.renderer().plotting_frame().HasExtension(

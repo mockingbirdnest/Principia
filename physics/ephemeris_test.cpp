@@ -643,13 +643,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
     probe2_positions.push_back(it.degrees_of_freedom().position() -
                                ICRFJ2000Equator::origin);
   }
-#if defined(WE_LOVE_228)
-  EXPECT_THAT(probe1_positions.size(), Eq(2));
-  EXPECT_THAT(probe2_positions.size(), Eq(2));
-#else
   EXPECT_THAT(probe1_positions.size(), Eq(1001));
   EXPECT_THAT(probe2_positions.size(), Eq(1001));
-#endif
   EXPECT_THAT(probe1_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe1, 25, 70));
   EXPECT_THAT(probe2_positions.back().coordinates().x,
