@@ -406,16 +406,8 @@ Ephemeris<Frame>::NewInstance(
         last_degrees_of_freedom.velocity());
   }
 
-#if defined(WE_LOVE_228)
-  auto const append_state = [trajectories](
-      typename NewtonianMotionEquation::SystemState const& state) {
-    last_state_228_ = state;
-    trajectories_228_ = trajectories;
-  };
-#else
   auto const append_state =
       std::bind(&Ephemeris::AppendMasslessBodiesState, _1, trajectories);
-#endif
 
   // The construction of the instance may evaluate the degrees of freedom of the
   // bodies.
@@ -522,15 +514,6 @@ void Ephemeris<Frame>::FlowWithFixedStep(
   }
 
   instance.Solve(t);
-
-#if defined(WE_LOVE_228)
-  // The last state is empty if and only if |append_state| was never called; in
-  // that case there was not enough room to advance the trajectories.
-  if (last_state_228_) {
-    AppendMasslessBodiesState(*last_state_228_, trajectories_228_);
-    last_state_228_ = std::experimental::nullopt;
-  }
-#endif
 }
 
 template<typename Frame>
@@ -1097,15 +1080,6 @@ double Ephemeris<Frame>::ToleranceToErrorRatio(
 template<typename Frame>
 typename Ephemeris<Frame>::IntrinsicAccelerations const
     Ephemeris<Frame>::NoIntrinsicAccelerations;
-#if defined(WE_LOVE_228)
-template<typename Frame>
-thread_local std::experimental::optional<
-    typename Ephemeris<Frame>::NewtonianMotionEquation::SystemState>
-    Ephemeris<Frame>::last_state_228_;
-template<typename Frame>
-thread_local std::vector<not_null<DiscreteTrajectory<Frame>*>>
-    Ephemeris<Frame>::trajectories_228_;
-#endif
 
 }  // namespace internal_ephemeris
 }  // namespace physics
