@@ -1,8 +1,9 @@
 ﻿
 #pragma once
 
-#include<vector>
+#include <vector>
 
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
@@ -13,6 +14,7 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -42,7 +44,7 @@ void ComputeHarmonicOscillatorVelocity(
 
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
-void ComputeHarmonicOscillatorAcceleration(
+Status ComputeHarmonicOscillatorAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,

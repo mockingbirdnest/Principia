@@ -82,8 +82,10 @@ class Status final {
   Error error() const;
   std::string const& message() const;
 
-  bool operator==(Status const& x) const;
-  bool operator!=(Status const& x) const;
+  bool operator==(Status const& s) const;
+  bool operator!=(Status const& s) const;
+
+  void Update(Status const& s);
 
   // Returns a combination of the error code name and message.
   std::string ToString() const;

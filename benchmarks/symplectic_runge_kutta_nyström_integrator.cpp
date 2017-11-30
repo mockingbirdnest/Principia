@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -23,6 +24,7 @@
 
 namespace principia {
 
+using base::Status;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
@@ -56,18 +58,20 @@ using World = Frame<serialization::Frame::TestTag,
 
 // TODO(egg): use the one from testing_utilities/integration again when everyone
 // uses |Instant|s.
-void ComputeHarmonicOscillatorAcceleration1D(
+Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result) {
   result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  return Status::OK;
 }
 
-void ComputeHarmonicOscillatorAcceleration3D(
+Status ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<World>> const& q,
     std::vector<Vector<Acceleration, World>>& result) {
   result[0] = (World::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  return Status::OK;
 }
 
 }  // namespace

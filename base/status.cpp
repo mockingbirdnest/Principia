@@ -104,12 +104,19 @@ std::string const& Status::message() const {
   return message_;
 }
 
-bool Status::operator==(Status const& x) const {
-  return error_ == x.error_ && message_ == x.message_;
+bool Status::operator==(Status const& s) const {
+  return error_ == s.error_ && message_ == s.message_;
 }
 
-bool Status::operator!=(Status const& x) const {
-  return !operator==(x);
+bool Status::operator!=(Status const& s) const {
+  return !operator==(s);
+}
+
+void Status::Update(Status const & s) {
+  if (error_ == Error::OK && s.error_ != Error::OK) {
+    error_ = s.error_;
+    message_ = s.message_;
+  }
 }
 
 std::string Status::ToString() const {

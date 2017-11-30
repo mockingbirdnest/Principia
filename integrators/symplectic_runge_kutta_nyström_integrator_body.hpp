@@ -84,11 +84,13 @@ Instance::Solve(Instant const& t_final) {
   // previous evaluation.
   constexpr int first_stage = composition == BA ? 0 : 1;
 
+  Status status;
+
   if (composition == BAB) {
     for (int k = 0; k < dimension; ++k) {
       q_stage[k] = q[k].value;
     }
-    equation.compute_acceleration(t.value, q_stage, g);
+    status.Update(equation.compute_acceleration(t.value, q_stage, g));
   }
 
   while (abs_h <= Abs((t_final - t.value) - t.error)) {
@@ -110,7 +112,8 @@ Instance::Solve(Instant const& t_final) {
       for (int k = 0; k < dimension; ++k) {
         q_stage[k] = q[k].value + Δq[k];
       }
-      equation.compute_acceleration(t.value + (t.error + c[i] * h), q_stage, g);
+      status.Update(equation.compute_acceleration(
+          t.value + (t.error + c[i] * h), q_stage, g));
       for (int k = 0; k < dimension; ++k) {
         // exp(bᵢ h B)
         Δv[k] += h * b[i] * g[k];
@@ -131,7 +134,7 @@ Instance::Solve(Instant const& t_final) {
     append_state(current_state);
   }
 
-  return Status::OK;
+  return status;
 }
 
 template<typename Position, int order, bool time_reversible, int evaluations,

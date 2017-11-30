@@ -10,6 +10,7 @@
 
 #include "base/bundle.hpp"
 #include "base/file.hpp"
+#include "base/status.hpp"
 #include "glog/logging.h"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -187,10 +188,10 @@ class WorkErrorGraphGenerator {
   };
 
   WorkErrorGraphGenerator(
-      std::function<void(Instant const& t,
-                         std::vector<Length> const& q,
-                         std::vector<Acceleration>& result,
-                         int* evaluations)> compute_accelerations,
+      std::function<Status(Instant const& t,
+                           std::vector<Length> const& q,
+                           std::vector<Acceleration>& result,
+                           int* evaluations)> compute_accelerations,
       ODE::SystemState initial_state,
       std::function<Errors(ODE::SystemState const&)> compute_errors,
       Instant const& tmax,
@@ -211,6 +212,7 @@ class WorkErrorGraphGenerator {
       e_errors_[i].resize(integrations_per_integrator_);
       evaluations_[i].resize(integrations_per_integrator_);
     }
+    return Status::OK;
   }
 
   std::string GetMathematicaData() {
@@ -297,10 +299,10 @@ class WorkErrorGraphGenerator {
   }
 
   std::vector<SimpleHarmonicMotionPlottedIntegrator> const methods_;
-  std::function<void(Instant const& t,
-                     std::vector<Length> const& q,
-                     std::vector<Acceleration>& result,
-                     int* evaluations)>
+  std::function<Status(Instant const& t,
+                       std::vector<Length> const& q,
+                       std::vector<Acceleration>& result,
+                       int* evaluations)>
       compute_accelerations_;
   ODE::SystemState initial_state_;
   std::function<Errors(ODE::SystemState const&)> compute_errors_;
