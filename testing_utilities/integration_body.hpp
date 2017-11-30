@@ -42,12 +42,24 @@ inline void ComputeHarmonicOscillatorVelocity(
   result[0] = p[0] / SIUnit<Mass>();
 }
 
-inline void ComputeHarmonicOscillatorAcceleration(
+inline void ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
-    int* evaluations) {
+    int* const evaluations) {
   result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
+  if (evaluations != nullptr) {
+    ++*evaluations;
+  }
+}
+
+template<typename Frame>
+void ComputeHarmonicOscillatorAcceleration3D(
+    Instant const& t,
+    std::vector<Position<Frame>> const& q,
+    std::vector<Vector<Acceleration, Frame>>& result,
+    int* const evaluations) {
+  result[0] = (Frame::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
   if (evaluations != nullptr) {
     ++*evaluations;
   }
