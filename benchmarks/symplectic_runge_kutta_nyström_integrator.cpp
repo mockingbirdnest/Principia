@@ -81,7 +81,8 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D, _1, _2, _3, nullptr);
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -135,7 +136,7 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
       std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
-                _1, _2, _3, nullptr);
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{World::origin + q_initial}, {v_initial}, t_initial};
