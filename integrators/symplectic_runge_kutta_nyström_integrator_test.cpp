@@ -41,7 +41,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::EqualsProto;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
@@ -107,7 +107,7 @@ void TestTermination(
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -166,7 +166,7 @@ void Test1000SecondsAt1Millisecond(
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -235,7 +235,7 @@ void TestConvergence(Integrator const& integrator,
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -309,7 +309,7 @@ void TestSymplecticity(Integrator const& integrator,
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -365,7 +365,7 @@ void TestTimeReversibility(Integrator const& integrator) {
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -417,7 +417,7 @@ void TestSerialization(Integrator const& integrator) {
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
