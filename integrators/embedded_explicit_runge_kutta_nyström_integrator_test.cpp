@@ -38,7 +38,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::EqualsProto;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -105,7 +105,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, &evaluations);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -196,7 +196,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
@@ -344,7 +344,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
   {
     ODE harmonic_oscillator;
     harmonic_oscillator.compute_acceleration =
-        std::bind(ComputeHarmonicOscillatorAcceleration,
+        std::bind(ComputeHarmonicOscillatorAcceleration1D,
                   _1, _2, _3, /*evaluations=*/nullptr);
     IntegrationProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
@@ -394,7 +394,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
   {
     ODE harmonic_oscillator;
     harmonic_oscillator.compute_acceleration =
-        std::bind(ComputeHarmonicOscillatorAcceleration,
+        std::bind(ComputeHarmonicOscillatorAcceleration1D,
                   _1, _2, _3, /*evaluations=*/nullptr);
     IntegrationProblem<ODE> problem;
     problem.equation = harmonic_oscillator;
@@ -442,7 +442,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
   std::vector<ODE::SystemState> solution;
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration,
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
                 _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;

@@ -20,6 +20,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/physics.pb.h"
+#include "testing_utilities/integration.hpp"
 
 namespace principia {
 
@@ -43,6 +44,8 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration3D;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
@@ -53,22 +56,6 @@ namespace {
 
 using World = Frame<serialization::Frame::TestTag,
                     serialization::Frame::TEST, true>;
-
-// TODO(egg): use the one from testing_utilities/integration again when everyone
-// uses |Instant|s.
-void ComputeHarmonicOscillatorAcceleration1D(
-    Instant const& t,
-    std::vector<Length> const& q,
-    std::vector<Acceleration>& result) {
-  result[0] = -q[0] * (SIUnit<Stiffness>() / SIUnit<Mass>());
-}
-
-void ComputeHarmonicOscillatorAcceleration3D(
-    Instant const& t,
-    std::vector<Position<World>> const& q,
-    std::vector<Vector<Acceleration, World>>& result) {
-  result[0] = (World::origin - q[0]) * (SIUnit<Stiffness>() / SIUnit<Mass>());
-}
 
 }  // namespace
 
@@ -94,7 +81,8 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D, _1, _2, _3);
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{q_initial}, {v_initial}, t_initial};
@@ -147,7 +135,8 @@ void SolveHarmonicOscillatorAndComputeError3D(benchmark::State& state,
   solution.reserve(static_cast<int>((t_final - t_initial) / step));
   ODE harmonic_oscillator;
   harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration3D, _1, _2, _3);
+      std::bind(ComputeHarmonicOscillatorAcceleration3D<World>,
+                _1, _2, _3, /*evaluations=*/nullptr);
   IntegrationProblem<ODE> problem;
   problem.equation = harmonic_oscillator;
   problem.initial_state = {{World::origin + q_initial}, {v_initial}, t_initial};

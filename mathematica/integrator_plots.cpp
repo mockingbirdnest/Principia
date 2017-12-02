@@ -79,7 +79,7 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::MasslessBody;
 using testing_utilities::AbsoluteError;
-using testing_utilities::ComputeHarmonicOscillatorAcceleration;
+using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::ComputeKeplerAcceleration;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
@@ -342,7 +342,7 @@ void GenerateSimpleHarmonicMotionWorkErrorGraphs() {
                        k * Pow<2>(state.positions[0].value)) / 2)};
   };
   WorkErrorGraphGenerator<Energy> generator(
-      ComputeHarmonicOscillatorAcceleration,
+      ComputeHarmonicOscillatorAcceleration1D,
       initial_state,
       compute_error,
       tmax,

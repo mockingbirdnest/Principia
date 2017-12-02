@@ -42,10 +42,17 @@ void ComputeHarmonicOscillatorVelocity(
 
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
-void ComputeHarmonicOscillatorAcceleration(
+void ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
+    int* evaluations);
+
+template<typename Frame>
+void ComputeHarmonicOscillatorAcceleration3D(
+    Instant const& t,
+    std::vector<Position<Frame>> const& q,
+    std::vector<Vector<Acceleration, Frame>>& result,
     int* evaluations);
 
 // The Kepler problem with unit gravitational parameter, where the
@@ -68,7 +75,8 @@ void ComputeGravitationalAcceleration(
 }  // namespace internal_integration
 
 using internal_integration::ComputeGravitationalAcceleration;
-using internal_integration::ComputeHarmonicOscillatorAcceleration;
+using internal_integration::ComputeHarmonicOscillatorAcceleration1D;
+using internal_integration::ComputeHarmonicOscillatorAcceleration3D;
 using internal_integration::ComputeHarmonicOscillatorForce;
 using internal_integration::ComputeHarmonicOscillatorVelocity;
 using internal_integration::ComputeKeplerAcceleration;
