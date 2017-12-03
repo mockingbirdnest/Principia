@@ -6,6 +6,7 @@
 
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "testing_utilities/matchers.hpp"
 
 #if !PRINCIPIA_COMPILER_CLANG
 
