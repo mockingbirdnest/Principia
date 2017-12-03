@@ -62,10 +62,10 @@ Status ComputeHarmonicOscillatorAcceleration3D(
 // the Runge-Kutta-Nyström formulation
 //   q" = -q μ / |q|³,
 // where μ = 1 m³ s⁻².
-void ComputeKeplerAcceleration(Instant const& t,
-                               std::vector<Length> const& q,
-                               std::vector<Acceleration>& result,
-                               int* evaluations);
+Status ComputeKeplerAcceleration(Instant const& t,
+                                 std::vector<Length> const& q,
+                                 std::vector<Acceleration>& result,
+                                 int* evaluations);
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(

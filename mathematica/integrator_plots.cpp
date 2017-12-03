@@ -212,7 +212,6 @@ class WorkErrorGraphGenerator {
       e_errors_[i].resize(integrations_per_integrator_);
       evaluations_[i].resize(integrations_per_integrator_);
     }
-    return Status::OK;
   }
 
   std::string GetMathematicaData() {

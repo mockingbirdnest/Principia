@@ -64,9 +64,10 @@ Status ComputeHarmonicOscillatorAcceleration3D(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
+  return Status::OK;
 }
 
-inline void ComputeKeplerAcceleration(
+inline Status ComputeKeplerAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
