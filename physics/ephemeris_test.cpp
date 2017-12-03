@@ -73,6 +73,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::EqualsProto;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
+using testing_utilities::StatusIs;
 using testing_utilities::VanishesBefore;
 using ::testing::AnyOf;
 using ::testing::Eq;
@@ -586,9 +587,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
       {intrinsic_acceleration1, intrinsic_acceleration2},
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
                                                        period / 1000));
-  ephemeris.FlowWithFixedStep(
-      t0_ + period,
-      *instance);
+  EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + period, *instance));
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);
@@ -739,7 +738,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
           Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
                                                            duration / 100));
 
-  MasslessBody elephant;
+  // The elephant's initial position and velocity.
   DiscreteTrajectory<ICRFJ2000Equator> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRFJ2000Equator>(
@@ -792,6 +791,56 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
               AlmostEquals(0 * SIUnit<Acceleration>(), 0));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
+}
+
+// An apple located a bit above the pole collides with the ground.
+TEST_P(EphemerisTest, CollisionDetection) {
+  Time const short_duration = 1 * Second;
+  // A naïve computation would have 1.428 s.
+  Time const long_duration = 1.431 * Second;
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> initial_state;
+
+  auto earth = SolarSystem<ICRFJ2000Equator>::MakeMassiveBody(
+      solar_system_.gravity_model_message("Earth"));
+  Length const& earth_mean_radius = earth->mean_radius();
+  Velocity<ICRFJ2000Equator> const v;
+  Position<ICRFJ2000Equator> const q = ICRFJ2000Equator::origin;
+
+  bodies.push_back(std::move(earth));
+  initial_state.emplace_back(q, v);
+
+  Position<ICRFJ2000Equator> const earth_position =
+      initial_state[0].position();
+  Velocity<ICRFJ2000Equator> const earth_velocity =
+      initial_state[0].velocity();
+
+  Ephemeris<ICRFJ2000Equator> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
+                                                       short_duration / 100));
+
+  // The apple's initial position and velocity
+  DiscreteTrajectory<ICRFJ2000Equator> trajectory;
+  trajectory.Append(
+      t0_,
+      DegreesOfFreedom<ICRFJ2000Equator>(
+          earth_position +
+              Vector<Length, ICRFJ2000Equator>(
+                  {0 * Metre, 0 * Metre, earth_mean_radius + 10 * Metre}),
+          earth_velocity));
+  auto const instance = ephemeris.NewInstance(
+      {&trajectory},
+      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          Quinlan1999Order8A<Position<ICRFJ2000Equator>>(), 1e-3 * Second));
+
+  EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + short_duration, *instance));
+  EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
+              StatusIs(Error::OUT_OF_RANGE));
 }
 
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {

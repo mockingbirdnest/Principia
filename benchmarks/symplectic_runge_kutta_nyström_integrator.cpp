@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -24,6 +25,7 @@
 
 namespace principia {
 
+using base::Status;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;

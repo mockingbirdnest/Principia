@@ -171,6 +171,8 @@ Instance::Solve(Instant const& t_final) {
   // The number of steps already performed.
   std::int64_t step_count = 0;
 
+  Status status;
+
   // No step size control on the first step.  If this instance is being
   // restarted we already have a value of |h| suitable for the next step, based
   // on the computation of |tolerance_to_error_ratio_| during the last
@@ -220,7 +222,7 @@ Instance::Solve(Instant const& t_final) {
           q_stage[k] = q_hat[k].value +
                            h * (c[i] * v_hat[k].value + h * Σj_a_ij_g_jk);
         }
-        equation.compute_acceleration(t_stage, q_stage, g[i]);
+        status.Update(equation.compute_acceleration(t_stage, q_stage, g[i]));
       }
 
       // Increment computation and step size control.
@@ -282,7 +284,7 @@ Instance::Solve(Instant const& t_final) {
   // The resolution is restartable from the last non-truncated state.
   CHECK(final_state);
   current_state = *final_state;
-  return Status(termination_condition::Done, "");
+  return status;
 }
 
 template<typename Position, int higher_order, int lower_order, int stages,

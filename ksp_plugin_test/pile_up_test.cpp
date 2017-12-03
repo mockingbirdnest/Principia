@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 
+#include "base/status.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "geometry/named_quantities.hpp"
@@ -24,6 +25,7 @@ namespace internal_pile_up {
 
 using base::check_not_null;
 using base::make_not_null_unique;
+using base::Status;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::R3Element;
@@ -374,7 +376,8 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
                           {1.2 * Metre, 14.2 * Metre, 31.2 / 3.0 * Metre}),
                   Velocity<Barycentric>({10.2 * Metre / Second,
                                          140.2 * Metre / Second,
-                                         310.2 / 3.0 * Metre / Second})))));
+                                         310.2 / 3.0 * Metre / Second}))),
+          Return(Status::OK)));
   EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillOnce(DoAll(
           AppendToDiscreteTrajectory(DegreesOfFreedom<Barycentric>(

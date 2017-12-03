@@ -42,7 +42,7 @@ inline void ComputeHarmonicOscillatorVelocity(
   result[0] = p[0] / SIUnit<Mass>();
 }
 
-inline void ComputeHarmonicOscillatorAcceleration1D(
+inline Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
@@ -51,10 +51,11 @@ inline void ComputeHarmonicOscillatorAcceleration1D(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
+  return Status::OK;
 }
 
 template<typename Frame>
-void ComputeHarmonicOscillatorAcceleration3D(
+Status ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
@@ -63,9 +64,10 @@ void ComputeHarmonicOscillatorAcceleration3D(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
+  return Status::OK;
 }
 
-inline void ComputeKeplerAcceleration(
+inline Status ComputeKeplerAcceleration(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
@@ -78,6 +80,7 @@ inline void ComputeKeplerAcceleration(
   if (evaluations != nullptr) {
     ++*evaluations;
   }
+  return Status::OK;
 }
 
 template<typename Frame>

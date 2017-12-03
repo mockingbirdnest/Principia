@@ -50,9 +50,9 @@ struct SpecialSecondOrderDifferentialEquation final {
   using Acceleration = Variation<Velocity>;
   using RightHandSideComputation =
       std::function<
-          void(Instant const& t,
-               std::vector<Position> const& positions,
-               std::vector<Acceleration>& accelerations)>;
+          Status(Instant const& t,
+                 std::vector<Position> const& positions,
+                 std::vector<Acceleration>& accelerations)>;
 
   struct SystemState final {
     SystemState() = default;

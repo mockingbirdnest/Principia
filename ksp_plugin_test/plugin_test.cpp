@@ -14,6 +14,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/permutation.hpp"
@@ -48,6 +49,7 @@ using astronomy::ParseTT;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
+using base::Status;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Identity;
@@ -732,7 +734,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
-      .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
+                            Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
@@ -835,7 +838,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(false)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
-      .WillRepeatedly(AppendToDiscreteTrajectory2(&trajectories[0], dof));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
+                            Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
       .WillRepeatedly(
           ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));

@@ -24,6 +24,18 @@ MATCHER_P(EqualsProto,
   return false;
 }
 
+MATCHER(IsOk,
+        std::string(negation ? "is not" : "is") + " ok") {
+  return arg.ok();
+}
+
+MATCHER_P(StatusIs,
+          error,
+          std::string(negation ? "does not have" : "has") + " error: " +
+              ::principia::base::ErrorToString(error)) {
+  return arg.error() == error;
+}
+
 }  // namespace testing_utilities
 
 namespace serialization {

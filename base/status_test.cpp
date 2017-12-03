@@ -75,7 +75,7 @@ TEST(Status, Message) {
   status = Status(Error::INVALID_ARGUMENT, "msg");
   EXPECT_FALSE(status.ok());
   EXPECT_EQ("msg", status.message());
-  EXPECT_EQ("INVALID_ARGUMENT:msg", status.ToString());
+  EXPECT_EQ("INVALID_ARGUMENT: msg", status.ToString());
   status = Status(Error::OK, "msg");
   EXPECT_TRUE(status.ok());
   EXPECT_EQ("", status.message());

@@ -15,6 +15,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {

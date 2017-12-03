@@ -188,7 +188,7 @@ class Ephemeris {
   // bodies in the gravitational potential described by |*this|.  If
   // |t > t_max()|, calls |Prolong(t)| beforehand.  The trajectories and
   // integration parameters are given by the |instance|.
-  virtual void FlowWithFixedStep(
+  virtual Status FlowWithFixedStep(
       Instant const& t,
       typename Integrator<NewtonianMotionEquation>::Instance& instance);
 
@@ -292,9 +292,10 @@ class Ephemeris {
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
   // |positions|.  The template parameter specifies what we know about the
-  // massive body, and therefore what forces apply.
+  // massive body, and therefore what forces apply.  Returns false iff a
+  // collision occurred, i.e., the massless body is inside |body1|.
   template<bool body1_is_oblate>
-  void ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
+  bool ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Instant const& t,
       MassiveBody const& body1,
       std::size_t const b1,
@@ -310,15 +311,18 @@ class Ephemeris {
 
   // Computes the acceleration exerted by the massive bodies in |bodies_| on
   // massless bodies.  The massless bodies are at the given |positions|.
-  void ComputeMasslessBodiesGravitationalAccelerations(
+  // Returns false iff a collision occurred, i.e., the massless body is inside
+  // one of the |bodies_|.
+  bool ComputeMasslessBodiesGravitationalAccelerations(
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       EXCLUDES(lock_);
 
   // Same as above, but the massless bodies have intrinsic accelerations.
-  // |intrinsic_accelerations| may be empty.
-  void ComputeMasslessBodiesTotalAccelerations(
+  // |intrinsic_accelerations| may be empty.  Returns false iff a collision
+  // occurred, i.e., the massless body is inside one of the |bodies_|.
+  bool ComputeMasslessBodiesTotalAccelerations(
       std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
       Instant const& t,
       std::vector<Position<Frame>> const& positions,

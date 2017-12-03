@@ -59,6 +59,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   // Order.
   int const k = order_;
 
+  Status status;
   std::vector<Position> positions(dimension);
 
   DoubleDisplacements Σj_minus_ɑj_qj(dimension);
@@ -129,9 +130,9 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
       positions[d] = current_position.value;
       current_state.positions[d] = current_position;
     }
-    equation.compute_acceleration(t.value,
-                                  positions,
-                                  current_step.accelerations);
+    status.Update(equation.compute_acceleration(t.value,
+                                                positions,
+                                                current_step.accelerations));
 
     // Note that we only delete the oldest step *after* computing the velocity.
     // This means that the velocity computation has access to |order_ + 1|
@@ -144,7 +145,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
     append_state(current_state);
   }
 
-  return Status::OK;
+  return status;
 }
 
 template<typename Position, int order_>
@@ -354,6 +355,8 @@ Instance::FillStepFromSystemState(ODE const& equation,
     positions.push_back(position.value);
   }
   step.accelerations.resize(step.displacements.size());
+  // Ignore the status here.  We are merely computing the acceleration to store
+  // it, not to advance an integrator.
   equation.compute_acceleration(step.time.value,
                                 positions,
                                 step.accelerations);

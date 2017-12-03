@@ -65,6 +65,8 @@ enum class Error {
   DATA_LOSS = 15,
 };
 
+std::string ErrorToString(Error const error);
+
 class Status final {
  public:
   // Creates a "successful" status.
@@ -82,8 +84,10 @@ class Status final {
   Error error() const;
   std::string const& message() const;
 
-  bool operator==(Status const& x) const;
-  bool operator!=(Status const& x) const;
+  bool operator==(Status const& s) const;
+  bool operator!=(Status const& s) const;
+
+  void Update(Status const& s);
 
   // Returns a combination of the error code name and message.
   std::string ToString() const;
@@ -93,16 +97,17 @@ class Status final {
   std::string message_;
 };
 
-// Prints a human-readable representation of |x| to |os|.
-std::ostream& operator<<(std::ostream& os, Status const& x);
+// Prints a human-readable representation of |s| to |os|.
+std::ostream& operator<<(std::ostream& os, Status const& s);
 
-#define CHECK_OK(value) CHECK((value).ok()) << (value)
-#define EXPECT_OK(value) EXPECT_TRUE((value).ok()) << (value)
+#define CHECK_OK(value) CHECK_EQ((value), ::principia::base::Status::OK)
+#define EXPECT_OK(value) \
+  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    const ::principia::base::Status _status = (expr);                        \
+    ::principia::base::Status const _status = (expr);                        \
     if (!_status.ok())                                                       \
       return _status;                                                        \
   } while (false)

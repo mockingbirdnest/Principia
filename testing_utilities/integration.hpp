@@ -1,8 +1,9 @@
 ﻿
 #pragma once
 
-#include<vector>
+#include <vector>
 
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/massive_body.hpp"
 #include "quantities/quantities.hpp"
@@ -13,6 +14,7 @@ namespace testing_utilities {
 namespace internal_integration {
 
 using base::not_null;
+using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
@@ -42,14 +44,14 @@ void ComputeHarmonicOscillatorVelocity(
 
 // The Runge-Kutta-Nyström formulation
 //   q" = -q k / m.
-void ComputeHarmonicOscillatorAcceleration1D(
+Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
     std::vector<Acceleration>& result,
     int* evaluations);
 
 template<typename Frame>
-void ComputeHarmonicOscillatorAcceleration3D(
+Status ComputeHarmonicOscillatorAcceleration3D(
     Instant const& t,
     std::vector<Position<Frame>> const& q,
     std::vector<Vector<Acceleration, Frame>>& result,
@@ -60,10 +62,10 @@ void ComputeHarmonicOscillatorAcceleration3D(
 // the Runge-Kutta-Nyström formulation
 //   q" = -q μ / |q|³,
 // where μ = 1 m³ s⁻².
-void ComputeKeplerAcceleration(Instant const& t,
-                               std::vector<Length> const& q,
-                               std::vector<Acceleration>& result,
-                               int* evaluations);
+Status ComputeKeplerAcceleration(Instant const& t,
+                                 std::vector<Length> const& q,
+                                 std::vector<Acceleration>& result,
+                                 int* evaluations);
 
 template<typename Frame>
 void ComputeGravitationalAcceleration(
