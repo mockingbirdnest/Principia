@@ -125,7 +125,7 @@ std::string Status::ToString() const {
   } else if (message_.empty()) {
     return ErrorToString(error_);
   } else {
-    return ErrorToString(error_) + ":" + message_;
+    return ErrorToString(error_) + ": " + message_;
   }
 }
 

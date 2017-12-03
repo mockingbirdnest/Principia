@@ -586,9 +586,7 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
       {intrinsic_acceleration1, intrinsic_acceleration2},
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(),
                                                        period / 1000));
-  ephemeris.FlowWithFixedStep(
-      t0_ + period,
-      *instance);
+  EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + period, *instance));
 
   ContinuousTrajectory<ICRFJ2000Equator> const& earth_trajectory =
       *ephemeris.trajectory(earth);

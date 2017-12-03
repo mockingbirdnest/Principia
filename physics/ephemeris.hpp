@@ -188,7 +188,7 @@ class Ephemeris {
   // bodies in the gravitational potential described by |*this|.  If
   // |t > t_max()|, calls |Prolong(t)| beforehand.  The trajectories and
   // integration parameters are given by the |instance|.
-  virtual void FlowWithFixedStep(
+  virtual Status FlowWithFixedStep(
       Instant const& t,
       typename Integrator<NewtonianMotionEquation>::Instance& instance);
 

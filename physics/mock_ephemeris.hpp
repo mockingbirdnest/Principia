@@ -57,8 +57,8 @@ class MockEphemeris : public Ephemeris<Frame> {
            bool last_point_only));
   MOCK_METHOD2_T(
       FlowWithFixedStep,
-      void(Instant const& t,
-           typename Integrator<NewtonianMotionEquation>::Instance& instance));
+      Status(Instant const& t,
+             typename Integrator<NewtonianMotionEquation>::Instance& instance));
 
   MOCK_CONST_METHOD2_T(
       ComputeGravitationalAccelerationOnMasslessBody,

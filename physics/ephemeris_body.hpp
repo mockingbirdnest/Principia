@@ -526,14 +526,14 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::FlowWithFixedStep(
+Status Ephemeris<Frame>::FlowWithFixedStep(
     Instant const& t,
     typename Integrator<NewtonianMotionEquation>::Instance& instance) {
   if (empty() || t > t_max()) {
     Prolong(t);
   }
 
-  instance.Solve(t);
+  return instance.Solve(t);
 }
 
 template<typename Frame>
