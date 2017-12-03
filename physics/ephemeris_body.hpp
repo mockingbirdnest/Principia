@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
@@ -967,6 +968,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
     ok &= Δq_norm > body1_mean_radius;
+    using astronomy::operator""_TT;
 
     // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
     // non-oblate path slower.

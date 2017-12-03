@@ -65,6 +65,8 @@ enum class Error {
   DATA_LOSS = 15,
 };
 
+std::string ErrorToString(Error const error);
+
 class Status final {
  public:
   // Creates a "successful" status.
@@ -98,13 +100,14 @@ class Status final {
 // Prints a human-readable representation of |s| to |os|.
 std::ostream& operator<<(std::ostream& os, Status const& s);
 
-#define CHECK_OK(value) CHECK((value).ok()) << (value)
-#define EXPECT_OK(value) EXPECT_TRUE((value).ok()) << (value)
+#define CHECK_OK(value) CHECK_EQ((value), ::principia::base::Status::OK)
+#define EXPECT_OK(value) \
+  EXPECT_THAT((value), ::principia::testing_utilities::IsOk());
 
 #define RETURN_IF_ERROR(expr)                                                \
   do {                                                                       \
     /* Using _status below to avoid capture problems if expr is "status". */ \
-    const ::principia::base::Status _status = (expr);                        \
+    ::principia::base::Status const _status = (expr);                        \
     if (!_status.ok())                                                       \
       return _status;                                                        \
   } while (false)
