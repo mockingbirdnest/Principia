@@ -758,7 +758,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        parameters);
 
   NewtonianMotionEquation equation;
-  equation.compute_acceleration = [&ephemeris](
+  equation.compute_acceleration = [ephemeris = ephemeris.get()](
       Instant const& t,
       std::vector<Position<Frame>> const& positions,
       std::vector<Vector<Acceleration, Frame>>& accelerations) {
