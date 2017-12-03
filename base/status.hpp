@@ -95,8 +95,8 @@ class Status final {
   std::string message_;
 };
 
-// Prints a human-readable representation of |x| to |os|.
-std::ostream& operator<<(std::ostream& os, Status const& x);
+// Prints a human-readable representation of |s| to |os|.
+std::ostream& operator<<(std::ostream& os, Status const& s);
 
 #define CHECK_OK(value) CHECK((value).ok()) << (value)
 #define EXPECT_OK(value) EXPECT_TRUE((value).ok()) << (value)
