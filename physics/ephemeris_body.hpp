@@ -966,7 +966,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    ok &= Δq_norm < body1_mean_radius;
+    ok &= Δq_norm > body1_mean_radius;
 
     // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
     // non-oblate path slower.
