@@ -112,13 +112,15 @@ void PileUp::NudgeParts() const {
   }
 }
 
-void PileUp::DeformAndAdvanceTime(Instant const& t) {
+Status PileUp::DeformAndAdvanceTime(Instant const& t) {
   std::lock_guard<std::mutex> l(*lock_);
+  Status status;
   if (psychohistory_->last().time() < t) {
     DeformPileUpIfNeeded();
-    AdvanceTime(t);
+    status = AdvanceTime(t);
     NudgeParts();
   }
+  return status;
 }
 
 void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
@@ -305,6 +307,7 @@ void PileUp::DeformPileUpIfNeeded() {
 void PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
+  Status status;
   auto const history_last = history_->last();
   if (intrinsic_force_ == Vector<Force, Barycentric>{}) {
     // Remove the fork.
@@ -316,7 +319,7 @@ void PileUp::AdvanceTime(Instant const& t) {
           fixed_step_parameters_);
     }
     CHECK_LT(history_->last().time(), t);
-    ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
+    status = ephemeris_->FlowWithFixedStep(t, *fixed_instance_);
     psychohistory_ = history_->NewForkAtLast();
     if (history_->last().time() < t) {
       // Do not clear the |fixed_instance_| here, we will use it for the next
@@ -373,6 +376,8 @@ void PileUp::AdvanceTime(Instant const& t) {
     AppendToPart<&Part::AppendToPsychohistory>(it);
   }
   history_->ForgetBefore(psychohistory_->Fork().time());
+
+  return status;
 }
 
 template<PileUp::AppendToPartTrajectory append_to_part_trajectory>

@@ -265,7 +265,7 @@ class Plugin {
   // must wait on the returned future before using the trajectories of the
   // vessel.  The caller must ensure that the vessels don't change while this
   // method is running.
-  virtual not_null<std::unique_ptr<std::future<void>>> CatchUpVessel(
+  virtual not_null<std::unique_ptr<std::future<Status>>> CatchUpVessel(
       GUID const& vessel_guid);
 
   // Advances time to |current_time_| for all pile ups that are not already

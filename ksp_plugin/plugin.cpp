@@ -24,6 +24,7 @@
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
+#include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -64,6 +65,7 @@ using base::Fingerprint2011;
 using base::make_not_null_unique;
 using base::OFStream;
 using base::not_null;
+using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -683,21 +685,23 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   loaded_vessels_.clear();
 }
 
-not_null<std::unique_ptr<std::future<void>>> Plugin::CatchUpVessel(
+not_null<std::unique_ptr<std::future<Status>>> Plugin::CatchUpVessel(
     GUID const& vessel_guid) {
   CHECK(!initializing_);
 
-  return make_not_null_unique<std::future<void>>(
+  return make_not_null_unique<std::future<Status>>(
       vessel_thread_pool_.Add([this, vessel_guid]() {
+        Status status;
         Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
-        vessel.ForSomePart([this](Part& part) {
+        vessel.ForSomePart([this, &status](Part& part) {
           auto const pile_up = part.containing_pile_up()->iterator();
           // Note that there can be contention in the following method if the
           // caller is catching-up two vessels belonging to the same pile-up in
           // parallel.
-          pile_up->DeformAndAdvanceTime(current_time_);
+          status = pile_up->DeformAndAdvanceTime(current_time_);
         });
         vessel.AdvanceTime();
+        return status;
       }));
 }
 
@@ -705,13 +709,13 @@ void Plugin::CatchUpLaggingVessels() {
   CHECK(!initializing_);
 
   // Start all the integrations in parallel.
-  std::vector<std::future<void>> futures;
+  std::vector<std::future<Status>> futures;
   for (PileUp& pile_up : pile_ups_) {
     futures.emplace_back(
         vessel_thread_pool_.Add([this, &pile_up]() {
           // Note that there cannot be contention in the following method as
           // no two pile-ups are advanced at the same time.
-          pile_up.DeformAndAdvanceTime(current_time_);
+          return pile_up.DeformAndAdvanceTime(current_time_);
         }));
   }
 
