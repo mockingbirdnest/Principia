@@ -430,7 +430,7 @@ Ephemeris<Frame>::NewInstance(
 }
 
 template<typename Frame>
-bool Ephemeris<Frame>::FlowWithAdaptiveStep(
+Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
@@ -439,7 +439,7 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
     bool const last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
-    return true;
+    return Status::OK;
   }
 
   std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
@@ -511,7 +511,14 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
                                           append_state,
                                           tolerance_to_error_ratio,
                                           integrator_parameters);
-  auto const status = instance->Solve(t_final);
+  auto status = instance->Solve(t_final);
+
+  // We probably don't care if the vessel gets too close to the singularity, as
+  // we only use this integrator for the future.  So we swallow the error.
+  // TODO(phl): Is this the right thing to do long term?
+  if (status.error() == Error::OUT_OF_RANGE) {
+    status = Status::OK;
+  }
 
   if (last_point_only) {
     AppendMasslessBodiesState(last_state, trajectories);
@@ -522,7 +529,13 @@ bool Ephemeris<Frame>::FlowWithAdaptiveStep(
   // (|VanishingStepSize|).  We should not have an event on the trajectory if
   // |ReachedMaximalStepCount|, since that is not a physical property, but
   // rather a self-imposed constraint.
-  return status.ok() && t_final == t;
+  if (!status.ok() || t_final == t) {
+    return status;
+  } else {
+    return Status(Error::DEADLINE_EXCEEDED,
+                  "Couldn't reach " + DebugString(t_final) + ", stopping at " +
+                      DebugString(t));
+  }
 }
 
 template<typename Frame>

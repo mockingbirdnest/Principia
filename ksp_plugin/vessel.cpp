@@ -250,7 +250,7 @@ void Vessel::FlowPrediction(Instant const& time) {
         t,
         prediction_adaptive_step_parameters_,
         FlightPlan::max_ephemeris_steps_per_frame,
-        /*last_point_only=*/false);
+        /*last_point_only=*/false).ok();
     if (!finite_time && reached_t) {
       // This will prolong the ephemeris by |max_ephemeris_steps_per_frame|.
       ephemeris_->FlowWithAdaptiveStep(

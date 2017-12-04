@@ -231,7 +231,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
                         Velocity<ICRFJ2000Equator>(
                             {velocity, velocity, velocity})));
 
-  EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
       t0_ + period,
@@ -242,7 +242,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
           2.6e-15 * Metre / Second),
       Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
       /*last_point_only=*/false));
-  EXPECT_TRUE(ephemeris.FlowWithAdaptiveStep(
+  EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
       trajectory.last().time(),
@@ -507,7 +507,7 @@ TEST_P(EphemerisTest, EarthProbe) {
 
   Instant const old_t_max = ephemeris.t_max();
   EXPECT_THAT(trajectory.last().time(), Lt(old_t_max));
-  EXPECT_FALSE(
+  EXPECT_THAT(
       ephemeris.FlowWithAdaptiveStep(
           &trajectory,
           intrinsic_acceleration,
@@ -518,7 +518,8 @@ TEST_P(EphemerisTest, EarthProbe) {
               1e-9 * Metre,
               2.6e-15 * Metre / Second),
           /*max_ephemeris_steps=*/0,
-          /*last_point_only=*/false));
+          /*last_point_only=*/false),
+      StatusIs(Error::DEADLINE_EXCEEDED));
   EXPECT_THAT(ephemeris.t_max(), Eq(old_t_max));
   EXPECT_THAT(trajectory.last().time(), Eq(old_t_max));
 }

@@ -174,9 +174,9 @@ class Ephemeris {
   // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
   // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
   // |last_point_only| is true, only the last point is appended to the
-  // trajectory.  Returns true if and only if |*trajectory| was integrated until
+  // trajectory.  Returns OK if and only if |*trajectory| was integrated until
   // |t|.
-  virtual bool FlowWithAdaptiveStep(
+  virtual Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,

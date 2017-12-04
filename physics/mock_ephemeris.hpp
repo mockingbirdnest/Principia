@@ -49,12 +49,12 @@ class MockEphemeris : public Ephemeris<Frame> {
           FixedStepParameters const& parameters));
   MOCK_METHOD6_T(
       FlowWithAdaptiveStep,
-      bool(not_null<DiscreteTrajectory<Frame>*> trajectory,
-           IntrinsicAcceleration intrinsic_acceleration,
-           Instant const& t,
-           AdaptiveStepParameters const& parameters,
-           std::int64_t max_ephemeris_steps,
-           bool last_point_only));
+      Status(not_null<DiscreteTrajectory<Frame>*> trajectory,
+             IntrinsicAcceleration intrinsic_acceleration,
+             Instant const& t,
+             AdaptiveStepParameters const& parameters,
+             std::int64_t max_ephemeris_steps,
+             bool last_point_only));
   MOCK_METHOD2_T(
       FlowWithFixedStep,
       Status(Instant const& t,

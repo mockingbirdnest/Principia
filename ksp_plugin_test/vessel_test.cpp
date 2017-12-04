@@ -226,7 +226,7 @@ TEST_F(VesselTest, Prediction) {
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
-                Return(true)));
+                Return(Status::OK)));
   vessel_.FlowPrediction(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(2, vessel_.prediction().Size());
@@ -277,7 +277,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                         Velocity<Barycentric>({140.0 / 3.0 * Metre / Second,
                                                50.0 * Metre / Second,
                                                40.0 * Metre / Second}))),
-                Return(true)));
+                Return(Status::OK)));
   EXPECT_CALL(
       ephemeris_,
       FlowWithAdaptiveStep(_, _, astronomy::InfiniteFuture, _, _, _))
@@ -292,7 +292,7 @@ TEST_F(VesselTest, PredictBeyondTheInfinite) {
                         Velocity<Barycentric>({50.0 * Metre / Second,
                                                60.0 * Metre / Second,
                                                50.0 * Metre / Second}))),
-                Return(true)));
+                Return(Status::OK)));
   vessel_.FlowPrediction(astronomy::InfiniteFuture);
 
   EXPECT_EQ(3, vessel_.prediction().Size());
@@ -319,7 +319,7 @@ TEST_F(VesselTest, FlightPlan) {
 
   EXPECT_FALSE(vessel_.has_flight_plan());
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillOnce(Return(true));
+      .WillOnce(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters());
@@ -335,7 +335,7 @@ TEST_F(VesselTest, SerializationSuccess) {
 
   serialization::Vessel message;
   EXPECT_CALL(ephemeris_, FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(Return(true));
+      .WillRepeatedly(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
                            DefaultPredictionParameters());
