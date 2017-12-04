@@ -6,6 +6,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin/celestial.hpp"
@@ -23,6 +24,7 @@ namespace ksp_plugin {
 namespace internal_vessel {
 
 using base::make_not_null_unique;
+using base::Status;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
