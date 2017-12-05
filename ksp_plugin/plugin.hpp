@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/monostable.hpp"
+#include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
@@ -45,6 +46,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
+using base::Status;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
@@ -270,8 +272,9 @@ class Plugin {
 
   // Advances time to |current_time_| for all pile ups that are not already
   // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.
-  virtual void CatchUpLaggingVessels();
+  // advances time on all vessels that are not yet at |current_time_|.  Returns
+  // the set of vessels that have collided with a celestial.
+  virtual VesselSet CatchUpLaggingVessels();
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -473,7 +476,7 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
 
   // The thread pool for advancing vessels.
-  ThreadPool<void> vessel_thread_pool_;
+  ThreadPool<Status> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
   std::experimental::optional<Rotation<Barycentric, AliceSun>>

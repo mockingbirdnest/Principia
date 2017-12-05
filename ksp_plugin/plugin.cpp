@@ -705,13 +705,22 @@ not_null<std::unique_ptr<std::future<Status>>> Plugin::CatchUpVessel(
       }));
 }
 
-void Plugin::CatchUpLaggingVessels() {
+VesselSet Plugin::CatchUpLaggingVessels() {
   CHECK(!initializing_);
 
+  struct PileUpFuture {
+    PileUpFuture(PileUp const* pile_up, std::future<Status> future)
+        : pile_up(pile_up),
+          future(std::move(future)) {}
+    PileUp const* pile_up;
+    std::future<Status> future;
+  };
+
   // Start all the integrations in parallel.
-  std::vector<std::future<Status>> futures;
+  std::vector<PileUpFuture> pile_up_futures;
   for (PileUp& pile_up : pile_ups_) {
-    futures.emplace_back(
+    pile_up_futures.emplace_back(
+        &pile_up,
         vessel_thread_pool_.Add([this, &pile_up]() {
           // Note that there cannot be contention in the following method as
           // no two pile-ups are advanced at the same time.
@@ -719,16 +728,31 @@ void Plugin::CatchUpLaggingVessels() {
         }));
   }
 
-  // Wait for the integrations to finish before updating the vessels.
-  for (auto const& future : futures) {
+  // Wait for the integrations to finish and figure out which vessels collided
+  // with a celestial.
+  VesselSet collided_vessels;
+  for (auto& pile_up_future : pile_up_futures) {
+    PileUp const* const pile_up = pile_up_future.pile_up;
+    auto& future = pile_up_future.future;
     future.wait();
+    if (future.get().error() == Error::OUT_OF_RANGE) {
+      for (not_null<Part*> const part : pile_up->parts()) {
+        not_null<Vessel*> const vessel =
+            FindOrDie(part_id_to_vessel_, part->part_id());
+        collided_vessels.insert(vessel);
+      }
+    }
   }
+
+  // Update the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     if (vessel.psychohistory().last().time() < current_time_) {
       vessel.AdvanceTime();
     }
   }
+
+  return collided_vessels;
 }
 
 void Plugin::ForgetAllHistoriesBefore(Instant const& t) const {

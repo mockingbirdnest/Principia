@@ -27,6 +27,8 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
@@ -56,6 +58,8 @@ using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
 using ksp_plugin::PartId;
+using ksp_plugin::TypedIterator;
+using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::FrameField;
@@ -174,11 +178,11 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-void principia__CatchUpLaggingVessels(Plugin* const plugin) {
+Iterator* principia__CatchUpLaggingVessels(Plugin* const plugin) {
   journal::Method<journal::CatchUpLaggingVessels> m({plugin});
   CHECK_NOTNULL(plugin);
-  plugin->CatchUpLaggingVessels();
-  return m.Return();
+  VesselSet collided_vessels = plugin->CatchUpLaggingVessels();
+  return m.Return(new TypedIterator<VesselSet>(std::move(collided_vessels)));
 }
 
 // Calls |plugin->CelestialFromParent| with the arguments given.

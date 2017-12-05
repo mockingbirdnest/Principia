@@ -7,6 +7,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -21,6 +22,7 @@ using geometry::RP2Lines;
 using geometry::RP2Point;
 using ksp_plugin::Camera;
 using ksp_plugin::TypedIterator;
+using ksp_plugin::VesselSet;
 using ksp_plugin::World;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -93,6 +95,16 @@ XY principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
   return m.Return(typed_iterator->Get<XY>(
       [](RP2Point<Length, Camera> const& rp2_point) -> XY {
         return ToXY(rp2_point);
+      }));
+}
+
+char const* principia__IteratorGetVessel(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetVessel> m({iterator});
+  auto const typed_iterator = check_not_null(
+      dynamic_cast<TypedIterator<VesselSet> const*>(iterator));
+  return m.Return(typed_iterator->Get<XY>(
+      [](Vessel* const vessel) -> char const* {
+        return vessel->guid().c_str();
       }));
 }
 

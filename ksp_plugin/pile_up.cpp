@@ -304,7 +304,7 @@ void PileUp::DeformPileUpIfNeeded() {
   apparent_part_degrees_of_freedom_.clear();
 }
 
-void PileUp::AdvanceTime(Instant const& t) {
+Status PileUp::AdvanceTime(Instant const& t) {
   CHECK_NOTNULL(psychohistory_);
 
   Status status;

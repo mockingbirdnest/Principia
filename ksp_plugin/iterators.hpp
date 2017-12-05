@@ -3,6 +3,7 @@
 
 #include "base/not_null.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "physics/discrete_trajectory.hpp"
 

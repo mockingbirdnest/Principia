@@ -3,6 +3,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
@@ -15,6 +16,7 @@ using base::not_constructible;
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using base::Status;
 using interface::AdaptiveStepParameters;
 using interface::BodyParameters;
 using interface::Burn;

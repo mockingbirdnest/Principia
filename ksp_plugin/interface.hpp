@@ -8,6 +8,7 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
@@ -33,6 +34,7 @@ namespace interface {
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
+using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;

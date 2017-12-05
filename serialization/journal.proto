@@ -103,7 +103,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5146.
+  extensions 5000 to 5999;  // Last used: 5147.
 }
 
 message AdvanceTime {
@@ -125,7 +125,12 @@ message CatchUpLaggingVessels {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
+  message Return {
+    required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (is_produced) = true];
+  }
   optional In in = 1;
+  optional Return return = 3;
 }
 
 message CelestialFromParent {
@@ -700,7 +705,7 @@ message FutureCatchUpVessel {
     required string vessel_guid = 2;
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "std::future<void> const",
+    required fixed64 result = 1 [(pointer_to) = "std::future<Status> const",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -712,11 +717,11 @@ message FutureWait {
     optional FutureWait extension = 5140;
   }
   message In {
-    required fixed64 future = 1 [(pointer_to) = "std::future<void> const",
+    required fixed64 future = 1 [(pointer_to) = "std::future<Status> const",
                                  (is_consumed) = true];
   }
   message Out {
-    required fixed64 future = 1 [(pointer_to) = "std::future<void> const"];
+    required fixed64 future = 1 [(pointer_to) = "std::future<Status> const"];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1047,6 +1052,21 @@ message IteratorGetRP2LineXY {
   }
   message Return {
     required XY result = 1;
+  }
+  optional In in = 1;
+  optional Return return = 3;
+}
+
+message IteratorGetVessel {
+  extend Method {
+    optional IteratorGetVessel extension = 5147;
+  }
+  message In {
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (is_subject) = true];
+  }
+  message Return {
+    required string result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
