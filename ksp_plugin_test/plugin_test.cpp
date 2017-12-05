@@ -46,6 +46,7 @@ namespace internal_plugin {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::ParseTT;
+using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
@@ -732,7 +733,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
   EXPECT_CALL(plugin_->mock_ephemeris(), empty()).WillRepeatedly(Return(false));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(true)));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
+                            Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));
@@ -836,7 +838,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillOnce(Return(plugin_->trajectory(SolarSystemFactory::Sun)));
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithAdaptiveStep(_, _, _, _, _, _))
-      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof), Return(false)));
+      .WillRepeatedly(DoAll(AppendToDiscreteTrajectory(dof),
+                            Return(Status(Error::DEADLINE_EXCEEDED, ""))));
   EXPECT_CALL(plugin_->mock_ephemeris(), FlowWithFixedStep(_, _))
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));

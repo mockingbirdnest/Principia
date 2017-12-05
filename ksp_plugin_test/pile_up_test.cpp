@@ -264,7 +264,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(true)));
+          Return(Status::OK)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(++p1_.history_begin(), p1_.history_end());
@@ -388,7 +388,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(true)));
+          Return(Status::OK)));
   pile_up.AdvanceTime(astronomy::J2000 + 1 * Second);
 
   EXPECT_EQ(++(++p1_.history_begin()), p1_.history_end());
@@ -645,7 +645,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
               Velocity<Barycentric>({10.0 * Metre / Second,
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
-          Return(true)));
+          Return(Status::OK)));
   p.DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
 }
 

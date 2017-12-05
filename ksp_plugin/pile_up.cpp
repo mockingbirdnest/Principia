@@ -324,13 +324,13 @@ void PileUp::AdvanceTime(Instant const& t) {
       // TODO(phl): Consider not setting |last_point_only| below as we would be
       // fine with multiple points in the |psychohistory_| once all the classes
       // have been changed.
-      CHECK(ephemeris_->FlowWithAdaptiveStep(
-                psychohistory_,
-                Ephemeris<Barycentric>::NoIntrinsicAcceleration,
-                t,
-                adaptive_step_parameters_,
-                Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-                /*last_point_only=*/true));
+      CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
+                   psychohistory_,
+                   Ephemeris<Barycentric>::NoIntrinsicAcceleration,
+                   t,
+                   adaptive_step_parameters_,
+                   Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+                   /*last_point_only=*/true));
     }
   } else {
     // Destroy the fixed instance, it wouldn't be correct to use it the next
@@ -348,13 +348,13 @@ void PileUp::AdvanceTime(Instant const& t) {
 
     auto const a = intrinsic_force_ / mass_;
     auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
-    CHECK(ephemeris_->FlowWithAdaptiveStep(
-              history_.get(),
-              intrinsic_acceleration,
-              t,
-              adaptive_step_parameters_,
-              Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
-              /*last_point_only=*/false));
+    CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
+                 history_.get(),
+                 intrinsic_acceleration,
+                 t,
+                 adaptive_step_parameters_,
+                 Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
+                 /*last_point_only=*/false));
     psychohistory_ = history_->NewForkAtLast();
   }
 

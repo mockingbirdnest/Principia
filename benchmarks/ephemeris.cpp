@@ -428,7 +428,7 @@ void FlowEphemerisWithAdaptiveStep(
     not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
     Instant const& t,
     Ephemeris<ICRFJ2000Equator>& ephemeris) {
-  CHECK(ephemeris.FlowWithAdaptiveStep(
+  CHECK_OK(ephemeris.FlowWithAdaptiveStep(
       trajectory,
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
       t,

@@ -312,7 +312,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                            manœuvre.final_time(),
                                            adaptive_step_parameters_,
                                            max_ephemeris_steps_per_frame,
-                                           /*last_point_only=*/false);
+                                           /*last_point_only=*/false).ok();
       if (!reached_desired_final_time) {
         anomalous_segments_ = 1;
       }
@@ -344,7 +344,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
                                              movement.final_time(),
                                              adaptive_step_parameters_,
                                              max_ephemeris_steps_per_frame,
-                                             /*last_point_only=*/false);
+                                             /*last_point_only=*/false).ok();
         if (!reached_desired_final_time) {
           anomalous_segments_ = 1;
           return;
@@ -365,7 +365,7 @@ void FlightPlan::CoastLastSegment(Instant const& desired_final_time) {
                         desired_final_time,
                         adaptive_step_parameters_,
                         max_ephemeris_steps_per_frame,
-                        /*last_point_only=*/false);
+                        /*last_point_only=*/false).ok();
     if (!reached_desired_final_time) {
       anomalous_segments_ = 1;
     }
@@ -421,7 +421,7 @@ DiscreteTrajectory<Barycentric>* FlightPlan::CoastIfReachesManœuvreInitialTime(
           manœuvre.initial_time(),
           adaptive_step_parameters_,
           max_ephemeris_steps_per_frame,
-          /*last_point_only=*/false);
+          /*last_point_only=*/false).ok();
   if (!reached_manœuvre_initial_time) {
     recomputed_coast->parent()->DeleteFork(recomputed_coast);
   }
