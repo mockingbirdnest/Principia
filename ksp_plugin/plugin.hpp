@@ -267,14 +267,14 @@ class Plugin {
   // must wait on the returned future before using the trajectories of the
   // vessel.  The caller must ensure that the vessels don't change while this
   // method is running.
-  virtual not_null<std::unique_ptr<std::future<Status>>> CatchUpVessel(
+  virtual not_null<std::unique_ptr<PileUpFuture>> CatchUpVessel(
       GUID const& vessel_guid);
 
   // Advances time to |current_time_| for all pile ups that are not already
   // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.  Returns
+  // advances time on all vessels that are not yet at |current_time_|.  Fills
   // the set of vessels that have collided with a celestial.
-  virtual VesselSet CatchUpLaggingVessels();
+  virtual void CatchUpLaggingVessels(VesselSet& collided_vessels);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;

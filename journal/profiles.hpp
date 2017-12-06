@@ -3,7 +3,6 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "base/status.hpp"
 #include "journal/player.hpp"
 #include "ksp_plugin/interface.hpp"
 #include "serialization/journal.pb.h"
@@ -16,7 +15,6 @@ using base::not_constructible;
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
-using base::Status;
 using interface::AdaptiveStepParameters;
 using interface::BodyParameters;
 using interface::Burn;
@@ -31,6 +29,7 @@ using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
 using ksp_plugin::NavigationFrame;
+using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;

@@ -125,12 +125,12 @@ message CatchUpLaggingVessels {
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
-  message Return {
-    required fixed64 result = 1 [(pointer_to) = "Iterator",
-                                 (is_produced) = true];
+  message Out {
+    required fixed64 collided_vessels = 1 [(pointer_to) = "Iterator",
+                                           (is_produced) = true];
   }
   optional In in = 1;
-  optional Return return = 3;
+  optional Out out = 2;
 }
 
 message CelestialFromParent {
@@ -705,7 +705,7 @@ message FutureCatchUpVessel {
     required string vessel_guid = 2;
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "std::future<Status> const",
+    required fixed64 result = 1 [(pointer_to) = "PileUpFuture const",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -717,11 +717,11 @@ message FutureWait {
     optional FutureWait extension = 5140;
   }
   message In {
-    required fixed64 future = 1 [(pointer_to) = "std::future<Status> const",
+    required fixed64 future = 1 [(pointer_to) = "PileUpFuture const",
                                  (is_consumed) = true];
   }
   message Out {
-    required fixed64 future = 1 [(pointer_to) = "std::future<Status> const"];
+    required fixed64 future = 1 [(pointer_to) = "PileUpFuture const"];
   }
   optional In in = 1;
   optional Out out = 2;

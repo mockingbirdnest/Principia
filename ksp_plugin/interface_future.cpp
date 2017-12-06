@@ -10,7 +10,7 @@
 namespace principia {
 namespace interface {
 
-std::future<Status> const* principia__FutureCatchUpVessel(
+PileUpFuture const* principia__FutureCatchUpVessel(
     Plugin* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FutureCatchUpVessel> m({plugin, vessel_guid});
@@ -20,9 +20,10 @@ std::future<Status> const* principia__FutureCatchUpVessel(
   return m.Return(future.release());
 }
 
-void principia__FutureWait(std::future<Status> const** const future) {
+void principia__FutureWait(PileUpFuture const** const future) {
   journal::Method<journal::FutureWait> m({future}, {future});
-  TakeOwnership(future)->wait();
+  auto const owned_future = TakeOwnership(future);
+  owned_future->future.wait();
   return m.Return();
 }
 

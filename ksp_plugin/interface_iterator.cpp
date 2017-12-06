@@ -102,7 +102,7 @@ char const* principia__IteratorGetVessel(Iterator const* const iterator) {
   journal::Method<journal::IteratorGetVessel> m({iterator});
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<VesselSet> const*>(iterator));
-  return m.Return(typed_iterator->Get<XY>(
+  return m.Return(typed_iterator->Get<char const*>(
       [](Vessel* const vessel) -> char const* {
         return vessel->guid().c_str();
       }));

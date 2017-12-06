@@ -399,6 +399,11 @@ void PileUp::AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const {
   }
 }
 
+PileUpFuture::PileUpFuture(PileUp const* const pile_up,
+                           std::future<Status> future)
+    : pile_up(pile_up),
+      future(std::move(future)) {}
+
 }  // namespace internal_pile_up
 }  // namespace ksp_plugin
 }  // namespace principia

@@ -8,7 +8,6 @@
 #include "base/macros.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
-#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/quaternion.hpp"
@@ -34,7 +33,6 @@ namespace interface {
 using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
-using base::Status;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Position;
@@ -47,6 +45,7 @@ using ksp_plugin::Camera;
 using ksp_plugin::Iterator;
 using ksp_plugin::NavigationFrame;
 using ksp_plugin::PileUp;
+using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;

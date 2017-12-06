@@ -178,11 +178,16 @@ void principia__AdvanceTime(Plugin* const plugin,
   return m.Return();
 }
 
-Iterator* principia__CatchUpLaggingVessels(Plugin* const plugin) {
-  journal::Method<journal::CatchUpLaggingVessels> m({plugin});
+void principia__CatchUpLaggingVessels(Plugin* const plugin,
+                                      Iterator** const collided_vessels) {
+  journal::Method<journal::CatchUpLaggingVessels> m({plugin},
+                                                    {collided_vessels});
   CHECK_NOTNULL(plugin);
-  VesselSet collided_vessels = plugin->CatchUpLaggingVessels();
-  return m.Return(new TypedIterator<VesselSet>(std::move(collided_vessels)));
+  VesselSet collided_vessel_set;
+  plugin->CatchUpLaggingVessels(collided_vessel_set);
+  *collided_vessels =
+      new TypedIterator<VesselSet>(std::move(collided_vessel_set));
+  return m.Return();
 }
 
 // Calls |plugin->CelestialFromParent| with the arguments given.

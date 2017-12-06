@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <future>
 #include <list>
 #include <map>
 #include <mutex>
@@ -177,9 +178,17 @@ class PileUp {
   friend class TestablePileUp;
 };
 
+// A convenient data object to track a pile-up and the result of integrating it.
+struct PileUpFuture {
+  PileUpFuture(PileUp const* pile_up, std::future<Status> future);
+  PileUp const* pile_up;
+  std::future<Status> future;
+};
+
 }  // namespace internal_pile_up
 
 using internal_pile_up::PileUp;
+using internal_pile_up::PileUpFuture;
 
 }  // namespace ksp_plugin
 }  // namespace principia
