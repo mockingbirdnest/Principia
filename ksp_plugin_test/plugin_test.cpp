@@ -381,7 +381,8 @@ TEST_F(PluginTest, Serialization) {
   Time const shift = 1 * Second;
   Instant const time = ParseTT(initial_time_) + shift;
   plugin->AdvanceTime(time, Angle());
-  plugin->CatchUpLaggingVessels();
+  VesselSet collided_vessels;
+  plugin->CatchUpLaggingVessels(collided_vessels);
 
 #if 0
   // Uncomment this block to print out a serialized "simple" plugin for
@@ -397,14 +398,14 @@ TEST_F(PluginTest, Serialization) {
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(HistoryTime(time, 3), Angle());
-  plugin->CatchUpLaggingVessels();
+  plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->InsertOrKeepVessel(satellite,
                              "v" + satellite,
                              SolarSystemFactory::Earth,
                              /*loaded=*/false,
                              inserted);
   plugin->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin->CatchUpLaggingVessels();
+  plugin->CatchUpLaggingVessels(collided_vessels);
   plugin->UpdatePrediction(satellite);
   plugin->ForgetAllHistoriesBefore(HistoryTime(time, 2));
 
@@ -780,7 +781,8 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
                               /*loaded=*/false,
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
-  plugin_->CatchUpLaggingVessels();
+  VesselSet collided_vessels;
+  plugin_->CatchUpLaggingVessels(collided_vessels);
 
   auto const burn = [this, mock_dynamic_frame, time]() -> Burn {
     return {/*thrust=*/1 * Newton,
@@ -803,7 +805,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
                               /*loaded=*/false,
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin_->CatchUpLaggingVessels();
+  plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 3));
   EXPECT_LE(HistoryTime(time, 3), satellite->flight_plan().initial_time());
   EXPECT_LE(HistoryTime(time, 3), satellite->psychohistory().Begin().time());
@@ -870,14 +872,15 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
   EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(HistoryTime(time, 5)))
       .Times(1);
   plugin_->AdvanceTime(time, Angle());
-  plugin_->CatchUpLaggingVessels();
+  VesselSet collided_vessels;
+  plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
                               SolarSystemFactory::Earth,
                               /*loaded=*/false,
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 3), Angle());
-  plugin_->CatchUpLaggingVessels();
+  plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->UpdatePrediction(guid);
   plugin_->InsertOrKeepVessel(guid,
                               "v" + guid,
@@ -885,7 +888,7 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
                               /*loaded=*/false,
                               inserted);
   plugin_->AdvanceTime(HistoryTime(time, 6), Angle());
-  plugin_->CatchUpLaggingVessels();
+  plugin_->CatchUpLaggingVessels(collided_vessels);
   plugin_->ForgetAllHistoriesBefore(HistoryTime(time, 5));
   auto const& prediction = plugin_->GetVessel(guid)->prediction();
   auto const rendered_prediction =

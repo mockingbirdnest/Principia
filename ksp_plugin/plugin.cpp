@@ -708,6 +708,20 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
       }));
 }
 
+void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
+                                    VesselSet& collided_vessels) {
+  PileUp const* const pile_up = pile_up_future.pile_up;
+  auto& future = pile_up_future.future;
+  future.wait();
+  if (future.get().error() == Error::OUT_OF_RANGE) {
+    for (not_null<Part*> const part : pile_up->parts()) {
+      not_null<Vessel*> const vessel =
+          FindOrDie(part_id_to_vessel_, part->part_id());
+      collided_vessels.insert(vessel);
+    }
+  }
+}
+
 void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   CHECK(!initializing_);
 
@@ -725,18 +739,8 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Wait for the integrations to finish and figure out which vessels collided
   // with a celestial.
-  collided_vessels.clear();
   for (auto& pile_up_future : pile_up_futures) {
-    PileUp const* const pile_up = pile_up_future.pile_up;
-    auto& future = pile_up_future.future;
-    future.wait();
-    if (future.get().error() == Error::OUT_OF_RANGE) {
-      for (not_null<Part*> const part : pile_up->parts()) {
-        not_null<Vessel*> const vessel =
-            FindOrDie(part_id_to_vessel_, part->part_id());
-        collided_vessels.insert(vessel);
-      }
-    }
+    WaitForVesselToCatchUp(pile_up_future, collided_vessels);
   }
 
   // Update the vessels.
