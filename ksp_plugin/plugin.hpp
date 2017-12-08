@@ -261,6 +261,13 @@ class Plugin {
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.  Inserts
+  // the set of vessels that have collided with a celestial into
+  // |collided_vessels|.
+  virtual void CatchUpLaggingVessels(VesselSet& collided_vessels);
+
   // Advances time to |current_time_| on the pile up containing the given
   // vessel if the pile up is not there already, and advances time to
   // |current_time_| on that vessel.  This operation is asynchronous: the caller
@@ -274,14 +281,6 @@ class Plugin {
   // collided with a celestial into |collided_vessels|.
   virtual void WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
                                       VesselSet& collided_vessels);
-
-  // Advances time to |current_time_| for all pile ups that are not already
-  // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.  Inserts
-  // the set of vessels that have collided with a celestial into
-  //|collided_vessels|.
-  //TODO(phl): Move before CatchUpVessel.
-  virtual void CatchUpLaggingVessels(VesselSet& collided_vessels);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;

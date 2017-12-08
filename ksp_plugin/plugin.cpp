@@ -685,6 +685,36 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   loaded_vessels_.clear();
 }
 
+void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
+  CHECK(!initializing_);
+
+  // Start all the integrations in parallel.
+  std::vector<PileUpFuture> pile_up_futures;
+  for (PileUp& pile_up : pile_ups_) {
+    pile_up_futures.emplace_back(
+        &pile_up,
+        vessel_thread_pool_.Add([this, &pile_up]() {
+          // Note that there cannot be contention in the following method as
+          // no two pile-ups are advanced at the same time.
+          return pile_up.DeformAndAdvanceTime(current_time_);
+        }));
+  }
+
+  // Wait for the integrations to finish and figure out which vessels collided
+  // with a celestial.
+  for (auto& pile_up_future : pile_up_futures) {
+    WaitForVesselToCatchUp(pile_up_future, collided_vessels);
+  }
+
+  // Update the vessels.
+  for (auto const& pair : vessels_) {
+    Vessel& vessel = *pair.second;
+    if (vessel.psychohistory().last().time() < current_time_) {
+      vessel.AdvanceTime();
+    }
+  }
+}
+
 not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
     GUID const& vessel_guid) {
   CHECK(!initializing_);
@@ -718,36 +748,6 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
       not_null<Vessel*> const vessel =
           FindOrDie(part_id_to_vessel_, part->part_id());
       collided_vessels.insert(vessel);
-    }
-  }
-}
-
-void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
-  CHECK(!initializing_);
-
-  // Start all the integrations in parallel.
-  std::vector<PileUpFuture> pile_up_futures;
-  for (PileUp& pile_up : pile_ups_) {
-    pile_up_futures.emplace_back(
-        &pile_up,
-        vessel_thread_pool_.Add([this, &pile_up]() {
-          // Note that there cannot be contention in the following method as
-          // no two pile-ups are advanced at the same time.
-          return pile_up.DeformAndAdvanceTime(current_time_);
-        }));
-  }
-
-  // Wait for the integrations to finish and figure out which vessels collided
-  // with a celestial.
-  for (auto& pile_up_future : pile_up_futures) {
-    WaitForVesselToCatchUp(pile_up_future, collided_vessels);
-  }
-
-  // Update the vessels.
-  for (auto const& pair : vessels_) {
-    Vessel& vessel = *pair.second;
-    if (vessel.psychohistory().last().time() < current_time_) {
-      vessel.AdvanceTime();
     }
   }
 }
