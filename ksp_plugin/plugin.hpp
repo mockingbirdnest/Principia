@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/monostable.hpp"
+#include "base/status.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/named_quantities.hpp"
@@ -45,6 +46,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::not_null;
+using base::Status;
 using base::Subset;
 using base::ThreadPool;
 using geometry::AffineMap;
@@ -259,19 +261,26 @@ class Plugin {
   // |Planetarium.InverseRotAngle| is in degrees.
   virtual void AdvanceTime(Instant const& t, Angle const& planetarium_rotation);
 
+  // Advances time to |current_time_| for all pile ups that are not already
+  // there, filling the tails of all their parts up to that instant; then
+  // advances time on all vessels that are not yet at |current_time_|.  Inserts
+  // the set of vessels that have collided with a celestial into
+  // |collided_vessels|.
+  virtual void CatchUpLaggingVessels(VesselSet& collided_vessels);
+
   // Advances time to |current_time_| on the pile up containing the given
   // vessel if the pile up is not there already, and advances time to
   // |current_time_| on that vessel.  This operation is asynchronous: the caller
   // must wait on the returned future before using the trajectories of the
   // vessel.  The caller must ensure that the vessels don't change while this
   // method is running.
-  virtual not_null<std::unique_ptr<std::future<void>>> CatchUpVessel(
+  virtual not_null<std::unique_ptr<PileUpFuture>> CatchUpVessel(
       GUID const& vessel_guid);
 
-  // Advances time to |current_time_| for all pile ups that are not already
-  // there, filling the tails of all their parts up to that instant; then
-  // advances time on all vessels that are not yet at |current_time_|.
-  virtual void CatchUpLaggingVessels();
+  // Waits for the |future| to return and inserts the set of vessels that have
+  // collided with a celestial into |collided_vessels|.
+  virtual void WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
+                                      VesselSet& collided_vessels);
 
   // Forgets the histories of the |celestials_| and of the vessels before |t|.
   virtual void ForgetAllHistoriesBefore(Instant const& t) const;
@@ -473,7 +482,7 @@ class Plugin {
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
 
   // The thread pool for advancing vessels.
-  ThreadPool<void> vessel_thread_pool_;
+  ThreadPool<Status> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
   std::experimental::optional<Rotation<Barycentric, AliceSun>>

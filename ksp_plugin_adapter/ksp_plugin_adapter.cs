@@ -1262,7 +1262,8 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
-    plugin_.CatchUpLaggingVessels();
+    IntPtr collided_vessels;
+    plugin_.CatchUpLaggingVessels(out collided_vessels);
 
     UpdatePredictions();
 
@@ -1406,7 +1407,9 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       foreach (var f in vessel_futures_) {
         var future = f;
-        Interface.FutureWait(ref future);
+        IntPtr collided_vessels;
+        plugin_.FutureWaitForVesselToCatchUp(ref future,
+                                             out collided_vessels);
       }
       vessel_futures_.Clear();
       ApplyToVesselsOnRails(

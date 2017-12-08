@@ -2,11 +2,13 @@
 #pragma once
 
 #include <functional>
+#include <future>
 #include <list>
 #include <map>
 #include <mutex>
 
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "integrators/integrators.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -24,6 +26,7 @@ FORWARD_DECLARE_FROM(part, class, Part);
 namespace internal_pile_up {
 
 using base::not_null;
+using base::Status;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Vector;
@@ -71,7 +74,7 @@ class PileUp {
   // Does nothing if the psychohistory is already advanced beyond |t|.  Several
   // executions of this method may happen concurrently on multiple threads, but
   // not concurrently with any other method of this class.
-  void DeformAndAdvanceTime(Instant const& t);
+  Status DeformAndAdvanceTime(Instant const& t);
 
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
   static PileUp ReadFromMessage(
@@ -110,7 +113,7 @@ class PileUp {
   // the histories of the parts and updates the degrees of freedom of the parts
   // if the pile-up is in the bubble.  After this call, the tail (of |*this|)
   // and of its parts have a (possibly ahistorical) final point exactly at |t|.
-  void AdvanceTime(Instant const& t);
+  Status AdvanceTime(Instant const& t);
 
   // Adjusts the degrees of freedom of all parts in this pile up based on the
   // degrees of freedom of the pile-up computed by |AdvanceTime| and on the
@@ -175,9 +178,17 @@ class PileUp {
   friend class TestablePileUp;
 };
 
+// A convenient data object to track a pile-up and the result of integrating it.
+struct PileUpFuture {
+  PileUpFuture(PileUp const* pile_up, std::future<Status> future);
+  PileUp const* pile_up;
+  std::future<Status> future;
+};
+
 }  // namespace internal_pile_up
 
 using internal_pile_up::PileUp;
+using internal_pile_up::PileUpFuture;
 
 }  // namespace ksp_plugin
 }  // namespace principia

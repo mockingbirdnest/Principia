@@ -29,6 +29,7 @@ using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
 using ksp_plugin::NavigationFrame;
+using ksp_plugin::PileUpFuture;
 using ksp_plugin::Planetarium;
 using ksp_plugin::Plugin;
 using ksp_plugin::Vessel;

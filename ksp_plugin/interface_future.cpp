@@ -6,11 +6,16 @@
 
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
+#include "ksp_plugin/identification.hpp"
+#include "ksp_plugin/iterators.hpp"
 
 namespace principia {
 namespace interface {
 
-std::future<void> const* principia__FutureCatchUpVessel(
+using ksp_plugin::TypedIterator;
+using ksp_plugin::VesselSet;
+
+PileUpFuture* principia__FutureCatchUpVessel(
     Plugin* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FutureCatchUpVessel> m({plugin, vessel_guid});
@@ -20,9 +25,19 @@ std::future<void> const* principia__FutureCatchUpVessel(
   return m.Return(future.release());
 }
 
-void principia__FutureWait(std::future<void> const** const future) {
-  journal::Method<journal::FutureWait> m({future}, {future});
-  TakeOwnership(future)->wait();
+void principia__FutureWaitForVesselToCatchUp(
+    Plugin* const plugin,
+    PileUpFuture** const future,
+    Iterator** const collided_vessels) {
+  journal::Method<journal::FutureWaitForVesselToCatchUp> m(
+      {plugin, future}, {future, collided_vessels});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(future);
+  auto const owned_future = TakeOwnership(future);
+  VesselSet collided_vessel_set;
+  plugin->WaitForVesselToCatchUp(*owned_future, collided_vessel_set);
+  *collided_vessels =
+      new TypedIterator<VesselSet>(std::move(collided_vessel_set));
   return m.Return();
 }
 

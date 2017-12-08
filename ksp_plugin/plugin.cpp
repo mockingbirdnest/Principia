@@ -24,6 +24,7 @@
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
+#include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/barycentre_calculator.hpp"
@@ -64,6 +65,7 @@ using base::Fingerprint2011;
 using base::make_not_null_unique;
 using base::OFStream;
 using base::not_null;
+using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
 using geometry::BarycentreCalculator;
@@ -683,46 +685,69 @@ void Plugin::AdvanceTime(Instant const& t, Angle const& planetarium_rotation) {
   loaded_vessels_.clear();
 }
 
-not_null<std::unique_ptr<std::future<void>>> Plugin::CatchUpVessel(
-    GUID const& vessel_guid) {
-  CHECK(!initializing_);
-
-  return make_not_null_unique<std::future<void>>(
-      vessel_thread_pool_.Add([this, vessel_guid]() {
-        Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
-        vessel.ForSomePart([this](Part& part) {
-          auto const pile_up = part.containing_pile_up()->iterator();
-          // Note that there can be contention in the following method if the
-          // caller is catching-up two vessels belonging to the same pile-up in
-          // parallel.
-          pile_up->DeformAndAdvanceTime(current_time_);
-        });
-        vessel.AdvanceTime();
-      }));
-}
-
-void Plugin::CatchUpLaggingVessels() {
+void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   CHECK(!initializing_);
 
   // Start all the integrations in parallel.
-  std::vector<std::future<void>> futures;
+  std::vector<PileUpFuture> pile_up_futures;
   for (PileUp& pile_up : pile_ups_) {
-    futures.emplace_back(
+    pile_up_futures.emplace_back(
+        &pile_up,
         vessel_thread_pool_.Add([this, &pile_up]() {
           // Note that there cannot be contention in the following method as
           // no two pile-ups are advanced at the same time.
-          pile_up.DeformAndAdvanceTime(current_time_);
+          return pile_up.DeformAndAdvanceTime(current_time_);
         }));
   }
 
-  // Wait for the integrations to finish before updating the vessels.
-  for (auto const& future : futures) {
-    future.wait();
+  // Wait for the integrations to finish and figure out which vessels collided
+  // with a celestial.
+  for (auto& pile_up_future : pile_up_futures) {
+    WaitForVesselToCatchUp(pile_up_future, collided_vessels);
   }
+
+  // Update the vessels.
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     if (vessel.psychohistory().last().time() < current_time_) {
       vessel.AdvanceTime();
+    }
+  }
+}
+
+not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
+    GUID const& vessel_guid) {
+  CHECK(!initializing_);
+
+  // Find the vessel and the pile-up that contains it.
+  Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
+  std::list<PileUp>::iterator pile_up;
+  vessel.ForSomePart([this, &pile_up](Part& part) {
+    auto const pile_up = part.containing_pile_up()->iterator();
+  });
+
+  return make_not_null_unique<PileUpFuture>(
+      &*pile_up,
+      vessel_thread_pool_.Add([this, &pile_up, &vessel]() {
+        // Note that there can be contention in the following method if the
+        // caller is catching-up two vessels belonging to the same pile-up in
+        // parallel.
+        Status const status = pile_up->DeformAndAdvanceTime(current_time_);
+        vessel.AdvanceTime();
+        return status;
+      }));
+}
+
+void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
+                                    VesselSet& collided_vessels) {
+  PileUp const* const pile_up = pile_up_future.pile_up;
+  auto& future = pile_up_future.future;
+  future.wait();
+  if (future.get().error() == Error::OUT_OF_RANGE) {
+    for (not_null<Part*> const part : pile_up->parts()) {
+      not_null<Vessel*> const vessel =
+          FindOrDie(part_id_to_vessel_, part->part_id());
+      collided_vessels.insert(vessel);
     }
   }
 }

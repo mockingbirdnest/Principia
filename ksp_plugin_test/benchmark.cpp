@@ -17,7 +17,8 @@ namespace principia {
 using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
-using interface::principia__FutureWait;
+using interface::principia__FutureWaitForVesselToCatchUp;
+using interface::principia__IteratorDelete;
 using quantities::Frequency;
 using quantities::Time;
 using quantities::si::Hertz;
@@ -49,13 +50,17 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
         plugin.get(),
         (plugin->CurrentTime() + step - plugin->GameEpoch()) / Second,
         /*planetarium_rotation=*/45);
-    std::vector<std::future<void> const*> futures;
+    std::vector<PileUpFuture*> futures;
     for (GUID const& vessel_guid : vessel_guids) {
       futures.push_back(
           principia__FutureCatchUpVessel(plugin.get(), vessel_guid.c_str()));
     }
     for (auto& future : futures) {
-      principia__FutureWait(&future);
+      Iterator* iterator;
+      principia__FutureWaitForVesselToCatchUp(plugin.get(),
+                                              &future,
+                                              &iterator);
+      principia__IteratorDelete(&iterator);
     }
   }
 }
