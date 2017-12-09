@@ -1270,7 +1270,7 @@ public partial class PrincipiaPluginAdapter
          collided_vessels.IteratorIncrement()) {
       Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
       Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
-      vessel.Die();
+      vessel?.Die();
     }
 
     UpdatePredictions();
@@ -1432,7 +1432,7 @@ public partial class PrincipiaPluginAdapter
       }
       vessel_futures_.Clear();
       foreach (var vessel in all_collided_vessels) {
-        vessel.Die();
+        vessel?.Die();
       }
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
