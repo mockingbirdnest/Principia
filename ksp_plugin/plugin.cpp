@@ -723,7 +723,7 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
   Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
   std::list<PileUp>::iterator pile_up;
   vessel.ForSomePart([this, &pile_up](Part& part) {
-    auto const pile_up = part.containing_pile_up()->iterator();
+    pile_up = part.containing_pile_up()->iterator();
   });
 
   return make_not_null_unique<PileUpFuture>(
