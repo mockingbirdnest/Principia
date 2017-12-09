@@ -747,7 +747,10 @@ void Plugin::WaitForVesselToCatchUp(PileUpFuture& pile_up_future,
     for (not_null<Part*> const part : pile_up->parts()) {
       not_null<Vessel*> const vessel =
           FindOrDie(part_id_to_vessel_, part->part_id());
-      collided_vessels.insert(vessel);
+      if (collided_vessels.insert(vessel).second) {
+        LOG(INFO) << "Vessel " << vessel->ShortDebugString()
+                  << " collided with a celestial";
+      }
     }
   }
 }
