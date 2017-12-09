@@ -1262,8 +1262,16 @@ public partial class PrincipiaPluginAdapter
       }
     }
 
+    // Advance the lagging vessels and kill those which collided with a
+    // celestial.
     IntPtr collided_vessels;
     plugin_.CatchUpLaggingVessels(out collided_vessels);
+    for (; !collided_vessels.IteratorAtEnd();
+         collided_vessels.IteratorIncrement()) {
+      Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+      Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
+      vessel?.Die();
+    }
 
     UpdatePredictions();
 
@@ -1405,13 +1413,27 @@ public partial class PrincipiaPluginAdapter
 
   private void Early() {
     if (PluginRunning()) {
+      // Wait for all the asynchronous integrations to complete and kill the
+      // vessels that collided with a celestial.  Note that a given vessel may
+      // be returned by several calls to FutureWaitForVesselToCatchUp because
+      // what we integrate are really pile-ups.
+      var all_collided_vessels = new HashSet<Vessel>();
       foreach (var f in vessel_futures_) {
         var future = f;
         IntPtr collided_vessels;
         plugin_.FutureWaitForVesselToCatchUp(ref future,
                                              out collided_vessels);
+        for (; !collided_vessels.IteratorAtEnd();
+             collided_vessels.IteratorIncrement()) {
+          Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+          Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
+          all_collided_vessels.Add(vessel);
+        }
       }
       vessel_futures_.Clear();
+      foreach (var vessel in all_collided_vessels) {
+        vessel?.Die();
+      }
       ApplyToVesselsOnRails(
           vessel => UpdateVessel(vessel, Planetarium.GetUniversalTime()));
     }

@@ -98,8 +98,8 @@ XY principia__IteratorGetRP2LineXY(Iterator const* const iterator) {
       }));
 }
 
-char const* principia__IteratorGetVessel(Iterator const* const iterator) {
-  journal::Method<journal::IteratorGetVessel> m({iterator});
+char const* principia__IteratorGetVesselGuid(Iterator const* const iterator) {
+  journal::Method<journal::IteratorGetVesselGuid> m({iterator});
   auto const typed_iterator = check_not_null(
       dynamic_cast<TypedIterator<VesselSet> const*>(iterator));
   return m.Return(typed_iterator->Get<char const*>(

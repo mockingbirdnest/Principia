@@ -1060,9 +1060,9 @@ message IteratorGetRP2LineXY {
   optional Return return = 3;
 }
 
-message IteratorGetVessel {
+message IteratorGetVesselGuid {
   extend Method {
-    optional IteratorGetVessel extension = 5147;
+    optional IteratorGetVesselGuid extension = 5147;
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
