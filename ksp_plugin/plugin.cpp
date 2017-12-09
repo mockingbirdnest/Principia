@@ -728,7 +728,7 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
 
   return make_not_null_unique<PileUpFuture>(
       &*pile_up,
-      vessel_thread_pool_.Add([this, &pile_up, &vessel]() {
+      vessel_thread_pool_.Add([this, pile_up, &vessel]() {
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
