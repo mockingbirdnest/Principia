@@ -19,6 +19,7 @@ namespace tools {
 namespace internal_journal_proto_processor {
 
 using base::Contains;
+using ::google::protobuf::MessageOptions;
 
 namespace {
 
@@ -1041,6 +1042,17 @@ void JournalProtoProcessor::ProcessMethodExtension(
       "void " + name + "::Run(Message const& message, "
       "Player::PointerMap& pointer_map) {\n" +
       cxx_run_prolog;
+  MessageOptions const& options = descriptor->options();
+  std::string const run_conditional_compilation_symbol =
+      options.HasExtension(
+          journal::serialization::run_conditional_compilation_symbol)
+          ? options.GetExtension(
+                journal::serialization::run_conditional_compilation_symbol)
+          : "";
+  if (!run_conditional_compilation_symbol.empty()) {
+    cxx_functions_implementation_[descriptor] +=
+        "#if " + run_conditional_compilation_symbol + "\n";
+  }
   if (has_return) {
     cxx_functions_implementation_[descriptor] += "  auto const result = ";
   } else {
@@ -1049,6 +1061,9 @@ void JournalProtoProcessor::ProcessMethodExtension(
   cxx_functions_implementation_[descriptor] +=
       "interface::principia__" + name + "(" +
       Join(cxx_run_arguments, /*joiner=*/", ") + ");\n";
+  if (!run_conditional_compilation_symbol.empty()) {
+    cxx_functions_implementation_[descriptor] += "#endif\n";
+  }
   cxx_functions_implementation_[descriptor] += cxx_run_epilog + "}\n\n";
 
   cs_interface_method_declaration_[descriptor] = Join(

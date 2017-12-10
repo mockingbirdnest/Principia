@@ -1551,6 +1551,7 @@ message SetTargetVessel {
 }
 
 message SetVerboseLogging {
+  option (run_conditional_compilation_symbol) = "PRINCIPIA_SET_VERBOSE_LOGGING";
   extend Method {
     optional SetVerboseLogging extension = 5018;
   }
@@ -1751,4 +1752,10 @@ extend google.protobuf.FieldOptions {
   // result should not be checked against the expected result.  Should only be
   // used when debugging issues with the replay.
   optional bool omit_check = 50007;
+}
+
+extend google.protobuf.MessageOptions {
+  // If set, the body of the Run method is wrapped into an #ifdef for the given
+  // symbol.  Useful for selectively skipping replay of some methods.
+  optional string run_conditional_compilation_symbol = 50008;
 }
