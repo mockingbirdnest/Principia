@@ -26,12 +26,6 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     typename Normed<Difference<Value>>::NormType const& tolerance) {
   using Iterator = typename Samples::const_iterator;
 
-  if (samples.size() < 3) {
-    // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
-    // estimate the error.
-    return {};
-  }
-
   auto interpolation_error = [get_argument, get_derivative, get_value](
                                  Iterator begin, Iterator last) {
     return Hermite3<Argument, Value>(
@@ -41,12 +35,17 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
         .LInfinityError(Range(begin, last + 1), get_argument, get_value);
   };
 
-  auto const last = samples.end() - 1;
-  if (interpolation_error(samples.begin(), last) < tolerance) {
-    // A single polynomial fits the entire range, so we have no way of knowing
-    // whether it is the largest polynomial that will fit the range.
-    return {};
-  } else {
+  std::list<Iterator> tail;
+  if (samples.size() < 3) {
+    // With 0 or 1 points there is nothing to interpolate, with 2 we cannot
+    // estimate the error.
+    return tail;
+  }
+
+  Iterator begin = samples.begin();
+  Iterator const last = samples.end() - 1;
+  while (last - begin + 1 >= 3 &&
+         interpolation_error(begin, last) >= tolerance) {
     // Look for a cubic that fits the beginning within |tolerance| and
     // such the cubic fitting one more sample would not fit the samples within
     // |tolerance|.
@@ -54,11 +53,10 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
     // ideally we would like to find the longest one, but this would be costly,
     // and we do not expect significant gains from this in practice.
 
-    // Invariant: The Hermite interpolant on [samples.begin(), lower] is below
-    // the tolerance, the Hermite interpolant on [samples.begin(), upper] is
-    // above.
-    auto lower = samples.begin() + 1;
-    auto upper = last;
+    // Invariant: The Hermite interpolant on [begin, lower] is below the
+    // tolerance, the Hermite interpolant on [begin, upper] is above.
+    Iterator lower = begin + 1;
+    Iterator upper = last;
     for (;;) {
       auto const middle = lower + (upper - lower) / 2;
       // Note that lower ≤ middle ≤ upper.
@@ -70,20 +68,22 @@ std::list<typename Samples::const_iterator> FitHermiteSpline(
       if (middle == lower) {
         break;
       }
-      if (interpolation_error(samples.begin(), middle) < tolerance) {
+      if (interpolation_error(begin, middle) < tolerance) {
         lower = middle;
       } else {
         upper = middle;
       }
     }
-    std::list<Iterator> tail = FitHermiteSpline(Range(lower, samples.end()),
-                                                get_argument,
-                                                get_value,
-                                                get_derivative,
-                                                tolerance);
-    tail.push_front(lower);
-    return tail;
+    tail.push_back(lower);
+
+    begin = lower;
   }
+
+  // If downsampling is not effective we'll output one iterator for each input
+  // point, except at the end where we give up because we don't have enough
+  // points left.
+  CHECK_LT(tail.size(), samples.size() - 2);
+  return tail;
 }
 
 }  // namespace internal_fit_hermite_spline
