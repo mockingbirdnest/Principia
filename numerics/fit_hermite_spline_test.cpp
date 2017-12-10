@@ -43,6 +43,8 @@ class FitHermiteSplineTest : public ::testing::Test {
   Instant const t0_;
 };
 
+using FitHermiteSplineDeathTest = FitHermiteSplineTest;
+
 TEST_F(FitHermiteSplineTest, Sinusoid) {
   AngularFrequency const ω = 1 * Radian / Second;
   auto const f = [ω, this](Instant const& t) {
@@ -108,6 +110,39 @@ TEST_F(FitHermiteSplineTest, Sinusoid) {
                   [](auto&& sample) -> auto&& { return sample.t; },
                   [](auto&& sample) -> auto&& { return sample.x; }),
               AllOf(Gt(1 * Nano(Metre)), Lt(1 * Micro(Metre))));
+}
+
+TEST_F(FitHermiteSplineDeathTest, NoDownsampling) {
+  AngularFrequency const ω = 1 * Radian / Second;
+  auto const f = [ω, this](Instant const& t) {
+    return Cos(ω * (t - t0_)) * Metre;
+  };
+  auto const df = [ω, this](Instant const& t) {
+    return -ω * Sin(ω *(t - t0_)) * Metre / Radian;
+  };
+  std::vector<Sample> samples;
+  {
+    auto t = DoublePrecision<Instant>(t0_);
+    for (; t.value < t0_ + π / 2 * Second; t.Increment(100 * Milli(Second))) {
+      samples.push_back({t.value, f(t.value), df(t.value)});
+    }
+    for (; t.value < t0_ + π * Second; t.Increment(20 * Milli(Second))) {
+      samples.push_back({t.value, f(t.value), df(t.value)});
+    }
+  }
+  auto fit_hermite_spline = [&samples]() {
+    return FitHermiteSpline<Instant, Length>(
+        samples,
+        [](auto&& sample) -> auto&& { return sample.t; },
+        [](auto&& sample) -> auto&& { return sample.x; },
+        [](auto&& sample) -> auto&& { return sample.v; },
+        0 * Metre);
+  };
+
+  EXPECT_DEATH({
+    std::list<std::vector<Sample>::const_iterator> const
+        interpolation_points = fit_hermite_spline();
+  }, "tail.size.*samples.size");
 }
 
 }  // namespace numerics
