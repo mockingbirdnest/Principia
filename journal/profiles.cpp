@@ -57,9 +57,11 @@ std::uint64_t SerializePointer(T* t) {
 }  // namespace
 
 #define PRINCIPIA_CHECK_EQ(a, b) CHECK((a) == (b))
+#define PRINCIPIA_SET_VERBOSE_LOGGING 1
 
 #include "journal/profiles.generated.cc"
 
+#undef PRINCIPIA_SET_VERBOSE_LOGGING
 #undef PRINCIPIA_CHECK_EQ
 
 }  // namespace journal
