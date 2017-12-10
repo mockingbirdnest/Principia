@@ -2113,9 +2113,6 @@ public partial class PrincipiaPluginAdapter
       ToggleableSection(name   : "Logging Settings",
                         show   : ref show_logging_settings_,
                         render : LoggingSettings);
-      ToggleableSection(name   : "Reset Principia",
-                        show   : ref show_reset_button_,
-                        render : ResetButton);
 #if CRASH_BUTTON
       ToggleableSection(name   : "CRASH",
                         show   : ref show_crash_options_,
@@ -2363,18 +2360,6 @@ public partial class PrincipiaPluginAdapter
       // work, we should only activate one before creating a plugin.
       journaling_ = false;
       Interface.ActivateRecorder(false);
-    }
-  }
-
-  private void ResetButton() {
-    if (PluginRunning()) {
-      if (UnityEngine.GUILayout.Button(text : "Force Stop")) {
-        Cleanup();
-      }
-    } else {
-      if (UnityEngine.GUILayout.Button(text : "Force Start")) {
-        ResetPlugin();
-      }
     }
   }
 
