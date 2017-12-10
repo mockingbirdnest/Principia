@@ -112,8 +112,6 @@ public partial class PrincipiaPluginAdapter
   private bool show_ksp_features_ = false;
   [KSPField(isPersistant = true)]
   private bool show_logging_settings_ = false;
-  [KSPField(isPersistant = true)]
-  private bool show_reset_button_ = false;
 
   [KSPField(isPersistant = true)]
   private int verbose_logging_ = 0;
