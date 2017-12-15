@@ -241,11 +241,6 @@ public partial class PrincipiaPluginAdapter
         Versioning.version_minor != 2 ||
         Versioning.Revision != 2) {
       string expected_version = "1.2.2";
-#elif KSP_VERSION_1_3_0
-    if (Versioning.version_major != 1 ||
-        Versioning.version_minor != 3 ||
-        Versioning.Revision != 0) {
-      string expected_version = "1.3.0";
 #elif KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
         Versioning.version_minor != 3 ||
@@ -653,7 +648,7 @@ public partial class PrincipiaPluginAdapter
       PopupDialog.SpawnPopupDialog(
           anchorMin           : default(UnityEngine.Vector2),
           anchorMax           : default(UnityEngine.Vector2),
-#if KSP_VERSION_1_3_0 || KSP_VERSION_1_3_1
+#if KSP_VERSION_1_3_1
           dialogName          : "Principia error",
 #endif
           title               : "Principia",
@@ -2043,20 +2038,11 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
       if (DateTimeOffset.Now > next_release_date_) {
-#if KSP_VERSION_1_3_0
-        UnityEngine.GUILayout.TextArea(
-            "Announcement: the new moon of lunation number " +
-            next_release_lunation_number_ +
-            " has come; please update KSP to version 1.3.1, " +
-            "and download the latest Principia release, " +
-            next_release_name_ + ".");
-#else
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
             next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
-#endif
       }
       String version;
       String unused_build_date;
