@@ -994,13 +994,11 @@ public partial class PrincipiaPluginAdapter
     }
 
     if (PluginRunning()) {
-      double universal_time = Planetarium.GetUniversalTime();
-
       plugin_.SetMainBody(
           (FlightGlobals.currentMainBody
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
-      plugin_.ForgetAllHistoriesBefore(universal_time -
+      plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
                                        history_lengths_[history_length_index_]);
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
@@ -1009,8 +1007,7 @@ public partial class PrincipiaPluginAdapter
       // the FashionablyLate callbacks, including ReportNonConservativeForces,
       // then the FlightIntegrator's FixedUpdate will run, then the Vessel's,
       // and eventually the physics simulation.
-      StartCoroutine(
-          AdvanceAndNudgeVesselsAfterPhysicsSimulation(universal_time));
+      StartCoroutine(WaitedForFixedUpdate());
     }
   }
 
@@ -1045,8 +1042,7 @@ public partial class PrincipiaPluginAdapter
 
   #endregion
 
-  private System.Collections.IEnumerator
-  AdvanceAndNudgeVesselsAfterPhysicsSimulation(double universal_time) {
+  private System.Collections.IEnumerator WaitedForFixedUpdate() {
     yield return new UnityEngine.WaitForFixedUpdate();
 
   try {
@@ -1329,7 +1325,7 @@ public partial class PrincipiaPluginAdapter
                          (XYZ)FlightGlobals.ActiveVessel.mainBody.position,
                      reference_part_id =
                          FlightGlobals.ActiveVessel.rootPart.flightID},
-          universal_time);
+          plugin_.CurrentTime());
       krakensbane.FrameVel = -(Vector3d)main_body_dof.p;
       Vector3d offset = (Vector3d)main_body_dof.q -
                         FlightGlobals.ActiveVessel.mainBody.position;
