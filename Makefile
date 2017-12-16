@@ -223,7 +223,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
 
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
