@@ -1752,7 +1752,8 @@ public partial class PrincipiaPluginAdapter
           }
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
-          if (!plotting_frame_selector_.get().target_override &&
+          if (FlightGlobals.ActiveVessel != null &&
+              !plotting_frame_selector_.get().target_override &&
               target_id != null && plugin_.HasVessel(target_id)) {
             {
               IntPtr rp2_lines_iterator =
