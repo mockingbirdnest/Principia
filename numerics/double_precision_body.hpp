@@ -191,7 +191,7 @@ DoublePrecision<Difference<T, U>> TwoDifference(T const& a, U const& b) {
   s = a - b;
   // Corresponds to -v in |TwoSum|.
   Point const w = a - s;
-  e = (a - (s + w)) - (w - b);
+  e = (a - (s + w)) + (w - b);
   return result;
 }
 
