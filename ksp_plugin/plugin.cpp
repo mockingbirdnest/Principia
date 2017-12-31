@@ -546,7 +546,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
     VesselSet grounded_vessels;
     for (auto const& pair : vessels_) {
       not_null<Vessel*> const vessel = pair.second.get();
-      vessel->ForSomePart([this, vessel, &grounded_vessels](Part& part) {
+      vessel->ForSomePart([vessel, &grounded_vessels](Part& part) {
         if (Subset<Part>::Find(part).properties().grounded()) {
           grounded_vessels.insert(vessel);
         }
@@ -722,7 +722,7 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
   // Find the vessel and the pile-up that contains it.
   Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
   std::list<PileUp>::iterator pile_up;
-  vessel.ForSomePart([this, &pile_up](Part& part) {
+  vessel.ForSomePart([&pile_up](Part& part) {
     pile_up = part.containing_pile_up()->iterator();
   });
 
