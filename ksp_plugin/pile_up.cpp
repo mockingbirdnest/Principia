@@ -159,7 +159,7 @@ void PileUp::WriteToMessage(not_null<serialization::PileUp*> message) const {
       message->mutable_fixed_step_parameters());
 }
 
-PileUp PileUp::ReadFromMessage(
+not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     serialization::PileUp const& message,
     std::function<not_null<Part*>(PartId)> const& part_id_to_part,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
@@ -242,7 +242,7 @@ PileUp PileUp::ReadFromMessage(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
-  return std::move(*pile_up);
+  return base::check_not_null(std::move(pile_up));
 }
 
 PileUp::PileUp(

@@ -77,8 +77,11 @@ class PileUp {
   // not concurrently with any other method of this class.
   Status DeformAndAdvanceTime(Instant const& t);
 
+  using PileUpForSerializationIndex = std::function<PileUp*(int)>;
+  using SerializationIndexForPileUp = std::function<int(PileUp*)>;
+
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
-  static PileUp ReadFromMessage(
+  static not_null<std::unique_ptr<PileUp>> ReadFromMessage(
       serialization::PileUp const& message,
       std::function<not_null<Part*>(PartId)> const& part_id_to_part,
       not_null<Ephemeris<Barycentric>*> ephemeris);

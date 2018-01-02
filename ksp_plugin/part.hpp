@@ -109,13 +109,16 @@ class Part final {
   // parts in that |PileUp| are no longer piled up.
   void ClearPileUp();
 
-  void WriteToMessage(not_null<serialization::Part*> message) const;
+  void WriteToMessage(not_null<serialization::Part*> message,
+                      PileUp::SerializationIndexForPileUp const&
+                          serialization_index_for_pile_up) const;
   static not_null<std::unique_ptr<Part>> ReadFromMessage(
       serialization::Part const& message,
       std::function<void()> deletion_callback);
   void FillContainingPileUpFromMessage(
       serialization::Part const& message,
-      not_null<std::list<PileUp>*> const pile_ups);
+      PileUp::PileUpForSerializationIndex const&
+          pile_up_for_serialization_index);
 
   // Returns "part name (part ID)".
   std::string ShortDebugString() const;

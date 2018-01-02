@@ -144,7 +144,9 @@ class Vessel {
   virtual DiscreteTrajectory<Barycentric> const& psychohistory() const;
 
   // The vessel must satisfy |is_initialized()|.
-  virtual void WriteToMessage(not_null<serialization::Vessel*> message) const;
+  virtual void WriteToMessage(not_null<serialization::Vessel*> message,
+                              PileUp::SerializationIndexForPileUp const&
+                                  serialization_index_for_pile_up) const;
   static not_null<std::unique_ptr<Vessel>> ReadFromMessage(
       serialization::Vessel const& message,
       not_null<Celestial const*> parent,
@@ -152,7 +154,8 @@ class Vessel {
       std::function<void(PartId)> const& deletion_callback);
   void FillContainingPileUpsFromMessage(
       serialization::Vessel const& message,
-      not_null<std::list<PileUp>*> const pile_ups);
+      PileUp::PileUpForSerializationIndex const&
+          pile_up_for_serialization_index);
 
   // Returns "vessel_name (GUID)".
   std::string ShortDebugString() const;

@@ -1178,6 +1178,12 @@ void Plugin::WriteToMessage(
     celestial_message->set_ephemeris_index(
         ephemeris_->serialization_index_for_body(owned_celestial->body()));
   }
+
+  auto const serialization_index_for_pile_up = [this](PileUp* pile_up) {
+    auto const it = std::find(pile_ups_.begin(), pile_ups_.end(), pile_up);
+    return std::distance(pile_ups_.begin(), it);
+  };
+
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& pair : vessels_) {
     std::string const& guid = pair.first;
@@ -1185,7 +1191,8 @@ void Plugin::WriteToMessage(
     vessel_to_guid.emplace(vessel, guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
-    vessel->WriteToMessage(vessel_message->mutable_vessel());
+    vessel->WriteToMessage(vessel_message->mutable_vessel(),
+                           serialization_index_for_pile_up);
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
@@ -1309,15 +1316,23 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
           not_null<Part*> const part = vessel->part(part_id);
           return part;
         },
-        plugin->ephemeris_.get()));
+        plugin->ephemeris_.get()).release());
   }
 
-  // Now fill the containing pile-up of all the parts.
+  // Now fill the containing pile-up of all the parts.  This gives ownership of
+  // the pile-ups to the parts.
+  auto const pile_up_for_serialization_index =
+      [&plugin](int const serialization_index) {
+    auto it = plugin->pile_ups_.begin();
+    std::advance(it, serialization_index);
+    return *it;
+  };
+
   for (auto const& vessel_message : message.vessel()) {
     GUID const guid = vessel_message.guid();
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     vessel->FillContainingPileUpsFromMessage(vessel_message.vessel(),
-                                             &plugin->pile_ups_);
+                                             pile_up_for_serialization_index);
   }
 
   plugin->initializing_.Flop();
