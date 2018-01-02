@@ -51,10 +51,10 @@ Vessel::Vessel(GUID const& guid,
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
   // The parts must remove themselves from their pile-ups *before* any of them
-  // starts to destroy, otherwise |clear_pile_up| might access destroyed parts.
+  // starts to destroy, otherwise |ClearPileUp| might access destroyed parts.
   for (auto const& pair : parts_) {
     auto const& part = pair.second;
-    part->clear_pile_up();
+    part->ClearPileUp();
   }
 }
 
@@ -121,7 +121,7 @@ void Vessel::FreeParts() {
     if (Contains(kept_parts_, part->part_id())) {
       ++it;
     } else {
-      part->clear_pile_up();
+      part->ClearPileUp();
       it = parts_.erase(it);
     }
   }

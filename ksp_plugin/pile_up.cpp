@@ -36,13 +36,15 @@ PileUp::PileUp(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-    not_null<Ephemeris<Barycentric>*> const ephemeris)
+    not_null<Ephemeris<Barycentric>*> const ephemeris,
+    std::function<void()> deletion_callback)
     : lock_(make_not_null_unique<std::mutex>()),
       parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       fixed_step_parameters_(fixed_step_parameters),
-      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()) {
+      history_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
+      deletion_callback_(std::move(deletion_callback)) {
   LOG(INFO) << "Constructing pile up at " << this;
   BarycentreCalculator<DegreesOfFreedom<Barycentric>, Mass> calculator;
   Vector<Force, Barycentric> total_intrinsic_force;
@@ -68,6 +70,13 @@ PileUp::PileUp(
         barycentric_to_pile_up(part->degrees_of_freedom()));
   }
   psychohistory_ = history_->NewForkAtLast();
+}
+
+PileUp::~PileUp() {
+  LOG(INFO) << "Destroying pile up at " << this;
+  if (deletion_callback_ != nullptr) {
+    deletion_callback_();
+  }
 }
 
 void PileUp::set_mass(Mass const& mass) {
@@ -251,10 +260,6 @@ PileUp::PileUp(
       fixed_step_parameters_(fixed_step_parameters),
       history_(std::move(history)),
       psychohistory_(psychohistory) {}
-
-PileUp::~PileUp() {
-  LOG(INFO) << "Destroying pile up at " << this;
-}
 
 void PileUp::DeformPileUpIfNeeded() {
   if (apparent_part_degrees_of_freedom_.empty()) {

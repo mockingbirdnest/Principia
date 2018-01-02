@@ -500,8 +500,8 @@ class Plugin {
   RotatingBody<Barycentric> const* main_body_ = nullptr;
   AngularVelocity<Barycentric> angular_velocity_of_world_;
 
-  // Do not |erase| from this list, use |Part::clear_pile_up| instead.
-  std::list<PileUp> pile_ups_;
+  // Do not |erase| from this list, use |Part::ClearPileUp| instead.
+  std::list<PileUp*> pile_ups_;
 
   // The vessels that are currently loaded, i.e. in the physics bubble.
   VesselSet loaded_vessels_;

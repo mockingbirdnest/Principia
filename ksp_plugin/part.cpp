@@ -132,16 +132,15 @@ void Part::ClearHistory() {
   history_ = prehistory_->NewForkAtLast();
 }
 
-void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
+void Part::set_containing_pile_up(not_null<PileUp*> const pile_up) {
   CHECK(!is_piled_up());
   LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
-            << &*pile_up.iterator();
-  containing_pile_up_ = pile_up;
+            << pile_up;
+  containing_pile_up_.reset(&*pile_up);
 }
 
-std::experimental::optional<IteratorOn<std::list<PileUp>>>
-Part::containing_pile_up() const {
-  return containing_pile_up_;
+PileUp* Part::containing_pile_up() const {
+  return containing_pile_up_.get();
 }
 
 bool Part::is_piled_up() const {
@@ -149,16 +148,19 @@ bool Part::is_piled_up() const {
   return static_cast<bool>(containing_pile_up_);
 }
 
-void Part::clear_pile_up() {
+void Part::ClearPileUp() {
   if (is_piled_up()) {
-    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Part*> const part : pile_up.iterator()->parts()) {
+    std::shared_ptr<PileUp> const pile_up = containing_pile_up_;
+    for (not_null<Part*> const part : pile_up->parts()) {
       LOG(INFO) << "Removing part " << part->ShortDebugString()
-                << " from its pile up at " << &*pile_up.iterator();
-      part->containing_pile_up_ = std::experimental::nullopt;
+                << " from its pile up at " << pile_up;
+      part->containing_pile_up_.reset();
     }
     CHECK(!is_piled_up());
-    pile_up.Erase();
+    // At this point the parts of this pile-up all have a null
+    // |containing_pile_up_|.  So |pile_up| is the last remaining pointer
+    // the pile-up.  By leaving this scope we cause the pile-up to be destroyed
+    // and to remove itself from the plugin.
   }
 }
 

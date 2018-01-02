@@ -22,7 +22,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_vessel {
 
-using base::IteratorOn;
 using base::not_null;
 using geometry::Instant;
 using geometry::Vector;

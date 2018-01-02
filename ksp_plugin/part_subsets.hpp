@@ -31,7 +31,7 @@ namespace base {
 // are strict supersets of the new sets, and creating the new |PileUp|s.
 template<>
 class Subset<ksp_plugin::Part>::Properties final {
-  using PileUps = std::list<ksp_plugin::PileUp>;
+  using PileUps = std::list<ksp_plugin::PileUp*>;
 
  public:
   explicit Properties(not_null<ksp_plugin::Part*> part);
@@ -59,7 +59,7 @@ class Subset<ksp_plugin::Part>::Properties final {
   //   with the parts in |parts_|.  The new |PileUp| is created using the given
   //   parameters.
   void Collect(
-      not_null<PileUps*> pile_ups,
+      PileUps& pile_ups,
       geometry::Instant const& t,
       physics::Ephemeris<ksp_plugin::Barycentric>::AdaptiveStepParameters const&
           adaptive_step_parameters,

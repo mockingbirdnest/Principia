@@ -568,7 +568,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     vessel->ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
-          &pile_ups_,
+          pile_ups_,
           vessel_time,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
@@ -597,7 +597,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
   CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
-  part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
+  part->containing_pile_up()->SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
@@ -690,13 +690,13 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Start all the integrations in parallel.
   std::vector<PileUpFuture> pile_up_futures;
-  for (PileUp& pile_up : pile_ups_) {
+  for (PileUp* const pile_up : pile_ups_) {
     pile_up_futures.emplace_back(
-        &pile_up,
-        vessel_thread_pool_.Add([this, &pile_up]() {
+        pile_up,
+        vessel_thread_pool_.Add([this, pile_up]() {
           // Note that there cannot be contention in the following method as
           // no two pile-ups are advanced at the same time.
-          return pile_up.DeformAndAdvanceTime(current_time_);
+          return pile_up->DeformAndAdvanceTime(current_time_);
         }));
   }
 
@@ -721,13 +721,13 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
 
   // Find the vessel and the pile-up that contains it.
   Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
-  std::list<PileUp>::iterator pile_up;
+  PileUp* pile_up = nullptr;
   vessel.ForSomePart([&pile_up](Part& part) {
-    pile_up = part.containing_pile_up()->iterator();
+    pile_up = part.containing_pile_up();
   });
 
   return make_not_null_unique<PileUpFuture>(
-      &*pile_up,
+      pile_up,
       vessel_thread_pool_.Add([this, pile_up, &vessel]() {
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
@@ -1213,7 +1213,7 @@ void Plugin::WriteToMessage(
   renderer_->WriteToMessage(message->mutable_renderer());
 
   for (auto const& pile_up : pile_ups_) {
-    pile_up.WriteToMessage(message->add_pile_up());
+    pile_up->WriteToMessage(message->add_pile_up());
   }
 
   LOG(INFO) << NAMED(message->SpaceUsed());

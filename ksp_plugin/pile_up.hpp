@@ -44,13 +44,14 @@ using quantities::Mass;
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
-  PileUp(
-      std::list<not_null<Part*>>&& parts,
-      Instant const& t,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
+  PileUp(std::list<not_null<Part*>>&& parts,
+         Instant const& t,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             adaptive_step_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             fixed_step_parameters,
+         not_null<Ephemeris<Barycentric>*> ephemeris,
+         std::function<void()> deletion_callback);
 
   virtual ~PileUp();
 
@@ -174,6 +175,9 @@ class PileUp {
 
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
+
+  // Called in the destructor.
+  std::function<void()> deletion_callback_;
 
   friend class TestablePileUp;
 };

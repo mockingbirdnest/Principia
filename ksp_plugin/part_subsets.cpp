@@ -2,6 +2,7 @@
 #include "ksp_plugin/part_subsets.hpp"
 
 #include <list>
+#include <memory>
 
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
@@ -21,7 +22,7 @@ Subset<Part>::Properties::Properties(not_null<ksp_plugin::Part*> const part)
     : total_mass_(part->mass()),
       total_intrinsic_force_(part->intrinsic_force()) {
   if (part->is_piled_up()) {
-    missing_ = part->containing_pile_up()->iterator()->parts().size() - 1;
+    missing_ = part->containing_pile_up()->parts().size() - 1;
   }
   parts_.emplace_back(part);
 }
@@ -34,8 +35,8 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
     missing_ -= other.parts_.size();
     CHECK_GE(missing_, 0);
   } else {
-    parts_.front()->clear_pile_up();
-    other.parts_.front()->clear_pile_up();
+    parts_.front()->ClearPileUp();
+    other.parts_.front()->ClearPileUp();
   }
   parts_.splice(parts_.end(), other.parts_);
   total_mass_ += other.total_mass_;
@@ -52,7 +53,7 @@ bool Subset<Part>::Properties::grounded() const {
 }
 
 void Subset<Part>::Properties::Collect(
-    not_null<PileUps*> const pile_ups,
+    PileUps& pile_ups,
     Instant const& t,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters,
@@ -63,21 +64,33 @@ void Subset<Part>::Properties::Collect(
   }
   collected_ = true;
   if (EqualsExistingPileUp()) {
-    PileUp& pile_up = *parts_.front()->containing_pile_up()->iterator();
+    PileUp& pile_up = *parts_.front()->containing_pile_up();
     pile_up.set_mass(total_mass_);
     pile_up.set_intrinsic_force(total_intrinsic_force_);
   } else {
     if (StrictSubsetOfExistingPileUp()) {
-      parts_.front()->clear_pile_up();
+      parts_.front()->ClearPileUp();
     }
-    pile_ups->emplace_front(std::move(parts_),
-                            t,
-                            adaptive_step_parameters,
-                            fixed_step_parameters,
-                            ephemeris);
-    auto const it = pile_ups->begin();
-    for (not_null<Part*> const part : it->parts()) {
-      part->set_containing_pile_up(IteratorOn<PileUps>(pile_ups, it));
+    CHECK(!parts_.empty());
+
+    // First push a nullptr to be able to capture an iterator to the new
+    // location in the list in the deletion callback.
+    pile_ups.push_front(nullptr);
+
+    auto deletion_callback = [it = pile_ups.begin(), &pile_ups] {
+      pile_ups.erase(it);
+    };
+    PileUp* const pile_up = new PileUp(std::move(parts_),
+                                       t,
+                                       adaptive_step_parameters,
+                                       fixed_step_parameters,
+                                       ephemeris,
+                                       std::move(deletion_callback));
+    *pile_ups.begin() = pile_up;
+
+    // The pile-up is now co-owned by all its parts.
+    for (not_null<Part*> const part : pile_up->parts()) {
+      part->set_containing_pile_up(pile_up);
     }
   }
 }
@@ -86,8 +99,8 @@ bool Subset<Part>::Properties::SubsetsOfSamePileUp(
     Properties const& left,
     Properties const& right) {
   return left.SubsetOfExistingPileUp() && right.SubsetOfExistingPileUp() &&
-         left.parts_.front()->containing_pile_up()->iterator() ==
-             right.parts_.front()->containing_pile_up()->iterator();
+         left.parts_.front()->containing_pile_up() ==
+             right.parts_.front()->containing_pile_up();
 }
 
 bool Subset<Part>::Properties::EqualsExistingPileUp() const {
