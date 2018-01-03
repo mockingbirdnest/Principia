@@ -96,18 +96,15 @@ class Part final {
   // Requires |!is_piled_up()|.  The part assumes co-ownership of the |pile_up|.
   void set_containing_pile_up(not_null<PileUp*> pile_up);
 
-  // A pointer to the containing pile up, if any.  Do not |Erase| this
-  // iterator, use |ClearPileUp| instead, which will take care of letting all
-  // parts know that their |PileUp| is gone.
-  //TODO(phl):comment.  shared_ptr?
+  // A pointer to the containing pile up, if any.
   PileUp* containing_pile_up() const;
 
   // Whether this part is in a |PileUp|.  Equivalent to |containing_pile_up()|.
   bool is_piled_up() const;
 
-  // If this part is in a |PileUp|, erases that |PileUp|.  After this call, all
-  // parts in that |PileUp| are no longer piled up.
-  void ClearPileUp();
+  // Remove this part from its pile-up, if any.  This may cause the pile-up to
+  // be destroyed if this was the last part owning the pile-up.
+  void remove_from_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message,
                       PileUp::SerializationIndexForPileUp const&

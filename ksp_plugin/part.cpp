@@ -38,7 +38,6 @@ Part::Part(
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
-  CHECK(!is_piled_up());
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
   }
@@ -144,24 +143,11 @@ PileUp* Part::containing_pile_up() const {
 }
 
 bool Part::is_piled_up() const {
-  // TODO(egg): |has_value()| once we have a standard |optional|.
-  return static_cast<bool>(containing_pile_up_);
+  return containing_pile_up_ != nullptr;
 }
 
-void Part::ClearPileUp() {
-  if (is_piled_up()) {
-    std::shared_ptr<PileUp> const pile_up = containing_pile_up_;
-    for (not_null<Part*> const part : pile_up->parts()) {
-      LOG(INFO) << "Removing part " << part->ShortDebugString()
-                << " from its pile up at " << pile_up;
-      part->containing_pile_up_.reset();
-    }
-    CHECK(!is_piled_up());
-    // At this point the parts of this pile-up all have a null
-    // |containing_pile_up_|.  So |pile_up| is the last remaining pointer
-    // the pile-up.  By leaving this scope we cause the pile-up to be destroyed
-    // and to remove itself from the plugin.
-  }
+void Part::remove_from_pile_up() {
+  containing_pile_up_.reset();
 }
 
 void Part::WriteToMessage(not_null<serialization::Part*> const message,

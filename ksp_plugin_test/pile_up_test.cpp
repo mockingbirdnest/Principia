@@ -53,6 +53,7 @@ using ::testing::DoAll;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::IsEmpty;
+using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::ReturnRef;
 using ::testing::_;
@@ -209,6 +210,8 @@ class PileUpTest : public testing::Test {
     EXPECT_THAT(pile_up.apparent_part_degrees_of_freedom(), IsEmpty());
   }
 
+  MockFunction<void()> deletion_callback_;
+
   PartId const part_id1_ = 111;
   PartId const part_id2_ = 222;
   Mass const mass1_ = 1 * Kilogram;
@@ -239,11 +242,13 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
   p2_.increment_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
                          DefaultHistoryParameters(),
-                         &ephemeris);
+                         &ephemeris,
+                         deletion_callback_.AsStdFunction());
   EXPECT_THAT(pile_up.intrinsic_force(),
               AlmostEquals(Vector<Force, Barycentric>(
                   {12 * Newton, 23 * Newton, 34 * Newton}), 0));
@@ -335,11 +340,13 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
 // Same as above, but without an intrinsic force.
 TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
   MockEphemeris<Barycentric> ephemeris;
+  EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
                          DefaultHistoryParameters(),
-                         &ephemeris);
+                         &ephemeris,
+                         deletion_callback_.AsStdFunction());
   EXPECT_THAT(pile_up.intrinsic_force(),
               AlmostEquals(Vector<Force, Barycentric>(), 0));
 
@@ -544,10 +551,12 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       /*length_integration_tolerance*/ 1 * Micro(Metre),
       /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};
 
+  EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_}, astronomy::J2000,
                          DefaultProlongationParameters(),
                          DefaultHistoryParameters(),
-                         &ephemeris);
+                         &ephemeris,
+                         deletion_callback_.AsStdFunction());
   Velocity<Barycentric> const old_velocity =
       p1_.degrees_of_freedom().velocity();
 
@@ -571,11 +580,13 @@ TEST_F(PileUpTest, Serialization) {
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
   p2_.increment_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
                          DefaultHistoryParameters(),
-                         &ephemeris);
+                         &ephemeris,
+                         deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);
@@ -600,7 +611,7 @@ TEST_F(PileUpTest, Serialization) {
   auto const p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
 
   serialization::PileUp second_message;
-  p.WriteToMessage(&second_message);
+  p->WriteToMessage(&second_message);
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
@@ -610,11 +621,13 @@ TEST_F(PileUpTest, SerializationCompatibility) {
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
   p2_.increment_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
+  EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
                          DefaultHistoryParameters(),
-                         &ephemeris);
+                         &ephemeris,
+                         deletion_callback_.AsStdFunction());
 
   serialization::PileUp message;
   pile_up.WriteToMessage(&message);
@@ -633,7 +646,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
     LOG(FATAL) << "Unexpected part id " << part_id;
     base::noreturn();
   };
-  auto p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
+  auto const p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
 
   EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillOnce(DoAll(
@@ -646,7 +659,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
                                      140.0 * Metre / Second,
                                      310.0 / 3.0 * Metre / Second}))),
           Return(Status::OK)));
-  p.DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
+  p->DeformAndAdvanceTime(astronomy::J2000 + 1 * Second);
 }
 
 }  // namespace internal_pile_up

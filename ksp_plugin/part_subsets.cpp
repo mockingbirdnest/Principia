@@ -35,8 +35,12 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
     missing_ -= other.parts_.size();
     CHECK_GE(missing_, 0);
   } else {
-    parts_.front()->ClearPileUp();
-    other.parts_.front()->ClearPileUp();
+    for (auto const part : parts_) {
+      part->remove_from_pile_up();
+    }
+    for (auto const part : other.parts_) {
+      part->remove_from_pile_up();
+    }
   }
   parts_.splice(parts_.end(), other.parts_);
   total_mass_ += other.total_mass_;
@@ -69,7 +73,9 @@ void Subset<Part>::Properties::Collect(
     pile_up.set_intrinsic_force(total_intrinsic_force_);
   } else {
     if (StrictSubsetOfExistingPileUp()) {
-      parts_.front()->ClearPileUp();
+      for (auto const part : parts_) {
+        part->remove_from_pile_up();
+      }
     }
     CHECK(!parts_.empty());
 
