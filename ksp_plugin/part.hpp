@@ -99,7 +99,8 @@ class Part final {
   // A pointer to the containing pile up, if any.
   PileUp* containing_pile_up() const;
 
-  // Whether this part is in a |PileUp|.  Equivalent to |containing_pile_up()|.
+  // Whether this part is in a |PileUp|, i.e., has a non-null
+  // |containing_pile_up|.
   bool is_piled_up() const;
 
   // Remove this part from its pile-up, if any.  This may cause the pile-up to
