@@ -691,7 +691,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Start all the integrations in parallel.
   std::vector<PileUpFuture> pile_up_futures;
-  for (auto const pile_up : pile_ups_) {
+  for (auto* const pile_up : pile_ups_) {
     pile_up_futures.emplace_back(
         pile_up,
         vessel_thread_pool_.Add([this, pile_up]() {
@@ -1221,7 +1221,7 @@ void Plugin::WriteToMessage(
   message->set_sun_index(sun_index);
   renderer_->WriteToMessage(message->mutable_renderer());
 
-  for (auto const& pile_up : pile_ups_) {
+  for (auto* const pile_up : pile_ups_) {
     pile_up->WriteToMessage(message->add_pile_up());
   }
 
@@ -1336,7 +1336,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   // the pile-ups to the parts.  To do that, we first build shared pointers for
   // all the pile-ups.
   std::vector<not_null<std::shared_ptr<PileUp>>> shared_pile_ups;
-  for (auto const pile_up : plugin->pile_ups_) {
+  for (auto* const pile_up : plugin->pile_ups_) {
     shared_pile_ups.emplace_back(check_not_null(pile_up));
   }
   auto const pile_up_for_serialization_index =
