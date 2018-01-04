@@ -160,7 +160,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
-        serialization_index_for_pile_up(containing_pile_up_));
+        serialization_index_for_pile_up(containing_pile_up_.get()));
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   prehistory_->WriteToMessage(message->mutable_prehistory(),

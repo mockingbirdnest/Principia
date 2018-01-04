@@ -84,7 +84,7 @@ class PileUp {
   using PileUpForSerializationIndex =
       std::function<not_null<std::shared_ptr<PileUp>>(int)>;
   using SerializationIndexForPileUp =
-      std::function<int(not_null<std::shared_ptr<PileUp>> const&)>;
+      std::function<int(not_null<PileUp const*>)>;
 
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
   static not_null<std::unique_ptr<PileUp>> ReadFromMessage(

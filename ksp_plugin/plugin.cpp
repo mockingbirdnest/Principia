@@ -1181,9 +1181,8 @@ void Plugin::WriteToMessage(
   }
 
   auto const serialization_index_for_pile_up =
-      [this](not_null<std::shared_ptr<PileUp>> const& pile_up) {
-        auto const it =
-            std::find(pile_ups_.begin(), pile_ups_.end(), pile_up.get());
+      [this](not_null<PileUp const*> const pile_up) {
+        auto const it = std::find(pile_ups_.begin(), pile_ups_.end(), pile_up);
         return std::distance(pile_ups_.begin(), it);
       };
 

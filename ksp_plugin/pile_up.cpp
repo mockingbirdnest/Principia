@@ -15,6 +15,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_pile_up {
 
+using base::check_not_null;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using geometry::AngularVelocity;
@@ -246,7 +247,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
         part_id_to_part(part_id),
         DegreesOfFreedom<ApparentBubble>::ReadFromMessage(degrees_of_freedom));
   }
-  return base::check_not_null(std::move(pile_up));
+  return check_not_null(std::move(pile_up));
 }
 
 PileUp::PileUp(
