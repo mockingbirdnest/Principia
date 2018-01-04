@@ -119,8 +119,9 @@ Plugin::Plugin(std::string const& game_epoch,
 Plugin::~Plugin() {
   // We must manually destroy the vessels, triggering the destruction of the
   // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.  This also removes the parts from the
-  // pile-ups, which also exist.
+  // which must therefore still exist.  This also causes the parts to be
+  // destroyed, and therefore to destroy the pile-ups, which want to remove
+  // themselves from |pile_up_|, which also exists.
   vessels_.clear();
 }
 
@@ -690,7 +691,7 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Start all the integrations in parallel.
   std::vector<PileUpFuture> pile_up_futures;
-  for (PileUp* const pile_up : pile_ups_) {
+  for (auto const pile_up : pile_ups_) {
     pile_up_futures.emplace_back(
         pile_up,
         vessel_thread_pool_.Add([this, pile_up]() {
@@ -1179,10 +1180,12 @@ void Plugin::WriteToMessage(
         ephemeris_->serialization_index_for_body(owned_celestial->body()));
   }
 
-  auto const serialization_index_for_pile_up = [this](PileUp* pile_up) {
-    auto const it = std::find(pile_ups_.begin(), pile_ups_.end(), pile_up);
-    return std::distance(pile_ups_.begin(), it);
-  };
+  auto const serialization_index_for_pile_up =
+      [this](not_null<std::shared_ptr<PileUp>> const& pile_up) {
+        auto const it =
+            std::find(pile_ups_.begin(), pile_ups_.end(), pile_up.get());
+        return std::distance(pile_ups_.begin(), it);
+      };
 
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& pair : vessels_) {
@@ -1307,25 +1310,39 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.
+  auto const part_id_to_part =
+      [&part_id_to_vessel =
+            plugin->part_id_to_vessel_](PartId const part_id) {
+        not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
+        not_null<Part*> const part = vessel->part(part_id);
+        return part;
+      };
   for (auto const& pile_up_message : message.pile_up()) {
-    plugin->pile_ups_.push_back(PileUp::ReadFromMessage(
-        pile_up_message,
-        [&part_id_to_vessel = plugin->part_id_to_vessel_](
-            PartId const part_id) {
-          not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
-          not_null<Part*> const part = vessel->part(part_id);
-          return part;
-        },
-        plugin->ephemeris_.get()).release());
+    // First push a nullptr to be able to capture an iterator to the new
+    // location in the list in the deletion callback.
+    plugin->pile_ups_.push_back(nullptr);
+    auto deletion_callback = [it = std::prev(plugin->pile_ups_.end()),
+                              &pile_ups = plugin->pile_ups_]() {
+      pile_ups.erase(it);
+    };
+    auto const pile_up = PileUp::ReadFromMessage(pile_up_message,
+                                                 part_id_to_part,
+                                                 plugin->ephemeris_.get(),
+                                                 std::move(deletion_callback))
+                             .release();
+    *plugin->pile_ups_.rbegin() = pile_up;
   }
 
   // Now fill the containing pile-up of all the parts.  This gives ownership of
-  // the pile-ups to the parts.
+  // the pile-ups to the parts.  To do that, we first build shared pointers for
+  // all the pile-ups.
+  std::vector<not_null<std::shared_ptr<PileUp>>> shared_pile_ups;
+  for (auto const pile_up : plugin->pile_ups_) {
+    shared_pile_ups.emplace_back(check_not_null(pile_up));
+  }
   auto const pile_up_for_serialization_index =
-      [&plugin](int const serialization_index) {
-    auto it = plugin->pile_ups_.begin();
-    std::advance(it, serialization_index);
-    return *it;
+      [&shared_pile_ups](int const serialization_index) {
+    return shared_pile_ups[serialization_index];
   };
 
   for (auto const& vessel_message : message.vessel()) {

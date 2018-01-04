@@ -5,6 +5,7 @@
 
 #include "base/disjoint_sets.hpp"
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/frames.hpp"

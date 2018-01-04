@@ -131,11 +131,12 @@ void Part::ClearHistory() {
   history_ = prehistory_->NewForkAtLast();
 }
 
-void Part::set_containing_pile_up(not_null<PileUp*> const pile_up) {
+void Part::set_containing_pile_up(
+    not_null<std::shared_ptr<PileUp>> const& pile_up) {
   CHECK(!is_piled_up());
   LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
             << pile_up;
-  containing_pile_up_.reset(&*pile_up);
+  containing_pile_up_ = pile_up;
 }
 
 PileUp* Part::containing_pile_up() const {
@@ -159,7 +160,7 @@ void Part::WriteToMessage(not_null<serialization::Part*> const message,
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
     message->set_containing_pile_up(
-        serialization_index_for_pile_up(containing_pile_up_.get()));
+        serialization_index_for_pile_up(containing_pile_up_));
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
@@ -206,8 +207,8 @@ void Part::FillContainingPileUpFromMessage(
     PileUp::PileUpForSerializationIndex const&
         pile_up_for_serialization_index) {
   if (message.has_containing_pile_up()) {
-    containing_pile_up_.reset(
-        pile_up_for_serialization_index(message.containing_pile_up()));
+    containing_pile_up_ =
+        pile_up_for_serialization_index(message.containing_pile_up());
   }
 }
 

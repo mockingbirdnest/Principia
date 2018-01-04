@@ -50,7 +50,8 @@ class PartTest : public testing::Test {
 };
 
 TEST_F(PartTest, Serialization) {
-  MockFunction<int(PileUp*)> serialization_index_for_pile_up;
+  MockFunction<int(not_null<std::shared_ptr<PileUp>> const&)>
+      serialization_index_for_pile_up;
   EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
 
   serialization::Part message;

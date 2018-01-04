@@ -4,11 +4,13 @@
 #include <list>
 #include <memory>
 
+#include "base/not_null.hpp"
 #include "ksp_plugin/part.hpp"
 #include "ksp_plugin/pile_up.hpp"
 
 namespace principia {
 
+using base::make_not_null_shared;
 using geometry::Instant;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -82,17 +84,17 @@ void Subset<Part>::Properties::Collect(
     // First push a nullptr to be able to capture an iterator to the new
     // location in the list in the deletion callback.
     pile_ups.push_front(nullptr);
-
-    auto deletion_callback = [it = pile_ups.begin(), &pile_ups] {
+    auto deletion_callback = [it = pile_ups.begin(), &pile_ups]() {
       pile_ups.erase(it);
     };
-    PileUp* const pile_up = new PileUp(std::move(parts_),
-                                       t,
-                                       adaptive_step_parameters,
-                                       fixed_step_parameters,
-                                       ephemeris,
-                                       std::move(deletion_callback));
-    *pile_ups.begin() = pile_up;
+    auto const pile_up =
+        make_not_null_shared<PileUp>(std::move(parts_),
+                                     t,
+                                     adaptive_step_parameters,
+                                     fixed_step_parameters,
+                                     ephemeris,
+                                     std::move(deletion_callback));
+    *pile_ups.begin() = pile_up.get();
 
     // The pile-up is now co-owned by all its parts.
     for (not_null<Part*> const part : pile_up->parts()) {

@@ -94,7 +94,7 @@ class Part final {
   void ClearHistory();
 
   // Requires |!is_piled_up()|.  The part assumes co-ownership of the |pile_up|.
-  void set_containing_pile_up(not_null<PileUp*> pile_up);
+  void set_containing_pile_up(not_null<std::shared_ptr<PileUp>> const& pile_up);
 
   // A pointer to the containing pile up, if any.
   PileUp* containing_pile_up() const;

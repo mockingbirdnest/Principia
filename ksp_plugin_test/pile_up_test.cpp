@@ -580,7 +580,7 @@ TEST_F(PileUpTest, Serialization) {
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
   p2_.increment_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
-  EXPECT_CALL(deletion_callback_, Call()).Times(1);
+  EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
@@ -608,7 +608,10 @@ TEST_F(PileUpTest, Serialization) {
     LOG(FATAL) << "Unexpected part id " << part_id;
     base::noreturn();
   };
-  auto const p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
+  auto const p = PileUp::ReadFromMessage(message,
+                                         part_id_to_part,
+                                         &ephemeris,
+                                         deletion_callback_.AsStdFunction());
 
   serialization::PileUp second_message;
   p->WriteToMessage(&second_message);
@@ -621,7 +624,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
       Vector<Force, Barycentric>({1 * Newton, 2 * Newton, 3 * Newton}));
   p2_.increment_intrinsic_force(
       Vector<Force, Barycentric>({11 * Newton, 21 * Newton, 31 * Newton}));
-  EXPECT_CALL(deletion_callback_, Call()).Times(1);
+  EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
                          DefaultProlongationParameters(),
@@ -646,7 +649,10 @@ TEST_F(PileUpTest, SerializationCompatibility) {
     LOG(FATAL) << "Unexpected part id " << part_id;
     base::noreturn();
   };
-  auto const p = PileUp::ReadFromMessage(message, part_id_to_part, &ephemeris);
+  auto const p = PileUp::ReadFromMessage(message,
+                                         part_id_to_part,
+                                         &ephemeris,
+                                         deletion_callback_.AsStdFunction());
 
   EXPECT_CALL(ephemeris, FlowWithAdaptiveStep(_, _, _, _, _, _))
       .WillOnce(DoAll(

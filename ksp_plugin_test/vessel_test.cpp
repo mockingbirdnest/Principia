@@ -334,7 +334,8 @@ TEST_F(VesselTest, FlightPlan) {
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
-  MockFunction<int(PileUp*)> serialization_index_for_pile_up;
+  MockFunction<int(not_null<std::shared_ptr<PileUp>> const&)>
+      serialization_index_for_pile_up;
   EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
 
   vessel_.PrepareHistory(astronomy::J2000);
