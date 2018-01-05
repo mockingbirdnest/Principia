@@ -280,6 +280,8 @@ class not_null final {
   template<typename P>
   friend _checked_not_null<P> check_not_null(P pointer);
   template<typename T, typename... Args>
+  friend not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args);
+  template<typename T, typename... Args>
   friend not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args);
 };
 

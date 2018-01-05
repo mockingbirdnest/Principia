@@ -41,6 +41,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::EqualsProto;
 using ::testing::DoAll;
 using ::testing::ElementsAre;
+using ::testing::MockFunction;
 using ::testing::Return;
 using ::testing::_;
 
@@ -333,6 +334,10 @@ TEST_F(VesselTest, FlightPlan) {
 }
 
 TEST_F(VesselTest, SerializationSuccess) {
+  MockFunction<int(not_null<PileUp const*>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
+
   vessel_.PrepareHistory(astronomy::J2000);
 
   serialization::Vessel message;
@@ -342,7 +347,8 @@ TEST_F(VesselTest, SerializationSuccess) {
                            10 * Kilogram,
                            DefaultPredictionParameters());
 
-  vessel_.WriteToMessage(&message);
+  vessel_.WriteToMessage(&message,
+                         serialization_index_for_pile_up.AsStdFunction());
   EXPECT_TRUE(message.has_history());
   EXPECT_TRUE(message.has_flight_plan());
 
@@ -351,7 +357,8 @@ TEST_F(VesselTest, SerializationSuccess) {
   EXPECT_TRUE(v->has_flight_plan());
 
   serialization::Vessel second_message;
-  v->WriteToMessage(&second_message);
+  v->WriteToMessage(&second_message,
+                    serialization_index_for_pile_up.AsStdFunction());
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 

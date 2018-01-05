@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/container_iterator.hpp"
 #include "base/disjoint_sets.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -25,7 +24,6 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_part {
 
-using base::IteratorOn;
 using base::not_null;
 using base::Subset;
 using geometry::Instant;
@@ -95,29 +93,30 @@ class Part final {
   // Clears the history and psychohistory.
   void ClearHistory();
 
-  // Requires |!is_piled_up()|.
-  void set_containing_pile_up(IteratorOn<std::list<PileUp>> pile_up);
+  // Requires |!is_piled_up()|.  The part assumes co-ownership of the |pile_up|.
+  void set_containing_pile_up(not_null<std::shared_ptr<PileUp>> const& pile_up);
 
-  // An iterator to the containing |PileUp|, if any.  Do not |Erase| this
-  // iterator, use |clear_pile_up| instead, which will take care of letting all
-  // parts know that their |PileUp| is gone.
-  std::experimental::optional<IteratorOn<std::list<PileUp>>>
-  containing_pile_up() const;
+  // A pointer to the containing pile up, if any.
+  PileUp* containing_pile_up() const;
 
-  // Whether this part is in a |PileUp|.  Equivalent to |containing_pile_up()|.
+  // Whether this part is in a |PileUp|, i.e., has a non-null
+  // |containing_pile_up|.
   bool is_piled_up() const;
 
-  // If this part is in a |PileUp|, erases that |PileUp|.  After this call, all
-  // parts in that |PileUp| are no longer piled up.
-  void clear_pile_up();
+  // Remove this part from its pile-up, if any.  This may cause the pile-up to
+  // be destroyed if this was the last part owning the pile-up.
+  void reset_containing_pile_up();
 
-  void WriteToMessage(not_null<serialization::Part*> message) const;
+  void WriteToMessage(not_null<serialization::Part*> message,
+                      PileUp::SerializationIndexForPileUp const&
+                          serialization_index_for_pile_up) const;
   static not_null<std::unique_ptr<Part>> ReadFromMessage(
       serialization::Part const& message,
       std::function<void()> deletion_callback);
   void FillContainingPileUpFromMessage(
       serialization::Part const& message,
-      not_null<std::list<PileUp>*> const pile_ups);
+      PileUp::PileUpForSerializationIndex const&
+          pile_up_for_serialization_index);
 
   // Returns "part name (part ID)".
   std::string ShortDebugString() const;
@@ -128,8 +127,7 @@ class Part final {
   Mass mass_;
   Vector<Force, Barycentric> intrinsic_force_;
 
-  std::experimental::optional<IteratorOn<std::list<PileUp>>>
-      containing_pile_up_;
+  std::shared_ptr<PileUp> containing_pile_up_;
 
   DegreesOfFreedom<Barycentric> degrees_of_freedom_;
 
