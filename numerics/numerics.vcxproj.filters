@@ -85,5 +85,8 @@
     <ClCompile Include="fit_hermite_spline_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="polynomial_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -20,6 +20,7 @@ using geometry::Normed;
 
 // A 3rd degree Hermite polynomial defined by its values and derivatives at the
 // bounds of some interval.
+// TODO(phl): Invert the two template arguments for consistency with Derivative.
 template<typename Argument, typename Value>
 class Hermite3 final {
  public:
