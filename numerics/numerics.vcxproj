@@ -264,6 +264,8 @@
     <ClInclude Include="hermite3.hpp" />
     <ClInclude Include="hermite3_body.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
+    <ClInclude Include="polynomial.hpp" />
+    <ClInclude Include="polynomial_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
