@@ -105,7 +105,7 @@ class Part final {
 
   // Remove this part from its pile-up, if any.  This may cause the pile-up to
   // be destroyed if this was the last part owning the pile-up.
-  void remove_from_pile_up();
+  void reset_containing_pile_up();
 
   void WriteToMessage(not_null<serialization::Part*> message,
                       PileUp::SerializationIndexForPileUp const&

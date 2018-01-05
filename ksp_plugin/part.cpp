@@ -147,7 +147,7 @@ bool Part::is_piled_up() const {
   return containing_pile_up_ != nullptr;
 }
 
-void Part::remove_from_pile_up() {
+void Part::reset_containing_pile_up() {
   LOG_IF(INFO, containing_pile_up_ != nullptr)
       << "Removing part " << ShortDebugString() << " from its pile up at "
       << containing_pile_up_;

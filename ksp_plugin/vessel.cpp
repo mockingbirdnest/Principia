@@ -115,7 +115,7 @@ void Vessel::FreeParts() {
     if (Contains(kept_parts_, part->part_id())) {
       ++it;
     } else {
-      part->remove_from_pile_up();
+      part->reset_containing_pile_up();
       it = parts_.erase(it);
     }
   }

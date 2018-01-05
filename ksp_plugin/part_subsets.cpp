@@ -38,10 +38,10 @@ void Subset<Part>::Properties::MergeWith(Properties& other) {
     CHECK_GE(missing_, 0);
   } else {
     for (auto const part : parts_) {
-      part->remove_from_pile_up();
+      part->reset_containing_pile_up();
     }
     for (auto const part : other.parts_) {
-      part->remove_from_pile_up();
+      part->reset_containing_pile_up();
     }
   }
   parts_.splice(parts_.end(), other.parts_);
@@ -76,7 +76,7 @@ void Subset<Part>::Properties::Collect(
   } else {
     if (StrictSubsetOfExistingPileUp()) {
       for (auto const part : parts_) {
-        part->remove_from_pile_up();
+        part->reset_containing_pile_up();
       }
     }
     CHECK(!parts_.empty());

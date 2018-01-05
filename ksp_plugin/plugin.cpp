@@ -1180,10 +1180,15 @@ void Plugin::WriteToMessage(
         ephemeris_->serialization_index_for_body(owned_celestial->body()));
   }
 
+  // Construct a map to help serialization of the pile-ups.
+  std::map<not_null<PileUp const*>, int> serialization_index_to_pile_up;
+  int serialization_index = 0;
+  for (auto const* pile_up : pile_ups_) {
+    serialization_index_to_pile_up[pile_up] = serialization_index++;
+  }
   auto const serialization_index_for_pile_up =
-      [this](not_null<PileUp const*> const pile_up) {
-        auto const it = std::find(pile_ups_.begin(), pile_ups_.end(), pile_up);
-        return std::distance(pile_ups_.begin(), it);
+      [&serialization_index_to_pile_up](not_null<PileUp const*> const pile_up) {
+        return serialization_index_to_pile_up.at(pile_up);
       };
 
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
@@ -1341,7 +1346,7 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   }
   auto const pile_up_for_serialization_index =
       [&shared_pile_ups](int const serialization_index) {
-    return shared_pile_ups[serialization_index];
+    return shared_pile_ups.at(serialization_index);
   };
 
   for (auto const& vessel_message : message.vessel()) {
