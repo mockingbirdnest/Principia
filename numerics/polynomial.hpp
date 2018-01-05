@@ -66,7 +66,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
           Argument,
           std::make_integer_sequence<int, degree + 1>>::type;
 
-  PolynomialInMonomialBasis(Coefficients const& coeffients,
+  PolynomialInMonomialBasis(Coefficients const& coefficients,
                             Argument const& argument_min,
                             Argument const& argument_max);
 

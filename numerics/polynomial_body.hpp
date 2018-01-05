@@ -24,7 +24,7 @@ Polynomial<Value, Argument>::Polynomial(Argument const& argument_min,
 
 template<typename Value, typename Argument, int degree>
 PolynomialInMonomialBasis<Value, Argument, degree>::PolynomialInMonomialBasis(
-    Coefficients const& coeffients,
+    Coefficients const& coefficients,
     Argument const& argument_min,
     Argument const& argument_max)
     : Polynomial(argument_min, argument_max),
