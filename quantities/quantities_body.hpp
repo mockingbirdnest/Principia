@@ -39,30 +39,24 @@ struct Dimensions : not_constructible {
   static int constexpr exponent_bits = 5;
   static int constexpr exponent_mask = 0x1F;
 
-  static_assert(LengthExponent >= min_exponent &&
-                LengthExponent <= max_exponent,
-                "Invalid length exponent");
-  static_assert(MassExponent >= min_exponent &&
-                MassExponent <= max_exponent,
-                "Invalid mass exponent");
-  static_assert(TimeExponent >= min_exponent &&
-                TimeExponent <= max_exponent,
-                "Invalid time exponent");
-  static_assert(CurrentExponent >= min_exponent &&
-                CurrentExponent <= max_exponent,
-                "Invalid current exponent");
-  static_assert(TemperatureExponent >= min_exponent &&
-                TemperatureExponent <= max_exponent,
-                "Invalid temperature exponent");
-  static_assert(AmountExponent >= min_exponent &&
-                AmountExponent <= max_exponent,
-                "Invalid amount exponent");
-  static_assert(LuminousIntensityExponent >= min_exponent &&
-                LuminousIntensityExponent <= max_exponent,
-                "Invalid luminous intensity exponent");
-  static_assert(AngleExponent >= min_exponent &&
-                AngleExponent <= max_exponent,
-                "Invalid angle exponent");
+  static bool constexpr length_is_serializable =
+      LengthExponent >= min_exponent && LengthExponent <= max_exponent;
+  static bool constexpr mass_is_serializable =
+      MassExponent >= min_exponent && MassExponent <= max_exponent;
+  static bool constexpr time_is_serializable =
+      TimeExponent >= min_exponent && TimeExponent <= max_exponent;
+  static bool constexpr current_is_serializable =
+      CurrentExponent >= min_exponent && CurrentExponent <= max_exponent;
+  static bool constexpr temperature_is_serializable =
+      TemperatureExponent >= min_exponent &&
+      TemperatureExponent <= max_exponent;
+  static bool constexpr amount_is_serializable =
+      AmountExponent >= min_exponent && AmountExponent <= max_exponent;
+  static bool constexpr luminous_intensity_is_serializable =
+      LuminousIntensityExponent >= min_exponent &&
+      LuminousIntensityExponent <= max_exponent;
+  static bool constexpr angle_is_serializable =
+      AngleExponent >= min_exponent && AngleExponent <= max_exponent;
 
   static std::int64_t constexpr representation =
       (LengthExponent & exponent_mask)                                 |
@@ -298,6 +292,22 @@ constexpr bool Quantity<D>::operator!=(Quantity const& right) const {
 template<typename D>
 void Quantity<D>::WriteToMessage(
     not_null<serialization::Quantity*> const message) const {
+  static_assert(D::length_is_serializable,
+                "Invalid length exponent");
+  static_assert(D::mass_is_serializable,
+                "Invalid mass exponent");
+  static_assert(D::time_is_serializable,
+                "Invalid time exponent");
+  static_assert(D::current_is_serializable,
+                "Invalid current exponent");
+  static_assert(D::temperature_is_serializable,
+                "Invalid temperature exponent");
+  static_assert(D::amount_is_serializable,
+                "Invalid amount exponent");
+  static_assert(D::luminous_intensity_is_serializable,
+                "Invalid luminous intensity exponent");
+  static_assert(D::angle_is_serializable,
+                "Invalid angle exponent");
   message->set_dimensions(D::representation);
   message->set_magnitude(magnitude_);
 }
@@ -305,6 +315,22 @@ void Quantity<D>::WriteToMessage(
 template<typename D>
 Quantity<D> Quantity<D>::ReadFromMessage(
     serialization::Quantity const& message) {
+  static_assert(D::length_is_serializable,
+                "Invalid length exponent");
+  static_assert(D::mass_is_serializable,
+                "Invalid mass exponent");
+  static_assert(D::time_is_serializable,
+                "Invalid time exponent");
+  static_assert(D::current_is_serializable,
+                "Invalid current exponent");
+  static_assert(D::temperature_is_serializable,
+                "Invalid temperature exponent");
+  static_assert(D::amount_is_serializable,
+                "Invalid amount exponent");
+  static_assert(D::luminous_intensity_is_serializable,
+                "Invalid luminous intensity exponent");
+  static_assert(D::angle_is_serializable,
+                "Invalid angle exponent");
   CHECK_EQ(D::representation, message.dimensions());
   return Quantity(message.magnitude());
 }

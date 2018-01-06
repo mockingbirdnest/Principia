@@ -11,26 +11,36 @@ namespace numerics {
 namespace internal_polynomial {
 
 using quantities::Derivative;
+using quantities::Difference;
 
 //TODO(phl): move elsewhere?
 template<typename Value, typename Argument, int order>
-struct NthDerivative {
-  using type =
-      Derivative<typename NthDerivative<Value, Argument, order - 1>::type,
-                 Argument>;
+struct NthDerivativeGenerator {
+  using Type = Derivative<
+      typename NthDerivativeGenerator<Value, Argument, order - 1>::Type,
+      Argument>;
 };
 template<typename Value, typename Argument>
-struct NthDerivative<Value, Argument, 0> {
-  using type = Value;
+struct NthDerivativeGenerator<Value, Argument, 0> {
+  using Type = Value;
 };
 
+template<typename Value, typename Argument, int order>
+using NthDerivative =
+    typename NthDerivativeGenerator<Value, Argument, order>::Type;
+
 template<typename Value, typename Argument, typename>
-struct NthDerivatives;
+struct NthDerivativesGenerator;
 template<typename Value, typename Argument, int... orders>
-struct NthDerivatives<Value, Argument, std::integer_sequence<int, orders...>> {
-  using type =
-      std::tuple<typename NthDerivative<Value, Argument, orders>::type...>;
+struct NthDerivativesGenerator<Value,
+                               Argument,
+                               std::integer_sequence<int, orders...>> {
+  using Type = std::tuple<typename NthDerivative<Value, Argument, orders>...>;
 };
+
+template<typename Value, typename Argument, typename Sequence>
+using NthDerivatives =
+    typename NthDerivativesGenerator<Value, Argument, Sequence>::Type;
 
 template<typename Value, typename Argument>
 class Polynomial {
@@ -61,10 +71,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
   using Coefficients =
-      typename NthDerivatives<
-          Value,
-          Argument,
-          std::make_integer_sequence<int, degree + 1>>::type;
+      typename NthDerivatives<Value,
+                              Argument,
+                              std::make_integer_sequence<int, degree + 1>>;
 
   PolynomialInMonomialBasis(Coefficients const& coefficients,
                             Argument const& argument_min,

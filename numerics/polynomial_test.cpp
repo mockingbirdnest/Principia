@@ -11,6 +11,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 
@@ -22,6 +23,7 @@ using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
 
 namespace numerics {
 
@@ -31,6 +33,7 @@ class PolynomialTest : public ::testing::Test {
                       serialization::Frame::TEST1, true>;
 
   using P2 = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
+  using P17 = PolynomialInMonomialBasis<Displacement<World>, Instant, 17>;
 
   PolynomialTest()
       : coefficients_({
@@ -57,10 +60,30 @@ TEST_F(PolynomialTest, Coefficients) {
 }
 
 // Check that a polynomial can be constructed and evaluated.
-TEST_F(PolynomialTest, Evaluate) {
+TEST_F(PolynomialTest, Evaluate2) {
   P2 p(coefficients_, t0_, t0_ + 1 * Second);
   Displacement<World> const d = p.Evaluate(t0_ + 0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(t0_ + 0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
+                                                   0.5 * Metre,
+                                                   1 * Metre}), 0));
+  EXPECT_THAT(v, AlmostEquals(Velocity<World>({1 * Metre / Second,
+                                               1 * Metre / Second,
+                                               0 * Metre / Second}), 0));
+}
+
+// Check that a polynomial of high order may be declared even if the quantities
+// of the coefficients would not be serializable.
+TEST_F(PolynomialTest, Evaluate17) {
+  P17::Coefficients const coefficients;
+  P17 p(coefficients, t0_, t0_ + 1 * Second);
+  Displacement<World> const d = p.Evaluate(t0_ + 0.5 * Second);
+  EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
+                                                   0 * Metre,
+                                                   0 * Metre}), 0));
+  // The following doesn't compile with: "Invalid time exponent".
+  //   serialization::Quantity message;
+  //   std::get<17>(coefficients).coordinates().x.WriteToMessage(&message);
 }
 
 }  // namespace numerics
