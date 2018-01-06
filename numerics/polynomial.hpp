@@ -13,7 +13,23 @@ namespace internal_polynomial {
 using quantities::Derivative;
 using quantities::Difference;
 
-//TODO(phl): move elsewhere?
+// TODO(phl): We would like to define NthDerivative in named_quantities.hpp
+// thus:
+//
+//   template<typename Value, typename Argument, int order>
+//   using NthDerivative = typename std::conditional_t<
+//       order == 0,
+//       Value,
+//       Quotient<Difference<Value>,
+//       Exponentiation<Difference<Argument>, order>>>;
+//
+//   template<typename Value, typename Argument>
+//   using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+//
+// Unfortunately VS2015 is buggy and this interacts poorly with the
+// std::integer_sequence below (we get the wrong types).  Revisit once MSFT has
+// fixed their bugs.
+
 template<typename Value, typename Argument, int order>
 struct NthDerivativeGenerator {
   using Type = Derivative<
@@ -35,7 +51,7 @@ template<typename Value, typename Argument, int... orders>
 struct NthDerivativesGenerator<Value,
                                Argument,
                                std::integer_sequence<int, orders...>> {
-  using Type = std::tuple<typename NthDerivative<Value, Argument, orders>...>;
+  using Type = std::tuple<NthDerivative<Value, Argument, orders>...>;
 };
 
 template<typename Value, typename Argument, typename Sequence>
@@ -71,9 +87,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
   using Coefficients =
-      typename NthDerivatives<Value,
-                              Argument,
-                              std::make_integer_sequence<int, degree + 1>>;
+      NthDerivatives<Value,
+                     Argument,
+                     std::make_integer_sequence<int, degree + 1>>;
 
   PolynomialInMonomialBasis(Coefficients const& coefficients,
                             Argument const& argument_min,

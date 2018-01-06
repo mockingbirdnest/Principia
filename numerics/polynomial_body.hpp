@@ -110,7 +110,7 @@ template<typename Value, typename Argument, int degree>
 Value PolynomialInMonomialBasis<Value, Argument, degree>::Evaluate(
     Argument const& argument) const {
   return HornerEvaluator<Value, Argument, degree, 0>::Evaluate(
-      coefficients_, argument - argument_min());
+      coefficients_, argument - this->argument_min());
 }
 
 template<typename Value, typename Argument, int degree>
@@ -118,7 +118,7 @@ Derivative<Value, Argument>
 PolynomialInMonomialBasis<Value, Argument, degree>::EvaluateDerivative(
     Argument const& argument) const {
   return HornerEvaluator<Value, Argument, degree, 1>::EvaluateDerivative(
-      coefficients_, argument - argument_min());
+      coefficients_, argument - this->argument_min());
 }
 
 }  // namespace internal_polynomial
