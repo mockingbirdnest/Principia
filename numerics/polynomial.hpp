@@ -11,7 +11,6 @@ namespace numerics {
 namespace internal_polynomial {
 
 using quantities::Derivative;
-using quantities::Difference;
 
 // TODO(phl): We would like to define NthDerivative in named_quantities.hpp
 // thus:
@@ -58,25 +57,17 @@ template<typename Value, typename Argument, typename Sequence>
 using NthDerivatives =
     typename NthDerivativesGenerator<Value, Argument, Sequence>::Type;
 
+// |Value| must belong to an affine space.  |Argument| must belong to a vector
+// space.
 template<typename Value, typename Argument>
 class Polynomial {
  public:
-  Argument const& argument_min() const;
-  Argument const& argument_max() const;
-
   virtual Value Evaluate(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
  protected:
-  Polynomial(Argument const& argument_min,
-             Argument const& argument_max);
-
   virtual ~Polynomial() = default;
-
- private:
-  Argument argument_min_;
-  Argument argument_max_;
 };
 
 template<typename Value, typename Argument, int degree>
@@ -91,9 +82,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
                      Argument,
                      std::make_integer_sequence<int, degree + 1>>;
 
-  PolynomialInMonomialBasis(Coefficients const& coefficients,
-                            Argument const& argument_min,
-                            Argument const& argument_max);
+  explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
 
   Value Evaluate(Argument const& argument) const override;
   Derivative<Value, Argument> EvaluateDerivative(

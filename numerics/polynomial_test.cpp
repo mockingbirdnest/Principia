@@ -16,11 +16,11 @@
 namespace principia {
 
 using geometry::Frame;
-using geometry::Instant;
 using geometry::Displacement;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -32,8 +32,8 @@ class PolynomialTest : public ::testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
 
-  using P2 = PolynomialInMonomialBasis<Displacement<World>, Instant, 2>;
-  using P17 = PolynomialInMonomialBasis<Displacement<World>, Instant, 17>;
+  using P2 = PolynomialInMonomialBasis<Displacement<World>, Time, 2>;
+  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17>;
 
   PolynomialTest()
       : coefficients_({
@@ -48,7 +48,6 @@ class PolynomialTest : public ::testing::Test {
                                          0 * Metre / Second / Second})}) {}
 
   P2::Coefficients const coefficients_;
-  Instant const t0_;
 };
 
 // Check that coefficients can be accessed and have the right type.
@@ -61,9 +60,9 @@ TEST_F(PolynomialTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialTest, Evaluate2) {
-  P2 p(coefficients_, t0_, t0_ + 1 * Second);
-  Displacement<World> const d = p.Evaluate(t0_ + 0.5 * Second);
-  Velocity<World> const v = p.EvaluateDerivative(t0_ + 0.5 * Second);
+  P2 p(coefficients_);
+  Displacement<World> const d = p.Evaluate(0.5 * Second);
+  Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
                                                    0.5 * Metre,
                                                    1 * Metre}), 0));
@@ -76,8 +75,8 @@ TEST_F(PolynomialTest, Evaluate2) {
 // of the coefficients would not be serializable.
 TEST_F(PolynomialTest, Evaluate17) {
   P17::Coefficients const coefficients;
-  P17 p(coefficients, t0_, t0_ + 1 * Second);
-  Displacement<World> const d = p.Evaluate(t0_ + 0.5 * Second);
+  P17 p(coefficients);
+  Displacement<World> const d = p.Evaluate(0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
                                                    0 * Metre,
                                                    0 * Metre}), 0));

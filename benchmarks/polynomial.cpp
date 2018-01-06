@@ -57,10 +57,10 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   std::mt19937_64 random(42);
   P::Coefficients coefficients;
   RandomTupleGenerator<P::Coefficients, 0>::Fill(coefficients, random);
+  P const p(coefficients);
+
   auto const min = ValueGenerator<Argument>::Get(random);
   auto const max = ValueGenerator<Argument>::Get(random);
-  P const p(coefficients, min, max);
-
   auto argument = min;
   auto const Δargument = (max - min) * 1e-9;
   auto result = Value{};
@@ -79,7 +79,7 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
-void BM_EvaluatePolynomialDouble(benchmark::State& state) {
+void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
@@ -96,7 +96,7 @@ void BM_EvaluatePolynomialDouble(benchmark::State& state) {
   }
 }
 
-void BM_EvaluatePolynomialQuantity(benchmark::State& state) {
+void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
@@ -113,8 +113,9 @@ void BM_EvaluatePolynomialQuantity(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_EvaluatePolynomialDouble)->Arg(4)->Arg(8)->Arg(16);
-BENCHMARK(BM_EvaluatePolynomialQuantity)->Arg(4)->Arg(8)->Arg(16);
+BENCHMARK(BM_EvaluatePolynomialInMonomialBasisDouble)->Arg(4)->Arg(8)->Arg(16);
+BENCHMARK(BM_EvaluatePolynomialInMonomialBasisQuantity)
+    ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
 }  // namespace principia
