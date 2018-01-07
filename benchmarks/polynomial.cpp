@@ -3,12 +3,14 @@
 #include <tuple>
 
 #include "benchmark/benchmark.h"
+#include "geometry/r3_element.hpp"
 #include "numerics/polynomial.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 
+using geometry::R3Element;
 using quantities::Length;
 using quantities::Quantity;
 using quantities::SIUnit;
@@ -34,6 +36,15 @@ template<typename D>
 struct ValueGenerator<Quantity<D>> {
   static Quantity<D> Get(std::mt19937_64& random) {
     return static_cast<double>(random()) * SIUnit<Quantity<D>>();
+  }
+};
+
+template<typename S>
+struct ValueGenerator<R3Element<S>> {
+  static R3Element<S> Get(std::mt19937_64& random) {
+    return {ValueGenerator<S>::Get(random),
+            ValueGenerator<S>::Get(random),
+            ValueGenerator<S>::Get(random)};
   }
 };
 
@@ -92,7 +103,8 @@ void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
       EvaluatePolynomialInMonomialBasis<double, Time, 16>(state);
       break;
     default:
-      LOG(FATAL) << "Degree " << degree << " in BM_EvaluatePolynomialDouble";
+      LOG(FATAL) << "Degree " << degree
+                 << " in BM_EvaluatePolynomialInMonomialBasisDouble";
   }
 }
 
@@ -109,12 +121,35 @@ void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
       EvaluatePolynomialInMonomialBasis<Length, Time, 16>(state);
       break;
     default:
-      LOG(FATAL) << "Degree " << degree << " in BM_EvaluatePolynomialQuantity";
+      LOG(FATAL) << "Degree " << degree
+                 << " in BM_EvaluatePolynomialInMonomialBasisQuantity";
   }
 }
 
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisDouble)->Arg(4)->Arg(8)->Arg(16);
+void BM_EvaluatePolynomialInMonomialBasisR3ElementDouble(
+    benchmark::State& state) {
+  int const degree = state.range_x();
+  switch (degree) {
+    case 4:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 4>(state);
+      break;
+    case 8:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 8>(state);
+      break;
+    case 16:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 16>(state);
+      break;
+    default:
+      LOG(FATAL) << "Degree " << degree
+                 << " in BM_EvaluatePolynomialInMonomialBasisR3ElementDouble";
+  }
+}
+
+BENCHMARK(BM_EvaluatePolynomialInMonomialBasisDouble)
+    ->Arg(4)->Arg(8)->Arg(16);
 BENCHMARK(BM_EvaluatePolynomialInMonomialBasisQuantity)
+    ->Arg(4)->Arg(8)->Arg(16);
+BENCHMARK(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble)
     ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
