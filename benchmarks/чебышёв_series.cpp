@@ -32,12 +32,10 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
-
-// Must come last to avoid conflicts when defining the CHECK macros.
-#include "benchmark/benchmark.h"
 
 namespace principia {
 
@@ -55,7 +53,7 @@ using quantities::si::Second;
 namespace numerics {
 
 namespace {
-int const evaluations_per_iteration = 1000;
+constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {
@@ -122,8 +120,8 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
   std::vector<R3Element<double>> coefficients;
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back({static_cast<double>(random()),
-                           static_cast<double>(random()),
-                           static_cast<double>(random())});
+                            static_cast<double>(random()),
+                            static_cast<double>(random())});
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
