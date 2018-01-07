@@ -189,4 +189,6 @@ using internal_continuous_trajectory::ContinuousTrajectory;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/continuous_trajectory_body.hpp"
+#endif
