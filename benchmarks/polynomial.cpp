@@ -17,7 +17,7 @@ using quantities::Time;
 namespace numerics {
 
 namespace {
-int const evaluations_per_iteration = 1000;
+constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 template<typename T>

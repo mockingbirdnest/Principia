@@ -32,12 +32,10 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
-
-// Must come last to avoid conflicts when defining the CHECK macros.
-#include "benchmark/benchmark.h"
 
 namespace principia {
 
@@ -55,7 +53,7 @@ using quantities::si::Second;
 namespace numerics {
 
 namespace {
-int const evaluations_per_iteration = 1000;
+constexpr int evaluations_per_iteration = 1000;
 }  // namespace
 
 void BM_EvaluateDouble(benchmark::State& state) {
