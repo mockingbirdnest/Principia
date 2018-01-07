@@ -518,23 +518,15 @@ void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 void principia__InitGoogleLogging() {
-  static bool reopened_stderr = false;
-  if (!reopened_stderr) {
+  if (google::IsGoogleLoggingInitialized()) {
+    LOG(INFO) << "Google logging was already initialized, no action taken";
+  } else {
 #ifdef _MSC_VER
     FILE* file;
     freopen_s(&file, "stderr.log", "w", stderr);
 #else
     std::freopen("stderr.log", "w", stderr);
 #endif
-    reopened_stderr = true;
-  }
-#ifdef OS_WIN
-// Probably SetDllDirectory or LoadLibrary or something; log to stderr if
-// something goes wrong.
-#endif
-  if (google::IsGoogleLoggingInitialized()) {
-    LOG(INFO) << "Google logging was already initialized, no action taken";
-  } else {
     google::SetLogDestination(google::FATAL, "glog/Principia/FATAL.");
     google::SetLogDestination(google::ERROR, "glog/Principia/ERROR.");
     google::SetLogDestination(google::WARNING, "glog/Principia/WARNING.");

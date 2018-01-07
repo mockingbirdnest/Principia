@@ -206,7 +206,8 @@
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -227,7 +228,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -251,7 +253,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -275,7 +278,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -299,7 +303,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -323,7 +328,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <PostBuildEvent>
       <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
 copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
       <Message>Copying principia.dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>

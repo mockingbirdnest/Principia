@@ -49,6 +49,17 @@ internal static class Loader {
     }
     try {
       loaded_principia_dll_ = true;
+      // No kernel32 on *nix, so we throw an exception and immediately resume
+      // after the try block.
+      try {
+        // We dynamically link glog and an optimized subset of the physics
+        // library on Windows, so we need that to be in the DLL search path for
+        // the main DLL to load.
+        if (!SetDllDirectory(@"GameData\Principia\x64")) {
+          return "Failed to set DLL directory (error code " +
+                 Marshal.GetLastWin32Error() + ").";
+        }
+      } catch {}
       Log.InitGoogleLogging();
       return null;
     } catch (Exception e) {
@@ -84,7 +95,11 @@ internal static class Loader {
     }
   }
 
-  [DllImport("kernel32", SetLastError=true, CharSet = CharSet.Ansi)]
+  [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
+  [return: MarshalAs(UnmanagedType.Bool)]
+  static extern bool SetDllDirectory(string lpPathName);
+
+  [DllImport("kernel32", SetLastError = true, CharSet = CharSet.Ansi)]
   private static extern IntPtr LoadLibrary(
       [MarshalAs(UnmanagedType.LPStr)]string lpFileName);
 
