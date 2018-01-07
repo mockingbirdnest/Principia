@@ -102,6 +102,12 @@ inline Unit ParseUnit(std::string const& s) {
   if (s == "") {
     return Unit(1.0);
   // Units of length.
+  } else if (s == u8"μm") {
+    return Unit(si::Micro(si::Metre));
+  } else if (s == "mm") {
+    return Unit(si::Milli(si::Metre));
+  } else if (s == "cm") {
+    return Unit(si::Centi(si::Metre));
   } else if (s == "m") {
     return Unit(si::Metre);
   } else if (s == "km") {
@@ -109,8 +115,14 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == "au") {
     return Unit(si::AstronomicalUnit);
   // Units of time.
+  } else if (s == "ms") {
+    return Unit(si::Milli(si::Second));
   } else if (s == "s") {
     return Unit(si::Second);
+  } else if (s == "min") {
+    return Unit(si::Minute);
+  } else if (s == "h") {
+    return Unit(si::Hour);
   } else if (s == "d") {
     return Unit(si::Day);
   // Units of power.

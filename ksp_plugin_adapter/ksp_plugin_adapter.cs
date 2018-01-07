@@ -60,6 +60,8 @@ public partial class PrincipiaPluginAdapter
       "principia_initial_state";
   private const String principia_gravity_model_config_name_ =
       "principia_gravity_model";
+  private const String principia_numerics_blueprint_config_name_ =
+      "principia_numerics_blueprint";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
@@ -2362,82 +2364,129 @@ public partial class PrincipiaPluginAdapter
     reset_rsas_target_ = true;
   }
 
+  private static void InitializeIntegrators(
+      IntPtr plugin,
+      ConfigNode numerics_blueprint) {
+   if (numerics_blueprint == null) {
+     return;
+   }
+   var ephemeris_parameters =
+       numerics_blueprint.GetAtMostOneNode("ephemeris");
+   if (ephemeris_parameters != null) {
+     plugin.InitializeEphemerisParameters(new ConfigurationFixedStepParameters{
+         fixed_step_size_integrator =
+             ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         integration_step_size =
+             ephemeris_parameters.GetUniqueValue("integration_step_size")});
+   }
+
+   var history_parameters =
+       numerics_blueprint.GetAtMostOneNode("history");
+   if (history_parameters != null) {
+     plugin.InitializeHistoryParameters(new ConfigurationFixedStepParameters{
+         fixed_step_size_integrator =
+             history_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         integration_step_size =
+             history_parameters.GetUniqueValue("integration_step_size")});
+   }
+
+   var psychohistory_parameters =
+       numerics_blueprint.GetAtMostOneNode("psychohistory");
+   if (psychohistory_parameters != null) {
+     plugin.InitializePsychohistoryParameters(
+         new ConfigurationAdaptiveStepParameters{
+             adaptive_step_size_integrator =
+                 psychohistory_parameters.GetUniqueValue(
+                     "adaptive_step_size_integrator"),
+             length_integration_tolerance =
+                 psychohistory_parameters.GetUniqueValue(
+                     "length_integration_tolerance"),
+             speed_integration_tolerance =
+                 psychohistory_parameters.GetUniqueValue(
+                     "speed_integration_tolerance")});
+   }
+  }
+
   private void ResetPlugin() {
     Cleanup();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
-    var gravity_model_configs =
-        GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name_);
-    var cartesian_configs =
-        GameDatabase.Instance.GetConfigs(principia_initial_state_config_name_);
-    if (gravity_model_configs.Length == 1) {
+    ConfigNode gravity_model = GameDatabase.Instance.GetAtMostOneNode(
+        principia_gravity_model_config_name_);
+    ConfigNode initial_state = GameDatabase.Instance.GetAtMostOneNode(
+        principia_initial_state_config_name_);
+    ConfigNode numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
+        principia_numerics_blueprint_config_name_);
+    if (gravity_model == null) {
       name_to_gravity_model =
-          gravity_model_configs[0].config.GetNodes("body").
-              ToDictionary(node => node.GetValue("name"));
-    } else if (gravity_model_configs.Length > 1) {
-      Log.Fatal("too many gravity models (" + gravity_model_configs.Length +
-                ")");
+          gravity_model.GetNodes("body").ToDictionary(
+              node => node.GetUniqueValue("name"));
     }
-    if (cartesian_configs.Length > 0) {
-      if (cartesian_configs.Length > 1) {
-        Log.Fatal("too many Cartesian configs (" + cartesian_configs.Length +
-                  ")");
-      }
+    if (initial_state != null) {
       if (name_to_gravity_model == null) {
         Log.Fatal("Cartesian config without gravity models");
       }
       try {
-        ConfigNode initial_states = GameDatabase.Instance.GetConfigs(
-            principia_initial_state_config_name_)[0].config;
-        plugin_ =
-            Interface.NewPlugin(initial_states.GetValue("game_epoch"),
-                                initial_states.GetValue("solar_system_epoch"),
-                                Planetarium.InverseRotAngle);
+        // Note that |game_epoch| is not in the astronomy proto, as it is
+        // KSP-specific: it is the |Instant| corresponding to KSP's
+        // UniversalTime 0.  It is passed as an argument to
+        // |generate_configuration|.
+        plugin_ = Interface.NewPlugin(
+            initial_state.GetUniqueValue("game_epoch"),
+            initial_state.GetUniqueValue("solar_system_epoch"),
+            Planetarium.InverseRotAngle);
+        InitializeIntegrators(plugin_, numerics_blueprint);
         var name_to_initial_state =
-            initial_states.GetNodes("body").
-                ToDictionary(node => node.GetValue("name"));
+            initial_state.GetNodes("body").
+                ToDictionary(node => node.GetUniqueValue("name"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
-          ConfigNode gravity_model;
+          ConfigNode body_gravity_model;
           if (!name_to_gravity_model.TryGetValue(body.name,
-                                                 out gravity_model)) {
+                                                 out body_gravity_model)) {
              Log.Fatal("missing gravity model for " + body.name);
           }
-          ConfigNode initial_state;
+          ConfigNode body_initial_state;
           if (!name_to_initial_state.TryGetValue(body.name,
-                                                 out initial_state)) {
+                                                 out body_initial_state)) {
              Log.Fatal("missing Cartesian initial state for " + body.name);
           }
           int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+          // GetUniqueValue resp. GetAtMostOneValue corresponding to required
+          // resp. optional in principia.serialization.GravityModel.Body.
           var body_parameters = new BodyParameters{
               name = body.name,
               gravitational_parameter =
-                  gravity_model.GetValue("gravitational_parameter"),
+                  body_gravity_model.GetUniqueValue("gravitational_parameter"),
               reference_instant       =
-                  gravity_model.GetValue("reference_instant"),
-              mean_radius             = gravity_model.GetValue("mean_radius"),
+                  body_gravity_model.GetAtMostOneValue("reference_instant"),
+              mean_radius             =
+                  body_gravity_model.GetAtMostOneValue("mean_radius"),
               axis_right_ascension    =
-                  gravity_model.GetValue("axis_right_ascension"),
+                  body_gravity_model.GetAtMostOneValue("axis_right_ascension"),
               axis_declination        =
-                  gravity_model.GetValue("axis_declination"),
+                  body_gravity_model.GetAtMostOneValue("axis_declination"),
               reference_angle         =
-                  gravity_model.GetValue("reference_angle"),
+                  body_gravity_model.GetAtMostOneValue("reference_angle"),
               angular_frequency       =
-                  gravity_model.GetValue("angular_frequency"),
-              j2                      = gravity_model.GetValue("j2"),
+                  body_gravity_model.GetAtMostOneValue("angular_frequency"),
+              j2                      =
+                  body_gravity_model.GetAtMostOneValue("j2"),
               reference_radius        =
-                  gravity_model.GetValue("reference_radius")};
+                  body_gravity_model.GetAtMostOneValue("reference_radius")};
+          // GetUniqueValue since these are all required fields in
+          // principia.serialization.InitialState.Cartesian.Body.
           plugin_.InsertCelestialAbsoluteCartesian(
               celestial_index         : body.flightGlobalsIndex,
               parent_index            : parent_index,
               body_parameters         : body_parameters,
-              x                       : initial_state.GetValue("x"),
-              y                       : initial_state.GetValue("y"),
-              z                       : initial_state.GetValue("z"),
-              vx                      : initial_state.GetValue("vx"),
-              vy                      : initial_state.GetValue("vy"),
-              vz                      : initial_state.GetValue("vz"));
+              x                       : body_initial_state.GetUniqueValue("x"),
+              y                       : body_initial_state.GetUniqueValue("y"),
+              z                       : body_initial_state.GetUniqueValue("z"),
+              vx                      : body_initial_state.GetUniqueValue("vx"),
+              vy                      : body_initial_state.GetUniqueValue("vy"),
+              vz                      : body_initial_state.GetUniqueValue("vz"));
         };
         insert_body(Planetarium.fetch.Sun);
         ApplyToBodyTree(insert_body);
@@ -2451,38 +2500,45 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
+      InitializeIntegrators(plugin_, numerics_blueprint);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
-        ConfigNode gravity_model = null;
-        if (name_to_gravity_model?.TryGetValue(body.name,
-                                                out gravity_model) == true) {
+        ConfigNode body_gravity_model = null;
+        if (name_to_gravity_model?.TryGetValue(
+                body.name,
+                out body_gravity_model) == true) {
           Log.Info("using custom gravity model");
         }
         Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
         var body_parameters = new BodyParameters{
             name = body.name,
             gravitational_parameter =
-                gravity_model?.GetValue("gravitational_parameter")
+                body_gravity_model?.GetAtMostOneValue("gravitational_parameter")
                      ?? (body.gravParameter + " m^3/s^2"),
             // The origin of rotation in KSP is the x of Barycentric, rather
             // than the y axis as is the case for Earth, so the right
             // ascension is -90 deg.
             reference_instant    = 
-                gravity_model?.GetValue("reference_instant") ?? "JD2451545.0",
+                body_gravity_model?.GetAtMostOneValue("reference_instant")
+                    ?? "JD2451545.0",
             mean_radius          =
-                gravity_model?.GetValue("mean_radius") ?? (body.Radius + " m"),
+                body_gravity_model?.GetAtMostOneValue("mean_radius")
+                    ?? (body.Radius + " m"),
             axis_right_ascension =
-                gravity_model?.GetValue("axis_right_ascension") ?? "-90 deg",
+                body_gravity_model?.GetAtMostOneValue("axis_right_ascension")
+                    ?? "-90 deg",
             axis_declination     =
-                gravity_model?.GetValue("axis_declination") ?? "90 deg",
+                body_gravity_model?.GetAtMostOneValue("axis_declination")
+                    ?? "90 deg",
             reference_angle      =
-                gravity_model?.GetValue("reference_angle")
+                body_gravity_model?.GetAtMostOneValue("reference_angle")
                     ?? (body.initialRotation.ToString() + " deg"),
             angular_frequency    =
-                gravity_model?.GetValue("angular_frequency")
+                body_gravity_model?.GetAtMostOneValue("angular_frequency")
                     ??  (body.angularV.ToString() + " rad/s"),
-            j2                   = gravity_model?.GetValue("j2"),
-            reference_radius     = gravity_model?.GetValue("reference_radius")};
+            j2                   = body_gravity_model?.GetAtMostOneValue("j2"),
+            reference_radius     =
+                body_gravity_model?.GetAtMostOneValue("reference_radius")};
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                :
