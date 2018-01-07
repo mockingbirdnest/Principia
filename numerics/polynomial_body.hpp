@@ -48,7 +48,7 @@ HornerEvaluator<Value, Argument, degree, k>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
   return std::get<k>(coefficients) +
-         argument * 
+         argument *
          HornerEvaluator<Value, Argument, degree, k + 1>::Evaluate(
              coefficients, argument);
 }

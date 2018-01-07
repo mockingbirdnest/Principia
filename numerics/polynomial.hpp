@@ -20,10 +20,10 @@ using quantities::Derivative;
 //       order == 0,
 //       Value,
 //       Quotient<Difference<Value>,
-//       Exponentiation<Difference<Argument>, order>>>;
+//                Exponentiation<Difference<Argument>, order>>>;
 //
 //   template<typename Value, typename Argument>
-//   using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+//   using Derivative = NthDerivative<Value, Argument, 1>;
 //
 // Unfortunately VS2015 is buggy and this interacts poorly with the
 // std::integer_sequence below (we get the wrong types).  Revisit once MSFT has
