@@ -379,4 +379,6 @@ using internal_ephemeris::Ephemeris;
 }  // namespace physics
 }  // namespace principia
 
+#ifndef PHYSICS_DLL_IMPORT
 #include "physics/ephemeris_body.hpp"
+#endif

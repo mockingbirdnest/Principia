@@ -27,6 +27,7 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
+#include "ksp_physics/ksp_physics_lib.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
@@ -468,6 +469,11 @@ void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
 // "<KSP directory>/glog/Principia/<SEVERITY>.<date>-<time>.<pid>",
 // where date and time are in ISO 8601 basic format.
 void principia__InitGoogleLogging() {
+#ifdef OS_WIN
+  CHECK_NOTNULL(LoadLibrary(LR"(GameData\Principia\x64\glog.dll)"));
+  CHECK_NOTNULL(
+      LoadLibrary(LR"(GameData\Principia\x64\principia_physics.dll)"));
+#endif
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
   } else {
@@ -507,6 +513,7 @@ void principia__InitGoogleLogging() {
                              &module_info,
                              sizeof(module_info)));
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+  principia::physics::LogPhysicsDLLBaseAddress();
 #endif
   }
 }
