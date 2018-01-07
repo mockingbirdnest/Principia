@@ -245,7 +245,7 @@ TEST_F(PileUpTest, LifecycleWithIntrinsicForce) {
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
-                         DefaultProlongationParameters(),
+                         DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
                          deletion_callback_.AsStdFunction());
@@ -343,7 +343,7 @@ TEST_F(PileUpTest, LifecycleWithoutIntrinsicForce) {
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
-                         DefaultProlongationParameters(),
+                         DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
                          deletion_callback_.AsStdFunction());
@@ -553,7 +553,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
 
   EXPECT_CALL(deletion_callback_, Call()).Times(1);
   TestablePileUp pile_up({&p1_}, astronomy::J2000,
-                         DefaultProlongationParameters(),
+                         DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
                          deletion_callback_.AsStdFunction());
@@ -583,7 +583,7 @@ TEST_F(PileUpTest, Serialization) {
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
-                         DefaultProlongationParameters(),
+                         DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
                          deletion_callback_.AsStdFunction());
@@ -627,7 +627,7 @@ TEST_F(PileUpTest, SerializationCompatibility) {
   EXPECT_CALL(deletion_callback_, Call()).Times(2);
   TestablePileUp pile_up({&p1_, &p2_},
                          astronomy::J2000,
-                         DefaultProlongationParameters(),
+                         DefaultPsychohistoryParameters(),
                          DefaultHistoryParameters(),
                          &ephemeris,
                          deletion_callback_.AsStdFunction());

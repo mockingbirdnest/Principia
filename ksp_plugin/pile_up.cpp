@@ -178,7 +178,7 @@ not_null<std::unique_ptr<PileUp>> PileUp::ReadFromMessage(
     if (is_pre_cartan) {
       pile_up = std::unique_ptr<PileUp>(
           new PileUp(std::move(parts),
-                     DefaultProlongationParameters(),
+                     DefaultPsychohistoryParameters(),
                      DefaultHistoryParameters(),
                      DiscreteTrajectory<Barycentric>::ReadFromMessage(
                          message.history(),
