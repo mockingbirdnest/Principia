@@ -122,14 +122,14 @@ ParseAdaptiveStepSizeIntegrator(std::string const& integrator_kind) {
 }
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
-   ConfigurationFixedStepParameters const& parameters) {
+    ConfigurationFixedStepParameters const& parameters) {
   return Ephemeris<Barycentric>::FixedStepParameters(
       ParseFixedStepSizeIntegrator(parameters.fixed_step_size_integrator),
       ParseQuantity<Time>(parameters.integration_step_size));
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
-   ConfigurationAdaptiveStepParameters const& parameters) {
+    ConfigurationAdaptiveStepParameters const& parameters) {
   // It is erroneous for a psychohistory integration to fail, so the |max_steps|
   // must be unlimited.
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
