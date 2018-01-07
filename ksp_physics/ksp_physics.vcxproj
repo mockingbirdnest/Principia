@@ -336,6 +336,8 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClInclude Include="ksp_physics_lib.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="ksp_physics_lib.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

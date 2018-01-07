@@ -389,6 +389,9 @@ copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Pr
     <ClCompile Include="vessel.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ksp_physics\ksp_physics.vcxproj">
+      <Project>{3882467c-89d7-4dae-9730-bb2e610f05ad}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>

@@ -27,7 +27,6 @@
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
-#include "ksp_physics/ksp_physics_lib.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin/iterators.hpp"
 #include "ksp_plugin/part.hpp"
