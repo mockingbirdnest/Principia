@@ -20,7 +20,7 @@ constexpr Length default_ephemeris_fitting_tolerance = 1 * Milli(Metre);
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters();
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters();
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPsychohistoryParameters();
 
 }  // namespace internal_integrators
 
@@ -28,7 +28,7 @@ using internal_integrators::default_ephemeris_fitting_tolerance;
 using internal_integrators::DefaultEphemerisParameters;
 using internal_integrators::DefaultHistoryParameters;
 using internal_integrators::DefaultPredictionParameters;
-using internal_integrators::DefaultProlongationParameters;
+using internal_integrators::DefaultPsychohistoryParameters;
 
 }  // namespace ksp_plugin
 }  // namespace principia

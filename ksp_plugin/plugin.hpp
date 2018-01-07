@@ -122,6 +122,15 @@ class Plugin {
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
 
+  virtual void InitializeEphemerisParameters(
+      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
+  virtual void InitializeHistoryParameters(
+      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
+  virtual void InitializePsychohistoryParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters);
+  // No setter for the default prediction parameters, as that default is always
+  // overriden by the vessel-specific |SetPredictionAdaptiveStepParameters|.
+
   // Ends initialization.  The sun must have been inserted.
   virtual void EndInitialization();
 
@@ -422,7 +431,7 @@ class Plugin {
   // This constructor should only be used during deserialization.
   Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prolongation_parameters,
+             psychohistory_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
              prediction_parameters);
 
@@ -466,6 +475,12 @@ class Plugin {
   std::map<std::string, Index> name_to_index_;
   std::map<Index, std::string> index_to_name_;
   std::map<Index, std::experimental::optional<Index>> parents_;
+  // The ephemeris is only constructed once, so this is an initialization
+  // object.  The other parameters must be persisted to create new vessels.
+  // Since this is not persisted directly, it is optional so that it can be null
+  // in a deserialized object.
+  std::experimental::optional<Ephemeris<Barycentric>::FixedStepParameters>
+      ephemeris_parameters_;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
@@ -478,7 +493,7 @@ class Plugin {
 
   // The parameters for computing the various trajectories.
   Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters prolongation_parameters_;
+  Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
 
   // The thread pool for advancing vessels.

@@ -258,6 +258,8 @@
     <ClInclude Include="hermite3.hpp" />
     <ClInclude Include="hermite3_body.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
+    <ClInclude Include="polynomial.hpp" />
+    <ClInclude Include="polynomial_body.hpp" />
     <ClInclude Include="root_finders.hpp" />
     <ClInclude Include="root_finders_body.hpp" />
     <ClInclude Include="ulp_distance.hpp" />
@@ -270,6 +272,7 @@
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
+    <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
   </ItemGroup>

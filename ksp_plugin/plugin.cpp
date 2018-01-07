@@ -104,7 +104,7 @@ Plugin::Plugin(std::string const& game_epoch,
                std::string const& solar_system_epoch,
                Angle const& planetarium_rotation)
     : history_parameters_(DefaultHistoryParameters()),
-      prolongation_parameters_(DefaultProlongationParameters()),
+      psychohistory_parameters_(DefaultPsychohistoryParameters()),
       prediction_parameters_(DefaultPredictionParameters()),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()),
@@ -154,6 +154,24 @@ void Plugin::InsertCelestialJacobiKeplerian(
   }
 }
 
+void Plugin::InitializeEphemerisParameters(
+    Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
+  CHECK(initializing_);
+  ephemeris_parameters_ = parameters;
+}
+
+void Plugin::InitializeHistoryParameters(
+    Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
+  CHECK(initializing_);
+  history_parameters_ = parameters;
+}
+
+void Plugin::InitializePsychohistoryParameters(
+    Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters) {
+  CHECK(initializing_);
+  psychohistory_parameters_ = parameters;
+}
+
 void Plugin::EndInitialization() {
   CHECK(initializing_);
   SolarSystem<Barycentric> solar_system(gravity_model_, initial_state_);
@@ -198,8 +216,9 @@ void Plugin::EndInitialization() {
   }
 
   // Construct the ephemeris.
-  ephemeris_ = solar_system.MakeEphemeris(default_ephemeris_fitting_tolerance,
-                                          DefaultEphemerisParameters());
+  ephemeris_ = solar_system.MakeEphemeris(
+      default_ephemeris_fitting_tolerance,
+      ephemeris_parameters_.value_or(DefaultEphemerisParameters()));
 
   // Construct the celestials using the bodies from the ephemeris.
   for (std::string const& name : solar_system.names()) {
@@ -571,8 +590,8 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
           pile_ups_,
           vessel_time,
-          DefaultProlongationParameters(),
-          DefaultHistoryParameters(),
+          psychohistory_parameters_,
+          history_parameters_,
           ephemeris_.get());
     });
   }
@@ -1214,8 +1233,8 @@ void Plugin::WriteToMessage(
   ephemeris_->WriteToMessage(message->mutable_ephemeris());
 
   history_parameters_.WriteToMessage(message->mutable_history_parameters());
-  prolongation_parameters_.WriteToMessage(
-      message->mutable_prolongation_parameters());
+  psychohistory_parameters_.WriteToMessage(
+      message->mutable_psychohistory_parameters());
   prediction_parameters_.WriteToMessage(
       message->mutable_prediction_parameters());
 
@@ -1241,15 +1260,15 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   auto const history_parameters =
       Ephemeris<Barycentric>::FixedStepParameters::ReadFromMessage(
           message.history_parameters());
-  auto const prolongation_parameters =
+  auto const psychohistory_parameters =
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-          message.prolongation_parameters());
+          message.psychohistory_parameters());
   auto const prediction_parameters =
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.prediction_parameters());
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
-                                         prolongation_parameters,
+                                         psychohistory_parameters,
                                          prediction_parameters));
 
   plugin->ephemeris_ =
@@ -1363,10 +1382,10 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 Plugin::Plugin(
     Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        prolongation_parameters,
+        psychohistory_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters)
     : history_parameters_(history_parameters),
-      prolongation_parameters_(prolongation_parameters),
+      psychohistory_parameters_(psychohistory_parameters),
       prediction_parameters_(prediction_parameters),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
