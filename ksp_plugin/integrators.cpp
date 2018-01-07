@@ -30,7 +30,8 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
              /*step=*/10 * Second);
 }
 
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters() {
+Ephemeris<Barycentric>::AdaptiveStepParameters
+DefaultPsychohistoryParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
              DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
              /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
