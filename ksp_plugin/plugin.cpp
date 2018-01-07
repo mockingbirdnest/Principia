@@ -154,19 +154,19 @@ void Plugin::InsertCelestialJacobiKeplerian(
   }
 }
 
-void Plugin::SetEphemerisParameters(
+void Plugin::InitializeEphemerisParameters(
     Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
   CHECK(initializing_);
   ephemeris_parameters_ = parameters;
 }
 
-void Plugin::SetHistoryParameters(
+void Plugin::InitializeHistoryParameters(
     Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
   CHECK(initializing_);
   history_parameters_ = parameters;
 }
 
-void Plugin::SetPsychohistoryParameters(
+void Plugin::InitializePsychohistoryParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters) {
   CHECK(initializing_);
   psychohistory_parameters_ = parameters;

@@ -543,6 +543,54 @@ void principia__InitGoogleLogging() {
   }
 }
 
+void principia__InitializeEphemerisParameters(
+    Plugin* const plugin,
+    char const* const fixed_step_size_integrator_kind,
+    char const* const step) {
+  journal::Method<journal::SetEphemerisParameters> m(
+      {plugin, fixed_step_size_integrator_kind, step});
+  CHECK_NOTNULL(plugin);
+  plugin->InitializeEphemerisParameters(Ephemeris<Barycentric>::FixedStepParameters(
+      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
+      ParseQuantity<Time>(step)));
+  return m.Return();
+}
+
+void principia__InitializeHistoryParameters(
+    Plugin* const plugin,
+    char const* const fixed_step_size_integrator_kind,
+    char const* const step) {
+  journal::Method<journal::SetHistoryParameters> m(
+      {plugin, fixed_step_size_integrator_kind, step});
+  CHECK_NOTNULL(plugin);
+  plugin->InitializeHistoryParameters(Ephemeris<Barycentric>::FixedStepParameters(
+      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
+      ParseQuantity<Time>(step)));
+  return m.Return();
+}
+
+void principia__InitializePsychohistoryParameters(
+    Plugin* const plugin,
+    char const* const adaptive_step_size_integrator_kind,
+    char const* const length_integration_tolerance,
+    char const* const speed_integration_tolerance) {
+  journal::Method<journal::SetPsychohistoryParameters> m(
+      {plugin,
+       adaptive_step_size_integrator_kind,
+       length_integration_tolerance,
+       speed_integration_tolerance});
+  CHECK_NOTNULL(plugin);
+  // It is erroneous for a psychohistory integration to fail, so the |max_steps|
+  // must be unlimited.
+  plugin->InitializePsychohistoryParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          ParseAdaptiveStepSizeIntegrator(adaptive_step_size_integrator_kind),
+          /*max_steps=*/std::numeric_limits<int64_t>::max(),
+          ParseQuantity<Length>(length_integration_tolerance),
+          ParseQuantity<Speed>(speed_integration_tolerance)));
+  return m.Return();
+}
+
 void principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
@@ -845,32 +893,6 @@ void principia__SetBufferedLogging(int const max_severity) {
   return m.Return();
 }
 
-void principia__SetEphemerisParameters(
-    Plugin* const plugin,
-    char const* const fixed_step_size_integrator_kind,
-    char const* const step) {
-  journal::Method<journal::SetEphemerisParameters> m(
-      {plugin, fixed_step_size_integrator_kind, step});
-  CHECK_NOTNULL(plugin);
-  plugin->SetEphemerisParameters(Ephemeris<Barycentric>::FixedStepParameters(
-      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
-      ParseQuantity<Time>(step)));
-  return m.Return();
-}
-
-void principia__SetHistoryParameters(
-    Plugin* const plugin,
-    char const* const fixed_step_size_integrator_kind,
-    char const* const step) {
-  journal::Method<journal::SetHistoryParameters> m(
-      {plugin, fixed_step_size_integrator_kind, step});
-  CHECK_NOTNULL(plugin);
-  plugin->SetHistoryParameters(Ephemeris<Barycentric>::FixedStepParameters(
-      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
-      ParseQuantity<Time>(step)));
-  return m.Return();
-}
-
 void principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
@@ -890,28 +912,6 @@ void principia__SetPartApparentDegreesOfFreedom(
       part_id,
       FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
       FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
-  return m.Return();
-}
-
-void principia__SetPsychohistoryParameters(
-    Plugin* const plugin,
-    char const* const adaptive_step_size_integrator_kind,
-    char const* const length_integration_tolerance,
-    char const* const speed_integration_tolerance) {
-  journal::Method<journal::SetPsychohistoryParameters> m(
-      {plugin,
-       adaptive_step_size_integrator_kind,
-       length_integration_tolerance,
-       speed_integration_tolerance});
-  CHECK_NOTNULL(plugin);
-  // It is erroneous for a psychohistory integration to fail, so the |max_steps|
-  // must be unlimited.
-  plugin->SetPsychohistoryParameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters(
-          ParseAdaptiveStepSizeIntegrator(adaptive_step_size_integrator_kind),
-          /*max_steps=*/std::numeric_limits<int64_t>::max(),
-          ParseQuantity<Length>(length_integration_tolerance),
-          ParseQuantity<Speed>(speed_integration_tolerance)));
   return m.Return();
 }
 

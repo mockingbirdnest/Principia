@@ -871,6 +871,46 @@ message IncrementPartIntrinsicForce {
   optional In in = 1;
 }
 
+message InitializeEphemerisParameters {
+  extend Method {
+    optional InitializeEphemerisParameters extension = 5148;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+    required string fixed_step_size_integrator_kind = 2;
+    required string step = 3;
+  }
+  optional In in = 1;
+}
+
+message InitializeHistoryParameters {
+  extend Method {
+    optional InitializeHistoryParameters extension = 5149;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+    required string fixed_step_size_integrator_kind = 2;
+    required string step = 3;
+  }
+  optional In in = 1;
+}
+
+message InitializePsychohistoryParameters {
+  extend Method {
+    optional InitializePsychohistoryParameters extension = 5150;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
+    required string adaptive_step_size_integrator_kind = 2;
+    required string length_integration_tolerance = 3;
+    required string speed_integration_tolerance = 4;
+  }
+  optional In in = 1;
+}
+
 message InsertCelestialAbsoluteCartesian {
   extend Method {
     optional InsertCelestialAbsoluteCartesian extension = 5003;
@@ -1478,32 +1518,6 @@ message SetBufferedLogging {
   optional In in = 1;
 }
 
-message SetEphemerisParameters {
-  extend Method {
-    optional SetEphemerisParameters extension = 5148;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
-    required string fixed_step_size_integrator_kind = 2;
-    required string step = 3;
-  }
-  optional In in = 1;
-}
-
-message SetHistoryParameters {
-  extend Method {
-    optional SetHistoryParameters extension = 5149;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
-    required string fixed_step_size_integrator_kind = 2;
-    required string step = 3;
-  }
-  optional In in = 1;
-}
-
 message SetMainBody {
   extend Method {
     optional SetMainBody extension = 5097;
@@ -1542,20 +1556,6 @@ message SetPlottingFrame {
   }
   optional In in = 1;
   optional Out out = 2;
-}
-
-message SetPsychohistoryParameters {
-  extend Method {
-    optional SetPsychohistoryParameters extension = 5150;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
-    required string adaptive_step_size_integrator_kind = 2;
-    required string length_integration_tolerance = 3;
-    required string speed_integration_tolerance = 4;
-  }
-  optional In in = 1;
 }
 
 message SetStderrLogging {

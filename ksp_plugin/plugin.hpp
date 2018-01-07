@@ -122,11 +122,11 @@ class Plugin {
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
 
-  virtual void SetEphemerisParameters(
+  virtual void InitializeEphemerisParameters(
       Ephemeris<Barycentric>::FixedStepParameters const& parameters);
-  virtual void SetHistoryParameters(
+  virtual void InitializeHistoryParameters(
       Ephemeris<Barycentric>::FixedStepParameters const& parameters);
-  virtual void SetPsychohistoryParameters(
+  virtual void InitializePsychohistoryParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const& parameters);
   // No setter for the default prediction parameters, as that default is always
   // overriden by the vessel-specific |SetPredictionAdaptiveStepParameters|.

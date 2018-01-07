@@ -2362,15 +2362,16 @@ public partial class PrincipiaPluginAdapter
     reset_rsas_target_ = true;
   }
 
-  private static void SetIntegrators(IntPtr plugin,
-                                     ConfigNode gravity_model_config) {
+  private static void InitializeIntegrators(
+      IntPtr plugin,
+      ConfigNode gravity_model_config) {
    if (gravity_model_config == null) {
      return;
    }
    var ephemeris_parameters =
        gravity_model_config.GetAtMostOneNode("ephemeris_parameters");
    if (ephemeris_parameters != null) {
-     plugin.SetEphemerisParameters(
+     plugin.InitializeEphemerisParameters(
          ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
          ephemeris_parameters.GetUniqueValue("step"));
    }
@@ -2378,7 +2379,7 @@ public partial class PrincipiaPluginAdapter
    var history_parameters =
        gravity_model_config.GetAtMostOneNode("history_parameters");
    if (history_parameters != null) {
-     plugin.SetEphemerisParameters(
+     plugin.InitializeEphemerisParameters(
          history_parameters.GetUniqueValue("fixed_step_size_integrator"),
          history_parameters.GetUniqueValue("step"));
    }
@@ -2386,12 +2387,13 @@ public partial class PrincipiaPluginAdapter
    var psychohistory_parameters =
        gravity_model_config.GetAtMostOneNode("psychohistory_parameters");
    if (psychohistory_parameters != null) {
-     plugin.SetPsychohistoryParameters(psychohistory_parameters.GetUniqueValue(
-                                           "adaptive_step_size_integrator"),
-                                       psychohistory_parameters.GetUniqueValue(
-                                           "length_integration_tolerance"),
-                                       psychohistory_parameters.GetUniqueValue(
-                                           "speed_integration_tolerance"));
+     plugin.InitializePsychohistoryParameters(
+         psychohistory_parameters.GetUniqueValue(
+             "adaptive_step_size_integrator"),
+         psychohistory_parameters.GetUniqueValue(
+             "length_integration_tolerance"),
+         psychohistory_parameters.GetUniqueValue(
+             "speed_integration_tolerance"));
    }
   }
 
@@ -2429,7 +2431,7 @@ public partial class PrincipiaPluginAdapter
             initial_states.GetUniqueValue("game_epoch"),
             initial_states.GetUniqueValue("solar_system_epoch"),
             Planetarium.InverseRotAngle);
-        SetIntegrators(plugin_, gravity_model_config);
+        InitializeIntegrators(plugin_, gravity_model_config);
         var name_to_initial_state =
             initial_states.GetNodes("body").
                 ToDictionary(node => node.GetUniqueValue("name"));
@@ -2492,7 +2494,7 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
-      SetIntegrators(plugin_, gravity_model_config);
+      InitializeIntegrators(plugin_, gravity_model_config);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         ConfigNode gravity_model = null;
