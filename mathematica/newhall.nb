@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       157,          7]
-NotebookDataLength[     29873,        732]
-NotebookOptionsPosition[     27933,        671]
-NotebookOutlinePosition[     28515,        692]
-CellTagsIndexPosition[     28472,        689]
+NotebookDataLength[     30411,        748]
+NotebookOptionsPosition[     28469,        687]
+NotebookOutlinePosition[     29051,        708]
+CellTagsIndexPosition[     29008,        705]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -66,7 +66,8 @@ Cell[BoxData[
    3.641454963873104*^9, 3.6414549836000767`*^9}, 3.6414553923619485`*^9, 
    3.6523680002656956`*^9, 3.6555736696468344`*^9, {3.655573763584227*^9, 
    3.655573787177586*^9}, 3.655573832788147*^9, 3.6555755761551704`*^9, 
-   3.6621318273458405`*^9, 3.724319885737544*^9, 3.7243246671543474`*^9}]
+   3.6621318273458405`*^9, 3.724319885737544*^9, 3.7243246671543474`*^9, 
+   3.7243262980292234`*^9}]
 }, Open  ]],
 
 Cell[TextData[{
@@ -133,14 +134,18 @@ Cell[BoxData[
   3.641454196019824*^9}}],
 
 Cell[TextData[{
- "This function computes matrix W used in Newhall\[CloseCurlyQuote]s equation \
-(8). The parameter ",
+ "This function computes matrix ",
+ Cell[BoxData[
+  FormBox["W", TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " used in Newhall\[CloseCurlyQuote]s equation (8). The parameter ",
  Cell[BoxData[
   FormBox["w", TraditionalForm]]],
  " is the weight of the velocities relative to the positions (0.4 in Newhall)."
 }], "Text",
  CellChangeTimes->{{3.6408570334555626`*^9, 3.6408571098402004`*^9}, {
-  3.640857486657981*^9, 3.6408574912574406`*^9}}],
+  3.640857486657981*^9, 3.6408574912574406`*^9}, {3.7243354856277084`*^9, 
+  3.7243354870668526`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -261,14 +266,17 @@ Cell[BoxData[
 Cell[TextData[{
  "The following functions compute the two blocs of matrix ",
  Cell[BoxData[
-  FormBox["C2", TraditionalForm]]],
+  FormBox[
+   SubscriptBox["C", "2"], TraditionalForm]]],
  " and assemble them to form ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"C2", "."}], TraditionalForm]]]
+   SubscriptBox["C", "2"], TraditionalForm]]],
+ "."
 }], "Text",
  CellChangeTimes->{{3.6408571912667933`*^9, 3.640857228497167*^9}, {
-  3.6408575122675414`*^9, 3.6408575292262373`*^9}}],
+  3.6408575122675414`*^9, 3.6408575292262373`*^9}, {3.7243355005151973`*^9, 
+  3.7243355707652216`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -321,8 +329,10 @@ Cell[TextData[{
  Cell[BoxData[
   FormBox[
    RowBox[{
-    SuperscriptBox["C1", 
-     RowBox[{"-", "1"}]], ".", "C2"}], TraditionalForm]]],
+    SuperscriptBox[
+     SubscriptBox["C", "1"], 
+     RowBox[{"-", "1"}]], ".", 
+    SubscriptBox["C", "2"]}], TraditionalForm]]],
  ". Newhall doesn\[CloseCurlyQuote]t give it a name but calls its elements ",
  Cell[BoxData[
   FormBox[
@@ -332,7 +342,8 @@ Cell[TextData[{
   FormBox["C", TraditionalForm]]],
  "."
 }], "Text",
- CellChangeTimes->{{3.64085755035935*^9, 3.6408577002573385`*^9}}],
+ CellChangeTimes->{{3.64085755035935*^9, 3.6408577002573385`*^9}, {
+  3.7243355820373487`*^9, 3.7243355984789925`*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -348,13 +359,17 @@ Cell[BoxData[
  CellChangeTimes->{{3.640856537054928*^9, 3.6408566025854797`*^9}, 
    3.6408567878820076`*^9}],
 
-Cell["\<\
-This function expresses C in a way that is suitable for obtaining the \
-coefficients of a polynomial in the monomial base, not in the Chebyshev base. \
- It drops the last 4 rows corresponding to the Lagrange multipliers.\
-\>", "Text",
- CellChangeTimes->{{3.724323230535097*^9, 3.7243233423152742`*^9}},
- FormatType->"TextForm"],
+Cell[TextData[{
+ "This function expresses ",
+ Cell[BoxData[
+  FormBox["C", TraditionalForm]],
+  FormatType->"TraditionalForm"],
+ " in a way that is suitable for obtaining the coefficients of a polynomial \
+in the monomial base, not in the Chebyshev base.  It drops the last 4 rows \
+corresponding to the Lagrange multipliers."
+}], "Text",
+ CellChangeTimes->{{3.724323230535097*^9, 3.7243233423152742`*^9}, {
+  3.724335608405985*^9, 3.724335627838928*^9}}],
 
 Cell[BoxData[
  RowBox[{
@@ -448,9 +463,9 @@ Cell[BoxData[
     "dimension2_String", ",", "variable_String", ",", "matrix_List"}], "]"}], 
   ":=", 
   RowBox[{
-  "type", "<>", "\"\<<\>\"", "<>", "element", "<>", "\"\<, \>\"", "<>", 
-   "dimension1", "<>", "\"\<, \>\"", "<>", "dimension2", "<>", 
-   "\"\<> constexpr\\r\\n    \>\"", "<>", "variable", "<>", 
+  "\"\<constexpr \>\"", "<>", "type", "<>", "\"\<<\>\"", "<>", "element", 
+   "<>", "\"\<, \>\"", "<>", "dimension1", "<>", "\"\<, \>\"", "<>", 
+   "dimension2", "<>", "\"\<>\\r\\n    \>\"", "<>", "variable", "<>", 
    "\"\<(\\r\\n        std::array<\>\"", "<>", "element", "<>", "\"\<, \>\"", 
    "<>", "\"\<(\>\"", "<>", "dimension1", "<>", "\"\<) * (\>\"", "<>", 
    "dimension2", "<>", "\"\<)>{\\r\\n\>\"", "<>", "\[IndentingNewLine]", 
@@ -490,7 +505,8 @@ Cell[BoxData[
    3.655573317211594*^9, 3.655573383166189*^9}, {3.6555734151113834`*^9, 
    3.655573558612732*^9}, {3.655573642560126*^9, 3.655573648583728*^9}, {
    3.655573747958665*^9, 3.6555737490367727`*^9}, {3.655573780005869*^9, 
-   3.6555737800288715`*^9}, 3.655575538414397*^9}],
+   3.6555737800288715`*^9}, 3.655575538414397*^9, {3.724335309306078*^9, 
+   3.724335332572405*^9}}],
 
 Cell["Produces a representation of a list as an initializer list.", "Text",
  CellChangeTimes->{{3.640882654947112*^9, 3.640882678263444*^9}}],
@@ -699,39 +715,39 @@ Cell[930, 31, 99, 1, 70, "Section"],
 Cell[1032, 34, 161, 3, 30, "Text"],
 Cell[CellGroupData[{
 Cell[1218, 41, 509, 9, 30, "Input"],
-Cell[1730, 52, 797, 16, 30, "Output"]
+Cell[1730, 52, 825, 17, 30, "Output"]
 }, Open  ]],
-Cell[2542, 71, 817, 19, 49, "Text"],
-Cell[3362, 92, 1715, 40, 126, "Input"],
-Cell[5080, 134, 380, 8, 30, "Text"],
-Cell[5463, 144, 716, 17, 33, "Input"],
-Cell[6182, 163, 363, 10, 30, "Text"],
-Cell[6548, 175, 699, 16, 30, "Input"],
-Cell[7250, 193, 951, 23, 50, "Input"],
-Cell[8204, 218, 385, 8, 30, "Input"],
-Cell[8592, 228, 324, 8, 30, "Input"],
-Cell[8919, 238, 834, 20, 88, "Input"],
-Cell[9756, 260, 361, 10, 30, "Text"],
-Cell[10120, 272, 507, 12, 30, "Input"],
-Cell[10630, 286, 522, 13, 30, "Input"],
-Cell[11155, 301, 551, 15, 30, "Input"],
-Cell[11709, 318, 508, 16, 32, "Text"],
-Cell[12220, 336, 487, 12, 30, "Input"],
-Cell[12710, 350, 337, 6, 49, "Text"],
-Cell[13050, 358, 1056, 27, 145, "Input"]
+Cell[2570, 72, 817, 19, 49, "Text"],
+Cell[3390, 93, 1715, 40, 126, "Input"],
+Cell[5108, 135, 518, 12, 30, "Text"],
+Cell[5629, 149, 716, 17, 33, "Input"],
+Cell[6348, 168, 363, 10, 30, "Text"],
+Cell[6714, 180, 699, 16, 30, "Input"],
+Cell[7416, 198, 951, 23, 50, "Input"],
+Cell[8370, 223, 385, 8, 30, "Input"],
+Cell[8758, 233, 324, 8, 30, "Input"],
+Cell[9085, 243, 834, 20, 88, "Input"],
+Cell[9922, 265, 445, 13, 30, "Text"],
+Cell[10370, 280, 507, 12, 30, "Input"],
+Cell[10880, 294, 522, 13, 30, "Input"],
+Cell[11405, 309, 551, 15, 30, "Input"],
+Cell[11959, 326, 608, 19, 32, "Text"],
+Cell[12570, 347, 487, 12, 30, "Input"],
+Cell[13060, 361, 455, 10, 49, "Text"],
+Cell[13518, 373, 1056, 27, 145, "Input"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[14143, 390, 108, 1, 70, "Section"],
-Cell[14254, 393, 344, 6, 49, "Text"],
-Cell[14601, 401, 1740, 34, 164, "Input"],
-Cell[16344, 437, 170, 3, 30, "Text"],
-Cell[16517, 442, 2923, 50, 202, "Input"],
-Cell[19443, 494, 141, 1, 30, "Text"],
-Cell[19587, 497, 1557, 28, 126, "Input"],
-Cell[21147, 527, 347, 8, 30, "Text"],
-Cell[21497, 537, 5628, 109, 672, "Input"],
-Cell[27128, 648, 146, 1, 30, "Text"],
-Cell[27277, 651, 628, 16, 50, "Input"]
+Cell[14611, 405, 108, 1, 70, "Section"],
+Cell[14722, 408, 344, 6, 49, "Text"],
+Cell[15069, 416, 1740, 34, 164, "Input"],
+Cell[16812, 452, 170, 3, 30, "Text"],
+Cell[16985, 457, 2991, 51, 202, "Input"],
+Cell[19979, 510, 141, 1, 30, "Text"],
+Cell[20123, 513, 1557, 28, 126, "Input"],
+Cell[21683, 543, 347, 8, 30, "Text"],
+Cell[22033, 553, 5628, 109, 672, "Input"],
+Cell[27664, 664, 146, 1, 30, "Text"],
+Cell[27813, 667, 628, 16, 50, "Input"]
 }, Open  ]]
 }, Open  ]]
 }
