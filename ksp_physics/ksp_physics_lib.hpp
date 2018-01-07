@@ -4,7 +4,7 @@
 #include "ksp_plugin/frames.hpp"
 
 // If we are exporting, load the definitions; otherwise, just declare an extern
-// specialization.
+// instantiation.
 #if !PHYSICS_DLL_IMPORT
 #include "physics/ephemeris.hpp"
 #include "physics/continuous_trajectory.hpp"
