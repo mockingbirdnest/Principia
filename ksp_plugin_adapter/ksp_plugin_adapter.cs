@@ -2371,26 +2371,27 @@ public partial class PrincipiaPluginAdapter
        gravity_model_config.GetAtMostOneNode("ephemeris_parameters");
    if (ephemeris_parameters != null) {
      plugin.SetEphemerisParameters(
-         ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator_kind"),
-         gravity_model_config.GetUniqueValue("step"));
+         ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         ephemeris_parameters.GetUniqueValue("step"));
    }
 
    var history_parameters =
        gravity_model_config.GetAtMostOneNode("history_parameters");
    if (history_parameters != null) {
      plugin.SetEphemerisParameters(
-         history_parameters.GetUniqueValue("fixed_step_size_integrator_kind"),
-         gravity_model_config.GetUniqueValue("step"));
+         history_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         history_parameters.GetUniqueValue("step"));
    }
 
    var psychohistory_parameters =
        gravity_model_config.GetAtMostOneNode("psychohistory_parameters");
    if (psychohistory_parameters != null) {
-     plugin.SetPsychohistoryParameters(
-         psychohistory_parameters.GetUniqueValue(
-             "adaptive_step_size_integrator_kind"),
-         gravity_model_config.GetUniqueValue("length_integration_tolerance"),
-         gravity_model_config.GetUniqueValue("speed_integration_tolerance"));
+     plugin.SetPsychohistoryParameters(psychohistory_parameters.GetUniqueValue(
+                                           "adaptive_step_size_integrator"),
+                                       psychohistory_parameters.GetUniqueValue(
+                                           "length_integration_tolerance"),
+                                       psychohistory_parameters.GetUniqueValue(
+                                           "speed_integration_tolerance"));
    }
   }
 
