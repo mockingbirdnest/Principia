@@ -14,13 +14,13 @@ namespace internal_integrators {
 using geometry::Position;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::Quinlan1999Order8A;
-using integrators::BlanesMoan2002SRKN11B;
+using integrators::QuinlanTremaine1990Order12;
 using quantities::si::Minute;
 using quantities::si::Second;
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-             BlanesMoan2002SRKN11B  <Position<Barycentric>>(),
+             QuinlanTremaine1990Order12<Position<Barycentric>>(),
              /*step=*/10 * Minute);
 }
 
@@ -30,7 +30,7 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
              /*step=*/10 * Second);
 }
 
-Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPsychohistoryParameters() {
+Ephemeris<Barycentric>::AdaptiveStepParameters DefaultProlongationParameters() {
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
              DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
              /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
