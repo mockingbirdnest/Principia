@@ -2362,6 +2362,38 @@ public partial class PrincipiaPluginAdapter
     reset_rsas_target_ = true;
   }
 
+  private static void SetIntegrators(IntPtr plugin,
+                                     ConfigNode gravity_model_config) {
+   if (gravity_model_config == null) {
+     return;
+   }
+   var ephemeris_parameters =
+       gravity_model_config.GetAtMostOneNode("ephemeris_parameters");
+   if (ephemeris_parameters != null) {
+     plugin.SetEphemerisParameters(
+         ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator_kind"),
+         gravity_model_config.GetUniqueValue("step"));
+   }
+
+   var history_parameters =
+       gravity_model_config.GetAtMostOneNode("history_parameters");
+   if (history_parameters != null) {
+     plugin.SetEphemerisParameters(
+         history_parameters.GetUniqueValue("fixed_step_size_integrator_kind"),
+         gravity_model_config.GetUniqueValue("step"));
+   }
+
+   var psychohistory_parameters =
+       gravity_model_config.GetAtMostOneNode("psychohistory_parameters");
+   if (psychohistory_parameters != null) {
+     plugin.SetPsychohistoryParameters(
+         psychohistory_parameters.GetUniqueValue(
+             "adaptive_step_size_integrator_kind"),
+         gravity_model_config.GetUniqueValue("length_integration_tolerance"),
+         gravity_model_config.GetUniqueValue("speed_integration_tolerance"));
+   }
+  }
+
   private void ResetPlugin() {
     Cleanup();
     RemoveBuggyTidalLocking();
@@ -2371,9 +2403,11 @@ public partial class PrincipiaPluginAdapter
         GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name_);
     var cartesian_configs =
         GameDatabase.Instance.GetConfigs(principia_initial_state_config_name_);
+    ConfigNode gravity_model_config = null;
     if (gravity_model_configs.Length == 1) {
+      gravity_model_config = gravity_model_configs[0].config;
       name_to_gravity_model =
-          gravity_model_configs[0].config.GetNodes("body").
+          gravity_model_config.GetNodes("body").
               ToDictionary(node => node.GetValue("name"));
     } else if (gravity_model_configs.Length > 1) {
       Log.Fatal("too many gravity models (" + gravity_model_configs.Length +
@@ -2394,6 +2428,7 @@ public partial class PrincipiaPluginAdapter
             Interface.NewPlugin(initial_states.GetValue("game_epoch"),
                                 initial_states.GetValue("solar_system_epoch"),
                                 Planetarium.InverseRotAngle);
+        SetIntegrators(plugin_, gravity_model_config);
         var name_to_initial_state =
             initial_states.GetNodes("body").
                 ToDictionary(node => node.GetValue("name"));
@@ -2451,6 +2486,7 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
+      SetIntegrators(plugin_, gravity_model_config);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         ConfigNode gravity_model = null;
