@@ -50,7 +50,6 @@ internal static class Loader {
     try {
       loaded_principia_dll_ = true;
       Log.InitGoogleLogging();
-      Interface.LoadPhysicsLibrary();
       return null;
     } catch (Exception e) {
       UnityEngine.Debug.LogException(e);

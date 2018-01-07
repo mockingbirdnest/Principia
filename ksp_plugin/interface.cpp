@@ -469,9 +469,7 @@ void principia__IncrementPartIntrinsicForce(Plugin* const plugin,
 // where date and time are in ISO 8601 basic format.
 void principia__InitGoogleLogging() {
 #ifdef OS_WIN
-  CHECK_NOTNULL(LoadLibrary(LR"(GameData\Principia\x64\glog.dll)"));
-  CHECK_NOTNULL(
-      LoadLibrary(LR"(GameData\Principia\x64\principia_physics.dll)"));
+  // Probably SetDllDirectory or LoadLibrary or something.
 #endif
   if (google::IsGoogleLoggingInitialized()) {
     LOG(INFO) << "Google logging was already initialized, no action taken";
