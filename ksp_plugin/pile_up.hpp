@@ -44,13 +44,14 @@ using quantities::Mass;
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:
-  PileUp(
-      std::list<not_null<Part*>>&& parts,
-      Instant const& t,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
+  PileUp(std::list<not_null<Part*>>&& parts,
+         Instant const& t,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             adaptive_step_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             fixed_step_parameters,
+         not_null<Ephemeris<Barycentric>*> ephemeris,
+         std::function<void()> deletion_callback);
 
   virtual ~PileUp();
 
@@ -76,11 +77,21 @@ class PileUp {
   // not concurrently with any other method of this class.
   Status DeformAndAdvanceTime(Instant const& t);
 
+  // We'd like to return |not_null<std::shared_ptr<PileUp> const&|, but the
+  // compiler gets confused when defining the corresponding lambda, and thinks
+  // that we return a local variable even though we capture by reference.
+  // TODO(phl): Try to fix in VS2017 or later.
+  using PileUpForSerializationIndex =
+      std::function<not_null<std::shared_ptr<PileUp>>(int)>;
+  using SerializationIndexForPileUp =
+      std::function<int(not_null<PileUp const*>)>;
+
   void WriteToMessage(not_null<serialization::PileUp*> message) const;
-  static PileUp ReadFromMessage(
+  static not_null<std::unique_ptr<PileUp>> ReadFromMessage(
       serialization::PileUp const& message,
       std::function<not_null<Part*>(PartId)> const& part_id_to_part,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
+      not_null<Ephemeris<Barycentric>*> ephemeris,
+      std::function<void()> deletion_callback);
 
  private:
   // A pointer to a member function of |Part| used to append a point to either
@@ -89,14 +100,15 @@ class PileUp {
       void (Part::*)(Instant const&, DegreesOfFreedom<Barycentric> const&);
 
   // For deserialization.
-  PileUp(
-      std::list<not_null<Part*>>&& parts,
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters,
-      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
-      not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
-      DiscreteTrajectory<Barycentric>* psychohistory,
-      not_null<Ephemeris<Barycentric>*> ephemeris);
+  PileUp(std::list<not_null<Part*>>&& parts,
+         Ephemeris<Barycentric>::AdaptiveStepParameters const&
+             adaptive_step_parameters,
+         Ephemeris<Barycentric>::FixedStepParameters const&
+             fixed_step_parameters,
+         not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> history,
+         DiscreteTrajectory<Barycentric>* psychohistory,
+         not_null<Ephemeris<Barycentric>*> ephemeris,
+         std::function<void()> deletion_callback);
 
   // Update the degrees of freedom (in |RigidPileUp|) of all the parts by
   // translating the *apparent* degrees of freedom so that their centre of mass
@@ -175,13 +187,16 @@ class PileUp {
   PartTo<DegreesOfFreedom<RigidPileUp>> actual_part_degrees_of_freedom_;
   PartTo<DegreesOfFreedom<ApparentBubble>> apparent_part_degrees_of_freedom_;
 
+  // Called in the destructor.
+  std::function<void()> deletion_callback_;
+
   friend class TestablePileUp;
 };
 
 // A convenient data object to track a pile-up and the result of integrating it.
 struct PileUpFuture {
-  PileUpFuture(PileUp const* pile_up, std::future<Status> future);
-  PileUp const* pile_up;
+  PileUpFuture(not_null<PileUp const*> pile_up, std::future<Status> future);
+  not_null<PileUp const*> pile_up;
   std::future<Status> future;
 };
 

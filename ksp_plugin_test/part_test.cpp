@@ -17,6 +17,8 @@ using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::EqualsProto;
+using ::testing::MockFunction;
+using ::testing::_;
 
 class PartTest : public testing::Test {
  protected:
@@ -48,8 +50,13 @@ class PartTest : public testing::Test {
 };
 
 TEST_F(PartTest, Serialization) {
+  MockFunction<int(not_null<not_null<PileUp const*>>)>
+      serialization_index_for_pile_up;
+  EXPECT_CALL(serialization_index_for_pile_up, Call(_)).Times(0);
+
   serialization::Part message;
-  part_.WriteToMessage(&message);
+  part_.WriteToMessage(&message,
+                       serialization_index_for_pile_up.AsStdFunction());
   EXPECT_EQ(part_id_, message.part_id());
   EXPECT_TRUE(message.has_mass());
   EXPECT_EQ(7, message.mass().magnitude());
@@ -89,7 +96,8 @@ TEST_F(PartTest, Serialization) {
   EXPECT_EQ(part_.degrees_of_freedom(), p->degrees_of_freedom());
 
   serialization::Part second_message;
-  p->WriteToMessage(&second_message);
+  p->WriteToMessage(&second_message,
+                    serialization_index_for_pile_up.AsStdFunction());
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 

@@ -50,12 +50,6 @@ Vessel::Vessel(GUID const& guid,
 
 Vessel::~Vessel() {
   LOG(INFO) << "Destroying vessel " << ShortDebugString();
-  // The parts must remove themselves from their pile-ups *before* any of them
-  // starts to destroy, otherwise |clear_pile_up| might access destroyed parts.
-  for (auto const& pair : parts_) {
-    auto const& part = pair.second;
-    part->clear_pile_up();
-  }
 }
 
 GUID const& Vessel::guid() const {
@@ -121,7 +115,7 @@ void Vessel::FreeParts() {
     if (Contains(kept_parts_, part->part_id())) {
       ++it;
     } else {
-      part->clear_pile_up();
+      part->reset_containing_pile_up();
       it = parts_.erase(it);
     }
   }
@@ -268,8 +262,9 @@ DiscreteTrajectory<Barycentric> const& Vessel::psychohistory() const {
   return *psychohistory_;
 }
 
-void Vessel::WriteToMessage(
-    not_null<serialization::Vessel*> const message) const {
+void Vessel::WriteToMessage(not_null<serialization::Vessel*> const message,
+                            PileUp::SerializationIndexForPileUp const&
+                                serialization_index_for_pile_up) const {
   message->set_guid(guid_);
   message->set_name(name_);
   body_.WriteToMessage(message->mutable_body());
@@ -277,7 +272,7 @@ void Vessel::WriteToMessage(
       message->mutable_prediction_adaptive_step_parameters());
   for (auto const& pair : parts_) {
     auto const& part = pair.second;
-    part->WriteToMessage(message->add_parts());
+    part->WriteToMessage(message->add_parts(), serialization_index_for_pile_up);
   }
   for (auto const& part_id : kept_parts_) {
     CHECK(Contains(parts_, part_id));
@@ -369,10 +364,12 @@ not_null<std::unique_ptr<Vessel>> Vessel::ReadFromMessage(
 
 void Vessel::FillContainingPileUpsFromMessage(
     serialization::Vessel const& message,
-    not_null<std::list<PileUp>*> const pile_ups) {
+    PileUp::PileUpForSerializationIndex const&
+        pile_up_for_serialization_index) {
   for (auto const& part_message : message.parts()) {
     auto const& part = FindOrDie(parts_, part_message.part_id());
-    part->FillContainingPileUpFromMessage(part_message, pile_ups);
+    part->FillContainingPileUpFromMessage(part_message,
+                                          pile_up_for_serialization_index);
   }
 }
 

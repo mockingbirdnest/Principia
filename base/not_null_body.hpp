@@ -197,6 +197,13 @@ not_null<Pointer> check_not_null(not_null<Pointer> pointer) {
 #endif
 
 template<typename T, typename... Args>
+not_null<std::shared_ptr<T>> make_not_null_shared(Args&&... args) {
+  return not_null<std::shared_ptr<T>>(
+      std::make_shared<T>(std::forward<Args>(args)...),
+      not_null<std::shared_ptr<T>>::unchecked_tag_);
+}
+
+template<typename T, typename... Args>
 not_null<std::unique_ptr<T>> make_not_null_unique(Args&&... args) {
   return not_null<std::unique_ptr<T>>(
       std::make_unique<T>(std::forward<Args>(args)...),

@@ -38,7 +38,6 @@ Part::Part(
 
 Part::~Part() {
   LOG(INFO) << "Destroying part " << ShortDebugString();
-  CHECK(!is_piled_up());
   if (deletion_callback_ != nullptr) {
     deletion_callback_();
   }
@@ -132,43 +131,39 @@ void Part::ClearHistory() {
   history_ = prehistory_->NewForkAtLast();
 }
 
-void Part::set_containing_pile_up(IteratorOn<std::list<PileUp>> const pile_up) {
+void Part::set_containing_pile_up(
+    not_null<std::shared_ptr<PileUp>> const& pile_up) {
   CHECK(!is_piled_up());
   LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
-            << &*pile_up.iterator();
+            << pile_up;
   containing_pile_up_ = pile_up;
 }
 
-std::experimental::optional<IteratorOn<std::list<PileUp>>>
-Part::containing_pile_up() const {
-  return containing_pile_up_;
+PileUp* Part::containing_pile_up() const {
+  return containing_pile_up_.get();
 }
 
 bool Part::is_piled_up() const {
-  // TODO(egg): |has_value()| once we have a standard |optional|.
-  return static_cast<bool>(containing_pile_up_);
+  return containing_pile_up_ != nullptr;
 }
 
-void Part::clear_pile_up() {
-  if (is_piled_up()) {
-    IteratorOn<std::list<PileUp>> pile_up = *containing_pile_up_;
-    for (not_null<Part*> const part : pile_up.iterator()->parts()) {
-      LOG(INFO) << "Removing part " << part->ShortDebugString()
-                << " from its pile up at " << &*pile_up.iterator();
-      part->containing_pile_up_ = std::experimental::nullopt;
-    }
-    CHECK(!is_piled_up());
-    pile_up.Erase();
-  }
+void Part::reset_containing_pile_up() {
+  LOG_IF(INFO, containing_pile_up_ != nullptr)
+      << "Removing part " << ShortDebugString() << " from its pile up at "
+      << containing_pile_up_;
+  containing_pile_up_.reset();
 }
 
-void Part::WriteToMessage(not_null<serialization::Part*> const message) const {
+void Part::WriteToMessage(not_null<serialization::Part*> const message,
+                          PileUp::SerializationIndexForPileUp const&
+                              serialization_index_for_pile_up) const {
   message->set_part_id(part_id_);
   message->set_name(name_);
   mass_.WriteToMessage(message->mutable_mass());
   intrinsic_force_.WriteToMessage(message->mutable_intrinsic_force());
   if (containing_pile_up_) {
-    message->set_containing_pile_up(containing_pile_up_->distance_from_begin());
+    message->set_containing_pile_up(
+        serialization_index_for_pile_up(containing_pile_up_.get()));
   }
   degrees_of_freedom_.WriteToMessage(message->mutable_degrees_of_freedom());
   prehistory_->WriteToMessage(message->mutable_prehistory(),
@@ -212,11 +207,11 @@ not_null<std::unique_ptr<Part>> Part::ReadFromMessage(
 
 void Part::FillContainingPileUpFromMessage(
     serialization::Part const& message,
-    not_null<std::list<PileUp>*> const pile_ups) {
+    PileUp::PileUpForSerializationIndex const&
+        pile_up_for_serialization_index) {
   if (message.has_containing_pile_up()) {
-    auto it = pile_ups->begin();
-    std::advance(it, message.containing_pile_up());
-    containing_pile_up_ = IteratorOn<std::list<PileUp>>(pile_ups, it);
+    containing_pile_up_ =
+        pile_up_for_serialization_index(message.containing_pile_up());
   }
 }
 

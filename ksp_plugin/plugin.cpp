@@ -119,8 +119,9 @@ Plugin::Plugin(std::string const& game_epoch,
 Plugin::~Plugin() {
   // We must manually destroy the vessels, triggering the destruction of the
   // parts, which have callbacks to remove themselves from |part_id_to_vessel_|,
-  // which must therefore still exist.  This also removes the parts from the
-  // pile-ups, which also exist.
+  // which must therefore still exist.  This also causes the parts to be
+  // destroyed, and therefore to destroy the pile-ups, which want to remove
+  // themselves from |pile_up_|, which also exists.
   vessels_.clear();
 }
 
@@ -568,7 +569,7 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
         is_loaded(vessel) ? current_time_ - Δt : current_time_;
     vessel->ForSomePart([&vessel_time, this](Part& first_part) {
       Subset<Part>::Find(first_part).mutable_properties().Collect(
-          &pile_ups_,
+          pile_ups_,
           vessel_time,
           DefaultProlongationParameters(),
           DefaultHistoryParameters(),
@@ -597,7 +598,7 @@ void Plugin::SetPartApparentDegreesOfFreedom(
   CHECK(is_loaded(vessel));
   not_null<Part*> const part = vessel->part(part_id);
   CHECK(part->is_piled_up());
-  part->containing_pile_up()->iterator()->SetPartApparentDegreesOfFreedom(
+  part->containing_pile_up()->SetPartApparentDegreesOfFreedom(
       part, world_to_apparent_bubble(degrees_of_freedom));
 }
 
@@ -690,13 +691,13 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
 
   // Start all the integrations in parallel.
   std::vector<PileUpFuture> pile_up_futures;
-  for (PileUp& pile_up : pile_ups_) {
+  for (auto* const pile_up : pile_ups_) {
     pile_up_futures.emplace_back(
-        &pile_up,
-        vessel_thread_pool_.Add([this, &pile_up]() {
+        pile_up,
+        vessel_thread_pool_.Add([this, pile_up]() {
           // Note that there cannot be contention in the following method as
           // no two pile-ups are advanced at the same time.
-          return pile_up.DeformAndAdvanceTime(current_time_);
+          return pile_up->DeformAndAdvanceTime(current_time_);
         }));
   }
 
@@ -721,13 +722,13 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
 
   // Find the vessel and the pile-up that contains it.
   Vessel& vessel = *FindOrDie(vessels_, vessel_guid);
-  std::list<PileUp>::iterator pile_up;
+  PileUp* pile_up = nullptr;
   vessel.ForSomePart([&pile_up](Part& part) {
-    pile_up = part.containing_pile_up()->iterator();
+    pile_up = part.containing_pile_up();
   });
 
   return make_not_null_unique<PileUpFuture>(
-      &*pile_up,
+      pile_up,
       vessel_thread_pool_.Add([this, pile_up, &vessel]() {
         // Note that there can be contention in the following method if the
         // caller is catching-up two vessels belonging to the same pile-up in
@@ -1178,6 +1179,18 @@ void Plugin::WriteToMessage(
     celestial_message->set_ephemeris_index(
         ephemeris_->serialization_index_for_body(owned_celestial->body()));
   }
+
+  // Construct a map to help serialization of the pile-ups.
+  std::map<not_null<PileUp const*>, int> serialization_index_to_pile_up;
+  int serialization_index = 0;
+  for (auto const* pile_up : pile_ups_) {
+    serialization_index_to_pile_up[pile_up] = serialization_index++;
+  }
+  auto const serialization_index_for_pile_up =
+      [&serialization_index_to_pile_up](not_null<PileUp const*> const pile_up) {
+        return serialization_index_to_pile_up.at(pile_up);
+      };
+
   std::map<not_null<Vessel const*>, GUID const> vessel_to_guid;
   for (auto const& pair : vessels_) {
     std::string const& guid = pair.first;
@@ -1185,7 +1198,8 @@ void Plugin::WriteToMessage(
     vessel_to_guid.emplace(vessel, guid);
     auto* const vessel_message = message->add_vessel();
     vessel_message->set_guid(guid);
-    vessel->WriteToMessage(vessel_message->mutable_vessel());
+    vessel->WriteToMessage(vessel_message->mutable_vessel(),
+                           serialization_index_for_pile_up);
     Index const parent_index = FindOrDie(celestial_to_index, vessel->parent());
     vessel_message->set_parent_index(parent_index);
     vessel_message->set_loaded(Contains(loaded_vessels_, vessel));
@@ -1212,8 +1226,8 @@ void Plugin::WriteToMessage(
   message->set_sun_index(sun_index);
   renderer_->WriteToMessage(message->mutable_renderer());
 
-  for (auto const& pile_up : pile_ups_) {
-    pile_up.WriteToMessage(message->add_pile_up());
+  for (auto* const pile_up : pile_ups_) {
+    pile_up->WriteToMessage(message->add_pile_up());
   }
 
   LOG(INFO) << NAMED(message->SpaceUsed());
@@ -1300,24 +1314,46 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 
   // Note that for proper deserialization of parts this list must be
   // reconstructed in its original order.
+  auto const part_id_to_part =
+      [&part_id_to_vessel =
+            plugin->part_id_to_vessel_](PartId const part_id) {
+        not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
+        not_null<Part*> const part = vessel->part(part_id);
+        return part;
+      };
   for (auto const& pile_up_message : message.pile_up()) {
-    plugin->pile_ups_.push_back(PileUp::ReadFromMessage(
-        pile_up_message,
-        [&part_id_to_vessel = plugin->part_id_to_vessel_](
-            PartId const part_id) {
-          not_null<Vessel*> const vessel = part_id_to_vessel.at(part_id);
-          not_null<Part*> const part = vessel->part(part_id);
-          return part;
-        },
-        plugin->ephemeris_.get()));
+    // First push a nullptr to be able to capture an iterator to the new
+    // location in the list in the deletion callback.
+    plugin->pile_ups_.push_back(nullptr);
+    auto deletion_callback = [it = std::prev(plugin->pile_ups_.end()),
+                              &pile_ups = plugin->pile_ups_]() {
+      pile_ups.erase(it);
+    };
+    auto const pile_up = PileUp::ReadFromMessage(pile_up_message,
+                                                 part_id_to_part,
+                                                 plugin->ephemeris_.get(),
+                                                 std::move(deletion_callback))
+                             .release();
+    *plugin->pile_ups_.rbegin() = pile_up;
   }
 
-  // Now fill the containing pile-up of all the parts.
+  // Now fill the containing pile-up of all the parts.  This gives ownership of
+  // the pile-ups to the parts.  To do that, we first build shared pointers for
+  // all the pile-ups.
+  std::vector<not_null<std::shared_ptr<PileUp>>> shared_pile_ups;
+  for (auto* const pile_up : plugin->pile_ups_) {
+    shared_pile_ups.emplace_back(check_not_null(pile_up));
+  }
+  auto const pile_up_for_serialization_index =
+      [&shared_pile_ups](int const serialization_index) {
+    return shared_pile_ups.at(serialization_index);
+  };
+
   for (auto const& vessel_message : message.vessel()) {
     GUID const guid = vessel_message.guid();
     auto const& vessel = FindOrDie(plugin->vessels_, guid);
     vessel->FillContainingPileUpsFromMessage(vessel_message.vessel(),
-                                             &plugin->pile_ups_);
+                                             pile_up_for_serialization_index);
   }
 
   plugin->initializing_.Flop();
