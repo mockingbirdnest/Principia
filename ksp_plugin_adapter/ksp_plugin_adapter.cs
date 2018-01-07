@@ -2408,6 +2408,7 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void ResetPlugin() {
+  try {
     Cleanup();
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
@@ -2418,82 +2419,76 @@ public partial class PrincipiaPluginAdapter
         principia_initial_state_config_name_);
     ConfigNode numerics_blueprint = GameDatabase.Instance.GetAtMostOneNode(
         principia_numerics_blueprint_config_name_);
-    if (gravity_model == null) {
-      name_to_gravity_model =
-          gravity_model.GetNodes("body").ToDictionary(
-              node => node.GetUniqueValue("name"));
+    if (gravity_model != null) {
+      name_to_gravity_model = gravity_model.GetNodes("body").ToDictionary(
+                                  node => node.GetUniqueValue("name"));
     }
     if (initial_state != null) {
       if (name_to_gravity_model == null) {
         Log.Fatal("Cartesian config without gravity models");
       }
-      try {
-        // Note that |game_epoch| is not in the astronomy proto, as it is
-        // KSP-specific: it is the |Instant| corresponding to KSP's
-        // UniversalTime 0.  It is passed as an argument to
-        // |generate_configuration|.
-        plugin_ = Interface.NewPlugin(
-            initial_state.GetUniqueValue("game_epoch"),
-            initial_state.GetUniqueValue("solar_system_epoch"),
-            Planetarium.InverseRotAngle);
-        InitializeIntegrators(plugin_, numerics_blueprint);
-        var name_to_initial_state =
-            initial_state.GetNodes("body").
-                ToDictionary(node => node.GetUniqueValue("name"));
-        BodyProcessor insert_body = body => {
-          Log.Info("Inserting " + body.name + "...");
-          ConfigNode body_gravity_model;
-          if (!name_to_gravity_model.TryGetValue(body.name,
-                                                 out body_gravity_model)) {
-             Log.Fatal("missing gravity model for " + body.name);
-          }
-          ConfigNode body_initial_state;
-          if (!name_to_initial_state.TryGetValue(body.name,
-                                                 out body_initial_state)) {
-             Log.Fatal("missing Cartesian initial state for " + body.name);
-          }
-          int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
-          // GetUniqueValue resp. GetAtMostOneValue corresponding to required
-          // resp. optional in principia.serialization.GravityModel.Body.
-          var body_parameters = new BodyParameters{
-              name = body.name,
-              gravitational_parameter =
-                  body_gravity_model.GetUniqueValue("gravitational_parameter"),
-              reference_instant       =
-                  body_gravity_model.GetAtMostOneValue("reference_instant"),
-              mean_radius             =
-                  body_gravity_model.GetAtMostOneValue("mean_radius"),
-              axis_right_ascension    =
-                  body_gravity_model.GetAtMostOneValue("axis_right_ascension"),
-              axis_declination        =
-                  body_gravity_model.GetAtMostOneValue("axis_declination"),
-              reference_angle         =
-                  body_gravity_model.GetAtMostOneValue("reference_angle"),
-              angular_frequency       =
-                  body_gravity_model.GetAtMostOneValue("angular_frequency"),
-              j2                      =
-                  body_gravity_model.GetAtMostOneValue("j2"),
-              reference_radius        =
-                  body_gravity_model.GetAtMostOneValue("reference_radius")};
-          // GetUniqueValue since these are all required fields in
-          // principia.serialization.InitialState.Cartesian.Body.
-          plugin_.InsertCelestialAbsoluteCartesian(
-              celestial_index         : body.flightGlobalsIndex,
-              parent_index            : parent_index,
-              body_parameters         : body_parameters,
-              x                       : body_initial_state.GetUniqueValue("x"),
-              y                       : body_initial_state.GetUniqueValue("y"),
-              z                       : body_initial_state.GetUniqueValue("z"),
-              vx                      : body_initial_state.GetUniqueValue("vx"),
-              vy                      : body_initial_state.GetUniqueValue("vy"),
-              vz                      : body_initial_state.GetUniqueValue("vz"));
-        };
-        insert_body(Planetarium.fetch.Sun);
-        ApplyToBodyTree(insert_body);
-        plugin_.EndInitialization();
-      } catch (Exception e) {
-        Log.Fatal("Exception while reading initial state: " + e.ToString());
-      }
+      // Note that |game_epoch| is not in the astronomy proto, as it is
+      // KSP-specific: it is the |Instant| corresponding to KSP's
+      // UniversalTime 0.  It is passed as an argument to
+      // |generate_configuration|.
+      plugin_ = Interface.NewPlugin(
+          initial_state.GetUniqueValue("game_epoch"),
+          initial_state.GetUniqueValue("solar_system_epoch"),
+          Planetarium.InverseRotAngle);
+      InitializeIntegrators(plugin_, numerics_blueprint);
+      var name_to_initial_state = initial_state.GetNodes("body").ToDictionary(
+                                      node => node.GetUniqueValue("name"));
+      BodyProcessor insert_body = body => {
+        Log.Info("Inserting " + body.name + "...");
+        ConfigNode body_gravity_model;
+        if (!name_to_gravity_model.TryGetValue(body.name,
+                                               out body_gravity_model)) {
+          Log.Fatal("missing gravity model for " + body.name);
+        }
+        ConfigNode body_initial_state;
+        if (!name_to_initial_state.TryGetValue(body.name,
+                                               out body_initial_state)) {
+          Log.Fatal("missing Cartesian initial state for " + body.name);
+        }
+        int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
+        // GetUniqueValue resp. GetAtMostOneValue corresponding to required
+        // resp. optional in principia.serialization.GravityModel.Body.
+        var body_parameters = new BodyParameters{
+            name = body.name,
+            gravitational_parameter =
+                body_gravity_model.GetUniqueValue("gravitational_parameter"),
+            reference_instant       =
+                body_gravity_model.GetAtMostOneValue("reference_instant"),
+            mean_radius             =
+                body_gravity_model.GetAtMostOneValue("mean_radius"),
+            axis_right_ascension    =
+                body_gravity_model.GetAtMostOneValue("axis_right_ascension"),
+            axis_declination        =
+                body_gravity_model.GetAtMostOneValue("axis_declination"),
+            reference_angle         =
+                body_gravity_model.GetAtMostOneValue("reference_angle"),
+            angular_frequency       =
+                body_gravity_model.GetAtMostOneValue("angular_frequency"),
+            j2                      =
+                body_gravity_model.GetAtMostOneValue("j2"),
+            reference_radius        =
+                body_gravity_model.GetAtMostOneValue("reference_radius")};
+        // GetUniqueValue since these are all required fields in
+        // principia.serialization.InitialState.Cartesian.Body.
+        plugin_.InsertCelestialAbsoluteCartesian(
+            celestial_index         : body.flightGlobalsIndex,
+            parent_index            : parent_index,
+            body_parameters         : body_parameters,
+            x                       : body_initial_state.GetUniqueValue("x"),
+            y                       : body_initial_state.GetUniqueValue("y"),
+            z                       : body_initial_state.GetUniqueValue("z"),
+            vx                      : body_initial_state.GetUniqueValue("vx"),
+            vy                      : body_initial_state.GetUniqueValue("vy"),
+            vz                      : body_initial_state.GetUniqueValue("vz"));
+      };
+      insert_body(Planetarium.fetch.Sun);
+      ApplyToBodyTree(insert_body);
+      plugin_.EndInitialization();
     } else {
       // We create the plugin at J2000 (a.k.a. Instant{}), rather than
       // |Planetarium.GetUniversalTime()|, in order to get a deterministic
@@ -2563,6 +2558,9 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame"));
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
+  } catch (Exception e) {
+    Log.Fatal("Exception while resetting plugin: " + e.ToString());
+  }
   }
 
   private void RemoveBuggyTidalLocking() {

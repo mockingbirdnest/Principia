@@ -315,49 +315,49 @@ template<typename Vector>
   coefficients.reserve(degree);
   switch (degree) {
     case 3:
-      coefficients = newhall_c_matrix_degree_3_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_3_divisions_8_w04 * qv;
       break;
     case 4:
-      coefficients = newhall_c_matrix_degree_4_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_4_divisions_8_w04 * qv;
       break;
     case 5:
-      coefficients = newhall_c_matrix_degree_5_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_5_divisions_8_w04 * qv;
       break;
     case 6:
-      coefficients = newhall_c_matrix_degree_6_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_6_divisions_8_w04 * qv;
       break;
     case 7:
-      coefficients = newhall_c_matrix_degree_7_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_7_divisions_8_w04 * qv;
       break;
     case 8:
-      coefficients = newhall_c_matrix_degree_8_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_8_divisions_8_w04 * qv;
       break;
     case 9:
-      coefficients = newhall_c_matrix_degree_9_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_9_divisions_8_w04 * qv;
       break;
     case 10:
-      coefficients = newhall_c_matrix_degree_10_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_10_divisions_8_w04 * qv;
       break;
     case 11:
-      coefficients = newhall_c_matrix_degree_11_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_11_divisions_8_w04 * qv;
       break;
     case 12:
-      coefficients = newhall_c_matrix_degree_12_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_12_divisions_8_w04 * qv;
       break;
     case 13:
-      coefficients = newhall_c_matrix_degree_13_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_13_divisions_8_w04 * qv;
       break;
     case 14:
-      coefficients = newhall_c_matrix_degree_14_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_14_divisions_8_w04 * qv;
       break;
     case 15:
-      coefficients = newhall_c_matrix_degree_15_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_15_divisions_8_w04 * qv;
       break;
     case 16:
-      coefficients = newhall_c_matrix_degree_16_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_16_divisions_8_w04 * qv;
       break;
     case 17:
-      coefficients = newhall_c_matrix_degree_17_divisions_8_w04 * qv;
+      coefficients = newhall_c_matrix_чебышёв_degree_17_divisions_8_w04 * qv;
       break;
     default:
       LOG(FATAL) << "Unexpected degree " << degree;
