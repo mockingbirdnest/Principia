@@ -8,8 +8,13 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\glog\$(Configuration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libglog_static.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libglog.lib ;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
+  <Target Name="CopyGlogDll" AfterTargets="Build">
+    <Copy
+      SourceFiles="$(SolutionDir)..\Google\glog\$(Configuration)\$(Platform)\libglog.dll"
+      DestinationFolder="$(OutDir)"/>
+  </Target>
 </Project>

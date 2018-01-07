@@ -157,7 +157,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
@@ -177,7 +176,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
@@ -197,7 +195,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
@@ -218,7 +215,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\..\Google\benchmark\msvc\windows_libraries.props" />
@@ -237,7 +233,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_translation_unit.props" />
@@ -253,7 +248,6 @@
     <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
     <Import Project="..\google_googletest.props" />
     <Import Project="..\google_googlemock_main.props" />
-    <Import Project="..\..\Google\glog\vsprojects\static_linking.props" />
     <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
     <Import Project="..\google_glog.props" />
     <Import Project="..\generate_version_translation_unit.props" />
