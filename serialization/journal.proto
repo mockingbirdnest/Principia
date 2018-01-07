@@ -103,7 +103,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5147.
+  extensions 5000 to 5999;  // Last used: 5150.
 }
 
 message AdvanceTime {
@@ -1478,6 +1478,32 @@ message SetBufferedLogging {
   optional In in = 1;
 }
 
+message SetEphemerisParameters {
+  extend Method {
+    optional SetEphemerisParameters extension = 5148;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+    required string fixed_step_size_integrator_kind = 2;
+    required string step = 3;
+  }
+  optional In in = 1;
+}
+
+message SetHistoryParameters {
+  extend Method {
+    optional SetHistoryParameters extension = 5149;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+    required string fixed_step_size_integrator_kind = 2;
+    required string step = 3;
+  }
+  optional In in = 1;
+}
+
 message SetMainBody {
   extend Method {
     optional SetMainBody extension = 5097;
@@ -1516,6 +1542,20 @@ message SetPlottingFrame {
   }
   optional In in = 1;
   optional Out out = 2;
+}
+
+message SetPsychohistoryParameters {
+  extend Method {
+    optional SetPsychohistoryParameters extension = 5150;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
+    // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
+    required string adaptive_step_size_integrator_kind = 2;
+    required string length_integration_tolerance = 3;
+    required string speed_integration_tolerance = 4;
+  }
+  optional In in = 1;
 }
 
 message SetStderrLogging {

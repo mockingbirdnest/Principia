@@ -40,7 +40,7 @@ using quantities::Force;
 using quantities::Mass;
 
 // A |PileUp| handles a connected component of the graph of |Parts| under
-// physical contact.  It advances the history and prolongation of its component
+// physical contact.  It advances the history and psychohistory of its component
 // |Parts|, modeling them as a massless body at their centre of mass.
 class PileUp {
  public:

@@ -10,6 +10,7 @@
 #include <vector>
 #if OS_WIN
 #define NOGDI
+#define NOMINMAX
 #include <windows.h>
 #include <psapi.h>
 #endif
@@ -54,6 +55,8 @@ using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::AdaptiveStepSizeIntegrator;
+using integrators::FixedStepSizeIntegrator;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -73,6 +76,7 @@ using quantities::DebugString;
 using quantities::Force;
 using quantities::ParseQuantity;
 using quantities::Pow;
+using quantities::Speed;
 using quantities::Time;
 using quantities::si::AstronomicalUnit;
 using quantities::si::Day;
@@ -88,6 +92,33 @@ namespace {
 
 int const chunk_size = 64 << 10;
 int const number_of_chunks = 8;
+
+FixedStepSizeIntegrator<Ephemeris<Barycentric>::NewtonianMotionEquation> const&
+ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
+  serialization::FixedStepSizeIntegrator::Kind kind;
+  CHECK(serialization::FixedStepSizeIntegrator::Kind_Parse(integrator_kind,
+                                                           &kind))
+      << "'" << integrator_kind
+      << "' is not a valid FixedStepSizeIntegrator.Kind";
+  serialization::FixedStepSizeIntegrator message;
+  message.set_kind(kind);
+  return FixedStepSizeIntegrator<Ephemeris<
+      Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message);
+}
+
+AdaptiveStepSizeIntegrator<
+    Ephemeris<Barycentric>::NewtonianMotionEquation> const&
+ParseAdaptiveStepSizeIntegrator(std::string const& integrator_kind) {
+  serialization::AdaptiveStepSizeIntegrator::Kind kind;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_Parse(integrator_kind,
+                                                              &kind))
+      << "'" << integrator_kind
+      << "' is not a valid AdaptiveStepSizeIntegrator.Kind";
+  serialization::AdaptiveStepSizeIntegrator message;
+  message.set_kind(kind);
+  return AdaptiveStepSizeIntegrator<Ephemeris<
+      Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message);
+}
 
 serialization::GravityModel::Body MakeGravityModel(
     BodyParameters const& body_parameters) {
@@ -813,6 +844,32 @@ void principia__SetBufferedLogging(int const max_severity) {
   return m.Return();
 }
 
+void principia__SetEphemerisParameters(
+    Plugin* const plugin,
+    char const* const fixed_step_size_integrator_kind,
+    char const* const step) {
+  journal::Method<journal::SetEphemerisParameters> m(
+      {plugin, fixed_step_size_integrator_kind, step});
+  CHECK_NOTNULL(plugin);
+  plugin->SetEphemerisParameters(Ephemeris<Barycentric>::FixedStepParameters(
+      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
+      ParseQuantity<Time>(step)));
+  return m.Return();
+}
+
+void principia__SetHistoryParameters(
+    Plugin* const plugin,
+    char const* const fixed_step_size_integrator_kind,
+    char const* const step) {
+  journal::Method<journal::SetHistoryParameters> m(
+      {plugin, fixed_step_size_integrator_kind, step});
+  CHECK_NOTNULL(plugin);
+  plugin->SetHistoryParameters(Ephemeris<Barycentric>::FixedStepParameters(
+      ParseFixedStepSizeIntegrator(fixed_step_size_integrator_kind),
+      ParseQuantity<Time>(step)));
+  return m.Return();
+}
+
 void principia__SetMainBody(Plugin* const plugin, int const index) {
   journal::Method<journal::SetMainBody> m({plugin, index});
   CHECK_NOTNULL(plugin);
@@ -832,6 +889,28 @@ void principia__SetPartApparentDegreesOfFreedom(
       part_id,
       FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
       FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
+  return m.Return();
+}
+
+void principia__SetPsychohistoryParameters(
+    Plugin* const plugin,
+    char const* const adaptive_step_size_integrator_kind,
+    char const* const length_integration_tolerance,
+    char const* const speed_integration_tolerance) {
+  journal::Method<journal::SetPsychohistoryParameters> m(
+      {plugin,
+       adaptive_step_size_integrator_kind,
+       length_integration_tolerance,
+       speed_integration_tolerance});
+  CHECK_NOTNULL(plugin);
+  // It is erroneous for a psychohistory integration to fail, so the |max_steps|
+  // must be unlimited.
+  plugin->SetPsychohistoryParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          ParseAdaptiveStepSizeIntegrator(adaptive_step_size_integrator_kind),
+          /*max_steps=*/std::numeric_limits<int64_t>::max(),
+          ParseQuantity<Length>(length_integration_tolerance),
+          ParseQuantity<Speed>(speed_integration_tolerance)));
   return m.Return();
 }
 
