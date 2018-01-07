@@ -49,6 +49,19 @@ message Burn {
   required bool is_inertially_fixed = 6;
 }
 
+message ConfigurationFixedStepParameters {
+  // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
+  required string fixed_step_size_integrator = 1;
+  required string integration_step_size = 2;
+}
+
+message ConfigurationAdaptiveStepParameters {
+  // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
+  required string adaptive_step_size_integrator = 1;
+  required string length_integration_tolerance = 2;
+  required string speed_integration_tolerance = 3;
+}
+
 message KeplerianElements {
   required double eccentricity = 1;
   required double semimajor_axis = 2 [default = nan];  // Optional.
@@ -877,9 +890,7 @@ message InitializeEphemerisParameters {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
-    required string fixed_step_size_integrator_kind = 2;
-    required string step = 3;
+    required ConfigurationFixedStepParameters parameters = 2;
   }
   optional In in = 1;
 }
@@ -890,9 +901,7 @@ message InitializeHistoryParameters {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
-    required string fixed_step_size_integrator_kind = 2;
-    required string step = 3;
+    required ConfigurationFixedStepParameters parameters = 2;
   }
   optional In in = 1;
 }
@@ -903,10 +912,7 @@ message InitializePsychohistoryParameters {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    // Must be the name of one of the values of AdaptiveStepSizeIntegrator.Kind.
-    required string adaptive_step_size_integrator_kind = 2;
-    required string length_integration_tolerance = 3;
-    required string speed_integration_tolerance = 4;
+    required ConfigurationAdaptiveStepParameters parameters = 3;
   }
   optional In in = 1;
 }

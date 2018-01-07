@@ -60,6 +60,8 @@ public partial class PrincipiaPluginAdapter
       "principia_initial_state";
   private const String principia_gravity_model_config_name_ =
       "principia_gravity_model";
+  private const String principia_numerics_parameters_config_name_ =
+      "principia_numerics_parameters";
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
@@ -2364,36 +2366,44 @@ public partial class PrincipiaPluginAdapter
 
   private static void InitializeIntegrators(
       IntPtr plugin,
-      ConfigNode gravity_model_config) {
-   if (gravity_model_config == null) {
+      ConfigNode numerics_parameters_config) {
+   if (numerics_parameters_config == null) {
      return;
    }
    var ephemeris_parameters =
-       gravity_model_config.GetAtMostOneNode("ephemeris_parameters");
+       numerics_parameters_config.GetAtMostOneNode("ephemeris");
    if (ephemeris_parameters != null) {
-     plugin.InitializeEphemerisParameters(
-         ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
-         ephemeris_parameters.GetUniqueValue("step"));
+     plugin.InitializeEphemerisParameters(new ConfigurationFixedStepParameters{
+         fixed_step_size_integrator =
+             ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         integration_step_size =
+             ephemeris_parameters.GetUniqueValue("integration_step_size")});
    }
 
    var history_parameters =
-       gravity_model_config.GetAtMostOneNode("history_parameters");
+       numerics_parameters_config.GetAtMostOneNode("history");
    if (history_parameters != null) {
-     plugin.InitializeEphemerisParameters(
-         history_parameters.GetUniqueValue("fixed_step_size_integrator"),
-         history_parameters.GetUniqueValue("step"));
+     plugin.InitializeHistoryParameters(new ConfigurationFixedStepParameters{
+         fixed_step_size_integrator =
+             history_parameters.GetUniqueValue("fixed_step_size_integrator"),
+         integration_step_size =
+             history_parameters.GetUniqueValue("integration_step_size")});
    }
 
    var psychohistory_parameters =
-       gravity_model_config.GetAtMostOneNode("psychohistory_parameters");
+       numerics_parameters_config.GetAtMostOneNode("psychohistory");
    if (psychohistory_parameters != null) {
      plugin.InitializePsychohistoryParameters(
-         psychohistory_parameters.GetUniqueValue(
-             "adaptive_step_size_integrator"),
-         psychohistory_parameters.GetUniqueValue(
-             "length_integration_tolerance"),
-         psychohistory_parameters.GetUniqueValue(
-             "speed_integration_tolerance"));
+         new ConfigurationAdaptiveStepParameters{
+             adaptive_step_size_integrator =
+                 psychohistory_parameters.GetUniqueValue(
+                     "adaptive_step_size_integrator"),
+             length_integration_tolerance =
+                 psychohistory_parameters.GetUniqueValue(
+                     "length_integration_tolerance"),
+             speed_integration_tolerance =
+                 psychohistory_parameters.GetUniqueValue(
+                     "speed_integration_tolerance")});
    }
   }
 
@@ -2402,38 +2412,33 @@ public partial class PrincipiaPluginAdapter
     RemoveBuggyTidalLocking();
     plugin_construction_ = DateTime.Now;
     Dictionary<String, ConfigNode> name_to_gravity_model = null;
-    var gravity_model_configs =
-        GameDatabase.Instance.GetConfigs(principia_gravity_model_config_name_);
-    var cartesian_configs =
-        GameDatabase.Instance.GetConfigs(principia_initial_state_config_name_);
-    ConfigNode gravity_model_config = null;
-    if (gravity_model_configs.Length == 1) {
-      gravity_model_config = gravity_model_configs[0].config;
+    ConfigNode gravity_model_config = GameDatabase.Instance.GetAtMostOneNode(
+        principia_gravity_model_config_name_);
+    ConfigNode initial_state_config = GameDatabase.Instance.GetAtMostOneNode(
+        principia_initial_state_config_name_);
+    ConfigNode numerics_parameters_config = GameDatabase.Instance.GetAtMostOneNode(
+        principia_numerics_parameters_config_name_);
+    if (gravity_model_config == null) {
       name_to_gravity_model =
-          gravity_model_config.GetNodes("body").
-              ToDictionary(node => node.GetUniqueValue("name"));
-    } else if (gravity_model_configs.Length > 1) {
-      Log.Fatal("too many gravity models (" + gravity_model_configs.Length +
-                ")");
+          gravity_model_config.GetNodes("body").ToDictionary(
+              node => node.GetUniqueValue("name"));
     }
-    if (cartesian_configs.Length > 0) {
-      if (cartesian_configs.Length > 1) {
-        Log.Fatal("too many Cartesian configs (" + cartesian_configs.Length +
-                  ")");
-      }
+    if (initial_state_config != null) {
       if (name_to_gravity_model == null) {
         Log.Fatal("Cartesian config without gravity models");
       }
       try {
-        ConfigNode initial_states = GameDatabase.Instance.GetConfigs(
-            principia_initial_state_config_name_)[0].config;
+        // Note that |game_epoch| is not in the astronomy proto, as it is
+        // KSP-specific: it is the |Instant| corresponding to KSP's
+        // UniversalTime 0.  It is passed as an argument to
+        // |generate_configuration|.
         plugin_ = Interface.NewPlugin(
-            initial_states.GetUniqueValue("game_epoch"),
-            initial_states.GetUniqueValue("solar_system_epoch"),
+            initial_state_config.GetUniqueValue("game_epoch"),
+            initial_state_config.GetUniqueValue("solar_system_epoch"),
             Planetarium.InverseRotAngle);
-        InitializeIntegrators(plugin_, gravity_model_config);
+        InitializeIntegrators(plugin_, numerics_parameters_config);
         var name_to_initial_state =
-            initial_states.GetNodes("body").
+            initial_state_config.GetNodes("body").
                 ToDictionary(node => node.GetUniqueValue("name"));
         BodyProcessor insert_body = body => {
           Log.Info("Inserting " + body.name + "...");
@@ -2494,7 +2499,7 @@ public partial class PrincipiaPluginAdapter
       // initial state.
       plugin_ = Interface.NewPlugin("JD2451545", "JD2451545",
                                     Planetarium.InverseRotAngle);
-      InitializeIntegrators(plugin_, gravity_model_config);
+      InitializeIntegrators(plugin_, numerics_parameters_config);
       BodyProcessor insert_body = body => {
         Log.Info("Inserting " + body.name + "...");
         ConfigNode gravity_model = null;

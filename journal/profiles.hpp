@@ -18,6 +18,8 @@ using base::PushDeserializer;
 using interface::AdaptiveStepParameters;
 using interface::BodyParameters;
 using interface::Burn;
+using interface::ConfigurationAdaptiveStepParameters;
+using interface::ConfigurationFixedStepParameters;
 using interface::KeplerianElements;
 using interface::Iterator;
 using interface::NavigationFrameParameters;

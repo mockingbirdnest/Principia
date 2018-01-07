@@ -477,6 +477,8 @@ class Plugin {
   std::map<Index, std::experimental::optional<Index>> parents_;
   // The ephemeris is only constructed once, so this is an initialization
   // object.  The other parameters must be persisted to create new vessels.
+  // Since this is not persisted directly, it is optional so that it can be null
+  // in a deserialized object.
   std::experimental::optional<Ephemeris<Barycentric>::FixedStepParameters>
       ephemeris_parameters_;
 
