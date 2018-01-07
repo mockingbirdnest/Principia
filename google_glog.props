@@ -2,17 +2,36 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
+
+  <PropertyGroup>
+    <StaticGlog>true</StaticGlog>
+    <StaticGlog Condition="'$(ProjectName)'=='ksp_physics' Or '$(ProjectName)'=='ksp_plugin'">false</StaticGlog>
+  </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)..\Google\glog\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\glog\$(Configuration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <Import Condition="$(StaticGlog)" Project="$(SolutionDir)..\Google\glog\vsprojects\static_linking.props" />
+
+  <ItemDefinitionGroup Condition="$(StaticGlog)">
+    <Link>
+      <AdditionalDependencies>libglog_static.lib ;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup Condition="!$(StaticGlog)">
+    <Link>
       <AdditionalDependencies>libglog.lib ;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup />
-  <Target Name="CopyGlogDll" AfterTargets="Build">
+
+  <Target Condition="!$(StaticGlog)" Name="CopyGlogDll" AfterTargets="Build">
     <Copy
       SourceFiles="$(SolutionDir)..\Google\glog\$(Configuration)\$(Platform)\libglog.dll"
       DestinationFolder="$(OutDir)"/>
