@@ -68,7 +68,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
