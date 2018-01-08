@@ -28,6 +28,13 @@ void LogPhysicsDLLBaseAddress() {
                              &module_info,
                              sizeof(module_info)));
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+
+  google::protobuf::SetLogHandler([](google::protobuf::LogLevel const level,
+                                     char const* const filename,
+                                     int const line,
+                                     std::string const& message) {
+    LOG_AT_LEVEL(level) << "[" << filename << ":" << line << "] " << message;
+  });
 }
 
 }  // namespace physics
