@@ -36,7 +36,6 @@
   <!--Test project-->
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
-    <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <PlatformToolset Condition="$(PrincipiaCompiler)==ClangLLVM">LLVM-vs2014</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -58,6 +57,9 @@
     </Link>
   </ItemDefinitionGroup>
   <!--Debug compilation and linkage options-->
+  <PropertyGroup Condition="!$(PrincipiaOptimize)">
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="!$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>Disabled</Optimization>
@@ -65,6 +67,9 @@
     <Link></Link>
   </ItemDefinitionGroup>
   <!--Release compilation and linkage options-->
+  <PropertyGroup Condition="$(PrincipiaOptimize)">
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
