@@ -32,11 +32,21 @@ constexpr int log2(int const n) {
 template<typename Argument, int n>
 struct SquareGenerator {
   using Type = Square<typename SquareGenerator<Argument, n - 1>::Type>;
+
+  Type Evaluate(Argument const& argument) {
+    auto const argument_n_minus_1 =
+        SquareGenerator<Argument, n - 1>::Evaluate(argument);
+    return argument_n_minus_1 * argument_n_minus_1;
+  }
 };
 
 template<typename Argument>
 struct SquareGenerator<Argument, 0> {
   using Type = Argument;
+
+  Type Evaluate(Argument const& argument) {
+    return argument;
+  }
 };
 
 template<typename Argument, typename>
@@ -44,9 +54,18 @@ struct SquaresGenerator;
 template<typename Argument, int... orders>
 struct SquaresGenerator<Argument, std::integer_sequence<int, orders...>> {
   using Type = std::tuple<typename SquareGenerator<Argument, orders>::Type...>;
+
+  Type Evaluate(Argument const& argument) {
+    return std::make_tuple<SquareGenerator<Argument, orders>::
+               Evaluate(argument)...>;
+  }
 };
 
-template<typename Value, typename Argument, int degree>
+template<typename Value,
+         typename Argument,
+         int degree,
+         int low = 0,
+         int high = degree>
 struct EstrinEvaluator {
   using ArgumentSquares = typename SquaresGenerator<
       Argument,
@@ -54,37 +73,43 @@ struct EstrinEvaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
 
-  ArgumentSquares ComputeArgumentSquares(Argument const& argument);
-
-  template<int low, int high>
-  struct Subevaluator {
-    static NthDerivative<Value, Argument, low>
-    Evaluate(Coefficients const& coefficients,
-             Argument const& argument,
-             ArgumentSquares& argument_squares);
-  };
+  static NthDerivative<Value, Argument, low>
+  Evaluate(Coefficients const& coefficients,
+           Argument const& argument,
+           ArgumentSquares& argument_squares);
 };
 
-template<typename Value, typename Argument, int degree>
-template<int low, int high>
+template<typename Value, typename Argument, int degree, int low>
+struct EstrinEvaluator<Value, Argument, degree, low, low> {
+  using ArgumentSquares = typename SquaresGenerator<
+      Argument,
+      std::make_integer_sequence<int, log2(degree)>>::Type;
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+
+  static NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares& argument_squares);
+};
+
+template<typename Value, typename Argument, int degree, int low, int high>
 NthDerivative<Value, Argument, low>
-EstrinEvaluator<Value, Argument, degree>::Subevaluator<low, high>::Evaluate(
+EstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares& argument_squares) {
   constexpr int n = flp2(high - low);
-  return EstrinEvaluator::Subevaluator<low, low + n - 1>::Evaluate(
+  return EstrinEvaluator<Value, Argument, degree, low, low + n - 1>::Evaluate(
              coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             EstrinEvaluator::Subevaluator<low + n, high>::Evaluate(
+             EstrinEvaluator<Value, Argument, degree, low + n, high>::Evaluate(
                  coefficients, argument, argument_squares);
 }
 
-// OMG This is a specialization of a non-specialization, Cthulu comes!
-template<typename Value, typename Argument, int degree>
-template<int low>
+template<typename Value, typename Argument, int degree, int low>
 NthDerivative<Value, Argument, low>
-EstrinEvaluator<Value, Argument, degree>::Subevaluator<low, low>::Evaluate(
+EstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares& argument_squares) {
