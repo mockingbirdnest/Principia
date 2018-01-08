@@ -38,8 +38,8 @@
     <PrincipiaCompilerClangLLVM Condition="$(Configuration)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
     <PrincipiaOptimize>false</PrincipiaOptimize>
     <PrincipiaOptimize Condition="$(Configuration)==Release or $(Configuration)==Release_LLVM">true</PrincipiaOptimize>
-    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools">false</PrincipiaTestProject>
     <PrincipiaTestProject>true</PrincipiaTestProject>
+    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools">false</PrincipiaTestProject>
     <!--Tools.-->
     <!--Protocompiler.-->
     <ProtocCommand>"$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
