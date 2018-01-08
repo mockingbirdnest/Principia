@@ -44,11 +44,11 @@
       *after* we pick the PlatformToolset.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <!--Common compilation and linkage options-->
+  <!--Common options-->
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
+      <TreatWarningAsError>true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <Link>
@@ -103,4 +103,7 @@
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
+
+  <!--This import must be at the end.-->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>
