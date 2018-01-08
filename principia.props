@@ -11,6 +11,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release_LLVM|Win32">
+      <Configuration>Release_LLVM</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release_LLVM|x64">
@@ -26,7 +27,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Condition="$(Configuration==Release_LLVM)">
+  <PropertyGroup Condition="$(Configuration)==Release_LLVM">
     <PrincipiaCompiler>ClangLLVM</PrincipiaCompiler>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration)==Release">
