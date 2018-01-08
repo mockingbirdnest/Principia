@@ -63,7 +63,7 @@
 
   <!--Common options.-->
   <PropertyGroup>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
