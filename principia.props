@@ -56,7 +56,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <!--Debug compilation and linkage options-->
+  <!--Debug options-->
   <PropertyGroup Condition="!$(PrincipiaOptimize)">
     <UseDebugLibraries>true</UseDebugLibraries>
   </PropertyGroup>
@@ -66,8 +66,9 @@
     </ClCompile>
     <Link></Link>
   </ItemDefinitionGroup>
-  <!--Release compilation and linkage options-->
+  <!--Release options-->
   <PropertyGroup Condition="$(PrincipiaOptimize)">
+    <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
