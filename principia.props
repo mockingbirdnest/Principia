@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!--Define project configurations.  Nothing interesting can happen here.-->
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -27,16 +27,12 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Condition="$(Configuration)==Release_LLVM">
-    <PrincipiaCompiler>ClangLLVM</PrincipiaCompiler>
+  <PropertyGroup>
+    <PrincipiaCompilerClangLLVM>false</PrincipiaCompilerClangLLVM>
+    <PrincipiaCompilerClangLLVM Condition="$(Configuration)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
+    <PrincipiaOptimize>false</PrincipiaOptimize>
+    <PrincipiaOptimize Condition="$(Configuration)==Release or $(Configuration)==Release_LLVM">true</PrincipiaOptimize>
   </PropertyGroup>
-  <PropertyGroup Condition="$(Configuration)==Release">
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <!--Microsoft C++ stuff-->
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!--Test project-->
   <PropertyGroup>
     <ConfigurationType>Application</ConfigurationType>
@@ -45,6 +41,11 @@
     <PlatformToolset Condition="$(PrincipiaCompiler)==ClangLLVM">LLVM-vs2014</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
+  <!--Microsoft C++ stuff.  Note that Microsoft.Cpp.targets must be included
+      *after* we pick the PlatformToolset.-->
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <!--Common compilation and linkage options-->
   <ItemDefinitionGroup>
     <ClCompile>
@@ -57,14 +58,14 @@
     </Link>
   </ItemDefinitionGroup>
   <!--Debug compilation and linkage options-->
-  <ItemDefinitionGroup Condition="!$(Optimize)">
+  <ItemDefinitionGroup Condition="!$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>Disabled</Optimization>
     </ClCompile>
     <Link></Link>
   </ItemDefinitionGroup>
   <!--Release compilation and linkage options-->
-  <ItemDefinitionGroup Condition="$(Optimize)">
+  <ItemDefinitionGroup Condition="$(PrincipiaOptimize)">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
