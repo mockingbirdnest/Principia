@@ -10,53 +10,53 @@
   <ItemGroup>
     <CustomBuild Include="geometry.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="quantities.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="physics.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ksp_plugin.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="numerics.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="integrators.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="astronomy.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)'))</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
     <CustomBuild Include="journal.proto">
       <FileType>Document</FileType>
-      <Command>$(ProtocInvocation)</Command>
-      <Message>$(ProtocMessage)</Message>
-      <Outputs>$(ProtocOutputs)</Outputs>
+      <Command>$([System.String]::Format($(ProtocCommand), '%(FullPath)')) -I"$(SolutionDir)..\Google\protobuf\src"</Command>
+      <Message>$([System.String]::Format($(ProtocMessage), '%(FullPath)'))</Message>
+      <Outputs>$([System.String]::Format($(ProtocOutputs), '%(Filename)'))</Outputs>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

@@ -30,7 +30,6 @@
   
   <!--Microsoft C++ stuff.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
   <!--Definitions.-->
   <PropertyGroup>
@@ -39,13 +38,13 @@
     <PrincipiaCompilerClangLLVM Condition="$(Configuration)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
     <PrincipiaOptimize>false</PrincipiaOptimize>
     <PrincipiaOptimize Condition="$(Configuration)==Release or $(Configuration)==Release_LLVM">true</PrincipiaOptimize>
-    <PrincipiaTestProject>false</PrincipiaTestProject>
-    <PrincipiaTestProject Condition="$(ProjectName.EndsWith('_test'))">true</PrincipiaTestProject>
+    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools">false</PrincipiaTestProject>
+    <PrincipiaTestProject>true</PrincipiaTestProject>
     <!--Tools.-->
     <!--Protocompiler.-->
-    <ProtocCommand>"$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc" -I"$(SolutionDir)." --cpp_out=.. "%(FullPath)"</ProtocCommand>
-    <ProtocMessage>Generating C++ files for %(FullPath)</ProtocMessage>
-    <ProtocOutputs>%(Filename).pb.h;%(Filename).pb.cc;%(Outputs)</ProtocOutputs>
+    <ProtocCommand>"$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
+    <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
+    <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
   </PropertyGroup>
 
   <!--Compiler.-->
@@ -59,6 +58,8 @@
     <ConfigurationType Condition="$(ProjectName)==serialization">StaticLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject)">Application</ConfigurationType>
   </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
   <!--Common options.-->
   <PropertyGroup>
