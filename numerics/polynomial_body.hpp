@@ -8,7 +8,88 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using quantities::Exponentiation;
+using quantities::Square;
+
 namespace {
+
+// Greatest power of 2 less than or equal to n.  8 -> 8, 7 -> 4.
+constexpr int flp2(int const n) {
+  return n == 0 ? 0 : n == 1 ? 1 : flp2(n >> 1) << 1;
+}
+
+// Ceiling log2 of n.  8 -> 3, 7 -> 2.
+constexpr int log2(int const n) {
+  return n == 1 ? 0 : flp2(n >> 1) + 1;
+}
+
+// Generator for repeated squaring:
+//   SquareGenerator<Length, 0>::Type is Length
+//   SquareGenerator<Length, 1>::Type is Exponentiation<Length, 2>
+//   SquareGenerator<Length, 2>::Type is Exponentiation<Length, 4>
+//   SquareGenerator<Length, n>::Type is Exponentiation<Length, 2^n>
+// etc.
+template<typename Argument, int n>
+struct SquareGenerator {
+  using Type = Square<typename SquareGenerator<Argument, n - 1>::Type>;
+};
+
+template<typename Argument>
+struct SquareGenerator<Argument, 0> {
+  using Type = Argument;
+};
+
+template<typename Argument, typename>
+struct SquaresGenerator;
+template<typename Argument, int... orders>
+struct SquaresGenerator<Argument, std::integer_sequence<int, orders...>> {
+  using Type = std::tuple<typename SquareGenerator<Argument, orders>::Type...>;
+};
+
+template<typename Value, typename Argument, int degree>
+struct EstrinEvaluator {
+  using ArgumentSquares = typename SquaresGenerator<
+      Argument,
+      std::make_integer_sequence<int, log2(degree)>>::Type;
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+
+  ArgumentSquares ComputeArgumentSquares(Argument const& argument);
+
+  template<int low, int high>
+  struct Subevaluator {
+    static NthDerivative<Value, Argument, low>
+    Evaluate(Coefficients const& coefficients,
+             Argument const& argument,
+             ArgumentSquares& argument_squares);
+  };
+};
+
+template<typename Value, typename Argument, int degree>
+template<int low, int high>
+NthDerivative<Value, Argument, low>
+EstrinEvaluator<Value, Argument, degree>::Subevaluator<low, high>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares& argument_squares) {
+  constexpr int n = flp2(high - low);
+  return EstrinEvaluator::Subevaluator<low, low + n - 1>::Evaluate(
+             coefficients, argument, argument_squares) +
+         std::get<n>(argument_squares) *
+             EstrinEvaluator::Subevaluator<low + n, high>::Evaluate(
+                 coefficients, argument, argument_squares);
+}
+
+// OMG This is a specialization of a non-specialization, Cthulu comes!
+template<typename Value, typename Argument, int degree>
+template<int low>
+NthDerivative<Value, Argument, low>
+EstrinEvaluator<Value, Argument, degree>::Subevaluator<low, low>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares& argument_squares) {
+  return std::get<low>(coefficients);
+}
 
 // The structs below are only needed because the language won't let us have (1)
 // a partial specialization of a function (2) an explicit specialization of a
