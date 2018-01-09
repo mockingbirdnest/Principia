@@ -74,11 +74,11 @@ struct EstrinEvaluator {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
 
-  static NthDerivative<Value, Argument, low> Evaluate(
+  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument);
 
-  static NthDerivative<Value, Argument, low> Evaluate(
+  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -93,11 +93,11 @@ struct EstrinEvaluator<Value, Argument, degree, low, low> {
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
 
-  static NthDerivative<Value, Argument, low> Evaluate(
+  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument);
 
-  static NthDerivative<Value, Argument, low> Evaluate(
+  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
