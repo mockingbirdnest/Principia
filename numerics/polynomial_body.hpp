@@ -20,7 +20,7 @@ constexpr int flp2(int const n) {
 
 // Ceiling log2 of n.  8 -> 3, 7 -> 2.
 constexpr int log2(int const n) {
-  return n == 1 ? 0 : flp2(n >> 1) + 1;
+  return n == 1 ? 0 : log2(n >> 1) + 1;
 }
 
 // Generator for repeated squaring:
@@ -33,7 +33,7 @@ template<typename Argument, int n>
 struct SquareGenerator {
   using Type = Square<typename SquareGenerator<Argument, n - 1>::Type>;
 
-  Type Evaluate(Argument const& argument) {
+  static Type Evaluate(Argument const& argument) {
     auto const argument_n_minus_1 =
         SquareGenerator<Argument, n - 1>::Evaluate(argument);
     return argument_n_minus_1 * argument_n_minus_1;
@@ -44,7 +44,7 @@ template<typename Argument>
 struct SquareGenerator<Argument, 0> {
   using Type = Argument;
 
-  Type Evaluate(Argument const& argument) {
+  static Type Evaluate(Argument const& argument) {
     return argument;
   }
 };
@@ -55,9 +55,9 @@ template<typename Argument, int... orders>
 struct SquaresGenerator<Argument, std::integer_sequence<int, orders...>> {
   using Type = std::tuple<typename SquareGenerator<Argument, orders>::Type...>;
 
-  Type Evaluate(Argument const& argument) {
-    return std::make_tuple<SquareGenerator<Argument, orders>::
-               Evaluate(argument)...>;
+  static Type Evaluate(Argument const& argument) {
+    return std::make_tuple(SquareGenerator<Argument, orders>::
+               Evaluate(argument)...);
   }
 };
 
@@ -67,43 +67,63 @@ template<typename Value,
          int low = 0,
          int high = degree>
 struct EstrinEvaluator {
-  using ArgumentSquares = typename SquaresGenerator<
-      Argument,
-      std::make_integer_sequence<int, log2(degree)>>::Type;
-  using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
-
-  static NthDerivative<Value, Argument, low>
-  Evaluate(Coefficients const& coefficients,
-           Argument const& argument,
-           ArgumentSquares& argument_squares);
-};
-
-template<typename Value, typename Argument, int degree, int low>
-struct EstrinEvaluator<Value, Argument, degree, low, low> {
-  using ArgumentSquares = typename SquaresGenerator<
-      Argument,
-      std::make_integer_sequence<int, log2(degree)>>::Type;
+  using ArgumentSquaresGenerator =
+      SquaresGenerator<Argument,
+                       std::make_integer_sequence<int, log2(degree) + 1>>;
+  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
 
   static NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
+      Argument const& argument);
+
+  static NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
       Argument const& argument,
-      ArgumentSquares& argument_squares);
+      ArgumentSquares const& argument_squares);
+};
+
+template<typename Value, typename Argument, int degree, int low>
+struct EstrinEvaluator<Value, Argument, degree, low, low> {
+  using ArgumentSquaresGenerator =
+      SquaresGenerator<Argument,
+                       std::make_integer_sequence<int, log2(degree) + 1>>;
+  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+
+  static NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument);
+
+  static NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares const& argument_squares);
 };
 
 template<typename Value, typename Argument, int degree, int low, int high>
 NthDerivative<Value, Argument, low>
 EstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
     Coefficients const& coefficients,
+    Argument const& argument) {
+  return EstrinEvaluator::Evaluate(
+      coefficients, argument, ArgumentSquaresGenerator::Evaluate(argument));
+}
+
+template<typename Value, typename Argument, int degree, int low, int high>
+NthDerivative<Value, Argument, low>
+EstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
+    Coefficients const& coefficients,
     Argument const& argument,
-    ArgumentSquares& argument_squares) {
-  constexpr int n = flp2(high - low);
-  return EstrinEvaluator<Value, Argument, degree, low, low + n - 1>::Evaluate(
+    ArgumentSquares const& argument_squares) {
+  constexpr int n = log2(high - low);
+  constexpr int m = flp2(high - low);  // m = 2^n
+  return EstrinEvaluator<Value, Argument, degree, low, low + m - 1>::Evaluate(
              coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             EstrinEvaluator<Value, Argument, degree, low + n, high>::Evaluate(
+             EstrinEvaluator<Value, Argument, degree, low + m, high>::Evaluate(
                  coefficients, argument, argument_squares);
 }
 
@@ -111,8 +131,16 @@ template<typename Value, typename Argument, int degree, int low>
 NthDerivative<Value, Argument, low>
 EstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
     Coefficients const& coefficients,
+    Argument const& argument) {
+  return std::get<low>(coefficients);
+}
+
+template<typename Value, typename Argument, int degree, int low>
+NthDerivative<Value, Argument, low>
+EstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
+    Coefficients const& coefficients,
     Argument const& argument,
-    ArgumentSquares& argument_squares) {
+    ArgumentSquares const& argument_squares) {
   return std::get<low>(coefficients);
 }
 
@@ -196,8 +224,13 @@ PolynomialInMonomialBasis<Value, Argument, degree>::PolynomialInMonomialBasis(
 template<typename Value, typename Argument, int degree>
 Value PolynomialInMonomialBasis<Value, Argument, degree>::Evaluate(
     Argument const& argument) const {
+#if 0
   return HornerEvaluator<Value, Argument, degree, 0>::Evaluate(
       coefficients_, argument);
+#else
+  return EstrinEvaluator<Value, Argument, degree>::Evaluate(
+      coefficients_,argument);
+#endif
 }
 
 template<typename Value, typename Argument, int degree>
