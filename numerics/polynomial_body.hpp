@@ -22,7 +22,7 @@ Value PolynomialInMonomialBasis<Value, Argument, degree>::Evaluate(
       coefficients_, argument);
 #else
   return EstrinEvaluator<Value, Argument, degree>::Evaluate(
-      coefficients_,argument);
+      coefficients_ ,argument);
 #endif
 }
 

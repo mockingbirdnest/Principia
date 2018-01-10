@@ -2,6 +2,8 @@
 
 #include "numerics/polynomial_evaluators.hpp"
 
+#include <tuple>
+
 namespace principia {
 namespace numerics {
 namespace internal_polynomial_evaluators {
