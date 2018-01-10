@@ -55,8 +55,9 @@
 
   <!--Target.-->
   <PropertyGroup>
-    <ConfigurationType Condition="$(ProjectName)==serialization">StaticLibrary</ConfigurationType>
-    <ConfigurationType Condition="$(PrincipiaTestProject)">Application</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == serialization">StaticLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(PrincipiaTestProject) or $(ProjectName) == tools or $(ProjectName) == benchmarks">Application</ConfigurationType>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
