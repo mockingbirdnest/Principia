@@ -6,7 +6,7 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial_evaluator {
+namespace internal_polynomial_evaluators {
 
 using quantities::Derivative;
 using quantities::Square;
@@ -38,10 +38,10 @@ struct HornerEvaluator {
                      Argument const& argument);
 };
 
-}  // namespace internal_polynomial_evaluator
+}  // namespace internal_polynomial_evaluators
 
-using internal_polynomial_evaluator::EstrinEvaluator;
-using internal_polynomial_evaluator::HornerEvaluator;
+using internal_polynomial_evaluators::EstrinEvaluator;
+using internal_polynomial_evaluators::HornerEvaluator;
 
 }  // namespace numerics
 }  // namespace principia

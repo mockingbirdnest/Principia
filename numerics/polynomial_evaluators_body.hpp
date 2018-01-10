@@ -4,7 +4,7 @@
 
 namespace principia {
 namespace numerics {
-namespace internal_polynomial_evaluator {
+namespace internal_polynomial_evaluators {
 
 namespace {
 
@@ -214,6 +214,6 @@ HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
       EvaluateDerivative(coefficients, argument);
 }
 
-}  // namespace internal_polynomial_evaluator
+}  // namespace internal_polynomial_evaluators
 }  // namespace numerics
 }  // namespace principia
