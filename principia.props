@@ -42,13 +42,13 @@
     <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools">false</PrincipiaTestProject>
     <!--Tools.-->
     <!--Protocompiler.-->
-    <Protoc>"$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc" </Protoc>
-    <ProtocCommand>$(Protoc) -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
+    <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc</Protoc>
+    <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
     <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
     <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
     <!--Principia tools.-->
-    <PrincipiaGenerateProfiles>"$(OutDir)tools.exe"</PrincipiaGenerateProfiles>
-    <PrincipiaGenerateProfilesCommand>$(PrincipiaGenerateProfiles) generate_profiles</PrincipiaGenerateProfilesCommand>
+    <PrincipiaGenerateProfiles>$(OutDir)tools.exe</PrincipiaGenerateProfiles>
+    <PrincipiaGenerateProfilesCommand>"$(PrincipiaGenerateProfiles)" generate_profiles</PrincipiaGenerateProfilesCommand>
     <PrincipiaGenerateProfilesMessage>Generating C#/C++ files for {0}</PrincipiaGenerateProfilesMessage>
     <PrincipiaGenerateProfilesOutput>interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutput>
   </PropertyGroup>
