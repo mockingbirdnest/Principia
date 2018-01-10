@@ -94,6 +94,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
 }  // namespace internal_polynomial
 
+using internal_polynomial::NthDerivative;
 using internal_polynomial::Polynomial;
 using internal_polynomial::PolynomialInMonomialBasis;
 
