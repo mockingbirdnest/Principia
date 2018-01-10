@@ -39,7 +39,7 @@
     <PrincipiaOptimize>false</PrincipiaOptimize>
     <PrincipiaOptimize Condition="$(Configuration)==Release or $(Configuration)==Release_LLVM">true</PrincipiaOptimize>
     <PrincipiaTestProject>true</PrincipiaTestProject>
-    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools">false</PrincipiaTestProject>
+    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or $(ProjectName) == serialization or $(ProjectName) == benchmarks or $(ProjectName) == tools or $(ProjectName) == mathematica">false</PrincipiaTestProject>
     <!--Tools.-->
     <!--Protocompiler.-->
     <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc</Protoc>
@@ -63,7 +63,7 @@
   <PropertyGroup>
     <ConfigurationType Condition="$(ProjectName) == serialization">StaticLibrary</ConfigurationType>
     <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
-    <ConfigurationType Condition="$(PrincipiaTestProject) or $(ProjectName) == tools or $(ProjectName) == benchmarks">Application</ConfigurationType>
+    <ConfigurationType Condition="$(PrincipiaTestProject) or $(ProjectName) == tools or $(ProjectName) == benchmarks or $(ProjectName) == mathematica">Application</ConfigurationType>
   </PropertyGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
