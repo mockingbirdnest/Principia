@@ -65,6 +65,11 @@
     <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or $(ProjectName) == tools or $(ProjectName) == benchmarks or $(ProjectName) == mathematica">Application</ConfigurationType>
   </PropertyGroup>
+  <ItemDefinitionGroup Condition="$(ConfigurationType)==Application">
+    <Link>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
@@ -80,7 +85,6 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <SubSystem Condition="$(ConfigurationType)==Application">Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <!--Debug options.-->
