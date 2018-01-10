@@ -141,8 +141,8 @@ InternalHornerEvaluator<Value, Argument, degree, low>::Evaluate(
     Argument const& argument) {
   return std::get<low>(coefficients) +
          argument *
-         InternalHornerEvaluator<Value, Argument, degree, low + 1>::Evaluate(
-             coefficients, argument);
+         InternalHornerEvaluator<Value, Argument, degree, low + 1>::
+             Evaluate(coefficients, argument);
 }
 
 template<typename Value, typename Argument, int degree, int low>
@@ -152,8 +152,8 @@ InternalHornerEvaluator<Value, Argument, degree, low>::EvaluateDerivative(
     Argument const& argument) {
   return std::get<low>(coefficients) * low +
          argument *
-         HornerEvaluator<Value, Argument, degree, low + 1>::EvaluateDerivative(
-             coefficients, argument);
+         InternalHornerEvaluator<Value, Argument, degree, low + 1>::
+             EvaluateDerivative(coefficients, argument);
 }
 
 template<typename Value, typename Argument, int degree>
@@ -185,8 +185,8 @@ Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
-  return InternalHornerEvaluator<Value, Argument, degree, /*low=*/1>::Evaluate(
-      coefficients, argument);
+  return InternalHornerEvaluator<Value, Argument, degree, /*low=*/1>::
+      EvaluateDerivative(coefficients, argument);
 }
 
 }  // namespace internal_polynomial_evaluator
