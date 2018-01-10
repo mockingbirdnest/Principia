@@ -19,7 +19,4 @@
     <ClInclude Include="generate_profiles.hpp" />
     <ClInclude Include="journal_proto_processor.hpp" />
   </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>
