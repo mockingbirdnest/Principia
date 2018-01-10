@@ -17,31 +17,6 @@ using quantities::Square;
 // We use FORCE_INLINE because we have to write this recursively, but we really
 // want linear code.
 
-// Generator for repeated squaring:
-//   SquareGenerator<Length, 0>::Type is Length
-//   SquareGenerator<Length, 1>::Type is Exponentiation<Length, 2>
-//   SquareGenerator<Length, 2>::Type is Exponentiation<Length, 4>
-//   SquareGenerator<Length, n>::Type is Exponentiation<Length, 2^n>
-// etc.
-template<typename Argument, int n>
-struct SquareGenerator {
-  using Type = Square<typename SquareGenerator<Argument, n - 1>::Type>;
-  static Type Evaluate(Argument const& argument);
-};
-template<typename Argument>
-struct SquareGenerator<Argument, 0> {
-  using Type = Argument;
-  static Type Evaluate(Argument const& argument);
-};
-
-template<typename Argument, typename>
-struct SquaresGenerator;
-template<typename Argument, int... orders>
-struct SquaresGenerator<Argument, std::integer_sequence<int, orders...>> {
-  using Type = std::tuple<typename SquareGenerator<Argument, orders>::Type...>;
-  static Type Evaluate(Argument const& argument);
-};
-
 template<typename Value, typename Argument, int degree>
 struct EstrinEvaluator {
   using Coefficients =

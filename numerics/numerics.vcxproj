@@ -280,6 +280,7 @@
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
+    <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />
     <ClCompile Include="root_finders_test.cpp" />
     <ClCompile Include="чебышёв_series_test.cpp" />
