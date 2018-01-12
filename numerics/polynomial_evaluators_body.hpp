@@ -11,13 +11,13 @@ namespace internal_polynomial_evaluators {
 namespace {
 
 // Greatest power of 2 less than or equal to n.  8 -> 8, 7 -> 4.
-constexpr int flp2(int const n) {
-  return n == 0 ? 0 : n == 1 ? 1 : flp2(n >> 1) << 1;
+constexpr int FloorPowerOf2(int const n) {
+  return n == 0 ? 0 : n == 1 ? 1 : FloorPowerOf2(n >> 1) << 1;
 }
 
 // Ceiling log2 of n.  8 -> 3, 7 -> 2.
-constexpr int log2(int const n) {
-  return n == 1 ? 0 : log2(n >> 1) + 1;
+constexpr int CeilingLog2(int const n) {
+  return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
 }
 
 }  // namespace
@@ -66,11 +66,16 @@ auto SquaresGenerator<Argument, std::integer_sequence<int, orders...>>::
       SquareGenerator<Argument, orders>::Evaluate(argument)...);
 }
 
+// Internal helper for Estrin evaluation.  |degree| is the degree of the overall
+// polynomial, |low| and |high| defines the subpolynomial that we currently
+// evaluate, i.e., the one with a constant term coefficient
+// |std::get<low>(coefficients)| and a highest degree coefficient
+// |std::get<high>(coefficients)|.
 template<typename Value, typename Argument, int degree, int low, int high>
 struct InternalEstrinEvaluator {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int, log2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
@@ -85,7 +90,7 @@ template<typename Value, typename Argument, int degree, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int, log2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
@@ -102,8 +107,8 @@ InternalEstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
-  constexpr int n = log2(high - low);
-  constexpr int m = flp2(high - low);  // m = 2^n
+  constexpr int n = CeilingLog2(high - low);
+  constexpr int m = FloorPowerOf2(high - low);  // m = 2^n
   return InternalEstrinEvaluator<Value, Argument, degree, low, low + m - 1>::
              Evaluate(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
@@ -135,6 +140,9 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
       InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
 }
 
+// Internal helper for Horner evaluation.  |degree| is the degree of the overall
+// polynomial, |low| defines the subpolynomial that we currently evaluate, i.e.,
+// the one with a constant term coefficient |std::get<low>(coefficients)|.
 template<typename Value, typename Argument, int degree, int low>
 struct InternalHornerEvaluator {
   using Coefficients =
