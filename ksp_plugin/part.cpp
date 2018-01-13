@@ -136,7 +136,7 @@ void Part::set_containing_pile_up(
   CHECK(!is_piled_up());
   LOG(INFO) << "Adding part " << ShortDebugString() << " to the pile up at "
             << pile_up;
-  containing_pile_up_ = static_cast<std::shared_ptr<PileUp>>(pile_up);
+  containing_pile_up_ = static_cast<std::shared_ptr<PileUp> const&>(pile_up);
 }
 
 PileUp* Part::containing_pile_up() const {
