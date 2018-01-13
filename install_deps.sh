@@ -49,8 +49,7 @@ fi
 pushd glog
 git checkout master
 git pull
-aclocal
-automake
+./autogen.sh
 ./configure CC=clang CXX=clang++ CFLAGS="$C_FLAGS" CXXFLAGS="$CXX_FLAGS" LDFLAGS="$LD_FLAGS" LIBS="-lc++ -lc++abi"
 make -j8
 popd
