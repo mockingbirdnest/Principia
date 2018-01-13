@@ -11,14 +11,28 @@ namespace internal_polynomial_evaluators {
 namespace {
 
 // Greatest power of 2 less than or equal to n.  8 -> 8, 7 -> 4.
-constexpr int FloorOfPowerOf2(int const n) {
-  return n == 0 ? 0 : n == 1 ? 1 : FloorOfPowerOf2(n >> 1) << 1;
-}
+template<int n>
+struct FloorOfPowerOf2 {
+  static constexpr int value = FloorOfPowerOf2<(n >> 1)>::value << 1;
+};
+template<>
+struct FloorOfPowerOf2<0> {
+  static constexpr int value = 0;
+};
+template<>
+struct FloorOfPowerOf2<1> {
+  static constexpr int value = 1;
+};
 
 // Ceiling log2 of n.  8 -> 3, 7 -> 2.
-constexpr int CeilingLog2(int const n) {
-  return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
-}
+template<int n>
+struct CeilingLog2 {
+  static constexpr int value = CeilingLog2<(n >> 1)>::value + 1;
+};
+template<>
+struct CeilingLog2<1> {
+  static constexpr int value = 0;
+};
 
 }  // namespace
 
@@ -75,7 +89,7 @@ template<typename Value, typename Argument, int degree, int low, int high>
 struct InternalEstrinEvaluator {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2<degree>::value + 1>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree, EstrinEvaluator>::Coefficients;
@@ -90,7 +104,7 @@ template<typename Value, typename Argument, int degree, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2<degree>::value + 1>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree, EstrinEvaluator>::Coefficients;
@@ -107,8 +121,8 @@ InternalEstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
-  constexpr int n = CeilingLog2(high - low);
-  constexpr int m = FloorOfPowerOf2(high - low);  // m = 2^n
+  constexpr int n = CeilingLog2<high - low>::value;
+  constexpr int m = FloorOfPowerOf2<high - low>::value;  // m = 2^n
   return InternalEstrinEvaluator<Value, Argument, degree, low, low + m - 1>::
              Evaluate(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
