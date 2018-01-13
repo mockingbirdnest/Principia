@@ -33,6 +33,9 @@ class PolynomialEvaluatorTest : public ::testing::Test {
     for (int argument = -degree; argument <= degree; ++argument) {
       EXPECT_EQ(E::Evaluate(binomial_coefficients, argument),
                 std::pow(argument + 1, degree)) << argument << " " << degree;
+      EXPECT_EQ(E::EvaluateDerivative(binomial_coefficients, argument),
+                degree * std::pow(argument + 1, degree - 1))
+          << argument << " " << degree;
     }
   }
 };

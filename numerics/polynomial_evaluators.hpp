@@ -29,6 +29,9 @@ struct EstrinEvaluator {
 
   static FORCE_INLINE Value Evaluate(Coefficients const& coefficients,
                                      Argument const& argument);
+  static FORCE_INLINE Derivative<Value, Argument>
+  EvaluateDerivative(Coefficients const& coefficients,
+                     Argument const& argument);
 };
 
 template<typename Value, typename Argument, int degree>
