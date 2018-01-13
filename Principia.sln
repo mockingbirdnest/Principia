@@ -17,7 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Project Property Sheets", "
 		google_googletest.props = google_googletest.props
 		google_protobuf.props = google_protobuf.props
 		include_solution.props = include_solution.props
-		llvm_compatibility.props = llvm_compatibility.props
 		principia.props = principia.props
 		profiling.props = profiling.props
 		suppress_useless_warnings.props = suppress_useless_warnings.props
