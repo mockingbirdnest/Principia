@@ -83,6 +83,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}"
 	ProjectSection(SolutionItems) = preProject
 		generate_version_translation_unit.ps1 = generate_version_translation_unit.ps1
+		install_deps.sh = install_deps.sh
 		rebuild_all_solutions.ps1 = rebuild_all_solutions.ps1
 	EndProjectSection
 EndProject

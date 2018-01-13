@@ -121,14 +121,14 @@ __attribute__((noreturn))
 inline void noreturn() { std::exit(0); }
 
 // Used to force inlining.
-#if PRINCIPIA_COMPILER_GCC
-#  define FORCE_INLINE [[gnu::always_inline]] inline  // NOLINT
+#if PRINCIPIA_COMPILER_CLANG    ||  \
+    PRINCIPIA_COMPILER_CLANG_CL ||  \
+    PRINCIPIA_COMPILER_GCC
+#  define FORCE_INLINE(specifiers) [[gnu::always_inline]] specifiers // NOLINT
 #elif PRINCIPIA_COMPILER_MSVC
-#  define FORCE_INLINE __forceinline
-#elif PRINCIPIA_COMPILER_CLANG    ||  \
-      PRINCIPIA_COMPILER_CLANG_CL ||  \
-      PRINCIPIA_COMPILER_ICC
-#  define FORCE_INLINE __attribute__((always_inline))
+#  define FORCE_INLINE(specifiers) specifiers __forceinline
+#elif PRINCIPIA_COMPILER_ICC
+#  define FORCE_INLINE(specifiers) __attribute__((always_inline))
 #else
 #  error "What compiler is this?"
 #endif
