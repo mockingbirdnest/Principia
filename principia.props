@@ -139,10 +139,16 @@
     <Import Project="$(SolutionDir)google_benchmark.props" />
   </ImportGroup>
 
-  <!--Depend on the serialization project.-->
+  <!--Everybody depends on the serialization project.-->
   <ItemGroup Condition="$(ProjectName)!=serialization">
     <ProjectReference Include="$(SolutionDir)serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <!--journal depends on the ksp_plugin DLL.-->
+  <ItemGroup Condition="$(ProjectName) == journal">
+    <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
+      <Project>{a3f94607-2666-408f-af98-0e47d61c98bb}</Project>
     </ProjectReference>
   </ItemGroup>
 
