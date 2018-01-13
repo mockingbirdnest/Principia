@@ -27,9 +27,9 @@ struct EstrinEvaluator {
       degree,
       internal_polynomial_evaluators::EstrinEvaluator>::Coefficients;
 
-  static FORCE_INLINE Value Evaluate(Coefficients const& coefficients,
-                                     Argument const& argument);
-  static FORCE_INLINE Derivative<Value, Argument>
+  FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
+                                      Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };
@@ -44,9 +44,9 @@ struct HornerEvaluator {
       degree,
       internal_polynomial_evaluators::HornerEvaluator>::Coefficients;
 
-  static FORCE_INLINE Value Evaluate(Coefficients const& coefficients,
-                                     Argument const& argument);
-  static FORCE_INLINE Derivative<Value, Argument>
+  FORCE_INLINE(static) Value Evaluate(Coefficients const& coefficients,
+                                      Argument const& argument);
+  FORCE_INLINE(static) Derivative<Value, Argument>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };

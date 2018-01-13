@@ -22,7 +22,7 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
 }
 
 template<typename Q, typename>
-FORCE_INLINE Q Abs(Q const& quantity) {
+FORCE_INLINE(inline) Q Abs(Q const& quantity) {
   return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
 }
 

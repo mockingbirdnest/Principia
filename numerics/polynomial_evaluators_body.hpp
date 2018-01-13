@@ -82,11 +82,11 @@ struct InternalEstrinEvaluator {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
-  static FORCE_INLINE NthDerivative<Value, Argument, low> EvaluateDerivative(
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -103,11 +103,11 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
-  static FORCE_INLINE NthDerivative<Value, Argument, low> EvaluateDerivative(
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -201,10 +201,10 @@ struct InternalHornerEvaluator {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          HornerEvaluator>::Coefficients;
 
-  static FORCE_INLINE NthDerivative<Value, Argument, low>
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low>
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  static FORCE_INLINE NthDerivative<Value, Argument, low>
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };
@@ -215,10 +215,10 @@ struct InternalHornerEvaluator<Value, Argument, degree, degree> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          HornerEvaluator>::Coefficients;
 
-  static FORCE_INLINE NthDerivative<Value, Argument, degree>
+  FORCE_INLINE(static) NthDerivative<Value, Argument, degree>
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  static FORCE_INLINE NthDerivative<Value, Argument, degree>
+  FORCE_INLINE(static) NthDerivative<Value, Argument, degree>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };
