@@ -65,6 +65,12 @@
     <ClInclude Include="polynomial.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="polynomial_evaluators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="polynomial_evaluators_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -86,6 +92,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="polynomial_evaluators_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

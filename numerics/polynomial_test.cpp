@@ -7,6 +7,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -32,8 +33,10 @@ class PolynomialTest : public ::testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST1, true>;
 
-  using P2 = PolynomialInMonomialBasis<Displacement<World>, Time, 2>;
-  using P17 = PolynomialInMonomialBasis<Displacement<World>, Time, 17>;
+  using P2 =
+      PolynomialInMonomialBasis<Displacement<World>, Time, 2, HornerEvaluator>;
+  using P17 =
+      PolynomialInMonomialBasis<Displacement<World>, Time, 17, EstrinEvaluator>;
 
   PolynomialTest()
       : coefficients_({
