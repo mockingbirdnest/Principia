@@ -33,15 +33,6 @@
     <DebugSymbols>true</DebugSymbols>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_LLVM|AnyCPU'">
-    <OutputPath>bin\Release_LLVM\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_3_1</DefineConstants>
-    <Optimize>true</Optimize>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.2.2|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\Release\1.2.2 Compatibility\GameData\Principia\</OutputPath>
