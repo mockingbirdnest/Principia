@@ -160,16 +160,58 @@ void BM_EvaluatePolynomialInMonomialBasisR3ElementDouble(
                                         4,
                                         Evaluator>(state);
       break;
+    case 7:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        7,
+                                        Evaluator>(state);
+      break;
     case 8:
       EvaluatePolynomialInMonomialBasis<R3Element<double>,
                                         Time,
                                         8,
                                         Evaluator>(state);
       break;
+    case 9:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        9,
+                                        Evaluator>(state);
+      break;
+    case 10:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        10,
+                                        Evaluator>(state);
+      break;
+    case 11:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        11,
+                                        Evaluator>(state);
+      break;
     case 12:
       EvaluatePolynomialInMonomialBasis<R3Element<double>,
                                         Time,
                                         12,
+                                        Evaluator>(state);
+      break;
+    case 13:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        13,
+                                        Evaluator>(state);
+      break;
+    case 14:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        14,
+                                        Evaluator>(state);
+      break;
+    case 15:
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        15,
                                         Evaluator>(state);
       break;
     case 16:
@@ -264,7 +306,7 @@ BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble,
                     EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+    ->Arg(4)->Arg(7)->Arg(8)->Arg(9)->Arg(10)->Arg(11)->Arg(12)->Arg(13)->Arg(14)->Arg(15)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
