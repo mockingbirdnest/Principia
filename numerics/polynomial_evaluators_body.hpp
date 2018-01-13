@@ -86,6 +86,10 @@ struct InternalEstrinEvaluator {
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
+  static FORCE_INLINE NthDerivative<Value, Argument, low> EvaluateDerivative(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares const& argument_squares);
 };
 
 template<typename Value, typename Argument, int degree, int low>
@@ -100,6 +104,10 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
                                          EstrinEvaluator>::Coefficients;
 
   static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares const& argument_squares);
+  static FORCE_INLINE NthDerivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -120,6 +128,21 @@ InternalEstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
                  Evaluate(coefficients, argument, argument_squares);
 }
 
+template<typename Value, typename Argument, int degree, int low, int high>
+NthDerivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, low, high>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares const& argument_squares) {
+  constexpr int n = CeilingLog2(high - low);
+  constexpr int m = FloorOfPowerOf2(high - low);  // m = 2^n
+  return InternalEstrinEvaluator<Value, Argument, degree, low, low + m - 1>::
+             EvaluateDerivative(coefficients, argument, argument_squares) +
+         std::get<n>(argument_squares) *
+             InternalEstrinEvaluator<Value, Argument, degree, low + m, high>::
+                 EvaluateDerivative(coefficients, argument, argument_squares);
+}
+
 template<typename Value, typename Argument, int degree, int low>
 NthDerivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
@@ -127,6 +150,15 @@ InternalEstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
   return std::get<low>(coefficients);
+}
+
+template<typename Value, typename Argument, int degree, int low>
+NthDerivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, low, low>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares const& argument_squares) {
+  return low * std::get<low>(coefficients);
 }
 
 template<typename Value, typename Argument, int degree>
@@ -139,6 +171,22 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
                                                     /*low=*/0,
                                                     /*high=*/degree>;
   return InternalEvaluator::Evaluate(
+      coefficients,
+      argument,
+      InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+}
+
+template<typename Value, typename Argument, int degree>
+Derivative<Value, Argument>
+EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument) {
+  using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                    Argument,
+                                                    degree,
+                                                    /*low=*/1,
+                                                    /*high=*/degree>;
+  return InternalEvaluator::EvaluateDerivative(
       coefficients,
       argument,
       InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));

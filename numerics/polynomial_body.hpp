@@ -3,7 +3,6 @@
 #include "numerics/polynomial.hpp"
 
 #include "base/macros.hpp"
-#include "numerics/polynomial_evaluators.hpp"
 
 namespace principia {
 namespace numerics {
@@ -27,7 +26,7 @@ template<typename Value, typename Argument, int degree,
 Derivative<Value, Argument>
 PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
 EvaluateDerivative(Argument const& argument) const {
-  return HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
+  return Evaluator<Value, Argument, degree>::EvaluateDerivative(
       coefficients_, argument);
 }
 
