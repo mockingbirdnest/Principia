@@ -108,10 +108,12 @@ template<typename Value, typename Argument, int degree, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int,
+                                                  CeilingLog2(degree) + 1>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree, EstrinEvaluator>::Coefficients;
+      typename PolynomialInMonomialBasis<Value, Argument, degree,
+                                         EstrinEvaluator>::Coefficients;
 
   static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
@@ -127,10 +129,13 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
     ArgumentSquares const& argument_squares) {
   constexpr int n = CeilingLog2(subdegree);
   constexpr int m = FloorOfPowerOf2(subdegree);  // m = 2^n
-  return InternalEstrinEvaluator<Value, Argument, degree, low, m - 1>::
+  static_assert(n > 0, "Unexpected index in argument_squares");
+  return InternalEstrinEvaluator<Value, Argument, degree,
+                                 low, m - 1>::
              Evaluate(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             InternalEstrinEvaluator<Value, Argument, degree, low + m, subdegree - m>::
+             InternalEstrinEvaluator<Value, Argument, degree,
+                                     low + m, subdegree - m>::
                  Evaluate(coefficients, argument, argument_squares);
 }
 
