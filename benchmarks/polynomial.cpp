@@ -8,6 +8,7 @@
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 
@@ -75,9 +76,10 @@ struct RandomTupleGenerator<Tuple, size, size> {
   static void Fill(Tuple& t, std::mt19937_64& random) {}
 };
 
-template<typename Value, typename Argument, int degree>
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
 void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree>;
+  using P = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
   std::mt19937_64 random(42);
   P::Coefficients coefficients;
   RandomTupleGenerator<P::Coefficients, 0>::Fill(coefficients, random);
@@ -103,20 +105,21 @@ void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   state.SetLabel(ss.str().substr(0, 0));
 }
 
+template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
-      EvaluatePolynomialInMonomialBasis<double, Time, 4>(state);
+      EvaluatePolynomialInMonomialBasis<double, Time, 4, Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<double, Time, 8>(state);
+      EvaluatePolynomialInMonomialBasis<double, Time, 8, Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<double, Time, 12>(state);
+      EvaluatePolynomialInMonomialBasis<double, Time, 12, Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<double, Time, 16>(state);
+      EvaluatePolynomialInMonomialBasis<double, Time, 16, Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -124,20 +127,21 @@ void BM_EvaluatePolynomialInMonomialBasisDouble(benchmark::State& state) {
   }
 }
 
+template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 4>(state);
+      EvaluatePolynomialInMonomialBasis<Length, Time, 4, Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 8>(state);
+      EvaluatePolynomialInMonomialBasis<Length, Time, 8, Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 12>(state);
+      EvaluatePolynomialInMonomialBasis<Length, Time, 12, Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<Length, Time, 16>(state);
+      EvaluatePolynomialInMonomialBasis<Length, Time, 16, Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -145,21 +149,34 @@ void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
   }
 }
 
+template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisR3ElementDouble(
     benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 4>(state);
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        4,
+                                        Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 8>(state);
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        8,
+                                        Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 12>(state);
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        12,
+                                        Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>, Time, 16>(state);
+      EvaluatePolynomialInMonomialBasis<R3Element<double>,
+                                        Time,
+                                        16,
+                                        Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -167,6 +184,7 @@ void BM_EvaluatePolynomialInMonomialBasisR3ElementDouble(
   }
 }
 
+template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
@@ -174,25 +192,29 @@ void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
       EvaluatePolynomialInMonomialBasis<
           Multivector<double, ICRFJ2000Ecliptic, 1>,
           Time,
-          4>(state);
+          4,
+          Evaluator>(state);
       break;
     case 8:
       EvaluatePolynomialInMonomialBasis<
           Multivector<double, ICRFJ2000Ecliptic, 1>,
           Time,
-          8>(state);
+          8,
+          Evaluator>(state);
       break;
     case 12:
       EvaluatePolynomialInMonomialBasis<
           Multivector<double, ICRFJ2000Ecliptic, 1>,
           Time,
-          12>(state);
+          12,
+          Evaluator>(state);
       break;
     case 16:
       EvaluatePolynomialInMonomialBasis<
           Multivector<double, ICRFJ2000Ecliptic, 1>,
           Time,
-          16>(state);
+          16,
+          Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -200,28 +222,33 @@ void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
   }
 }
 
+template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
                                         Time,
-                                        4>(state);
+                                        4,
+                                        Evaluator>(state);
       break;
     case 8:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
                                         Time,
-                                        8>(state);
+                                        8,
+                                        Evaluator>(state);
       break;
     case 12:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
                                         Time,
-                                        12>(state);
+                                        12,
+                                        Evaluator>(state);
       break;
     case 16:
       EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
                                         Time,
-                                        16>(state);
+                                        16,
+                                        Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -229,15 +256,35 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisDouble)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, 
+                    EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisQuantity)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
+                    EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble,
+                    EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisVectorDouble)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
+                    EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK(BM_EvaluatePolynomialInMonomialBasisDisplacement)
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
+                    EstrinEvaluator)
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, 
+                    HornerEvaluator)
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
+                    HornerEvaluator)
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble,
+                    HornerEvaluator)
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
+                    HornerEvaluator)
+    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
+                    HornerEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 
 }  // namespace numerics

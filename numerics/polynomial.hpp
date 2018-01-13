@@ -70,7 +70,8 @@ class Polynomial {
   virtual ~Polynomial() = default;
 };
 
-template<typename Value, typename Argument, int degree>
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  public:
   // Equivalent to:

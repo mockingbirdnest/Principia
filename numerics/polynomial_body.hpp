@@ -9,27 +9,24 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
-template<typename Value, typename Argument, int degree>
-PolynomialInMonomialBasis<Value, Argument, degree>::PolynomialInMonomialBasis(
-    Coefficients const& coefficients)
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
+PolynomialInMonomialBasis(Coefficients const& coefficients)
     : coefficients_(coefficients) {}
 
-template<typename Value, typename Argument, int degree>
-Value PolynomialInMonomialBasis<Value, Argument, degree>::Evaluate(
-    Argument const& argument) const {
-#if 0
-  return HornerEvaluator<Value, Argument, degree>::Evaluate(
-      coefficients_, argument);
-#else
-  return EstrinEvaluator<Value, Argument, degree>::Evaluate(
-      coefficients_, argument);
-#endif
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
+Value PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
+Evaluate(Argument const& argument) const {
+  return Evaluator<Value, Argument, degree>::Evaluate(coefficients_, argument);
 }
 
-template<typename Value, typename Argument, int degree>
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
 Derivative<Value, Argument>
-PolynomialInMonomialBasis<Value, Argument, degree>::EvaluateDerivative(
-    Argument const& argument) const {
+PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>::
+EvaluateDerivative(Argument const& argument) const {
   return HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
       coefficients_, argument);
 }

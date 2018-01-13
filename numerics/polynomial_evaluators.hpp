@@ -19,8 +19,13 @@ using quantities::Square;
 
 template<typename Value, typename Argument, int degree>
 struct EstrinEvaluator {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+  // The fully qualified name below designates the template, not the current
+  // instance.
+  using Coefficients = typename PolynomialInMonomialBasis<
+      Value,
+      Argument,
+      degree,
+      internal_polynomial_evaluators::EstrinEvaluator>::Coefficients;
 
   static FORCE_INLINE Value Evaluate(Coefficients const& coefficients,
                                      Argument const& argument);
@@ -28,8 +33,13 @@ struct EstrinEvaluator {
 
 template<typename Value, typename Argument, int degree>
 struct HornerEvaluator {
-  using Coefficients =
-      typename PolynomialInMonomialBasis<Value, Argument, degree>::Coefficients;
+  // The fully qualified name below designates the template, not the current
+  // instance.
+  using Coefficients = typename PolynomialInMonomialBasis<
+      Value,
+      Argument,
+      degree,
+      internal_polynomial_evaluators::HornerEvaluator>::Coefficients;
 
   static FORCE_INLINE Value Evaluate(Coefficients const& coefficients,
                                      Argument const& argument);
