@@ -67,11 +67,10 @@ auto SquaresGenerator<Argument, std::integer_sequence<int, orders...>>::
 }
 
 // Internal helper for Estrin evaluation.  |degree| is the degree of the overall
-// polynomial, |low| and |high| defines the subpolynomial that we currently
+// polynomial, |low| and |subdegree| defines the subpolynomial that we currently
 // evaluate, i.e., the one with a constant term coefficient
-// |std::get<low>(coefficients)| and a highest degree coefficient
-// |std::get<high>(coefficients)|.
-template<typename Value, typename Argument, int degree, int low, int high>
+// |std::get<low>(coefficients)| and degree |subdegree|.
+template<typename Value, typename Argument, int degree, int low, int subdegree>
 struct InternalEstrinEvaluator {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
@@ -87,7 +86,7 @@ struct InternalEstrinEvaluator {
 };
 
 template<typename Value, typename Argument, int degree, int low>
-struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
+struct InternalEstrinEvaluator<Value, Argument, degree, low, 1> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
                        std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
@@ -101,24 +100,49 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, low> {
       ArgumentSquares const& argument_squares);
 };
 
-template<typename Value, typename Argument, int degree, int low, int high>
+template<typename Value, typename Argument, int degree, int low>
+struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
+  using ArgumentSquaresGenerator =
+      SquaresGenerator<Argument,
+                       std::make_integer_sequence<int, CeilingLog2(degree) + 1>>;
+  using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
+  using Coefficients =
+      typename PolynomialInMonomialBasis<Value, Argument, degree, EstrinEvaluator>::Coefficients;
+
+  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares const& argument_squares);
+};
+
+template<typename Value, typename Argument, int degree, int low, int subdegree>
 NthDerivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, high>::Evaluate(
+InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
-  constexpr int n = CeilingLog2(high - low);
-  constexpr int m = FloorOfPowerOf2(high - low);  // m = 2^n
-  return InternalEstrinEvaluator<Value, Argument, degree, low, low + m - 1>::
+  constexpr int n = CeilingLog2(subdegree);
+  constexpr int m = FloorOfPowerOf2(subdegree);  // m = 2^n
+  return InternalEstrinEvaluator<Value, Argument, degree, low, m - 1>::
              Evaluate(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             InternalEstrinEvaluator<Value, Argument, degree, low + m, high>::
+             InternalEstrinEvaluator<Value, Argument, degree, low + m, subdegree - m>::
                  Evaluate(coefficients, argument, argument_squares);
 }
 
 template<typename Value, typename Argument, int degree, int low>
 NthDerivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, low>::Evaluate(
+InternalEstrinEvaluator<Value, Argument, degree, low, 1>::Evaluate(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares const& argument_squares) {
+  return std::get<low>(coefficients) +
+         argument * std::get<low + 1>(coefficients);
+}
+
+template<typename Value, typename Argument, int degree, int low>
+NthDerivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, low, 0>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
