@@ -23,7 +23,8 @@ inline double R3x3Matrix::Trace() const {
   return row_x_.x + row_y_.y + row_z_.z;
 }
 
-FORCE_INLINE double R3x3Matrix::operator()(int const r, int const c) const {
+inline FORCE_INLINE double R3x3Matrix::operator()(
+    int const r, int const c) const {
   switch (r) {
     case 0:
       return row_x_[c];
