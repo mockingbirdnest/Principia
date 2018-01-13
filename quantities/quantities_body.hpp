@@ -246,13 +246,13 @@ constexpr Quantity<D> Quantity<D>::operator-() const {
 }
 
 template<typename D>
-FORCE_INLINE constexpr Quantity<D> Quantity<D>::operator+(
+FORCE_INLINE(constexpr) Quantity<D> Quantity<D>::operator+(
     Quantity const& right) const {
   return Quantity(magnitude_ + right.magnitude_);
 }
 
 template<typename D>
-FORCE_INLINE constexpr Quantity<D> Quantity<D>::operator-(
+FORCE_INLINE(constexpr) Quantity<D> Quantity<D>::operator-(
     Quantity const& right) const {
   return Quantity(magnitude_ - right.magnitude_);
 }
@@ -348,7 +348,7 @@ constexpr Quantity<D> Quantity<D>::operator*(double const right) const {
 }
 
 template<typename LDimensions, typename RDimensions>
-FORCE_INLINE constexpr Product<Quantity<LDimensions>, Quantity<RDimensions>>
+FORCE_INLINE(constexpr) Product<Quantity<LDimensions>, Quantity<RDimensions>>
 operator*(Quantity<LDimensions> const& left,
           Quantity<RDimensions> const& right) {
   return Product<Quantity<LDimensions>,
@@ -364,7 +364,7 @@ operator/(Quantity<LDimensions> const& left,
 }
 
 template<typename RDimensions>
-FORCE_INLINE constexpr Quantity<RDimensions> operator*(
+FORCE_INLINE(constexpr) Quantity<RDimensions> operator*(
     double const left,
     Quantity<RDimensions> const& right) {
   return Quantity<RDimensions>(left * right.magnitude_);

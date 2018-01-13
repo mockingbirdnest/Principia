@@ -75,7 +75,8 @@ Time const max_time_between_checkpoints = 180 * Day;
 // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to be
 // negative.
 template<typename Frame>
-FORCE_INLINE Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+FORCE_INLINE(inline)
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Order2ZonalAcceleration(OblateBody<Frame> const& body,
                         Displacement<Frame> const& r,
                         Exponentiation<Length, -2> const& one_over_r²,
