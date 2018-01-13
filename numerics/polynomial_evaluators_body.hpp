@@ -23,10 +23,9 @@ constexpr int CeilingLog2(int const n) {
 }  // namespace
 
 // Generator for repeated squaring:
-//   SquareGenerator<Length, 0>::Type is Length
-//   SquareGenerator<Length, 1>::Type is Exponentiation<Length, 2>
-//   SquareGenerator<Length, 2>::Type is Exponentiation<Length, 4>
-//   SquareGenerator<Length, n>::Type is Exponentiation<Length, 2^n>
+//   SquareGenerator<Length, 0>::Type is Exponentiation<Length, 2>
+//   SquareGenerator<Length, 1>::Type is Exponentiation<Length, 4>
+//   SquareGenerator<Length, n>::Type is Exponentiation<Length, 2^(n + 1)>
 // etc.
 template<typename Argument, int n>
 struct SquareGenerator {
@@ -35,7 +34,7 @@ struct SquareGenerator {
 };
 template<typename Argument>
 struct SquareGenerator<Argument, 0> {
-  using Type = Argument;
+  using Type = Square<Argument>;
   static Type Evaluate(Argument const& argument);
 };
 
@@ -56,7 +55,7 @@ auto SquareGenerator<Argument, n>::Evaluate(Argument const& argument) -> Type {
 
 template<typename Argument>
 auto SquareGenerator<Argument, 0>::Evaluate(Argument const& argument) -> Type {
-  return argument;
+  return argument * argument;
 }
 
 template<typename Argument, int... orders>
@@ -74,8 +73,7 @@ template<typename Value, typename Argument, int degree, int low, int subdegree>
 struct InternalEstrinEvaluator {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int,
-                                                  CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2(degree)>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree,
@@ -91,8 +89,7 @@ template<typename Value, typename Argument, int degree, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, low, 1> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int,
-                                                  CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2(degree)>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree,
@@ -108,8 +105,7 @@ template<typename Value, typename Argument, int degree, int low>
 struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
   using ArgumentSquaresGenerator =
       SquaresGenerator<Argument,
-                       std::make_integer_sequence<int,
-                                                  CeilingLog2(degree) + 1>>;
+                       std::make_integer_sequence<int, CeilingLog2(degree)>>;
   using ArgumentSquares = typename ArgumentSquaresGenerator::Type;
   using Coefficients =
       typename PolynomialInMonomialBasis<Value, Argument, degree,
@@ -127,9 +123,12 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
-  constexpr int n = CeilingLog2(subdegree);
-  constexpr int m = FloorOfPowerOf2(subdegree);  // m = 2^n
-  static_assert(n > 0, "Unexpected index in argument_squares");
+  static_assert(subdegree >= 2,
+                "Unexpected subdegree in InternalEstrinEvaluator");
+  // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
+  constexpr int n = CeilingLog2(subdegree) - 1;
+  // |m| is |2^(n + 1)|.
+  constexpr int m = FloorOfPowerOf2(subdegree);
   return InternalEstrinEvaluator<Value, Argument, degree,
                                  low, m - 1>::
              Evaluate(coefficients, argument, argument_squares) +
