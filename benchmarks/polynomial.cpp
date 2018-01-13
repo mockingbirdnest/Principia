@@ -256,7 +256,7 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
   }
 }
 
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, 
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
@@ -271,7 +271,7 @@ BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDisplacement,
                     EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble, 
+BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     HornerEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
