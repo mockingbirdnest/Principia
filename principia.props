@@ -130,18 +130,18 @@
   <Import Project="$(SolutionDir)google_glog.props" />
   <Import Project="$(SolutionDir)generate_version_translation_unit.props" />
 
-  <ImportGroup Condition="$(PrincipiaTestProject)">
-    <Import Project="$(SolutionDir)..\Google\googletest\googletest\msvc\portability_macros.props" />
-    <Import Project="$(SolutionDir)google_googletest.props" />
-    <Import Project="$(SolutionDir)google_googlemock_main.props" />
-  </ImportGroup>
-
   <ImportGroup Condition="$(ProjectName) == benchmarks or
                           $(ProjectName) == ksp_plugin_test or
                           $(ProjectName) == journal">
     <Import Project="$(SolutionDir)..\Google\benchmark\msvc\portability_macros.props" />
     <Import Project="$(SolutionDir)..\Google\benchmark\msvc\windows_libraries.props" />
     <Import Project="$(SolutionDir)google_benchmark.props" />
+  </ImportGroup>
+
+  <ImportGroup Condition="$(PrincipiaTestProject)">
+    <Import Project="$(SolutionDir)..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="$(SolutionDir)google_googletest.props" />
+    <Import Project="$(SolutionDir)google_googlemock_main.props" />
   </ImportGroup>
 
   <!--Tools.-->
