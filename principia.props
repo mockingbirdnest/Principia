@@ -159,8 +159,10 @@
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
-  <!--journal depends on the ksp_plugin DLL.-->
-  <ItemGroup Condition="$(ProjectName) == journal">
+  <!--journal depends on the ksp_plugin DLL; ksp_plugin_test does not, but
+      depends on code generation done in ksp_plugin.-->
+  <ItemGroup Condition="$(ProjectName) == journal or
+                        $(ProjectName) == ksp_plugin_test">
     <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
       <Project>{a3f94607-2666-408f-af98-0e47d61c98bb}</Project>
     </ProjectReference>
