@@ -28,7 +28,7 @@ struct SphericalCoordinates;
 // space over ℝ, represented by |double|. |R3Element| is the underlying data
 // type for more advanced strongly typed structures suchas |Multivector|.
 template<typename Scalar>
-struct R3Element final {
+struct alignas(16) R3Element final {
  public:
   R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
@@ -108,7 +108,7 @@ R3Element<Scalar> operator/(R3Element<Scalar> const& left, double right);
 // above in order to allow implicit conversions to |double|.
 template<typename LDimension, typename RScalar>
 R3Element<Product<Quantity<LDimension>, RScalar>>
-operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
+FORCE_INLINE(inline) operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
 template<typename LScalar, typename RDimension>
 R3Element<Product<LScalar, Quantity<RDimension>>>
 operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right);

@@ -3,6 +3,7 @@
 
 #include "geometry/r3_element.hpp"
 
+#include <intrin.h>
 #include <string>
 
 #include "base/macros.hpp"
@@ -180,8 +181,15 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
-  return R3Element<Scalar>(left.x + right.x,
-                           left.y + right.y,
+  __m128d const* const right_xy = reinterpret_cast<__m128d const*>(&right.x);
+  __m128d const* const left_xy = reinterpret_cast<__m128d const*>(&left.x);
+  __m128d const result_xy = _mm_add_pd(*left_xy, *right_xy);
+  Scalar const* const result_x =
+      reinterpret_cast<Scalar const*>(&result_xy.m128d_f64[0]);
+  Scalar const* const result_y =
+      reinterpret_cast<Scalar const*>(&result_xy.m128d_f64[1]);
+  return R3Element<Scalar>(*result_x,
+                           *result_y,
                            left.z + right.z);
 }
 
@@ -220,10 +228,18 @@ R3Element<Scalar> operator/(R3Element<Scalar> const& left,
 template<typename LDimension, typename RScalar>
 R3Element<Product<Quantity<LDimension>, RScalar>>
 operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
-  return R3Element<Product<Quantity<LDimension>, RScalar>>(
-      left * right.x,
-      left * right.y,
-      left * right.z);
+  using Scalar = Product<Quantity<LDimension>, RScalar>;
+  __m128d const* const right_xy = reinterpret_cast<__m128d const*>(&right.x);
+  double const* const left_d = reinterpret_cast<double const*>(&left);
+  __m128d const left_xy = {*left_d, *left_d};
+  __m128d const result_xy = _mm_mul_pd(left_xy, *right_xy);
+  Scalar const* const result_x =
+      reinterpret_cast<Scalar const*>(&result_xy.m128d_f64[0]);
+  Scalar const* const result_y =
+      reinterpret_cast<Scalar const*>(&result_xy.m128d_f64[1]);
+  return R3Element<Scalar>(*result_x,
+                           *result_y,
+                           left * right.z);
 }
 
 template<typename LScalar, typename RDimension>
