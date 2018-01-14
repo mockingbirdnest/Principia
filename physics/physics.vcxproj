@@ -81,12 +81,4 @@
     <ClCompile Include="forkable_test.cpp" />
     <ClCompile Include="solar_system_test.cpp" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\serialization\serialization.vcxproj">
-      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
 </Project>
