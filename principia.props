@@ -48,17 +48,6 @@
     <!--Dependency paths.-->
     <PrincipiaDependencyConfiguration>Debug</PrincipiaDependencyConfiguration>
     <PrincipiaDependencyConfiguration Condition="$(PrincipiaOptimize)">Release</PrincipiaDependencyConfiguration>
-    <!--Tools.-->
-    <!--Protocompiler.-->
-    <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc</Protoc>
-    <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
-    <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
-    <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
-    <!--Principia tools.-->
-    <PrincipiaGenerateProfiles>$(OutDir)tools.exe</PrincipiaGenerateProfiles>
-    <PrincipiaGenerateProfilesCommand>"$(PrincipiaGenerateProfiles)" generate_profiles</PrincipiaGenerateProfilesCommand>
-    <PrincipiaGenerateProfilesMessage>Generating C#/C++ files for {0}</PrincipiaGenerateProfilesMessage>
-    <PrincipiaGenerateProfilesOutputs>interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutputs>
   </PropertyGroup>
 
   <!--Compiler.-->
@@ -153,16 +142,28 @@
     <Import Project="$(SolutionDir)google_benchmark.props" />
   </ImportGroup>
 
+  <!--Tools.-->
+  <PropertyGroup>
+    <!--Protocompiler.-->
+    <Protoc>$(SolutionDir)..\Google\protobuf\vsprojects\Release\x64\protoc</Protoc>
+    <ProtocCommand>"$(Protoc)" -I"$(SolutionDir)." --cpp_out=.. "{0}"</ProtocCommand>
+    <ProtocMessage>Generating C++ files for {0}</ProtocMessage>
+    <ProtocOutputs>{0}.pb.h;{0}.pb.cc;</ProtocOutputs>
+    <!--Principia tools.-->
+    <PrincipiaGenerateProfiles>$(OutDir)tools.exe</PrincipiaGenerateProfiles>
+    <PrincipiaGenerateProfilesCommand>"$(PrincipiaGenerateProfiles)" generate_profiles</PrincipiaGenerateProfilesCommand>
+    <PrincipiaGenerateProfilesMessage>Generating C#/C++ files for {0}</PrincipiaGenerateProfilesMessage>
+    <PrincipiaGenerateProfilesOutputs>interface.generated.h;..\journal\player.generated.cc;..\journal\profiles.generated.h;..\journal\profiles.generated.cc;..\ksp_plugin_adapter\interface.generated.cs</PrincipiaGenerateProfilesOutputs>
+  </PropertyGroup>
+
   <!--Everybody depends on the serialization project.-->
   <ItemGroup Condition="$(ProjectName)!=serialization">
     <ProjectReference Include="$(SolutionDir)serialization\serialization.vcxproj">
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
-  <!--journal depends on the ksp_plugin DLL; ksp_plugin_test does not, but
-      depends on code generation done in ksp_plugin.-->
-  <ItemGroup Condition="$(ProjectName) == journal or
-                        $(ProjectName) == ksp_plugin_test">
+  <!--journal depends on the ksp_plugin DLL.-->
+  <ItemGroup Condition="$(ProjectName) == journal">
     <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
       <Project>{a3f94607-2666-408f-af98-0e47d61c98bb}</Project>
     </ProjectReference>
