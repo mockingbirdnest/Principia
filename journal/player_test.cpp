@@ -27,6 +27,9 @@ void BM_PlayForReal(benchmark::State& state) {
       ++count;
       LOG_IF(ERROR, (count % 100'000) == 0)
           << count << " journal entries replayed";
+      if (count % 500'000 == 0) {
+        return;  //DO NOT SUBMERGE
+      }
     }
   }
 }

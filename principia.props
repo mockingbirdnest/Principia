@@ -109,10 +109,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
@@ -165,12 +164,20 @@
     </ProjectReference>
   </ItemGroup>
   <!--journal depends on the ksp_plugin DLL.-->
+  <ItemDefinitionGroup Condition="$(ProjectName) == journal">
+    <ClCompile>
+      <PreprocessorDefinitions>PRINCIPIA_DLL_IMPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup Condition="$(ProjectName) == journal">
     <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
       <Project>{a3f94607-2666-408f-af98-0e47d61c98bb}</Project>
     </ProjectReference>
   </ItemGroup>
 
+  <PropertyGroup Condition="$(ProjectName) == ksp_plugin">
+    <TargetName>principia</TargetName>
+  </PropertyGroup>
   <!--Copy things to GameData.-->
   <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin">
     <PostBuildEvent>
