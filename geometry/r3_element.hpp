@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <intrin.h>
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
@@ -57,9 +58,17 @@ struct alignas(16) R3Element final {
   void WriteToMessage(not_null<serialization::R3Element*> message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);
 
-  Scalar x;
-  Scalar y;
-  Scalar z;
+  union {
+    struct {
+      Scalar x;
+      Scalar y;
+      Scalar z;
+    };
+    struct {
+      __m128d xy;
+      __m128d zt;
+    };
+  };
 };
 
 template<typename Scalar>
