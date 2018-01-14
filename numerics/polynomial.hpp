@@ -85,8 +85,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
 
-  Value Evaluate(Argument const& argument) const override;
-  Derivative<Value, Argument> EvaluateDerivative(
+  FORCE_INLINE(inline) Value Evaluate(Argument const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const override;
 
  private:
