@@ -79,6 +79,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
+      <AdditionalOptions>/bigobj</AdditionalOptions>
       <WarningLevel>Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM)">EnableAllWarnings</WarningLevel>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
