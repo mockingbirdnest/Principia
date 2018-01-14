@@ -119,7 +119,11 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  static FORCE_INLINE NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
+      Coefficients const& coefficients,
+      Argument const& argument,
+      ArgumentSquares const& argument_squares);
+  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -132,7 +136,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
   static_assert(subdegree >= 2,
-                "Unexpected subdegree in InternalEstrinEvaluator");
+                "Unexpected subdegree in InternalEstrinEvaluator::Evaluate");
   // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
   constexpr int n = CeilingLog2(subdegree) - 1;
   // |m| is |2^(n + 1)|.
@@ -146,18 +150,25 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
                  Evaluate(coefficients, argument, argument_squares);
 }
 
-template<typename Value, typename Argument, int degree, int low, int high>
+template<typename Value, typename Argument, int degree, int low, int subdegree>
 NthDerivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, high>::EvaluateDerivative(
-    Coefficients const& coefficients,
-    Argument const& argument,
-    ArgumentSquares const& argument_squares) {
-  constexpr int n = CeilingLog2(high - low);
-  constexpr int m = FloorOfPowerOf2(high - low);  // m = 2^n
-  return InternalEstrinEvaluator<Value, Argument, degree, low, low + m - 1>::
+InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::
+EvaluateDerivative(Coefficients const& coefficients,
+                   Argument const& argument,
+                   ArgumentSquares const& argument_squares) {
+  static_assert(subdegree >= 2,
+                "Unexpected subdegree in InternalEstrinEvaluator::"
+                "EvaluateDerivative");
+  // |n| is used to select |argument^(2^(n + 1))| = |argument^m|.
+  constexpr int n = CeilingLog2(subdegree) - 1;
+  // |m| is |2^(n + 1)|.
+  constexpr int m = FloorOfPowerOf2(subdegree);
+  return InternalEstrinEvaluator<Value, Argument, degree,
+                                 low, m - 1>::
              EvaluateDerivative(coefficients, argument, argument_squares) +
          std::get<n>(argument_squares) *
-             InternalEstrinEvaluator<Value, Argument, degree, low + m, high>::
+             InternalEstrinEvaluator<Value, Argument, degree,
+                                     low + m, subdegree - m>::
                  EvaluateDerivative(coefficients, argument, argument_squares);
 }
 
@@ -182,7 +193,17 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 0>::Evaluate(
 
 template<typename Value, typename Argument, int degree, int low>
 NthDerivative<Value, Argument, low>
-InternalEstrinEvaluator<Value, Argument, degree, low, low>::EvaluateDerivative(
+InternalEstrinEvaluator<Value, Argument, degree, low, 1>::EvaluateDerivative(
+    Coefficients const& coefficients,
+    Argument const& argument,
+    ArgumentSquares const& argument_squares) {
+  return low * std::get<low>(coefficients) +
+         argument * (low + 1) * std::get<low + 1>(coefficients);
+}
+
+template<typename Value, typename Argument, int degree, int low>
+NthDerivative<Value, Argument, low>
+InternalEstrinEvaluator<Value, Argument, degree, low, 0>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument,
     ArgumentSquares const& argument_squares) {
@@ -197,7 +218,7 @@ Value EstrinEvaluator<Value, Argument, degree>::Evaluate(
                                                     Argument,
                                                     degree,
                                                     /*low=*/0,
-                                                    /*high=*/degree>;
+                                                    /*subdegree=*/degree>;
   return InternalEvaluator::Evaluate(
       coefficients,
       argument,
@@ -213,7 +234,7 @@ EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
                                                     Argument,
                                                     degree,
                                                     /*low=*/1,
-                                                    /*high=*/degree>;
+                                                    /*subdegree=*/degree - 1>;
   return InternalEvaluator::EvaluateDerivative(
       coefficients,
       argument,
