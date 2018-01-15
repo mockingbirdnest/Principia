@@ -37,14 +37,13 @@
     <PrincipiaCompilerClangLLVM>false</PrincipiaCompilerClangLLVM>
     <PrincipiaCompilerClangLLVM Condition="$(Configuration)==Release_LLVM">true</PrincipiaCompilerClangLLVM>
     <PrincipiaOptimize>false</PrincipiaOptimize>
-    <PrincipiaOptimize Condition="$(Configuration)==Release or
-                                  $(Configuration)==Release_LLVM">true</PrincipiaOptimize>
+    <PrincipiaOptimize Condition="$(Configuration.StartsWith('Release'))">true</PrincipiaOptimize>
     <PrincipiaTestProject>true</PrincipiaTestProject>
-    <PrincipiaTestProject  Condition="$(ProjectName) == ksp_plugin or
-                                      $(ProjectName) == serialization or
-                                      $(ProjectName) == benchmarks or
-                                      $(ProjectName) == tools or
-                                      $(ProjectName) == mathematica">false</PrincipiaTestProject>
+    <PrincipiaTestProject Condition="$(ProjectName) == ksp_plugin or
+                                     $(ProjectName) == serialization or
+                                     $(ProjectName) == benchmarks or
+                                     $(ProjectName) == tools or
+                                     $(ProjectName) == mathematica">false</PrincipiaTestProject>
     <!--Dependency paths.-->
     <PrincipiaDependencyConfiguration>Debug</PrincipiaDependencyConfiguration>
     <PrincipiaDependencyConfiguration Condition="$(PrincipiaOptimize)">Release</PrincipiaDependencyConfiguration>
