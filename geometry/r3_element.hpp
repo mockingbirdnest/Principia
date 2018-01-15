@@ -33,6 +33,7 @@ struct alignas(16) R3Element final {
  public:
   R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
+  R3Element(__m128d xy, __m128d zt);
 
   Scalar&       operator[](int index);
   Scalar const& operator[](int index) const;
@@ -117,7 +118,7 @@ R3Element<Scalar> operator/(R3Element<Scalar> const& left, double right);
 // above in order to allow implicit conversions to |double|.
 template<typename LDimension, typename RScalar>
 R3Element<Product<Quantity<LDimension>, RScalar>>
-FORCE_INLINE(inline) operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
+operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
 template<typename LScalar, typename RDimension>
 R3Element<Product<LScalar, Quantity<RDimension>>>
 operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right);
