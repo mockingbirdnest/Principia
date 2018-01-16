@@ -25,7 +25,8 @@ template<typename Vector>
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
     Instant const& t_min,
-    Instant const& t_max);
+    Instant const& t_max,
+    Vector& error_estimate);
 
 //TODO(phl):comment.
 template<typename Vector, int degree,
