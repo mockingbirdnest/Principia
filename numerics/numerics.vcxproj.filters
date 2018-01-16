@@ -71,6 +71,12 @@
     <ClInclude Include="polynomial_evaluators_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="newhall.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="newhall_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -95,6 +101,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="polynomial_evaluators_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="newhall_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
