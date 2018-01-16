@@ -11,6 +11,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "glog/stl_logging.h"
+#include "numerics/newhall.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/si.hpp"
 
@@ -18,6 +19,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+namespace newhall = numerics::newhall;
 using base::Error;
 using base::make_not_null_unique;
 using numerics::ULPDistance;
@@ -98,7 +100,7 @@ Status ContinuousTrajectory<Frame>::Append(
     v.push_back(degrees_of_freedom.velocity());
 
     status = ComputeBestNewhallApproximation(
-        time, q, v, &ЧебышёвSeries<Displacement<Frame>>::NewhallApproximation);
+        time, q, v, &newhall::ApproximationInЧебышёвBasis<Displacement<Frame>>);
 
     // Wipe-out the points that have just been incorporated in a series.
     last_points_.clear();
