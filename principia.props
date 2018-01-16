@@ -40,6 +40,7 @@
     <PrincipiaOptimize Condition="$(Configuration.StartsWith('Release'))">true</PrincipiaOptimize>
     <PrincipiaTestProject>true</PrincipiaTestProject>
     <PrincipiaTestProject Condition="$(ProjectName) == ksp_plugin or
+                                     $(ProjectName) == ksp_physics or
                                      $(ProjectName) == serialization or
                                      $(ProjectName) == benchmarks or
                                      $(ProjectName) == tools or

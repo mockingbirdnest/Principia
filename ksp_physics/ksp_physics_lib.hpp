@@ -19,7 +19,6 @@ PHYSICS_DLL void LogPhysicsDLLBaseAddress();
 
 namespace internal_ephemeris {
 
-PHYSICS_DLL_TEMPLATE_CLASS Trajectory<ksp_plugin::Barycentric>;
 PHYSICS_DLL_TEMPLATE_CLASS ContinuousTrajectory<ksp_plugin::Barycentric>;
 PHYSICS_DLL_TEMPLATE_CLASS Ephemeris<ksp_plugin::Barycentric>;
 
