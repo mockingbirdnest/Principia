@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 

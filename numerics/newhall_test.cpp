@@ -1,6 +1,7 @@
 ﻿
 #include "numerics/newhall.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -30,7 +31,7 @@ using ::testing::Gt;
 using ::testing::Lt;
 
 class NewhallTest : public ::testing::Test {
-protected:
+ protected:
   NewhallTest()
       : t_min_(t0_ - 1 * Second),
         t_max_(t0_ + 3 * Second) {}
