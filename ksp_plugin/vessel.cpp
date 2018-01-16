@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/map_util.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"

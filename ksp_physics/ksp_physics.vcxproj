@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_LLVM|Win32">
+      <Configuration>Release_LLVM</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_LLVM|x64">
+      <Configuration>Release_LLVM</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{3882467C-89D7-4DAE-9730-BB2E610F05AD}</ProjectGuid>
+    <RootNamespace>ksp_plugin</RootNamespace>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v140</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2014</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>LLVM-vs2014</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+    <Import Project="..\define_ndebug.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\warnings_as_errors.props" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\profiling.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+    <Import Project="..\define_ndebug.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\llvm_compatibility.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\third_party_optional.props" />
+    <Import Project="..\suppress_useless_warnings.props" />
+    <Import Project="..\llvm_compatibility.props" />
+    <Import Project="..\include_solution.props" />
+    <Import Project="..\..\Google\protobuf\vsprojects\portability_macros.props" />
+    <Import Project="..\google_protobuf.props" />
+    <Import Project="..\..\Google\googletest\googletest\msvc\portability_macros.props" />
+    <Import Project="..\google_googletest.props" />
+    <Import Project="..\google_googlemock_main.props" />
+    <Import Project="..\..\Google\glog\vsprojects\portability_macros.props" />
+    <Import Project="..\google_glog.props" />
+    <Import Project="..\generate_version_translation_unit.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <TargetName>principia_physics</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AssemblerOutput>All</AssemblerOutput>
+      <UseUnicodeForAssemblerListing>false</UseUnicodeForAssemblerListing>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"</Command>
+      <Message>Copying principia.dll to GameData</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\serialization\serialization.vcxproj">
+      <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ksp_physics_lib.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\base\version.generated.cc" />
+    <ClCompile Include="ksp_physics_lib.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

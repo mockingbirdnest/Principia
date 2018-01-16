@@ -44,9 +44,6 @@
     <ClCompile Include="plugin_integration_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="manœuvre_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\journal\recorder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
