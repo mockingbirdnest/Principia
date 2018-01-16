@@ -57,8 +57,9 @@
 
   <!--Target.-->
   <PropertyGroup>
-    <ConfigurationType Condition="$(ProjectName) == serialization">StaticLibrary</ConfigurationType>
-    <ConfigurationType Condition="$(ProjectName) == ksp_plugin">DynamicLibrary</ConfigurationType>
+    <ConfigurationType Condition="$(ProjectName) == ksp_plugin or
+                                  $(ProjectName) == ksp_physics or
+                                  $(ProjectName) == serialization">DynamicLibrary</ConfigurationType>
     <ConfigurationType Condition="$(PrincipiaTestProject) or
                                   $(ProjectName) == tools or
                                   $(ProjectName) == benchmarks or
@@ -123,7 +124,6 @@
   <Import Project="$(SolutionDir)include_solution.props" />
   <Import Project="$(SolutionDir)..\Google\protobuf\vsprojects\portability_macros.props" />
   <Import Project="$(SolutionDir)google_protobuf.props" />
-  <Import Project="$(SolutionDir)..\Google\glog\vsprojects\static_linking.props" />
   <Import Project="$(SolutionDir)..\Google\glog\vsprojects\portability_macros.props" />
   <Import Project="$(SolutionDir)google_glog.props" />
   <Import Project="$(SolutionDir)generate_version_translation_unit.props" />
@@ -162,6 +162,17 @@
       <Project>{5c482c18-bbae-484d-a211-a25c86370061}</Project>
     </ProjectReference>
   </ItemGroup>
+  <!--ksp_plugin depends on the ksp_physics DLL.-->
+  <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin">
+    <ClCompile>
+      <PreprocessorDefinitions>PHYSICS_DLL_IMPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup Condition="$(ProjectName) == ksp_plugin">
+    <ProjectReference Include="$(SolutionDir)ksp_physics\ksp_physics.vcxproj">
+      <Project>{3882467c-89d7-4dae-9730-bb2e610f05ad}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <!--journal depends on the ksp_plugin DLL.-->
   <ItemDefinitionGroup Condition="$(ProjectName) == journal">
     <ClCompile>
@@ -169,7 +180,7 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup Condition="$(ProjectName) == journal">
-    <ProjectReference Include="..\ksp_plugin\ksp_plugin.vcxproj">
+    <ProjectReference Include="$(SolutionDir)ksp_plugin\ksp_plugin.vcxproj">
       <Project>{a3f94607-2666-408f-af98-0e47d61c98bb}</Project>
     </ProjectReference>
   </ItemGroup>
