@@ -56,8 +56,11 @@ class NewhallTest : public ::testing::Test {
     for (int degree = 3; degree <= 17; ++degree) {
       Length length_error_estimate;
       ЧебышёвSeries<Length> const approximation =
-          ApproximationInЧебышёвBasis<Length>(
-              degree, lengths, speeds, t_min_, t_max_, length_error_estimate);
+          ЧебышёвSeries<Length>(
+              ApproximationInЧебышёвBasis<Length>(
+                  degree, lengths, speeds,
+                  t_min_, t_max_, length_error_estimate),
+              t_min_, t_max_);
       length_error_estimates.push_back(Abs(length_error_estimate));
 
       // Compute the absolute error of both functions throughout the interval.

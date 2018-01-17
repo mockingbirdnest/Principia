@@ -12,7 +12,7 @@ namespace internal_newhall {
 using quantities::Time;
 
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+std::vector<Vector> ApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
@@ -90,7 +90,7 @@ template<typename Vector>
   }
   CHECK_EQ(degree + 1, coefficients.size());
   error_estimate = coefficients[degree];
-  return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
+  return coefficients;
 }
 
 }  // namespace internal_newhall

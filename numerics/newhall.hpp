@@ -17,9 +17,10 @@ using quantities::Variation;
 // |q| and |v| are the positions and velocities over a constant division of
 // [t_min, t_max].  |error_estimate| gives an estimate of the error between the
 // approximation the input data.  The client probably wants to compute some
-// norm of that estimate.
+// norm of that estimate.  The returned coefficients are for a polynomial with a
+// homegeneous time coordinate covering [-1, 1].
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+std::vector<Vector> ApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
