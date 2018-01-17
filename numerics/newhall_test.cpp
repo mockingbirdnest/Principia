@@ -19,6 +19,7 @@ namespace numerics {
 namespace newhall {
 
 using geometry::Instant;
+using quantities::Abs;
 using quantities::Length;
 using quantities::Speed;
 using quantities::si::Metre;
@@ -39,6 +40,7 @@ class NewhallTest : public ::testing::Test {
   void NewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
       std::function<Speed(Instant const)> speed_function,
+      std::vector<Length>& length_error_estimates,
       std::vector<Length>& length_absolute_errors,
       std::vector<Speed>& speed_absolute_errors) {
     std::vector<Length> lengths;
@@ -48,12 +50,15 @@ class NewhallTest : public ::testing::Test {
       speeds.push_back(speed_function(t));
     }
 
+    length_error_estimates.clear();
     length_absolute_errors.clear();
     speed_absolute_errors.clear();
     for (int degree = 3; degree <= 17; ++degree) {
+      Length length_error_estimate;
       ЧебышёвSeries<Length> const approximation =
           ApproximationInЧебышёвBasis<Length>(
-              degree, lengths, speeds, t_min_, t_max_);
+              degree, lengths, speeds, t_min_, t_max_, length_error_estimate);
+      length_error_estimates.push_back(Abs(length_error_estimate));
 
       // Compute the absolute error of both functions throughout the interval.
       Length length_absolute_error;
@@ -106,6 +111,7 @@ class NewhallTest : public ::testing::Test {
 };
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
+  std::vector<Length> length_error_estimates;
   std::vector<Length> length_absolute_errors;
   std::vector<Speed> speed_absolute_errors;
 
@@ -132,10 +138,27 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
+                               length_error_estimates,
                                length_absolute_errors,
                                speed_absolute_errors);
   }
 
+  ExpectMultipart(length_error_estimates,
+                  ElementsAre(near_length(3.9e1 * Metre),
+                              near_length(1.8e1 * Metre),
+                              near_length(8.3e0 * Metre),
+                              near_length(1.4e0 * Metre),
+                              near_length(7.5e0 * Metre),
+                              near_length(4.2e0 * Metre),
+                              near_length(3.1e-1 * Metre),
+                              near_length(7.5e-1 * Metre),
+                              near_length(1.8e-1 * Metre),
+                              near_length(4.9e-2 * Metre)),
+                  ElementsAre(near_length(2.6e-2 * Metre),
+                              near_length(8.9e-4 * Metre),
+                              near_length(1.6e-3 * Metre),
+                              near_length(2.9e-4 * Metre),
+                              near_length(3.7e-5 * Metre)));
   ExpectMultipart(length_absolute_errors,
                   ElementsAre(near_length(1.7e2 * Metre),
                               near_length(4.7e1 * Metre),
@@ -182,10 +205,27 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
 
     NewhallApproximationErrors(length_function,
                                speed_function,
+                               length_error_estimates,
                                length_absolute_errors,
                                speed_absolute_errors);
   }
 
+  ExpectMultipart(length_error_estimates,
+                  ElementsAre(near_length(7.9e-1 * Metre),
+                              near_length(2.5e-1 * Metre),
+                              near_length(5.7e-2 * Metre),
+                              near_length(8.6e-3 * Metre),
+                              near_length(6.2e-4 * Metre),
+                              near_length(4.5e-16 * Metre),
+                              near_length(4.8e-16 * Metre),
+                              near_length(4.8e-16 * Metre),
+                              near_length(1.2e-16 * Metre),
+                              near_length(7.3e-16 * Metre)),
+                  ElementsAre(near_length(1.4e-15 * Metre),
+                              near_length(2.1e-16 * Metre),
+                              near_length(3.2e-16 * Metre),
+                              near_length(1.2e-15 * Metre),
+                              near_length(4.8e-15 * Metre)));
   ExpectMultipart(length_absolute_errors,
                   ElementsAre(near_length(2.0 * Metre),
                               near_length(2.9e-1 * Metre),

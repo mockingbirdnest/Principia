@@ -295,7 +295,8 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
         std::vector<Displacement<Frame>> const& q,
         std::vector<Velocity<Frame>> const& v,
         Instant const& t_min,
-        Instant const& t_max)) {
+        Instant const& t_max,
+        Displacement<Frame>& error_estimate)) {
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
 
   // If the degree is too old, restart from the lowest degree.  This ensures
@@ -337,17 +338,20 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // Increase the degree if the approximation is not accurate enough.  Stop
   // when we reach the maximum degree or when the error estimate is not
   // decreasing.
+  Displacement<Frame> displacement_error_estimate;
   while (error_estimate > adjusted_tolerance_ &&
          error_estimate < previous_error_estimate &&
          degree_ < max_degree) {
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    series_.back() =
-        newhall_approximation(
-            degree_, q, v, last_points_.cbegin()->first, time);
+    series_.back() = newhall_approximation(degree_,
+                                           q, v,
+                                           last_points_.cbegin()->first,
+                                           time,
+                                           displacement_error_estimate);
     previous_error_estimate = error_estimate;
-    error_estimate = series_.back().last_coefficient().Norm();
+    error_estimate = displacement_error_estimateorm();
   }
 
   // If we have entered the zone of numerical instability, go back to the

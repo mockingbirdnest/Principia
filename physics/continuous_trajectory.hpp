@@ -145,7 +145,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
           std::vector<Displacement<Frame>> const& q,
           std::vector<Velocity<Frame>> const& v,
           Instant const& t_min,
-          Instant const& t_max));
+          Instant const& t_max,
+          Displacement<Frame>& displacement_error_estimate));
 
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
