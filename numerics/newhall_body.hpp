@@ -15,13 +15,13 @@ namespace internal_newhall {
 using quantities::Time;
 
 template<typename Vector>
-ЧебышёвSeries<Vector> NewhallApproximationInЧебышёвBasis(
-    int degree,
-    std::vector<Vector> const& q,
-    std::vector<Variation<Vector>> const& v,
-    Instant const& t_min,
-    Instant const& t_max,
-    Vector& error_estimate) {
+ЧебышёвSeries<Vector>
+NewhallApproximationInЧебышёвBasis(int degree,
+                                   std::vector<Vector> const& q,
+                                   std::vector<Variation<Vector>> const& v,
+                                   Instant const& t_min,
+                                   Instant const& t_max,
+                                   Vector& error_estimate) {
   // Only supports 8 divisions for now.
   int const divisions = 8;
   CHECK_EQ(divisions + 1, q.size());
@@ -98,13 +98,12 @@ template<typename Vector>
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
-ApproximationInMonomialBasis(
-    std::vector<Vector> const& q,
-    std::vector<Variation<Vector>> const& v,
-    Instant const& t_min,
-    Instant const& t_max,
-    Vector& error_estimate) {
+PolynomialInMonomialBasis<Vector, double, degree, Evaluator>
+NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
+                                    std::vector<Variation<Vector>> const& v,
+                                    Instant const& t_min,
+                                    Instant const& t_max,
+                                    Vector& error_estimate) {
   // Only supports 8 divisions for now.
   int const divisions = 8;
   CHECK_EQ(divisions + 1, q.size());
@@ -176,6 +175,8 @@ ApproximationInMonomialBasis(
   }
   CHECK_EQ(degree + 1, coefficients.size());
   error_estimate = coefficients[degree];
+  return PolynomialInMonomialBasis<Vector, double, degree, Evaluator>(
+             coefficients);
 }
 
 }  // namespace internal_newhall
