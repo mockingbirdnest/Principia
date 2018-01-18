@@ -44,8 +44,7 @@ void BM_NewhallApproximation(benchmark::State& state) {
     }
     state.ResumeTiming();
     auto const series =
-        newhall::ApproximationInЧебышёвBasis<double>(
-            degree, p, v, t_min, t_max);
+        NewhallApproximationInЧебышёвBasis<double>(degree, p, v, t_min, t_max);
   }
 }
 

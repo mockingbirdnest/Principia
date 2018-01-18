@@ -19,7 +19,7 @@ using quantities::Variation;
 // approximation the input data.  The client probably wants to compute some
 // norm of that estimate.
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+ЧебышёвSeries<Vector> NewhallApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
@@ -29,9 +29,7 @@ template<typename Vector>
 
 }  // namespace internal_newhall
 
-namespace newhall {
-using internal_newhall::ApproximationInЧебышёвBasis;
-}  // namespace newhall
+using internal_newhall::NewhallApproximationInЧебышёвBasis;
 
 }  // namespace numerics
 }  // namespace principia

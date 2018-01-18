@@ -16,7 +16,6 @@
 
 namespace principia {
 namespace numerics {
-namespace newhall {
 
 using geometry::Instant;
 using quantities::Abs;
@@ -56,7 +55,7 @@ class NewhallTest : public ::testing::Test {
     for (int degree = 3; degree <= 17; ++degree) {
       Length length_error_estimate;
       ЧебышёвSeries<Length> const approximation =
-          ApproximationInЧебышёвBasis<Length>(
+          NewhallApproximationInЧебышёвBasis<Length>(
               degree, lengths, speeds, t_min_, t_max_, length_error_estimate);
       length_error_estimates.push_back(Abs(length_error_estimate));
 
@@ -261,6 +260,5 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
                               near_speed(1.3e-12 * Metre / Second)));
 }
 
-}  // namespace newhall
 }  // namespace numerics
 }  // namespace principia
