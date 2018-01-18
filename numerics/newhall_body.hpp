@@ -19,7 +19,8 @@ template<typename Vector>
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
     Instant const& t_min,
-    Instant const& t_max) {
+    Instant const& t_max,
+    Vector& error_estimate) {
   // Only supports 8 divisions for now.
   int const divisions = 8;
   CHECK_EQ(divisions + 1, q.size());
@@ -90,6 +91,7 @@ template<typename Vector>
       break;
   }
   CHECK_EQ(degree + 1, coefficients.size());
+  error_estimate = coefficients[degree];
   return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
 }
 

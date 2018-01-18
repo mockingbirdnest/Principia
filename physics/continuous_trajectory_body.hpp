@@ -295,7 +295,8 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
         std::vector<Displacement<Frame>> const& q,
         std::vector<Velocity<Frame>> const& v,
         Instant const& t_min,
-        Instant const& t_max)) {
+        Instant const& t_max,
+        Displacement<Frame>& error_estimate)) {
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
 
   // If the degree is too old, restart from the lowest degree.  This ensures
@@ -310,12 +311,15 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   }
 
   // Compute the approximation with the current degree.
-  series_.push_back(
-      newhall_approximation(degree_, q, v, last_points_.cbegin()->first, time));
+  Displacement<Frame> displacement_error_estimate;
+  series_.push_back(newhall_approximation(degree_,
+                                          q, v,
+                                          last_points_.cbegin()->first, time,
+                                          displacement_error_estimate));
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
-  Length error_estimate = series_.back().last_coefficient().Norm();
+  Length error_estimate = displacement_error_estimate.Norm();
   Length previous_error_estimate = error_estimate + error_estimate;
 
   // If we are in the zone of numerical instabilities and we exceeded the
@@ -343,11 +347,12 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    series_.back() =
-        newhall_approximation(
-            degree_, q, v, last_points_.cbegin()->first, time);
+    series_.back() = newhall_approximation(degree_,
+                                           q, v,
+                                           last_points_.cbegin()->first, time,
+                                           displacement_error_estimate);
     previous_error_estimate = error_estimate;
-    error_estimate = series_.back().last_coefficient().Norm();
+    error_estimate = displacement_error_estimate.Norm();
   }
 
   // If we have entered the zone of numerical instability, go back to the

@@ -34,6 +34,7 @@ void BM_NewhallApproximation(benchmark::State& state) {
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
 
+  double error_estimate;
   while (state.KeepRunning()) {
     state.PauseTiming();
     p.clear();
@@ -44,7 +45,10 @@ void BM_NewhallApproximation(benchmark::State& state) {
     }
     state.ResumeTiming();
     auto const series =
-        NewhallApproximationInЧебышёвBasis<double>(degree, p, v, t_min, t_max);
+        NewhallApproximationInЧебышёвBasis<double>(degree,
+                                                   p, v,
+                                                   t_min, t_max,
+                                                   error_estimate);
   }
 }
 
