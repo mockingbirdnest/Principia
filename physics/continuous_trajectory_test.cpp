@@ -56,8 +56,9 @@ class ContinuousTrajectoryTest : public testing::Test {
       std::vector<Displacement<World>> const& q,
       std::vector<Velocity<World>> const& v,
       Instant const& t_min,
-      Instant const& t_max) {
-    Displacement<World> const error_estimate = error_estimates_->front();
+      Instant const& t_max,
+      Displacement<World>& error_estimate) {
+    error_estimate = error_estimates_->front();
     error_estimates_->pop_front();
     return ЧебышёвSeries<Displacement<World>>({error_estimate}, t_min, t_max);
   }

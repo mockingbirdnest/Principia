@@ -18,9 +18,11 @@ using quantities::Variation;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
 // |q| and |v| are the positions and velocities over a constant division of
-// [t_min, t_max].
+// [t_min, t_max].  |error_estimate| gives an estimate of the error between the
+// approximation the input data.  The client probably wants to compute some
+// norm of that estimate.
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+ЧебышёвSeries<Vector> NewhallApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
@@ -32,17 +34,15 @@ template<typename Vector>
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
-ApproximationInMonomialBasis(std::vector<Vector> const& q,
-                             std::vector<Variation<Vector>> const& v,
-                             Instant const& t_min,
-                             Instant const& t_max);
+NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
+                                    std::vector<Variation<Vector>> const& v,
+                                    Instant const& t_min,
+                                    Instant const& t_max);
 
 }  // namespace internal_newhall
 
-namespace newhall {
-using internal_newhall::ApproximationInЧебышёвBasis;
-using internal_newhall::ApproximationInMonomialBasis;
-}  // namespace newhall
+using internal_newhall::NewhallApproximationInЧебышёвBasis;
+using internal_newhall::NewhallApproximationInMonomialBasis;
 
 }  // namespace numerics
 }  // namespace principia

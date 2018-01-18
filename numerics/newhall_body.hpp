@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#include "numerics/newhall.hpp"
+
+#include <vector>
+
 #include "glog/logging.h"
 #include "quantities/quantities.hpp"
 #include "newhall.hpp"
@@ -11,7 +15,7 @@ namespace internal_newhall {
 using quantities::Time;
 
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+ЧебышёвSeries<Vector> NewhallApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,

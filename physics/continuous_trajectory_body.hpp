@@ -19,9 +19,9 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
-namespace newhall = numerics::newhall;
 using base::Error;
 using base::make_not_null_unique;
+using numerics::NewhallApproximationInЧебышёвBasis;
 using numerics::ULPDistance;
 using quantities::DebugString;
 using quantities::SIUnit;
@@ -100,7 +100,7 @@ Status ContinuousTrajectory<Frame>::Append(
     v.push_back(degrees_of_freedom.velocity());
 
     status = ComputeBestNewhallApproximation(
-        time, q, v, &newhall::ApproximationInЧебышёвBasis<Displacement<Frame>>);
+        time, q, v, &NewhallApproximationInЧебышёвBasis<Displacement<Frame>>);
 
     // Wipe-out the points that have just been incorporated in a series.
     last_points_.clear();
@@ -311,12 +311,15 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   }
 
   // Compute the approximation with the current degree.
-  series_.push_back(
-      newhall_approximation(degree_, q, v, last_points_.cbegin()->first, time));
+  Displacement<Frame> displacement_error_estimate;
+  series_.push_back(newhall_approximation(degree_,
+                                          q, v,
+                                          last_points_.cbegin()->first, time,
+                                          displacement_error_estimate));
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
-  Length error_estimate = series_.back().last_coefficient().Norm();
+  Length error_estimate = displacement_error_estimate.Norm();
   Length previous_error_estimate = error_estimate + error_estimate;
 
   // If we are in the zone of numerical instabilities and we exceeded the
@@ -347,8 +350,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
             << " because error estimate was " << error_estimate;
     series_.back() = newhall_approximation(degree_,
                                            q, v,
-                                           last_points_.cbegin()->first,
-                                           time,
+                                           last_points_.cbegin()->first, time,
                                            displacement_error_estimate);
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
