@@ -17,7 +17,7 @@ using quantities::Variation;
 // |q| and |v| are the positions and velocities over a constant division of
 // [t_min, t_max].
 template<typename Vector>
-ЧебышёвSeries<Vector> ApproximationInЧебышёвBasis(
+ЧебышёвSeries<Vector> NewhallApproximationInЧебышёвBasis(
     int degree,
     std::vector<Vector> const& q,
     std::vector<Variation<Vector>> const& v,
@@ -26,9 +26,7 @@ template<typename Vector>
 
 }  // namespace internal_newhall
 
-namespace newhall {
-using internal_newhall::ApproximationInЧебышёвBasis;
-}  // namespace newhall
+using internal_newhall::NewhallApproximationInЧебышёвBasis;
 
 }  // namespace numerics
 }  // namespace principia
