@@ -5,9 +5,7 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>benchmarks</RootNamespace>
   </PropertyGroup>
-
   <Import Project="$(SolutionDir)principia.props" />
-
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
@@ -15,6 +13,7 @@
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="newhall.cpp" />
     <ClCompile Include="perspective.cpp" />
     <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="quantities.cpp" />
