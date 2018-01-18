@@ -140,7 +140,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       Instant const& time,
       std::vector<Displacement<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v,
-      std::vector<Displacement<Frame>> (*newhall_approximation)(
+      ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
           int degree,
           std::vector<Displacement<Frame>> const& q,
           std::vector<Velocity<Frame>> const& v,

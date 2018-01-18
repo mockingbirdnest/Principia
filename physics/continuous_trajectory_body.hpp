@@ -290,7 +290,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
     std::vector<Velocity<Frame>> const& v,
-    std::vector<Displacement<Frame>> (*newhall_approximation)(
+    ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
         int const degree,
         std::vector<Displacement<Frame>> const& q,
         std::vector<Velocity<Frame>> const& v,
@@ -311,15 +311,11 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   }
 
   // Compute the approximation with the current degree.
-  Instant const t_min = last_points_.cbegin()->first;
-  Instant const t_max = time;
   Displacement<Frame> displacement_error_estimate;
-  std::vector<Displacement<Frame>> coefficients =
-      newhall_approximation(degree_, q, v,
-                            t_min, t_max,
-                            displacement_error_estimate);
-  series_.push_back(
-      ЧебышёвSeries<Displacement<Frame>>(coefficients, t_min, t_max));
+  series_.push_back(newhall_approximation(degree_,
+                                          q, v,
+                                          last_points_.cbegin()->first, time,
+                                          displacement_error_estimate));
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
@@ -351,12 +347,10 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    coefficients = newhall_approximation(degree_, q, v,
-                                         t_min, t_max,
-                                         displacement_error_estimate);
-    series_.back() =
-        ЧебышёвSeries<Displacement<Frame>>(coefficients, t_min, t_max);
-
+    series_.back() = newhall_approximation(degree_,
+                                           q, v,
+                                           last_points_.cbegin()->first, time,
+                                           displacement_error_estimate);
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }

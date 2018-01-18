@@ -51,7 +51,7 @@ class ContinuousTrajectoryTest : public testing::Test {
                       serialization::Frame::TEST1, true>;
 
  protected:
-  static std::vector<Displacement<World>> SimulatedNewhallApproximation(
+  static ЧебышёвSeries<Displacement<World>> SimulatedNewhallApproximation(
       int const degree,
       std::vector<Displacement<World>> const& q,
       std::vector<Velocity<World>> const& v,
@@ -60,7 +60,7 @@ class ContinuousTrajectoryTest : public testing::Test {
       Displacement<World>& error_estimate) {
     error_estimate = error_estimates_->front();
     error_estimates_->pop_front();
-    return {error_estimate};
+    return ЧебышёвSeries<Displacement<World>>({error_estimate}, t_min, t_max);
   }
 
   void FillTrajectory(
