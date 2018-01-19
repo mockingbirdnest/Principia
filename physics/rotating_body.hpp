@@ -22,12 +22,15 @@ namespace internal_rotating_body {
 
 using base::not_null;
 using geometry::AngularVelocity;
+using geometry::DefinesFrame;
+using geometry::EulerAngles;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Length;
+using quantities::si::Radian;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {
@@ -129,6 +132,28 @@ class RotatingBody : public MassiveBody {
   Vector<double, Frame> const polar_axis_;
   AngularVelocity<Frame> const angular_velocity_;
 };
+
+// Define template member functions even when importing: these are not
+// dllexport.
+
+template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
+    Instant const& t) const {
+  return Rotation<SurfaceFrame, Frame>(
+      π / 2 * Radian + right_ascension_of_pole(),
+      π / 2 * Radian - declination_of_pole(),
+      AngleAt(t),
+      EulerAngles::ZXZ,
+      DefinesFrame<SurfaceFrame>{});
+}
+
+template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
+    Instant const& t) const {
+  return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
+}
 
 }  // namespace internal_rotating_body
 

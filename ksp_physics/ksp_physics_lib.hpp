@@ -20,10 +20,6 @@ PHYSICS_DLL void LogPhysicsDLLBaseAddress();
 
 PHYSICS_DLL_TEMPLATE_CLASS
     internal_rotating_body::RotatingBody<ksp_plugin::Barycentric>;
-PHYSICS_DLL_TEMPLATE
-geometry::Rotation<ksp_plugin::Barycentric, ksp_plugin::Navigation>
-internal_rotating_body::RotatingBody<ksp_plugin::Barycentric>::ToSurfaceFrame<
-    ksp_plugin::Navigation>(Instant const&) const;
 PHYSICS_DLL_TEMPLATE_CLASS
     internal_oblate_body::OblateBody<ksp_plugin::Barycentric>;
 PHYSICS_DLL_TEMPLATE_CLASS internal_continuous_trajectory::ContinuousTrajectory<
