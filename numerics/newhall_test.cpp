@@ -5,9 +5,12 @@
 #include <cmath>
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -17,10 +20,12 @@
 namespace principia {
 namespace numerics {
 
+using geometry::Barycentre;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::Length;
 using quantities::Speed;
+using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
@@ -48,6 +53,26 @@ class ЧебышёвAdapter {
   explicit ЧебышёвAdapter(ЧебышёвSeries<Length> series);
 
   ЧебышёвSeries<Length> series_;
+};
+
+template<int degree>
+class MonomialAdapter {
+ public:
+  static MonomialAdapter NewhallApproximation(std::vector<Length> const& q,
+                                              std::vector<Speed> const& v,
+                                              Instant const& t_min,
+                                              Instant const& t_max,
+                                              Length& error_estimate);
+
+  Length Evaluate(Instant const& t) const;
+  Speed EvaluateDerivative(Instant const& t) const;
+
+ private:
+  using P = PolynomialInMonomialBasis<Length, Time, degree, EstrinEvaluator>;
+  MonomialAdapter(P const& polynomial, Instant const& t_mid);
+
+  P polynomial_;
+  Instant t_mid_;
 };
 
 class NewhallTest : public ::testing::Test {
@@ -169,6 +194,37 @@ Speed ЧебышёвAdapter<degree>::EvaluateDerivative(Instant const& t) const 
 template<int degree>
 ЧебышёвAdapter<degree>::ЧебышёвAdapter(ЧебышёвSeries<Length> series)
     : series_(std::move(series)) {}
+
+template<int degree>
+MonomialAdapter<degree> MonomialAdapter<degree>::NewhallApproximation(
+    std::vector<Length> const& q,
+    std::vector<Speed> const& v,
+    Instant const& t_min,
+    Instant const& t_max,
+    Length& error_estimate) {
+  return MonomialAdapter(
+      NewhallApproximationInMonomialBasis<Length, degree, EstrinEvaluator>(
+          q, v,
+          t_min, t_max,
+          error_estimate),
+      Barycentre<Instant, double>({t_min, t_max}, {1, 1}));
+}
+
+template<int degree>
+Length MonomialAdapter<degree>::Evaluate(Instant const& t) const {
+  return polynomial_.Evaluate(t - t_mid_);
+}
+
+template<int degree>
+Speed MonomialAdapter<degree>::EvaluateDerivative(Instant const& t) const {
+  return polynomial_.EvaluateDerivative(t - t_mid_);
+}
+
+template<int degree>
+MonomialAdapter<degree>::MonomialAdapter(P const& polynomial,
+                                         Instant const& t_mid)
+    : polynomial_(polynomial),
+      t_mid_(t_mid) {}
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter<3>>(
@@ -438,6 +494,15 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_17) {
       /*expected_length_error_estimate=*/4.8e-15 * Metre,
       /*expected_length_absolute_error=*/7.2e-14 * Metre,
       /*expected_speed_absolute_error=*/1.3e-12 * Metre / Second);
+}
+
+TEST_F(NewhallTest, ApproximationInMonomialBasis_1_3) {
+  CheckNewhallApproximationErrors<MonomialAdapter<3>>(
+      length_function_1_,
+      speed_function_1_,
+      /*expected_length_error_estimate=*/3.9e1 * Metre,
+      /*expected_length_absolute_error=*/1.7e2 * Metre,
+      /*expected_speed_absolute_error=*/2.3e2 * Metre / Second);
 }
 
 }  // namespace numerics
