@@ -10,12 +10,12 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libprotobuf_dynamic.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup />
   <Target Name="CopyProtobufDll" AfterTargets="Build">
-    <Copy SourceFiles="$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform)\libprotobuf_dynamic.dll"
+    <Copy SourceFiles="$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform)\libprotobuf.dll"
           DestinationFolder="$(OutDir)"/>
   </Target>
 </Project>
