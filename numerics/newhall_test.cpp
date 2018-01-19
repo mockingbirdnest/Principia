@@ -36,9 +36,17 @@ class NewhallTest : public ::testing::Test {
       : t_min_(t0_ - 1 * Second),
         t_max_(t0_ + 3 * Second) {}
 
+  template<typename Approximation>
   void NewhallApproximationErrors(
-      std::function<Length(Instant const)> length_function,
-      std::function<Speed(Instant const)> speed_function,
+      std::function<Approximation(int degree,
+                                  std::vector<Length> const& q,
+                                  std::vector<Speed> const& v,
+                                  Instant const& t_min,
+                                  Instant const& t_max,
+                                  Length& error_estimate)> const&
+          compute_approximation,
+      std::function<Length(Instant const)> const& length_function,
+      std::function<Speed(Instant const)>  const&speed_function,
       std::vector<Length>& length_error_estimates,
       std::vector<Length>& length_absolute_errors,
       std::vector<Speed>& speed_absolute_errors) {
@@ -54,9 +62,11 @@ class NewhallTest : public ::testing::Test {
     speed_absolute_errors.clear();
     for (int degree = 3; degree <= 17; ++degree) {
       Length length_error_estimate;
-      ЧебышёвSeries<Length> const approximation =
-          NewhallApproximationInЧебышёвBasis<Length>(
-              degree, lengths, speeds, t_min_, t_max_, length_error_estimate);
+      Approximation const approximation =
+          compute_approximation(degree,
+                                lengths, speeds,
+                                t_min_, t_max_,
+                                length_error_estimate);
       length_error_estimates.push_back(Abs(length_error_estimate));
 
       // Compute the absolute error of both functions throughout the interval.
@@ -114,6 +124,18 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
   std::vector<Length> length_absolute_errors;
   std::vector<Speed> speed_absolute_errors;
 
+  auto const compute_approximation = [](int degree,
+                                        std::vector<Length> const& q,
+                                        std::vector<Speed> const& v,
+                                        Instant const& t_min,
+                                        Instant const& t_max,
+                                        Length& error_estimate) {
+    return NewhallApproximationInЧебышёвBasis(degree,
+                                              q, v,
+                                              t_min, t_max,
+                                              error_estimate);
+  };
+
   auto near_length = [](Length const& length) {
     return AllOf(Gt(0.9 * length), Lt(length));
   };
@@ -135,11 +157,12 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
                        std::exp((t - t_min_) / (1 * Second));
     };
 
-    NewhallApproximationErrors(length_function,
-                               speed_function,
-                               length_error_estimates,
-                               length_absolute_errors,
-                               speed_absolute_errors);
+    NewhallApproximationErrors<ЧебышёвSeries<Length>>(compute_approximation,
+                                                      length_function,
+                                                      speed_function,
+                                                      length_error_estimates,
+                                                      length_absolute_errors,
+                                                      speed_absolute_errors);
   }
 
   ExpectMultipart(length_error_estimates,
@@ -202,11 +225,12 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis) {
                               std::pow((t - t_min_) / (4 * Second), 6));
     };
 
-    NewhallApproximationErrors(length_function,
-                               speed_function,
-                               length_error_estimates,
-                               length_absolute_errors,
-                               speed_absolute_errors);
+    NewhallApproximationErrors<ЧебышёвSeries<Length>>(compute_approximation,
+                                                      length_function,
+                                                      speed_function,
+                                                      length_error_estimates,
+                                                      length_absolute_errors,
+                                                      speed_absolute_errors);
   }
 
   ExpectMultipart(length_error_estimates,
