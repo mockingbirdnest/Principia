@@ -209,8 +209,8 @@
     <PostBuildEvent>
       <Command>
         if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
-        copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        if exist "$(OutDir)libglog.dll" copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        if exist "$(OutDir)libprotobuf.dll" copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
       </Command>
