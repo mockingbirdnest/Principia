@@ -201,15 +201,17 @@
   <PropertyGroup Condition="$(ProjectName) == ksp_plugin">
     <TargetName>principia</TargetName>
   </PropertyGroup>
-  <!--Copy things to GameData.-->
-  <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin">
+  <!--Copy DLLs to GameData.-->
+  <ItemDefinitionGroup Condition="$(ConfigurationType) == DynamicLibrary">
     <PostBuildEvent>
       <Command>
         if not exist "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)" mkdir "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        copy /Y "$(OutDir)libglog.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
+        copy /Y "$(OutDir)libprotobuf.dll" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(TargetPath)" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
         copy /Y "$(OutDir)$(TargetName).pdb" "$(SolutionDir)$(Configuration)\GameData\Principia\$(Platform)"
       </Command>
-      <Message>Copying principia.dll to GameData</Message>
+      <Message>Copying $(TargetName).dll to GameData</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
 

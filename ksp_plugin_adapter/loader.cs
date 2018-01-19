@@ -52,9 +52,9 @@ internal static class Loader {
       // No kernel32 on *nix, so we throw an exception and immediately resume
       // after the try block.
       try {
-        // We dynamically link glog and an optimized subset of the physics
-        // library on Windows, so we need that to be in the DLL search path for
-        // the main DLL to load.
+        // We dynamically link glog, protobuf, the serialization DLL, and an
+        // optimized subset of the physics library on Windows, so we need that
+        // to be in the DLL search path for the main DLL to load.
         if (!SetDllDirectory(@"GameData\Principia\x64")) {
           return "Failed to set DLL directory (error code " +
                  Marshal.GetLastWin32Error() + ").";
