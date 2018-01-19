@@ -13,6 +13,7 @@ namespace numerics {
 namespace internal_newhall {
 
 using geometry::Instant;
+using quantities::Time;
 using quantities::Variation;
 
 // Computes a Newhall approximation of the given |degree| in the Чебышёв basis.
@@ -32,7 +33,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 //TODO(phl):comment.
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, double, degree, Evaluator>
+PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
 NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
                                     std::vector<Variation<Vector>> const& v,
                                     Instant const& t_min,

@@ -98,7 +98,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, double, degree, Evaluator>
+PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
 NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
                                     std::vector<Variation<Vector>> const& v,
                                     Instant const& t_min,
