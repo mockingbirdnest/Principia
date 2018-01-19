@@ -113,8 +113,7 @@ Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
 
 template<typename Frame>
 Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
-  return Exp((t - parameters_.reference_instant_) *
-                 parameters_.angular_velocity_);
+  return Exp((t - parameters_.reference_instant_) * angular_velocity_);
 }
 
 template<typename Frame>

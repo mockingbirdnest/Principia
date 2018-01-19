@@ -22,12 +22,12 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 
-class MassiveBody : public Body {
+class PHYSICS_DLL MassiveBody : public Body {
  public:
   // We use the gravitational parameter μ = G M in order not to accumulate
   // unit roundoffs from repeated multiplications by G.  The parameter must not
   // be zero.
-  class Parameters final {
+  class PHYSICS_DLL Parameters final {
    public:
     // The constructors are implicit on purpose.
     Parameters(
@@ -88,7 +88,9 @@ using internal_massive_body::MassiveBody;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/massive_body_body.hpp"
+#endif
 
 #endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 #endif  // PRINCIPIA_PHYSICS_BODY_HPP_

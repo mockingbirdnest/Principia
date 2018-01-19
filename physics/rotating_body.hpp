@@ -34,7 +34,7 @@ class RotatingBody : public MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  class Parameters final {
+  class PHYSICS_DLL Parameters final {
    public:
     // |reference_angle| is the angle of the prime meridian at
     // |reference_instant|.  |angular_frequency| gives the rate of rotation of
@@ -137,7 +137,9 @@ using internal_rotating_body::RotatingBody;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/rotating_body_body.hpp"
+#endif
 
 #endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_

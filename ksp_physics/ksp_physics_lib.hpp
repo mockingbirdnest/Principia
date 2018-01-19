@@ -3,12 +3,13 @@
 #include "base/macros.hpp"
 #include "ksp_plugin/frames.hpp"
 
-// If we are exporting, load the definitions; otherwise, just declare an extern
-// instantiation.
-#if !PHYSICS_DLL_IMPORT
+#include "physics/body.hpp"
+#include "physics/massive_body.hpp"
+#include "physics/massless_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/continuous_trajectory.hpp"
-#endif
 
 namespace principia {
 namespace physics {
@@ -17,11 +18,18 @@ namespace physics {
 PHYSICS_DLL void LogPhysicsDLLBaseAddress();
 #endif
 
-namespace internal_ephemeris {
+PHYSICS_DLL_TEMPLATE_CLASS
+    internal_rotating_body::RotatingBody<ksp_plugin::Barycentric>;
+PHYSICS_DLL_TEMPLATE
+geometry::Rotation<ksp_plugin::Barycentric, ksp_plugin::Navigation>
+internal_rotating_body::RotatingBody<ksp_plugin::Barycentric>::ToSurfaceFrame<
+    ksp_plugin::Navigation>(Instant const&) const;
+PHYSICS_DLL_TEMPLATE_CLASS
+    internal_oblate_body::OblateBody<ksp_plugin::Barycentric>;
+PHYSICS_DLL_TEMPLATE_CLASS internal_continuous_trajectory::ContinuousTrajectory<
+    ksp_plugin::Barycentric>;
+PHYSICS_DLL_TEMPLATE_CLASS
+    internal_ephemeris::Ephemeris<ksp_plugin::Barycentric>;
 
-PHYSICS_DLL_TEMPLATE_CLASS ContinuousTrajectory<ksp_plugin::Barycentric>;
-PHYSICS_DLL_TEMPLATE_CLASS Ephemeris<ksp_plugin::Barycentric>;
-
-}  // namespace internal_ephemeris
 }  // namespace physics
 }  // namespace principia

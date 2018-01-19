@@ -114,15 +114,18 @@ char const* const Architecture = "x86-64";
 #  if OS_WIN
 #    if PHYSICS_DLL_IMPORT
 #      define PHYSICS_DLL __declspec(dllimport)
+  #    define PHYSICS_DLL_TEMPLATE extern template PHYSICS_DLL
 #      define PHYSICS_DLL_TEMPLATE_CLASS \
          extern template class PHYSICS_DLL
 #    else
 #      define PHYSICS_DLL __declspec(dllexport)
+#      define PHYSICS_DLL_TEMPLATE template PHYSICS_DLL
 #      define PHYSICS_DLL_TEMPLATE_CLASS template class PHYSICS_DLL
 #    endif
 #  else
 #    define PHYSICS_DLL __attribute__((visibility("default")))
      // No isolated physics library on Linux or Macintosh at the moment.
+#    define PHYSICS_DLL_TEMPLATE extern template PHYSICS_DLL
 #    define PHYSICS_DLL_TEMPLATE_CLASS extern template class PHYSICS_DLL
 #  endif
 #endif
