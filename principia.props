@@ -201,6 +201,9 @@
   <PropertyGroup Condition="$(ProjectName) == ksp_plugin">
     <TargetName>principia</TargetName>
   </PropertyGroup>
+  <PropertyGroup Condition="$(ProjectName) == ksp_physics">
+    <TargetName>physics</TargetName>
+  </PropertyGroup>
   <!--Copy DLLs to GameData.-->
   <ItemDefinitionGroup Condition="$(ConfigurationType) == DynamicLibrary">
     <PostBuildEvent>
