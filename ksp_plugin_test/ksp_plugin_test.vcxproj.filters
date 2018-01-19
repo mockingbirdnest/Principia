@@ -158,6 +158,9 @@
     <ClCompile Include="benchmark.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="manœuvre_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_plugin.hpp">

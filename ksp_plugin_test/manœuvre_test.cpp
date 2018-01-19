@@ -5,6 +5,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
@@ -55,8 +56,7 @@ using ::testing::_;
 
 class ManœuvreTest : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+  using World = Barycentric;
   using Rendering = Frame<serialization::Frame::TestTag,
                           serialization::Frame::TEST2, false>;
 
