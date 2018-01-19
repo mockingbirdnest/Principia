@@ -5,9 +5,7 @@
     <RootNamespace>ksp_plugin_test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
-  <Import Project="$(SolutionDir)principia.props"/>
-
+  <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />
@@ -40,7 +38,6 @@
     <ClCompile Include="interface_planetarium_test.cpp" />
     <ClCompile Include="interface_renderer_test.cpp" />
     <ClCompile Include="interface_test.cpp" />
-    <ClCompile Include="manœuvre_test.cpp" />
     <ClCompile Include="mock_flight_plan.cpp" />
     <ClCompile Include="mock_plugin.cpp" />
     <ClCompile Include="mock_renderer.cpp" />

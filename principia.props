@@ -164,12 +164,14 @@
     </ProjectReference>
   </ItemGroup>
   <!--ksp_plugin depends on the ksp_physics DLL.-->
-  <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin">
+  <ItemDefinitionGroup Condition="$(ProjectName) == ksp_plugin or
+                                  $(ProjectName) == ksp_plugin_test">
     <ClCompile>
       <PreprocessorDefinitions>PHYSICS_DLL_IMPORT=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup Condition="$(ProjectName) == ksp_plugin">
+  <ItemGroup Condition="$(ProjectName) == ksp_plugin or
+                        $(ProjectName) == ksp_plugin_test">
     <ProjectReference Include="$(SolutionDir)ksp_physics\ksp_physics.vcxproj">
       <Project>{3882467c-89d7-4dae-9730-bb2e610f05ad}</Project>
     </ProjectReference>
