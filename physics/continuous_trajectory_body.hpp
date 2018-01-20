@@ -341,7 +341,6 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
   // Increase the degree if the approximation is not accurate enough.  Stop
   // when we reach the maximum degree or when the error estimate is not
   // decreasing.
-  Displacement<Frame> displacement_error_estimate;
   while (error_estimate > adjusted_tolerance_ &&
          error_estimate < previous_error_estimate &&
          degree_ < max_degree) {
