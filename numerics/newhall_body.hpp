@@ -5,7 +5,6 @@
 #include <vector>
 
 #include "glog/logging.h"
-#include "mathematica/mathematica.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/quantities.hpp"
 
@@ -32,7 +31,6 @@ PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
       scale,
       /*scale_0=*/1.0,
       dehomogeneized_coefficients);
-  LOG_IF(ERROR, degree==3)<<mathematica::ToMathematica(dehomogeneized_coefficients);
   return P(dehomogeneized_coefficients);
 }
 
@@ -95,8 +93,6 @@ template<typename Vector,
 struct NewhallAppromixator<Vector, 3, Evaluator> {
   static FixedVector<Vector, 4> HomogeneousCoefficients(
       FixedVector<Vector, 2 * divisions + 2> const& qv) {
-    LOG(ERROR)<<mathematica::ToMathematica(
-      newhall_c_matrix_monomial_degree_3_divisions_8_w04 * qv);
     return newhall_c_matrix_monomial_degree_3_divisions_8_w04 * qv;
   }
 };
@@ -255,7 +251,6 @@ NewhallApproximationInЧебышёвBasis(int degree,
   switch (degree) {
     case 3:
       coefficients = newhall_c_matrix_чебышёв_degree_3_divisions_8_w04 * qv;
-      LOG(ERROR)<<mathematica::ToMathematica(coefficients);
       break;
     case 4:
       coefficients = newhall_c_matrix_чебышёв_degree_4_divisions_8_w04 * qv;
@@ -331,11 +326,12 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
+  // TODO(phl): Implement error estimation.
+  error_estimate = Vector{};
   return Dehomogeneize<Vector, degree, Evaluator>(
              NewhallAppromixator<Vector, degree, Evaluator>::
                  HomogeneousCoefficients(qv),
              /*scale=*/1.0 / duration_over_two);
-  //error estimate
 }
 
 }  // namespace internal_newhall
