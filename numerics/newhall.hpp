@@ -30,7 +30,10 @@ NewhallApproximationInЧебышёвBasis(int degree,
                                    Instant const& t_max,
                                    Vector& error_estimate);
 
-//TODO(phl):comment.
+// Computes a Newhall approximation of the given |degree| in the monomial basis.
+// The parameters have the same meaning as in the preceding function.  The
+// result is a polynomial of |Time| valid around |(t_min + t_max) / 2| with
+// an argument in the range [(t_min - t_max) / 2, (t_max - t_min) / 2].
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
