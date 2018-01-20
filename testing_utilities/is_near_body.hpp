@@ -88,6 +88,6 @@ void IsNearMatcher<T>::DescribeNegationTo(std::ostream* out) const {
        << " away from " << expected_;
 }
 
-}  // namespace internal_almost_equals
+}  // namespace internal_is_near
 }  // namespace testing_utilities
 }  // namespace principia
