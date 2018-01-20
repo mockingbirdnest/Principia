@@ -5,9 +5,7 @@
     <RootNamespace>ksp_plugin_test</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
-  <Import Project="$(SolutionDir)principia.props"/>
-
+  <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\base\version.generated.cc" />

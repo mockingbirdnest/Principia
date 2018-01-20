@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 
+#include "base/map_util.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
 #include "ksp_plugin/integrators.hpp"

@@ -557,6 +557,7 @@ void principia__InitGoogleLogging() {
                              &module_info,
                              sizeof(module_info)));
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
+  principia::physics::LogPhysicsDLLBaseAddress();
 #endif
   }
 }
