@@ -6,6 +6,7 @@
 
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -14,6 +15,7 @@ namespace internal_newhall {
 
 using quantities::Exponentiation;
 using quantities::Frequency;
+using quantities::Pow;
 using quantities::Time;
 
 // Only supports 8 divisions for now.
@@ -29,7 +31,6 @@ PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
   Dehomogeneizer<Vector, typename P::Coefficients, degree, /*k=*/0>::Convert(
       homogeneous_coefficients,
       scale,
-      /*scale_0=*/1.0,
       dehomogeneized_coefficients);
   return P(dehomogeneized_coefficients);
 }
@@ -40,7 +41,6 @@ struct Dehomogeneizer {
   static void Convert(
       FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
       Frequency const& scale,
-      Exponentiation<Frequency, k> const& scale_k,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
@@ -50,7 +50,6 @@ struct Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree> {
   static void Convert(
       FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
       Frequency const& time_scale,
-      Exponentiation<Frequency, degree> const& scale_degree,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
@@ -59,14 +58,12 @@ template<typename Vector,
 void Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, k>::Convert(
     FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
     Frequency const& scale,
-    Exponentiation<Frequency, k> const& scale_k,
     DehomogeneizedCoefficients& dehomogeneized_coefficients) {
   std::get<k>(dehomogeneized_coefficients) =
-      homogeneous_coefficients[k] * scale_k;
+      homogeneous_coefficients[k] * Pow<k>(scale);
   Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, k + 1>::Convert(
       homogeneous_coefficients,
       scale,
-      scale_k * scale,
       dehomogeneized_coefficients);
 }
 
@@ -75,10 +72,9 @@ template<typename Vector,
 void Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree>::
 Convert(FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
         Frequency const& scale,
-        Exponentiation<Frequency, degree> const& scale_degree,
         DehomogeneizedCoefficients& dehomogeneized_coefficients) {
   std::get<degree>(dehomogeneized_coefficients) =
-      homogeneous_coefficients[degree] * scale_degree;
+      homogeneous_coefficients[degree] * Pow<degree>(scale);
 }
 
 template<typename Vector, int degree,
