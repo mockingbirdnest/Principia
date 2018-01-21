@@ -25,15 +25,7 @@ template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
     FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
-    Frequency const& scale) {
-  using P = PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>;
-  typename P::Coefficients dehomogeneized_coefficients;
-  Dehomogeneizer<Vector, typename P::Coefficients, degree, /*k=*/0>::Convert(
-      homogeneous_coefficients,
-      scale,
-      dehomogeneized_coefficients);
-  return P(dehomogeneized_coefficients);
-}
+    Frequency const& scale);
 
 template<typename Vector,
          typename DehomogeneizedCoefficients, int degree, int k>
@@ -52,6 +44,20 @@ struct Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree> {
       Frequency const& scale,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
+
+template<typename Vector, int degree,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
+    FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
+    Frequency const& scale) {
+  using P = PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>;
+  typename P::Coefficients dehomogeneized_coefficients;
+  Dehomogeneizer<Vector, typename P::Coefficients, degree, /*k=*/0>::Convert(
+      homogeneous_coefficients,
+      scale,
+      dehomogeneized_coefficients);
+  return P(dehomogeneized_coefficients);
+}
 
 template<typename Vector,
          typename DehomogeneizedCoefficients, int degree, int k>
