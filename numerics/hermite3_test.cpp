@@ -11,6 +11,7 @@
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 
@@ -29,11 +30,9 @@ using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
-using ::testing::AllOf;
+using testing_utilities::IsNear;
 using ::testing::ElementsAre;
 using ::testing::Eq;
-using ::testing::Gt;
-using ::testing::Lt;
 
 namespace numerics {
 
@@ -137,7 +136,7 @@ TEST_F(Hermite3Test, ThreeDimensionalInterpolationError) {
           samples,
           /*get_argument=*/[](auto&& pair) -> auto&& { return pair.first; },
           /*get_value=*/[](auto&& pair) -> auto&& { return pair.second; }),
-      AllOf(Gt(1 * Centi(Metre)), Lt(2 * Centi(Metre))));
+      IsNear(1.5 * Centi(Metre)));
 }
 
 }  // namespace numerics
