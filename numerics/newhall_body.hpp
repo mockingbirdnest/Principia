@@ -49,7 +49,7 @@ template<typename Vector,
 struct Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree> {
   static void Convert(
       FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
-      Frequency const& time_scale,
+      Frequency const& scale,
       DehomogeneizedCoefficients& dehomogeneized_coefficients);
 };
 
