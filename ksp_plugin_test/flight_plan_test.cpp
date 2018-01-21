@@ -13,6 +13,7 @@
 #include "physics/massive_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -43,6 +44,7 @@ using quantities::si::Newton;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
+using testing_utilities::IsNear;
 using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -435,9 +437,7 @@ TEST_F(FlightPlanTest, GuidedBurn) {
   flight_plan_->GetAllSegments(begin, end);
   last = --end;
   Speed const guided_final_speed = last.degrees_of_freedom().velocity().Norm();
-  EXPECT_THAT(
-      guided_final_speed,
-      AllOf(Gt(1.39 * unguided_final_speed), Lt(1.40 * unguided_final_speed)));
+  EXPECT_THAT(guided_final_speed, IsNear(1.40 * unguided_final_speed));
 }
 
 TEST_F(FlightPlanTest, Serialization) {
