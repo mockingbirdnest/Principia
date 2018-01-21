@@ -1,3 +1,6 @@
+
+#include "base/macros.hpp"
+
 #if OS_WIN
 
 #include "ksp_physics/ksp_physics_lib.hpp"
