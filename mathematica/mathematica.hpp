@@ -8,6 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/point.hpp"
 #include "geometry/r3_element.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -17,6 +18,7 @@ namespace internal_mathematica {
 using geometry::Point;
 using geometry::R3Element;
 using geometry::Vector;
+using numerics::FixedVector;
 using quantities::Quantity;
 using quantities::Quotient;
 
@@ -38,6 +40,9 @@ template<typename T>
 std::string ToMathematica(std::vector<T> const& list);
 
 std::string ToMathematica(double const& real);
+
+template<typename T, int size>
+std::string ToMathematica(FixedVector<T, size> const& fixed_vector);
 
 template<typename T>
 std::string ToMathematica(R3Element<T> const& r3_element);
