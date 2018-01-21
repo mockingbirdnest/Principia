@@ -110,11 +110,11 @@ class NewhallTest : public ::testing::Test {
   // testing_utilities.
   static auto NearLength(Length const& length) {
     return AllOf(Gt(0.9 * length), Lt(length));
-  };
+  }
 
   static auto NearSpeed(Speed const& speed) {
     return AllOf(Gt(0.9 * speed), Lt(speed));
-  };
+  }
 
   template<typename Adapter>
   void CheckNewhallApproximationErrors(
