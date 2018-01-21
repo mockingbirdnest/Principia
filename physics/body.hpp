@@ -2,6 +2,7 @@
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #define PRINCIPIA_PHYSICS_BODY_HPP_
 
+#include "base/macros.hpp"
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "serialization/physics.pb.h"
@@ -13,7 +14,7 @@ namespace internal_body {
 using base::not_constructible;
 using base::not_null;
 
-class Body {
+class PHYSICS_DLL Body {
  public:
   virtual ~Body() = default;
 
@@ -56,6 +57,8 @@ using internal_body::Body;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/body_body.hpp"
+#endif
 
 #endif  // PRINCIPIA_PHYSICS_BODY_HPP_

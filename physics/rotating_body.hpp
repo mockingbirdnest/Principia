@@ -22,19 +22,22 @@ namespace internal_rotating_body {
 
 using base::not_null;
 using geometry::AngularVelocity;
+using geometry::DefinesFrame;
+using geometry::EulerAngles;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Length;
+using quantities::si::Radian;
 
 template<typename Frame>
 class RotatingBody : public MassiveBody {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  class Parameters final {
+  class PHYSICS_DLL Parameters final {
    public:
     // |reference_angle| is the angle of the prime meridian at
     // |reference_instant|.  |angular_frequency| gives the rate of rotation of
@@ -130,6 +133,28 @@ class RotatingBody : public MassiveBody {
   AngularVelocity<Frame> const angular_velocity_;
 };
 
+// Define template member functions even when importing: these are not
+// dllexport.
+
+template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
+    Instant const& t) const {
+  return Rotation<SurfaceFrame, Frame>(
+      π / 2 * Radian + right_ascension_of_pole(),
+      π / 2 * Radian - declination_of_pole(),
+      AngleAt(t),
+      EulerAngles::ZXZ,
+      DefinesFrame<SurfaceFrame>{});
+}
+
+template<typename Frame>
+template<typename SurfaceFrame>
+Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
+    Instant const& t) const {
+  return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
+}
+
 }  // namespace internal_rotating_body
 
 using internal_rotating_body::RotatingBody;
@@ -137,7 +162,9 @@ using internal_rotating_body::RotatingBody;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/rotating_body_body.hpp"
+#endif
 
 #endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_

@@ -31,7 +31,7 @@ class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  class Parameters final {
+  class PHYSICS_DLL Parameters final {
    public:
     explicit Parameters(Order2ZonalCoefficient const& j2);
     Parameters(double const j2,
@@ -84,7 +84,9 @@ using internal_oblate_body::OblateBody;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/oblate_body_body.hpp"
+#endif
 
 #endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_

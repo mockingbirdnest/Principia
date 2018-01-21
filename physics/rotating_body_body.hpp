@@ -93,28 +93,8 @@ Angle RotatingBody<Frame>::AngleAt(Instant const& t) const {
 }
 
 template<typename Frame>
-template<typename SurfaceFrame>
-Rotation<SurfaceFrame, Frame> RotatingBody<Frame>::FromSurfaceFrame(
-    Instant const& t) const {
-  return Rotation<SurfaceFrame, Frame>(
-      π / 2 * Radian + right_ascension_of_pole(),
-      π / 2 * Radian - declination_of_pole(),
-      AngleAt(t),
-      EulerAngles::ZXZ,
-      DefinesFrame<SurfaceFrame>{});
-}
-
-template<typename Frame>
-template<typename SurfaceFrame>
-Rotation<Frame, SurfaceFrame> RotatingBody<Frame>::ToSurfaceFrame(
-    Instant const& t) const {
-  return FromSurfaceFrame<SurfaceFrame>(t).Inverse();
-}
-
-template<typename Frame>
 Rotation<Frame, Frame> RotatingBody<Frame>::RotationAt(Instant const& t) const {
-  return Exp((t - parameters_.reference_instant_) *
-                 parameters_.angular_velocity_);
+  return Exp((t - parameters_.reference_instant_) * angular_velocity_);
 }
 
 template<typename Frame>

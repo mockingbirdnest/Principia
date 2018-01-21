@@ -39,7 +39,7 @@ internal static partial class Interface {
             orbit.meanAnomalyAtEpoch - orbit.epoch * mean_motion};
   }
 
-  [DllImport(dllName           : Interface.dll_path,
+  [DllImport(dllName           : dll_path,
              EntryPoint        = "principia__ActivateRecorder",
              CallingConvention = CallingConvention.Cdecl)]
   internal static extern void ActivateRecorder(bool activate);
