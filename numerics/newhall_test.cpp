@@ -15,6 +15,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -30,9 +31,7 @@ using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-using ::testing::AllOf;
-using ::testing::Gt;
-using ::testing::Lt;
+using testing_utilities::IsNear;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -106,16 +105,6 @@ class NewhallTest : public ::testing::Test {
                       std::pow((t - t_min_) / (4 * Second), 6));
         }) {}
 
-  // TODO(phl): These two functions are generally useful, move them to
-  // testing_utilities.
-  static auto NearLength(Length const& length) {
-    return AllOf(Gt(0.9 * length), Lt(length));
-  }
-
-  static auto NearSpeed(Speed const& speed) {
-    return AllOf(Gt(0.9 * speed), Lt(speed));
-  }
-
   template<typename Adapter>
   void CheckNewhallApproximationErrors(
       std::function<Length(Instant const)> length_function,
@@ -154,12 +143,12 @@ class NewhallTest : public ::testing::Test {
     // TODO(phl): Implement error estimation.
     if (length_error_estimate != 0.0 * Metre) {
       EXPECT_THAT(Abs(length_error_estimate),
-                  NearLength(expected_length_error_estimate));
+                  IsNear(expected_length_error_estimate));
     }
     EXPECT_THAT(length_absolute_error,
-                NearLength(expected_length_absolute_error));
+                IsNear(expected_length_absolute_error));
     EXPECT_THAT(speed_absolute_error,
-                NearSpeed(expected_speed_absolute_error));
+                IsNear(expected_speed_absolute_error));
   }
 
   Instant const t0_;
@@ -244,7 +233,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_4) {
       speed_function_1_,
       /*expected_length_error_estimate=*/1.8e1 * Metre,
       /*expected_length_absolute_error=*/4.7e1 * Metre,
-      /*expected_speed_absolute_error=*/1.3e2 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e2 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_5) {
@@ -262,7 +251,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_6) {
       speed_function_1_,
       /*expected_length_error_estimate=*/1.4e0 * Metre,
       /*expected_length_absolute_error=*/3.8e1 * Metre,
-      /*expected_speed_absolute_error=*/1.1e2 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.0e2 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_7) {
@@ -270,7 +259,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_7) {
       length_function_1_,
       speed_function_1_,
       /*expected_length_error_estimate=*/7.5e0 * Metre,
-      /*expected_length_absolute_error=*/1.5e1 * Metre,
+      /*expected_length_absolute_error=*/1.4e1 * Metre,
       /*expected_speed_absolute_error=*/4.5e1 * Metre / Second);
 }
 
@@ -325,7 +314,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_13) {
       speed_function_1_,
       /*expected_length_error_estimate=*/2.6e-2 * Metre,
       /*expected_length_absolute_error=*/1.3e-2 * Metre,
-      /*expected_speed_absolute_error=*/1.3e-1 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e-1 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_14) {
@@ -333,7 +322,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_14) {
       length_function_1_,
       speed_function_1_,
       /*expected_length_error_estimate=*/8.9e-4 * Metre,
-      /*expected_length_absolute_error=*/1.6e-2 * Metre,
+      /*expected_length_absolute_error=*/1.5e-2 * Metre,
       /*expected_speed_absolute_error=*/1.5e-1 * Metre / Second);
 }
 
@@ -440,7 +429,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_11) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter<11>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.2e-16 * Metre,
+      /*expected_length_error_estimate=*/1.1e-16 * Metre,
       /*expected_length_absolute_error=*/3.6e-14 * Metre,
       /*expected_speed_absolute_error=*/2.2e-14 * Metre / Second);
 }
@@ -458,8 +447,8 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_13) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter<13>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.4e-15 * Metre,
-      /*expected_length_absolute_error=*/1.5e-14 * Metre,
+      /*expected_length_error_estimate=*/1.3e-15 * Metre,
+      /*expected_length_absolute_error=*/1.4e-14 * Metre,
       /*expected_speed_absolute_error=*/6.1e-14 * Metre / Second);
 }
 
@@ -468,7 +457,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_14) {
       length_function_2_,
       speed_function_2_,
       /*expected_length_error_estimate=*/2.1e-16 * Metre,
-      /*expected_length_absolute_error=*/1.5e-14 * Metre,
+      /*expected_length_absolute_error=*/1.4e-14 * Metre,
       /*expected_speed_absolute_error=*/6.8e-14 * Metre / Second);
 }
 
@@ -485,7 +474,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_16) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter<16>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.2e-15 * Metre,
+      /*expected_length_error_estimate=*/1.1e-15 * Metre,
       /*expected_length_absolute_error=*/2.9e-14 * Metre,
       /*expected_speed_absolute_error=*/8.5e-13 * Metre / Second);
 }
@@ -496,7 +485,7 @@ TEST_F(NewhallTest, ApproximationInЧебышёвBasis_2_17) {
       speed_function_2_,
       /*expected_length_error_estimate=*/4.8e-15 * Metre,
       /*expected_length_absolute_error=*/7.2e-14 * Metre,
-      /*expected_speed_absolute_error=*/1.3e-12 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e-12 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_3) {
@@ -514,7 +503,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_4) {
       speed_function_1_,
       /*expected_length_error_estimate=*/1.8e1 * Metre,
       /*expected_length_absolute_error=*/4.7e1 * Metre,
-      /*expected_speed_absolute_error=*/1.3e2 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e2 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_5) {
@@ -532,7 +521,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_6) {
       speed_function_1_,
       /*expected_length_error_estimate=*/1.4e0 * Metre,
       /*expected_length_absolute_error=*/3.8e1 * Metre,
-      /*expected_speed_absolute_error=*/1.1e2 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.0e2 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_7) {
@@ -540,7 +529,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_7) {
       length_function_1_,
       speed_function_1_,
       /*expected_length_error_estimate=*/7.5e0 * Metre,
-      /*expected_length_absolute_error=*/1.5e1 * Metre,
+      /*expected_length_absolute_error=*/1.4e1 * Metre,
       /*expected_speed_absolute_error=*/4.5e1 * Metre / Second);
 }
 
@@ -595,7 +584,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_13) {
       speed_function_1_,
       /*expected_length_error_estimate=*/2.6e-2 * Metre,
       /*expected_length_absolute_error=*/1.3e-2 * Metre,
-      /*expected_speed_absolute_error=*/1.3e-1 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e-1 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_1_14) {
@@ -603,7 +592,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_1_14) {
       length_function_1_,
       speed_function_1_,
       /*expected_length_error_estimate=*/8.9e-4 * Metre,
-      /*expected_length_absolute_error=*/1.6e-2 * Metre,
+      /*expected_length_absolute_error=*/1.5e-2 * Metre,
       /*expected_speed_absolute_error=*/1.5e-1 * Metre / Second);
 }
 
@@ -685,7 +674,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_8) {
       speed_function_2_,
       /*expected_length_error_estimate=*/4.5e-16 * Metre,
       /*expected_length_absolute_error=*/3.9e-14 * Metre,
-      /*expected_speed_absolute_error=*/1.3e-13 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.2e-13 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_9) {
@@ -748,7 +737,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_15) {
       speed_function_2_,
       /*expected_length_error_estimate=*/3.2e-16 * Metre,
       /*expected_length_absolute_error=*/3.0e-10 * Metre,
-      /*expected_speed_absolute_error=*/1.7e-9 * Metre / Second);
+      /*expected_speed_absolute_error=*/1.6e-9 * Metre / Second);
 }
 
 TEST_F(NewhallTest, ApproximationInMonomialBasis_2_16) {
