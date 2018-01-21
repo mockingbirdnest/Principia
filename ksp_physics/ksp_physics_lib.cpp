@@ -1,8 +1,9 @@
-#include "ksp_physics/ksp_physics_lib.hpp"
 
-#if !OS_WIN
-#error The isolated KSP physics library is currently only supported on windows.
-#endif
+#include "base/macros.hpp"
+
+#if OS_WIN
+
+#include "ksp_physics/ksp_physics_lib.hpp"
 
 #define NOGDI
 #include <windows.h>
@@ -32,3 +33,5 @@ void LogPhysicsDLLBaseAddress() {
 
 }  // namespace physics
 }  // namespace principia
+
+#endif  // OS_WIN
