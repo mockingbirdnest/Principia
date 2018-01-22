@@ -92,6 +92,38 @@ FixedMatrix<Scalar, rows, columns>::operator=(
   return *this;
 }
 
+template<typename Scalar, int rows, int columns>
+template<int r>
+FixedMatrix<Scalar, rows, columns>::Row<r>::Row(const FixedMatrix* const matrix)
+    : matrix_(matrix) {}
+
+template<typename Scalar, int rows, int columns>
+template<int r>
+constexpr Scalar const& FixedMatrix<Scalar, rows, columns>::Row<r>::operator[](
+    int index) const {
+  return (matrix_->data_)[r * columns + index];
+}
+
+template<typename Scalar, int rows, int columns>
+template<int r>
+template<typename S>
+Product<Scalar, S>
+FixedMatrix<Scalar, rows, columns>::Row<r>::operator*(
+    FixedVector<S, columns> const& right) {
+  Product<Scalar, S> result{};
+  for (int j = 0; j < columns; ++j) {
+    result += (*this)[j] * right[j];
+  }
+  return result;
+}
+
+template<typename Scalar, int rows, int columns>
+template<int r>
+typename FixedMatrix<Scalar, rows, columns>::Row<r>
+FixedMatrix<Scalar, rows, columns>::row() const {
+  return Row<r>(this);
+}
+
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,

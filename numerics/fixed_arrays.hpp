@@ -55,6 +55,25 @@ class FixedMatrix final {
   bool operator==(FixedMatrix const& right) const;
   FixedMatrix& operator=(std::initializer_list<Scalar> const& right);
 
+  template<int r>
+  class Row {
+   public:
+    explicit Row(const FixedMatrix* matrix);
+
+    constexpr Scalar const& operator[](int index) const;
+
+    // The template deduction runs into trouble if this operator is declared at
+    // namespace scope.
+    template<typename S>
+    Product<Scalar, S> operator*(FixedVector<S, columns> const& right);
+
+   private:
+    const FixedMatrix* matrix_;
+  };
+
+  template<int r>
+  Row<r> row() const;
+
  private:
   std::array<Scalar, rows * columns> data_;
 
