@@ -87,14 +87,18 @@ template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator {
   static FixedVector<Vector, degree + 1> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv);
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate);
 };
 
 template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 3, Evaluator> {
   static FixedVector<Vector, 4> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_3_divisions_8_w04.row<3>() * qv;
     return newhall_c_matrix_monomial_degree_3_divisions_8_w04 * qv;
   }
 };
@@ -103,7 +107,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 4, Evaluator> {
   static FixedVector<Vector, 5> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_4_divisions_8_w04.row<4>() * qv;
     return newhall_c_matrix_monomial_degree_4_divisions_8_w04 * qv;
   }
 };
@@ -112,7 +119,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 5, Evaluator> {
   static FixedVector<Vector, 6> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_5_divisions_8_w04.row<5>() * qv;
     return newhall_c_matrix_monomial_degree_5_divisions_8_w04 * qv;
   }
 };
@@ -121,7 +131,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 6, Evaluator> {
   static FixedVector<Vector, 7> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_6_divisions_8_w04.row<6>() * qv;
     return newhall_c_matrix_monomial_degree_6_divisions_8_w04 * qv;
   }
 };
@@ -130,7 +143,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 7, Evaluator> {
   static FixedVector<Vector, 8> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_7_divisions_8_w04.row<7>() * qv;
     return newhall_c_matrix_monomial_degree_7_divisions_8_w04 * qv;
   }
 };
@@ -139,7 +155,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 8, Evaluator> {
   static FixedVector<Vector, 9> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_8_divisions_8_w04.row<8>() * qv;
     return newhall_c_matrix_monomial_degree_8_divisions_8_w04 * qv;
   }
 };
@@ -148,7 +167,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 9, Evaluator> {
   static FixedVector<Vector, 10> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_9_divisions_8_w04.row<9>() * qv;
     return newhall_c_matrix_monomial_degree_9_divisions_8_w04 * qv;
   }
 };
@@ -157,7 +179,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 10, Evaluator> {
   static FixedVector<Vector, 11> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_10_divisions_8_w04.row<10>() * qv;
     return newhall_c_matrix_monomial_degree_10_divisions_8_w04 * qv;
   }
 };
@@ -166,7 +191,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 11, Evaluator> {
   static FixedVector<Vector, 12> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_11_divisions_8_w04.row<11>() * qv;
     return newhall_c_matrix_monomial_degree_11_divisions_8_w04 * qv;
   }
 };
@@ -175,7 +203,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 12, Evaluator> {
   static FixedVector<Vector, 13> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_12_divisions_8_w04.row<12>() * qv;
     return newhall_c_matrix_monomial_degree_12_divisions_8_w04 * qv;
   }
 };
@@ -184,7 +215,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 13, Evaluator> {
   static FixedVector<Vector, 14> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_13_divisions_8_w04.row<13>() * qv;
     return newhall_c_matrix_monomial_degree_13_divisions_8_w04 * qv;
   }
 };
@@ -193,7 +227,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 14, Evaluator> {
   static FixedVector<Vector, 15> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_14_divisions_8_w04.row<14>() * qv;
     return newhall_c_matrix_monomial_degree_14_divisions_8_w04 * qv;
   }
 };
@@ -202,7 +239,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 15, Evaluator> {
   static FixedVector<Vector, 16> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_15_divisions_8_w04.row<15>() * qv;
     return newhall_c_matrix_monomial_degree_15_divisions_8_w04 * qv;
   }
 };
@@ -211,7 +251,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 16, Evaluator> {
   static FixedVector<Vector, 17> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_16_divisions_8_w04.row<16>() * qv;
     return newhall_c_matrix_monomial_degree_16_divisions_8_w04 * qv;
   }
 };
@@ -220,7 +263,10 @@ template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 17, Evaluator> {
   static FixedVector<Vector, 18> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv) {
+      FixedVector<Vector, 2 * divisions + 2> const& qv,
+      Vector& error_estimate) {
+    error_estimate =
+        newhall_c_matrix_чебышёв_degree_17_divisions_8_w04.row<17>() * qv;
     return newhall_c_matrix_monomial_degree_17_divisions_8_w04 * qv;
   }
 };
@@ -328,11 +374,9 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
-  // TODO(phl): Implement error estimation.
-  error_estimate = Vector{};
   return Dehomogeneize<Vector, degree, Evaluator>(
              NewhallAppromixator<Vector, degree, Evaluator>::
-                 HomogeneousCoefficients(qv),
+                 HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two);
 }
 

@@ -140,11 +140,8 @@ class NewhallTest : public ::testing::Test {
                     AbsoluteError(expected_speed, actual_speed));
     }
 
-    // TODO(phl): Implement error estimation.
-    if (length_error_estimate != 0.0 * Metre) {
-      EXPECT_THAT(Abs(length_error_estimate),
-                  IsNear(expected_length_error_estimate));
-    }
+    EXPECT_THAT(Abs(length_error_estimate),
+                IsNear(expected_length_error_estimate));
     EXPECT_THAT(length_absolute_error,
                 IsNear(expected_length_absolute_error));
     EXPECT_THAT(speed_absolute_error,
@@ -699,7 +696,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_11) {
   CheckNewhallApproximationErrors<MonomialAdapter<11>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.2e-16 * Metre,
+      /*expected_length_error_estimate=*/1.1e-16 * Metre,
       /*expected_length_absolute_error=*/5.6e-13 * Metre,
       /*expected_speed_absolute_error=*/1.7e-12 * Metre / Second);
 }
@@ -717,7 +714,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_13) {
   CheckNewhallApproximationErrors<MonomialAdapter<13>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.4e-15 * Metre,
+      /*expected_length_error_estimate=*/1.3e-15 * Metre,
       /*expected_length_absolute_error=*/1.9e-11 * Metre,
       /*expected_speed_absolute_error=*/9.5e-11 * Metre / Second);
 }
@@ -744,7 +741,7 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_16) {
   CheckNewhallApproximationErrors<MonomialAdapter<16>>(
       length_function_2_,
       speed_function_2_,
-      /*expected_length_error_estimate=*/1.2e-15 * Metre,
+      /*expected_length_error_estimate=*/1.1e-15 * Metre,
       /*expected_length_absolute_error=*/5.8e-10 * Metre,
       /*expected_speed_absolute_error=*/2.8e-9 * Metre / Second);
 }
