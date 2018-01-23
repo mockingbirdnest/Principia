@@ -82,5 +82,16 @@ TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
   EXPECT_EQ(-666, l4_[3][1]);
 }
 
+TEST_F(FixedArraysTest, Row) {
+  FixedMatrix<double, 2, 3> m({1, 2, 3,
+                               4, -5, 6});
+  FixedMatrix<double, 2, 3>::Row<0> r0 = m.row<0>();
+  FixedMatrix<double, 2, 3>::Row<1> r1 = m.row<1>();
+  FixedVector<double, 3> v = {1, 2, -3};
+
+  EXPECT_EQ(-4, r0 * v);
+  EXPECT_EQ(-24, r1 * v);
+}
+
 }  // namespace numerics
 }  // namespace principia
