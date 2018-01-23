@@ -207,11 +207,6 @@ int ЧебышёвSeries<Vector>::degree() const {
 }
 
 template<typename Vector>
-Vector ЧебышёвSeries<Vector>::last_coefficient() const {
-  return helper_.coefficients(helper_.degree());
-}
-
-template<typename Vector>
 Vector ЧебышёвSeries<Vector>::Evaluate(Instant const& t) const {
   // This formula ensures continuity at the edges by producing -1 or +1 within
   // 2 ulps for |t_min_| and |t_max_|.
