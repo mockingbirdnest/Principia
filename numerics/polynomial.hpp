@@ -70,7 +70,7 @@ class Polynomial {
   // code.
   virtual int degree() const = 0;
 
-protected:
+ protected:
   virtual ~Polynomial() = default;
 };
 
@@ -95,7 +95,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   constexpr int degree() const override;
 
-private:
+ private:
   Coefficients coefficients_;
 };
 
