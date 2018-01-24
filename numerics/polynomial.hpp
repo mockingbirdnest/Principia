@@ -68,11 +68,15 @@ class Polynomial {
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
 
+  // Only useful for benchmarking or analyzing performance.  Do not use in real
+  // code.
+  virtual int degree() const = 0;
+
  protected:
   virtual ~Polynomial() = default;
 };
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  public:
@@ -83,7 +87,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   using Coefficients =
       NthDerivatives<Value,
                      Argument,
-                     std::make_integer_sequence<int, degree + 1>>;
+                     std::make_integer_sequence<int, degree_ + 1>>;
 
   // The coefficients are applied to powers of argument.
   explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
@@ -92,6 +96,8 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   Evaluate(Argument const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Argument const& argument) const override;
+
+  constexpr int degree() const override;
 
  private:
   Coefficients coefficients_;
