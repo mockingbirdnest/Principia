@@ -4,13 +4,16 @@
 #include <tuple>
 #include <utility>
 
+#include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using geometry::Point;
 using quantities::Derivative;
+using quantities::Difference;
 
 // TODO(phl): We would like to define NthDerivative in named_quantities.hpp
 // thus:
@@ -91,6 +94,33 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
  private:
   Coefficients coefficients_;
+};
+
+template<typename Value, typename Argument, int degree,
+         template<typename, typename, int> class Evaluator>
+class PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>
+    : public Polynomial<Value, Point<Argument>> {
+ public:
+  // Equivalent to:
+  //   std::tuple<Value,
+  //              Derivative<Value, Argument>,
+  //              Derivative<Derivative<Value, Argument>>...>
+  using Coefficients =
+      NthDerivatives<Value,
+                     Argument,
+                     std::make_integer_sequence<int, degree + 1>>;
+
+  PolynomialInMonomialBasis(Coefficients const& coefficients,
+                            Point<Argument> const& origin);
+
+  FORCE_INLINE(inline) Value
+  Evaluate(Point<Argument> const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Difference<Argument>>
+  EvaluateDerivative(Point<Argument> const& argument) const override;
+
+ private:
+  Coefficients coefficients_;
+  Point<Argument> origin_;
 };
 
 }  // namespace internal_polynomial
