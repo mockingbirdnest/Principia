@@ -103,9 +103,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   Coefficients coefficients_;
 };
 
-template<typename Value, typename Argument, int degree,
+template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-class PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>
+class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
     : public Polynomial<Value, Point<Argument>> {
  public:
   // Equivalent to:
@@ -115,7 +115,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>
   using Coefficients =
       NthDerivatives<Value,
                      Argument,
-                     std::make_integer_sequence<int, degree + 1>>;
+                     std::make_integer_sequence<int, degree_ + 1>>;
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
@@ -126,6 +126,8 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree, Evaluator>
   Evaluate(Point<Argument> const& argument) const override;
   FORCE_INLINE(inline) Derivative<Value, Argument>
   EvaluateDerivative(Point<Argument> const& argument) const override;
+
+  constexpr int degree() const override;
 
  private:
   Coefficients coefficients_;
