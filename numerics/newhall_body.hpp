@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "geometry/barycentre_calculator.hpp"
 #include "glog/logging.h"
 #include "numerics/fixed_arrays.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
+using geometry::Barycentre;
 using quantities::Exponentiation;
 using quantities::Frequency;
 using quantities::Pow;
@@ -23,9 +25,10 @@ constexpr int divisions = 8;
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
+PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator> Dehomogeneize(
     FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
-    Frequency const& scale);
+    Frequency const& scale,
+    Instant const& origin);
 
 template<typename Vector,
          typename DehomogeneizedCoefficients, int degree, int k>
@@ -47,16 +50,17 @@ struct Dehomogeneizer<Vector, DehomogeneizedCoefficients, degree, degree> {
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Time, degree, Evaluator> Dehomogeneize(
+PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator> Dehomogeneize(
     FixedVector<Vector, degree + 1> const& homogeneous_coefficients,
-    Frequency const& scale) {
-  using P = PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>;
+    Frequency const& scale,
+    Instant const& origin) {
+  using P = PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator>;
   typename P::Coefficients dehomogeneized_coefficients;
   Dehomogeneizer<Vector, typename P::Coefficients, degree, /*k=*/0>::Convert(
       homogeneous_coefficients,
       scale,
       dehomogeneized_coefficients);
-  return P(dehomogeneized_coefficients);
+  return P(dehomogeneized_coefficients, origin);
 }
 
 template<typename Vector,
@@ -353,7 +357,7 @@ NewhallApproximationInЧебышёвBasis(int degree,
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Vector, Time, degree, Evaluator>
+PolynomialInMonomialBasis<Vector, Instant, degree, Evaluator>
 NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
                                     std::vector<Variation<Vector>> const& v,
                                     Instant const& t_min,
@@ -374,10 +378,12 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
     qv[j + 1] = v[i] * duration_over_two;
   }
 
+  Instant const t_mid = Barycentre<Instant, double>({t_min, t_max}, {1, 1});
   return Dehomogeneize<Vector, degree, Evaluator>(
              NewhallAppromixator<Vector, degree, Evaluator>::
                  HomogeneousCoefficients(qv, error_estimate),
-             /*scale=*/1.0 / duration_over_two);
+             /*scale=*/1.0 / duration_over_two,
+             t_mid);
 }
 
 }  // namespace internal_newhall

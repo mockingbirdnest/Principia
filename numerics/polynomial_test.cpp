@@ -65,7 +65,7 @@ TEST_F(PolynomialTest, Coefficients) {
 }
 
 // Check that a polynomial can be constructed and evaluated.
-TEST_F(PolynomialTest, Evaluate2) {
+TEST_F(PolynomialTest, Evaluate2V) {
   P2V p(coefficients_);
   Displacement<World> const d = p.Evaluate(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
@@ -78,11 +78,11 @@ TEST_F(PolynomialTest, Evaluate2) {
 }
 
 // Check that a polynomial can be for an affine argument.
-TEST_F(PolynomialTest, Evaluate3) {
+TEST_F(PolynomialTest, Evaluate2A) {
   Instant const t0 = Instant() + 0.3 * Second;
   P2A p(coefficients_, t0);
-  Displacement<World> const d = p.Evaluate(t0 + 0.2 * Second);
-  Velocity<World> const v = p.EvaluateDerivative(t0 + 0.2 * Second);
+  Displacement<World> const d = p.Evaluate(t0 + 0.5 * Second);
+  Velocity<World> const v = p.EvaluateDerivative(t0 + 0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0.25 * Metre,
                                                    0.5 * Metre,
                                                    1 * Metre}), 0));
