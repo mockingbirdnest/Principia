@@ -59,8 +59,12 @@ template<typename Value, typename Argument, typename Sequence>
 using NthDerivatives =
     typename NthDerivativesGenerator<Value, Argument, Sequence>::Type;
 
-// |Value| must belong to an affine space.  |Argument| must belong to an affine
-// space that is also a ring.
+// |Value| must belong to an affine space.  |Argument| must belong to a ring or
+// to Point based on a ring.
+// TODO(phl): We would like the base case to be the affine case (not limited to
+// Point) and the specialized case to check for the existence of Sum and Product
+// for Argument, and that works with Clang but not with VS2015.  Revisit once
+// MSFT has fixed their bugs.
 template<typename Value, typename Argument>
 class Polynomial {
  public:
