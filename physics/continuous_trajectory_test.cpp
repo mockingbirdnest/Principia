@@ -28,7 +28,7 @@ namespace internal_continuous_trajectory {
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
-using numerics::ЧебышёвSeries;
+using numerics::Polynomial;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Cos;

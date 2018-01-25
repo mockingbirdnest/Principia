@@ -2,12 +2,13 @@
 #pragma once
 
 #include <experimental/optional>
-#include <vector>
+#include <map>
 #include <utility>
+#include <vector>
 
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
-#include "numerics/чебышёв_series.hpp"
+#include "numerics/polynomial.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -25,7 +26,7 @@ using geometry::Position;
 using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
-using numerics::ЧебышёвSeries;
+using numerics::Polynomial;
 
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
@@ -139,19 +140,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Displacement<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
-      ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
-          int degree,
-          std::vector<Displacement<Frame>> const& q,
-          std::vector<Velocity<Frame>> const& v,
-          Instant const& t_min,
-          Instant const& t_max,
-          Displacement<Frame>& displacement_error_estimate));
+      std::vector<Velocity<Frame>> const& v);
 
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
-  typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
+  typename std::map<Instant,
+                    Polynomial<Displacement<Frame>, Instant>>::const_iterator
   FindSeriesForInstant(Instant const& time) const;
 
   // Construction parameters;
@@ -169,7 +164,8 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   int degree_age_;
 
   // The series are in increasing time order.  Their intervals are consecutive.
-  std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
+  //TODO(phl):fix
+  std::map<Instant, Polynomial<Displacement<Frame>, Instant>> polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |*first_time_ >= series_.front().t_min()|

@@ -21,7 +21,7 @@ namespace internal_continuous_trajectory {
 
 using base::Error;
 using base::make_not_null_unique;
-using numerics::NewhallApproximationInЧебышёвBasis;
+using numerics::NewhallApproximationInMonomialBasis;
 using numerics::ULPDistance;
 using quantities::DebugString;
 using quantities::SIUnit;
@@ -49,7 +49,7 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
 
 template<typename Frame>
 bool ContinuousTrajectory<Frame>::empty() const {
-  return series_.empty();
+  return polynomials_.empty();
 }
 
 template<typename Frame>
@@ -58,10 +58,11 @@ double ContinuousTrajectory<Frame>::average_degree() const {
     return 0;
   } else {
     double total = 0;
-    for (auto const& series : series_) {
-      total += series.degree();
+    for (auto const& pair : polynomials_) {
+      auto const& polynomial = pair.second;
+      total += polynomial.degree();
     }
-    return total / series_.size();
+    return total / polynomials_.size();
   }
 }
 
@@ -121,11 +122,11 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
     // |FindSeriesForInstant|.
     return;
   }
-  series_.erase(series_.begin(), FindSeriesForInstant(time));
+  polynomials_.erase(polynomials_.begin(), FindSeriesForInstant(time));
 
-  // If there are no |series_| left, clear everything.  Otherwise, update the
-  // first time.
-  if (series_.empty()) {
+  // If there are no |polynomials_| left, clear everything.  Otherwise, update
+  // the first time.
+  if (polynomials_.empty()) {
     first_time_ = std::experimental::nullopt;
     last_points_.clear();
   } else {
@@ -146,7 +147,7 @@ Instant ContinuousTrajectory<Frame>::t_max() const {
   if (empty()) {
     return astronomy::InfinitePast;
   }
-  return series_.back().t_max();
+  return polynomials_.crbegin()->first;
 }
 
 template<typename Frame>
@@ -155,7 +156,7 @@ Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
   CHECK_LE(t_min(), time);
   CHECK_GE(t_max(), time);
   auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
+  CHECK(it != polynomials_.end());
   return it->Evaluate(time) + Frame::origin;
 }
 
@@ -165,7 +166,7 @@ Velocity<Frame> ContinuousTrajectory<Frame>::EvaluateVelocity(
   CHECK_LE(t_min(), time);
   CHECK_GE(t_max(), time);
   auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
+  CHECK(it != polynomials_.end());
   return it->EvaluateDerivative(time);
 }
 
@@ -175,7 +176,7 @@ DegreesOfFreedom<Frame> ContinuousTrajectory<Frame>::EvaluateDegreesOfFreedom(
   CHECK_LE(t_min(), time);
   CHECK_GE(t_max(), time);
   auto const it = FindSeriesForInstant(time);
-  CHECK(it != series_.end());
+  CHECK(it != polynomials_.end());
   return DegreesOfFreedom<Frame>(it->Evaluate(time) + Frame::origin,
                                  it->EvaluateDerivative(time));
 }
@@ -208,14 +209,16 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
   message->set_is_unstable(checkpoint.is_unstable_);
   message->set_degree(checkpoint.degree_);
   message->set_degree_age(checkpoint.degree_age_);
-  for (auto const& s : series_) {
-    if (s.t_max() <= checkpoint.t_max_) {
-      s.WriteToMessage(message->add_series());
+  for (auto const& pair : polynomials_) {
+    Instant const& t_max = pair.first;
+    auto const& polynomial = pair.second;
+    if (t_max <= checkpoint.t_max_) {
+      polynomial.WriteToMessage(message->add_series());
     }
-    if (s.t_max() == checkpoint.t_max_) {
+    if (t_max == checkpoint.t_max_) {
       break;
     }
-    CHECK_LT(s.t_max(), checkpoint.t_max_);
+    CHECK_LT(t_max, checkpoint.t_max_);
   }
   if (first_time_) {
     first_time_->WriteToMessage(message->mutable_first_time());
@@ -289,14 +292,7 @@ template<typename Frame>
 Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     Instant const& time,
     std::vector<Displacement<Frame>> const& q,
-    std::vector<Velocity<Frame>> const& v,
-    ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
-        int const degree,
-        std::vector<Displacement<Frame>> const& q,
-        std::vector<Velocity<Frame>> const& v,
-        Instant const& t_min,
-        Instant const& t_max,
-        Displacement<Frame>& error_estimate)) {
+    std::vector<Velocity<Frame>> const& v) {
   Length const previous_adjusted_tolerance = adjusted_tolerance_;
 
   // If the degree is too old, restart from the lowest degree.  This ensures
@@ -312,10 +308,13 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // Compute the approximation with the current degree.
   Displacement<Frame> displacement_error_estimate;
-  series_.push_back(newhall_approximation(degree_,
-                                          q, v,
-                                          last_points_.cbegin()->first, time,
-                                          displacement_error_estimate));
+  polynomial.insert(
+      {time,
+       NewhallApproximationInMonomialBasis(
+           degree_,
+           q, v,
+           last_points_.cbegin()->first, time,
+           displacement_error_estimate)});
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
@@ -347,10 +346,13 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    series_.back() = newhall_approximation(degree_,
-                                           q, v,
-                                           last_points_.cbegin()->first, time,
-                                           displacement_error_estimate);
+    polynomial.insert(
+        {time,
+         NewhallApproximationInMonomialBasis(
+             degree_,
+             q, v,
+             last_points_.cbegin()->first, time,
+             displacement_error_estimate)});
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }
@@ -392,18 +394,11 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 }
 
 template<typename Frame>
-typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
+typename std::map<Instant,
+                  Polynomial<Displacement<Frame>, Instant>>::const_iterator
 ContinuousTrajectory<Frame>::FindSeriesForInstant(Instant const& time) const {
-  // Need to use |lower_bound|, not |upper_bound|, because it allows
-  // heterogeneous arguments.  This returns the first series |s| such that
-  // |time <= s.t_max()|.
-  auto const it = std::lower_bound(
-                      series_.begin(), series_.end(), time,
-                      [](ЧебышёвSeries<Displacement<Frame>> const& left,
-                         Instant const& right) {
-                        return left.t_max() < right;
-                      });
-  return it;
+  // his returns the first polynomial |p| such that |time <= p.t_max()|.
+  return polynomials_.lower_bound(time);
 }
 
 }  // namespace internal_continuous_trajectory
