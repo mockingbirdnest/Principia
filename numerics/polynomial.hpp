@@ -4,12 +4,14 @@
 #include <tuple>
 #include <utility>
 
+#include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using geometry::Point;
 using quantities::Derivative;
 
 // TODO(phl): We would like to define NthDerivative in named_quantities.hpp
@@ -57,8 +59,12 @@ template<typename Value, typename Argument, typename Sequence>
 using NthDerivatives =
     typename NthDerivativesGenerator<Value, Argument, Sequence>::Type;
 
-// |Value| must belong to an affine space.  |Argument| must belong to a vector
-// space.
+// |Value| must belong to an affine space.  |Argument| must belong to a ring or
+// to Point based on a ring.
+// TODO(phl): We would like the base case to be the affine case (not limited to
+// Point) and the specialized case to check for the existence of Sum and Product
+// for Argument, and that works with Clang but not with VS2015.  Revisit once
+// MSFT has fixed their bugs.
 template<typename Value, typename Argument>
 class Polynomial {
  public:
@@ -87,16 +93,49 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
                      Argument,
                      std::make_integer_sequence<int, degree_ + 1>>;
 
+  // The coefficients are applied to powers of argument.
   explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
 
-  FORCE_INLINE(inline) Value Evaluate(Argument const& argument) const override;
-  FORCE_INLINE(inline) Derivative<Value, Argument> EvaluateDerivative(
-      Argument const& argument) const override;
+  FORCE_INLINE(inline) Value
+  Evaluate(Argument const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument>
+  EvaluateDerivative(Argument const& argument) const override;
 
   constexpr int degree() const override;
 
  private:
   Coefficients coefficients_;
+};
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
+    : public Polynomial<Value, Point<Argument>> {
+ public:
+  // Equivalent to:
+  //   std::tuple<Value,
+  //              Derivative<Value, Argument>,
+  //              Derivative<Derivative<Value, Argument>>...>
+  using Coefficients =
+      NthDerivatives<Value,
+                     Argument,
+                     std::make_integer_sequence<int, degree_ + 1>>;
+
+  // The coefficients are relative to origin; in other words they are applied to
+  // powers of (argument - origin).
+  PolynomialInMonomialBasis(Coefficients const& coefficients,
+                            Point<Argument> const& origin);
+
+  FORCE_INLINE(inline) Value
+  Evaluate(Point<Argument> const& argument) const override;
+  FORCE_INLINE(inline) Derivative<Value, Argument>
+  EvaluateDerivative(Point<Argument> const& argument) const override;
+
+  constexpr int degree() const override;
+
+ private:
+  Coefficients coefficients_;
+  Point<Argument> origin_;
 };
 
 }  // namespace internal_polynomial

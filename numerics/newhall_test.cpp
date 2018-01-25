@@ -5,7 +5,6 @@
 #include <cmath>
 #include <vector>
 
-#include "geometry/barycentre_calculator.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
@@ -21,7 +20,6 @@
 namespace principia {
 namespace numerics {
 
-using geometry::Barycentre;
 using geometry::Instant;
 using quantities::Abs;
 using quantities::Length;
@@ -67,11 +65,10 @@ class MonomialAdapter {
   Speed EvaluateDerivative(Instant const& t) const;
 
  private:
-  using P = PolynomialInMonomialBasis<Length, Time, degree, EstrinEvaluator>;
-  MonomialAdapter(P const& polynomial, Instant const& t_mid);
+  using P = PolynomialInMonomialBasis<Length, Instant, degree, EstrinEvaluator>;
+  explicit MonomialAdapter(P const& polynomial);
 
   P polynomial_;
-  Instant t_mid_;
 };
 
 class NewhallTest : public ::testing::Test {
@@ -195,25 +192,22 @@ MonomialAdapter<degree> MonomialAdapter<degree>::NewhallApproximation(
       NewhallApproximationInMonomialBasis<Length, degree, EstrinEvaluator>(
           q, v,
           t_min, t_max,
-          error_estimate),
-      Barycentre<Instant, double>({t_min, t_max}, {1, 1}));
+          error_estimate));
 }
 
 template<int degree>
 Length MonomialAdapter<degree>::Evaluate(Instant const& t) const {
-  return polynomial_.Evaluate(t - t_mid_);
+  return polynomial_.Evaluate(t);
 }
 
 template<int degree>
 Speed MonomialAdapter<degree>::EvaluateDerivative(Instant const& t) const {
-  return polynomial_.EvaluateDerivative(t - t_mid_);
+  return polynomial_.EvaluateDerivative(t);
 }
 
 template<int degree>
-MonomialAdapter<degree>::MonomialAdapter(P const& polynomial,
-                                         Instant const& t_mid)
-    : polynomial_(polynomial),
-      t_mid_(t_mid) {}
+MonomialAdapter<degree>::MonomialAdapter(P const& polynomial)
+    : polynomial_(polynomial) {}
 
 TEST_F(NewhallTest, ApproximationInЧебышёвBasis_1_3) {
   CheckNewhallApproximationErrors<ЧебышёвAdapter<3>>(
