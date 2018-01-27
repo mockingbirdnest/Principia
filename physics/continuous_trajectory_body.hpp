@@ -327,12 +327,15 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
   // Compute the approximation with the current degree.
   Displacement<Frame> displacement_error_estimate;
-  polynomials_.emplace(time,
-                       NewhallApproximationInMonomialBasis(
-                           degree_,
-                           q, v,
-                           last_points_.cbegin()->first, time,
-                           displacement_error_estimate));
+  bool inserted;
+  std::tie(std::ignore, inserted) =
+      polynomials_.emplace(time,
+                           NewhallApproximationInMonomialBasis(
+                               degree_,
+                               q, v,
+                               last_points_.cbegin()->first, time,
+                               displacement_error_estimate));
+  CHECK(inserted) << time;
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
@@ -364,12 +367,11 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
     ++degree_;
     VLOG(1) << "Increasing degree for " << this << " to " <<degree_
             << " because error estimate was " << error_estimate;
-    polynomials_.emplace(time,
-                         NewhallApproximationInMonomialBasis(
-                             degree_,
-                             q, v,
-                             last_points_.cbegin()->first, time,
-                             displacement_error_estimate));
+    polynomials_.at(time) = NewhallApproximationInMonomialBasis(
+                                 degree_,
+                                 q, v,
+                                 last_points_.cbegin()->first, time,
+                                 displacement_error_estimate);
     previous_error_estimate = error_estimate;
     error_estimate = displacement_error_estimate.Norm();
   }
