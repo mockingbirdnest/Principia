@@ -133,6 +133,20 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   ContinuousTrajectory();
 
  private:
+  using InstantToPolynomial =
+      std::map<Instant,
+               std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>;
+
+  // May be overridden for testing.
+  virtual std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>
+  NewhallApproximationInMonomialBasis(
+      int degree,
+      std::vector<Displacement<Frame>> const& q,
+      std::vector<Velocity<Frame>> const& v,
+      Instant const& t_min,
+      Instant const& t_max,
+      Displacement<Frame>& error_estimate) const;
+
   // Computes the best Newhall approximation based on the desired tolerance.
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
@@ -145,8 +159,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // Returns an iterator to the series applicable for the given |time|, or
   // |begin()| if |time| is before the first series or |end()| if |time| is
   // after the last series.  Time complexity is O(N Log N).
-  typename std::map<Instant,
-                    Polynomial<Displacement<Frame>, Instant>>::const_iterator
+  typename InstantToPolynomial::const_iterator
   FindSeriesForInstant(Instant const& time) const;
 
   // Construction parameters;
@@ -165,7 +178,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The series are in increasing time order.  Their intervals are consecutive.
   //TODO(phl):fix
-  std::map<Instant, Polynomial<Displacement<Frame>, Instant>> polynomials_;
+  InstantToPolynomial polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   // |*first_time_ >= series_.front().t_min()|
@@ -176,7 +189,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // |last_points_.begin()->first == series_.back().t_max()|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 
-  friend class ContinuousTrajectoryTest;
+  friend class TestableContinuousTrajectory;
 };
 
 }  // namespace internal_continuous_trajectory
