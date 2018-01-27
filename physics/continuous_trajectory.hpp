@@ -133,6 +133,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   ContinuousTrajectory();
 
  private:
+  // Each polynomial is valid over an interval [t_min, t_max].  Polynomials are
+  // stored in this map keyed by their |t_max|, as it turns out that we never
+  // need to extract their |t_min|.  Logically, the |t_min| for a polynomial is
+  // the |t_max| of the previous one.  The first polynomial has a |t_min| which
+  // is |*first_time_|.
   using InstantToPolynomial =
       std::map<Instant,
                std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>;
@@ -176,8 +181,6 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   int degree_;
   int degree_age_;
 
-  // The series are in increasing time order.  Their intervals are consecutive.
-  //TODO(phl):fix
   InstantToPolynomial polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
