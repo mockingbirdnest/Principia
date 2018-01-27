@@ -44,6 +44,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
+using ::testing::Sequence;
 using ::testing::SetArgReferee;
 using ::testing::_;
 
@@ -174,106 +175,191 @@ TEST_F(ContinuousTrajectoryTest, BestNewhallApproximation) {
                                               Velocity<World>()));
 
   // A case where the errors smoothly decrease.
-  EXPECT_CALL(*trajectory_,
-              FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
-      .WillOnce(SetArgReferee<5>(
-                    Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
-  trajectory_->ComputeBestNewhallApproximation(t, q, v);
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
-  //     Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
-  //     Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
-  //     Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})});
-  //EXPECT_EQ(6, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
-  //trajectory_->ResetBestNewhallApproximation();
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(6, trajectory_->degree());
+    EXPECT_EQ(tolerance, trajectory_->adjusted_tolerance());
+    EXPECT_FALSE(trajectory_->is_unstable());
+    trajectory_->ResetBestNewhallApproximation();
+  }
 
-  //// A case where the errors increase at the end, but after we have reached the
-  //// desired tolerance.
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
-  //     Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
-  //     Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
-  //     Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre}),
-  //     Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})});
-  //EXPECT_EQ(6, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
-  //ResetBestNewhallApproximation();
+  // A case where the errors increase before we have reach the desired
+  // tolerance...
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(5, trajectory_->degree());
+    EXPECT_EQ(sqrt(4.01) * Metre, trajectory_->adjusted_tolerance());
+    EXPECT_TRUE(trajectory_->is_unstable());
+  }
 
-  //// A case where the errors increase before we have reach the desired
-  //// tolerance...
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
-  //     Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
-  //     Displacement<World>({0.1 * Metre, 2 * Metre, 0 * Metre}),
-  //     Displacement<World>({1 * Metre, 3 * Metre, 1 * Metre}),
-  //     Displacement<World>({0.5 * Metre, 0.5 * Metre, 0.1 * Metre})});
-  //EXPECT_EQ(5, degree());
-  //EXPECT_EQ(sqrt(4.01) * Metre, adjusted_tolerance());
-  //EXPECT_TRUE(is_unstable());
+  // ... then the error decreases...
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(5, trajectory_->degree());
+    EXPECT_EQ(sqrt(4.01) * Metre, trajectory_->adjusted_tolerance());
+    EXPECT_TRUE(trajectory_->is_unstable());
+  }
 
-  //// ... then the error decreases...
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({0.1 * Metre, 1.5 * Metre, 0 * Metre})});
-  //EXPECT_EQ(5, degree());
-  //EXPECT_EQ(sqrt(4.01) * Metre, adjusted_tolerance());
-  //EXPECT_TRUE(is_unstable());
+  // ... then the error increases forcing us to go back to square one...
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 2 * Metre, 0.5 * Metre})))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 2 * Metre, 1 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 1.5 * Metre, 1 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 1.2 * Metre, 1 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(8, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(7, trajectory_->degree());
+    EXPECT_EQ(sqrt(3.44) * Metre, trajectory_->adjusted_tolerance());
+    EXPECT_TRUE(trajectory_->is_unstable());
+  }
 
-  //// ... then the error increases forcing us to go back to square one...
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({0.1 * Metre, 2 * Metre, 0.5 * Metre}),
-  //     Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
-  //     Displacement<World>({2 * Metre, 1 * Metre, 2 * Metre}),
-  //     Displacement<World>({1 * Metre, 2 * Metre, 1 * Metre}),
-  //     Displacement<World>({1 * Metre, 1.5 * Metre, 1 * Metre}),
-  //     Displacement<World>({1 * Metre, 1.2 * Metre, 1 * Metre}),
-  //     Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})});
-  //EXPECT_EQ(7, degree());
-  //EXPECT_EQ(sqrt(3.44) * Metre, adjusted_tolerance());
-  //EXPECT_TRUE(is_unstable());
+  // ... it does it again but then the computation becomes stable.
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(7, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(4, trajectory_->degree());
+    EXPECT_EQ(tolerance, trajectory_->adjusted_tolerance());
+    EXPECT_FALSE(trajectory_->is_unstable());
+    trajectory_->ResetBestNewhallApproximation();
+  }
 
-  //// ... it does it again but then the computation becomes stable.
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({1 * Metre, 1.3 * Metre, 1 * Metre}),
-  //     Displacement<World>({3 * Metre, 4 * Metre, 5 * Metre}),
-  //     Displacement<World>({0.1 * Metre, 0.5 * Metre, 0.2 * Metre})});
-  //EXPECT_EQ(4, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
-  //ResetBestNewhallApproximation();
+  // Check that the degree is properly lowered when the age of the approximation
+  // exceeds the limit.
+  // First, the errors force usage of degree 6.
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(6, trajectory_->degree());
+    EXPECT_EQ(tolerance, trajectory_->adjusted_tolerance());
+    EXPECT_FALSE(trajectory_->is_unstable());
+  }
 
-  //// Check that the degree is properly lowered when the age of the approximation
-  //// exceeds the limit.
-  //// First, the errors force usage of degree 6.
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre}),
-  //     Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre}),
-  //     Displacement<World>({1 * Metre, 1 * Metre, 1 * Metre}),
-  //     Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})});
-  //EXPECT_EQ(6, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
+  // Then we get low errors for a long time.
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(6, _, _, _, _, _, _))
+        .Times(99)
+        .WillRepeatedly(SetArgReferee<5>(
+            Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})));
+    for (int i = 0; i < 99; ++i) {
+      trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    }
+    EXPECT_EQ(6, trajectory_->degree());
+    EXPECT_EQ(tolerance, trajectory_->adjusted_tolerance());
+    EXPECT_FALSE(trajectory_->is_unstable());
+  }
 
-  //// Then we get low errors for a long time.
-  //for (int i = 0; i < 99; ++i) {
-  //  ComputeBestNewhallApproximation(
-  //      {Displacement<World>({0.1 * Metre, 0.1 * Metre, 0.1 * Metre})});
-  //}
-  //EXPECT_EQ(6, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
-
-  //// Finally we try all the degrees again and discover that degree 5 works.
-  //ComputeBestNewhallApproximation(
-  //    {Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre}),
-  //     Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre}),
-  //     Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})});
-  //EXPECT_EQ(5, degree());
-  //EXPECT_EQ(tolerance, adjusted_tolerance());
-  //EXPECT_FALSE(is_unstable());
-  //ResetBestNewhallApproximation();
+  // Finally we try all the degrees again and discover that degree 5 works.
+  {
+    Sequence s;
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(3, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({3 * Metre, 3 * Metre, 3 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(4, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({2 * Metre, 2 * Metre, 2 * Metre})));
+    EXPECT_CALL(*trajectory_,
+                FillNewhallApproximationInMonomialBasis(5, _, _, _, _, _, _))
+        .WillOnce(SetArgReferee<5>(
+            Displacement<World>({0.2 * Metre, 0.2 * Metre, 0.2 * Metre})));
+    trajectory_->ComputeBestNewhallApproximation(t, q, v);
+    EXPECT_EQ(5, trajectory_->degree());
+    EXPECT_EQ(tolerance, trajectory_->adjusted_tolerance());
+    EXPECT_FALSE(trajectory_->is_unstable());
+    trajectory_->ResetBestNewhallApproximation();
+  }
 }
 
 // A trajectory defined by a degree-1 polynomial.
