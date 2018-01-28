@@ -14,6 +14,7 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 
@@ -27,6 +28,7 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::EqualsProto;
 
 namespace numerics {
 
@@ -121,6 +123,18 @@ TEST_F(PolynomialTest, Serialization) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
     EXPECT_FALSE(extension.has_origin());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
+            message);
+    EXPECT_EQ(2, polynomial_read->degree());
+    EXPECT_THAT(
+        polynomial_read->Evaluate(0.5 * Second),
+        AlmostEquals(
+            Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
   }
   {
     P2A p2a(coefficients_, Instant());
@@ -137,6 +151,18 @@ TEST_F(PolynomialTest, Serialization) {
     }
     EXPECT_TRUE(extension.has_origin());
     EXPECT_TRUE(extension.origin().has_scalar());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>,
+                   Instant>::ReadFromMessage<HornerEvaluator>(message);
+    EXPECT_EQ(2, polynomial_read->degree());
+    EXPECT_THAT(
+        polynomial_read->Evaluate(Instant() + 0.5 * Second),
+        AlmostEquals(
+            Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
   }
   {
     P17::Coefficients const coefficients;
@@ -153,6 +179,17 @@ TEST_F(PolynomialTest, Serialization) {
       EXPECT_TRUE(coefficient.has_multivector());
     }
     EXPECT_FALSE(extension.has_origin());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
+            message);
+    EXPECT_EQ(17, polynomial_read->degree());
+    EXPECT_THAT(polynomial_read->Evaluate(0.5 * Second),
+                AlmostEquals(
+                    Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
   }
 }
 
