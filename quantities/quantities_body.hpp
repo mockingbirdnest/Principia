@@ -213,7 +213,8 @@ constexpr std::int64_t ExponentSerializer::Representation(
   // 0x10, 0x11, ... 0x00, ... 0x07.  For exponents in [-24, -17] this returns
   // the representations 0x08, 0x09, ... 0x0F.  The latter used to be reserved
   // for exponents in the range [8, 15] but we believe that we never used them,
-  // and with polynomials in the monomial base we need large negative exponents.
+  // and with polynomials in the monomial basis we need large negative
+  // exponents.
   return (exponent & exponent_mask) << (position * exponent_bits);
 }
 
