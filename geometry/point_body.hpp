@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include "geometry/point.hpp"
+
 #include <string>
 #include <vector>
 

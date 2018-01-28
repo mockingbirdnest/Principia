@@ -4,19 +4,25 @@
 
 #include <tuple>
 
+#include "base/not_constructible.hpp"
+#include "geometry/serialization.hpp"
+
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::not_constructible;
+using geometry::DoubleOrQuantityOrMultivectorSerializer;
+
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
-struct TupleSerializer {
+struct TupleSerializer : not_constructible {
   static void WriteToMessage(
       Tuple const& tuple,
       not_null<serialization::PolynomialInMonomialBasis*> message);
 };
 
 template<typename Tuple, int size>
-struct TupleSerializer<Tuple, size, size> {
+struct TupleSerializer<Tuple, size, size> : not_constructible {
   static void WriteToMessage(
       Tuple const& tuple,
       not_null<serialization::PolynomialInMonomialBasis*> message);
@@ -26,7 +32,10 @@ template<typename Tuple, int k, int size>
 void TupleSerializer<Tuple, k, size>::WriteToMessage(
     Tuple const& tuple,
     not_null<serialization::PolynomialInMonomialBasis*> message) {
-  std::get<k>(tuple).WriteToMessage(message->mutable_coefficients(k));
+  DoubleOrQuantityOrMultivectorSerializer<
+      std::tuple_element_t<k, Tuple>,
+      serialization::PolynomialInMonomialBasis::Coefficient>::
+      WriteToMessage(std::get<k>(tuple), message->mutable_coefficients(k));
   TupleSerializer<Tuple, k + 1, size>::WriteToMessage(tuple, message);
 }
 

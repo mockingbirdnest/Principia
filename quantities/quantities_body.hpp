@@ -9,14 +9,17 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "base/not_constructible.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
+using base::not_constructible;
+
 // A helper class to serialize dimension exponents.  Any change here is
 // potentially save-incompatible.
-class ExponentSerializer {
+class ExponentSerializer : not_constructible {
  public:
   // Returns true if the exponent is in the range that we can serialize.
   static constexpr bool IsSerializable(std::int64_t exponent);

@@ -51,6 +51,13 @@ message PolynomialInMonomialBasis {
   extend Polynomial {
     optional PolynomialInMonomialBasis extension = 10000;
   }
-  repeated Quantity coefficients = 1;
+  message Coefficient {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+    }
+  }
+  repeated Coefficient coefficients = 1;
   optional Point origin = 2;  // Only in the affine case.
 }
