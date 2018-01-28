@@ -19,9 +19,6 @@ struct TupleSerializer : not_constructible {
   static void WriteToMessage(
       Tuple const& tuple,
       not_null<serialization::PolynomialInMonomialBasis*> message);
-  static void FillFromMessage(
-      serialization::PolynomialInMonomialBasis const& message,
-      Tuple& tuple);
 };
 
 template<typename Tuple, int size>
@@ -29,11 +26,7 @@ struct TupleSerializer<Tuple, size, size> : not_constructible {
   static void WriteToMessage(
       Tuple const& tuple,
       not_null<serialization::PolynomialInMonomialBasis*> message);
-  static void FillFromMessage(
-      serialization::PolynomialInMonomialBasis const& message,
-      Tuple& tuple);
 };
-
 
 template<typename Tuple, int k, int size>
 void TupleSerializer<Tuple, k, size>::WriteToMessage(
@@ -46,27 +39,10 @@ void TupleSerializer<Tuple, k, size>::WriteToMessage(
   TupleSerializer<Tuple, k + 1, size>::WriteToMessage(tuple, message);
 }
 
-template<typename Tuple, int k, int size>
-void TupleSerializer<Tuple, k, size>::FillFromMessage(
-    serialization::PolynomialInMonomialBasis const& message,
-    Tuple& tuple) {
-  std::get<k>(tuple) =
-      DoubleOrQuantityOrMultivectorSerializer<
-          std::tuple_element_t<k, Tuple>,
-          serialization::PolynomialInMonomialBasis::Coefficient>::
-          ReadFromMessage(message->coefficient(k));
-  TupleSerializer<Tuple, k + 1, size>::FillFromMessage(message, tuple);
-}
-
 template<typename Tuple, int size>
 void TupleSerializer<Tuple, size, size>::WriteToMessage(
     Tuple const& tuple,
     not_null<serialization::PolynomialInMonomialBasis*> message) {}
-
-template<typename Tuple, int size>
-void TupleSerializer<Tuple, size, size>::FillFromMessage(
-    serialization::PolynomialInMonomialBasis const& message,
-    Tuple& tuple) {}
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -113,17 +89,7 @@ template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Value, Argument>>>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::ReadFromMessage(
-    serialization::Polynomial const& message) {
-  CHECK_EQ(degree_, message.degree()) << message.DebugString();
-  CHECK(message.HasExtension(
-           serialization::PolynomialInMonomialBasis::extension))
-      << message.DebugString();
-  auto const& extension =
-      message.GetExtension(
-          serialization::PolynomialInMonomialBasis::extension);
-  TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients_);
-  CHECK(!extension.has_origin()) << message.DebugString();
-}
+    serialization::Polynomial const& message) {}
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -174,17 +140,7 @@ template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Value, Point<Argument>>>>
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
-ReadFromMessage(serialization::Polynomial const& message) {
-  CHECK_EQ(degree_, message.degree()) << message.DebugString();
-  CHECK(message.HasExtension(
-           serialization::PolynomialInMonomialBasis::extension))
-      << message.DebugString();
-  auto const& extension =
-      message.GetExtension(
-          serialization::PolynomialInMonomialBasis::extension);
-  TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients_);
-  origin_ = Point<Argument>::ReadFromMessage(extension.origin());
-}
+ReadFromMessage(serialization::Polynomial const& message) {}
 
 }  // namespace internal_polynomial
 }  // namespace numerics
