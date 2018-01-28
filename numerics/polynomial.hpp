@@ -4,13 +4,16 @@
 #include <tuple>
 #include <utility>
 
+#include "base/not_null.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/numerics.pb.h"
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 
@@ -76,6 +79,9 @@ class Polynomial {
   // code.
   virtual int degree() const = 0;
 
+  virtual void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const = 0;
+
  protected:
   virtual ~Polynomial() = default;
 };
@@ -102,6 +108,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   EvaluateDerivative(Argument const& argument) const override;
 
   constexpr int degree() const override;
+
+  virtual void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const override;
+  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+      serialization::Polynomial const& message);
 
  private:
   Coefficients coefficients_;
@@ -132,6 +143,11 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 
   constexpr int degree() const override;
+
+  virtual void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const override;
+  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+      serialization::Polynomial const& message);
 
  private:
   Coefficients coefficients_;
