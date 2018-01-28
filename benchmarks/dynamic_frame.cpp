@@ -132,7 +132,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   SolarSystem<ksp_plugin::Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "sol_initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt",
+      /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
@@ -179,7 +180,8 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   SolarSystem<ksp_plugin::Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "sol_initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt",
+      /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(

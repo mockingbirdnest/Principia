@@ -97,7 +97,8 @@ SolarSystemAtСпутник1Launch(SolarSystemFactory::Accuracy const accuracy) 
       make_not_null_unique<SolarSystem<ksp_plugin::Barycentric>>(
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
-              "sol_initial_state_jd_2436145_604166667.proto.txt");
+              "sol_initial_state_jd_2436145_604166667.proto.txt",
+          /*ignore_frame=*/true);
   SolarSystemFactory::AdjustAccuracy(accuracy, *at_спутник_1_launch);
   return at_спутник_1_launch;
 }
