@@ -109,7 +109,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   constexpr int degree() const override;
 
-  virtual void WriteToMessage(
+  void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);
@@ -144,7 +144,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
   constexpr int degree() const override;
 
-  virtual void WriteToMessage(
+  void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
   static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
       serialization::Polynomial const& message);

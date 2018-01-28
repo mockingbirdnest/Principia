@@ -2,11 +2,38 @@
 
 #include "numerics/polynomial.hpp"
 
-#include "base/macros.hpp"
+#include <tuple>
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
+
+template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
+struct TupleSerializer {
+  static void WriteToMessage(
+      Tuple const& tuple,
+      not_null<serialization::PolynomialInMonomialBasis*> message);
+};
+
+template<typename Tuple, int size>
+struct TupleSerializer<Tuple, size, size> {
+  static void WriteToMessage(
+      Tuple const& tuple,
+      not_null<serialization::PolynomialInMonomialBasis*> message);
+};
+
+template<typename Tuple, int k, int size>
+void TupleSerializer<Tuple, k, size>::WriteToMessage(
+    Tuple const& tuple,
+    not_null<serialization::PolynomialInMonomialBasis*> message) {
+  std::get<k>(tuple).WriteToMessage(message->mutable_coefficients(k));
+  TupleSerializer<Tuple, k + 1, size>::WriteToMessage(tuple, message);
+}
+
+template<typename Tuple, int size>
+void TupleSerializer<Tuple, size, size>::WriteToMessage(
+    Tuple const& tuple,
+    not_null<serialization::PolynomialInMonomialBasis*> message) {}
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -36,6 +63,24 @@ constexpr int
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
   return degree_;
 }
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+void PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+    WriteToMessage(not_null<serialization::Polynomial*> message) const {
+  message->set_degree(degree_);
+  auto* const extension =
+      message->MutableExtension(
+          serialization::PolynomialInMonomialBasis::extension);
+  TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
+  // No |origin|.
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+not_null<std::unique_ptr<Polynomial<Value, Argument>>>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::ReadFromMessage(
+    serialization::Polynomial const& message) {}
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -69,6 +114,24 @@ PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 degree() const {
   return degree_;
 }
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+void PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+    WriteToMessage(not_null<serialization::Polynomial*> message) const {
+  message->set_degree(degree_);
+  auto* const extension =
+      message->MutableExtension(
+          serialization::PolynomialInMonomialBasis::extension);
+  TupleSerializer<Coefficients, 0>::WriteToMessage(coefficients_, extension);
+  origin_.WriteToMessage(extension->mutable_origin());
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+not_null<std::unique_ptr<Polynomial<Value, Point<Argument>>>>
+PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
+ReadFromMessage(serialization::Polynomial const& message) {}
 
 }  // namespace internal_polynomial
 }  // namespace numerics
