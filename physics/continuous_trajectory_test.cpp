@@ -636,6 +636,59 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
+TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
+  Time const step = 0.01 * Second;
+  Length const tolerance = 0.1 * Metre;
+
+  // Fill the basic fields of a serialized ContinuousTrajectory.
+  auto const trajectory = std::make_unique<ContinuousTrajectory<World>>(
+                              step, tolerance);
+  serialization::ContinuousTrajectory message;
+  trajectory->WriteToMessage(&message);
+
+  // Remove the polynomials and add a single Чебышёв series of the form:
+  //   T₀ - 2 * T₁ + 3 * T₂  + 4 * T₃.
+  message.clear_instant_to_polynomial_pair();
+  auto* const series = message.add_series();
+  Instant t_min = Instant() - 1 * Second;
+  Instant t_max = Instant() + 1 * Second;
+  t_min.WriteToMessage(series->mutable_t_min());
+  t_max.WriteToMessage(series->mutable_t_max());
+  Displacement<World> const c0({1.0 * Metre, 1.0 * Metre, 1.0 * Metre});
+  Displacement<World> const c1({-2.0 * Metre, -2.0 * Metre, -2.0 * Metre});
+  Displacement<World> const c2({3.0 * Metre, 3.0 * Metre, 3.0 * Metre});
+  Displacement<World> const c3({4.0 * Metre, 4.0 * Metre, 4.0 * Metre});
+  c0.WriteToMessage(series->add_coefficient()->mutable_multivector());
+  c1.WriteToMessage(series->add_coefficient()->mutable_multivector());
+  c2.WriteToMessage(series->add_coefficient()->mutable_multivector());
+  c3.WriteToMessage(series->add_coefficient()->mutable_multivector());
+
+  // Deserialize the message and check that a polynomial was constructed and
+  // that it has the form:
+  //   -2 - 14 * t + 6 * t^2 + 16 * t^3.
+  auto const trajectory_read =
+      ContinuousTrajectory<World>::ReadFromMessage(message);
+  serialization::ContinuousTrajectory message2;
+  trajectory_read->WriteToMessage(&message2);
+  EXPECT_EQ(1, message2.instant_to_polynomial_pair_size());
+  EXPECT_EQ(3, message2.instant_to_polynomial_pair(0).polynomial().degree());
+  auto const& polynomial_in_monomial_basis =
+      message2.instant_to_polynomial_pair(0).polynomial().GetExtension(
+          serialization::PolynomialInMonomialBasis::extension);
+  EXPECT_EQ(-2,
+            polynomial_in_monomial_basis.coefficient(0).multivector().vector().
+                x().quantity().magnitude());
+  EXPECT_EQ(-14,
+            polynomial_in_monomial_basis.coefficient(1).multivector().vector().
+                x().quantity().magnitude());
+  EXPECT_EQ(6,
+            polynomial_in_monomial_basis.coefficient(2).multivector().vector().
+                x().quantity().magnitude());
+  EXPECT_EQ(16,
+            polynomial_in_monomial_basis.coefficient(3).multivector().vector().
+                x().quantity().magnitude());
+}
+
 TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   int const number_of_steps1 = 30;
   int const number_of_steps2 = 20;

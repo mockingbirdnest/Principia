@@ -267,7 +267,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
       Instant t = series.t_min();
       std::vector<Displacement<Frame>> q;
       std::vector<Velocity<Frame>> v;
-      for (int i = 0; i <= divisions; t += step) {
+      for (int i = 0; i <= divisions; t += step, ++i) {
         q.push_back(series.Evaluate(t));
         v.push_back(series.EvaluateDerivative(t));
       }
