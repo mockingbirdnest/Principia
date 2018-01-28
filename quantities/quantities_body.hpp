@@ -9,10 +9,33 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "base/not_constructible.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_quantities {
+
+using base::not_constructible;
+
+// A helper class to serialize dimension exponents.  Any change here is
+// potentially save-incompatible.
+class ExponentSerializer : not_constructible {
+ public:
+  // Returns true if the exponent is in the range that we can serialize.
+  static constexpr bool IsSerializable(std::int64_t exponent);
+
+  // Returns the serialized representation of the exponent.  |position| is the
+  // 0-based position of the dimension in the representation.
+  static constexpr std::int64_t Representation(
+      std::int64_t exponent,
+      std::int64_t position);
+
+ private:
+  static constexpr std::int64_t min_exponent = -24;
+  static constexpr std::int64_t max_exponent = 7;
+  static constexpr std::int64_t exponent_mask = 0x1F;
+  static constexpr std::int64_t exponent_bits = 5;
+};
 
 template<std::int64_t LengthExponent,
          std::int64_t MassExponent,
@@ -34,39 +57,15 @@ struct Dimensions : not_constructible {
     Angle             = AngleExponent,
   };
 
-  static int constexpr min_exponent = -16;
-  static int constexpr max_exponent = 15;
-  static int constexpr exponent_bits = 5;
-  static int constexpr exponent_mask = 0x1F;
-
-  static bool constexpr length_is_serializable =
-      LengthExponent >= min_exponent && LengthExponent <= max_exponent;
-  static bool constexpr mass_is_serializable =
-      MassExponent >= min_exponent && MassExponent <= max_exponent;
-  static bool constexpr time_is_serializable =
-      TimeExponent >= min_exponent && TimeExponent <= max_exponent;
-  static bool constexpr current_is_serializable =
-      CurrentExponent >= min_exponent && CurrentExponent <= max_exponent;
-  static bool constexpr temperature_is_serializable =
-      TemperatureExponent >= min_exponent &&
-      TemperatureExponent <= max_exponent;
-  static bool constexpr amount_is_serializable =
-      AmountExponent >= min_exponent && AmountExponent <= max_exponent;
-  static bool constexpr luminous_intensity_is_serializable =
-      LuminousIntensityExponent >= min_exponent &&
-      LuminousIntensityExponent <= max_exponent;
-  static bool constexpr angle_is_serializable =
-      AngleExponent >= min_exponent && AngleExponent <= max_exponent;
-
   static std::int64_t constexpr representation =
-      (LengthExponent & exponent_mask)                                 |
-      (MassExponent & exponent_mask)              << 1 * exponent_bits |
-      (TimeExponent & exponent_mask)              << 2 * exponent_bits |
-      (CurrentExponent & exponent_mask)           << 3 * exponent_bits |
-      (TemperatureExponent & exponent_mask)       << 4 * exponent_bits |
-      (AmountExponent & exponent_mask)            << 5 * exponent_bits |
-      (LuminousIntensityExponent & exponent_mask) << 6 * exponent_bits |
-      (AngleExponent & exponent_mask)             << 7 * exponent_bits;
+      ExponentSerializer::Representation(LengthExponent, 0)            |
+      ExponentSerializer::Representation(MassExponent, 1)              |
+      ExponentSerializer::Representation(TimeExponent, 2)              |
+      ExponentSerializer::Representation(CurrentExponent, 3)           |
+      ExponentSerializer::Representation(TemperatureExponent, 4)       |
+      ExponentSerializer::Representation(AmountExponent, 5)            |
+      ExponentSerializer::Representation(LuminousIntensityExponent, 6) |
+      ExponentSerializer::Representation(AngleExponent, 7);
 };
 
 template<typename Q>
@@ -202,6 +201,23 @@ struct NthRootGenerator<
                                    Amount, LuminousIntensity, Angle>>;
 };
 
+constexpr bool ExponentSerializer::IsSerializable(
+    std::int64_t const exponent) {
+  return exponent >= min_exponent && exponent <= max_exponent;
+}
+
+constexpr std::int64_t ExponentSerializer::Representation(
+    std::int64_t const exponent,
+    std::int64_t const position) {
+  // For exponents in [-16, 7] this returns the representations
+  // 0x10, 0x11, ... 0x00, ... 0x07.  For exponents in [-24, -17] this returns
+  // the representations 0x08, 0x09, ... 0x0F.  The latter used to be reserved
+  // for exponents in the range [8, 15] but we believe that we never used them,
+  // and with polynomials in the monomial basis we need large negative
+  // exponents.
+  return (exponent & exponent_mask) << (position * exponent_bits);
+}
+
 template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}
 
@@ -292,21 +308,21 @@ constexpr bool Quantity<D>::operator!=(Quantity const& right) const {
 template<typename D>
 void Quantity<D>::WriteToMessage(
     not_null<serialization::Quantity*> const message) const {
-  static_assert(D::length_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Length),
                 "Invalid length exponent");
-  static_assert(D::mass_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Mass),
                 "Invalid mass exponent");
-  static_assert(D::time_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Time),
                 "Invalid time exponent");
-  static_assert(D::current_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Current),
                 "Invalid current exponent");
-  static_assert(D::temperature_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Temperature),
                 "Invalid temperature exponent");
-  static_assert(D::amount_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Amount),
                 "Invalid amount exponent");
-  static_assert(D::luminous_intensity_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::LuminousIntensity),
                 "Invalid luminous intensity exponent");
-  static_assert(D::angle_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Angle),
                 "Invalid angle exponent");
   message->set_dimensions(D::representation);
   message->set_magnitude(magnitude_);
@@ -315,21 +331,21 @@ void Quantity<D>::WriteToMessage(
 template<typename D>
 Quantity<D> Quantity<D>::ReadFromMessage(
     serialization::Quantity const& message) {
-  static_assert(D::length_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Length),
                 "Invalid length exponent");
-  static_assert(D::mass_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Mass),
                 "Invalid mass exponent");
-  static_assert(D::time_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Time),
                 "Invalid time exponent");
-  static_assert(D::current_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Current),
                 "Invalid current exponent");
-  static_assert(D::temperature_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Temperature),
                 "Invalid temperature exponent");
-  static_assert(D::amount_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Amount),
                 "Invalid amount exponent");
-  static_assert(D::luminous_intensity_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::LuminousIntensity),
                 "Invalid luminous intensity exponent");
-  static_assert(D::angle_is_serializable,
+  static_assert(ExponentSerializer::IsSerializable(D::Angle),
                 "Invalid angle exponent");
   CHECK_EQ(D::representation, message.dimensions());
   return Quantity(message.magnitude());
