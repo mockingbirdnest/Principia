@@ -30,6 +30,7 @@ using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
 
 // The adapters wrap the result of the Newhall approximation so that they can be
 // used consistently in this test.
@@ -747,6 +748,24 @@ TEST_F(NewhallTest, ApproximationInMonomialBasis_2_17) {
       /*expected_length_error_estimate=*/4.8e-15 * Metre,
       /*expected_length_absolute_error=*/3.7e-9 * Metre,
       /*expected_speed_absolute_error=*/2.2e-8 * Metre / Second);
+}
+
+TEST_F(NewhallTest, NonConstantDegree) {
+    std::vector<Length> lengths;
+    std::vector<Speed> speeds;
+    for (Instant t = t_min_; t <= t_max_; t += 0.5 * Second) {
+      lengths.push_back(length_function_1_(t));
+      speeds.push_back(speed_function_1_(t));
+    }
+
+    Length length_error_estimate;
+    auto const approximation =
+        NewhallApproximationInMonomialBasis<Length, EstrinEvaluator>(
+            /*degree=*/10,
+            lengths, speeds, t_min_, t_max_, length_error_estimate);
+
+    EXPECT_THAT(RelativeError(approximation->Evaluate(t_min_),
+                              length_function_1_(t_min_)), IsNear(9e-13));
 }
 
 }  // namespace numerics
