@@ -71,6 +71,8 @@ using NthDerivatives =
 template<typename Value, typename Argument>
 class Polynomial {
  public:
+  virtual ~Polynomial() = default;
+
   virtual Value Evaluate(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
@@ -81,9 +83,6 @@ class Polynomial {
 
   virtual void WriteToMessage(
       not_null<serialization::Polynomial*> message) const = 0;
-
- protected:
-  virtual ~Polynomial() = default;
 };
 
 template<typename Value, typename Argument, int degree_,
