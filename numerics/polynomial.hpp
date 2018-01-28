@@ -83,6 +83,12 @@ class Polynomial {
 
   virtual void WriteToMessage(
       not_null<serialization::Polynomial*> message) const = 0;
+
+  // The evaluator is not part of the serialization because it's fine to read
+  // with a different evaluator than the one the polynomial was written with.
+  template<template<typename, typename, int> class Evaluator>
+  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+      serialization::Polynomial const& message);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -110,7 +116,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
-  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+  static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
  private:
@@ -145,7 +151,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
-  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+  static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
  private:

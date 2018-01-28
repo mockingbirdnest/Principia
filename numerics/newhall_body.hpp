@@ -96,6 +96,8 @@ struct NewhallAppromixator {
       Vector& error_estimate);
 };
 
+// TODO(phl): Use macros everywhere in this file.  It will be less error-prone.
+
 template<typename Vector,
          template<typename, typename, int> class Evaluator>
 struct NewhallAppromixator<Vector, 3, Evaluator> {
