@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
@@ -138,9 +139,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // need to extract their |t_min|.  Logically, the |t_min| for a polynomial is
   // the |t_max| of the previous one.  The first polynomial has a |t_min| which
   // is |*first_time_|.
-  using InstantToPolynomial =
-      std::map<Instant,
-               std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>;
+  using InstantToPolynomial = std::map<
+      Instant,
+      not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>>;
 
   // May be overridden for testing.
   virtual std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>

@@ -14,6 +14,7 @@
 #include "numerics/newhall.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "numerics/ulp_distance.hpp"
+#include "numerics/чебышёв_series.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -24,6 +25,7 @@ using base::Error;
 using base::make_not_null_unique;
 using numerics::EstrinEvaluator;
 using numerics::ULPDistance;
+using numerics::ЧебышёвSeries;
 using quantities::DebugString;
 using quantities::SIUnit;
 using quantities::si::Metre;
@@ -216,7 +218,9 @@ void ContinuousTrajectory<Frame>::WriteToMessage(
     Instant const& t_max = pair.first;
     auto const& polynomial = pair.second;
     if (t_max <= checkpoint.t_max_) {
-      //polynomial.WriteToMessage(message->add_series());
+      auto* const pair = message->add_instant_to_polynomial_pair();
+      t_max.WriteToMessage(pair->mutable_instant());
+      polynomial->WriteToMessage(pair->mutable_polynomial());
     }
     if (t_max == checkpoint.t_max_) {
       break;
@@ -242,6 +246,7 @@ template<typename Frame>
 not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>
 ContinuousTrajectory<Frame>::ReadFromMessage(
       serialization::ContinuousTrajectory const& message) {
+  bool const is_pre_cohen = message.series_size() > 0;
   not_null<std::unique_ptr<ContinuousTrajectory<Frame>>> continuous_trajectory =
       std::make_unique<ContinuousTrajectory<Frame>>(
           Time::ReadFromMessage(message.step()),
@@ -251,9 +256,42 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
   continuous_trajectory->is_unstable_ = message.is_unstable();
   continuous_trajectory->degree_ = message.degree();
   continuous_trajectory->degree_age_ = message.degree_age();
-  for (auto const& s : message.series()) {
-    //continuous_trajectory->series_.push_back(
-    //    ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s));
+  if (is_pre_cohen) {
+    bool inserted;
+    for (auto const& s : message.series()) {
+      // Read the series, evaluate it and use the resulting values to build a
+      // polynomial in the monomial basis.
+      auto const series =
+          ЧебышёвSeries<Displacement<Frame>>::ReadFromMessage(s);
+      Time const step = (series.t_max() - series.t_min()) / divisions;
+      Instant t = series.t_min();
+      std::vector<Displacement<Frame>> q;
+      std::vector<Velocity<Frame>> v;
+      for (int i = 0; i <= divisions; t += step) {
+        q.push_back(series.Evaluate(t));
+        v.push_back(series.EvaluateDerivative(t));
+      }
+      Displacement<Frame> error_estimate;  // Should we do something with this?
+      std::tie(std::ignore, inserted) =
+          continuous_trajectory->polynomials_.emplace(
+              series.t_max(),
+              continuous_trajectory->NewhallApproximationInMonomialBasis(
+                  series.degree(),
+                  q, v,
+                  series.t_min(), series.t_max(),
+                  error_estimate));
+      CHECK(inserted) << message.DebugString();
+    }
+  } else {
+    bool inserted;
+    for (auto const& pair : message.instant_to_polynomial_pair()) {
+      std::tie(std::ignore, inserted) =
+          continuous_trajectory->polynomials_.emplace(
+              Instant::ReadFromMessage(pair.instant()),
+              Polynomial<Displacement<Frame>, Instant>::ReadFromMessage<
+                  EstrinEvaluator>(pair.polynomial()));
+      CHECK(inserted) << message.DebugString();
+    }
   }
   if (message.has_first_time()) {
     continuous_trajectory->first_time_ =

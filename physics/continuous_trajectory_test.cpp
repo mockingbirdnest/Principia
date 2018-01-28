@@ -568,7 +568,7 @@ TEST_F(ContinuousTrajectoryTest, Continuity) {
   EXPECT_THAT(p1, AlmostEquals(p3, 0, 2));
 }
 
-TEST_F(ContinuousTrajectoryTest, DISABLED_Serialization) {
+TEST_F(ContinuousTrajectoryTest, Serialization) {
   int const number_of_steps = 20;
   int const number_of_substeps = 50;
   Time const step = 0.01 * Second;
@@ -627,7 +627,7 @@ TEST_F(ContinuousTrajectoryTest, DISABLED_Serialization) {
   EXPECT_THAT(message, EqualsProto(second_message));
 }
 
-TEST_F(ContinuousTrajectoryTest, DISABLED_Checkpoint) {
+TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   int const number_of_steps1 = 30;
   int const number_of_steps2 = 20;
   int const number_of_substeps = 50;
