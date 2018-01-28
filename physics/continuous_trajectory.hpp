@@ -144,7 +144,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>>;
 
   // May be overridden for testing.
-  virtual std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>
+  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
       std::vector<Displacement<Frame>> const& q,

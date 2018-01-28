@@ -330,7 +330,7 @@ template<typename Frame>
 ContinuousTrajectory<Frame>::ContinuousTrajectory() {}
 
 template<typename Frame>
-std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>
+not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
 ContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
     std::vector<Displacement<Frame>> const& q,

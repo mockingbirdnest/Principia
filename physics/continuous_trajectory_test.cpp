@@ -9,6 +9,8 @@
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "quantities/astronomy.hpp"
@@ -30,6 +32,8 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
 using numerics::Polynomial;
+using numerics::PolynomialInMonomialBasis;
+using numerics::HornerEvaluator;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Cos;
@@ -57,7 +61,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
   using ContinuousTrajectory<Frame>::ContinuousTrajectory;
 
   // Mock the Newhall factory.
-  std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>
+  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
   NewhallApproximationInMonomialBasis(
       int degree,
       std::vector<Displacement<Frame>> const& q,
@@ -74,7 +78,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
            Instant const& t_min,
            Instant const& t_max,
            Displacement<Frame>& error_estimate,
-           std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>&
+           not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>&
                polynomial));
 
   // Expose the Newhall optimization.
@@ -88,7 +92,7 @@ class TestableContinuousTrajectory : public ContinuousTrajectory<Frame> {
 };
 
 template<typename Frame>
-std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>
+not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
 TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     int degree,
     std::vector<Displacement<Frame>> const& q,
@@ -96,7 +100,12 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Instant const& t_min,
     Instant const& t_max,
     Displacement<Frame>& error_estimate) const {
-  std::unique_ptr<Polynomial<Displacement<Frame>, Instant>> polynomial;
+  using P = PolynomialInMonomialBasis<
+                Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
+  P::Coefficients const coefficients = {Displacement<Frame>(),
+                                        Velocity<Frame>()};
+  not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+      polynomial = make_not_null_unique<P>(coefficients, Instant());
   FillNewhallApproximationInMonomialBasis(degree,
                                           q, v,
                                           t_min, t_max,
