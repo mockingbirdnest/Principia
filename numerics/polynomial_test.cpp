@@ -12,7 +12,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 
@@ -26,6 +28,7 @@ using quantities::Time;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::EqualsProto;
 
 namespace numerics {
 
@@ -93,8 +96,7 @@ TEST_F(PolynomialTest, Evaluate2A) {
                                                0 * Metre / Second}), 0));
 }
 
-// Check that a polynomial of high order may be declared even if the quantities
-// of the coefficients would not be serializable.
+// Check that a polynomial of high order may be declared.
 TEST_F(PolynomialTest, Evaluate17) {
   P17::Coefficients const coefficients;
   P17 p(coefficients);
@@ -103,9 +105,92 @@ TEST_F(PolynomialTest, Evaluate17) {
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
                                                    0 * Metre,
                                                    0 * Metre}), 0));
-  // The following doesn't compile with: "Invalid time exponent".
-  //   serialization::Quantity message;
-  //   std::get<17>(coefficients).coordinates().x.WriteToMessage(&message);
+}
+
+// Check that polynomials may be serialized.
+TEST_F(PolynomialTest, Serialization) {
+  {
+    P2V p2v(coefficients_);
+    serialization::Polynomial message;
+    p2v.WriteToMessage(&message);
+    EXPECT_EQ(2, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_FALSE(extension.has_origin());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
+            message);
+    EXPECT_EQ(2, polynomial_read->degree());
+    EXPECT_THAT(
+        polynomial_read->Evaluate(0.5 * Second),
+        AlmostEquals(
+            Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
+  }
+  {
+    P2A p2a(coefficients_, Instant());
+    serialization::Polynomial message;
+    p2a.WriteToMessage(&message);
+    EXPECT_EQ(2, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_TRUE(extension.has_origin());
+    EXPECT_TRUE(extension.origin().has_scalar());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>,
+                   Instant>::ReadFromMessage<HornerEvaluator>(message);
+    EXPECT_EQ(2, polynomial_read->degree());
+    EXPECT_THAT(
+        polynomial_read->Evaluate(Instant() + 0.5 * Second),
+        AlmostEquals(
+            Displacement<World>({0.25 * Metre, 0.5 * Metre, 1 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
+  }
+  {
+    P17::Coefficients const coefficients;
+    P17 p17(coefficients);
+    serialization::Polynomial message;
+    p17.WriteToMessage(&message);
+    EXPECT_EQ(17, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(18, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_FALSE(extension.has_origin());
+
+    auto const polynomial_read =
+        Polynomial<Displacement<World>, Time>::ReadFromMessage<HornerEvaluator>(
+            message);
+    EXPECT_EQ(17, polynomial_read->degree());
+    EXPECT_THAT(polynomial_read->Evaluate(0.5 * Second),
+                AlmostEquals(
+                    Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre}), 0));
+    serialization::Polynomial message2;
+    polynomial_read->WriteToMessage(&message2);
+    EXPECT_THAT(message2, EqualsProto(message));
+  }
 }
 
 }  // namespace numerics

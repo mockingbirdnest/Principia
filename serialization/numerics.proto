@@ -39,3 +39,25 @@ message DoublePrecision {
   required Value value = 1;
   required Error error = 2;
 }
+
+// Polynomials follow.
+
+message Polynomial {
+  required int32 degree = 1;
+  extensions 10000 to 10999;  // Last used: 10000.
+}
+
+message PolynomialInMonomialBasis {
+  extend Polynomial {
+    optional PolynomialInMonomialBasis extension = 10000;
+  }
+  message Coefficient {
+    oneof message {
+      double double = 1;
+      Quantity quantity = 2;
+      Multivector multivector = 3;
+    }
+  }
+  repeated Coefficient coefficient = 1;
+  optional Point origin = 2;  // Only in the affine case.
+}

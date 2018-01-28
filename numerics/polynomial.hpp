@@ -4,13 +4,16 @@
 #include <tuple>
 #include <utility>
 
+#include "base/not_null.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/numerics.pb.h"
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 
@@ -68,6 +71,8 @@ using NthDerivatives =
 template<typename Value, typename Argument>
 class Polynomial {
  public:
+  virtual ~Polynomial() = default;
+
   virtual Value Evaluate(Argument const& argument) const = 0;
   virtual Derivative<Value, Argument> EvaluateDerivative(
       Argument const& argument) const = 0;
@@ -76,8 +81,14 @@ class Polynomial {
   // code.
   virtual int degree() const = 0;
 
- protected:
-  virtual ~Polynomial() = default;
+  virtual void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const = 0;
+
+  // The evaluator is not part of the serialization because it's fine to read
+  // with a different evaluator than the one the polynomial was written with.
+  template<template<typename, typename, int> class Evaluator>
+  static not_null<std::unique_ptr<Polynomial>> ReadFromMessage(
+      serialization::Polynomial const& message);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -102,6 +113,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   EvaluateDerivative(Argument const& argument) const override;
 
   constexpr int degree() const override;
+
+  void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const override;
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message);
 
  private:
   Coefficients coefficients_;
@@ -132,6 +148,11 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   EvaluateDerivative(Point<Argument> const& argument) const override;
 
   constexpr int degree() const override;
+
+  void WriteToMessage(
+      not_null<serialization::Polynomial*> message) const override;
+  static PolynomialInMonomialBasis ReadFromMessage(
+      serialization::Polynomial const& message);
 
  private:
   Coefficients coefficients_;

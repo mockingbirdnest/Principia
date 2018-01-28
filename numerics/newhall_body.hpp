@@ -14,6 +14,7 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
+using base::make_not_null_unique;
 using geometry::Barycentre;
 using quantities::Exponentiation;
 using quantities::Frequency;
@@ -94,6 +95,8 @@ struct NewhallAppromixator {
       FixedVector<Vector, 2 * divisions + 2> const& qv,
       Vector& error_estimate);
 };
+
+// TODO(phl): Use macros everywhere in this file.  It will be less error-prone.
 
 template<typename Vector,
          template<typename, typename, int> class Evaluator>
@@ -384,6 +387,127 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
                  HomogeneousCoefficients(qv, error_estimate),
              /*scale=*/1.0 / duration_over_two,
              t_mid);
+}
+
+template<typename Vector,
+         template<typename, typename, int> class Evaluator>
+not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
+NewhallApproximationInMonomialBasis(int degree,
+                                    std::vector<Vector> const& q,
+                                    std::vector<Variation<Vector>> const& v,
+                                    Instant const& t_min,
+                                    Instant const& t_max,
+                                    Vector& error_estimate) {
+  switch (degree) {
+    case 3:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 3, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 3, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 4:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 4, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 4, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 5:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 5, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 5, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 6:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 6, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 6, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 7:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 7, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 7, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 8:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 8, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 8, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 9:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 9, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 9, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 10:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 10, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 10, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 11:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 11, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 11, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 12:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 12, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 12, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 13:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 13, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 13, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 14:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 14, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 14, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 15:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 15, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 15, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 16:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 16, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 16, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    case 17:
+      return make_not_null_unique<
+                 PolynomialInMonomialBasis<Vector, Instant, 17, Evaluator>>(
+                     NewhallApproximationInMonomialBasis<Vector, 17, Evaluator>(
+                         q, v,
+                         t_min, t_max,
+                         error_estimate));
+    default:
+      LOG(FATAL) << "Unexpected degree " << degree;
+      break;
+  }
 }
 
 }  // namespace internal_newhall
