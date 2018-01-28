@@ -76,10 +76,10 @@ namespace physics {
 
 namespace {
 
-using Flow =
-    void(not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
-         Instant const& t,
-         Ephemeris<ksp_plugin::Barycentric>& ephemeris);
+using Flow = void(
+    not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
+    Instant const& t,
+    Ephemeris<ksp_plugin::Barycentric>& ephemeris);
 
 Length FittingTolerance(int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
