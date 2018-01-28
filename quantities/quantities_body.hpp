@@ -31,7 +31,7 @@ class ExponentSerializer : not_constructible {
       std::int64_t position);
 
  private:
-  static constexpr std::int64_t min_exponent = -31;
+  static constexpr std::int64_t min_exponent = -24;
   static constexpr std::int64_t max_exponent = 7;
   static constexpr std::int64_t exponent_mask = 0x1F;
   static constexpr std::int64_t exponent_bits = 5;
@@ -210,7 +210,7 @@ constexpr std::int64_t ExponentSerializer::Representation(
     std::int64_t const exponent,
     std::int64_t const position) {
   // For exponents in [-16, 7] this returns the representations
-  // 0x10, 0x11, ... 0x00, ... 0x07.  For exponents in [-31, -17] this returns
+  // 0x10, 0x11, ... 0x00, ... 0x07.  For exponents in [-24, -17] this returns
   // the representations 0x08, 0x09, ... 0x0F.  The latter used to be reserved
   // for exponents in the range [8, 15] but we believe that we never used them,
   // and with polynomials in the monomial base we need large negative exponents.
