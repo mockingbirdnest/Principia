@@ -58,6 +58,6 @@ message PolynomialInMonomialBasis {
       Multivector multivector = 3;
     }
   }
-  repeated Coefficient coefficients = 1;
+  repeated Coefficient coefficient = 1;
   optional Point origin = 2;  // Only in the affine case.
 }

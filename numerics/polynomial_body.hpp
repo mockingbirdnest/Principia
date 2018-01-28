@@ -35,7 +35,7 @@ void TupleSerializer<Tuple, k, size>::WriteToMessage(
   DoubleOrQuantityOrMultivectorSerializer<
       std::tuple_element_t<k, Tuple>,
       serialization::PolynomialInMonomialBasis::Coefficient>::
-      WriteToMessage(std::get<k>(tuple), message->mutable_coefficients(k));
+      WriteToMessage(std::get<k>(tuple), message->add_coefficient());
   TupleSerializer<Tuple, k + 1, size>::WriteToMessage(tuple, message);
 }
 

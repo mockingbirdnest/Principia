@@ -12,6 +12,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
@@ -93,8 +94,7 @@ TEST_F(PolynomialTest, Evaluate2A) {
                                                0 * Metre / Second}), 0));
 }
 
-// Check that a polynomial of high order may be declared even if the quantities
-// of the coefficients would not be serializable.
+// Check that a polynomial of high order may be declared.
 TEST_F(PolynomialTest, Evaluate17) {
   P17::Coefficients const coefficients;
   P17 p(coefficients);
@@ -103,9 +103,57 @@ TEST_F(PolynomialTest, Evaluate17) {
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
                                                    0 * Metre,
                                                    0 * Metre}), 0));
-  // The following doesn't compile with: "Invalid time exponent".
-  //   serialization::Quantity message;
-  //   std::get<17>(coefficients).coordinates().x.WriteToMessage(&message);
+}
+
+// Check that polynomials may be serialized.
+TEST_F(PolynomialTest, Serialization) {
+  {
+    P2V p2v(coefficients_);
+    serialization::Polynomial message;
+    p2v.WriteToMessage(&message);
+    EXPECT_EQ(2, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_FALSE(extension.has_origin());
+  }
+  {
+    P2A p2a(coefficients_, Instant());
+    serialization::Polynomial message;
+    p2a.WriteToMessage(&message);
+    EXPECT_EQ(2, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(3, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_TRUE(extension.has_origin());
+    EXPECT_TRUE(extension.origin().has_scalar());
+  }
+  {
+    P17::Coefficients const coefficients;
+    P17 p17(coefficients);
+    serialization::Polynomial message;
+    p17.WriteToMessage(&message);
+    EXPECT_EQ(17, message.degree());
+    EXPECT_TRUE(message.HasExtension(
+        serialization::PolynomialInMonomialBasis::extension));
+    auto const& extension = message.GetExtension(
+        serialization::PolynomialInMonomialBasis::extension);
+    EXPECT_EQ(18, extension.coefficient_size());
+    for (auto const& coefficient : extension.coefficient()) {
+      EXPECT_TRUE(coefficient.has_multivector());
+    }
+    EXPECT_FALSE(extension.has_origin());
+  }
 }
 
 }  // namespace numerics
