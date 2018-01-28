@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/чебышёв_series.hpp"
 #include "numerics/polynomial.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace numerics {
 namespace internal_newhall {
 
+using base::not_null;
 using geometry::Instant;
 using quantities::Variation;
 
@@ -46,7 +48,7 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
 // Same as above but the |degree| is not a constant expression.
 template<typename Vector,
          template<typename, typename, int> class Evaluator>
-std::unique_ptr<Polynomial<Vector, Instant>>
+not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
                                     std::vector<Vector> const& q,
                                     std::vector<Variation<Vector>> const& v,
