@@ -15,6 +15,8 @@
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
