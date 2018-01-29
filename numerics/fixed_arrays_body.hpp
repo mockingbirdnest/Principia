@@ -119,7 +119,7 @@ FixedMatrix<Scalar, rows, columns>::Row<r>::operator*(
 
 template<typename Scalar, int rows, int columns>
 template<int r>
-typename FixedMatrix<Scalar, rows, columns>::Row<r>
+typename FixedMatrix<Scalar, rows, columns>::template Row<r>
 FixedMatrix<Scalar, rows, columns>::row() const {
   return Row<r>(this);
 }
