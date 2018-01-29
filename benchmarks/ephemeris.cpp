@@ -54,6 +54,7 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order12;
+using ksp_plugin::Barycentric;
 using quantities::DebugString;
 using quantities::Frequency;
 using quantities::Length;
@@ -76,25 +77,24 @@ namespace physics {
 
 namespace {
 
-using Flow = void(
-    not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
-    Instant const& t,
-    Ephemeris<ksp_plugin::Barycentric>& ephemeris);
+using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+                  Instant const& t,
+                  Ephemeris<Barycentric>& ephemeris);
 
 Length FittingTolerance(int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
 }
 
-Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters EphemerisParameters() {
-  return Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-      QuinlanTremaine1990Order12<Position<ksp_plugin::Barycentric>>(),
+Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+      QuinlanTremaine1990Order12<Position<Barycentric>>(),
       /*step=*/10 * Minute);
 }
 
-not_null<std::unique_ptr<SolarSystem<ksp_plugin::Barycentric>>>
-SolarSystemAtСпутник1Launch(SolarSystemFactory::Accuracy const accuracy) {
+not_null<std::unique_ptr<SolarSystem<Barycentric>>> SolarSystemAtСпутник1Launch(
+    SolarSystemFactory::Accuracy const accuracy) {
   auto at_спутник_1_launch =
-      make_not_null_unique<SolarSystem<ksp_plugin::Barycentric>>(
+      make_not_null_unique<SolarSystem<Barycentric>>(
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
               "sol_initial_state_jd_2436145_604166667.proto.txt",
@@ -160,14 +160,14 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   while (state.KeepRunning()) {
     state.PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
-    Identity<ICRFJ2000Equator, ksp_plugin::Barycentric> to_barycentric;
-    Identity<ksp_plugin::Barycentric, ICRFJ2000Equator> from_barycentric;
+    Identity<ICRFJ2000Equator, Barycentric> to_barycentric;
+    Identity<Barycentric, ICRFJ2000Equator> from_barycentric;
     MasslessBody probe;
-    DiscreteTrajectory<ksp_plugin::Barycentric> trajectory;
-    DegreesOfFreedom<ksp_plugin::Barycentric> const sun_degrees_of_freedom =
+    DiscreteTrajectory<Barycentric> trajectory;
+    DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
-    DegreesOfFreedom<ksp_plugin::Barycentric> const earth_degrees_of_freedom =
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
@@ -185,7 +185,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
         l4_rotation(sun_earth_velocity);
     trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<ksp_plugin::Barycentric>(
+                      DegreesOfFreedom<Barycentric>(
                           sun_degrees_of_freedom.position() +
                               to_barycentric(
                                   ICRFJ200EquatorialToEcliptic.Inverse()(
@@ -244,20 +244,20 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state.PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
-    DiscreteTrajectory<ksp_plugin::Barycentric> trajectory;
-    DegreesOfFreedom<ksp_plugin::Barycentric> const earth_degrees_of_freedom =
+    DiscreteTrajectory<Barycentric> trajectory;
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
-    Displacement<ksp_plugin::Barycentric> const earth_probe_displacement(
+    Displacement<Barycentric> const earth_probe_displacement(
         {6371 * Kilo(Metre) + 100 * NauticalMile, 0 * Metre, 0 * Metre});
     Speed const earth_probe_speed =
         Sqrt(at_спутник_1_launch->gravitational_parameter(
                  SolarSystemFactory::name(SolarSystemFactory::Earth)) /
                      earth_probe_displacement.Norm());
-    Velocity<ksp_plugin::Barycentric> const earth_probe_velocity(
+    Velocity<Barycentric> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
     trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<ksp_plugin::Barycentric>(
+                      DegreesOfFreedom<Barycentric>(
                           earth_degrees_of_freedom.position() +
                               earth_probe_displacement,
                           earth_degrees_of_freedom.velocity() +
@@ -308,16 +308,16 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
       at_спутник_1_launch->degrees_of_freedom(earth_name);
 
   MasslessBody probe;
-  std::list<DiscreteTrajectory<ksp_plugin::Barycentric>> trajectories;
+  std::list<DiscreteTrajectory<Barycentric>> trajectories;
   for (int i = 0; i < state.range_x(); ++i) {
-    KeplerianElements<ksp_plugin::Barycentric> elements;
+    KeplerianElements<Barycentric> elements;
     elements.eccentricity = 0;
     elements.semimajor_axis = (i + 1) * 10'000 * Kilo(Metre);
     elements.inclination = 0 * Radian;
     elements.longitude_of_ascending_node = 0 * Radian;
     elements.argument_of_periapsis = 0 * Radian;
     elements.true_anomaly = 0 * Radian;
-    KeplerOrbit<ksp_plugin::Barycentric> const orbit(
+    KeplerOrbit<Barycentric> const orbit(
         *earth_massive_body, probe, elements, epoch);
     trajectories.emplace_back();
     auto& trajectory = trajectories.back();
@@ -333,14 +333,14 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   while (state.KeepRunning()) {
     state.PauseTiming();
     std::vector<not_null<std::unique_ptr<Integrator<Ephemeris<
-        ksp_plugin::Barycentric>::NewtonianMotionEquation>::Instance>>>
+        Barycentric>::NewtonianMotionEquation>::Instance>>>
         instances;
     for (auto& trajectory : trajectories) {
       instances.push_back(ephemeris->NewInstance(
           {&trajectory},
-          Ephemeris<ksp_plugin::Barycentric>::NoIntrinsicAccelerations,
-          Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-              Quinlan1999Order8A<Position<ksp_plugin::Barycentric>>(),
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          Ephemeris<Barycentric>::FixedStepParameters(
+              Quinlan1999Order8A<Position<Barycentric>>(),
               /*step=*/10 * Second)));
     }
     final_time += step;
@@ -443,45 +443,45 @@ void BM_EphemerisStartup(benchmark::State& state) {
 }
 
 void FlowEphemerisWithAdaptiveStep(
-    not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ksp_plugin::Barycentric>& ephemeris) {
+    Ephemeris<Barycentric>& ephemeris) {
   CHECK_OK(ephemeris.FlowWithAdaptiveStep(
       trajectory,
-      Ephemeris<ksp_plugin::Barycentric>::NoIntrinsicAcceleration,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       t,
-      Ephemeris<ksp_plugin::Barycentric>::AdaptiveStepParameters(
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
           DormandElMikkawyPrince1986RKN434FM<
-              Position<ksp_plugin::Barycentric>>(),
+              Position<Barycentric>>(),
           /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
-      Ephemeris<ksp_plugin::Barycentric>::unlimited_max_ephemeris_steps,
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
       /*last_point_only=*/false));
 }
 
 void FlowEphemerisWithFixedStepSLMS(
-    not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ksp_plugin::Barycentric>& ephemeris) {
-  auto const instance = ephemeris.NewInstance(
-      {trajectory},
-      Ephemeris<ksp_plugin::Barycentric>::NoIntrinsicAccelerations,
-      Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-          Quinlan1999Order8A<Position<ksp_plugin::Barycentric>>(),
-          /*step=*/10 * Second));
+    Ephemeris<Barycentric>& ephemeris) {
+  auto const instance =
+      ephemeris.NewInstance({trajectory},
+                            Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+                            Ephemeris<Barycentric>::FixedStepParameters(
+                                Quinlan1999Order8A<Position<Barycentric>>(),
+                                /*step=*/10 * Second));
   ephemeris.FlowWithFixedStep(t, *instance);
 }
 
 void FlowEphemerisWithFixedStepSRKN(
-    not_null<DiscreteTrajectory<ksp_plugin::Barycentric>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ksp_plugin::Barycentric>& ephemeris) {
+    Ephemeris<Barycentric>& ephemeris) {
   auto const instance = ephemeris.NewInstance(
       {trajectory},
-      Ephemeris<ksp_plugin::Barycentric>::NoIntrinsicAccelerations,
-      Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ksp_plugin::Barycentric>>(),
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/10 * Second));
   ephemeris.FlowWithFixedStep(t, *instance);
 }

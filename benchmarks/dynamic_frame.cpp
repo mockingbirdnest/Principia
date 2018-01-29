@@ -44,6 +44,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
+using ksp_plugin::Barycentric;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::SIUnit;
@@ -85,16 +86,14 @@ void FillLinearTrajectory(Position<F> const& initial,
 }
 
 // This code is derived from Plugin::RenderTrajectory.
-std::vector<std::pair<Position<ksp_plugin::Barycentric>,
-                      Position<ksp_plugin::Barycentric>>>
+std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
 ApplyDynamicFrame(
     not_null<Body const*> const body,
-    not_null<DynamicFrame<ksp_plugin::Barycentric, Rendering>*> const
-        dynamic_frame,
-    DiscreteTrajectory<ksp_plugin::Barycentric>::Iterator const& begin,
-    DiscreteTrajectory<ksp_plugin::Barycentric>::Iterator const& end) {
-  std::vector<std::pair<Position<ksp_plugin::Barycentric>,
-                        Position<ksp_plugin::Barycentric>>> result;
+    not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) {
+  std::vector<std::pair<Position<Barycentric>,
+                        Position<Barycentric>>> result;
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
@@ -129,15 +128,15 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ksp_plugin::Barycentric> solar_system(
+  SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt",
       /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ksp_plugin::Barycentric>>(),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
@@ -145,25 +144,24 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
       solar_system.massive_body(*ephemeris, "Earth");
 
   MasslessBody probe;
-  Position<ksp_plugin::Barycentric> probe_initial_position =
-      ksp_plugin::Barycentric::origin + Displacement<ksp_plugin::Barycentric>(
+  Position<Barycentric> probe_initial_position =
+      Barycentric::origin + Displacement<Barycentric>(
                                      {0.5 * AstronomicalUnit,
                                       -1 * AstronomicalUnit,
                                       0 * AstronomicalUnit});
-  Velocity<ksp_plugin::Barycentric> probe_velocity =
-      Velocity<ksp_plugin::Barycentric>({0 * SIUnit<Speed>(),
+  Velocity<Barycentric> probe_velocity =
+      Velocity<Barycentric>({0 * SIUnit<Speed>(),
                                   100 * Kilo(Metre) / Second,
                                   0 * SIUnit<Speed>()});
-  DiscreteTrajectory<ksp_plugin::Barycentric> probe_trajectory;
-  FillLinearTrajectory<ksp_plugin::Barycentric, DiscreteTrajectory>(
-      probe_initial_position,
-      probe_velocity,
-      solar_system.epoch(),
-      Δt,
-      steps,
-      probe_trajectory);
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
+                                                        probe_velocity,
+                                                        solar_system.epoch(),
+                                                        Δt,
+                                                        steps,
+                                                        probe_trajectory);
 
-  BodyCentredNonRotatingDynamicFrame<ksp_plugin::Barycentric, Rendering>
+  BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth);
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
@@ -177,15 +175,15 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ksp_plugin::Barycentric> solar_system(
+  SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt",
       /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ksp_plugin::Barycentric>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ksp_plugin::Barycentric>>(),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
@@ -195,25 +193,23 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
       solar_system.massive_body(*ephemeris, "Venus");
 
   MasslessBody probe;
-  Position<ksp_plugin::Barycentric> probe_initial_position =
-      ksp_plugin::Barycentric::origin + Displacement<ksp_plugin::Barycentric>(
-                                     {0.5 * AstronomicalUnit,
-                                      -1 * AstronomicalUnit,
-                                      0 * AstronomicalUnit});
-  Velocity<ksp_plugin::Barycentric> probe_velocity =
-      Velocity<ksp_plugin::Barycentric>({0 * SIUnit<Speed>(),
-                                  100 * Kilo(Metre) / Second,
-                                  0 * SIUnit<Speed>()});
-  DiscreteTrajectory<ksp_plugin::Barycentric> probe_trajectory;
-  FillLinearTrajectory<ksp_plugin::Barycentric, DiscreteTrajectory>(
-      probe_initial_position,
-      probe_velocity,
-      solar_system.epoch(),
-      Δt,
-      steps,
-      probe_trajectory);
+  Position<Barycentric> probe_initial_position =
+      Barycentric::origin + Displacement<Barycentric>({0.5 * AstronomicalUnit,
+                                                       -1 * AstronomicalUnit,
+                                                       0 * AstronomicalUnit});
+  Velocity<Barycentric> probe_velocity =
+      Velocity<Barycentric>({0 * SIUnit<Speed>(),
+                             100 * Kilo(Metre) / Second,
+                             0 * SIUnit<Speed>()});
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
+                                                        probe_velocity,
+                                                        solar_system.epoch(),
+                                                        Δt,
+                                                        steps,
+                                                        probe_trajectory);
 
-  BarycentricRotatingDynamicFrame<ksp_plugin::Barycentric, Rendering>
+  BarycentricRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth, venus);
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
