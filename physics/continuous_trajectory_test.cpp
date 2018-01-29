@@ -616,7 +616,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_TRUE(message.has_is_unstable());
   EXPECT_EQ(3, message.degree());
   EXPECT_GE(100, message.degree_age());
-  EXPECT_EQ(2, message.series_size());
+  EXPECT_EQ(2, message.instant_to_polynomial_pair_size());
   EXPECT_TRUE(message.has_first_time());
   EXPECT_EQ(4, message.last_point_size());
 
@@ -741,19 +741,19 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_TRUE(message.has_is_unstable());
   EXPECT_EQ(3, message.degree());
   EXPECT_GE(100, message.degree_age());
-  EXPECT_EQ(3, message.series_size());
+  EXPECT_EQ(3, message.instant_to_polynomial_pair_size());
   EXPECT_TRUE(message.has_first_time());
   EXPECT_EQ(6, message.last_point_size());
 
   auto const trajectory_read =
       ContinuousTrajectory<World>::ReadFromMessage(message);
-  EXPECT_EQ(trajectory->t_min(), trajectory_read->t_min());
-  EXPECT_EQ(trajectory->t_max(), checkpoint_t_max);
+  EXPECT_EQ(trajectory_read->t_min(), trajectory->t_min());
+  EXPECT_EQ(trajectory_read->t_max(), checkpoint_t_max);
   for (Instant time = trajectory->t_min();
        time <= checkpoint_t_max;
        time += step / number_of_substeps) {
-    EXPECT_EQ(trajectory->EvaluateDegreesOfFreedom(time),
-              trajectory_read->EvaluateDegreesOfFreedom(time));
+    EXPECT_EQ(trajectory_read->EvaluateDegreesOfFreedom(time),
+              trajectory->EvaluateDegreesOfFreedom(time));
   }
 }
 

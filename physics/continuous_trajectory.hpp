@@ -33,10 +33,9 @@ template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
-  // state that gets incrementally updated as the Чебышёв polynomials are
-  // constructed.  The client may get a |Checkpoint| at any time and use it to
-  // serialize the trajectory up to and including the time designated by the
-  // |Checkpoint|.
+  // state that gets incrementally updated as the polynomials are constructed.
+  // The client may get a |Checkpoint| at any time and use it to serialize the
+  // trajectory up to and including the time designated by the |Checkpoint|.
   class Checkpoint;
 
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
@@ -99,11 +98,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       serialization::ContinuousTrajectory const& message);
 
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
-  // state that gets incrementally updated as the Чебышёв polynomials are
-  // constructed.  The client may get a |Checkpoint| at any time and use it to
-  // serialize the trajectory up to and including the time designated by the
-  // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
-  // is to initialize them with GetCheckpoint.
+  // state that gets incrementally updated as the polynomials are constructed.
+  // The client may get a |Checkpoint| at any time and use it to serialize the
+  // trajectory up to and including the time designated by the |Checkpoint|.
+  // The only thing that clients may do with |Checkpoint| objects is to
+  // initialize them with GetCheckpoint.
   class Checkpoint final {
    public:
     // Returns true if this checkpoint is after |time| and would remain valid
