@@ -149,7 +149,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, ToBigSmallFrameAtTime) {
                 Lt(1.0e-11 * Metre));
     EXPECT_THAT(AbsoluteError(centre_of_mass_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
-                Lt(1.0e-11 * Metre / Second));
+                Lt(1.1e-11 * Metre / Second));
 
     // Check that the bodies don't move and are at the right locations.
     DegreesOfFreedom<ICRFJ2000Equator> const big_in_inertial_frame_at_t =
@@ -484,9 +484,9 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  -2.25461792868978955e3 * Metre / Pow<2>(Second),
-                  -3.47432622325071563e1 * Metre / Pow<2>(Second),
-                  -5.16651053897897441e1 * Metre / Pow<2>(Second)}), 0));
+                  -2.25461792868978819e3 * Metre / Pow<2>(Second),
+                  -3.47432622325080658e1 * Metre / Pow<2>(Second),
+                  -5.16651053897896801e1 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {

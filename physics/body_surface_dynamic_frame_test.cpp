@@ -173,7 +173,7 @@ TEST_F(BodySurfaceDynamicFrameTest, ToBigSmallFrameAtTime) {
                                   0 * Kilo(Metre),
                                   5.0 * Kilo(Metre),
                                   0 * Kilo(Metre)}) + BigSmallFrame::origin),
-                Lt(2.0e-4 * Metre));
+                Lt(2.7e-4 * Metre));
     EXPECT_THAT(AbsoluteError(small_in_big_small_at_t.velocity(),
                               Velocity<BigSmallFrame>()),
                 Lt(4.0e-3 * Metre / Second));

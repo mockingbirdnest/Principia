@@ -63,7 +63,7 @@ double ContinuousTrajectory<Frame>::average_degree() const {
     double total = 0;
     for (auto const& pair : polynomials_) {
       auto const& polynomial = pair.second;
-      total += polynomial.degree();
+      total += polynomial->degree();
     }
     return total / polynomials_.size();
   }
