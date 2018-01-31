@@ -941,6 +941,10 @@ void Plugin::SetPredictionAdaptiveStepParameters(
   }
 }
 
+bool Plugin::HasCelestial(Index index) const {
+  return Contains(celestials_, index);
+}
+
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return Contains(vessels_, vessel_guid);
 }

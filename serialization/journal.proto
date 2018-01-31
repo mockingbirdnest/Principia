@@ -351,12 +351,12 @@ message ExternalFlowBodyCentric {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required int32 central_body_index = 2;
-    required QP world_body_centric_initial_degrees_of_freedom = 3;
+    required QP world_body_centred_initial_degrees_of_freedom = 3;
     required double t_initial = 4;
     required double t_final = 5;
   }
   message Out {
-    required QP world_body_centric_final_degrees_of_freedom = 1;
+    required QP world_body_centred_final_degrees_of_freedom = 1;
     required fixed64 error_message = 2 [(pointer_to) = "char const",
                                         (is_produced) = true];
   }
@@ -382,7 +382,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
     required XYZ world_body_centric_reference_position = 5;
   }
   message Out {
-    required QP world_body_centric_nearest_degrees_of_freedom = 1;
+    required QP world_body_centred_nearest_degrees_of_freedom = 1;
     required fixed64 error_message = 2 [(pointer_to) = "char const",
                                         (is_produced) = true];
   }
