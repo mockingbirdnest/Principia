@@ -155,10 +155,10 @@ Instant ContinuousTrajectory<Frame>::t_max() const {
 template<typename Frame>
 Position<Frame> ContinuousTrajectory<Frame>::EvaluatePosition(
     Instant const& time) const {
-  CHECK_LE(t_min(), time);
-  CHECK_GE(t_max(), time);
+  DCHECK_LE(t_min(), time);
+  DCHECK_GE(t_max(), time);
   auto const it = FindSeriesForInstant(time);
-  CHECK(it != polynomials_.end());
+  DCHECK(it != polynomials_.end());
   auto const& polynomial = it->second;
   return polynomial->Evaluate(time) + Frame::origin;
 }
