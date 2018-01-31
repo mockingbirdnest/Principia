@@ -116,7 +116,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5150.
+  extensions 5000 to 5999;  // Last used: 5152.
 }
 
 message AdvanceTime {
@@ -339,6 +339,63 @@ message EndInitialization {
   }
   optional In in = 1;
 }
+
+// These functions form the external API of principia; announce deprecation one
+// lunation ahead, then make them return UNIMPLEMENTED.
+
+message ExternalFlowBodyCentric {
+  extend Method {
+    optional ExternalFlowBodyCentric extension = 5151;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 central_body_index = 2;
+    required QP world_body_centric_initial_degrees_of_freedom = 3;
+    required double t_initial = 4;
+    required double t_final = 5;
+  }
+  message Out {
+    required QP world_body_centric_final_degrees_of_freedom = 1;
+    required fixed64 error_message = 2 [(pointer_to) = "char const",
+                                        (is_produced) = true];
+  }
+  message Return {
+    // A principia::base::Error, or equivalently, a google.rpc.Code.
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message ExternalGetNearestPlannedCoastDegreesOfFreedom {
+  extend Method {
+    optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 central_body_index = 2;
+    required string vessel_guid = 3;
+    required int32 manoeuvre_index = 4;
+    required XYZ world_body_centric_reference_position = 5;
+  }
+  message Out {
+    required QP world_body_centric_nearest_degrees_of_freedom = 1;
+    required fixed64 error_message = 2 [(pointer_to) = "char const",
+                                        (is_produced) = true];
+  }
+  message Return {
+    // A principia::base::Error, or equivalently, a google.rpc.Code.
+    required int32 result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// End of external API.
 
 message FlightPlanAppend {
   extend Method {
