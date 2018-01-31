@@ -134,13 +134,20 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
  private:
   // Each polynomial is valid over an interval [t_min, t_max].  Polynomials are
-  // stored in this map keyed by their |t_max|, as it turns out that we never
-  // need to extract their |t_min|.  Logically, the |t_min| for a polynomial is
-  // the |t_max| of the previous one.  The first polynomial has a |t_min| which
-  // is |*first_time_|.
-  using InstantToPolynomial = std::map<
-      Instant,
-      not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>>;
+  // stored in this vector sorted by their |t_max|, as it turns out that we
+  // never need to extract their |t_min|.  Logically, the |t_min| for a
+  // polynomial is the |t_max| of the previous one.  The first polynomial has a
+  // |t_min| which is |*first_time_|.
+  struct InstantPolynomialPair {
+    InstantPolynomialPair(
+        Instant t_max,
+        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+            polynomial);
+    Instant t_max;
+    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        polynomial;
+  };
+  using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
 
   // May be overridden for testing.
   virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
@@ -161,11 +168,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       std::vector<Displacement<Frame>> const& q,
       std::vector<Velocity<Frame>> const& v);
 
-  // Returns an iterator to the series applicable for the given |time|, or
-  // |begin()| if |time| is before the first series or |end()| if |time| is
-  // after the last series.  Time complexity is O(N Log N).
-  typename InstantToPolynomial::const_iterator
-  FindSeriesForInstant(Instant const& time) const;
+  // Returns an iterator to the polynomial applicable for the given |time|, or
+  // |begin()| if |time| is before the first polynomial or |end()| if |time| is
+  // after the last polynomial.  Time complexity is O(N Log N).
+  typename InstantPolynomialPairs::const_iterator
+  FindPolynomialForInstant(Instant const& time) const;
 
   // Construction parameters;
   Time const step_;
@@ -181,15 +188,14 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   int degree_;
   int degree_age_;
 
-  InstantToPolynomial polynomials_;
+  InstantPolynomialPairs polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  // |*first_time_ >= series_.front().t_min()|
   std::experimental::optional<Instant> first_time_;
 
-  // The points that have not yet been incorporated in a series.  Nonempty for a
-  // nonempty trajectory.
-  // |last_points_.begin()->first == series_.back().t_max()|
+  // The points that have not yet been incorporated in a polynomial.  Nonempty
+  // for a nonempty trajectory.
+  // |last_points_.begin()->first == polynomials_.back().t_max|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 
   template<typename Frame>

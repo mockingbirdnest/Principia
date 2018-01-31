@@ -616,7 +616,7 @@ TEST_F(ContinuousTrajectoryTest, Serialization) {
   EXPECT_TRUE(message.has_is_unstable());
   EXPECT_EQ(3, message.degree());
   EXPECT_GE(100, message.degree_age());
-  EXPECT_EQ(2, message.instant_to_polynomial_pair_size());
+  EXPECT_EQ(2, message.instant_polynomial_pair_size());
   EXPECT_TRUE(message.has_first_time());
   EXPECT_EQ(4, message.last_point_size());
 
@@ -648,7 +648,7 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
 
   // Remove the polynomials and add a single Чебышёв series of the form:
   //   T₀ - 2 * T₁ + 3 * T₂  + 4 * T₃.
-  message.clear_instant_to_polynomial_pair();
+  message.clear_instant_polynomial_pair();
   auto* const series = message.add_series();
   Instant t_min = Instant() - 1 * Second;
   Instant t_max = Instant() + 1 * Second;
@@ -670,10 +670,10 @@ TEST_F(ContinuousTrajectoryTest, PreCohenCompatibility) {
       ContinuousTrajectory<World>::ReadFromMessage(message);
   serialization::ContinuousTrajectory message2;
   trajectory_read->WriteToMessage(&message2);
-  EXPECT_EQ(1, message2.instant_to_polynomial_pair_size());
-  EXPECT_EQ(3, message2.instant_to_polynomial_pair(0).polynomial().degree());
+  EXPECT_EQ(1, message2.instant_polynomial_pair_size());
+  EXPECT_EQ(3, message2.instant_polynomial_pair(0).polynomial().degree());
   auto const& polynomial_in_monomial_basis =
-      message2.instant_to_polynomial_pair(0).polynomial().GetExtension(
+      message2.instant_polynomial_pair(0).polynomial().GetExtension(
           serialization::PolynomialInMonomialBasis::extension);
   EXPECT_EQ(-2,
             polynomial_in_monomial_basis.coefficient(0).multivector().vector().
@@ -741,7 +741,7 @@ TEST_F(ContinuousTrajectoryTest, Checkpoint) {
   EXPECT_TRUE(message.has_is_unstable());
   EXPECT_EQ(3, message.degree());
   EXPECT_GE(100, message.degree_age());
-  EXPECT_EQ(3, message.instant_to_polynomial_pair_size());
+  EXPECT_EQ(3, message.instant_polynomial_pair_size());
   EXPECT_TRUE(message.has_first_time());
   EXPECT_EQ(6, message.last_point_size());
 

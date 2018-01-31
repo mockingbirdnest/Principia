@@ -59,11 +59,11 @@ message ContinuousTrajectory {
   optional Point first_time = 8;
   repeated InstantaneousDegreesOfFreedom last_point = 9;
   // Added in Cohen.
-  message InstantToPolynomialPair {
-    required Point instant = 1;
+  message InstantPolynomialPair {
+    required Point t_max = 1;
     required Polynomial polynomial = 2;
   }
-  repeated InstantToPolynomialPair instant_to_polynomial_pair = 10;
+  repeated InstantPolynomialPair instant_polynomial_pair = 10;
 }
 
 message DiscreteTrajectory {
