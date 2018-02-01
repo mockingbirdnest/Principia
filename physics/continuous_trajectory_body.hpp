@@ -450,7 +450,8 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
 
 template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
-ContinuousTrajectory<Frame>::FindPolynomialForInstant(Instant const& time) const {
+ContinuousTrajectory<Frame>::FindPolynomialForInstant(
+    Instant const& time) const {
   // Need to use |lower_bound|, not |upper_bound|, because it allows
   // heterogeneous arguments.  This returns the first polynomial |p| such that
   // |time <= p.t_max()|.

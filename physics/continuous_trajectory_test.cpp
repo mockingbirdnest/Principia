@@ -1,6 +1,7 @@
 ﻿
 #include "physics/continuous_trajectory.hpp"
 
+#include <algorithm>
 #include <deque>
 #include <functional>
 #include <limits>
