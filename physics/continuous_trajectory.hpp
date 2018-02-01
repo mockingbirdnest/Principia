@@ -2,7 +2,6 @@
 #pragma once
 
 #include <experimental/optional>
-#include <map>
 #include <utility>
 #include <vector>
 
@@ -188,6 +187,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   int degree_;
   int degree_age_;
 
+  // The polynomials are in increasing time order.
   InstantPolynomialPairs polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.

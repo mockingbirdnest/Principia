@@ -371,7 +371,7 @@ Status ContinuousTrajectory<Frame>::ComputeBestNewhallApproximation(
                                 degree_,
                                 q, v,
                                 last_points_.cbegin()->first, time,
-                              displacement_error_estimate));
+                                displacement_error_estimate));
 
   // Estimate the error.  For initializing |previous_error_estimate|, any value
   // greater than |error_estimate| will do.
