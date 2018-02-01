@@ -187,9 +187,11 @@ int principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
         ToQP(to_world_body_centred_inertial(
             coasting_away ? coast.Begin().degrees_of_freedom()
                           : coast.last().degrees_of_freedom()));
+  } else {
+    *world_body_centred_nearest_degrees_of_freedom =
+        ToQP(to_world_body_centred_inertial(
+            periapsides.Begin().degrees_of_freedom()));
   }
-  *world_body_centred_nearest_degrees_of_freedom = ToQP(
-      to_world_body_centred_inertial(periapsides.Begin().degrees_of_freedom()));
   return m.Return(set_error(Status::OK, error_message));
 }
 
