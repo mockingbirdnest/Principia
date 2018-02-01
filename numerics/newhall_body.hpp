@@ -96,8 +96,6 @@ struct NewhallAppromixator {
       Vector& error_estimate);
 };
 
-// TODO(phl): Use macros everywhere in this file.  It will be less error-prone.
-
 #define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
   template<typename Vector,                                                    \
            template<typename, typename, int> class Evaluator>                  \
