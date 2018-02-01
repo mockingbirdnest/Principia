@@ -84,6 +84,10 @@ class SolarSystemFactory : not_constructible {
     AllBodiesAndOblateness,
   };
 
+  template<typename Frame>
+  static void AdjustAccuracy(Accuracy const accuracy,
+                             SolarSystem<Frame>& solar_system);
+
   // A solar system at the time of the launch of Простейший Спутник-1.
   static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
   AtСпутник1Launch(Accuracy accuracy);

@@ -18,6 +18,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -38,9 +39,11 @@ namespace principia {
 using astronomy::ICRFJ2000Ecliptic;
 using astronomy::ICRFJ2000Equator;
 using astronomy::ICRFJ200EquatorialToEcliptic;
+using base::make_not_null_unique;
 using base::not_null;
 using base::ThreadPool;
 using geometry::Displacement;
+using geometry::Identity;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Quaternion;
@@ -51,6 +54,7 @@ using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order12;
+using ksp_plugin::Barycentric;
 using quantities::DebugString;
 using quantities::Frequency;
 using quantities::Length;
@@ -73,19 +77,30 @@ namespace physics {
 
 namespace {
 
-using Flow =
-    void(not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
-         Instant const& t,
-         Ephemeris<ICRFJ2000Equator>& ephemeris);
+using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
+                  Instant const& t,
+                  Ephemeris<Barycentric>& ephemeris);
 
 Length FittingTolerance(int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
 }
 
-Ephemeris<ICRFJ2000Equator>::FixedStepParameters EphemerisParameters() {
-  return Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-      QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+      QuinlanTremaine1990Order12<Position<Barycentric>>(),
       /*step=*/10 * Minute);
+}
+
+not_null<std::unique_ptr<SolarSystem<Barycentric>>> SolarSystemAtСпутник1Launch(
+    SolarSystemFactory::Accuracy const accuracy) {
+  auto at_спутник_1_launch =
+      make_not_null_unique<SolarSystem<Barycentric>>(
+          SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+          SOLUTION_DIR / "astronomy" /
+              "sol_initial_state_jd_2436145_604166667.proto.txt",
+          /*ignore_frame=*/true);
+  SolarSystemFactory::AdjustAccuracy(accuracy, *at_спутник_1_launch);
+  return at_спутник_1_launch;
 }
 
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
@@ -93,10 +108,9 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Length error;
   while (state.KeepRunning()) {
     state.PauseTiming();
-    auto const at_спутник_1_launch =
-        SolarSystemFactory::AtСпутник1Launch(accuracy);
-    Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
 
+    auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
+    Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
     auto const ephemeris =
         at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
                                            EphemerisParameters());
@@ -126,8 +140,7 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Length earth_error;
   int steps;
 
-  auto const at_спутник_1_launch =
-      SolarSystemFactory::AtСпутник1Launch(accuracy);
+  auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
   Instant const final_time = at_спутник_1_launch->epoch() +
                              integration_duration;
 
@@ -147,34 +160,40 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   while (state.KeepRunning()) {
     state.PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
+    Identity<ICRFJ2000Equator, Barycentric> to_barycentric;
+    Identity<Barycentric, ICRFJ2000Equator> from_barycentric;
     MasslessBody probe;
-    DiscreteTrajectory<ICRFJ2000Equator> trajectory;
-    DegreesOfFreedom<ICRFJ2000Equator> const sun_degrees_of_freedom =
+    DiscreteTrajectory<Barycentric> trajectory;
+    DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
-    DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
     Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
-        ICRFJ200EquatorialToEcliptic(earth_degrees_of_freedom.position() -
-                              sun_degrees_of_freedom.position());
+        ICRFJ200EquatorialToEcliptic(
+            from_barycentric(earth_degrees_of_freedom.position() -
+                             sun_degrees_of_freedom.position()));
     Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
         Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
     Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
         l4_rotation(sun_earth_displacement);
     Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
-        ICRFJ200EquatorialToEcliptic(earth_degrees_of_freedom.velocity() -
-                              sun_degrees_of_freedom.velocity());
+        ICRFJ200EquatorialToEcliptic(
+            from_barycentric(earth_degrees_of_freedom.velocity() -
+                             sun_degrees_of_freedom.velocity()));
     Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
         l4_rotation(sun_earth_velocity);
     trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<ICRFJ2000Equator>(
+                      DegreesOfFreedom<Barycentric>(
                           sun_degrees_of_freedom.position() +
-                              ICRFJ200EquatorialToEcliptic.Inverse()(
-                                  sun_l4_displacement),
+                              to_barycentric(
+                                  ICRFJ200EquatorialToEcliptic.Inverse()(
+                                      sun_l4_displacement)),
                           sun_degrees_of_freedom.velocity() +
-                              ICRFJ200EquatorialToEcliptic.Inverse()(
-                                  sun_l4_velocity)));
+                              to_barycentric(
+                                  ICRFJ200EquatorialToEcliptic.Inverse()(
+                                      sun_l4_velocity))));
 
     state.ResumeTiming();
     flow(&trajectory, final_time, *ephemeris);
@@ -212,8 +231,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Length earth_error;
   int steps;
 
-  auto const at_спутник_1_launch =
-      SolarSystemFactory::AtСпутник1Launch(accuracy);
+  auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
   Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
 
   auto const ephemeris =
@@ -226,20 +244,20 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     state.PauseTiming();
     // A probe in low earth orbit.
     MasslessBody probe;
-    DiscreteTrajectory<ICRFJ2000Equator> trajectory;
-    DegreesOfFreedom<ICRFJ2000Equator> const earth_degrees_of_freedom =
+    DiscreteTrajectory<Barycentric> trajectory;
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
-    Displacement<ICRFJ2000Equator> const earth_probe_displacement(
+    Displacement<Barycentric> const earth_probe_displacement(
         {6371 * Kilo(Metre) + 100 * NauticalMile, 0 * Metre, 0 * Metre});
     Speed const earth_probe_speed =
         Sqrt(at_спутник_1_launch->gravitational_parameter(
                  SolarSystemFactory::name(SolarSystemFactory::Earth)) /
                      earth_probe_displacement.Norm());
-    Velocity<ICRFJ2000Equator> const earth_probe_velocity(
+    Velocity<Barycentric> const earth_probe_velocity(
         {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
     trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<ICRFJ2000Equator>(
+                      DegreesOfFreedom<Barycentric>(
                           earth_degrees_of_freedom.position() +
                               earth_probe_displacement,
                           earth_degrees_of_freedom.velocity() +
@@ -276,7 +294,7 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
 void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   auto const at_спутник_1_launch =
-      SolarSystemFactory::AtСпутник1Launch(
+      SolarSystemAtСпутник1Launch(
           SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
   Instant const epoch = at_спутник_1_launch->epoch();
   auto const ephemeris =
@@ -290,16 +308,16 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
       at_спутник_1_launch->degrees_of_freedom(earth_name);
 
   MasslessBody probe;
-  std::list<DiscreteTrajectory<ICRFJ2000Equator>> trajectories;
+  std::list<DiscreteTrajectory<Barycentric>> trajectories;
   for (int i = 0; i < state.range_x(); ++i) {
-    KeplerianElements<ICRFJ2000Equator> elements;
+    KeplerianElements<Barycentric> elements;
     elements.eccentricity = 0;
     elements.semimajor_axis = (i + 1) * 10'000 * Kilo(Metre);
     elements.inclination = 0 * Radian;
     elements.longitude_of_ascending_node = 0 * Radian;
     elements.argument_of_periapsis = 0 * Radian;
     elements.true_anomaly = 0 * Radian;
-    KeplerOrbit<ICRFJ2000Equator> const orbit(
+    KeplerOrbit<Barycentric> const orbit(
         *earth_massive_body, probe, elements, epoch);
     trajectories.emplace_back();
     auto& trajectory = trajectories.back();
@@ -314,15 +332,15 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   Instant final_time = epoch;
   while (state.KeepRunning()) {
     state.PauseTiming();
-    std::vector<not_null<std::unique_ptr<Integrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>::Instance>>>
+    std::vector<not_null<std::unique_ptr<Integrator<Ephemeris<
+        Barycentric>::NewtonianMotionEquation>::Instance>>>
         instances;
     for (auto& trajectory : trajectories) {
       instances.push_back(ephemeris->NewInstance(
           {&trajectory},
-          Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
+          Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+          Ephemeris<Barycentric>::FixedStepParameters(
+              Quinlan1999Order8A<Position<Barycentric>>(),
               /*step=*/10 * Second)));
     }
     final_time += step;
@@ -425,44 +443,45 @@ void BM_EphemerisStartup(benchmark::State& state) {
 }
 
 void FlowEphemerisWithAdaptiveStep(
-    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+    Ephemeris<Barycentric>& ephemeris) {
   CHECK_OK(ephemeris.FlowWithAdaptiveStep(
       trajectory,
-      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAcceleration,
+      Ephemeris<Barycentric>::NoIntrinsicAcceleration,
       t,
-      Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<ICRFJ2000Equator>>(),
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          DormandElMikkawyPrince1986RKN434FM<
+              Position<Barycentric>>(),
           /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
-      Ephemeris<ICRFJ2000Equator>::unlimited_max_ephemeris_steps,
+      Ephemeris<Barycentric>::unlimited_max_ephemeris_steps,
       /*last_point_only=*/false));
 }
 
 void FlowEphemerisWithFixedStepSLMS(
-    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ICRFJ2000Equator>& ephemeris) {
-  auto const instance = ephemeris.NewInstance(
-      {trajectory},
-      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
-          /*step=*/10 * Second));
+    Ephemeris<Barycentric>& ephemeris) {
+  auto const instance =
+      ephemeris.NewInstance({trajectory},
+                            Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+                            Ephemeris<Barycentric>::FixedStepParameters(
+                                Quinlan1999Order8A<Position<Barycentric>>(),
+                                /*step=*/10 * Second));
   ephemeris.FlowWithFixedStep(t, *instance);
 }
 
 void FlowEphemerisWithFixedStepSRKN(
-    not_null<DiscreteTrajectory<ICRFJ2000Equator>*> const trajectory,
+    not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
-    Ephemeris<ICRFJ2000Equator>& ephemeris) {
+    Ephemeris<Barycentric>& ephemeris) {
   auto const instance = ephemeris.NewInstance(
       {trajectory},
-      Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/10 * Second));
   ephemeris.FlowWithFixedStep(t, *instance);
 }
