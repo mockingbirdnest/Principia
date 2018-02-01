@@ -72,7 +72,7 @@ class FixedMatrix final {
   };
 
   template<int r>
-  Row<r> row() const;
+  typename FixedMatrix<Scalar, rows, columns>::template Row<r> row() const;
 
  private:
   std::array<Scalar, rows * columns> data_;
