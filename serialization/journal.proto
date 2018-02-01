@@ -343,9 +343,9 @@ message EndInitialization {
 // These functions form the external API of principia; announce deprecation one
 // lunation ahead, then make them return UNIMPLEMENTED.
 
-message ExternalFlowBodyCentric {
+message ExternalFlowFreefall {
   extend Method {
-    optional ExternalFlowBodyCentric extension = 5151;
+    optional ExternalFlowFreefall extension = 5151;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
