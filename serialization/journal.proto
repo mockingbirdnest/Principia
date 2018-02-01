@@ -103,6 +103,12 @@ message QP {
   required XYZ p = 2;
 }
 
+message Status {
+  // A principia::base::Error, or equivalently, a google.rpc.Code.
+  required int32 error = 1;
+  // TODO(phl): find a way to produce strings in a struct.
+}
+
 message WXYZ {
   required double w = 1;
   required double x = 2;
@@ -357,12 +363,9 @@ message ExternalFlowFreefall {
   }
   message Out {
     required QP world_body_centred_final_degrees_of_freedom = 1;
-    required fixed64 error_message = 2 [(pointer_to) = "char const",
-                                        (is_produced) = true];
   }
   message Return {
-    // A principia::base::Error, or equivalently, a google.rpc.Code.
-    required int32 result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Out out = 2;
@@ -383,12 +386,9 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
   }
   message Out {
     required QP world_body_centred_nearest_degrees_of_freedom = 1;
-    required fixed64 error_message = 2 [(pointer_to) = "char const",
-                                        (is_produced) = true];
   }
   message Return {
-    // A principia::base::Error, or equivalently, a google.rpc.Code.
-    required int32 result = 1;
+    required Status result = 1;
   }
   optional In in = 1;
   optional Out out = 2;

@@ -12,7 +12,6 @@ namespace principia {
 namespace interface {
 
 using base::Error;
-using base::Status;
 using base::StatusOr;
 using base::UniqueBytes;
 using geometry::AngularVelocity;
@@ -27,107 +26,106 @@ using physics::RigidTransformation;
 
 namespace {
 
-char const* release_string(const std::string& s) {
-  UniqueBytes allocated_string(s.size() + 1);
-  std::memcpy(allocated_string.data.get(), s.data(), s.size() + 1);
-  return reinterpret_cast<char const*>(allocated_string.data.release());
+// This is called "New" because it will eventually construct and release the
+// message string.  For now it just wraps the error code.
+Status NewStatus(base::Status status) {
+  Status result;
+  if (!status.ok()) {
+    LOG(ERROR) << status.message();
+  }
+  result.error = static_cast<int>(status.error());
+  return result;
 }
 
-int set_error(Status status, char const** error_message) {
-  *error_message = release_string(status.message());
-  return static_cast<int>(status.error());
+// A wrapper for |NewStatus(base::Status(error, message))|, since we often
+// construct the status in the interface itself.
+Status NewStatus(Error const error, std::string const& message) {
+  return NewStatus(base::Status(error, message));
+}
+
+Status OK() {
+  return NewStatus(base::Status::OK);
 }
 
 }  // namespace
 
-int principia__ExternalFlowFreefall(
+Status principia__ExternalFlowFreefall(
     Plugin const* const plugin,
     int const central_body_index,
     QP const world_body_centred_initial_degrees_of_freedom,
     double const t_initial,
     double const t_final,
-    QP* const world_body_centred_final_degrees_of_freedom,
-    char const** const error_message) {
+    QP* const world_body_centred_final_degrees_of_freedom) {
   journal::Method<journal::ExternalFlowFreefall> m{
       {plugin,
        central_body_index,
        world_body_centred_initial_degrees_of_freedom,
        t_initial,
        t_final},
-      {world_body_centred_final_degrees_of_freedom, error_message}};
+      {world_body_centred_final_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        set_error(Status(Error::INVALID_ARGUMENT, "|plugin| must not be null"),
-                  error_message));
+        NewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  return set_error(Status(Error::UNIMPLEMENTED,
-                          "|ExternalFlowFreefall| is not yet implemented"),
-                   error_message);
+  return m.Return(NewStatus(Error::UNIMPLEMENTED,
+                            "|ExternalFlowFreefall| is not yet implemented"));
 }
 
-int principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
+Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,
     int manoeuvre_index,
     XYZ world_body_centred_reference_position,
-    QP* world_body_centred_nearest_degrees_of_freedom,
-    char const** const error_message) {
+    QP* world_body_centred_nearest_degrees_of_freedom) {
   journal::Method<journal::ExternalGetNearestPlannedCoastDegreesOfFreedom> m{
       {plugin,
        central_body_index,
        vessel_guid,
        manoeuvre_index,
        world_body_centred_reference_position},
-      {world_body_centred_nearest_degrees_of_freedom, error_message}};
+      {world_body_centred_nearest_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        set_error(Status(Error::INVALID_ARGUMENT, "|plugin| must not be null"),
-                  error_message));
+        NewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (manoeuvre_index < 0) {
-    return m.Return(set_error(Status(Error::INVALID_ARGUMENT,
-                                     "Invalid negative |manoeuvre_index|" +
-                                         std::to_string(manoeuvre_index)),
-                              error_message));
+    return m.Return(NewStatus(Error::INVALID_ARGUMENT,
+                              "Invalid negative |manoeuvre_index|" +
+                                  std::to_string(manoeuvre_index)));
   }
   if (!plugin->HasCelestial(central_body_index)) {
-    return m.Return(set_error(
-        Status(Error::NOT_FOUND,
-               "No celestial with index " + std::to_string(central_body_index)),
-        error_message));
+    return m.Return(NewStatus(
+        Error::NOT_FOUND,
+        "No celestial with index " + std::to_string(central_body_index)));
   }
   if (!plugin->HasVessel(vessel_guid)) {
-    return m.Return(
-        set_error(Status(Error::NOT_FOUND,
-                         "No vessel with GUID " + std::string(vessel_guid)),
-                  error_message));
+    return m.Return(NewStatus(
+        Error::NOT_FOUND,
+        "No vessel with GUID " + std::string(vessel_guid)));
   }
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   if (!vessel.has_flight_plan()) {
-    return m.Return(set_error(
-        Status(Error::FAILED_PRECONDITION,
-               "Vessel " + vessel.ShortDebugString() + " has no flight plan"),
-        error_message));
+    return m.Return(NewStatus(
+        Error::FAILED_PRECONDITION,
+        "Vessel " + vessel.ShortDebugString() + " has no flight plan"));
   }
   FlightPlan const& flight_plan = vessel.flight_plan();
   if (manoeuvre_index >= flight_plan.number_of_manœuvres()) {
-    return m.Return(set_error(
-        Status(Error::OUT_OF_RANGE,
-               "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
-                   " out of range, vessel " + vessel.ShortDebugString() +
-                   " has " + std::to_string(flight_plan.number_of_manœuvres()) +
-                   u8" planned manœuvres"),
-        error_message));
+    return m.Return(NewStatus(
+        Error::OUT_OF_RANGE,
+        "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
+            " out of range, vessel " + vessel.ShortDebugString() + " has " +
+            std::to_string(flight_plan.number_of_manœuvres()) +
+            u8" planned manœuvres"));
   }
   // The index of the coast segment following the desired manœuvre.
   int const segment_index = manoeuvre_index * 2 + 3;
   if (segment_index >= flight_plan.number_of_segments()) {
-    return m.Return(set_error(Status(Error::FAILED_PRECONDITION,
-                                     u8"A singularity occurs within manœuvre " +
-                                         std::to_string(manoeuvre_index) +
-                                         " of " + vessel.ShortDebugString()),
-                              error_message));
+    return m.Return(NewStatus(Error::FAILED_PRECONDITION,
+                              u8"A singularity occurs within manœuvre " +
+                                  std::to_string(manoeuvre_index) + " of " +
+                                  vessel.ShortDebugString()));
   }
   DiscreteTrajectory<Barycentric>::Iterator coast_begin;
   DiscreteTrajectory<Barycentric>::Iterator coast_end;
@@ -192,7 +190,7 @@ int principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
         ToQP(to_world_body_centred_inertial(
             periapsides.Begin().degrees_of_freedom()));
   }
-  return m.Return(set_error(Status::OK, error_message));
+  return m.Return(OK());
 }
 
 }  // namespace interface

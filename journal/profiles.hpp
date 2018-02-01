@@ -27,6 +27,7 @@ using interface::NavigationManoeuvre;
 using interface::NavigationManoeuvreFrenetTrihedron;
 using interface::Origin;
 using interface::QP;
+using interface::Status;
 using interface::WXYZ;
 using interface::XY;
 using interface::XYZ;
