@@ -142,21 +142,28 @@ TEST_F(MercuryPerihelionTest, Year1950) {
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
       orbit.elements_at_epoch();
 
-  EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
-                          *keplerian_elements_1950_.eccentricity), 1.4e-13);
-  EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
-                          *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
-  EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
-                          *keplerian_elements_1950_.mean_motion), 1.5e-14);
-  EXPECT_LT(RelativeError(keplerian_elements.inclination,
-                          keplerian_elements_1950_.inclination), 5.2e-15);
-  EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
-                          keplerian_elements_1950_.
-                              longitude_of_ascending_node), 4.2e-15);
-  EXPECT_LT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
-                          *keplerian_elements.argument_of_periapsis), 8.5e-14);
-  EXPECT_LT(RelativeError(*keplerian_elements.mean_anomaly,
-                          *keplerian_elements_1950_.mean_anomaly), 1.3e-14);
+  EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
+                             *keplerian_elements_1950_.eccentricity),
+              IsNear(9.3e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.semimajor_axis,
+                            *keplerian_elements_1950_.semimajor_axis),
+              IsNear(2.1e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
+                          *keplerian_elements_1950_.mean_motion),
+              IsNear(2.1e-13));
+  EXPECT_THAT(RelativeError(keplerian_elements.inclination,
+                          keplerian_elements_1950_.inclination),
+              IsNear(5.6e-14));
+  EXPECT_THAT(RelativeError(keplerian_elements.longitude_of_ascending_node,
+                           keplerian_elements_1950_.
+                               longitude_of_ascending_node),
+              IsNear(3.8e-14));
+  EXPECT_THAT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
+                          *keplerian_elements.argument_of_periapsis),
+              IsNear(2.0e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.mean_anomaly,
+                          *keplerian_elements_1950_.mean_anomaly),
+              IsNear(8.4e-14));
 }
 
 #if !defined(_DEBUG)
