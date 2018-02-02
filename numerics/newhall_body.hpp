@@ -96,187 +96,43 @@ struct NewhallAppromixator {
       Vector& error_estimate);
 };
 
-// TODO(phl): Use macros everywhere in this file.  It will be less error-prone.
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 3, Evaluator> {
-  static FixedVector<Vector, 4> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_3_divisions_8_w04.row<3>() * qv;
-    return newhall_c_matrix_monomial_degree_3_divisions_8_w04 * qv;
+#define PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(degree)                  \
+  template<typename Vector,                                                    \
+           template<typename, typename, int> class Evaluator>                  \
+  struct NewhallAppromixator<Vector, (degree), Evaluator> {                    \
+    static FixedVector<Vector, ((degree) + 1)> HomogeneousCoefficients(        \
+        FixedVector<Vector, 2 * divisions + 2> const& qv,                      \
+        Vector& error_estimate) {                                              \
+      error_estimate =                                                         \
+          newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04.row<      \
+              (degree)>() * qv;                                                \
+      return newhall_c_matrix_monomial_degree_##degree##_divisions_8_w04 * qv; \
+    }                                                                          \
   }
-};
 
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 4, Evaluator> {
-  static FixedVector<Vector, 5> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_4_divisions_8_w04.row<4>() * qv;
-    return newhall_c_matrix_monomial_degree_4_divisions_8_w04 * qv;
-  }
-};
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(3);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(4);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(5);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(6);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(7);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(8);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(9);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(10);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(11);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(12);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(13);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(14);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(15);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(16);
+PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION(17);
 
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 5, Evaluator> {
-  static FixedVector<Vector, 6> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_5_divisions_8_w04.row<5>() * qv;
-    return newhall_c_matrix_monomial_degree_5_divisions_8_w04 * qv;
-  }
-};
+#undef PRINCIPIA_NEWHALL_APPROXIMATOR_SPECIALIZATION
 
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 6, Evaluator> {
-  static FixedVector<Vector, 7> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_6_divisions_8_w04.row<6>() * qv;
-    return newhall_c_matrix_monomial_degree_6_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 7, Evaluator> {
-  static FixedVector<Vector, 8> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_7_divisions_8_w04.row<7>() * qv;
-    return newhall_c_matrix_monomial_degree_7_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 8, Evaluator> {
-  static FixedVector<Vector, 9> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_8_divisions_8_w04.row<8>() * qv;
-    return newhall_c_matrix_monomial_degree_8_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 9, Evaluator> {
-  static FixedVector<Vector, 10> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_9_divisions_8_w04.row<9>() * qv;
-    return newhall_c_matrix_monomial_degree_9_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 10, Evaluator> {
-  static FixedVector<Vector, 11> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_10_divisions_8_w04.row<10>() * qv;
-    return newhall_c_matrix_monomial_degree_10_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 11, Evaluator> {
-  static FixedVector<Vector, 12> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_11_divisions_8_w04.row<11>() * qv;
-    return newhall_c_matrix_monomial_degree_11_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 12, Evaluator> {
-  static FixedVector<Vector, 13> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_12_divisions_8_w04.row<12>() * qv;
-    return newhall_c_matrix_monomial_degree_12_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 13, Evaluator> {
-  static FixedVector<Vector, 14> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_13_divisions_8_w04.row<13>() * qv;
-    return newhall_c_matrix_monomial_degree_13_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 14, Evaluator> {
-  static FixedVector<Vector, 15> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_14_divisions_8_w04.row<14>() * qv;
-    return newhall_c_matrix_monomial_degree_14_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 15, Evaluator> {
-  static FixedVector<Vector, 16> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_15_divisions_8_w04.row<15>() * qv;
-    return newhall_c_matrix_monomial_degree_15_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 16, Evaluator> {
-  static FixedVector<Vector, 17> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_16_divisions_8_w04.row<16>() * qv;
-    return newhall_c_matrix_monomial_degree_16_divisions_8_w04 * qv;
-  }
-};
-
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
-struct NewhallAppromixator<Vector, 17, Evaluator> {
-  static FixedVector<Vector, 18> HomogeneousCoefficients(
-      FixedVector<Vector, 2 * divisions + 2> const& qv,
-      Vector& error_estimate) {
-    error_estimate =
-        newhall_c_matrix_чебышёв_degree_17_divisions_8_w04.row<17>() * qv;
-    return newhall_c_matrix_monomial_degree_17_divisions_8_w04 * qv;
-  }
-};
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(degree)    \
+  case (degree):                                                         \
+    coefficients =                                                       \
+        newhall_c_matrix_чебышёв_degree_##degree##_divisions_8_w04 * qv; \
+    break
 
 template<typename Vector>
 ЧебышёвSeries<Vector>
@@ -304,51 +160,21 @@ NewhallApproximationInЧебышёвBasis(int degree,
   std::vector<Vector> coefficients;
   coefficients.reserve(degree);
   switch (degree) {
-    case 3:
-      coefficients = newhall_c_matrix_чебышёв_degree_3_divisions_8_w04 * qv;
-      break;
-    case 4:
-      coefficients = newhall_c_matrix_чебышёв_degree_4_divisions_8_w04 * qv;
-      break;
-    case 5:
-      coefficients = newhall_c_matrix_чебышёв_degree_5_divisions_8_w04 * qv;
-      break;
-    case 6:
-      coefficients = newhall_c_matrix_чебышёв_degree_6_divisions_8_w04 * qv;
-      break;
-    case 7:
-      coefficients = newhall_c_matrix_чебышёв_degree_7_divisions_8_w04 * qv;
-      break;
-    case 8:
-      coefficients = newhall_c_matrix_чебышёв_degree_8_divisions_8_w04 * qv;
-      break;
-    case 9:
-      coefficients = newhall_c_matrix_чебышёв_degree_9_divisions_8_w04 * qv;
-      break;
-    case 10:
-      coefficients = newhall_c_matrix_чебышёв_degree_10_divisions_8_w04 * qv;
-      break;
-    case 11:
-      coefficients = newhall_c_matrix_чебышёв_degree_11_divisions_8_w04 * qv;
-      break;
-    case 12:
-      coefficients = newhall_c_matrix_чебышёв_degree_12_divisions_8_w04 * qv;
-      break;
-    case 13:
-      coefficients = newhall_c_matrix_чебышёв_degree_13_divisions_8_w04 * qv;
-      break;
-    case 14:
-      coefficients = newhall_c_matrix_чебышёв_degree_14_divisions_8_w04 * qv;
-      break;
-    case 15:
-      coefficients = newhall_c_matrix_чебышёв_degree_15_divisions_8_w04 * qv;
-      break;
-    case 16:
-      coefficients = newhall_c_matrix_чебышёв_degree_16_divisions_8_w04 * qv;
-      break;
-    case 17:
-      coefficients = newhall_c_matrix_чебышёв_degree_17_divisions_8_w04 * qv;
-      break;
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(3);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(4);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(5);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(6);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(7);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(8);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(9);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(10);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(11);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(12);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(13);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(14);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(15);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(16);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE(17);
     default:
       LOG(FATAL) << "Unexpected degree " << degree;
       break;
@@ -357,6 +183,8 @@ NewhallApproximationInЧебышёвBasis(int degree,
   error_estimate = coefficients[degree];
   return ЧебышёвSeries<Vector>(coefficients, t_min, t_max);
 }
+
+#undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_ЧЕБЫШЁВ_BASIS_CASE
 
 template<typename Vector, int degree,
          template<typename, typename, int> class Evaluator>
@@ -389,8 +217,16 @@ NewhallApproximationInMonomialBasis(std::vector<Vector> const& q,
              t_mid);
 }
 
-template<typename Vector,
-         template<typename, typename, int> class Evaluator>
+#define PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(degree)    \
+  case (degree):                                                          \
+    return make_not_null_unique<                                          \
+        PolynomialInMonomialBasis<Vector, Instant, (degree), Evaluator>>( \
+        NewhallApproximationInMonomialBasis<Vector, (degree), Evaluator>( \
+            q, v,                                                         \
+            t_min, t_max,                                                 \
+            error_estimate))
+
+template<typename Vector, template<typename, typename, int> class Evaluator>
 not_null<std::unique_ptr<Polynomial<Vector, Instant>>>
 NewhallApproximationInMonomialBasis(int degree,
                                     std::vector<Vector> const& q,
@@ -399,116 +235,28 @@ NewhallApproximationInMonomialBasis(int degree,
                                     Instant const& t_max,
                                     Vector& error_estimate) {
   switch (degree) {
-    case 3:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 3, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 3, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 4:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 4, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 4, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 5:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 5, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 5, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 6:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 6, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 6, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 7:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 7, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 7, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 8:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 8, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 8, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 9:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 9, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 9, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 10:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 10, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 10, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 11:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 11, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 11, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 12:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 12, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 12, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 13:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 13, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 13, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 14:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 14, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 14, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 15:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 15, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 15, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 16:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 16, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 16, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
-    case 17:
-      return make_not_null_unique<
-                 PolynomialInMonomialBasis<Vector, Instant, 17, Evaluator>>(
-                     NewhallApproximationInMonomialBasis<Vector, 17, Evaluator>(
-                         q, v,
-                         t_min, t_max,
-                         error_estimate));
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(3);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(4);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(5);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(6);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(7);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(8);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(9);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(10);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(11);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(12);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(13);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(14);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(15);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(16);
+    PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE(17);
     default:
       LOG(FATAL) << "Unexpected degree " << degree;
       break;
   }
 }
+
+#undef PRINCIPIA_NEWHALL_APPROXIMATION_IN_MONOMIAL_BASIS_CASE
 
 }  // namespace internal_newhall
 }  // namespace numerics
