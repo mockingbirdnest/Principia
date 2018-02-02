@@ -150,7 +150,7 @@ TEST_F(MercuryPerihelionTest, Year1950) {
               IsNear(2.1e-13));
   EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
                           *keplerian_elements_1950_.mean_motion),
-              IsNear(2.1e-13));
+              IsNear(3.1e-13));
   EXPECT_THAT(RelativeError(keplerian_elements.inclination,
                           keplerian_elements_1950_.inclination),
               IsNear(5.6e-14));
