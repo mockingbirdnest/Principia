@@ -16,6 +16,7 @@
   <ItemGroup />
   <Target Name="CopyProtobufDll" AfterTargets="Build">
     <Copy SourceFiles="$(SolutionDir)..\Google\protobuf\vsprojects\$(PrincipiaDependencyConfiguration)\$(Platform)\libprotobuf.dll"
-          DestinationFolder="$(OutDir)"/>
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true"/>
   </Target>
 </Project>
