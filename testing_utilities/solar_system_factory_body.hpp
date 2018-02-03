@@ -18,7 +18,7 @@ namespace internal_solar_system_factory {
 using base::Contains;
 
 template<typename Frame>
-static void SolarSystemFactory::AdjustAccuracy(
+void SolarSystemFactory::AdjustAccuracy(
     SolarSystemFactory::Accuracy const accuracy,
     SolarSystem<Frame>& solar_system) {
   std::set<std::string> existing;
