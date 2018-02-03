@@ -1,10 +1,9 @@
 ﻿
 // The files containing the tree of child classes of |Body| must be included in
-// the order of inheritance to avoid circular dependencies.  This class will end
-// up being reincluded as part of the implementation of its parent.
+// the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_PHYSICS_BODY_HPP_
 #include "physics/body.hpp"
-#else
+#endif  // PRINCIPIA_PHYSICS_BODY_HPP_
 #ifndef PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
 
@@ -93,4 +92,3 @@ using internal_massive_body::MassiveBody;
 #endif
 
 #endif  // PRINCIPIA_PHYSICS_MASSIVE_BODY_HPP_
-#endif  // PRINCIPIA_PHYSICS_BODY_HPP_

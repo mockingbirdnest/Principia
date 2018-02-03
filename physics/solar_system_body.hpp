@@ -83,21 +83,26 @@ inline serialization::InitialState ParseInitialState(
 template<typename Frame>
 SolarSystem<Frame>::SolarSystem(
     std::experimental::filesystem::path const& gravity_model_filename,
-    std::experimental::filesystem::path const& initial_state_filename)
+    std::experimental::filesystem::path const& initial_state_filename,
+    bool const ignore_frame)
     : SolarSystem(ParseGravityModel(gravity_model_filename),
-                  ParseInitialState(initial_state_filename)) {}
+                  ParseInitialState(initial_state_filename),
+                  ignore_frame) {}
 
 template<typename Frame>
 SolarSystem<Frame>::SolarSystem(
     serialization::GravityModel const& gravity_model,
-    serialization::InitialState const& initial_state)
+    serialization::InitialState const& initial_state,
+    bool const ignore_frame)
     : gravity_model_(gravity_model),
       initial_state_(initial_state) {
   gravity_model_.CheckInitialized();
   initial_state_.CheckInitialized();
 
-  CheckFrame(gravity_model_);
-  CheckFrame(initial_state_);
+  if (!ignore_frame) {
+    CheckFrame(gravity_model_);
+    CheckFrame(initial_state_);
+  }
 
   // Store the data in maps keyed by body name.
   for (auto& body : *gravity_model_.mutable_body()) {

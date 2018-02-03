@@ -386,16 +386,16 @@ TEST_P(EphemerisTest, Moon) {
 
   EXPECT_THAT(moon_positions.size(), Eq(101));
   EXPECT_THAT(moon_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v, 630, 632));
+              AlmostEquals(0.25 * period * v, 343, 345));
   EXPECT_THAT(moon_positions[25].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v, 360, 362));
+              AlmostEquals(0.50 * period * v, 151, 153));
   EXPECT_THAT(moon_positions[50].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v, 41, 46));
+              AlmostEquals(0.75 * period * v, 512, 516));
   EXPECT_THAT(moon_positions[75].coordinates().y, Eq(q));
   EXPECT_THAT(moon_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v, 135, 137));
+              AlmostEquals(1.00 * period * v, 401, 403));
   EXPECT_THAT(moon_positions[100].coordinates().y, Eq(q));
 }
 
@@ -472,16 +472,16 @@ TEST_P(EphemerisTest, EarthProbe) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 996, 1012));
+              AlmostEquals(0.25 * period * v_earth, 539, 541));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 551, 566));
+              AlmostEquals(0.50 * period * v_earth, 241, 242));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 22, 33));
+              AlmostEquals(0.75 * period * v_earth, 403, 405));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 217, 232));
+              AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
@@ -497,11 +497,11 @@ TEST_P(EphemerisTest, EarthProbe) {
                               ICRFJ2000Equator::origin);
   }
   // The solution is a line, so the rounding errors dominate.  Different
-  // compilers result in different errors and thus different numbers of steps.
+  // libms result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
-              AnyOf(Eq(379), Eq(388)));
+              AnyOf(Eq(395), Eq(414), Eq(438), Eq(450)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 194, 235));
+              AlmostEquals(1.00 * period * v_probe, 244, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -607,16 +607,16 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
 
   EXPECT_THAT(earth_positions.size(), Eq(101));
   EXPECT_THAT(earth_positions[25].coordinates().x,
-              AlmostEquals(0.25 * period * v_earth, 996, 1012));
+              AlmostEquals(0.25 * period * v_earth, 539, 541));
   EXPECT_THAT(earth_positions[25].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[50].coordinates().x,
-              AlmostEquals(0.50 * period * v_earth, 551, 566));
+              AlmostEquals(0.50 * period * v_earth, 241, 242));
   EXPECT_THAT(earth_positions[50].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[75].coordinates().x,
-              AlmostEquals(0.75 * period * v_earth, 22, 33));
+              AlmostEquals(0.75 * period * v_earth, 403, 405));
   EXPECT_THAT(earth_positions[75].coordinates().y, Eq(q_earth));
   EXPECT_THAT(earth_positions[100].coordinates().x,
-              AlmostEquals(1.00 * period * v_earth, 217, 232));
+              AlmostEquals(1.00 * period * v_earth, 633, 635));
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe1 = (trajectory1.last().degrees_of_freedom().position() -

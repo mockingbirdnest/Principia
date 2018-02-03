@@ -1,10 +1,9 @@
 ﻿
 // The files containing the tree of child classes of |Body| must be included in
-// the order of inheritance to avoid circular dependencies.  This class will end
-// up being reincluded as part of the implementation of its parent.
+// the order of inheritance to avoid circular dependencies.
 #ifndef PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #include "physics/rotating_body.hpp"
-#else
+#endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
@@ -89,4 +88,3 @@ using internal_oblate_body::OblateBody;
 #endif
 
 #endif  // PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
-#endif  // PRINCIPIA_PHYSICS_ROTATING_BODY_HPP_

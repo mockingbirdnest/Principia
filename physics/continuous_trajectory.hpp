@@ -2,12 +2,13 @@
 #pragma once
 
 #include <experimental/optional>
-#include <vector>
 #include <utility>
+#include <vector>
 
+#include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
-#include "numerics/чебышёв_series.hpp"
+#include "numerics/polynomial.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/trajectory.hpp"
 #include "quantities/quantities.hpp"
@@ -25,16 +26,15 @@ using geometry::Position;
 using geometry::Velocity;
 using quantities::Length;
 using quantities::Time;
-using numerics::ЧебышёвSeries;
+using numerics::Polynomial;
 
 template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
-  // state that gets incrementally updated as the Чебышёв polynomials are
-  // constructed.  The client may get a |Checkpoint| at any time and use it to
-  // serialize the trajectory up to and including the time designated by the
-  // |Checkpoint|.
+  // state that gets incrementally updated as the polynomials are constructed.
+  // The client may get a |Checkpoint| at any time and use it to serialize the
+  // trajectory up to and including the time designated by the |Checkpoint|.
   class Checkpoint;
 
   // Constructs a trajectory with the given time |step|.  Because the Чебышёв
@@ -97,11 +97,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
       serialization::ContinuousTrajectory const& message);
 
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
-  // state that gets incrementally updated as the Чебышёв polynomials are
-  // constructed.  The client may get a |Checkpoint| at any time and use it to
-  // serialize the trajectory up to and including the time designated by the
-  // |Checkpoint|.  The only thing that clients may do with |Checkpoint| objects
-  // is to initialize them with GetCheckpoint.
+  // state that gets incrementally updated as the polynomials are constructed.
+  // The client may get a |Checkpoint| at any time and use it to serialize the
+  // trajectory up to and including the time designated by the |Checkpoint|.
+  // The only thing that clients may do with |Checkpoint| objects is to
+  // initialize them with GetCheckpoint.
   class Checkpoint final {
    public:
     // Returns true if this checkpoint is after |time| and would remain valid
@@ -132,6 +132,32 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   ContinuousTrajectory();
 
  private:
+  // Each polynomial is valid over an interval [t_min, t_max].  Polynomials are
+  // stored in this vector sorted by their |t_max|, as it turns out that we
+  // never need to extract their |t_min|.  Logically, the |t_min| for a
+  // polynomial is the |t_max| of the previous one.  The first polynomial has a
+  // |t_min| which is |*first_time_|.
+  struct InstantPolynomialPair {
+    InstantPolynomialPair(
+        Instant t_max,
+        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+            polynomial);
+    Instant t_max;
+    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+        polynomial;
+  };
+  using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
+
+  // May be overridden for testing.
+  virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
+  NewhallApproximationInMonomialBasis(
+      int degree,
+      std::vector<Displacement<Frame>> const& q,
+      std::vector<Velocity<Frame>> const& v,
+      Instant const& t_min,
+      Instant const& t_max,
+      Displacement<Frame>& error_estimate) const;
+
   // Computes the best Newhall approximation based on the desired tolerance.
   // Adjust the |degree_| and other member variables to stay within the
   // tolerance while minimizing the computational cost and avoiding numerical
@@ -139,20 +165,13 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   Status ComputeBestNewhallApproximation(
       Instant const& time,
       std::vector<Displacement<Frame>> const& q,
-      std::vector<Velocity<Frame>> const& v,
-      ЧебышёвSeries<Displacement<Frame>> (*newhall_approximation)(
-          int degree,
-          std::vector<Displacement<Frame>> const& q,
-          std::vector<Velocity<Frame>> const& v,
-          Instant const& t_min,
-          Instant const& t_max,
-          Displacement<Frame>& displacement_error_estimate));
+      std::vector<Velocity<Frame>> const& v);
 
-  // Returns an iterator to the series applicable for the given |time|, or
-  // |begin()| if |time| is before the first series or |end()| if |time| is
-  // after the last series.  Time complexity is O(N Log N).
-  typename std::vector<ЧебышёвSeries<Displacement<Frame>>>::const_iterator
-  FindSeriesForInstant(Instant const& time) const;
+  // Returns an iterator to the polynomial applicable for the given |time|, or
+  // |begin()| if |time| is before the first polynomial or |end()| if |time| is
+  // after the last polynomial.  Time complexity is O(N Log N).
+  typename InstantPolynomialPairs::const_iterator
+  FindPolynomialForInstant(Instant const& time) const;
 
   // Construction parameters;
   Time const step_;
@@ -168,19 +187,19 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   int degree_;
   int degree_age_;
 
-  // The series are in increasing time order.  Their intervals are consecutive.
-  std::vector<ЧебышёвSeries<Displacement<Frame>>> series_;
+  // The polynomials are in increasing time order.
+  InstantPolynomialPairs polynomials_;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  // |*first_time_ >= series_.front().t_min()|
   std::experimental::optional<Instant> first_time_;
 
-  // The points that have not yet been incorporated in a series.  Nonempty for a
-  // nonempty trajectory.
-  // |last_points_.begin()->first == series_.back().t_max()|
+  // The points that have not yet been incorporated in a polynomial.  Nonempty
+  // for a nonempty trajectory.
+  // |last_points_.begin()->first == polynomials_.back().t_max|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 
-  friend class ContinuousTrajectoryTest;
+  template<typename Frame>
+  friend class TestableContinuousTrajectory;
 };
 
 }  // namespace internal_continuous_trajectory
