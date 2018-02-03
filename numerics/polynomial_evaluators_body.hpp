@@ -323,6 +323,7 @@ Derivative<Value, Argument>
 HornerEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
+  // TODO(phl): Starting at 1 prevents us from having polynomials of degree 0.
   return InternalHornerEvaluator<Value, Argument, degree, /*low=*/1>::
       EvaluateDerivative(coefficients, argument);
 }

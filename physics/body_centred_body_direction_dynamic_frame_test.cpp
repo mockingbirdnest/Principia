@@ -430,9 +430,9 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
   // ensures that we don't get NaNs.
   EXPECT_THAT(big_small_frame_->GeometricAcceleration(t, point_dof),
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
-                  -9.54502614154907060e5 * Metre / Pow<2>(Second),
-                  -1.90900949256416666e6 * Metre / Pow<2>(Second),
-                  -2.86351378905829135e6 * Metre / Pow<2>(Second)}), 0));
+                  -9.54502614154908457e5 * Metre / Pow<2>(Second),
+                  -1.90900949256416853e6 * Metre / Pow<2>(Second),
+                  -2.86351378905829182e6 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
@@ -480,7 +480,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
             {big_->gravitational_parameter(),
              small_->gravitational_parameter()});
     EXPECT_THAT(barycentre.velocity().Norm(),
-                VanishesBefore(1 * Kilo(Metre) / Second, 0, 40));
+                VanishesBefore(1 * Kilo(Metre) / Second, 0, 45));
     barycentre_trajectory.Append(t0_ + t, barycentre);
   }
   BodyCentredBodyDirectionDynamicFrame<ICRFJ2000Equator, BigSmallFrame>
@@ -499,10 +499,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
             {ICRFJ2000Equator::origin, Velocity<ICRFJ2000Equator>{}});
     EXPECT_THAT(
         (dof_from_discrete.position() - dof_from_both_bodies.position()).Norm(),
-        VanishesBefore(1 * Kilo(Metre), 0, 10));
+        VanishesBefore(1 * Kilo(Metre), 0, 15));
     EXPECT_THAT(
         (dof_from_discrete.velocity() - dof_from_both_bodies.velocity()).Norm(),
-        VanishesBefore(1 * Kilo(Metre) / Second, 0, 40));
+        VanishesBefore(1 * Kilo(Metre) / Second, 0, 93));
     // For the moment, the |BodyCentredBodyDirectionDynamicFrame| assumes that
     // its reference trajectories are free-falling, and gives us the wrong
     // geometric acceleration when this is not the case.
