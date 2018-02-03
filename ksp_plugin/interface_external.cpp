@@ -1,4 +1,4 @@
-
+Ôªø
 #include "ksp_plugin/interface.hpp"
 
 #include "base/array.hpp"
@@ -111,19 +111,19 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
         "Vessel " + vessel.ShortDebugString() + " has no flight plan"));
   }
   FlightPlan const& flight_plan = vessel.flight_plan();
-  if (manoeuvre_index >= flight_plan.number_of_manúuvres()) {
+  if (manoeuvre_index >= flight_plan.number_of_man≈ìuvres()) {
     return m.Return(NewStatus(
         Error::OUT_OF_RANGE,
         "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
             " out of range, vessel " + vessel.ShortDebugString() + " has " +
-            std::to_string(flight_plan.number_of_manúuvres()) +
-            u8" planned manúuvres"));
+            std::to_string(flight_plan.number_of_man≈ìuvres()) +
+            u8" planned man≈ìuvres"));
   }
-  // The index of the coast segment following the desired manúuvre.
+  // The index of the coast segment following the desired man≈ìuvre.
   int const segment_index = manoeuvre_index * 2 + 3;
   if (segment_index >= flight_plan.number_of_segments()) {
     return m.Return(NewStatus(Error::FAILED_PRECONDITION,
-                              u8"A singularity occurs within manúuvre " +
+                              u8"A singularity occurs within man≈ìuvre " +
                                   std::to_string(manoeuvre_index) + " of " +
                                   vessel.ShortDebugString()));
   }
@@ -178,9 +178,9 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   if (periapsides.Empty()) {
     bool const coasting_away =
         (coast.Begin().degrees_of_freedom().position() -
-         reference_position).Norm≤() <
+         reference_position).Norm¬≤() <
         (coast.last().degrees_of_freedom().position() -
-         reference_position).Norm≤();
+         reference_position).Norm¬≤();
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
             coasting_away ? coast.Begin().degrees_of_freedom()
