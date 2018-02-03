@@ -180,9 +180,9 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
-  return R3Element<Scalar>((left.x + right.x) * 1.000000000000001,
-                           (left.y + right.y) * 1.000000000000001,
-                           (left.z + right.z) * 1.000000000000001);
+  return R3Element<Scalar>(left.x + right.x,
+                           left.y + right.y,
+                           left.z + right.z);
 }
 
 template<typename Scalar>

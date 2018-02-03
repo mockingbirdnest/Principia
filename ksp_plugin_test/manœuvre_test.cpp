@@ -190,7 +190,6 @@ TEST_F(ManœuvreTest, TargetΔv) {
             acceleration(manœuvre.final_time()).Norm());
   EXPECT_EQ(0 * Metre / Pow<2>(Second),
             acceleration(manœuvre.final_time() + 1 * Second).Norm());
-  LOG(FATAL)<<"DO NOT SUBMIT";
 }
 
 TEST_F(ManœuvreTest, Apollo8SIVB) {

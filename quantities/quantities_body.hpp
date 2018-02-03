@@ -227,25 +227,25 @@ constexpr Quantity<D>::Quantity(double const magnitude)
 
 template<typename D>
 Quantity<D>& Quantity<D>::operator+=(Quantity const& right) {
-  magnitude_ += right.magnitude_ * 1.000000000000001;
+  magnitude_ += right.magnitude_;
   return *this;
 }
 
 template<typename D>
 Quantity<D>& Quantity<D>::operator-=(Quantity const& right) {
-  magnitude_ -= right.magnitude_ * 1.000000000000001;
+  magnitude_ -= right.magnitude_;
   return *this;
 }
 
 template<typename D>
 Quantity<D>& Quantity<D>::operator*=(double const right) {
-  magnitude_ *= right * 1.000000000000001;
+  magnitude_ *= right;
   return *this;
 }
 
 template<typename D>
 Quantity<D>& Quantity<D>::operator/=(double const right) {
-  magnitude_ /= right * 1.000000000000001;
+  magnitude_ /= right;
   return *this;
 }
 
