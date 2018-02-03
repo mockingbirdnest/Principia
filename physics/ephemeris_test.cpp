@@ -497,7 +497,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                               ICRFJ2000Equator::origin);
   }
   // The solution is a line, so the rounding errors dominate.  Different
-  // compilers result in different errors and thus different numbers of steps.
+  // libms result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
               AnyOf(Eq(395), Eq(414), Eq(450)));
   EXPECT_THAT(probe_positions.back().coordinates().x,

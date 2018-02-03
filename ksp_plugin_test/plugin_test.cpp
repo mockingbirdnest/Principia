@@ -487,6 +487,9 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   // 2     1     1     2
   //   |<   7/3 m   >|
   // S0    P2    M3    P1
+  // The geometry of the system must be such that the orbital periods are large
+  // compared to our integration step.  We used to have metres where we now have
+  // kilometres and the Newhall approximation was horribly ill-conditioned.
   serialization::GravityModel::Body gravity_model;
   serialization::InitialState::Keplerian::Body initial_state;
 
