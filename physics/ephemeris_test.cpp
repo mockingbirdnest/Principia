@@ -499,7 +499,7 @@ TEST_P(EphemerisTest, EarthProbe) {
   // The solution is a line, so the rounding errors dominate.  Different
   // compilers result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
-              AnyOf(Eq(414), Eq(450)));
+              AnyOf(Eq(395), Eq(414), Eq(450)));
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 244, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,

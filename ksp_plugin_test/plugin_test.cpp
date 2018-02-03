@@ -175,7 +175,7 @@ class TestablePlugin : public Plugin {
   // |MockEphemeris| rather than an |Ephemeris|.
   void EndInitialization() override {
     Plugin::EndInitialization();
-    // Extend the continuous trajectories of the ephemeri.
+    // Extend the continuous trajectories of the ephemeris.
     ephemeris_->Prolong(current_time_ + 10 * Hour);
     for (auto const& body : ephemeris_->bodies()) {
       ContinuousTrajectory<Barycentric>* const trajectory =
@@ -469,10 +469,10 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
                                              .displacement()),
-                                 0, 42380),
+                                 0, 32764),
                     AlmostEquals(
                         to_icrf(plugin_->CelestialFromParent(index).velocity()),
-                        74, 1475468)))
+                        441, 9400740)))
         << SolarSystemFactory::name(index);
   }
 }
@@ -523,7 +523,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       R"(name : "P1"
          elements {
            eccentricity                : 0
-           semimajor_axis              : "2.333333333333333333333333333333333 m"
+           semimajor_axis              : "2.33333333333333333333333333333333 km"
            inclination                 : "0 rad"
            longitude_of_ascending_node : "0 rad"
            argument_of_periapsis       : "0 rad"
@@ -550,7 +550,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       R"(name : "P2"
          elements {
            eccentricity                : 0
-           semimajor_axis              : "1 m"
+           semimajor_axis              : "1 km"
            inclination                 : "0 rad"
            longitude_of_ascending_node : "0 rad"
            argument_of_periapsis       : "0 rad"
@@ -577,7 +577,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       R"(name : "M3"
          elements {
            eccentricity                : 0
-           semimajor_axis              : "1 m"
+           semimajor_axis              : "1 km"
            inclination                 : "0 rad"
            longitude_of_ascending_node : "0 rad"
            argument_of_periapsis       : "0 rad"
@@ -593,11 +593,11 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3 * Metre, 1214, 1217));
+              AlmostEquals(3 * Kilo(Metre), 2));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Metre, 3838, 3844));
+              AlmostEquals(1 * Kilo(Metre), 3));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Metre, 30716, 30722));
+              AlmostEquals(1 * Kilo(Metre), 1));
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
@@ -996,11 +996,13 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
     EXPECT_THAT(
         (initial_from_parent.displacement() -
          computed_from_parent.displacement()).Norm(),
-        VanishesBefore(initial_from_parent.displacement().Norm(), 1, 4));
+        VanishesBefore(initial_from_parent.displacement().Norm(), 0, 6))
+        << SolarSystemFactory::name(index);
     EXPECT_THAT(
         (initial_from_parent.velocity() -
          computed_from_parent.velocity()).Norm(),
-        VanishesBefore(initial_from_parent.velocity().Norm(), 718, 422847));
+        VanishesBefore(initial_from_parent.velocity().Norm(), 1117, 1915381))
+        << SolarSystemFactory::name(index);
   }
 }
 
