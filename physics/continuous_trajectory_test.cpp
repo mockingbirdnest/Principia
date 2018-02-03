@@ -103,7 +103,7 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Displacement<Frame>& error_estimate) const {
   using P = PolynomialInMonomialBasis<
                 Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
-  P::Coefficients const coefficients = {Displacement<Frame>(),
+  typename P::Coefficients const coefficients = {Displacement<Frame>(),
                                         Velocity<Frame>()};
   not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
       polynomial = make_not_null_unique<P>(coefficients, Instant());
