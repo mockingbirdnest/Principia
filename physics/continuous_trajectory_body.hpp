@@ -282,7 +282,7 @@ ContinuousTrajectory<Frame>::ReadFromMessage(
     for (auto const& pair : message.instant_polynomial_pair()) {
       continuous_trajectory->polynomials_.emplace_back(
           Instant::ReadFromMessage(pair.t_max()),
-          Polynomial<Displacement<Frame>, Instant>::ReadFromMessage<
+          Polynomial<Displacement<Frame>, Instant>::template ReadFromMessage<
               EstrinEvaluator>(pair.polynomial()));
     }
   }
