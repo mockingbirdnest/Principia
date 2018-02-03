@@ -29,6 +29,9 @@ using quantities::Time;
 using numerics::Polynomial;
 
 template<typename Frame>
+class TestableContinuousTrajectory;
+
+template<typename Frame>
 class ContinuousTrajectory : public Trajectory<Frame> {
  public:
   // A |Checkpoint| contains the impermanent state of a trajectory, i.e., the
@@ -198,8 +201,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // |last_points_.begin()->first == polynomials_.back().t_max|
   std::vector<std::pair<Instant, DegreesOfFreedom<Frame>>> last_points_;
 
-  template<typename Frame>
-  friend class TestableContinuousTrajectory;
+  friend class TestableContinuousTrajectory<Frame>;
 };
 
 }  // namespace internal_continuous_trajectory

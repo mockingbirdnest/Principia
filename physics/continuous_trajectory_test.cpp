@@ -103,8 +103,8 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
     Displacement<Frame>& error_estimate) const {
   using P = PolynomialInMonomialBasis<
                 Displacement<Frame>, Instant, /*degree=*/1, HornerEvaluator>;
-  P::Coefficients const coefficients = {Displacement<Frame>(),
-                                        Velocity<Frame>()};
+  typename P::Coefficients const coefficients = {Displacement<Frame>(),
+                                                 Velocity<Frame>()};
   not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
       polynomial = make_not_null_unique<P>(coefficients, Instant());
   FillNewhallApproximationInMonomialBasis(degree,
@@ -117,22 +117,22 @@ TestableContinuousTrajectory<Frame>::NewhallApproximationInMonomialBasis(
 
 template<typename Frame>
 int TestableContinuousTrajectory<Frame>::degree() const {
-  return degree_;
+  return this->degree_;
 }
 
 template<typename Frame>
 Length TestableContinuousTrajectory<Frame>::adjusted_tolerance() const {
-  return adjusted_tolerance_;
+  return this->adjusted_tolerance_;
 }
 
 template<typename Frame>
 bool TestableContinuousTrajectory<Frame>::is_unstable() const {
-  return is_unstable_;
+  return this->is_unstable_;
 }
 
 template<typename Frame>
 void TestableContinuousTrajectory<Frame>::ResetBestNewhallApproximation() {
-  degree_age_ = std::numeric_limits<int>::max();
+  this->degree_age_ = std::numeric_limits<int>::max();
 }
 
 class ContinuousTrajectoryTest : public testing::Test {
