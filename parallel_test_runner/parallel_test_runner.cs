@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -179,6 +180,7 @@ class ParallelTestRunner {
     Console.WriteLine("Running " + processes.Count + " processes...");
 
     Task[] tasks = new Task[processes.Count];
+    var   errors = new ConcurrentBag<string>();
     for (int i = 0; i < processes.Count; ++i) {
       var process = processes[i];
       // We cannot use i in the lambdas, it would be captured by reference.
@@ -190,11 +192,9 @@ class ParallelTestRunner {
                             await process.StandardOutput.ReadLineAsync());
         }
         if (process.ExitCode != 0) {
-          Console.WriteLine("Exit code " + process.ExitCode + " from (" +
-                            index.ToString() + ") " +
-                            process.StartInfo.FileName + " " +
-                            process.StartInfo.Arguments);
-          Environment.Exit(process.ExitCode);
+          errors.Add("Exit code " + process.ExitCode + " from (" +
+                     index.ToString() + ") " + process.StartInfo.FileName +
+                     " " + process.StartInfo.Arguments);
         }
       });
       Task.Run(async () => {
@@ -206,7 +206,11 @@ class ParallelTestRunner {
     }
 
     Task.WaitAll(tasks);
+    foreach (string error in errors) {
+      Console.WriteLine(error);
+    }
     Console.WriteLine("Done (" + stopwatch.ElapsedMilliseconds + " ms)");
+    Environment.Exit(errors.Count);
   }
 }
 
