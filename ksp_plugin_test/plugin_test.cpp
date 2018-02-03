@@ -596,11 +596,11 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3 * Kilo(Metre), 2));
+              AlmostEquals(3 * Kilo(Metre), 1, 2));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
               AlmostEquals(1 * Kilo(Metre), 3));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 1));
+              AlmostEquals(1 * Kilo(Metre), 1, 6));
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
