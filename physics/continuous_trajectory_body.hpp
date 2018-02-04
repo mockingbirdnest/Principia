@@ -465,8 +465,6 @@ ContinuousTrajectory<Frame>::FindPolynomialForInstant(
     }
   }
   {
-    // Need to use |lower_bound|, not |upper_bound|, because it allows
-    // heterogeneous arguments.
     auto const it =
         std::lower_bound(polynomials_.begin(),
                          polynomials_.end(),

@@ -203,8 +203,11 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // polynomial.  This makes us O(1) instead of O(Log N) most of the time and it
   // speeds up the lookup by a factor of 7.  This member is atomic because of
   // multithreading in the ephemeris, and is mutable to maintain the fiction
-  // that evaluation has no side effects.  Any value in the range of
-  // |polynomials_| or 0 is correct.
+  // that evaluation has no side effects.  In the presence of multithreading it
+  // may be that different threads would want to access polynomials at different
+  // indices, but by and large the threads progress in parallel, and benchmarks
+  // show that there is no adverse performance effects.  Any value in the range
+  // of |polynomials_| or 0 is correct.
   mutable std::atomic_int last_accessed_polynomial_ = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
