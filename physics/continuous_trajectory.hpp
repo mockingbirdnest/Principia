@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <atomic>
 #include <experimental/optional>
 #include <utility>
 #include <vector>
@@ -192,6 +193,22 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The polynomials are in increasing time order.
   InstantPolynomialPairs polynomials_;
+
+  // Lookups into |polynomials_| are expensive because they entail a binary
+  // search into a vector that grows over time.  In benchmarks, this can be as
+  // costly as the polynomial evaluation itself.  The accesses are not random,
+  // though, they are clustered in time and (slowly) increasing.  To take
+  // advantage of this, we keep track of the index of the last accessed
+  // polynomial and first try to see if the new lookup is for the same
+  // polynomial.  This makes us O(1) instead of O(Log N) most of the time and it
+  // speeds up the lookup by a factor of 7.  This member is atomic because of
+  // multithreading in the ephemeris, and is mutable to maintain the fiction
+  // that evaluation has no side effects.  In the presence of multithreading it
+  // may be that different threads would want to access polynomials at different
+  // indices, but by and large the threads progress in parallel, and benchmarks
+  // show that there is no adverse performance effects.  Any value in the range
+  // of |polynomials_| or 0 is correct.
+  mutable std::atomic_int last_accessed_polynomial_ = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   std::experimental::optional<Instant> first_time_;
