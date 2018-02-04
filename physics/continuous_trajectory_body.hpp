@@ -57,7 +57,7 @@ bool ContinuousTrajectory<Frame>::empty() const {
 
 template<typename Frame>
 double ContinuousTrajectory<Frame>::average_degree() const {
-  if (empty()) {
+  if (polynomials_.empty()) {
     return 0;
   } else {
     double total = 0;
@@ -130,14 +130,16 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
   if (polynomials_.empty()) {
     first_time_ = std::experimental::nullopt;
     last_points_.clear();
+    last_accessed_polynomial_ = 0;
   } else {
     first_time_ = time;
+    last_accessed_polynomial_ = polynomials_.size() - 1;
   }
 }
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_min() const {
-  if (empty()) {
+  if (polynomials_.empty()) {
     return astronomy::InfiniteFuture;
   }
   return *first_time_;
@@ -145,7 +147,7 @@ Instant ContinuousTrajectory<Frame>::t_min() const {
 
 template<typename Frame>
 Instant ContinuousTrajectory<Frame>::t_max() const {
-  if (empty()) {
+  if (polynomials_.empty()) {
     return astronomy::InfinitePast;
   }
   return polynomials_.crbegin()->t_max;
@@ -452,27 +454,30 @@ template<typename Frame>
 typename ContinuousTrajectory<Frame>::InstantPolynomialPairs::const_iterator
 ContinuousTrajectory<Frame>::FindPolynomialForInstant(
     Instant const& time) const {
-  // Need to use |lower_bound|, not |upper_bound|, because it allows
-  // heterogeneous arguments.  This returns the first polynomial |p| such that
-  // |time <= p.t_max()|.
-  //TODO(phl):comment
-
+  // This returns the first polynomial |p| such that |time <= p.t_max|.
   {
+    auto const begin = polynomials_.begin();
+    auto const it = begin + last_accessed_polynomial_;
     int const last_accessed_polynomial = last_accessed_polynomial_;
-    if (time <= polynomials_[last_accessed_polynomial].t_max &&
-        (last_accessed_polynomial == 0 ||
-         polynomials_[last_accessed_polynomial - 1].t_max < time)) {
-      return polynomials_.begin() + last_accessed_polynomial;
+    if (it != polynomials_.end() && time <= it->t_max &&
+        (it == begin || std::prev(it)->t_max < time)) {
+      return it;
     }
   }
-  auto const it =
-      std::lower_bound(polynomials_.begin(),
-                       polynomials_.end(),
-                       time,
-                       [](InstantPolynomialPair const& left,
-                          Instant const& right) { return left.t_max < right; });
-  last_accessed_polynomial_ = it - polynomials_.begin();
-  return it;
+  {
+    // Need to use |lower_bound|, not |upper_bound|, because it allows
+    // heterogeneous arguments.
+    auto const it =
+        std::lower_bound(polynomials_.begin(),
+                         polynomials_.end(),
+                         time,
+                         [](InstantPolynomialPair const& left,
+                            Instant const& right) {
+                           return left.t_max < right;
+                         });
+    last_accessed_polynomial_ = it - polynomials_.begin();
+    return it;
+  }
 }
 
 }  // namespace internal_continuous_trajectory
