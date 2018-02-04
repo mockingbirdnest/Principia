@@ -455,12 +455,23 @@ ContinuousTrajectory<Frame>::FindPolynomialForInstant(
   // Need to use |lower_bound|, not |upper_bound|, because it allows
   // heterogeneous arguments.  This returns the first polynomial |p| such that
   // |time <= p.t_max()|.
-  auto const it = std::lower_bound(
-                      polynomials_.begin(), polynomials_.end(), time,
-                      [](InstantPolynomialPair const& left,
-                         Instant const& right) {
-                        return left.t_max < right;
-                      });
+  //TODO(phl):comment
+
+  {
+    int const last_accessed_polynomial = last_accessed_polynomial_;
+    if (time <= polynomials_[last_accessed_polynomial].t_max &&
+        (last_accessed_polynomial == 0 ||
+         polynomials_[last_accessed_polynomial - 1].t_max < time)) {
+      return polynomials_.begin() + last_accessed_polynomial;
+    }
+  }
+  auto const it =
+      std::lower_bound(polynomials_.begin(),
+                       polynomials_.end(),
+                       time,
+                       [](InstantPolynomialPair const& left,
+                          Instant const& right) { return left.t_max < right; });
+  last_accessed_polynomial_ = it - polynomials_.begin();
   return it;
 }
 

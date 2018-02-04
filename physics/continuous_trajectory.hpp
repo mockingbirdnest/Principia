@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <atomic>
 #include <experimental/optional>
 #include <utility>
 #include <vector>
@@ -192,6 +193,9 @@ class ContinuousTrajectory : public Trajectory<Frame> {
 
   // The polynomials are in increasing time order.
   InstantPolynomialPairs polynomials_;
+
+  //TODO(phl):thread safety?
+  mutable std::atomic_int last_accessed_polynomial_ = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
   std::experimental::optional<Instant> first_time_;
