@@ -282,6 +282,7 @@ class ReferenceFrameSelector : WindowRenderer {
                               func       : RenderSelector,
                               text       : name_ + " selection (" + Name() +
                                            ")");
+      window_rectangle_.EnsureOnScreen();
       window_rectangle_.InputLock(this);
     } else {
       WindowUtilities.ClearLock(this);
