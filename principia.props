@@ -81,8 +81,32 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalOptions>/bigobj</AdditionalOptions>
-      <WarningLevel>Level3</WarningLevel>
-      <WarningLevel Condition="$(PrincipiaCompilerClangLLVM)">EnableAllWarnings</WarningLevel>
+      <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
+      <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
+                               $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>
+      <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
+                               $(ProjectName) != serialization">EnableAllWarnings</WarningLevel>
+      <AdditionalOptions Condition="$(PrincipiaCompilerClangLLVM)">
+        -Werror=typename-missing
+        -Werror=microsoft-template
+        -Werror=unknown-argument
+        -Wno-c++98-compat-pedantic
+        -Wno-c++98-compat
+        -Wno-c99-compat
+        -Wno-undef
+        -Wno-float-equal
+        -Wno-shadow-field-in-constructor
+        -Wno-sign-conversion
+        -Wno-covered-switch-default
+        <!--Warnings in protobuf generated code are none of our business.-->
+        -Xclang --system-header-prefix=serialization/
+        <!--Same for warnings in dependencies.-->
+        -Xclang --system-header-prefix=benchmark/
+        -Xclang --system-header-prefix=google/
+        -Xclang --system-header-prefix=glog/
+        -Xclang --system-header-prefix=gtest/
+        -Xclang --system-header-prefix=gmock/
+      </AdditionalOptions>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
