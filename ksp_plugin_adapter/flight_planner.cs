@@ -39,7 +39,7 @@ class FlightPlanner : WindowRenderer {
                               func       : RenderPlanner,
                               text       : "Flight plan",
                               options    : UnityEngine.GUILayout.MinWidth(500));
-      window_rectangle_.EnsureOnScreen();
+      WindowUtilities.EnsureOnScreen(ref window_rectangle_);
       window_rectangle_.InputLock(this);
     } else {
       WindowUtilities.ClearLock(this);

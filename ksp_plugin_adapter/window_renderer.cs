@@ -15,7 +15,7 @@ internal static class WindowUtilities {
     return window_rectangle.Contains(mouse);
   }
 
-  public static void EnsureOnScreen(this UnityEngine.Rect window_rectangle) {
+  public static void EnsureOnScreen(ref UnityEngine.Rect window_rectangle) {
     const float min_width_on_screen = 50;
     const float min_height_on_screen = 50;
     window_rectangle.x =

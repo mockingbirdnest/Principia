@@ -682,7 +682,7 @@ public partial class PrincipiaPluginAdapter
             },
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
-      apocalypse_window_rectangle_.EnsureOnScreen();
+      WindowUtilities.EnsureOnScreen(ref apocalypse_window_rectangle_);
       apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
       apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
     }
@@ -723,7 +723,7 @@ public partial class PrincipiaPluginAdapter
           func       : DrawMainWindow,
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
-      main_window_rectangle_.EnsureOnScreen();
+      WindowUtilities.EnsureOnScreen(ref main_window_rectangle_);
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
       main_window_rectangle_.InputLock(this);
