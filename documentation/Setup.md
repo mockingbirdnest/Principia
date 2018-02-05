@@ -23,9 +23,7 @@ This project depends upon:
 - our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
   library;
 - our [fork](https://github.com/mockingbirdnest/googletest) of the Google googletest
-  library;
-- our [fork](https://github.com/mockingbirdnest/googlemock) of the Google googlemock
-  library;
+  and googlemock libraries;
 - our [fork](https://github.com/mockingbirdnest/protobuf) of the Google
   protobuf library;
 - our [fork](https://github.com/mockingbirdnest/benchmark) of the Google
@@ -51,7 +49,6 @@ In `<root>\Google`, run the following commands.
 ```powershell
 git clone "https://github.com/mockingbirdnest/glog.git"
 git clone "https://github.com/mockingbirdnest/googletest.git"
-git clone "https://github.com/mockingbirdnest/googlemock.git"
 git clone "https://github.com/mockingbirdnest/protobuf.git"
 git clone "https://github.com/mockingbirdnest/benchmark.git"
 git clone "https://chromium.googlesource.com/chromium/src.git" chromium -n --depth 1 -b "40.0.2193.1"
