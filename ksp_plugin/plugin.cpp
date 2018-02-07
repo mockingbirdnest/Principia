@@ -730,6 +730,9 @@ void Plugin::CatchUpLaggingVessels(VesselSet& collided_vessels) {
   for (auto const& pair : vessels_) {
     Vessel& vessel = *pair.second;
     if (vessel.psychohistory().last().time() < current_time_) {
+      if (Contains(collided_vessels, &vessel)) {
+        vessel.DisableDownsampling();
+      }
       vessel.AdvanceTime();
     }
   }
@@ -753,6 +756,9 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
         Status const status = pile_up->DeformAndAdvanceTime(current_time_);
+        if (!status.ok()) {
+          vessel.DisableDownsampling();
+        }
         vessel.AdvanceTime();
         return status;
       }));

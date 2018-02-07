@@ -97,6 +97,11 @@ class Vessel {
   // usable.
   virtual void PrepareHistory(Instant const& t);
 
+  // Disable downsampling for the history of this vessel.  This is useful when
+  // the vessel collided with a celestial, as downsampling might run into
+  // trouble.
+  virtual void DisableDownsampling();
+
   // Returns the part with the given ID.  Such a part must have been added using
   // |AddPart|.
   virtual not_null<Part*> part(PartId id) const;
