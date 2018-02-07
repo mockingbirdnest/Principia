@@ -756,7 +756,7 @@ not_null<std::unique_ptr<PileUpFuture>> Plugin::CatchUpVessel(
         // caller is catching-up two vessels belonging to the same pile-up in
         // parallel.
         Status const status = pile_up->DeformAndAdvanceTime(current_time_);
-        if (!status.ok()) {
+        if (status.error() == Error::OUT_OF_RANGE) {
           vessel.DisableDownsampling();
         }
         vessel.AdvanceTime();
