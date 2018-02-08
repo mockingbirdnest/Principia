@@ -458,7 +458,6 @@ ContinuousTrajectory<Frame>::FindPolynomialForInstant(
   {
     auto const begin = polynomials_.begin();
     auto const it = begin + last_accessed_polynomial_;
-    int const last_accessed_polynomial = last_accessed_polynomial_;
     if (it != polynomials_.end() && time <= it->t_max &&
         (it == begin || std::prev(it)->t_max < time)) {
       return it;
