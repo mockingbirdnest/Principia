@@ -139,6 +139,10 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
   // number of points that can be added before removal is considered.
   void SetDownsampling(std::int64_t max_dense_intervals, Length tolerance);
 
+  // Clear the downsampling parameters.  From now on, all points appended to the
+  // trajectory are going to be retained.
+  void ClearDownsampling();
+
   // Implementation of the interface |Trajectory|.
 
   // The bounds are the times of |Begin()| and |last()| if this trajectory is
