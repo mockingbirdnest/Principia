@@ -3,6 +3,7 @@
 
 #include "geometry/r3_element.hpp"
 
+#include "iacaMarks.h"
 #include <intrin.h>
 #include <string>
 
@@ -312,7 +313,7 @@ bool operator==(R3Element<Scalar> const& left,
   __m128d const eq_zt = _mm_cmpeq_sd(left.zt, right.zt);
   int const xy = _mm_movemask_pd(eq_xy);
   int const zt = _mm_movemask_pd(eq_zt);
-  return xy & (xy >> 1) & zt;
+  return (xy & zt) == 3;
 #else
   return left.x == right.x && left.y == right.y && left.z == right.z;
 #endif
@@ -326,7 +327,7 @@ bool operator!=(R3Element<Scalar> const& left,
   __m128d const eq_zt = _mm_cmpneq_sd(left.zt, right.zt);
   int const xy = _mm_movemask_pd(eq_xy);
   int const zt = _mm_movemask_pd(eq_zt);
-  return xy | (xy >> 1) | zt;
+  return (xy | zt) != 0;
 #else
   return left.x != right.x || left.y != right.y || left.z != right.z;
 #endif
@@ -385,18 +386,22 @@ template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
+  //IACA_VC64_START;
   // We take advantage of the HADDPD instruction (SSE3) by squishing a 0 in the
   // |t| component of |left.zt * right.zt| and computing the sum on a 4-vector.
+  //TODO(phl):fix comment.
   __m128d const lzrz = _mm_mul_sd(left.zt, right.zt);
   __m128d const lxrx_lyry = _mm_mul_pd(left.xy, right.xy);
   __m128d const zero = _mm_setzero_pd();
   __m128d const lzrz_0 = _mm_unpacklo_pd(lzrz, zero);
-  __m128d const lxrxlyry_lzrz = _mm_hadd_pd(lxrx_lyry, lzrz_0);
-  __m128d const result_0 = _mm_hadd_pd(lxrxlyry_lzrz, zero);
+  __m128d const lxrxlzrz_lyry = _mm_add_pd(lxrx_lyry, lzrz_0);
+  __m128d const result_0 = _mm_hadd_pd(lxrxlzrz_lyry, zero);
   Product<LScalar, RScalar> const* const result =
       reinterpret_cast<Product<LScalar, RScalar> const*>(
           &result_0.m128d_f64[0]);
-  return *result;
+  auto const  a = *result;
+  //IACA_VC64_END;
+  return a;
 #else
   return left.x * right.x + left.y * right.y + left.z * right.z;
 #endif
