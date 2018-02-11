@@ -220,7 +220,7 @@ inline void noreturn() { std::exit(0); }
 
 // Clang for some reason doesn't like FP arithmetic that yields infinities in
 // constexpr code (MSVC and GCC are fine with that).
-#ifdef PRINCIPIA_COMPILER_CLANG
+#if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define CONSTEXPR_INFINITY const
 #else
 #  define CONSTEXPR_INFINITY constexpr

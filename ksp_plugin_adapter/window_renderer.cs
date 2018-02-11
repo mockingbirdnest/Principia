@@ -15,6 +15,21 @@ internal static class WindowUtilities {
     return window_rectangle.Contains(mouse);
   }
 
+  public static void EnsureOnScreen(ref UnityEngine.Rect window_rectangle) {
+    const float min_width_on_screen = 50;
+    const float min_height_on_screen = 50;
+    window_rectangle.x =
+        UnityEngine.Mathf.Clamp(
+            window_rectangle.x,
+            -window_rectangle.width + min_width_on_screen,
+            UnityEngine.Screen.width - min_width_on_screen);
+    window_rectangle.y =
+        UnityEngine.Mathf.Clamp(
+            window_rectangle.y,
+            -window_rectangle.height + min_height_on_screen,
+            UnityEngine.Screen.height - min_height_on_screen);
+  }
+
   const ControlTypes PrincipiaLock = ControlTypes.ALLBUTCAMERAS &
                                      ~ControlTypes.ALL_SHIP_CONTROLS;
 

@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String next_release_name_ = "Cohen";
-  private const int next_release_lunation_number_ = 224;
+  private const String next_release_name_ = "Coxeter";
+  private const int next_release_lunation_number_ = 225;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2018, 02, 15, 21, 05, 00, TimeSpan.Zero);
+      new DateTimeOffset(2018, 03, 17, 13, 12, 00, TimeSpan.Zero);
 
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
@@ -682,6 +682,7 @@ public partial class PrincipiaPluginAdapter
             },
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
+      WindowUtilities.EnsureOnScreen(ref apocalypse_window_rectangle_);
       apocalypse_window_x_ = (int)apocalypse_window_rectangle_.xMin;
       apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
     }
@@ -722,6 +723,7 @@ public partial class PrincipiaPluginAdapter
           func       : DrawMainWindow,
           text       : "Principia",
           options    : UnityEngine.GUILayout.MinWidth(500));
+      WindowUtilities.EnsureOnScreen(ref main_window_rectangle_);
       main_window_x_ = (int)main_window_rectangle_.xMin;
       main_window_y_ = (int)main_window_rectangle_.yMin;
       main_window_rectangle_.InputLock(this);

@@ -148,6 +148,10 @@ void Vessel::PrepareHistory(Instant const& t) {
   }
 }
 
+void Vessel::DisableDownsampling() {
+  history_->ClearDownsampling();
+}
+
 not_null<Part*> Vessel::part(PartId const id) const {
   return FindOrDie(parts_, id).get();
 }
