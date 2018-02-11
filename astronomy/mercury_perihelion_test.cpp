@@ -19,6 +19,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -47,10 +48,8 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
+using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
-using ::testing::AllOf;
-using ::testing::Gt;
-using ::testing::Lt;
 
 namespace astronomy {
 
@@ -143,21 +142,28 @@ TEST_F(MercuryPerihelionTest, Year1950) {
   KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
       orbit.elements_at_epoch();
 
-  EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
-                          *keplerian_elements_1950_.eccentricity), 1.4e-13);
-  EXPECT_LT(RelativeError(*keplerian_elements.semimajor_axis,
-                          *keplerian_elements_1950_.semimajor_axis), 1.1e-14);
-  EXPECT_LT(RelativeError(*keplerian_elements.mean_motion,
-                          *keplerian_elements_1950_.mean_motion), 1.5e-14);
-  EXPECT_LT(RelativeError(keplerian_elements.inclination,
-                          keplerian_elements_1950_.inclination), 5.2e-15);
-  EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
-                          keplerian_elements_1950_.
-                              longitude_of_ascending_node), 4.2e-15);
-  EXPECT_LT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
-                          *keplerian_elements.argument_of_periapsis), 8.5e-14);
-  EXPECT_LT(RelativeError(*keplerian_elements.mean_anomaly,
-                          *keplerian_elements_1950_.mean_anomaly), 1.3e-14);
+  EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
+                             *keplerian_elements_1950_.eccentricity),
+              IsNear(9.3e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.semimajor_axis,
+                            *keplerian_elements_1950_.semimajor_axis),
+              IsNear(2.1e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.mean_motion,
+                          *keplerian_elements_1950_.mean_motion),
+              IsNear(3.1e-13));
+  EXPECT_THAT(RelativeError(keplerian_elements.inclination,
+                          keplerian_elements_1950_.inclination),
+              IsNear(5.6e-14));
+  EXPECT_THAT(RelativeError(keplerian_elements.longitude_of_ascending_node,
+                           keplerian_elements_1950_.
+                               longitude_of_ascending_node),
+              IsNear(3.8e-14));
+  EXPECT_THAT(RelativeError(*keplerian_elements_1950_.argument_of_periapsis,
+                          *keplerian_elements.argument_of_periapsis),
+              IsNear(2.0e-13));
+  EXPECT_THAT(RelativeError(*keplerian_elements.mean_anomaly,
+                          *keplerian_elements_1950_.mean_anomaly),
+              IsNear(8.4e-14));
 }
 
 #if !defined(_DEBUG)
@@ -190,10 +196,10 @@ TEST_F(MercuryPerihelionTest, Year1960) {
                               longitude_of_ascending_node), 1.3e-9);
   EXPECT_THAT(*keplerian_elements_1960_.argument_of_periapsis -
                   *keplerian_elements.argument_of_periapsis,
-              AllOf(Gt(4.202 * ArcSecond), Lt(4.203 * ArcSecond)));
+              IsNear(4.203 * ArcSecond, 1.0002));
   EXPECT_THAT(*keplerian_elements.mean_anomaly -
                   *keplerian_elements_1960_.mean_anomaly,
-              AllOf(Gt(17.0 * ArcSecond), Lt(17.1 * ArcSecond)));
+              IsNear(17.03 * ArcSecond, 1.0002));
 }
 
 TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
@@ -223,12 +229,15 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
   EXPECT_LT(RelativeError(keplerian_elements.longitude_of_ascending_node,
                           keplerian_elements_2050_.
                               longitude_of_ascending_node), 9.1e-8);
+  // The actual number is 42.98" on average, but there are other periodic
+  // effects so your mileage will vary.  See Nobili and Will, The real value of
+  // Mercury's perihelion advance.
   EXPECT_THAT(*keplerian_elements_2050_.argument_of_periapsis -
                   *keplerian_elements.argument_of_periapsis,
-              AllOf(Gt(42.83 * ArcSecond), Lt(42.84 * ArcSecond)));
+              IsNear(42.84 * ArcSecond, 1.0001));
   EXPECT_THAT(*keplerian_elements.mean_anomaly -
                   *keplerian_elements_2050_.mean_anomaly,
-              AllOf(Gt(171 * ArcSecond), Lt(172 * ArcSecond)));
+              IsNear(171.3 * ArcSecond, 1.0006));
 }
 
 #endif

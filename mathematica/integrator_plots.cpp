@@ -24,17 +24,17 @@
 #include "testing_utilities/numerics.hpp"
 
 #define SLMS_INTEGRATOR(name) \
-  { (integrators::name<Length>()), u8#name, 1 }
+  { (integrators::name<Length>()), u8###name, 1 }
 #define SRKN_INTEGRATOR(name)                     \
   {                                               \
-    (integrators::name<Length>()), u8#name,       \
+    (integrators::name<Length>()), u8###name,       \
         (integrators::name<Length>()).evaluations \
   }
 #define SPRK_INTEGRATOR(name, composition)                 \
   {                                                        \
     (integrators::name<Length, Speed>()                    \
          .AsRungeKuttaNyströmIntegrator<(composition)>()), \
-        u8#name " " u8#composition,                        \
+        u8###name " " u8###composition,                    \
         (integrators::name<Length, Speed>()).evaluations   \
   }
 

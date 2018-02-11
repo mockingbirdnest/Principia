@@ -91,6 +91,15 @@ inline std::string ToMathematica(double const& real) {
   }
 }
 
+template<typename T, int size>
+std::string ToMathematica(FixedVector<T, size> const & fixed_vector) {
+  std::vector<std::string> expressions;
+  for (int i = 0; i < size; ++i) {
+    expressions.emplace_back(ToMathematica(fixed_vector[i]));
+  }
+  return Apply("List", expressions);
+}
+
 template<typename T>
 std::string ToMathematica(R3Element<T> const& r3_element) {
   std::vector<std::string> expressions;

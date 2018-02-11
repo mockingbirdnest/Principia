@@ -150,41 +150,6 @@ void BM_EvaluatePolynomialInMonomialBasisQuantity(benchmark::State& state) {
 }
 
 template<template<typename, typename, int> class Evaluator>
-void BM_EvaluatePolynomialInMonomialBasisR3ElementDouble(
-    benchmark::State& state) {
-  int const degree = state.range_x();
-  switch (degree) {
-    case 4:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>,
-                                        Time,
-                                        4,
-                                        Evaluator>(state);
-      break;
-    case 8:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>,
-                                        Time,
-                                        8,
-                                        Evaluator>(state);
-      break;
-    case 12:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>,
-                                        Time,
-                                        12,
-                                        Evaluator>(state);
-      break;
-    case 16:
-      EvaluatePolynomialInMonomialBasis<R3Element<double>,
-                                        Time,
-                                        16,
-                                        Evaluator>(state);
-      break;
-    default:
-      LOG(FATAL) << "Degree " << degree
-                 << " in BM_EvaluatePolynomialInMonomialBasisR3ElementDouble";
-  }
-}
-
-template<template<typename, typename, int> class Evaluator>
 void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
@@ -262,9 +227,6 @@ BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
                     EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble,
-                    EstrinEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,
                     EstrinEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
@@ -275,9 +237,6 @@ BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisDouble,
                     HornerEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisQuantity,
-                    HornerEvaluator)
-    ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
-BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisR3ElementDouble,
                     HornerEvaluator)
     ->Arg(4)->Arg(8)->Arg(12)->Arg(16);
 BENCHMARK_TEMPLATE1(BM_EvaluatePolynomialInMonomialBasisVectorDouble,

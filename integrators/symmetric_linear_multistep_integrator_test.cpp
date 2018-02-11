@@ -12,6 +12,7 @@
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/integration.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/statistics.hpp"
@@ -45,6 +46,7 @@ using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
 using testing_utilities::RelativeError;
 using testing_utilities::Slope;
@@ -244,7 +246,7 @@ void TestConvergence(Integrator const& integrator,
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
               Lt(0.05));
-  EXPECT_THAT(q_correlation, AllOf(Gt(0.99), Lt(1.01)));
+  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.01));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -253,7 +255,7 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(integrator.order, v_convergence_order), Lt(0.035));
-  EXPECT_THAT(v_correlation, AllOf(Gt(0.99), Lt(1.01)));
+  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
 #endif
 }
 

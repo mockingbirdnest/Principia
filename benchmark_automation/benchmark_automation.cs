@@ -65,14 +65,15 @@ class BenchmarkAutomation {
             String[] words =
                 line.Split(separator : new Char[]{' '},
                            options   : StringSplitOptions.RemoveEmptyEntries);
-            const String mean_postfix = "_mean";
-            const String stddev_postfix = "_stddev";
+            const String mean_suffix = "_mean";
+            const String median_suffix = "_median";
+            const String stddev_suffix = "_stddev";
             if (words[0].StartsWith("BM_")) {
-              if (has_repetitions && words[0].EndsWith(mean_postfix)) {
+              if (has_repetitions && words[0].EndsWith(mean_suffix)) {
                 String benchmark_name =
                     words[0].Substring(
                         startIndex : 0,
-                        length     : words[0].Length - mean_postfix.Length);
+                        length     : words[0].Length - mean_suffix.Length);
                 Int64 μ = Int64.Parse(words[1]);
                 Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
                 CommaSeparatedAppend(
@@ -88,8 +89,9 @@ class BenchmarkAutomation {
                 CommaSeparatedAppend(ref csv_means, μ.ToString());
                 Console.WriteLine(benchmark_name + ": μ = " + μ + " ns");
               }
-              if (!words[0].EndsWith(stddev_postfix) &&
-                  !words[0].EndsWith(mean_postfix)) {
+              if (!words[0].EndsWith(mean_suffix) &&
+                  !words[0].EndsWith(median_suffix) &&
+                  !words[0].EndsWith(stddev_suffix)) {
                 String benchmark_name = words[0];
                 if (last_benchmark_name != benchmark_name) {
                   if (last_benchmark_name != "") {

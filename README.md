@@ -14,4 +14,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/7nBtNi) and [here for 1.3.1](https://goo.gl/Tjp5Aq).  Or, if you don't trust our binary, build the mod from the [Christoffel](https://github.com/mockingbirdnest/Principia/releases/tag/2017121807-Christoffel) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/TtSQMq) and [here for 1.3.1](https://goo.gl/jfYBF5).  Or, if you don't trust our binary, build the mod from the [Clifford](https://github.com/mockingbirdnest/Principia/releases/tag/2018011702-Cliffordl) release.

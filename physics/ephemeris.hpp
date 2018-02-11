@@ -63,7 +63,7 @@ class Ephemeris {
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
 
-  class AdaptiveStepParameters final {
+  class PHYSICS_DLL AdaptiveStepParameters final {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
@@ -102,7 +102,7 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
-  class FixedStepParameters final {
+  class PHYSICS_DLL FixedStepParameters final {
    public:
     FixedStepParameters(
         FixedStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
@@ -379,4 +379,6 @@ using internal_ephemeris::Ephemeris;
 }  // namespace physics
 }  // namespace principia
 
+#if !PHYSICS_DLL_IMPORT
 #include "physics/ephemeris_body.hpp"
+#endif

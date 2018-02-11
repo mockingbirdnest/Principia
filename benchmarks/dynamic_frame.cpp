@@ -17,6 +17,7 @@
 #include "quantities/numbers.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "ksp_plugin/frames.hpp"
 #include "physics/barycentric_rotating_dynamic_frame.hpp"
 #include "physics/body.hpp"
 #include "physics/body_centred_non_rotating_dynamic_frame.hpp"
@@ -34,7 +35,6 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Equator;
 using base::not_null;
 using geometry::AngularVelocity;
 using geometry::Displacement;
@@ -44,6 +44,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::McLachlanAtela1992Order5Optimal;
+using ksp_plugin::Barycentric;
 using quantities::AngularFrequency;
 using quantities::Length;
 using quantities::SIUnit;
@@ -85,14 +86,14 @@ void FillLinearTrajectory(Position<F> const& initial,
 }
 
 // This code is derived from Plugin::RenderTrajectory.
-std::vector<std::pair<Position<ICRFJ2000Equator>,
-                      Position<ICRFJ2000Equator>>> ApplyDynamicFrame(
+std::vector<std::pair<Position<Barycentric>, Position<Barycentric>>>
+ApplyDynamicFrame(
     not_null<Body const*> const body,
-    not_null<DynamicFrame<ICRFJ2000Equator, Rendering>*> const dynamic_frame,
-    DiscreteTrajectory<ICRFJ2000Equator>::Iterator const& begin,
-    DiscreteTrajectory<ICRFJ2000Equator>::Iterator const& end) {
-  std::vector<std::pair<Position<ICRFJ2000Equator>,
-                        Position<ICRFJ2000Equator>>> result;
+    not_null<DynamicFrame<Barycentric, Rendering>*> const dynamic_frame,
+    DiscreteTrajectory<Barycentric>::Iterator const& begin,
+    DiscreteTrajectory<Barycentric>::Iterator const& end) {
+  std::vector<std::pair<Position<Barycentric>,
+                        Position<Barycentric>>> result;
 
   // Compute the trajectory in the rendering frame.
   DiscreteTrajectory<Rendering> intermediate_trajectory;
@@ -127,14 +128,15 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "sol_initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt",
+      /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
@@ -142,25 +144,24 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
       solar_system.massive_body(*ephemeris, "Earth");
 
   MasslessBody probe;
-  Position<ICRFJ2000Equator> probe_initial_position =
-      ICRFJ2000Equator::origin + Displacement<ICRFJ2000Equator>(
+  Position<Barycentric> probe_initial_position =
+      Barycentric::origin + Displacement<Barycentric>(
                                      {0.5 * AstronomicalUnit,
                                       -1 * AstronomicalUnit,
                                       0 * AstronomicalUnit});
-  Velocity<ICRFJ2000Equator> probe_velocity =
-      Velocity<ICRFJ2000Equator>({0 * SIUnit<Speed>(),
+  Velocity<Barycentric> probe_velocity =
+      Velocity<Barycentric>({0 * SIUnit<Speed>(),
                                   100 * Kilo(Metre) / Second,
                                   0 * SIUnit<Speed>()});
-  DiscreteTrajectory<ICRFJ2000Equator> probe_trajectory;
-  FillLinearTrajectory<ICRFJ2000Equator, DiscreteTrajectory>(
-      probe_initial_position,
-      probe_velocity,
-      solar_system.epoch(),
-      Δt,
-      steps,
-      probe_trajectory);
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
+                                                        probe_velocity,
+                                                        solar_system.epoch(),
+                                                        Δt,
+                                                        steps,
+                                                        probe_trajectory);
 
-  BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Rendering>
+  BodyCentredNonRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth);
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,
@@ -174,14 +175,15 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   Time const Δt = 5 * Minute;
   int const steps = state.range_x();
 
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<Barycentric> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "sol_initial_state_jd_2433282_500000000.proto.txt");
+          "sol_initial_state_jd_2433282_500000000.proto.txt",
+      /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+      Ephemeris<Barycentric>::FixedStepParameters(
+          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
@@ -191,25 +193,23 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
       solar_system.massive_body(*ephemeris, "Venus");
 
   MasslessBody probe;
-  Position<ICRFJ2000Equator> probe_initial_position =
-      ICRFJ2000Equator::origin + Displacement<ICRFJ2000Equator>(
-                                     {0.5 * AstronomicalUnit,
-                                      -1 * AstronomicalUnit,
-                                      0 * AstronomicalUnit});
-  Velocity<ICRFJ2000Equator> probe_velocity =
-      Velocity<ICRFJ2000Equator>({0 * SIUnit<Speed>(),
-                                  100 * Kilo(Metre) / Second,
-                                  0 * SIUnit<Speed>()});
-  DiscreteTrajectory<ICRFJ2000Equator> probe_trajectory;
-  FillLinearTrajectory<ICRFJ2000Equator, DiscreteTrajectory>(
-      probe_initial_position,
-      probe_velocity,
-      solar_system.epoch(),
-      Δt,
-      steps,
-      probe_trajectory);
+  Position<Barycentric> probe_initial_position =
+      Barycentric::origin + Displacement<Barycentric>({0.5 * AstronomicalUnit,
+                                                       -1 * AstronomicalUnit,
+                                                       0 * AstronomicalUnit});
+  Velocity<Barycentric> probe_velocity =
+      Velocity<Barycentric>({0 * SIUnit<Speed>(),
+                             100 * Kilo(Metre) / Second,
+                             0 * SIUnit<Speed>()});
+  DiscreteTrajectory<Barycentric> probe_trajectory;
+  FillLinearTrajectory<Barycentric, DiscreteTrajectory>(probe_initial_position,
+                                                        probe_velocity,
+                                                        solar_system.epoch(),
+                                                        Δt,
+                                                        steps,
+                                                        probe_trajectory);
 
-  BarycentricRotatingDynamicFrame<ICRFJ2000Equator, Rendering>
+  BarycentricRotatingDynamicFrame<Barycentric, Rendering>
       dynamic_frame(ephemeris.get(), earth, venus);
   while (state.KeepRunning()) {
     auto v = ApplyDynamicFrame(&probe,

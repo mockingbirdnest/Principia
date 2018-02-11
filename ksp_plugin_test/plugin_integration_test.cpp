@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/massive_body.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -52,9 +53,9 @@ using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::AstronomicalUnit;
 using testing_utilities::AbsoluteError;
+using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
-using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Ge;
 using ::testing::Gt;
@@ -743,7 +744,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
-      AllOf(Gt(31 * Milli(Metre)), Lt(32 * Milli(Metre))));
+      IsNear(32 * Milli(Metre), 1.05));
 }
 
 }  // namespace internal_plugin

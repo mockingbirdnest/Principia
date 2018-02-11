@@ -64,10 +64,6 @@ class ЧебышёвSeries final {
   // code.
   int degree() const;
 
-  // The value of the last coefficient of the series.  Smaller values indicate a
-  // a better approximation.
-  Vector last_coefficient() const;
-
   // Uses the Clenshaw algorithm.  |t| must be in the range [t_min, t_max].
   Vector Evaluate(Instant const& t) const;
   Variation<Vector> EvaluateDerivative(Instant const& t) const;
@@ -75,15 +71,6 @@ class ЧебышёвSeries final {
   void WriteToMessage(not_null<serialization::ЧебышёвSeries*> message) const;
   static ЧебышёвSeries ReadFromMessage(
       serialization::ЧебышёвSeries const& message);
-
-  // Computes a Newhall approximation of the given |degree|.  |q| and |v| are
-  // the positions and velocities over a constant division of [t_min, t_max].
-  static ЧебышёвSeries NewhallApproximation(
-      int degree,
-      std::vector<Vector> const& q,
-      std::vector<Variation<Vector>> const& v,
-      Instant const& t_min,
-      Instant const& t_max);
 
  private:
   Instant t_min_;

@@ -258,6 +258,10 @@ void DiscreteTrajectory<Frame>::SetDownsampling(
   downsampling_.emplace(
       max_dense_intervals, tolerance, timeline_.begin(), timeline_);
 }
+template<typename Frame>
+void DiscreteTrajectory<Frame>::ClearDownsampling() {
+  downsampling_.reset();
+}
 
 template<typename Frame>
 Instant DiscreteTrajectory<Frame>::t_min() const {

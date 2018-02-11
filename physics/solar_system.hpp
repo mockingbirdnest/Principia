@@ -8,12 +8,15 @@
 
 #include "base/not_null.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
+#include "physics/body.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/massive_body.hpp"
+#include "physics/oblate_body.hpp"
+#include "physics/rotating_body.hpp"
 #include "serialization/astronomy.pb.h"
 
 namespace principia {
@@ -32,11 +35,13 @@ class SolarSystem final {
   // format for SolarSystemFile protocol buffers.
   SolarSystem(
       std::experimental::filesystem::path const& gravity_model_filename,
-      std::experimental::filesystem::path const& initial_state_filename);
+      std::experimental::filesystem::path const& initial_state_filename,
+      bool ignore_frame = false);
 
   // Construct a solar system from the given messages.
   SolarSystem(serialization::GravityModel const& gravity_model,
-              serialization::InitialState const& initial_state);
+              serialization::InitialState const& initial_state,
+              bool ignore_frame = false);
 
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to

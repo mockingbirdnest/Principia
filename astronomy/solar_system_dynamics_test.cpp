@@ -23,6 +23,7 @@
 #include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
@@ -73,11 +74,11 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
-using testing_utilities::SolarSystemFactory;
 using testing_utilities::AbsoluteError;
-using ::testing::AllOf;
-using ::testing::Gt;
+using testing_utilities::IsNear;
+using testing_utilities::SolarSystemFactory;
 using ::testing::Lt;
+using ::testing::Gt;
 
 namespace astronomy {
 
@@ -189,7 +190,7 @@ class SolarSystemDynamicsTest : public testing::Test {
       // https://arxiv.org/pdf/1607.03963.pdf.
       EXPECT_THAT(AngleBetween(solar_system_angular_momentum,
                                parent->angular_velocity()),
-                  AllOf(Gt(5.9 * Degree), Lt(6.0 * Degree)));
+                  IsNear(5.9 * Degree));
       auto const declination_of_invariable_plane =
           OrientedAngleBetween(z, solar_system_angular_momentum, normal);
       EXPECT_THAT(declination_of_invariable_plane, Gt(0 * Radian));
@@ -308,9 +309,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
     // change in anomaly, it's hard to get an exact figure for that.
     if (planet_or_minor_planet == SolarSystemFactory::Mercury ||
         planet_or_minor_planet == SolarSystemFactory::Venus) {
-      EXPECT_THAT(
-          error.separation_per_orbit,
-          AllOf(Gt(100 * Milli(ArcSecond)), Lt(200 * Milli(ArcSecond))));
+      EXPECT_THAT(error.separation_per_orbit,
+                  IsNear(140 * Milli(ArcSecond), 2));
     } else if (planet_or_minor_planet != SolarSystemFactory::Pluto) {
       EXPECT_THAT(error.separation_per_orbit, Lt(100 * Milli(ArcSecond)));
     }
@@ -319,9 +319,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
       switch (planet_or_minor_planet) {
         case SolarSystemFactory::Mercury:
           // This is what we expect from GR to the last sigfig.
-          EXPECT_THAT(
-              *error.argument_of_periapsis_drift_per_orbit,
-              AllOf(Gt(102 * Milli(ArcSecond)), Lt(104 * Milli(ArcSecond))));
+          EXPECT_THAT(*error.argument_of_periapsis_drift_per_orbit,
+                      IsNear(103 * Milli(ArcSecond), 1.01));
           break;
         case SolarSystemFactory::Eris:
           // I'm not sure what's going on with Eris; it's not clear what

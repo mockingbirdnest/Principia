@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "base/map_util.hpp"
 #include "ksp_plugin/integrators.hpp"
 #include "ksp_plugin/pile_up.hpp"
 #include "quantities/si.hpp"
@@ -145,6 +146,10 @@ void Vessel::PrepareHistory(Instant const& t) {
     psychohistory_ = history_->NewForkAtLast();
     prediction_ = psychohistory_->NewForkAtLast();
   }
+}
+
+void Vessel::DisableDownsampling() {
+  history_->ClearDownsampling();
 }
 
 not_null<Part*> Vessel::part(PartId const id) const {

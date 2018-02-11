@@ -4,6 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 
 namespace principia {
@@ -16,9 +17,8 @@ using quantities::si::Minute;
 using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
-using ::testing::AllOf;
+using testing_utilities::IsNear;
 using ::testing::Eq;
-using ::testing::Ge;
 using ::testing::Lt;
 
 class TimeScalesTest : public testing::Test {};
@@ -116,13 +116,13 @@ TEST_F(TimeScalesTest, ReferenceDates) {
   Instant const JD2415020_3135 = JulianDate(2415020.3135);
   EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 29));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
-              AllOf(Ge(10 * Micro(Second)), Lt(100 * Micro(Second))));
+              IsNear(14 * Micro(Second)));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
   Instant const JD2433282_4235 = JulianDate(2433282.4235);
   EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 12));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2433282_4235, B1950),
-              AllOf(Ge(1 * Micro(Second)), Lt(10 * Micro(Second))));
+              IsNear(3 * Micro(Second)));
 }
 
 TEST_F(TimeScalesTest, LeapSecond) {

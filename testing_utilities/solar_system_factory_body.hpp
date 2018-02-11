@@ -17,8 +17,10 @@ namespace internal_solar_system_factory {
 
 using base::Contains;
 
-inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
-                           SolarSystem<ICRFJ2000Equator>* const solar_system) {
+template<typename Frame>
+void SolarSystemFactory::AdjustAccuracy(
+    SolarSystemFactory::Accuracy const accuracy,
+    SolarSystem<Frame>& solar_system) {
   std::set<std::string> existing;
   std::set<std::string> oblate;
   switch (accuracy) {
@@ -73,7 +75,7 @@ inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
   }
   std::vector<std::string> bodies_to_remove;
   std::vector<std::string> bodies_to_spherify;
-  for (std::string const& solar_system_name : solar_system->names()) {
+  for (std::string const& solar_system_name : solar_system.names()) {
     if (!Contains(existing, solar_system_name)) {
       bodies_to_remove.push_back(solar_system_name);
     } else if (!Contains(oblate, solar_system_name)) {
@@ -81,10 +83,10 @@ inline void AdjustAccuracy(SolarSystemFactory::Accuracy const accuracy,
     }
   }
   for (std::string const& body_to_remove : bodies_to_remove) {
-    solar_system->RemoveMassiveBody(body_to_remove);
+    solar_system.RemoveMassiveBody(body_to_remove);
   }
   for (std::string const& body_to_spherify : bodies_to_spherify) {
-    solar_system->RemoveOblateness(body_to_spherify);
+    solar_system.RemoveOblateness(body_to_spherify);
   }
 }
 
@@ -95,7 +97,7 @@ SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
               "sol_initial_state_jd_2436116_311504629.proto.txt");
-  AdjustAccuracy(accuracy, solar_system.get());
+  AdjustAccuracy(accuracy, *solar_system);
   return solar_system;
 }
 
@@ -106,7 +108,7 @@ SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
               "sol_initial_state_jd_2436145_604166667.proto.txt");
-  AdjustAccuracy(accuracy, solar_system.get());
+  AdjustAccuracy(accuracy, *solar_system);
   return solar_system;
 }
 

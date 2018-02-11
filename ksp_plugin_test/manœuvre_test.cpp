@@ -5,6 +5,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "ksp_plugin/frames.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/massive_body.hpp"
@@ -14,6 +15,7 @@
 #include "quantities/uk.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/make_not_null.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -44,6 +46,7 @@ using testing_utilities::make_not_null;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using ::testing::AllOf;
 using ::testing::Gt;
@@ -55,8 +58,7 @@ using ::testing::_;
 
 class ManœuvreTest : public ::testing::Test {
  protected:
-  using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST1, true>;
+  using World = Barycentric;
   using Rendering = Frame<serialization::Frame::TestTag,
                           serialization::Frame::TEST2, false>;
 
@@ -262,13 +264,11 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   auto const first_acceleration = first_burn.IntrinsicAcceleration();
   EXPECT_THAT(
       first_acceleration(first_burn.initial_time()).Norm(),
-      AllOf(Gt(5 * Metre / Pow<2>(Second)), Lt(6.25 * Metre / Pow<2>(Second))));
+      IsNear(5.6 * Metre / Pow<2>(Second)));
   EXPECT_THAT(first_acceleration(range_zero + 600 * Second).Norm(),
-              AllOf(Gt(6.15 * Metre / Pow<2>(Second)),
-                    Lt(6.35 * Metre / Pow<2>(Second))));
+              IsNear(6.15 * Metre / Pow<2>(Second), 1.01));
   EXPECT_THAT(first_acceleration(first_burn.final_time()).Norm(),
-              AllOf(Gt(7.03 * Metre / Pow<2>(Second)),
-                    Lt(7.05 * Metre / Pow<2>(Second))));
+              IsNear(7.04 * Metre / Pow<2>(Second), 1.01));
 
   Manœuvre<World, Rendering> second_burn(
       thrust_2nd,
@@ -303,27 +303,19 @@ TEST_F(ManœuvreTest, Apollo8SIVB) {
   second_burn.set_coasting_trajectory(&discrete_trajectory_);
   auto const second_acceleration = second_burn.IntrinsicAcceleration();
   EXPECT_THAT(second_acceleration(second_burn.initial_time()).Norm(),
-              AllOf(Gt(7 * Metre / Pow<2>(Second)),
-                    Lt(7.5 * Metre / Pow<2>(Second))));
+              IsNear(7.2 * Metre / Pow<2>(Second), 1.05));
   EXPECT_THAT(second_acceleration(t6 + 650 * Second).Norm(),
-              AllOf(Gt(8 * Metre / Pow<2>(Second)),
-                    Lt(8.02 * Metre / Pow<2>(Second))));
+              IsNear(8.01 * Metre / Pow<2>(Second), 1.01));
   EXPECT_THAT(second_acceleration(t6 + 700 * Second).Norm(),
-              AllOf(Gt(8.8 * Metre / Pow<2>(Second)),
-                    Lt(9 * Metre / Pow<2>(Second))));
+              IsNear(8.9 * Metre / Pow<2>(Second), 1.01));
   EXPECT_THAT(second_acceleration(t6 + 750 * Second).Norm(),
-              AllOf(Gt(9.9 * Metre / Pow<2>(Second)),
-                    Lt(10 * Metre / Pow<2>(Second))));
+              IsNear(9.9 * Metre / Pow<2>(Second), 1.01));
   EXPECT_THAT(second_acceleration(t6 + 850 * Second).Norm(),
-              AllOf(Gt(12.97 * Metre / Pow<2>(Second)),
-                    Lt(13 * Metre / Pow<2>(Second))));
+              IsNear(12.97 * Metre / Pow<2>(Second), 1.001));
   EXPECT_THAT(second_acceleration(second_burn.final_time()).Norm(),
-              AllOf(Gt(15.12 * Metre / Pow<2>(Second)),
-                    Lt(15.17 * Metre / Pow<2>(Second))));
+              IsNear(15.12 * Metre / Pow<2>(Second), 1.001));
 
-  EXPECT_THAT(second_burn.Δv(),
-              AllOf(Gt(3 * Kilo(Metre) / Second),
-                    Lt(3.25 * Kilo(Metre) / Second)));
+  EXPECT_THAT(second_burn.Δv(), IsNear(3.2 * Kilo(Metre) / Second, 1.01));
 
   // From the Apollo 8 flight journal.
   EXPECT_THAT(AbsoluteError(10'519.6 * Foot / Second, second_burn.Δv()),
