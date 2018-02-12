@@ -407,10 +407,10 @@ Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
   __m128d const lxrx_lyry = _mm_mul_pd(left.xy, right.xy);
   __m128d const lzrz_0 = _mm_unpacklo_pd(lzrz, zero);
   __m128d const lxrxlzrz_lyry = _mm_add_pd(lxrx_lyry, lzrz_0);
-  __m128d const result_0 = _mm_hadd_pd(lxrxlzrz_lyry, zero);
+  __m128d const lxrxlyrylzrz_0 = _mm_hadd_pd(lxrxlzrz_lyry, zero);
   Product<LScalar, RScalar> const* const result =
       reinterpret_cast<Product<LScalar, RScalar> const*>(
-          &result_0.m128d_f64[0]);
+          &lxrxlyrylzrz_0.m128d_f64[0]);
   return *result;
 #else
   return left.x * right.x + left.y * right.y + left.z * right.z;

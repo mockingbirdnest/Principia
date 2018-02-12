@@ -82,7 +82,9 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 
 TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_EQ((e * 42) * v_, e * (42 * v_));
-  EXPECT_THAT(303.492345479576 * Metre / Second, AlmostEquals(a_.Norm(), 8));
+  EXPECT_THAT(303.49234547957647 * Metre / Second, AlmostEquals(a_.Norm(), 0));
+  EXPECT_THAT(92107.603764694598 * Metre * Metre / Second / Second,
+              AlmostEquals(a_.Norm²(), 0));
   testing_utilities::TestEquality(42 * v_, 43 * v_);
   testing_utilities::TestVectorSpace<R3Element<Speed>, double>(
       null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 0, 1);
