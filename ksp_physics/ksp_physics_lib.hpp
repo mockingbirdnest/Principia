@@ -17,7 +17,6 @@ namespace physics {
 
 #if OS_WIN
 PHYSICS_DLL void LogPhysicsDLLBaseAddress();
-#endif
 
 PHYSICS_DLL_TEMPLATE_CLASS
     internal_rotating_body::RotatingBody<ksp_plugin::Barycentric>;
@@ -34,6 +33,7 @@ PHYSICS_DLL_TEMPLATE_CLASS
     internal_rotating_body::RotatingBody<astronomy::ICRFJ2000Equator>;
 PHYSICS_DLL_TEMPLATE_CLASS
     internal_oblate_body::OblateBody<astronomy::ICRFJ2000Equator>;
+#endif  // OS_WIN
 
 }  // namespace physics
 }  // namespace principia
