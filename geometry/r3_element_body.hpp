@@ -309,11 +309,11 @@ template<typename Scalar>
 bool operator==(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const eq_xy = _mm_cmpeq_pd(left.xy, right.xy);
-  __m128d const eq_zt = _mm_cmpeq_sd(left.zt, right.zt);
+  __m128d const eq_xy = _mm_cmpneq_pd(left.xy, right.xy);
+  __m128d const eq_zt = _mm_cmpneq_sd(left.zt, right.zt);
   int const xy = _mm_movemask_pd(eq_xy);
   int const zt = _mm_movemask_pd(eq_zt);
-  return (xy & zt) == 3;
+  return (xy | (zt & 1)) == 0;
 #else
   return left.x == right.x && left.y == right.y && left.z == right.z;
 #endif
@@ -327,7 +327,7 @@ bool operator!=(R3Element<Scalar> const& left,
   __m128d const eq_zt = _mm_cmpneq_sd(left.zt, right.zt);
   int const xy = _mm_movemask_pd(eq_xy);
   int const zt = _mm_movemask_pd(eq_zt);
-  return (xy | zt) != 0;
+  return (xy | (zt & 1)) != 0;
 #else
   return left.x != right.x || left.y != right.y || left.z != right.z;
 #endif
