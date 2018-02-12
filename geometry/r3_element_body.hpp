@@ -113,7 +113,21 @@ Scalar R3Element<Scalar>::Norm() const {
 
 template<typename Scalar>
 Square<Scalar> R3Element<Scalar>::Norm²() const {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  // This code is very sensitive to the exact sequence of instructions.  When
+  // changing it, use IACA to check the effect.
+  __m128d const zero = _mm_setzero_pd();
+  __m128d const z_0 = _mm_unpacklo_pd(zt, zero);
+  __m128d const z2_0 = _mm_mul_sd(z_0, z_0);
+  __m128d const x2_y2 = _mm_mul_pd(xy, xy);
+  __m128d const x2z2_y2 = _mm_add_pd(x2_y2, z2_0);
+  __m128d const result_0 = _mm_hadd_pd(x2z2_y2, zero);
+  Square<Scalar> const* const result =
+      reinterpret_cast<Square<Scalar> const*>(&result_0.m128d_f64[0]);
+  return *result;
+#else
   return x * x + y * y + z * z;
+#endif
 }
 
 template<typename Scalar>
@@ -386,10 +400,8 @@ template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  // This code is very sensitive to the exact sequence of instructions.  For
-  // instance, replacing the unpacklo_pd/add_pd by an add_sd reduces the
-  // throughput by a factor 3.  When changing this code, use IACA to check the
-  // effect.
+  // This code is very sensitive to the exact sequence of instructions.  When
+  // changing it, use IACA to check the effect.
   __m128d const zero = _mm_setzero_pd();
   __m128d const lzrz = _mm_mul_sd(left.zt, right.zt);
   __m128d const lxrx_lyry = _mm_mul_pd(left.xy, right.xy);
