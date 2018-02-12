@@ -229,7 +229,8 @@ template<typename Scalar>
 R3Element<Scalar> operator*(double const left,
                             R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const left_128d = _mm_load1_pd(&left);
+  __m128d const left_128d_lo = _mm_set_sd(left);
+  __m128d const left_128d = _mm_movedup_pd(left_128d_lo);
   return R3Element<Scalar>(_mm_mul_pd(left_128d, right.xy),
                            _mm_mul_sd(left_128d, right.zt));
 #else
@@ -243,7 +244,8 @@ template<typename Scalar>
 R3Element<Scalar> operator*(R3Element<Scalar> const& left,
                             double const right) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const right_128d = _mm_load1_pd(&right);
+  __m128d const right_128d_lo = _mm_set_sd(right);
+  __m128d const right_128d = _mm_movedup_pd(right_128d_lo);
   return R3Element<Scalar>(_mm_mul_pd(left.xy, right_128d),
                            _mm_mul_sd(left.zt, right_128d));
 #else
@@ -257,7 +259,8 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             double const right) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const right_128d = _mm_load1_pd(&right);
+  __m128d const right_128d_lo = _mm_set_sd(right);
+  __m128d const right_128d = _mm_movedup_pd(right_128d_lo);
   return R3Element<Scalar>(_mm_div_pd(left.xy, right_128d),
                            _mm_div_sd(left.zt, right_128d));
 #else
