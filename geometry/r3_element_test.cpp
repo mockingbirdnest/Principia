@@ -1,6 +1,7 @@
 ﻿
 #include "geometry/r3_element.hpp"
 
+#include "iacaMarks.h"
 #include <functional>
 
 #include "glog/logging.h"
@@ -79,6 +80,16 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
   }, const_method);
 }
 #endif
+
+TEST_F(R3ElementTest, IACA) {
+  auto l = [](R3Element<Speed> const& a) {
+    IACA_VC64_START;
+    auto const b = a.Norm²();
+    IACA_VC64_END;
+    return b;
+  };
+  CHECK_EQ(l(a_), l(a_));
+}
 
 TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_EQ((e * 42) * v_, e * (42 * v_));
