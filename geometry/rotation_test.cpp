@@ -179,7 +179,7 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 4));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
@@ -194,7 +194,7 @@ TEST_F(RotationTest, ToQuaternion2) {
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 4));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
@@ -209,7 +209,7 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 4));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
@@ -224,7 +224,7 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3x3Matrix m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
-  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 4));
+  EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
   EXPECT_THAT(rotation(e3_).coordinates(), AlmostEquals(w3, 1));
 }
 
@@ -469,7 +469,7 @@ TEST_F(RotationTest, CardanoAngles) {
                                                  DefinesFrame<Aircraft>{});
 
     EXPECT_THAT(AngleBetween(to_ground(forward), north),
-                AlmostEquals(angle_to_north, 51));
+                AlmostEquals(angle_to_north, 52));
 
     // Positive pitch is up.
     EXPECT_THAT(InnerProduct(to_ground(forward), up), Gt(0));

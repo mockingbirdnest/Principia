@@ -81,14 +81,15 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 }
 #endif
 
-TEST_F(R3ElementTest, IACA) {
-  auto l = [](R3Element<Speed> const& a) {
+// A convenient skeleton for analysing code with IACA.
+TEST_F(R3ElementTest, DISABLED_IACA) {
+  auto iaca = [](R3Element<Speed> const& a) {
     IACA_VC64_START;
-    auto const b = a.Norm²();
+    auto const result = 2 * Second * a;
     IACA_VC64_END;
-    return b;
+    return result;
   };
-  CHECK_EQ(l(a_), l(a_));
+  CHECK_EQ(iaca(a_), iaca(a_));
 }
 
 TEST_F(R3ElementTest, Dumb3Vector) {

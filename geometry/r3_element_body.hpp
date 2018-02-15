@@ -4,6 +4,7 @@
 #include "geometry/r3_element.hpp"
 
 #include <intrin.h>
+
 #include <string>
 
 #include "base/macros.hpp"
@@ -23,9 +24,11 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::DebugString;
 using quantities::DoubleOrQuantitySerializer;
+using quantities::FromM128D;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
+using quantities::ToM128D;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -112,18 +115,7 @@ Scalar R3Element<Scalar>::Norm() const {
 
 template<typename Scalar>
 Square<Scalar> R3Element<Scalar>::Norm²() const {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const z² = _mm_mul_sd(zt, zt);
-  __m128d const x²_y² = _mm_mul_pd(xy, xy);
-  __m128d const y² =
-      _mm_castps_pd(_mm_movehl_ps(_mm_castpd_ps(x²_y²), _mm_castpd_ps(x²_y²)));
-  __m128d const x²z² = _mm_add_sd(x²_y², z²);
-  __m128d const x²y²z² = _mm_add_sd(x²z², y²);
-  double const x²y²z²_f64 = _mm_cvtsd_f64(x²y²z²);
-  return reinterpret_cast<Square<Scalar> const&>(x²y²z²_f64);
-#else
   return x * x + y * y + z * z;
-#endif
 }
 
 template<typename Scalar>
@@ -225,8 +217,7 @@ template<typename Scalar>
 R3Element<Scalar> operator*(double const left,
                             R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const left_128d_lo = _mm_set_sd(left);
-  __m128d const left_128d = _mm_movedup_pd(left_128d_lo);
+  __m128d const left_128d = ToM128D(left);
   return R3Element<Scalar>(_mm_mul_pd(left_128d, right.xy),
                            _mm_mul_sd(left_128d, right.zt));
 #else
@@ -240,8 +231,7 @@ template<typename Scalar>
 R3Element<Scalar> operator*(R3Element<Scalar> const& left,
                             double const right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const right_128d_lo = _mm_set_sd(right);
-  __m128d const right_128d = _mm_movedup_pd(right_128d_lo);
+  __m128d const right_128d = ToM128D(right);
   return R3Element<Scalar>(_mm_mul_pd(left.xy, right_128d),
                            _mm_mul_sd(left.zt, right_128d));
 #else
@@ -255,8 +245,7 @@ template<typename Scalar>
 R3Element<Scalar> operator/(R3Element<Scalar> const& left,
                             double const right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const right_128d_lo = _mm_set_sd(right);
-  __m128d const right_128d = _mm_movedup_pd(right_128d_lo);
+  __m128d const right_128d = ToM128D(right);
   return R3Element<Scalar>(_mm_div_pd(left.xy, right_128d),
                            _mm_div_sd(left.zt, right_128d));
 #else
@@ -270,8 +259,7 @@ template<typename LDimension, typename RScalar>
 R3Element<Product<Quantity<LDimension>, RScalar>>
 operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  double const left_double = reinterpret_cast<double const&>(left);
-  __m128d const left_128d = _mm_set_sd(left_double);
+  __m128d const left_128d = ToM128D(left);
   return R3Element<Product<Quantity<LDimension>, RScalar>>(
       _mm_mul_pd(left_128d, right.xy),
       _mm_mul_sd(left_128d, right.zt));
@@ -287,8 +275,7 @@ template<typename LScalar, typename RDimension>
 R3Element<Product<LScalar, Quantity<RDimension>>>
 operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  double const right_double = reinterpret_cast<double const&>(right);
-  __m128d const right_128d = _mm_set_sd(right_double);
+  __m128d const right_128d = ToM128D(right);
   return R3Element<Product<LScalar, Quantity<RDimension>>>(
       _mm_mul_pd(left.xy, right_128d),
       _mm_mul_sd(left.zt, right_128d));
@@ -305,8 +292,7 @@ R3Element<Quotient<LScalar, Quantity<RDimension>>>
 operator/(R3Element<LScalar> const& left,
           Quantity<RDimension> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  double const right_double = reinterpret_cast<double const&>(right);
-  __m128d const right_128d = _mm_set_sd(right_double);
+  __m128d const right_128d = ToM128D(right);
   return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
       _mm_div_pd(left.xy, right_128d),
       _mm_div_sd(left.zt, right_128d));
@@ -321,29 +307,13 @@ operator/(R3Element<LScalar> const& left,
 template<typename Scalar>
 bool operator==(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const eq_xy = _mm_cmpneq_pd(left.xy, right.xy);
-  __m128d const eq_zt = _mm_cmpneq_sd(left.zt, right.zt);
-  int const xy = _mm_movemask_pd(eq_xy);
-  int const zt = _mm_movemask_pd(eq_zt);
-  return (xy | (zt & 1)) == 0;
-#else
   return left.x == right.x && left.y == right.y && left.z == right.z;
-#endif
 }
 
 template<typename Scalar>
 bool operator!=(R3Element<Scalar> const& left,
                 R3Element<Scalar> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const eq_xy = _mm_cmpneq_pd(left.xy, right.xy);
-  __m128d const eq_zt = _mm_cmpneq_sd(left.zt, right.zt);
-  int const xy = _mm_movemask_pd(eq_xy);
-  int const zt = _mm_movemask_pd(eq_zt);
-  return (xy | (zt & 1)) != 0;
-#else
   return left.x != right.x || left.y != right.y || left.z != right.z;
-#endif
 }
 
 template<typename Scalar>
@@ -398,21 +368,7 @@ R3Element<Product<LScalar, RScalar>> Cross(
 template<typename LScalar, typename RScalar>
 Product<LScalar, RScalar> Dot(R3Element<LScalar> const& left,
                               R3Element<RScalar> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  // This code is very sensitive to the exact sequence of instructions.  When
-  // changing it, use IACA to check the effect.
-  __m128d const zero = _mm_setzero_pd();
-  __m128d const lzrz = _mm_mul_sd(left.zt, right.zt);
-  __m128d const lxrx_lyry = _mm_mul_pd(left.xy, right.xy);
-  __m128d const lxrxlzrz_lyry = _mm_add_sd(lxrx_lyry, lzrz);
-  __m128d const lxrxlyrylzrz_0 = _mm_hadd_pd(lxrxlzrz_lyry, zero);
-  Product<LScalar, RScalar> const* const result =
-      reinterpret_cast<Product<LScalar, RScalar> const*>(
-          &lxrxlyrylzrz_0.m128d_f64[0]);
-  return *result;
-#else
   return left.x * right.x + left.y * right.y + left.z * right.z;
-#endif
 }
 
 inline R3Element<double> BasisVector(int const i) {
@@ -427,4 +383,4 @@ inline R3Element<double> BasisVector(int const i) {
 }  // namespace geometry
 }  // namespace principia
 
-#undef PRINCIPIA_USE_SSE3_INTRINSICS
+#undef PRINCIPIA_USE_SSE2_INTRINSICS

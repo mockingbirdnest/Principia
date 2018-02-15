@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <intrin.h>
+
 #include <iostream>
 #include <limits>
 #include <string>
@@ -135,6 +137,10 @@ class Quantity final {
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
+  template<typename Q>
+  friend Q FromM128D(__m128d x);
+  template<typename Q>
+  friend __m128d ToM128D(Q x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -157,6 +163,17 @@ constexpr Q SIUnit();
 // Returns 1.
 template<>
 constexpr double SIUnit<double>();
+
+// Conversion to and from intrinsic types.  ToM128D fills both halves of the
+// result.
+template<typename Q>
+Q FromM128D(__m128d x);
+template<typename Q>
+__m128d ToM128D(Q );
+template<>
+double FromM128D(__m128d x);
+template<>
+__m128d ToM128D(double x);
 
 // A type trait for testing if a type is a quantity.
 template<typename T>
@@ -194,6 +211,7 @@ using internal_quantities::CubeRoot;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
 using internal_quantities::Exponentiation;
+using internal_quantities::FromM128D;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
 using internal_quantities::is_quantity;
@@ -207,6 +225,7 @@ using internal_quantities::Square;
 using internal_quantities::SquareRoot;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
+using internal_quantities::ToM128D;
 
 }  // namespace quantities
 }  // namespace principia
