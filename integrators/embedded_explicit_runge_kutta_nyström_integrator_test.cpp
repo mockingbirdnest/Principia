@@ -386,7 +386,7 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
     EXPECT_EQ(261, solution1.size());
     EXPECT_THAT(solution1[solution1.size() - 1].time.value -
                 solution1[solution1.size() - 2].time.value,
-                AlmostEquals(0.00805976959833537384 * duration, 0));
+                AlmostEquals(0.00805976959833537384 * duration, 0, 128));
   }
 
   // Do it again in one call to |Solve| and check associativity.
