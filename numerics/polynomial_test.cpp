@@ -1,7 +1,8 @@
 
-#include <tuple>
-
 #include "numerics/polynomial.hpp"
+
+#include "iacaMarks.h"
+#include <tuple>
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
@@ -58,6 +59,24 @@ class PolynomialTest : public ::testing::Test {
 
   P2V::Coefficients const coefficients_;
 };
+
+TEST_F(PolynomialTest, DISABLED_IACA) {
+  constexpr int degree = 17;
+  using P = PolynomialInMonomialBasis<Displacement<World>,
+                                      Time,
+                                      degree,
+                                      EstrinEvaluator>;
+  P::Coefficients const coefficients;
+
+  auto iaca = [](P::Coefficients const& c, Time const& t) {
+    IACA_VC64_START;
+    auto const result =
+        EstrinEvaluator<Displacement<World>, Time, degree>::Evaluate(c, t);
+    IACA_VC64_END;
+    return result;
+  };
+  CHECK_EQ(iaca(coefficients, 2 * Second), iaca(coefficients, 2 * Second));
+}
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialTest, Coefficients) {
