@@ -7,7 +7,7 @@ $dependencies = @(".\Google\glog\google-glog.sln",
 
 function build_solutions($solutions) {
   foreach ($configuration in "Debug", "Release") {
-    foreach ($platform in "Win32", "x64") {
+    foreach ($platform in "x64") {
       foreach ($solution in $solutions) {
         &$msbuild /t:"Clean;Build" /m /property:VisualStudioVersion=14.0 /property:Configuration=$configuration /property:Platform=$platform $solution
         if (!$?) {
