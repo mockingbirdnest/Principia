@@ -30,3 +30,6 @@ using internal_generators::QuotientGenerator;
 
 }  // namespace quantities
 }  // namespace principia
+
+// Because of circular dependencies, this file doesn't include
+// generators_body.hpp.  This will be done by quantities_body.hpp.

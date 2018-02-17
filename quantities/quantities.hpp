@@ -35,17 +35,15 @@ using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>>;
 // We strongly type angles.
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
+// |Product| and |Quotient| are not exported from this namespace.  Instead they
+// are defined as the result types of |operator*| and |operator/|.
 template<typename Left, typename Right>
-using Product =
-    typename ProductGenerator<Left, Right>::Type;
-
+using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
-using Quotient =
-    typename QuotientGenerator<Left, Right>::Type;
+using Quotient = typename QuotientGenerator<Left, Right>::Type;
 
 template<typename T, int exponent>
-using Exponentiation =
-    typename ExponentiationGenerator<T, exponent>::Type;
+using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
@@ -211,5 +209,4 @@ using internal_quantities::ToM128D;
 }  // namespace quantities
 }  // namespace principia
 
-#include "quantities/generators_body.hpp"
 #include "quantities/quantities_body.hpp"

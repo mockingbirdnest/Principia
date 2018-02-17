@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.hpp"
+#include "quantities/generators_body.hpp"  // Apologies.
 
 namespace principia {
 namespace quantities {
