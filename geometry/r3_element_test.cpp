@@ -90,7 +90,7 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 TEST_F(R3ElementTest, DISABLED_IACA) {
   auto iaca = [](R3Element<Speed> const& a) {
     IACA_VC64_START;
-    auto const result = 2 /** Second */* a;
+    auto const result = 2 * Second * a;
     IACA_VC64_END;
     return result;
   };
