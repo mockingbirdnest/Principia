@@ -59,7 +59,7 @@ using Power  = Variation<Energy>;
 using Action = Product<Energy, Time>;
 
 // There is some ambiguity regarding the choice of units for torque.  We choose
-// to make the moment of inertia free from angles, which introduce a
+// to make the moment of inertia free from angles, which introduces a
 // multiplicative angle in the torque.
 // Calls to Wedge in mechanics will often require the result to be multiplied by
 // Radian, and the application of a bivector will often require the result to be
