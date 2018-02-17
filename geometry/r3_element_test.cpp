@@ -14,7 +14,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-#define PRINCIPIA_USE_IACA 1
+#define PRINCIPIA_USE_IACA 0
 #if PRINCIPIA_USE_IACA
 #include "intel/iacaMarks.h"
 #endif
