@@ -25,23 +25,14 @@ template<>
 struct Collapse<Quantity<NoDimensions>> : not_constructible {
   using Type = double;
 };
+
 template<typename Left, typename Right>
 struct ProductGenerator : not_constructible {
-  enum {
-    Length            = Left::Dimensions::Length + Right::Dimensions::Length,
-    Mass              = Left::Dimensions::Mass + Right::Dimensions::Mass,
-    Time              = Left::Dimensions::Time + Right::Dimensions::Time,
-    Current           = Left::Dimensions::Current + Right::Dimensions::Current,
-    Temperature       = Left::Dimensions::Temperature +
-                        Right::Dimensions::Temperature,
-    Amount            = Left::Dimensions::Amount + Right::Dimensions::Amount,
-    LuminousIntensity = Left::Dimensions::LuminousIntensity +
-                        Right:: Dimensions::LuminousIntensity,
-    Angle             = Left::Dimensions::Angle + Right::Dimensions::Angle,
-  };
-  using Type = typename Collapse<
-      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                          LuminousIntensity, Angle>>>::Type;
+  using Type =
+      typename Collapse<
+          Quantity<typename DimensionsProductGenerator<
+                                typename Left::Dimensions,
+                                typename Right::Dimensions>::Type>>::Type;
 };
 template<typename Left>
 struct ProductGenerator<Left, double> : not_constructible {
@@ -55,23 +46,14 @@ template<>
 struct ProductGenerator<double, double> : not_constructible {
   using Type = double;
 };
+
 template<typename Left, typename Right>
 struct QuotientGenerator : not_constructible {
-  enum {
-    Length            = Left::Dimensions::Length - Right::Dimensions::Length,
-    Mass              = Left::Dimensions::Mass - Right::Dimensions::Mass,
-    Time              = Left::Dimensions::Time - Right::Dimensions::Time,
-    Current           = Left::Dimensions::Current - Right::Dimensions::Current,
-    Temperature       = Left::Dimensions::Temperature -
-                        Right::Dimensions::Temperature,
-    Amount            = Left::Dimensions::Amount - Right::Dimensions::Amount,
-    LuminousIntensity = Left::Dimensions::LuminousIntensity -
-                        Right:: Dimensions::LuminousIntensity,
-    Angle             = Left::Dimensions::Angle - Right::Dimensions::Angle,
-  };
-  using Type = typename Collapse<
-      Quantity<Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                          LuminousIntensity, Angle>>>::Type;
+  using Type =
+      typename Collapse<
+          Quantity<typename DimensionsQuotientGenerator<
+                                typename Left::Dimensions,
+                                typename Right::Dimensions>::Type>>::Type;
 };
 template<typename Left>
 struct QuotientGenerator<Left, double> : not_constructible {
@@ -83,19 +65,11 @@ struct QuotientGenerator<double, double> : not_constructible {
 };
 template<typename Right>
 struct QuotientGenerator<double, Right> : not_constructible {
-  enum {
-    Length            = -Right::Dimensions::Length,
-    Mass              = -Right::Dimensions::Mass,
-    Time              = -Right::Dimensions::Time,
-    Current           = -Right::Dimensions::Current,
-    Temperature       = -Right::Dimensions::Temperature,
-    Amount            = -Right::Dimensions::Amount,
-    LuminousIntensity = -Right::Dimensions::LuminousIntensity,
-    Angle             = -Right::Dimensions::Angle,
-  };
-  using Type = Quantity<
-      Dimensions<Length, Mass, Time, Current, Temperature, Amount,
-                 LuminousIntensity, Angle>>;
+  using Type =
+      typename Collapse<
+          Quantity<typename DimensionsQuotientGenerator<
+                                NoDimensions,
+                                typename Right::Dimensions>::Type>>::Type;
 };
 
 template<typename T, int exponent>
@@ -103,15 +77,13 @@ struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent > 1)>> {
   using Type = Product<typename ExponentiationGenerator<T, exponent - 1>::Type,
                        T>;
 };
-
 template<typename T, int exponent>
 struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent < 1)>>{
   using Type = Quotient<typename ExponentiationGenerator<T, exponent + 1>::Type,
                         T>;
 };
-
-template<typename T, int exponent>
-struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent == 1)>>{
+template<typename T>
+struct ExponentiationGenerator<T, 1>{
   using Type = T;
 };
 
@@ -123,31 +95,11 @@ template<int n, typename Q>
 struct NthRootGenerator<n, Q, std::enable_if_t<std::is_arithmetic<Q>::value>> {
   using Type = double;
 };
-
-template<int n, typename Q>
-struct NthRootGenerator<
-    n,
-    Q,
-    std::enable_if_t<(Q::Dimensions::Length % n) == 0 &&
-                     (Q::Dimensions::Mass % n) == 0 &&
-                     (Q::Dimensions::Time % n) == 0 &&
-                     (Q::Dimensions::Current % n) == 0 &&
-                     (Q::Dimensions::Temperature % n) == 0 &&
-                     (Q::Dimensions::Amount % n) == 0 &&
-                     (Q::Dimensions::LuminousIntensity % n) == 0 &&
-                     (Q::Dimensions::Angle % n) == 0>> {
-  enum {
-    Length            = Q::Dimensions::Length / n,
-    Mass              = Q::Dimensions::Mass / n,
-    Time              = Q::Dimensions::Time / n,
-    Current           = Q::Dimensions::Current / n,
-    Temperature       = Q::Dimensions::Temperature / n,
-    Amount            = Q::Dimensions::Amount / n,
-    LuminousIntensity = Q::Dimensions::LuminousIntensity / n,
-    Angle             = Q::Dimensions::Angle / n,
-  };
-  using Type = Quantity<Dimensions<Length, Mass, Time, Current, Temperature,
-                                   Amount, LuminousIntensity, Angle>>;
+template<int n, typename D>
+struct NthRootGenerator<n, Quantity<D>> {
+  using Type =
+      typename Collapse<
+          Quantity<typename DimensionsNthRootGenerator<n, D>::Type>>::Type;
 };
 
 template<typename D>

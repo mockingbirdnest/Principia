@@ -94,6 +94,55 @@ struct Dimensions : not_constructible {
       ExponentSerializer::Representation(AngleExponent, 7);
 };
 
+template<int n, typename Dimensions>
+struct DimensionsNthRootGenerator : not_constructible {
+  static_assert((Dimensions::Length % n) == 0 &&
+                (Dimensions::Mass % n) == 0 &&
+                (Dimensions::Time % n) == 0 &&
+                (Dimensions::Current % n) == 0 &&
+                (Dimensions::Temperature % n) == 0 &&
+                (Dimensions::Amount % n) == 0 &&
+                (Dimensions::LuminousIntensity % n) == 0 &&
+                (Dimensions::Angle % n) == 0,
+                "Dimensions not suitable for Nth root");
+
+  using Type =
+      internal_dimensions::Dimensions<Dimensions::Length / n,
+                                      Dimensions::Mass / n,
+                                      Dimensions::Time / n,
+                                      Dimensions::Current / n,
+                                      Dimensions::Temperature / n,
+                                      Dimensions::Amount / n,
+                                      Dimensions::LuminousIntensity / n,
+                                      Dimensions::Angle / n>;
+};
+
+template<typename LDimensions, typename RDimensions>
+struct DimensionsProductGenerator : not_constructible {
+  using Type = Dimensions<LDimensions::Length + RDimensions::Length,
+                          LDimensions::Mass + RDimensions::Mass,
+                          LDimensions::Time + RDimensions::Time,
+                          LDimensions::Current + RDimensions::Current,
+                          LDimensions::Temperature + RDimensions::Temperature,
+                          LDimensions::Amount + RDimensions::Amount,
+                          LDimensions::LuminousIntensity +
+                              RDimensions::LuminousIntensity,
+                          LDimensions::Angle + RDimensions::Angle>;
+};
+
+template<typename LDimensions, typename RDimensions>
+struct DimensionsQuotientGenerator : not_constructible {
+  using Type = Dimensions<LDimensions::Length - RDimensions::Length,
+                          LDimensions::Mass - RDimensions::Mass,
+                          LDimensions::Time - RDimensions::Time,
+                          LDimensions::Current - RDimensions::Current,
+                          LDimensions::Temperature - RDimensions::Temperature,
+                          LDimensions::Amount - RDimensions::Amount,
+                          LDimensions::LuminousIntensity -
+                              RDimensions::LuminousIntensity,
+                          LDimensions::Angle - RDimensions::Angle>;
+};
+
 }  // namespace internal_dimensions
 }  // namespace quantities
 }  // namespace principia
