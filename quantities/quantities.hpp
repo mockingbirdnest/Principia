@@ -21,8 +21,6 @@ namespace internal_quantities {
 using base::not_constructible;
 using base::not_null;
 using internal_dimensions::Dimensions;
-using internal_generators::ExponentiationGenerator;
-using internal_generators::NthRootGenerator;
 using internal_generators::ProductGenerator;
 using internal_generators::QuotientGenerator;
 
@@ -46,20 +44,6 @@ template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::Type;
-
-template<typename T, int exponent>
-using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
-template<typename Q>
-using Square = Exponentiation<Q, 2>;
-template<typename Q>
-using Cube = Exponentiation<Q, 3>;
-
-template<typename Q, int n>
-using NthRoot = typename NthRootGenerator<Q, n>::Type;
-template<typename Q>
-using SquareRoot = NthRoot<Q, 2>;
-template<typename Q>
-using CubeRoot = NthRoot<Q, 3>;
 
 template<typename D>
 class Quantity final {
@@ -190,11 +174,8 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 using internal_quantities::Amount;
 using internal_quantities::Angle;
-using internal_quantities::Cube;
-using internal_quantities::CubeRoot;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
-using internal_quantities::Exponentiation;
 using internal_quantities::FromM128D;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
@@ -205,8 +186,6 @@ using internal_quantities::Mass;
 using internal_quantities::NaN;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
-using internal_quantities::Square;
-using internal_quantities::SquareRoot;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
 using internal_quantities::ToM128D;

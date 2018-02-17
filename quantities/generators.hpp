@@ -12,6 +12,7 @@ namespace internal_generators {
 template<typename Q, int n>
 struct ExponentiationGenerator;
 
+// Only legal if |n| divides the dimensions of |Q|.
 template<typename Q, int n, typename = void>
 struct NthRootGenerator;
 
