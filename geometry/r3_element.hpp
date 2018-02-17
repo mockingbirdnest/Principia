@@ -1,8 +1,9 @@
 ﻿
 #pragma once
 
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <nmmintrin.h>
+
+#include <iostream>
 #include <string>
 
 #include "base/not_null.hpp"
@@ -28,10 +29,11 @@ struct SphericalCoordinates;
 // space over ℝ, represented by |double|. |R3Element| is the underlying data
 // type for more advanced strongly typed structures suchas |Multivector|.
 template<typename Scalar>
-struct R3Element final {
+struct alignas(16) R3Element final {
  public:
   R3Element();
   R3Element(Scalar const& x, Scalar const& y, Scalar const& z);
+  R3Element(__m128d xy, __m128d zt);
 
   Scalar&       operator[](int index);
   Scalar const& operator[](int index) const;
@@ -57,9 +59,17 @@ struct R3Element final {
   void WriteToMessage(not_null<serialization::R3Element*> message) const;
   static R3Element ReadFromMessage(serialization::R3Element const& message);
 
-  Scalar x;
-  Scalar y;
-  Scalar z;
+  union {
+    struct {
+      Scalar x;
+      Scalar y;
+      Scalar z;
+    };
+    struct {
+      __m128d xy;
+      __m128d zt;
+    };
+  };
 };
 
 template<typename Scalar>

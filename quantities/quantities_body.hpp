@@ -403,6 +403,26 @@ constexpr double SIUnit<double>() {
   return 1;
 }
 
+template<typename Q>
+Q FromM128D(__m128d const x) {
+  return Q(_mm_cvtsd_f64(x));
+}
+
+template<typename Q>
+__m128d ToM128D(Q const x) {
+  return _mm_set1_pd(x.magnitude_);
+}
+
+template<>
+inline double FromM128D(__m128d const x) {
+  return _mm_cvtsd_f64(x);
+}
+
+template<>
+inline __m128d ToM128D(double const x) {
+  return _mm_set1_pd(x);
+}
+
 template<typename Q, typename>
 constexpr Q Infinity() {
   return SIUnit<Q>() * std::numeric_limits<double>::infinity();
