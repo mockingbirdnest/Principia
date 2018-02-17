@@ -169,7 +169,7 @@ constexpr double SIUnit<double>();
 template<typename Q>
 Q FromM128D(__m128d x);
 template<typename Q>
-__m128d ToM128D(Q );
+__m128d ToM128D(Q);
 template<>
 double FromM128D(__m128d x);
 template<>
