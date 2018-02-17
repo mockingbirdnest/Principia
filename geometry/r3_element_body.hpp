@@ -3,7 +3,7 @@
 
 #include "geometry/r3_element.hpp"
 
-#include <intrin.h>
+#include <nmmintrin.h>
 
 #include <string>
 

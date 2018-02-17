@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include <intrin.h>
-// We use ostream for logging purposes.
-#include <iostream>  // NOLINT(readability/streams)
+#include <nmmintrin.h>
+
+#include <iostream>
 #include <string>
 
 #include "base/not_null.hpp"

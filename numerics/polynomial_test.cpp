@@ -1,7 +1,6 @@
 
 #include "numerics/polynomial.hpp"
 
-#include "iacaMarks.h"
 #include <tuple>
 
 #include "geometry/frame.hpp"
@@ -16,6 +15,11 @@
 #include "serialization/numerics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/matchers.hpp"
+
+#define PRINCIPIA_USE_IACA 0
+#if PRINCIPIA_USE_IACA
+#include "intel/iacaMarks.h"
+#endif
 
 namespace principia {
 
@@ -60,8 +64,11 @@ class PolynomialTest : public ::testing::Test {
   P2V::Coefficients const coefficients_;
 };
 
+#if PRINCIPIA_USE_IACA
+// A convenient skeleton for analysing code with IACA.
 TEST_F(PolynomialTest, DISABLED_IACA) {
   constexpr int degree = 17;
+  using E = EstrinEvaluator<Displacement<World>, Time, degree>;
   using P = PolynomialInMonomialBasis<Displacement<World>,
                                       Time,
                                       degree,
@@ -70,13 +77,13 @@ TEST_F(PolynomialTest, DISABLED_IACA) {
 
   auto iaca = [](P::Coefficients const& c, Time const& t) {
     IACA_VC64_START;
-    auto const result =
-        EstrinEvaluator<Displacement<World>, Time, degree>::Evaluate(c, t);
+    auto const result = E::Evaluate(c, t);
     IACA_VC64_END;
     return result;
   };
   CHECK_EQ(iaca(coefficients, 2 * Second), iaca(coefficients, 2 * Second));
 }
+#endif
 
 // Check that coefficients can be accessed and have the right type.
 TEST_F(PolynomialTest, Coefficients) {
@@ -214,3 +221,5 @@ TEST_F(PolynomialTest, Serialization) {
 
 }  // namespace numerics
 }  // namespace principia
+
+#undef PRINCIPIA_USE_IACA

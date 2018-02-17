@@ -1,7 +1,6 @@
 ﻿
 #include "geometry/r3_element.hpp"
 
-#include "iacaMarks.h"
 #include <functional>
 
 #include "glog/logging.h"
@@ -14,6 +13,11 @@
 #include "testing_utilities/algebra.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
+
+#define PRINCIPIA_USE_IACA 0
+#if PRINCIPIA_USE_IACA
+#include "intel/iacaMarks.h"
+#endif
 
 namespace principia {
 
@@ -81,6 +85,7 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 }
 #endif
 
+#if PRINCIPIA_USE_IACA
 // A convenient skeleton for analysing code with IACA.
 TEST_F(R3ElementTest, DISABLED_IACA) {
   auto iaca = [](R3Element<Speed> const& a) {
@@ -91,6 +96,7 @@ TEST_F(R3ElementTest, DISABLED_IACA) {
   };
   CHECK_EQ(iaca(a_), iaca(a_));
 }
+#endif
 
 TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_EQ((e * 42) * v_, e * (42 * v_));
@@ -242,3 +248,5 @@ TEST_F(R3ElementTest, SphericalCoordinates) {
 
 }  // namespace geometry
 }  // namespace principia
+
+#undef PRINCIPIA_USE_IACA

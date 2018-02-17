@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <intrin.h>
+#include <nmmintrin.h>
 
 #include <iostream>
 #include <limits>
