@@ -9,98 +9,10 @@
 #include <string>
 
 #include "base/macros.hpp"
-#include "base/not_constructible.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_quantities {
-
-using base::not_constructible;
-
-template<typename Q>
-struct Collapse : not_constructible {
-  using Type = Q;
-};
-template<>
-struct Collapse<Quantity<NoDimensions>> : not_constructible {
-  using Type = double;
-};
-
-template<typename Left, typename Right>
-struct ProductGenerator : not_constructible {
-  using Type =
-      typename Collapse<
-          Quantity<typename DimensionsProductGenerator<
-                                typename Left::Dimensions,
-                                typename Right::Dimensions>::Type>>::Type;
-};
-template<typename Left>
-struct ProductGenerator<Left, double> : not_constructible {
-  using Type = Left;
-};
-template<typename Right>
-struct ProductGenerator<double, Right> : not_constructible {
-  using Type = Right;
-};
-template<>
-struct ProductGenerator<double, double> : not_constructible {
-  using Type = double;
-};
-
-template<typename Left, typename Right>
-struct QuotientGenerator : not_constructible {
-  using Type =
-      typename Collapse<
-          Quantity<typename DimensionsQuotientGenerator<
-                                typename Left::Dimensions,
-                                typename Right::Dimensions>::Type>>::Type;
-};
-template<typename Left>
-struct QuotientGenerator<Left, double> : not_constructible {
-  using Type = Left;
-};
-template<>
-struct QuotientGenerator<double, double> : not_constructible {
-  using Type = double;
-};
-template<typename Right>
-struct QuotientGenerator<double, Right> : not_constructible {
-  using Type =
-      typename Collapse<
-          Quantity<typename DimensionsQuotientGenerator<
-                                NoDimensions,
-                                typename Right::Dimensions>::Type>>::Type;
-};
-
-template<typename T, int exponent>
-struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent > 1)>> {
-  using Type = Product<typename ExponentiationGenerator<T, exponent - 1>::Type,
-                       T>;
-};
-template<typename T, int exponent>
-struct ExponentiationGenerator<T, exponent, std::enable_if_t<(exponent < 1)>>{
-  using Type = Quotient<typename ExponentiationGenerator<T, exponent + 1>::Type,
-                        T>;
-};
-template<typename T>
-struct ExponentiationGenerator<T, 1>{
-  using Type = T;
-};
-
-// NOTE(phl): We use |is_arithmetic| here, not |double|, to make it possible to
-// write something like |Sqrt(2)|.  We could use |is_arithmetic| in more places
-// but it would make the template magic even harder to follow, so let's not do
-// that until we have a good reason.
-template<int n, typename Q>
-struct NthRootGenerator<n, Q, std::enable_if_t<std::is_arithmetic<Q>::value>> {
-  using Type = double;
-};
-template<int n, typename D>
-struct NthRootGenerator<n, Quantity<D>> {
-  using Type =
-      typename Collapse<
-          Quantity<typename DimensionsNthRootGenerator<n, D>::Type>>::Type;
-};
 
 template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}

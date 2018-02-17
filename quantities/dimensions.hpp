@@ -24,7 +24,9 @@ using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
 // These structs have a |Type| member that is a |Dimensions| suitable for
 // the result of the operation applied to argument(s) having the |Dimensions|
 // given as template parameter(s).
-template<int n, typename Dimensions>
+template<typename Dimensions, int n>
+struct DimensionsExponentiationGenerator;
+template<typename Dimensions, int n>
 struct DimensionsNthRootGenerator;
 template<typename LDimensions, typename RDimensions>
 struct DimensionsProductGenerator;
@@ -34,6 +36,7 @@ struct DimensionsQuotientGenerator;
 }  // namespace internal_dimensions
 
 using internal_dimensions::Dimensions;
+using internal_dimensions::DimensionsExponentiationGenerator;
 using internal_dimensions::DimensionsNthRootGenerator;
 using internal_dimensions::DimensionsProductGenerator;
 using internal_dimensions::DimensionsQuotientGenerator;

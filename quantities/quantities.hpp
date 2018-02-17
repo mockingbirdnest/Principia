@@ -11,6 +11,7 @@
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
 #include "quantities/dimensions.hpp"
+#include "quantities/generators.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -20,7 +21,8 @@ namespace internal_quantities {
 using base::not_constructible;
 using base::not_null;
 
-template<typename D> class Quantity;
+template<typename D>
+class Quantity;
 
 // Base quantities
 using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0>>;
@@ -33,39 +35,28 @@ using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>>;
 // We strongly type angles.
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
-template<typename Left, typename Right> struct ProductGenerator;
-template<typename Left, typename Right> struct QuotientGenerator;
-template<int n, typename Q, typename = void>
-struct NthRootGenerator : not_constructible {};
-template<typename T, int exponent, typename = void>
-struct ExponentiationGenerator final {};
+template<typename Left, typename Right>
+using Product =
+    typename ProductGenerator<Left, Right>::Type;
 
 template<typename Left, typename Right>
-using Product = typename ProductGenerator<Left, Right>::Type;
-template<typename Left, typename Right>
-using Quotient = typename QuotientGenerator<Left, Right>::Type;
+using Quotient =
+    typename QuotientGenerator<Left, Right>::Type;
 
-// |Exponentiation<T, n>| is an alias for the following, where t is a value of
-// type |T|:
-//   The type of ( ... (t * t) * ... * t), with n factors, if n >= 1;
-//   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
-//   denominator, if n < 1.
 template<typename T, int exponent>
-using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
+using Exponentiation =
+    typename ExponentiationGenerator<T, exponent>::Type;
 template<typename Q>
 using Square = Exponentiation<Q, 2>;
 template<typename Q>
 using Cube = Exponentiation<Q, 3>;
 
-// |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
-// even dimensions.  In that case, it is the unique instance |S| of |Quantity|
-// such that |Product<S, S>| is |T|.
-template<int n, typename Q>
-using NthRoot = typename NthRootGenerator<n, Q>::Type;
+template<typename Q, int n>
+using NthRoot = typename NthRootGenerator<Q, n>::Type;
 template<typename Q>
-using SquareRoot = NthRoot<2, Q>;
+using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>
-using CubeRoot = NthRoot<3, Q>;
+using CubeRoot = NthRoot<Q, 3>;
 
 template<typename D>
 class Quantity final {
@@ -104,12 +95,12 @@ class Quantity final {
 
   template<typename LDimensions, typename RDimensions>
   friend constexpr Product<Quantity<LDimensions>,
-                                   Quantity<RDimensions>> operator*(
+                               Quantity<RDimensions>> operator*(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
   friend constexpr Quotient<Quantity<LDimensions>,
-                                    Quantity<RDimensions>> operator/(
+                                Quantity<RDimensions>> operator/(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
@@ -220,4 +211,5 @@ using internal_quantities::ToM128D;
 }  // namespace quantities
 }  // namespace principia
 
+#include "quantities/generators_body.hpp"
 #include "quantities/quantities_body.hpp"

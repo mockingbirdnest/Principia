@@ -94,7 +94,20 @@ struct Dimensions : not_constructible {
       ExponentSerializer::Representation(AngleExponent, 7);
 };
 
-template<int n, typename Dimensions>
+template<typename Dimensions, int n>
+struct DimensionsExponentiationGenerator : not_constructible {
+  using Type =
+      internal_dimensions::Dimensions<Dimensions::Length * n,
+                                      Dimensions::Mass * n,
+                                      Dimensions::Time * n,
+                                      Dimensions::Current * n,
+                                      Dimensions::Temperature * n,
+                                      Dimensions::Amount * n,
+                                      Dimensions::LuminousIntensity * n,
+                                      Dimensions::Angle * n>;
+};
+
+template<typename Dimensions, int n>
 struct DimensionsNthRootGenerator : not_constructible {
   static_assert((Dimensions::Length % n) == 0 &&
                 (Dimensions::Mass % n) == 0 &&
