@@ -14,7 +14,7 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
-#define PRINCIPIA_USE_IACA 0
+#define PRINCIPIA_USE_IACA 1
 #if PRINCIPIA_USE_IACA
 #include "intel/iacaMarks.h"
 #endif
@@ -90,7 +90,7 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 TEST_F(R3ElementTest, DISABLED_IACA) {
   auto iaca = [](R3Element<Speed> const& a) {
     IACA_VC64_START;
-    auto const result = 2 * Second * a;
+    auto const result = 2 /** Second */* a;
     IACA_VC64_END;
     return result;
   };

@@ -6,6 +6,7 @@
 #include <nmmintrin.h>
 
 #include <string>
+#include <type_traits>
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
@@ -32,16 +33,25 @@ using quantities::ToM128D;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
-R3Element<Scalar>::R3Element() : x(), y(), z() {}
+R3Element<Scalar>::R3Element() : x(), y(), z() {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
 
 template<typename Scalar>
 R3Element<Scalar>::R3Element(Scalar const& x,
                              Scalar const& y,
-                             Scalar const& z) : x(x), y(y), z(z) {}
+                             Scalar const& z) : x(x), y(y), z(z) {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
 
 template<typename Scalar>
 R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
-    : xy(xy), zt(zt) {}
+    : xy(xy), zt(zt) {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
 
 template<typename Scalar>
 Scalar& R3Element<Scalar>::operator[](int const index) {
@@ -218,8 +228,8 @@ R3Element<Scalar> operator*(double const left,
                             R3Element<Scalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
   __m128d const left_128d = ToM128D(left);
-  return R3Element<Scalar>(_mm_mul_pd(left_128d, right.xy),
-                           _mm_mul_sd(left_128d, right.zt));
+  return R3Element<Scalar>(_mm_mul_pd(right.xy, left_128d),
+                           _mm_mul_sd(right.zt, left_128d));
 #else
   return R3Element<Scalar>(left * right.x,
                            left * right.y,
@@ -261,8 +271,8 @@ operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
   __m128d const left_128d = ToM128D(left);
   return R3Element<Product<Quantity<LDimension>, RScalar>>(
-      _mm_mul_pd(left_128d, right.xy),
-      _mm_mul_sd(left_128d, right.zt));
+      _mm_mul_pd(right.xy, left_128d),
+      _mm_mul_sd(right.zt, left_128d));
 #else
   return R3Element<Product<Quantity<LDimension>, RScalar>>(
       left * right.x,
