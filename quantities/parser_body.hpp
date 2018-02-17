@@ -5,13 +5,15 @@
 
 #include <array>
 #include <string>
-
+#include "quantities/dimensions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_parser {
+
+using internal_dimensions::Dimensions;
 
 using RuntimeDimensions = std::array<std::int64_t, 8>;
 
@@ -33,8 +35,7 @@ template<std::int64_t LengthExponent,
          std::int64_t AmountExponent,
          std::int64_t LuminousIntensityExponent,
          std::int64_t AngleExponent>
-struct ExtractDimensions<
-    Quantity<internal_quantities::Dimensions<LengthExponent,
+struct ExtractDimensions<Quantity<Dimensions<LengthExponent,
                                              MassExponent,
                                              TimeExponent,
                                              CurrentExponent,
