@@ -109,5 +109,3 @@ struct QuotientGenerator<double, double> : not_constructible {
 }  // namespace internal_generators
 }  // namespace quantities
 }  // namespace principia
-
-

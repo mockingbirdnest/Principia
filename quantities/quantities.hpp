@@ -93,12 +93,12 @@ class Quantity final {
 
   template<typename LDimensions, typename RDimensions>
   friend constexpr Product<Quantity<LDimensions>,
-                               Quantity<RDimensions>> operator*(
+                           Quantity<RDimensions>> operator*(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
   friend constexpr Quotient<Quantity<LDimensions>,
-                                Quantity<RDimensions>> operator/(
+                            Quantity<RDimensions>> operator/(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
