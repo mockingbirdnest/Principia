@@ -20,6 +20,11 @@ namespace internal_quantities {
 
 using base::not_constructible;
 using base::not_null;
+using internal_dimensions::Dimensions;
+using internal_generators::ExponentiationGenerator;
+using internal_generators::NthRootGenerator;
+using internal_generators::ProductGenerator;
+using internal_generators::QuotientGenerator;
 
 template<typename D>
 class Quantity;

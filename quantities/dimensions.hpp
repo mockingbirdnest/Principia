@@ -34,14 +34,6 @@ template<typename LDimensions, typename RDimensions>
 struct DimensionsQuotientGenerator;
 
 }  // namespace internal_dimensions
-
-using internal_dimensions::Dimensions;
-using internal_dimensions::DimensionsExponentiationGenerator;
-using internal_dimensions::DimensionsNthRootGenerator;
-using internal_dimensions::DimensionsProductGenerator;
-using internal_dimensions::DimensionsQuotientGenerator;
-using internal_dimensions::NoDimensions;
-
 }  // namespace quantities
 }  // namespace principia
 

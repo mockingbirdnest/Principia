@@ -5,13 +5,15 @@
 
 #include <array>
 #include <string>
-
+#include "quantities/dimensions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
 namespace quantities {
 namespace internal_parser {
+
+using internal_dimensions::Dimensions;
 
 using RuntimeDimensions = std::array<std::int64_t, 8>;
 

@@ -22,12 +22,6 @@ template<typename Left, typename Right>
 struct QuotientGenerator;
 
 }  // namespace internal_generators
-
-using internal_generators::ExponentiationGenerator;
-using internal_generators::NthRootGenerator;
-using internal_generators::ProductGenerator;
-using internal_generators::QuotientGenerator;
-
 }  // namespace quantities
 }  // namespace principia
 

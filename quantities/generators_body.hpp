@@ -12,6 +12,12 @@ namespace quantities {
 namespace internal_generators {
 
 using base::not_constructible;
+using internal_dimensions::Dimensions;
+using internal_dimensions::DimensionsExponentiationGenerator;
+using internal_dimensions::DimensionsNthRootGenerator;
+using internal_dimensions::DimensionsProductGenerator;
+using internal_dimensions::DimensionsQuotientGenerator;
+using internal_dimensions::NoDimensions;
 
 template<typename Q>
 struct Collapse : not_constructible {
