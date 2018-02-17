@@ -66,23 +66,6 @@ struct Dimensions : not_constructible {
     Angle             = AngleExponent,
   };
 
-  static_assert(ExponentSerializer::IsSerializable(Length),
-                "Invalid length exponent");
-  static_assert(ExponentSerializer::IsSerializable(Mass),
-                "Invalid mass exponent");
-  static_assert(ExponentSerializer::IsSerializable(Time),
-                "Invalid time exponent");
-  static_assert(ExponentSerializer::IsSerializable(Current),
-                "Invalid current exponent");
-  static_assert(ExponentSerializer::IsSerializable(Temperature),
-                "Invalid temperature exponent");
-  static_assert(ExponentSerializer::IsSerializable(Amount),
-                "Invalid amount exponent");
-  static_assert(ExponentSerializer::IsSerializable(LuminousIntensity),
-                "Invalid luminous intensity exponent");
-  static_assert(ExponentSerializer::IsSerializable(Angle),
-                "Invalid angle exponent");
-
   static std::int64_t constexpr representation =
       ExponentSerializer::Representation(LengthExponent, 0)            |
       ExponentSerializer::Representation(MassExponent, 1)              |
@@ -92,6 +75,27 @@ struct Dimensions : not_constructible {
       ExponentSerializer::Representation(AmountExponent, 5)            |
       ExponentSerializer::Representation(LuminousIntensityExponent, 6) |
       ExponentSerializer::Representation(AngleExponent, 7);
+};
+
+template<typename Dimensions>
+struct DimensionsAreSerializable {
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Length),
+                "Invalid length exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Mass),
+                "Invalid mass exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Time),
+                "Invalid time exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Current),
+                "Invalid current exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Temperature),
+                "Invalid temperature exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Amount),
+                "Invalid amount exponent");
+  static_assert(ExponentSerializer::IsSerializable(
+                    Dimensions::LuminousIntensity),
+                "Invalid luminous intensity exponent");
+  static_assert(ExponentSerializer::IsSerializable(Dimensions::Angle),
+                "Invalid angle exponent");
 };
 
 template<typename Dimensions, int n>

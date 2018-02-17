@@ -15,6 +15,8 @@ namespace principia {
 namespace quantities {
 namespace internal_quantities {
 
+using internal_dimensions::DimensionsAreSerializable;
+
 template<typename D>
 constexpr Quantity<D>::Quantity() : magnitude_(0) {}
 
@@ -105,6 +107,7 @@ constexpr bool Quantity<D>::operator!=(Quantity const& right) const {
 template<typename D>
 void Quantity<D>::WriteToMessage(
     not_null<serialization::Quantity*> const message) const {
+  sizeof(internal_dimensions::DimensionsAreSerializable<D>);
   message->set_dimensions(D::representation);
   message->set_magnitude(magnitude_);
 }
@@ -112,6 +115,7 @@ void Quantity<D>::WriteToMessage(
 template<typename D>
 Quantity<D> Quantity<D>::ReadFromMessage(
     serialization::Quantity const& message) {
+  sizeof(internal_dimensions::DimensionsAreSerializable<D>);
   CHECK_EQ(D::representation, message.dimensions());
   return Quantity(message.magnitude());
 }

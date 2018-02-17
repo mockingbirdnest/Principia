@@ -21,6 +21,11 @@ struct Dimensions;
 // A double by any other name...
 using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
 
+// Instantiating this struct asserts at compile time that the template parameter
+// can be serialized.
+template<typename Dimensions>
+struct DimensionsAreSerializable;
+
 // These structs have a |Type| member that is a |Dimensions| suitable for
 // the result of the operation applied to argument(s) having the |Dimensions|
 // given as template parameter(s).
