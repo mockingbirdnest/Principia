@@ -10,6 +10,7 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "quantities/dimensions.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -19,18 +20,7 @@ namespace internal_quantities {
 using base::not_constructible;
 using base::not_null;
 
-template<std::int64_t LengthExponent,
-         std::int64_t MassExponent,
-         std::int64_t TimeExponent,
-         std::int64_t CurrentExponent,
-         std::int64_t TemperatureExponent,
-         std::int64_t AmountExponent,
-         std::int64_t LuminousIntensityExponent,
-         std::int64_t AngleExponent>
-struct Dimensions;
 template<typename D> class Quantity;
-
-using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
 
 // Base quantities
 using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0>>;

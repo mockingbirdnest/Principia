@@ -33,8 +33,7 @@ template<std::int64_t LengthExponent,
          std::int64_t AmountExponent,
          std::int64_t LuminousIntensityExponent,
          std::int64_t AngleExponent>
-struct ExtractDimensions<
-    Quantity<internal_quantities::Dimensions<LengthExponent,
+struct ExtractDimensions<Quantity<Dimensions<LengthExponent,
                                              MassExponent,
                                              TimeExponent,
                                              CurrentExponent,
