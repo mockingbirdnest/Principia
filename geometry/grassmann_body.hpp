@@ -355,48 +355,27 @@ Multivector<Scalar, Frame, rank> operator-(
       left.coordinates() - right.coordinates());
 }
 
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator*(
-    double const left,
-    Multivector<Scalar, Frame, rank> const& right) {
-  return Multivector<Scalar, Frame, rank>(left * right.coordinates());
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator*(
-    Multivector<Scalar, Frame, rank> const& left,
-    double const right) {
-  return Multivector<Scalar, Frame, rank>(left.coordinates() * right);
-}
-
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator/(
-    Multivector<Scalar, Frame, rank> const& left,
-    double const right) {
-  return Multivector<Scalar, Frame, rank>(left.coordinates() / right);
-}
-
-template<typename LDimension, typename RScalar, typename Frame, int rank>
-Multivector<Product<Quantity<LDimension>, RScalar>, Frame, rank>
-operator*(Quantity<LDimension> const& left,
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+operator*(LScalar const& left,
           Multivector<RScalar, Frame, rank> const& right) {
-  return Multivector<Product<Quantity<LDimension>, RScalar>, Frame, rank>(
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       left * right.coordinates());
 }
 
-template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<Product<LScalar, Quantity<RDimension>>, Frame, rank>
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
-          Quantity<RDimension> const& right) {
-  return Multivector<Product<LScalar, Quantity<RDimension>>, Frame, rank>(
+          RScalar const& right) {
+  return Multivector<Product<LScalar, RScalar>, Frame, rank>(
       left.coordinates() * right);
 }
 
-template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<Quotient<LScalar, Quantity<RDimension>>, Frame, rank>
+template<typename LScalar, typename RScalar, typename Frame, int rank, typename>
+Multivector<Quotient<LScalar, RScalar>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
-          Quantity<RDimension> const& right) {
-  return Multivector<Quotient<LScalar, Quantity<RDimension>>, Frame, rank>(
+          RScalar const& right) {
+  return Multivector<Quotient<LScalar, RScalar>, Frame, rank>(
       left.coordinates() / right);
 }
 
