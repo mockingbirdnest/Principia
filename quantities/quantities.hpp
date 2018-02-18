@@ -12,6 +12,7 @@
 #include "base/not_null.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -142,21 +143,17 @@ template<>
 double FromM128D(__m128d x);
 template<>
 __m128d ToM128D(double x);
-
-// A type trait for testing if a type is a quantity.
-template<typename T>
-struct is_quantity : std::is_arithmetic<T>, not_constructible {};
-template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
+template<>
+__m128d ToM128D(int x);
 
 // Returns a positive infinity of |Q|.
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
 constexpr Q Infinity();
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
 constexpr bool IsFinite(Q const& x);
 
 // Returns a quiet NaN of |Q|.
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
 constexpr Q NaN();
 
 std::string DebugString(
@@ -179,7 +176,6 @@ using internal_quantities::DebugString;
 using internal_quantities::FromM128D;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
-using internal_quantities::is_quantity;
 using internal_quantities::Length;
 using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;

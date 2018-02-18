@@ -192,6 +192,11 @@ inline __m128d ToM128D(double const x) {
   return _mm_set1_pd(x);
 }
 
+template<>
+inline __m128d ToM128D(int const x) {
+  return _mm_set1_pd(static_cast<double>(x));
+}
+
 template<typename Q, typename>
 constexpr Q Infinity() {
   return SIUnit<Q>() * std::numeric_limits<double>::infinity();

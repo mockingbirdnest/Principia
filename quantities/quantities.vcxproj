@@ -28,6 +28,7 @@
     <ClInclude Include="serialization_body.hpp" />
     <ClInclude Include="si.hpp" />
     <ClInclude Include="si_body.hpp" />
+    <ClInclude Include="traits.hpp" />
     <ClInclude Include="uk.hpp" />
   </ItemGroup>
   <ItemGroup>

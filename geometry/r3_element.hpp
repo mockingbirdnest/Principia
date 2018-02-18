@@ -17,6 +17,7 @@ namespace internal_r3_element {
 
 using base::not_null;
 using quantities::Angle;
+using quantities::is_quantity_v;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
@@ -104,27 +105,25 @@ template<typename Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right);
 
-template<typename Scalar>
-R3Element<Scalar> operator*(double left, R3Element<Scalar> const& right);
-template<typename Scalar>
-R3Element<Scalar> operator*(R3Element<Scalar> const& left, double right);
-template<typename Scalar>
-R3Element<Scalar> operator/(R3Element<Scalar> const& left, double right);
-
 // Dimensionful multiplication |LScalar * R3Element<RScalar>| is the tensor
 // product LScalar ⊗ Scalar³. Since LScalar ⊗ Scalar³ ≅ (LScalar ⊗ Scalar)³,
 // the result is an R3Element<Product<LScalar, RScalar>>.
 // The special case where one of the scalars is |double| is handled separately
 // above in order to allow implicit conversions to |double|.
-template<typename LDimension, typename RScalar>
-R3Element<Product<Quantity<LDimension>, RScalar>>
-operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right);
-template<typename LScalar, typename RDimension>
-R3Element<Product<LScalar, Quantity<RDimension>>>
-operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right);
-template<typename LScalar, typename RDimension>
-R3Element<Quotient<LScalar, Quantity<RDimension>>>
-operator/(R3Element<LScalar> const& left, Quantity<RDimension> const& right);
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<LScalar>>>
+R3Element<Product<LScalar, RScalar>>
+operator*(LScalar const& left, R3Element<RScalar> const& right);
+
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Product<LScalar, RScalar>>
+operator*(R3Element<LScalar> const& left, RScalar const& right);
+
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity_v<RScalar>>>
+R3Element<Quotient<LScalar, RScalar>>
+operator/(R3Element<LScalar> const& left, RScalar const& right);
 
 template<typename Scalar>
 bool operator==(R3Element<Scalar> const& left,
