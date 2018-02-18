@@ -177,12 +177,12 @@ KeplerOrbit<Frame>::KeplerOrbit(
   Vector<double, Frame> const z({0, 0, 1});
   Bivector<double, Frame> const x_wedge_y({0, 0, 1});
 
-  Bivector<SpecificAngularMomentum, Frame> const h = Wedge(r / Radian, v);
+  Bivector<SpecificAngularMomentum, Frame> const h = Wedge(r, v) * Radian;
   // The eccentricity vector has magnitude equal to the eccentricity, and points
   // towards the periapsis.  This is a vector (the direction of the periapsis
   // does not depend on the coordinate system).
   Vector<double, Frame> const eccentricity_vector =
-      v * h / μ * Radian - Normalize(r);
+      v * h / (μ * Radian) - Normalize(r);
   auto const& periapsis = eccentricity_vector;
   Vector<SpecificAngularMomentum, Frame> const ascending_node = z * h;
 
@@ -210,9 +210,9 @@ KeplerOrbit<Frame>::KeplerOrbit(
   // We have h, e, and ε.  There are three ways of computing each of b, r_pe,
   // and r_ap from that (from any two of the elements we have), but only one is
   // well-conditioned for all eccentricities.
-  Length const b = Sqrt(-h.Norm²() / (2 * ε)) * Radian;
-  Length const impact_parameter = Sqrt(h.Norm²() / (2 * ε)) * Radian;
-  Length const r_pe = h.Norm²() / ((1 + e) * μ) * Pow<2>(Radian);
+  Length const b = Sqrt(-h.Norm²() / (2 * ε)) / Radian;
+  Length const impact_parameter = Sqrt(h.Norm²() / (2 * ε)) / Radian;
+  Length const r_pe = h.Norm²() / ((1 + e) * μ) / Pow<2>(Radian);
   Length const r_ap = - μ * (1 + e) / (2 * ε);
 
   elements_at_epoch_.eccentricity                = e;
@@ -422,10 +422,10 @@ void KeplerOrbit<Frame>::CompleteConicParametersByCategory(
   }
   if (must_complete_semilatus_rectum) {
     if (semilatus_rectum) {
-      specific_angular_momentum = Sqrt(μ * *semilatus_rectum) / Radian;
+      specific_angular_momentum = Sqrt(μ * *semilatus_rectum) * Radian;
     } else if (specific_angular_momentum) {
       SpecificAngularMomentum const& h = *specific_angular_momentum;
-      semilatus_rectum = Pow<2>(h * Radian) / μ;
+      semilatus_rectum = Pow<2>(h / Radian) / μ;
     }
   }
 }

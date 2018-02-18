@@ -58,7 +58,15 @@ using Energy = Product<Force, Length>;
 using Power  = Variation<Energy>;
 using Action = Product<Energy, Time>;
 
-using MomentOfInertia     = Product<Square<Quotient<Length, Angle>>, Mass>;
+// There is some ambiguity regarding the choice of units for torque.  We choose
+// to make the moment of inertia free from angles, which introduces a
+// multiplicative angle in the torque.
+// Calls to Wedge in mechanics will often require the result to be multiplied by
+// Radian, and the application of a bivector will often require the result to be
+// divided by Radian.  An inner product of bivectors will occasionally have
+// to be divided by Radian².
+// It's because of the latter rule that torque sometimes has an inverse angle.
+using MomentOfInertia     = Product<Square<Length>, Mass>;
 using AngularFrequency    = Variation<Angle>;
 using AngularAcceleration = Variation<AngularFrequency>;
 using AngularMomentum     = Product<MomentOfInertia, AngularFrequency>;

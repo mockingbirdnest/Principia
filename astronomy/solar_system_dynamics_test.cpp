@@ -178,8 +178,9 @@ class SolarSystemDynamicsTest : public testing::Test {
                 DegreesOfFreedom<ICRFJ2000Equator>(ICRFJ2000Equator::origin,
                                                    {});
         solar_system_angular_momentum +=
-            Wedge(from_solar_system_barycentre.displacement() / Radian,
-                  body->mass() * from_solar_system_barycentre.velocity());
+            Wedge(from_solar_system_barycentre.displacement(),
+                  body->mass() * from_solar_system_barycentre.velocity()) *
+            Radian;
       }
       Bivector<double, ICRFJ2000Equator> const normal =
           Commutator(z, Normalize(solar_system_angular_momentum));
