@@ -106,10 +106,10 @@ class Quantity final {
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
-  template<typename Q>
-  friend Q FromM128D(__m128d x);
-  template<typename Q>
-  friend __m128d ToM128D(Q x);
+  template<typename D>
+  friend Quantity<D> FromM128D(__m128d x);
+  template<typename D>
+  friend __m128d ToM128D(Quantity<D> x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -135,16 +135,14 @@ constexpr double SIUnit<double>();
 
 // Conversion to and from intrinsic types.  ToM128D fills both halves of the
 // result.
-template<typename Q>
-Q FromM128D(__m128d x);
-template<typename Q>
-__m128d ToM128D(Q);
-template<>
-double FromM128D(__m128d x);
-template<>
-__m128d ToM128D(double x);
-template<>
-__m128d ToM128D(int x);
+template<typename D>
+Quantity<D> FromM128D(__m128d x);
+template<typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+T FromM128D(__m128d x);
+template<typename D>
+__m128d ToM128D(Quantity<D> x);
+template<typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+__m128d ToM128D(T x);
 
 // Returns a positive infinity of |Q|.
 template<typename Q>
