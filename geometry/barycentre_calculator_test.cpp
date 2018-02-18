@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -30,7 +31,9 @@ class BarycentreCalculatorTest : public testing::Test {
              8 * SIUnit<Entropy>(),
              7 * SIUnit<Entropy>()}),
         k1_(4 * SIUnit<KinematicViscosity>()),
-        k2_(5 * SIUnit<KinematicViscosity>()) {}
+        k2_(5 * SIUnit<KinematicViscosity>()) {
+    auto const a = Normed<Displacement<World>>::NormType();
+  }
 
   Bivector<Entropy, World> b1_;
   Bivector<Entropy, World> b2_;

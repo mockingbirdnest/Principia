@@ -147,13 +147,13 @@ template<>
 __m128d ToM128D(int x);
 
 // Returns a positive infinity of |Q|.
-template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 constexpr Q Infinity();
-template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 constexpr bool IsFinite(Q const& x);
 
 // Returns a quiet NaN of |Q|.
-template<typename Q, typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 constexpr Q NaN();
 
 std::string DebugString(

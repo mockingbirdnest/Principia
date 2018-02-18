@@ -15,7 +15,6 @@ namespace geometry {
 namespace internal_point {
 
 using base::not_null;
-// We would prefer to use is_quantity_v in this file but this confuse VS 2015.
 using quantities::is_quantity;
 
 // Point<Vector> is an affine space on the vector space Vector. Vector should

@@ -9,32 +9,26 @@ namespace quantities {
 namespace internal_elementary_functions {
 
 // Equivalent to |std::fma(x, y, z)|.
-template<typename Q1, typename Q2,
-         typename = std::enable_if_t<is_quantity_v<Q1>>,
-         typename = std::enable_if_t<is_quantity_v<Q2>>>
+template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z);
 
 // Equivalent to |std::abs(x)|.
-template<typename Q,
-         typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 Q Abs(Q const& x);
 
 // Equivalent to |std::sqrt(x)|.
-template<typename Q,
-         typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x);
 
 // Equivalent to |std::cbrt(x)|.
-template<typename Q,
-         typename = std::enable_if_t<is_quantity_v<Q>>>
+template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x);
 
 // Equivalent to |std::pow(x, exponent)| unless -3 ≤ x ≤ 3, in which case
 // explicit specialization yields multiplications statically.
-template<int exponent, typename Q,
-         typename = std::enable_if_t<is_quantity_v<Q>>>
+template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x);
 
 double Sin(Angle const& α);

@@ -164,6 +164,7 @@ constexpr typename Quantity<RDimensions>::Inverse operator/(
 
 template<typename Q>
 constexpr Q SIUnit() {
+  static_assert(is_quantity<Q>::value, "Not a quantity");
   return Q(1);
 }
 
@@ -197,17 +198,17 @@ inline __m128d ToM128D(int const x) {
   return _mm_set1_pd(static_cast<double>(x));
 }
 
-template<typename Q, typename>
+template<typename Q>
 constexpr Q Infinity() {
   return SIUnit<Q>() * std::numeric_limits<double>::infinity();
 }
 
-template<typename Q, typename>
+template<typename Q>
 constexpr bool IsFinite(Q const& x) {
   return std::isfinite(x / SIUnit<Q>());
 }
 
-template<typename Q, typename>
+template<typename Q>
 constexpr Q NaN() {
   return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }
