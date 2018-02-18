@@ -223,94 +223,46 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& left,
 #endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator*(double const left,
-                            R3Element<Scalar> const& right) {
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
   __m128d const left_128d = ToM128D(left);
-  return R3Element<Scalar>(_mm_mul_pd(right.xy, left_128d),
-                           _mm_mul_sd(right.zt, left_128d));
+  return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(right.xy, left_128d),
+                                              _mm_mul_sd(right.zt, left_128d));
 #else
-  return R3Element<Scalar>(left * right.x,
-                           left * right.y,
-                           left * right.z);
+  return R3Element<Product<LScalar, RScalar>>(left * right.x,
+                                              left * right.y,
+                                              left * right.z);
 #endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                            double const right) {
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
+                                               RScalar const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
   __m128d const right_128d = ToM128D(right);
-  return R3Element<Scalar>(_mm_mul_pd(left.xy, right_128d),
-                           _mm_mul_sd(left.zt, right_128d));
+  return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(left.xy, right_128d),
+                                              _mm_mul_sd(left.zt, right_128d));
 #else
-  return R3Element<Scalar>(left.x * right,
-                           left.y * right,
-                           left.z * right);
+  return R3Element<Product<LScalar, RScalar>>(left.x * right,
+                                              left.y * right,
+                                              left.z * right);
 #endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                            double const right) {
+template<typename LScalar, typename RScalar, typename>
+R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
+                                                RScalar const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
   __m128d const right_128d = ToM128D(right);
-  return R3Element<Scalar>(_mm_div_pd(left.xy, right_128d),
-                           _mm_div_sd(left.zt, right_128d));
+  return R3Element<Quotient<LScalar, RScalar>>(_mm_div_pd(left.xy, right_128d),
+                                               _mm_div_sd(left.zt, right_128d));
 #else
-  return R3Element<Scalar>(left.x / right,
-                           left.y / right,
-                           left.z / right);
-#endif
-}
-
-template<typename LDimension, typename RScalar>
-R3Element<Product<Quantity<LDimension>, RScalar>>
-operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const left_128d = ToM128D(left);
-  return R3Element<Product<Quantity<LDimension>, RScalar>>(
-      _mm_mul_pd(right.xy, left_128d),
-      _mm_mul_sd(right.zt, left_128d));
-#else
-  return R3Element<Product<Quantity<LDimension>, RScalar>>(
-      left * right.x,
-      left * right.y,
-      left * right.z);
-#endif
-}
-
-template<typename LScalar, typename RDimension>
-R3Element<Product<LScalar, Quantity<RDimension>>>
-operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const right_128d = ToM128D(right);
-  return R3Element<Product<LScalar, Quantity<RDimension>>>(
-      _mm_mul_pd(left.xy, right_128d),
-      _mm_mul_sd(left.zt, right_128d));
-#else
-  return R3Element<Product<LScalar, Quantity<RDimension>>>(
-      left.x * right,
-      left.y * right,
-      left.z * right);
-#endif
-}
-
-template<typename LScalar, typename RDimension>
-R3Element<Quotient<LScalar, Quantity<RDimension>>>
-operator/(R3Element<LScalar> const& left,
-          Quantity<RDimension> const& right) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const right_128d = ToM128D(right);
-  return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
-      _mm_div_pd(left.xy, right_128d),
-      _mm_div_sd(left.zt, right_128d));
-#else
-  return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
-      left.x / right,
-      left.y / right,
-      left.z / right);
+  return R3Element<Quotient<LScalar, RScalar>>(left.x / right,
+                                               left.y / right,
+                                               left.z / right);
 #endif
 }
 

@@ -164,6 +164,7 @@ constexpr typename Quantity<RDimensions>::Inverse operator/(
 
 template<typename Q>
 constexpr Q SIUnit() {
+  static_assert(is_quantity<Q>::value, "Not a quantity");
   return Q(1);
 }
 
@@ -172,37 +173,37 @@ constexpr double SIUnit<double>() {
   return 1;
 }
 
-template<typename Q>
-Q FromM128D(__m128d const x) {
-  return Q(_mm_cvtsd_f64(x));
+template<typename D>
+Quantity<D> FromM128D(__m128d const x) {
+  return Quantity<D>(_mm_cvtsd_f64(x));
 }
 
-template<typename Q>
-__m128d ToM128D(Q const x) {
+template<typename T, typename>
+T FromM128D(__m128d const x) {
+  return static_cast<T>(_mm_cvtsd_f64(x));
+}
+
+template<typename D>
+__m128d ToM128D(Quantity<D> const x) {
   return _mm_set1_pd(x.magnitude_);
 }
 
-template<>
-inline double FromM128D(__m128d const x) {
-  return _mm_cvtsd_f64(x);
+template<typename T, typename>
+inline __m128d ToM128D(T const x) {
+  return _mm_set1_pd(static_cast<double>(x));
 }
 
-template<>
-inline __m128d ToM128D(double const x) {
-  return _mm_set1_pd(x);
-}
-
-template<typename Q, typename>
+template<typename Q>
 constexpr Q Infinity() {
   return SIUnit<Q>() * std::numeric_limits<double>::infinity();
 }
 
-template<typename Q, typename>
+template<typename Q>
 constexpr bool IsFinite(Q const& x) {
   return std::isfinite(x / SIUnit<Q>());
 }
 
-template<typename Q, typename>
+template<typename Q>
 constexpr Q NaN() {
   return SIUnit<Q>() * std::numeric_limits<double>::quiet_NaN();
 }

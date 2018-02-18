@@ -12,7 +12,7 @@ namespace principia {
 namespace quantities {
 namespace internal_elementary_functions {
 
-template<typename Q1, typename Q2, typename, typename>
+template<typename Q1, typename Q2>
 Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                  Q2 const& y,
                                  Product<Q1, Q2> const& z) {
@@ -21,17 +21,17 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
                                               z / SIUnit<Product<Q1, Q2>>());
 }
 
-template<typename Q, typename>
+template<typename Q>
 FORCE_INLINE(inline) Q Abs(Q const& quantity) {
   return SIUnit<Q>() * std::abs(quantity / SIUnit<Q>());
 }
 
-template<typename Q, typename>
+template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x) {
   return SIUnit<SquareRoot<Q>>() * std::sqrt(x / SIUnit<Q>());
 }
 
-template<typename Q, typename>
+template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
   return SIUnit<CubeRoot<Q>>() * std::cbrt(x / SIUnit<Q>());
 }
@@ -79,7 +79,7 @@ inline constexpr double Pow<3>(double x) {
   return x * x * x;
 }
 
-template<int exponent, typename Q, typename>
+template<int exponent, typename Q>
 constexpr Exponentiation<Q, exponent> Pow(Q const& x) {
   return SIUnit<Exponentiation<Q, exponent>>() * Pow<exponent>(x / SIUnit<Q>());
 }
