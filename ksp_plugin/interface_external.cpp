@@ -1,6 +1,8 @@
 ﻿
 #include "ksp_plugin/interface.hpp"
 
+#include <string>
+
 #include "base/array.hpp"
 #include "base/status.hpp"
 #include "base/status_or.hpp"
