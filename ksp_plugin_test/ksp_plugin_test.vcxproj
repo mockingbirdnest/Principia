@@ -17,6 +17,7 @@
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_external.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
