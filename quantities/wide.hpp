@@ -5,51 +5,53 @@
 
 #include <type_traits>
 
-#include "quantities/quantities.hpp"
+#include "base/not_constructible.hpp"
+#include "quantities/traits.hpp"
 
 namespace principia {
 namespace quantities {
+
+namespace internal_quantities {
+template<typename D>
+class Quantity;
+}  // namespace internal_quantities
+
 namespace internal_wide {
 
+using base::not_constructible;
+using internal_quantities::Quantity;
+
+// A wrapper for a quantity already converted to __m128d.
 template<typename T>
 class Wide final {
-  static_assert(std::is_arithmetic<T>::value, "Nonarithmetic type");
+  static_assert(is_quantity<T>::value, "Not a quantity type");
  public:
   explicit Wide(T x);
 
-  __m128d m128d() const;
-
  private:
+  explicit Wide(__m128d wide);
+
   __m128d wide_;
+
+  template<typename U>
+  friend __m128d ToM128D(Wide<U> x);
 };
 
+// Fills both halves of the result.
 template<typename D>
-class Wide<Quantity<D>> final {
- public:
-  explicit Wide(Quantity<D> const& x);
-
-  __m128d m128d() const;
-
- private:
-  __m128d wide_;
-};
-
+__m128d ToM128D(Quantity<D> x);
 template<typename T>
-class Wide<Wide<T>> final {
- public:
-  explicit Wide(Wide<T> const& x);
-
-  __m128d m128d() const;
-
- private:
-  __m128d wide_;
-};
+__m128d ToM128D(Wide<T> x);
+template<typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+__m128d ToM128D(T x);
 
 }  // namespace internal_wide
 
+using internal_wide::ToM128D;
 using internal_wide::Wide;
 
 }  // namespace quantities
 }  // namespace principia
 
-#include "quantities/wide_body.hpp"
+// Because of circular dependencies, this file doesn't include wide_body.hpp.
+// This will be done by quantities.hpp.

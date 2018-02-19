@@ -13,16 +13,11 @@
 #include "quantities/dimensions.hpp"
 #include "quantities/generators.hpp"
 #include "quantities/traits.hpp"
+#include "quantities/wide.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
 namespace quantities {
-
-namespace internal_wide {
-template<typename T>
-class Wide;
-}  // namespace internal_wide
-
 namespace internal_quantities {
 
 using base::not_constructible;
@@ -106,18 +101,15 @@ class Quantity final {
       double left,
       Quantity<RDimensions> const& right);
 
-  template<typename T>
-  friend class internal_wide::Wide;
   template<typename Q>
   friend constexpr Q Infinity();
   template<typename Q>
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
-  template<typename D>
-  friend Quantity<D> FromM128D(__m128d x);
-  template<typename D>
-  friend __m128d ToM128D(Quantity<D> x);
+
+  template<typename U>
+  friend __m128d internal_wide::ToM128D(Quantity<U> x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -140,17 +132,6 @@ constexpr Q SIUnit();
 // Returns 1.
 template<>
 constexpr double SIUnit<double>();
-
-// Conversion to and from intrinsic types.  ToM128D fills both halves of the
-// result.
-template<typename D>
-Quantity<D> FromM128D(__m128d x);
-template<typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
-T FromM128D(__m128d x);
-template<typename D>
-__m128d ToM128D(Quantity<D> x);
-template<typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
-__m128d ToM128D(T x);
 
 // Returns a positive infinity of |Q|.
 template<typename Q>
@@ -179,7 +160,6 @@ using internal_quantities::Amount;
 using internal_quantities::Angle;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
-using internal_quantities::FromM128D;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
 using internal_quantities::Length;
@@ -190,9 +170,13 @@ using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
-using internal_quantities::ToM128D;
 
 }  // namespace quantities
 }  // namespace principia
+
+// Include before quantities_body.hpp all the bodies that want to see the
+// definition of class Quantity.
+#include "quantities/generators_body.hpp"
+#include "quantities/wide_body.hpp"
 
 #include "quantities/quantities_body.hpp"

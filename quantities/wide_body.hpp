@@ -8,28 +8,24 @@ namespace quantities {
 namespace internal_wide {
 
 template<typename T>
-Wide<T>::Wide(T const x) : wide_(_mm_set1_pd(static_cast<double>(x))) {}
+Wide<T>::Wide(T const x) : wide_(ToM128D(x)) {}
 
 template<typename T>
-__m128d Wide<T>::m128d() const {
-  return wide_;
-}
+Wide<T>::Wide(__m128d wide) : wide_(wide) {}
 
 template<typename D>
-Wide<Quantity<D>>::Wide(Quantity<D> const& x)
-    : wide_(_mm_set1_pd(x.magnitude_)) {}
-
-template<typename D>
-__m128d Wide<Quantity<D>>::m128d() const {
-  return wide_;
+__m128d ToM128D(Quantity<D> const x) {
+  return _mm_set1_pd(x.magnitude_);
 }
 
 template<typename T>
-Wide<Wide<T>>::Wide(Wide<T> const& x) : wide_(x.wide_) {}
+__m128d ToM128D(Wide<T> x) {
+  return x.wide_;
+}
 
-template<typename T>
-__m128d Wide<Wide<T>>::m128d() const {
-  return wide_;
+template<typename T, typename>
+inline __m128d ToM128D(T const x) {
+  return _mm_set1_pd(static_cast<double>(x));
 }
 
 }  // namespace internal_wide

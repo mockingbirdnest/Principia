@@ -229,7 +229,7 @@ R3Element<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const left_128d = Wide<LScalar>(left).m128d();
+  __m128d const left_128d = ToM128D(left);
   return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(right.xy, left_128d),
                                               _mm_mul_sd(right.zt, left_128d));
 #else
