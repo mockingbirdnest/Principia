@@ -29,8 +29,6 @@ class Wide final {
   explicit Wide(T x);
 
  private:
-  explicit Wide(__m128d wide);
-
   __m128d wide_;
 
   template<typename U>

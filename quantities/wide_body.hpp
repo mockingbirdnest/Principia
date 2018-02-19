@@ -10,9 +10,6 @@ namespace internal_wide {
 template<typename T>
 Wide<T>::Wide(T const x) : wide_(ToM128D(x)) {}
 
-template<typename T>
-Wide<T>::Wide(__m128d wide) : wide_(wide) {}
-
 template<typename D>
 __m128d ToM128D(Quantity<D> const x) {
   return _mm_set1_pd(x.magnitude_);
