@@ -30,10 +30,13 @@
     <ClInclude Include="si_body.hpp" />
     <ClInclude Include="traits.hpp" />
     <ClInclude Include="uk.hpp" />
+    <ClInclude Include="wide.hpp" />
+    <ClInclude Include="wide_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />
+    <ClCompile Include="wide_test.cpp" />
   </ItemGroup>
 </Project>

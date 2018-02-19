@@ -17,6 +17,12 @@
 
 namespace principia {
 namespace quantities {
+
+namespace internal_wide {
+template<typename T>
+class Wide;
+}  // namespace internal_wide
+
 namespace internal_quantities {
 
 using base::not_constructible;
@@ -100,6 +106,8 @@ class Quantity final {
       double left,
       Quantity<RDimensions> const& right);
 
+  template<typename T>
+  friend class internal_wide::Wide;
   template<typename Q>
   friend constexpr Q Infinity();
   template<typename Q>

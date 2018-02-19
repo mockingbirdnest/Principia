@@ -13,6 +13,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
+#include "quantities/wide.hpp"
 
 #define PRINCIPIA_USE_SSE2_INTRINSICS 1
 
@@ -25,11 +26,11 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::DebugString;
 using quantities::DoubleOrQuantitySerializer;
-using quantities::FromM128D;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
 using quantities::ToM128D;
+using quantities::Wide;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
@@ -228,7 +229,7 @@ R3Element<Product<LScalar, RScalar>> operator*(
     LScalar const& left,
     R3Element<RScalar> const& right) {
 #if PRINCIPIA_USE_SSE2_INTRINSICS
-  __m128d const left_128d = ToM128D(left);
+  __m128d const left_128d = Wide<LScalar>(left).m128d();
   return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(right.xy, left_128d),
                                               _mm_mul_sd(right.zt, left_128d));
 #else
