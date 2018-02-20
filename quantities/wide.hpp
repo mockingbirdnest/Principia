@@ -21,7 +21,7 @@ namespace internal_wide {
 using base::not_constructible;
 using internal_quantities::Quantity;
 
-// A wrapper for a quantity already converted to __m128d.
+// A wrapper for a quantity copied to all entries of a SIMD vector.
 template<typename T>
 class Wide final {
   static_assert(is_quantity<T>::value, "Not a quantity type");
