@@ -13,6 +13,7 @@
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
+#include "quantities/wide.hpp"
 
 #define PRINCIPIA_USE_SSE2_INTRINSICS 1
 
@@ -25,11 +26,11 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::DebugString;
 using quantities::DoubleOrQuantitySerializer;
-using quantities::FromM128D;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
 using quantities::ToM128D;
+using quantities::Wide;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>

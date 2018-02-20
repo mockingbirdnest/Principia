@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.hpp"
-#include "quantities/generators_body.hpp"  // Apologies.
 
 namespace principia {
 namespace quantities {
@@ -171,26 +170,6 @@ constexpr Q SIUnit() {
 template<>
 constexpr double SIUnit<double>() {
   return 1;
-}
-
-template<typename D>
-Quantity<D> FromM128D(__m128d const x) {
-  return Quantity<D>(_mm_cvtsd_f64(x));
-}
-
-template<typename T, typename>
-T FromM128D(__m128d const x) {
-  return static_cast<T>(_mm_cvtsd_f64(x));
-}
-
-template<typename D>
-__m128d ToM128D(Quantity<D> const x) {
-  return _mm_set1_pd(x.magnitude_);
-}
-
-template<typename T, typename>
-inline __m128d ToM128D(T const x) {
-  return _mm_set1_pd(static_cast<double>(x));
 }
 
 template<typename Q>
