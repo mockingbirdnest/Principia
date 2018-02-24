@@ -30,7 +30,6 @@ using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
 using quantities::ToM128D;
-using quantities::Wide;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
