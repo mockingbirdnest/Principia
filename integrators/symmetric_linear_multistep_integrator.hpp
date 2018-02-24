@@ -120,7 +120,7 @@ class SymmetricLinearMultistepIntegrator
       Time const& step) const override;
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
-  BackwardDifference<order_> const& backward_difference_;
+  BackwardDifference<order_ - 1> const& backward_difference_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;
