@@ -69,7 +69,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalOptions>/bigobj</AdditionalOptions>
+      <AdditionalOptions>/bigobj /w14714</AdditionalOptions>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>

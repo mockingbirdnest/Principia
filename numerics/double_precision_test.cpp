@@ -11,6 +11,11 @@
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 
+#define PRINCIPIA_USE_IACA 0
+#if PRINCIPIA_USE_IACA
+#include "intel/iacaMarks.h"
+#endif
+
 namespace principia {
 namespace numerics {
 namespace internal_double_precision {
@@ -52,6 +57,25 @@ using World = Frame<serialization::Frame::TestTag,
                     /*inertial=*/false>;
 
 class DoublePrecisionTest : public ::testing::Test {};
+
+#if PRINCIPIA_USE_IACA
+// A convenient skeleton for analysing code with IACA.
+TEST_F(DoublePrecisionTest, DISABLED_IACA) {
+  auto iaca = [](DoublePrecision<Displacement<World>> const& x,
+                 DoublePrecision<Displacement<World>> const& y) {
+    IACA_VC64_START;
+    auto const result = x - y;
+    IACA_VC64_END;
+    return result;
+  };
+  auto const x = Displacement<World>({1 * Metre, 2 * Metre, 3 * Metre});
+  auto const y = Displacement<World>({4 * Metre, 3 * Metre, 2 * Metre});
+  CHECK_EQ(iaca(DoublePrecision<Displacement<World>>(x),
+                DoublePrecision<Displacement<World>>(y)),
+           iaca(DoublePrecision<Displacement<World>>(x),
+                DoublePrecision<Displacement<World>>(y)));
+}
+#endif
 
 TEST_F(DoublePrecisionTest, CompensatedSummationIncrement) {
   Position<World> const initial =
@@ -288,3 +312,5 @@ TEST_F(DoublePrecisionTest, Product) {
 }  // namespace internal_double_precision
 }  // namespace numerics
 }  // namespace principia
+
+#undef PRINCIPIA_USE_IACA
