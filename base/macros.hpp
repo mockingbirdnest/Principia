@@ -163,6 +163,10 @@ inline void noreturn() { std::exit(0); }
 #  error "What compiler is this?"
 #endif
 
+// We assume that the processor is at least a Prescott since we only support
+// 64-bit architectures.
+#define PRINCIPIA_USE_SSE3_INTRINSICS !_DEBUG
+
 // Thread-safety analysis.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))

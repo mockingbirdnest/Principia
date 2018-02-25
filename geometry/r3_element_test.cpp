@@ -14,6 +14,11 @@
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
+#define PRINCIPIA_USE_IACA 0
+#if PRINCIPIA_USE_IACA
+#include "intel/iacaMarks.h"
+#endif
+
 namespace principia {
 
 using quantities::Length;
@@ -80,9 +85,24 @@ TEST_F(R3ElementDeathTest, IndexingOperator) {
 }
 #endif
 
+#if PRINCIPIA_USE_IACA
+// A convenient skeleton for analysing code with IACA.
+TEST_F(R3ElementTest, DISABLED_IACA) {
+  auto iaca = [](R3Element<Speed> const& a) {
+    IACA_VC64_START;
+    auto const result = 2 * Second * a;
+    IACA_VC64_END;
+    return result;
+  };
+  CHECK_EQ(iaca(a_), iaca(a_));
+}
+#endif
+
 TEST_F(R3ElementTest, Dumb3Vector) {
   EXPECT_EQ((e * 42) * v_, e * (42 * v_));
-  EXPECT_THAT(303.492345479576 * Metre / Second, AlmostEquals(a_.Norm(), 8));
+  EXPECT_THAT(303.49234547957647 * Metre / Second, AlmostEquals(a_.Norm(), 0));
+  EXPECT_THAT(92107.603764694598 * Metre * Metre / Second / Second,
+              AlmostEquals(a_.Norm²(), 0));
   testing_utilities::TestEquality(42 * v_, 43 * v_);
   testing_utilities::TestVectorSpace<R3Element<Speed>, double>(
       null_velocity_, u_, v_, w_, 0.0, 1.0, e, 42.0, 0, 1);
@@ -228,3 +248,5 @@ TEST_F(R3ElementTest, SphericalCoordinates) {
 
 }  // namespace geometry
 }  // namespace principia
+
+#undef PRINCIPIA_USE_IACA

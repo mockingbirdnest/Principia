@@ -17,7 +17,7 @@ constexpr Permittivity VacuumPermittivity =
     1 / (VacuumPermeability * Pow<2>(SpeedOfLight));
 // We use the 2010 CODATA recommended values.  We do not support uncertainties.
 constexpr AngularMomentum ReducedPlanckConstant =
-    1.054571726e-34 * si::Joule * si::Second / si::Radian;
+    1.054571726e-34 * si::Joule * si::Second * si::Radian;
 constexpr Quotient<GravitationalParameter, Mass> GravitationalConstant =
     6.67384e-11 * si::Newton * Pow<2>(si::Metre) / Pow<2>(si::Kilogram);
 constexpr Entropy BoltzmannConstant = 1.3806488e-23 * (si::Joule / si::Kelvin);

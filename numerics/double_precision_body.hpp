@@ -151,10 +151,13 @@ DoublePrecision<Product<T, U>> TwoProduct(T const& a, U const& b) {
 }
 
 template<typename T, typename U>
+FORCE_INLINE(inline)
 DoublePrecision<Sum<T, U>> QuickTwoSum(T const& a, U const& b) {
+#if _DEBUG
   using quantities::DebugString;
-  DCHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
+  CHECK(ComponentwiseGreaterThanOrEqualOrZero(a, b))
       << "|" << DebugString(a) << "| < |" << DebugString(b) << "|";
+#endif
   // Hida, Li and Bailey (2007), Library for Double-Double and Quad-Double
   // Arithmetic.
   DoublePrecision<Sum<T, U>> result;

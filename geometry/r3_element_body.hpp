@@ -3,13 +3,17 @@
 
 #include "geometry/r3_element.hpp"
 
+#include <pmmintrin.h>
+
 #include <string>
+#include <type_traits>
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/serialization.hpp"
+#include "quantities/wide.hpp"
 
 namespace principia {
 namespace geometry {
@@ -23,15 +27,29 @@ using quantities::DoubleOrQuantitySerializer;
 using quantities::Quantity;
 using quantities::Sin;
 using quantities::SIUnit;
+using quantities::ToM128D;
 
 // We want zero initialization here, so the default constructor won't do.
 template<typename Scalar>
-R3Element<Scalar>::R3Element() : x(), y(), z() {}
+R3Element<Scalar>::R3Element() : x(), y(), z() {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
 
 template<typename Scalar>
 R3Element<Scalar>::R3Element(Scalar const& x,
                              Scalar const& y,
-                             Scalar const& z) : x(x), y(y), z(z) {}
+                             Scalar const& z) : x(x), y(y), z(z) {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
+
+template<typename Scalar>
+R3Element<Scalar>::R3Element(__m128d const xy, __m128d const zt)
+    : xy(xy), zt(zt) {
+  static_assert(std::is_standard_layout<R3Element>::value,
+                "R3Element has a nonstandard layout");
+}
 
 template<typename Scalar>
 Scalar& R3Element<Scalar>::operator[](int const index) {
@@ -180,69 +198,70 @@ R3Element<Scalar> operator-(R3Element<Scalar> const& right) {
 template<typename Scalar>
 R3Element<Scalar> operator+(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  return R3Element<Scalar>(_mm_add_pd(left.xy, right.xy),
+                           _mm_add_sd(left.zt, right.zt));
+#else
   return R3Element<Scalar>(left.x + right.x,
                            left.y + right.y,
                            left.z + right.z);
+#endif
 }
 
 template<typename Scalar>
 R3Element<Scalar> operator-(R3Element<Scalar> const& left,
                             R3Element<Scalar> const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  return R3Element<Scalar>(_mm_sub_pd(left.xy, right.xy),
+                           _mm_sub_sd(left.zt, right.zt));
+#else
   return R3Element<Scalar>(left.x - right.x,
                            left.y - right.y,
                            left.z - right.z);
+#endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator*(double const left,
-                            R3Element<Scalar> const& right) {
-  return R3Element<Scalar>(left * right.x,
-                           left * right.y,
-                           left * right.z);
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    R3Element<RScalar> const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const left_128d = ToM128D(left);
+  return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(right.xy, left_128d),
+                                              _mm_mul_sd(right.zt, left_128d));
+#else
+  return R3Element<Product<LScalar, RScalar>>(left * right.x,
+                                              left * right.y,
+                                              left * right.z);
+#endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                            double const right) {
-  return R3Element<Scalar>(left.x * right,
-                           left.y * right,
-                           left.z * right);
+template<typename LScalar, typename RScalar, typename>
+R3Element<Product<LScalar, RScalar>> operator*(R3Element<LScalar> const& left,
+                                               RScalar const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const right_128d = ToM128D(right);
+  return R3Element<Product<LScalar, RScalar>>(_mm_mul_pd(left.xy, right_128d),
+                                              _mm_mul_sd(left.zt, right_128d));
+#else
+  return R3Element<Product<LScalar, RScalar>>(left.x * right,
+                                              left.y * right,
+                                              left.z * right);
+#endif
 }
 
-template<typename Scalar>
-R3Element<Scalar> operator/(R3Element<Scalar> const& left,
-                            double const right) {
-  return R3Element<Scalar>(left.x / right,
-                           left.y / right,
-                           left.z / right);
-}
-
-template<typename LDimension, typename RScalar>
-R3Element<Product<Quantity<LDimension>, RScalar>>
-operator*(Quantity<LDimension> const& left, R3Element<RScalar> const& right) {
-  return R3Element<Product<Quantity<LDimension>, RScalar>>(
-      left * right.x,
-      left * right.y,
-      left * right.z);
-}
-
-template<typename LScalar, typename RDimension>
-R3Element<Product<LScalar, Quantity<RDimension>>>
-operator*(R3Element<LScalar> const& left, Quantity<RDimension> const& right) {
-  return R3Element<Product<LScalar, Quantity<RDimension>>>(
-      left.x * right,
-      left.y * right,
-      left.z * right);
-}
-
-template<typename LScalar, typename RDimension>
-R3Element<Quotient<LScalar, Quantity<RDimension>>>
-operator/(R3Element<LScalar> const& left,
-          Quantity<RDimension> const& right) {
-  return R3Element<Quotient<LScalar, Quantity<RDimension>>>(
-      left.x / right,
-      left.y / right,
-      left.z / right);
+template<typename LScalar, typename RScalar, typename>
+R3Element<Quotient<LScalar, RScalar>> operator/(R3Element<LScalar> const& left,
+                                                RScalar const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const right_128d = ToM128D(right);
+  return R3Element<Quotient<LScalar, RScalar>>(_mm_div_pd(left.xy, right_128d),
+                                               _mm_div_sd(left.zt, right_128d));
+#else
+  return R3Element<Quotient<LScalar, RScalar>>(left.x / right,
+                                               left.y / right,
+                                               left.z / right);
+#endif
 }
 
 template<typename Scalar>

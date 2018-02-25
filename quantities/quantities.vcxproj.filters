@@ -65,6 +65,27 @@
     <ClInclude Include="parser_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="dimensions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dimensions_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generators.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="generators_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="traits.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wide.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wide_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantities_test.cpp">
@@ -74,6 +95,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="elementary_functions_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="wide_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

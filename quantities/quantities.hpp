@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <pmmintrin.h>
+
 #include <iostream>
 #include <limits>
 #include <string>
@@ -8,6 +10,10 @@
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
+#include "quantities/dimensions.hpp"
+#include "quantities/generators.hpp"
+#include "quantities/traits.hpp"
+#include "quantities/wide.hpp"
 #include "serialization/quantities.pb.h"
 
 namespace principia {
@@ -16,19 +22,12 @@ namespace internal_quantities {
 
 using base::not_constructible;
 using base::not_null;
+using internal_dimensions::Dimensions;
+using internal_generators::ProductGenerator;
+using internal_generators::QuotientGenerator;
 
-template<std::int64_t LengthExponent,
-         std::int64_t MassExponent,
-         std::int64_t TimeExponent,
-         std::int64_t CurrentExponent,
-         std::int64_t TemperatureExponent,
-         std::int64_t AmountExponent,
-         std::int64_t LuminousIntensityExponent,
-         std::int64_t AngleExponent>
-struct Dimensions;
-template<typename D> class Quantity;
-
-using NoDimensions = Dimensions<0, 0, 0, 0, 0, 0, 0, 0>;
+template<typename D>
+class Quantity;
 
 // Base quantities
 using Length            = Quantity<Dimensions<1, 0, 0, 0, 0, 0, 0, 0>>;
@@ -41,39 +40,12 @@ using LuminousIntensity = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 1, 0>>;
 // We strongly type angles.
 using Angle             = Quantity<Dimensions<0, 0, 0, 0, 0, 0, 0, 1>>;
 
-template<typename Left, typename Right> struct ProductGenerator;
-template<typename Left, typename Right> struct QuotientGenerator;
-template<int n, typename Q, typename = void>
-struct NthRootGenerator : not_constructible {};
-template<typename T, int exponent, typename = void>
-struct ExponentiationGenerator final {};
-
+// |Product| and |Quotient| are not exported from this namespace.  Instead they
+// are defined as the result types of |operator*| and |operator/|.
 template<typename Left, typename Right>
 using Product = typename ProductGenerator<Left, Right>::Type;
 template<typename Left, typename Right>
 using Quotient = typename QuotientGenerator<Left, Right>::Type;
-
-// |Exponentiation<T, n>| is an alias for the following, where t is a value of
-// type |T|:
-//   The type of ( ... (t * t) * ... * t), with n factors, if n >= 1;
-//   The type of t / ( ... (t * t) * ... * t), with n + 1 factors in the
-//   denominator, if n < 1.
-template<typename T, int exponent>
-using Exponentiation = typename ExponentiationGenerator<T, exponent>::Type;
-template<typename Q>
-using Square = Exponentiation<Q, 2>;
-template<typename Q>
-using Cube = Exponentiation<Q, 3>;
-
-// |SquareRoot<T>| is only defined if |T| is an instance of |Quantity| with only
-// even dimensions.  In that case, it is the unique instance |S| of |Quantity|
-// such that |Product<S, S>| is |T|.
-template<int n, typename Q>
-using NthRoot = typename NthRootGenerator<n, Q>::Type;
-template<typename Q>
-using SquareRoot = NthRoot<2, Q>;
-template<typename Q>
-using CubeRoot = NthRoot<3, Q>;
 
 template<typename D>
 class Quantity final {
@@ -112,12 +84,12 @@ class Quantity final {
 
   template<typename LDimensions, typename RDimensions>
   friend constexpr Product<Quantity<LDimensions>,
-                                   Quantity<RDimensions>> operator*(
+                           Quantity<RDimensions>> operator*(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename LDimensions, typename RDimensions>
   friend constexpr Quotient<Quantity<LDimensions>,
-                                    Quantity<RDimensions>> operator/(
+                            Quantity<RDimensions>> operator/(
       Quantity<LDimensions> const& left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
@@ -135,6 +107,9 @@ class Quantity final {
   friend constexpr Q NaN();
   template<typename Q>
   friend constexpr Q SIUnit();
+
+  template<typename U>
+  friend __m128d internal_wide::ToM128D(Quantity<U> x);
 };
 
 template<typename LDimensions, typename RDimensions>
@@ -158,20 +133,14 @@ constexpr Q SIUnit();
 template<>
 constexpr double SIUnit<double>();
 
-// A type trait for testing if a type is a quantity.
-template<typename T>
-struct is_quantity : std::is_arithmetic<T>, not_constructible {};
-template<typename D>
-struct is_quantity<Quantity<D>> : std::true_type, not_constructible {};
-
 // Returns a positive infinity of |Q|.
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q>
 constexpr Q Infinity();
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q>
 constexpr bool IsFinite(Q const& x);
 
 // Returns a quiet NaN of |Q|.
-template<typename Q, typename = std::enable_if<is_quantity<Q>::value>>
+template<typename Q>
 constexpr Q NaN();
 
 std::string DebugString(
@@ -189,26 +158,25 @@ std::ostream& operator<<(std::ostream& out, Quantity<D> const& quantity);
 
 using internal_quantities::Amount;
 using internal_quantities::Angle;
-using internal_quantities::Cube;
-using internal_quantities::CubeRoot;
 using internal_quantities::Current;
 using internal_quantities::DebugString;
-using internal_quantities::Exponentiation;
 using internal_quantities::Infinity;
 using internal_quantities::IsFinite;
-using internal_quantities::is_quantity;
 using internal_quantities::Length;
 using internal_quantities::LuminousIntensity;
 using internal_quantities::Mass;
 using internal_quantities::NaN;
 using internal_quantities::Quantity;
 using internal_quantities::SIUnit;
-using internal_quantities::Square;
-using internal_quantities::SquareRoot;
 using internal_quantities::Temperature;
 using internal_quantities::Time;
 
 }  // namespace quantities
 }  // namespace principia
+
+// Include before quantities_body.hpp all the bodies that want to see the
+// definition of class Quantity.
+#include "quantities/generators_body.hpp"
+#include "quantities/wide_body.hpp"
 
 #include "quantities/quantities_body.hpp"

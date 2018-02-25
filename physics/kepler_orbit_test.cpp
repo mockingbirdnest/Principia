@@ -121,7 +121,7 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.impact_parameter = -NaN<Length>();
     elements.semilatus_rectum = 0.75 * AstronomicalUnit;
     elements.specific_angular_momentum =
-        Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+        (Sqrt(3) / 2 * Pow<2>(AstronomicalUnit) / JulianYear) * Radian;
     elements.periapsis_distance = 0.5 * AstronomicalUnit;
     elements.apoapsis_distance = 1.5 * AstronomicalUnit;
 
@@ -154,7 +154,7 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.impact_parameter = Sqrt(5) / 2 * AstronomicalUnit;
     elements.semilatus_rectum = 1.25 * AstronomicalUnit;
     elements.specific_angular_momentum =
-        Sqrt(5) / 2 * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+        (Sqrt(5) / 2 * Pow<2>(AstronomicalUnit) / JulianYear) * Radian;
     elements.periapsis_distance = 0.5 * AstronomicalUnit;
     elements.apoapsis_distance = -2.5 * AstronomicalUnit;
 
@@ -197,7 +197,7 @@ class KeplerOrbitTest : public ::testing::Test {
     elements.impact_parameter = -NaN<Length>();
     elements.semilatus_rectum = (2 * ε - ε²) * AstronomicalUnit;
     elements.specific_angular_momentum =
-        Sqrt(2 * ε - ε²) * Pow<2>(AstronomicalUnit) / (JulianYear * Radian);
+        (Sqrt(2 * ε - ε²) * Pow<2>(AstronomicalUnit) / JulianYear) * Radian;
     elements.periapsis_distance = ε * AstronomicalUnit;
     elements.apoapsis_distance = (2 - ε) * AstronomicalUnit;
 
