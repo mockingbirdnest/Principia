@@ -19,6 +19,7 @@ using ksp_plugin::Vessel;
 using physics::SolarSystem;
 using quantities::si::Hour;
 using quantities::si::Kilo;
+using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Newton;
 using quantities::si::Tonne;
@@ -27,10 +28,10 @@ using ::testing::Eq;
 
 namespace {
 
-constexpr PartId part_id = 789;
-constexpr char const* vessel_guid = "123-456";
+constexpr PartId part_id = 1729;
+constexpr char const* vessel_guid = "NCC 1701-D";
 constexpr char const* part_name = "Picard's desk";
-constexpr char const* vessel_name = "NCC-1701-D";
+constexpr char const* vessel_name = "Enterprise";
 
 }  // namespace
 
@@ -60,8 +61,8 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   plugin_.CreateFlightPlan(
       vessel_guid, plugin_.CurrentTime() + 24 * Hour, 1 * Tonne);
   vessel_->flight_plan().Append(ksp_plugin::Burn{
-      1 * Kilo(Newton),
-      1 * Kilo(Newton) * Second / Tonne,
+      180 * Kilo(Newton),
+      4.56 * Kilo(Newton) * Second / Kilogram,
       plugin_.NewBodyCentredNonRotatingNavigationFrame(
           SolarSystemFactory::Earth),
       plugin_.CurrentTime() + 30 * Second,
