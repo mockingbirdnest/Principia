@@ -14,6 +14,7 @@ using physics::KeplerianElements;
 using physics::SolarSystem;
 
 class TestPlugin : public Plugin {
+ public:
   TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system);
 
   Vessel& AddVesselInEarthOrbit(GUID const& vessel_id,
