@@ -93,7 +93,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   // The reference position is far above the apoapsis, so the result is roughly
   // the apoapsis.
   EXPECT_THAT(barycentric_result,
-              Componentwise(Componentwise(IsNear(-11'000 * Kilo(Metre)),
+              Componentwise(Componentwise(IsNear(-12'000 * Kilo(Metre)),
                                           IsNear(-120 * Kilo(Metre)),
                                           IsNear(2.2 * Metre)),
                             Componentwise(IsNear(-6.6 * Metre / Second),
