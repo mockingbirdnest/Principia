@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <nmmintrin.h>
+#include <pmmintrin.h>
 
 #include <type_traits>
 
