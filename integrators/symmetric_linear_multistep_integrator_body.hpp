@@ -374,7 +374,7 @@ SymmetricLinearMultistepIntegrator(
           SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
       backward_difference_(
-          FirstDerivativeBackwardDifference<order_>()),
+          FirstDerivativeBackwardDifference<order_ - 1>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {

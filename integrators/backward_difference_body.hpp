@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include "integrators/backward_difference.hpp"
 
 namespace principia {
@@ -9,55 +11,55 @@ namespace integrators {
 // Spaced Grids.
 
 template<>
+inline BackwardDifference<0> const& FirstDerivativeBackwardDifference<0>() {
+  static BackwardDifference<0> const backward_difference{{1.0, -1.0}, 1.0};
+  return backward_difference;
+}
+
+template<>
 inline BackwardDifference<1> const& FirstDerivativeBackwardDifference<1>() {
-  static BackwardDifference<1> const backward_difference{{1.0, -1.0}, 1.0};
+  static BackwardDifference<1> const backward_difference{{3.0, -4.0, 1.0}, 2.0};
   return backward_difference;
 }
 
 template<>
 inline BackwardDifference<2> const& FirstDerivativeBackwardDifference<2>() {
-  static BackwardDifference<2> const backward_difference{{3.0, -4.0, 1.0}, 2.0};
+  static BackwardDifference<2> const backward_difference{
+      {11.0, -18.0, 9.0, -2.0}, 6.0};
   return backward_difference;
 }
 
 template<>
 inline BackwardDifference<3> const& FirstDerivativeBackwardDifference<3>() {
   static BackwardDifference<3> const backward_difference{
-      {11.0, -18.0, 9.0, -2.0}, 6.0};
+      {25.0, -48.0, 36.0, -16.0, 3.0}, 12.0};
   return backward_difference;
 }
 
 template<>
 inline BackwardDifference<4> const& FirstDerivativeBackwardDifference<4>() {
   static BackwardDifference<4> const backward_difference{
-      {25.0, -48.0, 36.0, -16.0, 3.0}, 12.0};
+      {137.0, -300.0, 300.0, -200.0, 75.0, -12.0}, 60.0};
   return backward_difference;
 }
 
 template<>
 inline BackwardDifference<5> const& FirstDerivativeBackwardDifference<5>() {
   static BackwardDifference<5> const backward_difference{
-      {137.0, -300.0, 300.0, -200.0, 75.0, -12.0}, 60.0};
+      {147.0, -360.0, 450.0, -400.0, 225.0, -72.0, 10.0}, 60.0};
   return backward_difference;
 }
 
 template<>
 inline BackwardDifference<6> const& FirstDerivativeBackwardDifference<6>() {
   static BackwardDifference<6> const backward_difference{
-      {147.0, -360.0, 450.0, -400.0, 225.0, -72.0, 10.0}, 60.0};
-  return backward_difference;
-}
-
-template<>
-inline BackwardDifference<7> const& FirstDerivativeBackwardDifference<7>() {
-  static BackwardDifference<7> const backward_difference{
       {1089.0, -2940.0, 4410.0, -4900.0, 3675.0, -1764.0, 490.0, -60.0}, 420.0};
   return backward_difference;
 }
 
 template<>
-inline BackwardDifference<8> const& FirstDerivativeBackwardDifference<8>() {
-  static BackwardDifference<8> const backward_difference{{2283.0,
+inline BackwardDifference<7> const& FirstDerivativeBackwardDifference<7>() {
+  static BackwardDifference<7> const backward_difference{{2283.0,
                                                           -6720.0,
                                                           11760.0,
                                                           -15680.0,
@@ -71,8 +73,8 @@ inline BackwardDifference<8> const& FirstDerivativeBackwardDifference<8>() {
 }
 
 template<>
-inline BackwardDifference<9> const& FirstDerivativeBackwardDifference<9>() {
-  static BackwardDifference<9> const backward_difference{{7129.0,
+inline BackwardDifference<8> const& FirstDerivativeBackwardDifference<8>() {
+  static BackwardDifference<8> const backward_difference{{7129.0,
                                                           -22680.0,
                                                           45360.0,
                                                           -70560.0,
@@ -87,25 +89,25 @@ inline BackwardDifference<9> const& FirstDerivativeBackwardDifference<9>() {
 }
 
 template<>
-inline BackwardDifference<10> const& FirstDerivativeBackwardDifference<10>() {
-  static BackwardDifference<10> const backward_difference{{7381.0,
-                                                           -25200.0,
-                                                           56700.0,
-                                                           -100800.0,
-                                                           132300.0,
-                                                           -127008.0,
-                                                           88200.0,
-                                                           -43200.0,
-                                                           14175.0,
-                                                           -2800.0,
-                                                           252.0},
-                                                          2520.0};
+inline BackwardDifference<9> const& FirstDerivativeBackwardDifference<9>() {
+  static BackwardDifference<9> const backward_difference{{7381.0,
+                                                          -25200.0,
+                                                          56700.0,
+                                                          -100800.0,
+                                                          132300.0,
+                                                          -127008.0,
+                                                          88200.0,
+                                                          -43200.0,
+                                                          14175.0,
+                                                          -2800.0,
+                                                          252.0},
+                                                         2520.0};
   return backward_difference;
 }
 
 template<>
-inline BackwardDifference<11> const& FirstDerivativeBackwardDifference<11>() {
-  static BackwardDifference<11> const backward_difference{{83711.0,
+inline BackwardDifference<10> const& FirstDerivativeBackwardDifference<10>() {
+  static BackwardDifference<10> const backward_difference{{83711.0,
                                                            -304920.0,
                                                            762300.0,
                                                            -1524600.0,
@@ -122,8 +124,8 @@ inline BackwardDifference<11> const& FirstDerivativeBackwardDifference<11>() {
 }
 
 template<>
-inline BackwardDifference<12> const& FirstDerivativeBackwardDifference<12>() {
-  static BackwardDifference<12> const backward_difference{{86021.0,
+inline BackwardDifference<11> const& FirstDerivativeBackwardDifference<11>() {
+  static BackwardDifference<11> const backward_difference{{86021.0,
                                                            -332640.0,
                                                            914760.0,
                                                            -2032800.0,
@@ -141,8 +143,8 @@ inline BackwardDifference<12> const& FirstDerivativeBackwardDifference<12>() {
 }
 
 template<>
-inline BackwardDifference<13> const& FirstDerivativeBackwardDifference<13>() {
-  static BackwardDifference<13> const backward_difference{{1145993.0,
+inline BackwardDifference<12> const& FirstDerivativeBackwardDifference<12>() {
+  static BackwardDifference<12> const backward_difference{{1145993.0,
                                                            -4684680.0,
                                                            14054040.0,
                                                            -34354320.0,
@@ -161,8 +163,8 @@ inline BackwardDifference<13> const& FirstDerivativeBackwardDifference<13>() {
 }
 
 template<>
-inline BackwardDifference<14> const& FirstDerivativeBackwardDifference<14>() {
-  static BackwardDifference<14> const backward_difference{{1171733.0,
+inline BackwardDifference<13> const& FirstDerivativeBackwardDifference<13>() {
+  static BackwardDifference<13> const backward_difference{{1171733.0,
                                                            -5045040.0,
                                                            16396380.0,
                                                            -43723680.0,
