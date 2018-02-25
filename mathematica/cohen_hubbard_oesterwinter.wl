@@ -130,4 +130,4 @@ MapThread[{#1 #2,#2}&,{cho,commondenominators},1]
 ]
 
 
-g=GenerateCohenHubbardOesterwinter[\[Eta],14]
+g=GenerateCohenHubbardOesterwinter[\[Eta],16]

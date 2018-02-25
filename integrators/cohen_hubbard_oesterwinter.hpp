@@ -38,4 +38,4 @@ CohenHubbardOesterwinter<order> const& CohenHubbardOesterwinterOrder();
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/backward_difference_body.hpp"
+#include "integrators/cohen_hubbard_oesterwinter_body.hpp"

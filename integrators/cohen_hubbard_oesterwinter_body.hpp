@@ -161,5 +161,48 @@ inline CohenHubbardOesterwinter<13> const& CohenHubbardOesterwinterOrder<13>() {
   return cohen_hubbard_oesterwinter;
 }
 
+template<>
+inline CohenHubbardOesterwinter<14> const& CohenHubbardOesterwinterOrder<14>() {
+  static CohenHubbardOesterwinter<14> const cohen_hubbard_oesterwinter{
+      {3222245907974.0,
+       12037738451557.0,
+       -26802725457012.0,
+       61256305132546.0,
+       -111377493654070.0,
+       157573362429387.0,
+       -173081395797144.0,
+       147163097080284.0,
+       -95999978168262.0,
+       47189380167595.0,
+       -16926084595636.0,
+       4184066277762.0,
+       -637654600522.0,
+       45183033541.0},
+      15692092416000.0};
+  return cohen_hubbard_oesterwinter;
+}
+
+template<>
+inline CohenHubbardOesterwinter<15> const& CohenHubbardOesterwinterOrder<15>() {
+  static CohenHubbardOesterwinter<15> const cohen_hubbard_oesterwinter{
+      {12725213787853.0,
+       50443731622830.0,
+       -122113957635961.0,
+       304637443761836.0,
+       -609443588503323.0,
+       958160677491634.0,
+       -1184126424849705.0,
+       1150710493076712.0,
+       -875800754334177.0,
+       516624748444466.0,
+       -231637952269587.0,
+       76348488342700.0,
+       -17453674210001.0,
+       2473509950766.0,
+       -163769844043.0},
+      62768369664000.0};
+  return cohen_hubbard_oesterwinter;
+}
+
 }  // namespace integrators
 }  // namespace principia

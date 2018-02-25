@@ -10,6 +10,8 @@
 #include "geometry/serialization.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#define PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER 1
+
 namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
@@ -136,8 +138,15 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
     // Note that we only delete the oldest step *after* computing the velocity.
     // This means that the velocity computation has access to |order_ + 1|
-    // points and can therefore be of order |order_|.
-    ComputeVelocity(dimension);
+    // points and, for backward difference, it makes it possible to reach order
+    // |order_ - 1|.  For Cohen-Hubbard-Oesterwinter this is not necessary: it
+    // makes no sense to go up to order |order_ + 1| so we really only need
+    // |order_| points.
+#if PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER
+    ComputeVelocityUsingCohenHubbardOesterwinter();
+#else
+    ComputeVelocityUsingBackwardDifferences();
+#endif
     previous_steps_.pop_front();
 
     // Inform the caller of the new state.
@@ -301,7 +310,7 @@ Instance::StartupSolve(Instant const& t_final) {
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
-Instance::ComputeVelocity(int const dimension) {
+Instance::ComputeVelocityUsingBackwardDifferences() {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
 
@@ -311,6 +320,7 @@ Instance::ComputeVelocity(int const dimension) {
   // because we have not computed the future yet.
   auto const& backward_difference = integrator_.backward_difference_;
 
+  int const dimension = previous_steps_.back().displacements.size();
   auto& current_state = this->current_state_;
   auto const& step = this->step_;
 
@@ -340,6 +350,46 @@ Instance::ComputeVelocity(int const dimension) {
     velocity = DoublePrecision<Velocity>(
         (weighted_displacement.value + weighted_displacement.error) /
         (step * backward_difference.denominator));
+  }
+}
+
+template<typename Position, int order_>
+void SymmetricLinearMultistepIntegrator<Position, order_>::
+Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
+  using Acceleration = typename ODE::Acceleration;
+  using Displacement = typename ODE::Displacement;
+  using Velocity = typename ODE::Velocity;
+
+  // For the computation of the velocity we use a formula similar to that of
+  // Cohen, Hubbard, Oesterwinter (1973), Astronomical papers prepared for the
+  // use of the American ephemeris and nautical almanac, Volume XXII, Part I.
+  // More specifically, we use the coefficients η from
+  // cohen_hubbard_oesterwinter.wl.
+  auto const& cohen_hubbard_oesterwinter =
+      integrator_.cohen_hubbard_oesterwinter_;
+
+  int const dimension = previous_steps_.back().displacements.size();
+  auto& current_state = this->current_state_;
+  auto const& step = this->step_;
+
+  for (int d = 0; d < dimension; ++d) {
+    DoublePrecision<Velocity>& velocity = current_state.velocities[d];
+    auto it = previous_steps_.rbegin();
+
+    // Compute the displacement difference using double precision.
+    DoublePrecision<Displacement> displacement_change =
+        it->displacements[d] - std::next(it)->displacements[d];
+    velocity = DoublePrecision<Velocity>(
+        (displacement_change.value + displacement_change.error) / step);
+
+    Acceleration weighted_accelerations;
+    for (int i = 0; i < cohen_hubbard_oesterwinter.numerators.size; ++i, ++it) {
+      weighted_accelerations +=
+          cohen_hubbard_oesterwinter.numerators[i] * it->accelerations[d];
+    }
+
+    velocity.value +=
+        weighted_accelerations * step / cohen_hubbard_oesterwinter.denominator;
   }
 }
 
@@ -375,6 +425,7 @@ SymmetricLinearMultistepIntegrator(
       startup_integrator_(startup_integrator),
       backward_difference_(
           FirstDerivativeBackwardDifference<order_ - 1>()),
+      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {
@@ -510,3 +561,5 @@ QuinlanTremaine1990Order14() {
 
 }  // namespace integrators
 }  // namespace principia
+
+#undef PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER
