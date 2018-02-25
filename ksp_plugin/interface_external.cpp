@@ -28,9 +28,7 @@ using physics::RigidTransformation;
 
 namespace {
 
-// This is called "New" because it will eventually construct and release the
-// message string.  For now it just wraps the error code.
-Status NewStatus(base::Status status) {
+Status MakeStatus(base::Status const status) {
   Status result;
   if (!status.ok()) {
     LOG(ERROR) << status.message();
@@ -39,14 +37,14 @@ Status NewStatus(base::Status status) {
   return result;
 }
 
-// A wrapper for |NewStatus(base::Status(error, message))|, since we often
+// A wrapper for |MakeStatus(base::Status(error, message))|, since we often
 // construct the status in the interface itself.
-Status NewStatus(Error const error, std::string const& message) {
-  return NewStatus(base::Status(error, message));
+Status MakeStatus(Error const error, std::string const& message) {
+  return MakeStatus(base::Status(error, message));
 }
 
 Status OK() {
-  return NewStatus(base::Status::OK);
+  return MakeStatus(base::Status::OK);
 }
 
 }  // namespace
@@ -67,10 +65,10 @@ Status principia__ExternalFlowFreefall(
       {world_body_centred_final_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        NewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
-  return m.Return(NewStatus(Error::UNIMPLEMENTED,
-                            "|ExternalFlowFreefall| is not yet implemented"));
+  return m.Return(MakeStatus(Error::UNIMPLEMENTED,
+                             "|ExternalFlowFreefall| is not yet implemented"));
 }
 
 Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
@@ -89,32 +87,32 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       {world_body_centred_nearest_degrees_of_freedom}};
   if (plugin == nullptr) {
     return m.Return(
-        NewStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
+        MakeStatus(Error::INVALID_ARGUMENT, "|plugin| must not be null"));
   }
   if (manoeuvre_index < 0) {
-    return m.Return(NewStatus(Error::INVALID_ARGUMENT,
+    return m.Return(MakeStatus(Error::INVALID_ARGUMENT,
                               "Invalid negative |manoeuvre_index|" +
                                   std::to_string(manoeuvre_index)));
   }
   if (!plugin->HasCelestial(central_body_index)) {
-    return m.Return(NewStatus(
+    return m.Return(MakeStatus(
         Error::NOT_FOUND,
         "No celestial with index " + std::to_string(central_body_index)));
   }
   if (!plugin->HasVessel(vessel_guid)) {
-    return m.Return(NewStatus(
+    return m.Return(MakeStatus(
         Error::NOT_FOUND,
         "No vessel with GUID " + std::string(vessel_guid)));
   }
   Vessel const& vessel = *plugin->GetVessel(vessel_guid);
   if (!vessel.has_flight_plan()) {
-    return m.Return(NewStatus(
+    return m.Return(MakeStatus(
         Error::FAILED_PRECONDITION,
         "Vessel " + vessel.ShortDebugString() + " has no flight plan"));
   }
   FlightPlan const& flight_plan = vessel.flight_plan();
   if (manoeuvre_index >= flight_plan.number_of_manœuvres()) {
-    return m.Return(NewStatus(
+    return m.Return(MakeStatus(
         Error::OUT_OF_RANGE,
         "|manoeuvre_index| " + std::to_string(manoeuvre_index) +
             " out of range, vessel " + vessel.ShortDebugString() + " has " +
@@ -124,10 +122,10 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   // The index of the coast segment following the desired manœuvre.
   int const segment_index = manoeuvre_index * 2 + 2;
   if (segment_index >= flight_plan.number_of_segments()) {
-    return m.Return(NewStatus(Error::FAILED_PRECONDITION,
-                              u8"A singularity occurs within manœuvre " +
-                                  std::to_string(manoeuvre_index) + " of " +
-                                  vessel.ShortDebugString()));
+    return m.Return(MakeStatus(Error::FAILED_PRECONDITION,
+                               u8"A singularity occurs within manœuvre " +
+                                   std::to_string(manoeuvre_index) + " of " +
+                                   vessel.ShortDebugString()));
   }
   DiscreteTrajectory<Barycentric>::Iterator coast_begin;
   DiscreteTrajectory<Barycentric>::Iterator coast_end;
@@ -165,8 +163,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
   DiscreteTrajectory<Navigation> immobile_reference;
   immobile_reference.Append(coast.Begin().time(),
                             {reference_position, Velocity<Navigation>{}});
-  if (coast.Begin() !=
-      coast.last()) {
+  if (coast.Size() > 1) {
     immobile_reference.Append(coast.last().time(),
                               {reference_position, Velocity<Navigation>{}});
   }
@@ -178,15 +175,15 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
                  apoapsides,
                  periapsides);
   if (periapsides.Empty()) {
-    bool const coasting_away =
+    bool const begin_is_nearest =
         (coast.Begin().degrees_of_freedom().position() -
          reference_position).Norm²() <
         (coast.last().degrees_of_freedom().position() -
          reference_position).Norm²();
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(
-            coasting_away ? coast.Begin().degrees_of_freedom()
-                          : coast.last().degrees_of_freedom()));
+            begin_is_nearest ? coast.Begin().degrees_of_freedom()
+                             : coast.last().degrees_of_freedom()));
   } else {
     *world_body_centred_nearest_degrees_of_freedom =
         ToQP(to_world_body_centred_inertial(

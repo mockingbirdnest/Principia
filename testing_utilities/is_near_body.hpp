@@ -40,11 +40,12 @@ testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
 }
 
 template<typename T>
-IsNearMatcher<T>::IsNearMatcher(T const& expected,
-                                double const tolerance)
+IsNearMatcher<T>::IsNearMatcher(T const& expected, double const tolerance)
     : expected_(expected),
-      low_(expected / std::sqrt(tolerance)),
-      high_(expected * std::sqrt(tolerance)),
+      low_(std::min(expected * std::sqrt(tolerance),
+                    expected / std::sqrt(tolerance))),
+      high_(std::max(expected * std::sqrt(tolerance),
+                     expected / std::sqrt(tolerance))),
       tolerance_(tolerance) {}
 
 template<typename T>

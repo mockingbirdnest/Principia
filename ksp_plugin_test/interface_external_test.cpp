@@ -4,6 +4,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "ksp_plugin_test/test_plugin.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
@@ -21,8 +23,11 @@ using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
+using quantities::si::Micro;
 using quantities::si::Newton;
 using quantities::si::Tonne;
+using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
 using ::testing::Eq;
 
@@ -45,7 +50,7 @@ class InterfaceExternalTest : public ::testing::Test {
     physics::KeplerianElements<Barycentric> low_earth_orbit;
     low_earth_orbit.eccentricity = 0;
     low_earth_orbit.semimajor_axis = 6783 * Kilo(Metre);
-    low_earth_orbit.inclination = 53.6 * Degree;
+    low_earth_orbit.inclination = 0 * Degree;
     low_earth_orbit.longitude_of_ascending_node = 0 * Radian;
     low_earth_orbit.argument_of_periapsis = 0 * Radian;
     low_earth_orbit.mean_anomaly = 0 * Radian;
@@ -67,17 +72,33 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
           SolarSystemFactory::Earth),
       plugin_.CurrentTime() + 30 * Second,
       Velocity<Frenet<Navigation>>(
-          {100 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
+          {1000 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
       /*is_inertially_fixed=*/false});
   QP result;
+  auto const to_world =
+      plugin_.renderer().BarycentricToWorld(plugin_.PlanetariumRotation());
   auto const status = principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
       &plugin_,
       SolarSystemFactory::Earth,
       vessel_guid,
       /*manoeuvre_index=*/0,
-      /*reference_position=*/{0, 7'000'000, 0},
+      /*reference_position=*/ToXYZ(
+          to_world(Displacement<Barycentric>(
+              {-100'000 * Kilo(Metre), 0 * Metre, 0 * Metre})).coordinates() /
+                  Metre),
       &result);
   EXPECT_THAT(status.error, Eq(static_cast<int>(base::Error::OK)));
+  auto const barycentric_result =
+      to_world.Inverse()(FromQP<RelativeDegreesOfFreedom<World>>(result));
+  // The reference position is far above the apoapsis, so the result is roughly
+  // the apoapsis.
+  EXPECT_THAT(barycentric_result,
+              Componentwise(Componentwise(IsNear(-11'000 * Kilo(Metre)),
+                                          IsNear(-120 * Kilo(Metre)),
+                                          IsNear(2.2 * Metre)),
+                            Componentwise(IsNear(-6.6 * Metre / Second),
+                                          IsNear(-4.9 * Kilo(Metre) / Second),
+                                          IsNear(54 * Micro(Metre) / Second))));
 }
 
 }  // namespace interface
