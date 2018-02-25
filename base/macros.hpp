@@ -163,6 +163,9 @@ inline void noreturn() { std::exit(0); }
 #  error "What compiler is this?"
 #endif
 
+// We assume that the processor is at least a Nehalem.
+#define PRINCIPIA_USE_SSE2_INTRINSICS 1
+
 // Thread-safety analysis.
 #if PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))

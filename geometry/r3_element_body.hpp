@@ -15,8 +15,6 @@
 #include "quantities/serialization.hpp"
 #include "quantities/wide.hpp"
 
-#define PRINCIPIA_USE_SSE2_INTRINSICS 1
-
 namespace principia {
 namespace geometry {
 namespace internal_r3_element {
@@ -344,5 +342,3 @@ inline R3Element<double> BasisVector(int const i) {
 }  // namespace internal_r3_element
 }  // namespace geometry
 }  // namespace principia
-
-#undef PRINCIPIA_USE_SSE2_INTRINSICS
