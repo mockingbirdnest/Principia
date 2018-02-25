@@ -346,9 +346,13 @@ message EndInitialization {
   optional In in = 1;
 }
 
-// These functions form the external API of principia; announce deprecation one
+// These functions form the external API of Principia; announce deprecation one
 // lunation ahead, then make them return UNIMPLEMENTED.
 
+// Not yet implemented.
+// Solves a free-fall initial value problem, where the initial degrees of
+// freedom and those of the result are given in world coordinates in the
+// body-centred inertial frame of the body with the given index.
 message ExternalFlowFreefall {
   extend Method {
     optional ExternalFlowFreefall extension = 5151;
@@ -372,6 +376,9 @@ message ExternalFlowFreefall {
   optional Return return = 3;
 }
 
+// Returns first point of the coast phase following the given manoeuvre which is
+// locally nearest to the reference position, or the nearest endpoint if there
+// is no local minimum.
 message ExternalGetNearestPlannedCoastDegreesOfFreedom {
   extend Method {
     optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;
@@ -382,7 +389,7 @@ message ExternalGetNearestPlannedCoastDegreesOfFreedom {
     required int32 central_body_index = 2;
     required string vessel_guid = 3;
     required int32 manoeuvre_index = 4;
-    required XYZ world_body_centric_reference_position = 5;
+    required XYZ world_body_centred_reference_position = 5;
   }
   message Out {
     required QP world_body_centred_nearest_degrees_of_freedom = 1;
