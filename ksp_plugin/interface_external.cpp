@@ -122,7 +122,7 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
             u8" planned manœuvres"));
   }
   // The index of the coast segment following the desired manœuvre.
-  int const segment_index = manoeuvre_index * 2 + 3;
+  int const segment_index = manoeuvre_index * 2 + 2;
   if (segment_index >= flight_plan.number_of_segments()) {
     return m.Return(NewStatus(Error::FAILED_PRECONDITION,
                               u8"A singularity occurs within manœuvre " +
