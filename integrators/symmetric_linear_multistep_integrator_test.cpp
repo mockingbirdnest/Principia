@@ -432,27 +432,27 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
                    0.07 * Second,
                    1.00044972306534419e-13 * Metre,
                    1.00587940754515159e-13 * Metre / Second,
-                   4.11866032945518157e-08 * Joule),
+                   3.93946996135596805e-08 * Joule),
           INSTANCE(Quinlan1999Order8B,
                    0.055 * Second,
                    9.97882332320898513e-14 * Metre,
                    1.00953967407946266e-13 * Metre / Second,
-                   2.36733395664323609e-08 * Joule),
+                   2.19802622769549316e-08 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
                    0.3 * Second,
                    9.98298665955132947e-14 * Metre,
                    1.00752739484732956e-13 * Metre / Second,
-                   6.59523038959441976e-08 * Joule),
+                   6.42628611435824837e-08 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
                    0.3 * Second,
                    9.96980276113390573e-14 * Metre,
                    1.02442360150334366e-13 * Metre / Second,
-                   1.10484732473992153e-09 * Joule),
+                   1.03418451580239434e-09 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
                    0.21 * Second,
                    9.90457715843717779e-14 * Metre,
                    1.05165876007617953e-13 * Metre / Second,
-                   4.37903047156851244e-11 * Joule)};
+                   4.14703826834283973e-11 * Joule)};
 }
 
 }  // namespace

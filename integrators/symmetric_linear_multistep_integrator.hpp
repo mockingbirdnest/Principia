@@ -126,7 +126,7 @@ class SymmetricLinearMultistepIntegrator
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
   BackwardDifference<order_ - 1> const& backward_difference_;
-  CohenHubbardOesterwinter<order_ + 1> const& cohen_hubbard_oesterwinter_;
+  CohenHubbardOesterwinter<order_> const& cohen_hubbard_oesterwinter_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;
   double const β_denominator_;

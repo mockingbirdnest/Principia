@@ -138,8 +138,10 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
 
     // Note that we only delete the oldest step *after* computing the velocity.
     // This means that the velocity computation has access to |order_ + 1|
-    // points. For backward difference this yields order |order_ - 1|, for
-    // Cohen-Hubbard-Oesterwinter this yields order |order_ + 1|.
+    // points and, for backward difference, it makes it possible to reach order
+    // |order_ - 1|.  For Cohen-Hubbard-Oesterwinter this is not necessary: it
+    // makes no sense to go up to order |order_ + 1| so we really only need
+    // |order_| points.
 #if PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER
     ComputeVelocityUsingCohenHubbardOesterwinter();
 #else
@@ -375,8 +377,8 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
     auto it = previous_steps_.rbegin();
 
     // Compute the displacement difference using double precision.
-    DoublePrecision<Displacement> displacement_change = 
-      it->displacements[d] - std::next(it)->displacements[d];
+    DoublePrecision<Displacement> displacement_change =
+        it->displacements[d] - std::next(it)->displacements[d];
     velocity = DoublePrecision<Velocity>(
         (displacement_change.value + displacement_change.error) / step);
 
@@ -423,7 +425,7 @@ SymmetricLinearMultistepIntegrator(
       startup_integrator_(startup_integrator),
       backward_difference_(
           FirstDerivativeBackwardDifference<order_ - 1>()),
-      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_ + 1>()),
+      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
       β_denominator_(β_denominator) {
