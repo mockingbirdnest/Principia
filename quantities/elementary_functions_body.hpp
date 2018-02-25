@@ -3,7 +3,7 @@
 
 #include "quantities/elementary_functions.hpp"
 
-#include <nmmintrin.h>
+#include <pmmintrin.h>
 
 #include <cmath>
 #include <type_traits>
@@ -30,7 +30,7 @@ FORCE_INLINE(inline) Q Abs(Q const& quantity) {
 
 template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x) {
-#if PRINCIPIA_USE_SSE2_INTRINSICS
+#if PRINCIPIA_USE_SSE3_INTRINSICS
   auto const x_128d = _mm_set_sd(x / SIUnit<Q>());
   return SIUnit<SquareRoot<Q>>() * _mm_cvtsd_f64(_mm_sqrt_sd(x_128d, x_128d));
 #else
