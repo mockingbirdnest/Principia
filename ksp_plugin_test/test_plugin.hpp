@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "astronomy/frames.hpp"
 #include "ksp_plugin/plugin.hpp"
 #include "physics/solar_system.hpp"
@@ -15,7 +17,7 @@ using physics::SolarSystem;
 
 class TestPlugin : public Plugin {
  public:
-  TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system);
+  explicit TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system);
 
   Vessel& AddVesselInEarthOrbit(GUID const& vessel_id,
                                 std::string const& vessel_name,

@@ -1,5 +1,8 @@
 
 #include "ksp_plugin_test/test_plugin.hpp"
+
+#include <string>
+
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
