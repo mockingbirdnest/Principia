@@ -75,9 +75,9 @@ Status principia__ExternalGetNearestPlannedCoastDegreesOfFreedom(
     Plugin const* const plugin,
     int const central_body_index,
     char const* const vessel_guid,
-    int manoeuvre_index,
-    XYZ world_body_centred_reference_position,
-    QP* world_body_centred_nearest_degrees_of_freedom) {
+    int const manoeuvre_index,
+    XYZ const world_body_centred_reference_position,
+    QP* const world_body_centred_nearest_degrees_of_freedom) {
   journal::Method<journal::ExternalGetNearestPlannedCoastDegreesOfFreedom> m{
       {plugin,
        central_body_index,

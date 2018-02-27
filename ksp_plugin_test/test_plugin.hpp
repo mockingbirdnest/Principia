@@ -17,8 +17,12 @@ using physics::SolarSystem;
 
 class TestPlugin : public Plugin {
  public:
+  // Creates a test plugin with the bodies of the given |solar_system|.  The
+  // system must be the Sol system.
   explicit TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system);
 
+  // Adds an unloaded vessel with a single part with the given osculating
+  // elements around the Earth at |CurrentTime()|.
   Vessel& AddVesselInEarthOrbit(GUID const& vessel_id,
                                 std::string const& vessel_name,
                                 PartId part_id,

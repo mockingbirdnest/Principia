@@ -376,9 +376,9 @@ message ExternalFlowFreefall {
   optional Return return = 3;
 }
 
-// Returns first point of the coast phase following the given manoeuvre which is
-// locally nearest to the reference position, or the nearest endpoint if there
-// is no local minimum.
+// Returns the first point of the coast phase following the given manoeuvre
+// which is locally nearest to the reference position, or the nearest endpoint
+// if there is no local minimum.
 message ExternalGetNearestPlannedCoastDegreesOfFreedom {
   extend Method {
     optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;

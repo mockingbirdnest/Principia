@@ -41,7 +41,7 @@ TestPlugin::TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
 Vessel& TestPlugin::AddVesselInEarthOrbit(
     GUID const& vessel_id,
     std::string const& vessel_name,
-    PartId part_id,
+    PartId const part_id,
     std::string const& part_name,
     KeplerianElements<Barycentric> const& elements) {
   KeplerOrbit<Barycentric> earth_orbit(
@@ -57,7 +57,8 @@ Vessel& TestPlugin::AddVesselInEarthOrbit(
                      SolarSystemFactory::Earth,
                      /*loaded=*/false,
                      inserted);
-  CHECK(inserted);
+  CHECK(inserted) << "Failed to insert vessel " << vessel_name << " ("
+                  << vessel_id << ")";
   InsertUnloadedPart(part_id, part_name, vessel_id, alice_dof);
   PrepareToReportCollisions();
   FreeVesselsAndPartsAndCollectPileUps(20 * Milli(Second));

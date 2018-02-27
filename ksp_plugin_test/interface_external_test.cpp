@@ -6,6 +6,7 @@
 #include "ksp_plugin_test/test_plugin.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/matchers.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
 
 namespace principia {
@@ -27,6 +28,7 @@ using quantities::si::Micro;
 using quantities::si::Newton;
 using quantities::si::Tonne;
 using testing_utilities::Componentwise;
+using testing_utilities::IsOk;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
 using ::testing::Eq;
@@ -87,7 +89,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
               {-100'000 * Kilo(Metre), 0 * Metre, 0 * Metre})).coordinates() /
                   Metre),
       &result);
-  EXPECT_THAT(status.error, Eq(static_cast<int>(base::Error::OK)));
+  EXPECT_THAT(base::Status(status.error, ""), IsOk());
   auto const barycentric_result =
       to_world.Inverse()(FromQP<RelativeDegreesOfFreedom<World>>(result));
   // The reference position is far above the apoapsis, so the result is roughly
