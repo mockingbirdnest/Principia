@@ -12,6 +12,41 @@ namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
 
+// A helper class to compute the dot product of two arrays.  |ScalarLeft| and
+// |ScalarRight| are the types of the elements of the arrays.  |Left| and
+// |Right| are the (deduced) types of the arrays.  They must both have an
+// operator[].  |size| is the size of the arrays.
+template<typename ScalarLeft, typename ScalarRight, int size, int i = size - 1>
+struct DotProduct {
+  template<typename Left, typename Right>
+  static Product<ScalarLeft, ScalarRight> Compute(Left const& left,
+                                                  Right const& right);
+};
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+struct DotProduct<ScalarLeft, ScalarRight, size, 0> {
+  template<typename Left, typename Right>
+  static Product<ScalarLeft, ScalarRight> Compute(Left const& left,
+                                                  Right const& right);
+};
+
+template<typename ScalarLeft, typename ScalarRight, int size, int i>
+template<typename Left, typename Right>
+Product<ScalarLeft, ScalarRight>
+DotProduct<ScalarLeft, ScalarRight, size, i>::Compute(Left const& left,
+                                                      Right const& right) {
+  return left[i] * right[i] +
+         DotProduct<ScalarLeft, ScalarRight, size, i - 1>::Compute(left, right);
+}
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+template<typename Left, typename Right>
+Product<ScalarLeft, ScalarRight>
+DotProduct<ScalarLeft, ScalarRight, size, 0>::Compute(Left const& left,
+                                                      Right const& right) {
+  return left[0] * right[0];
+}
+
 template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector() {
   // TODO(phl): This used to be:
@@ -26,6 +61,11 @@ template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector(
     std::array<Scalar, size_> const& data)
     : data_(data) {}
+
+template<typename Scalar, int size_>
+constexpr FixedVector<Scalar, size_>::FixedVector(
+    std::array<Scalar, size_>&& data)
+    : data_(std::move(data)) {}
 
 template<typename Scalar, int size_>
 FixedVector<Scalar, size_>::FixedVector(
@@ -110,11 +150,7 @@ template<typename S>
 Product<Scalar, S>
 FixedMatrix<Scalar, rows, columns>::Row<r>::operator*(
     FixedVector<S, columns> const& right) {
-  Product<Scalar, S> result{};
-  for (int j = 0; j < columns; ++j) {
-    result += (*this)[j] * right[j];
-  }
-  return result;
+  return DotProduct<Scalar, S, columns>::Compute(*this, right);
 }
 
 template<typename Scalar, int rows, int columns>
@@ -128,15 +164,14 @@ template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,
     FixedVector<ScalarRight, columns> const& right) {
-  FixedVector<Product<ScalarLeft, ScalarRight>, rows> result;
+  std::array<Product<ScalarLeft, ScalarRight>, rows> result;
   auto const* row = left.data_.data();
   for (int i = 0; i < rows; ++i) {
-    for (int j = 0; j < columns; ++j) {
-      result.data_[i] += row[j] * right.data_[j];
-    }
+    result[i] =
+        DotProduct<ScalarLeft, ScalarRight, columns>::Compute(row, right.data_);
     row += columns;
   }
-  return result;
+  return FixedVector<Product<ScalarLeft, ScalarRight>, rows>(std::move(result));
 }
 
 template<typename Scalar, int rows>
