@@ -89,7 +89,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
               {-100'000 * Kilo(Metre), 0 * Metre, 0 * Metre})).coordinates() /
                   Metre),
       &result);
-  EXPECT_THAT(base::Status(status.error, ""), IsOk());
+  EXPECT_THAT(base::Status(static_cast<base::Error>(status.error), ""), IsOk());
   auto const barycentric_result =
       to_world.Inverse()(FromQP<RelativeDegreesOfFreedom<World>>(result));
   // The reference position is far above the apoapsis, so the result is roughly
