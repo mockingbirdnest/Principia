@@ -1,5 +1,5 @@
 ﻿
-// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall.*Mono  // NOLINT(whitespace/line_length)
 // Benchmarking on 1 X 3310 MHz CPU
 // 2015/05/24-13:16:32
 // Benchmark                    Time(ns)    CPU(ns) Iterations
@@ -120,16 +120,17 @@ BENCHMARK_TEMPLATE2(
     ResultЧебышёвDisplacement,
     &NewhallApproximationInЧебышёвBasis<Displacement<ICRFJ2000Ecliptic>>)
     ->Arg(4)->Arg(8)->Arg(16);
+// No space or line break in the second argument, that confuses automation.
 BENCHMARK_TEMPLATE2(
     BM_NewhallApproximationDouble,
     ResultMonomialDouble,
-    (&NewhallApproximationInMonomialBasis<double, EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<double,EstrinEvaluator>))  // NOLINT
     ->Arg(4)->Arg(8)->Arg(16);
+// No space or line break in the second argument, that confuses automation.
 BENCHMARK_TEMPLATE2(
     BM_NewhallApproximationDisplacement,
     ResultMonomialDisplacement,
-    (&NewhallApproximationInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
-                                          EstrinEvaluator>))
+    (&NewhallApproximationInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,EstrinEvaluator>))  // NOLINT
     ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
