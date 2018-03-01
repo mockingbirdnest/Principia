@@ -356,6 +356,9 @@ class Plugin {
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
           prediction_adaptive_step_parameters);
 
+  virtual bool HasCelestial(Index index) const;
+  virtual Celestial const& GetCelestial(Index index) const;
+
   virtual bool HasVessel(GUID const& vessel_guid) const;
   virtual not_null<Vessel*> GetVessel(GUID const& vessel_guid) const;
 
