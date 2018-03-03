@@ -22,6 +22,8 @@ void PlotCentury();
 // than 1e6 m after 5 a: this duration is deemed "predictable" (see above).
 void AnalyseGlobalError();
 
+void AnalyseLocalError();
+
 // Integrates a cluster of millimetrically perturbed systems, discarding them as
 // the integrations encounter high local errors, currently very badly estimated,
 // or eject Joolian moons.

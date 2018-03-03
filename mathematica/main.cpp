@@ -29,6 +29,8 @@ int main(int argc, char const* argv[]) {
       principia::mathematica::PlotCentury();
     } else if (target == "analyse_global_error") {
       principia::mathematica::AnalyseGlobalError();
+    } else if (target == "analyse_local_error") {
+      principia::mathematica::AnalyseLocalError();
     } else if (target == "statistically_analyse_stability") {
       principia::mathematica::StatisticallyAnalyseStability();
     } else {

@@ -207,6 +207,28 @@ DegreesOfFreedom<Barycentric> JoolSystemBarycentre(
   return jool_system_barycentre.Get();
 }
 
+not_null<std::unique_ptr<Ephemeris<Barycentric>>> ForkEphemeris(
+    Ephemeris<Barycentric> const& original,
+    Instant const& t,
+    FixedStepSizeIntegrator<
+        Ephemeris<Barycentric>::NewtonianMotionEquation> const& integrator,
+    Time const& step) {
+  std::vector<DegreesOfFreedom<Barycentric>> degrees_of_freedom;
+  for (not_null<MassiveBody const*> const body : original.bodies()) {
+    degrees_of_freedom.emplace_back(
+        original.trajectory(body)->EvaluateDegreesOfFreedom(t));
+  }
+  // TODO(eggrobin): it is a bit ugly to make a system just for the bodies,
+  // where we actually have that information in the ephemeris already.  Consider
+  // implementing a dispatching |MassiveBody::Clone|.
+  return std::make_unique<Ephemeris<Barycentric>>(
+      MakeStabilizedKSPSystem().bodies,
+      degrees_of_freedom,
+      t,
+      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<Barycentric>::FixedStepParameters(integrator, step));
+}
+
 not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
     HierarchicalSystem<Barycentric>::
         BarycentricSystem&& system,  // NOLINT(whitespace/operators)
@@ -249,6 +271,39 @@ MakePerturbedEphemerides(int const count,
           system.degrees_of_freedom[celestial].velocity()};
     }
     result.emplace_back(MakeEphemeris(std::move(system), integrator, step));
+  }
+  return result;
+}
+
+template<typename Integrator>
+std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
+MakePerturbedForkedEphemerides(int const count,
+                               Ephemeris<Barycentric> const& original,
+                               Instant const& t,
+                               Integrator const& integrator,
+                               Time const& step) {
+  std::mt19937_64 generator;
+  std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>> result;
+  std::vector<DegreesOfFreedom<Barycentric>> original_degrees_of_freedom;
+  for (not_null<MassiveBody const*> const body : original.bodies()) {
+    original_degrees_of_freedom.emplace_back(
+        original.trajectory(body)->EvaluateDegreesOfFreedom(t));
+  }
+  for (int i = 0; i < count; ++i) {
+    std::vector<DegreesOfFreedom<Barycentric>> perturbed_degrees_of_freedom =
+        original_degrees_of_freedom;
+    for (Celestial const celestial : jool_system) {
+      perturbed_degrees_of_freedom[celestial] = {
+          perturbed_degrees_of_freedom[celestial].position() +
+              RandomUnitVector(generator) * Milli(Metre),
+          perturbed_degrees_of_freedom[celestial].velocity()};
+    }
+    result.emplace_back(std::make_unique<Ephemeris<Barycentric>>(
+        MakeStabilizedKSPSystem().bodies,
+        perturbed_degrees_of_freedom,
+        t,
+        /*fitting_tolerance=*/1 * Milli(Metre),
+        Ephemeris<Barycentric>::FixedStepParameters(integrator, step)));
   }
   return result;
 }
@@ -591,6 +646,96 @@ void AnalyseGlobalError() {
     if (!log_radius && refined_ephemeris == nullptr) {
       return;
     }
+  }
+}
+
+void AnalyseLocalError() {
+  auto const reference_ephemeris = MakeEphemeris(
+      MakeStabilizedKSPSystem(),
+      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      step);
+  reference_ephemeris->Prolong(ksp_epoch);
+
+  for (int day = 1;; ++day) {
+    Instant const t0 = ksp_epoch + (day - 1) * Day;
+    std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = ForkEphemeris(
+        *reference_ephemeris,
+        t0,
+        integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+        step / 2);
+    std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
+        perturbed_ephemerides = MakePerturbedForkedEphemerides(
+            100,
+            *reference_ephemeris,
+            t0,
+            integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+            step);
+    Instant const t = ksp_epoch + day * Day;
+    Bundle bundle{static_cast<int>(std::thread::hardware_concurrency() - 1)};
+    if (reference_ephemeris != nullptr) {
+      bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
+        reference_ephemeris.Prolong(t);
+        reference_ephemeris.ForgetBefore(t);
+        return Status::OK;
+      });
+    }
+    if (refined_ephemeris != nullptr) {
+      bundle.Add([&refined_ephemeris = *refined_ephemeris, t]() {
+        refined_ephemeris.Prolong(t);
+        refined_ephemeris.ForgetBefore(t);
+        return Status::OK;
+      });
+    }
+    for (auto const& ephemeris : perturbed_ephemerides) {
+      bundle.Add([ephemeris = ephemeris.get(), t]() {
+        ephemeris->Prolong(t);
+        ephemeris->ForgetBefore(t);
+        return Status::OK;
+      });
+    }
+    bundle.Join();
+    LOG(INFO) << "day " << day;
+
+    {
+      Length numerical_error;
+      Celestial most_erroneous_moon;
+      ComputeHighestMoonError(*refined_ephemeris,
+                              *reference_ephemeris,
+                              t,
+                              numerical_error,
+                              most_erroneous_moon);
+      LOG(INFO) << "Numerical error in position: " << numerical_error << " ("
+                << names[most_erroneous_moon] << ")";
+    }
+    {
+      Speed numerical_error;
+      Celestial most_erroneous_moon;
+      ComputeHighestMoonVelocityError(*refined_ephemeris,
+                                      *reference_ephemeris,
+                                      t,
+                                      numerical_error,
+                                      most_erroneous_moon);
+      LOG(INFO) << "Numerical error in velocity: " << numerical_error << " ("
+                << names[most_erroneous_moon] << ")";
+    }
+
+    Length cluster_radius;
+    Celestial most_erroneous_moon;
+    for (auto const& ephemeris : perturbed_ephemerides) {
+      Length moon_error;
+      Celestial moon;
+      ComputeHighestMoonError(*ephemeris,
+                              *reference_ephemeris,
+                              t,
+                              moon_error,
+                              moon);
+      if (moon_error > cluster_radius) {
+        cluster_radius = moon_error;
+        most_erroneous_moon = moon;
+      }
+    }
+    LOG(INFO) << "Cluster radius: " << cluster_radius << " ("
+              << names[most_erroneous_moon] << ")";
   }
 }
 
