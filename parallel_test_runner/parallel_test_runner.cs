@@ -74,7 +74,7 @@ class ParallelTestRunner {
       granularity_option = null;
       instrument_option = null;
 
-      string[] test_binaries = Directory.GetFiles(arg, "integrators_tests.exe");
+      string[] test_binaries = Directory.GetFiles(arg, "*_tests.exe");
       foreach (string test_binary in test_binaries) {
         if (instrument) {
           instrument_tests.Add(
