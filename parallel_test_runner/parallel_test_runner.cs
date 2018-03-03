@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -73,7 +74,7 @@ class ParallelTestRunner {
       granularity_option = null;
       instrument_option = null;
 
-      string[] test_binaries = Directory.GetFiles(arg, "*_tests.exe");
+      string[] test_binaries = Directory.GetFiles(arg, "integrators_tests.exe");
       foreach (string test_binary in test_binaries) {
         if (instrument) {
           instrument_tests.Add(
@@ -137,7 +138,8 @@ class ParallelTestRunner {
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.FileName = test_binary;
             process.StartInfo.Arguments =
-                "--gtest_filter=" + test_case + line.Split(' ')[2];
+               Encoding.Default.GetString(Encoding.UTF8.GetBytes(
+                    "--gtest_filter=" + test_case + line.Split(' ')[2]));
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";
