@@ -17,6 +17,7 @@
     <ClCompile Include="..\ksp_plugin\identification.cpp" />
     <ClCompile Include="..\ksp_plugin\integrators.cpp" />
     <ClCompile Include="..\ksp_plugin\interface.cpp" />
+    <ClCompile Include="..\ksp_plugin\interface_external.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_flight_plan.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_future.cpp" />
     <ClCompile Include="..\ksp_plugin\interface_iterator.cpp" />
@@ -34,6 +35,7 @@
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />
+    <ClCompile Include="interface_external_test.cpp" />
     <ClCompile Include="interface_flight_plan_test.cpp" />
     <ClCompile Include="interface_planetarium_test.cpp" />
     <ClCompile Include="interface_renderer_test.cpp" />
@@ -49,6 +51,7 @@
     <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />
+    <ClCompile Include="test_plugin.cpp" />
     <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +60,7 @@
     <ClInclude Include="mock_manœuvre.hpp" />
     <ClInclude Include="mock_planetarium.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
+    <ClInclude Include="test_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_renderer.hpp" />

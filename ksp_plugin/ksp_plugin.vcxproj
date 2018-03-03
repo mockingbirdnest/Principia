@@ -5,9 +5,7 @@
     <RootNamespace>ksp_plugin</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
   <Import Project="$(SolutionDir)principia.props" />
-
   <ItemGroup>
     <ClInclude Include="burn.hpp" />
     <ClInclude Include="celestial.hpp" />
@@ -48,6 +46,7 @@
     <ClCompile Include="identification.cpp" />
     <ClCompile Include="integrators.cpp" />
     <ClCompile Include="interface.cpp" />
+    <ClCompile Include="interface_external.cpp" />
     <ClCompile Include="interface_flight_plan.cpp" />
     <ClCompile Include="interface_future.cpp" />
     <ClCompile Include="interface_iterator.cpp" />

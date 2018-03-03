@@ -65,6 +65,12 @@
     <ClInclude Include="backward_difference_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="cohen_hubbard_oesterwinter_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cohen_hubbard_oesterwinter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">

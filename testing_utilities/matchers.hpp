@@ -1,11 +1,14 @@
 #pragma once
 
+#include <pmmintrin.h>
+
 #include <string>
 
 #include "base/status.hpp"
 #include "gmock/gmock.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"
+#include "quantities/quantities.hpp"
 #include "serialization/ksp_plugin.pb.h"
 
 namespace principia {
@@ -35,6 +38,20 @@ MATCHER_P(StatusIs,
           std::string(negation ? "does not have" : "has") + " error: " +
               ::principia::base::ErrorToString(error)) {
   return arg.error() == error;
+}
+
+MATCHER_P(SSEHighHalfIs,
+          value,
+          std::string(negation ? "does not have" : "has") + " high half: " +
+              ::principia::quantities::DebugString(value)) {
+  return _mm_cvtsd_f64(_mm_unpackhi_pd(arg, arg)) == value;
+}
+
+MATCHER_P(SSELowHalfIs,
+          value,
+          std::string(negation ? "does not have" : "has") + " low half: " +
+              ::principia::quantities::DebugString(value)) {
+  return _mm_cvtsd_f64(arg) == value;
 }
 
 }  // namespace testing_utilities

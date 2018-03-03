@@ -245,8 +245,8 @@ void TestConvergence(Integrator const& integrator,
 
 #if !defined(_DEBUG)
   EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
-              Lt(0.05));
-  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.01));
+              Lt(0.02));
+  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.0005));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
   double const v_correlation =
@@ -254,8 +254,8 @@ void TestConvergence(Integrator const& integrator,
   LOG(INFO) << "Convergence order in p : " << v_convergence_order;
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(integrator.order, v_convergence_order), Lt(0.035));
-  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
+  EXPECT_THAT(RelativeError(integrator.order, v_convergence_order), Lt(0.02));
+  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.0002));
 #endif
 }
 
@@ -431,28 +431,28 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
   return {INSTANCE(Quinlan1999Order8A,
                    0.07 * Second,
                    1.00044972306534419e-13 * Metre,
-                   1.00572328243231368e-13 * Metre / Second,
-                   3.28261265669649305e-07 * Joule),
+                   1.00587940754515159e-13 * Metre / Second,
+                   3.93946996135596805e-08 * Joule),
           INSTANCE(Quinlan1999Order8B,
                    0.055 * Second,
                    9.97882332320898513e-14 * Metre,
-                   1.24972948656321137e-13 * Metre / Second,
-                   4.92124234141577688e-07 * Joule),
+                   1.00953967407946266e-13 * Metre / Second,
+                   2.19802622769549316e-08 * Joule),
           INSTANCE(QuinlanTremaine1990Order8,
                    0.3 * Second,
                    9.98298665955132947e-14 * Metre,
-                   1.01817859698982716e-13 * Metre / Second,
-                   3.58998453353631675e-07 * Joule),
+                   1.00752739484732956e-13 * Metre / Second,
+                   6.42628611435824837e-08 * Joule),
           INSTANCE(QuinlanTremaine1990Order10,
                    0.3 * Second,
                    9.96980276113390573e-14 * Metre,
-                   1.76542808150159658e-13 * Metre / Second,
-                   1.56463170197795876e-08 * Joule),
+                   1.02442360150334366e-13 * Metre / Second,
+                   1.03418451580239434e-09 * Joule),
           INSTANCE(QuinlanTremaine1990Order12,
                    0.21 * Second,
                    9.90457715843717779e-14 * Metre,
-                   4.89830398464619066e-13 * Metre / Second,
-                   8.68691674149602022e-10 * Joule)};
+                   1.05165876007617953e-13 * Metre / Second,
+                   4.14703826834283973e-11 * Joule)};
 }
 
 }  // namespace

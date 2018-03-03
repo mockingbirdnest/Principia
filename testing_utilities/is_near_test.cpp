@@ -29,5 +29,9 @@ TEST_F(IsNearTest, Quantity) {
   EXPECT_THAT(v, Not(IsNear(3.0 * Metre / Second, 1.01)));
 }
 
+TEST_F(IsNearTest, Negatives) {
+  EXPECT_THAT(π - std::exp(π), IsNear(-20, 1.00001));
+}
+
 }  // namespace testing_utilities
 }  // namespace principia

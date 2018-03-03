@@ -8,6 +8,7 @@
 #include "base/not_null.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/traits.hpp"
 #include "serialization/geometry.pb.h"
 
 namespace principia {
@@ -21,6 +22,7 @@ namespace internal_grassmann {
 
 using base::not_null;
 using quantities::Angle;
+using quantities::is_quantity;
 using quantities::Product;
 using quantities::Quantity;
 using quantities::Quotient;
@@ -255,33 +257,23 @@ Multivector<Scalar, Frame, rank> operator-(
     Multivector<Scalar, Frame, rank> const& left,
     Multivector<Scalar, Frame, rank> const& right);
 
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator*(
-    double left,
-    Multivector<Scalar, Frame, rank> const& right);
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator*(
-    Multivector<Scalar, Frame, rank> const& left,
-    double right);
-template<typename Scalar, typename Frame, int rank>
-Multivector<Scalar, Frame, rank> operator/(
-    Multivector<Scalar, Frame, rank> const& left,
-    double right);
-
-template<typename LDimension, typename RScalar, typename Frame, int rank>
-Multivector<Product<Quantity<LDimension>, RScalar>, Frame, rank>
-operator*(Quantity<LDimension> const& left,
+template<typename LScalar, typename RScalar, typename Frame, int rank,
+         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
+operator*(LScalar const& left,
           Multivector<RScalar, Frame, rank> const& right);
 
-template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<Product<LScalar, Quantity<RDimension>>, Frame, rank>
+template<typename LScalar, typename RScalar, typename Frame, int rank,
+         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+Multivector<Product<LScalar, RScalar>, Frame, rank>
 operator*(Multivector<LScalar, Frame, rank> const& left,
-          Quantity<RDimension> const& right);
+          RScalar const& right);
 
-template<typename LScalar, typename RDimension, typename Frame, int rank>
-Multivector<Quotient<LScalar, Quantity<RDimension>>, Frame, rank>
+template<typename LScalar, typename RScalar, typename Frame, int rank,
+         typename = std::enable_if_t<is_quantity<RScalar>::value>>
+Multivector<Quotient<LScalar, RScalar>, Frame, rank>
 operator/(Multivector<LScalar, Frame, rank> const& left,
-          Quantity<RDimension> const& right);
+          RScalar const& right);
 
 template<typename Scalar, typename Frame, int rank>
 bool operator==(Multivector<Scalar, Frame, rank> const& left,

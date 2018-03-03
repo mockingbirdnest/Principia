@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "quantities/generators.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
@@ -15,6 +16,21 @@ template<typename Left, typename Right>
 using Product = decltype(std::declval<Left>() * std::declval<Right>());
 template<typename Left, typename Right>
 using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
+
+template<typename T, int exponent>
+using Exponentiation =
+    typename internal_generators::ExponentiationGenerator<T, exponent>::Type;
+template<typename Q>
+using Square = Exponentiation<Q, 2>;
+template<typename Q>
+using Cube = Exponentiation<Q, 3>;
+
+template<typename Q, int n>
+using NthRoot = typename internal_generators::NthRootGenerator<Q, n>::Type;
+template<typename Q>
+using SquareRoot = NthRoot<Q, 2>;
+template<typename Q>
+using CubeRoot = NthRoot<Q, 3>;
 
 // The result type of the derivative of a |Value|-valued function with respect
 // to its |Argument|-valued argument.
@@ -42,7 +58,15 @@ using Energy = Product<Force, Length>;
 using Power  = Variation<Energy>;
 using Action = Product<Energy, Time>;
 
-using MomentOfInertia     = Product<Square<Quotient<Length, Angle>>, Mass>;
+// There is some ambiguity regarding the choice of units for torque.  We choose
+// to make the moment of inertia free from angles, which introduces a
+// multiplicative angle in the torque.
+// Calls to Wedge in mechanics will often require the result to be multiplied by
+// Radian, and the application of a bivector will often require the result to be
+// divided by Radian.  An inner product of bivectors will occasionally have
+// to be divided by Radian².
+// It's because of the latter rule that torque sometimes has an inverse angle.
+using MomentOfInertia     = Product<Square<Length>, Mass>;
 using AngularFrequency    = Variation<Angle>;
 using AngularAcceleration = Variation<AngularFrequency>;
 using AngularMomentum     = Product<MomentOfInertia, AngularFrequency>;

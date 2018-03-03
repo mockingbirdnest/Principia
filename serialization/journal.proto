@@ -103,6 +103,12 @@ message QP {
   required XYZ p = 2;
 }
 
+message Status {
+  // A principia::base::Error, or equivalently, a google.rpc.Code.
+  required int32 error = 1;
+  // TODO(phl): find a way to produce strings in a struct.
+}
+
 message WXYZ {
   required double w = 1;
   required double x = 2;
@@ -116,7 +122,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5150.
+  extensions 5000 to 5999;  // Last used: 5152.
 }
 
 message AdvanceTime {
@@ -339,6 +345,64 @@ message EndInitialization {
   }
   optional In in = 1;
 }
+
+// These functions form the external API of Principia; announce deprecation one
+// lunation ahead, then make them return UNIMPLEMENTED.
+
+// Not yet implemented.
+// Solves a free-fall initial value problem, where the initial degrees of
+// freedom and those of the result are given in world coordinates in the
+// body-centred inertial frame of the body with the given index.
+message ExternalFlowFreefall {
+  extend Method {
+    optional ExternalFlowFreefall extension = 5151;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 central_body_index = 2;
+    required QP world_body_centred_initial_degrees_of_freedom = 3;
+    required double t_initial = 4;
+    required double t_final = 5;
+  }
+  message Out {
+    required QP world_body_centred_final_degrees_of_freedom = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// Returns the first point of the coast phase following the given manoeuvre
+// which is locally nearest to the reference position, or the nearest endpoint
+// if there is no local minimum.
+message ExternalGetNearestPlannedCoastDegreesOfFreedom {
+  extend Method {
+    optional ExternalGetNearestPlannedCoastDegreesOfFreedom extension = 5152;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required int32 central_body_index = 2;
+    required string vessel_guid = 3;
+    required int32 manoeuvre_index = 4;
+    required XYZ world_body_centred_reference_position = 5;
+  }
+  message Out {
+    required QP world_body_centred_nearest_degrees_of_freedom = 1;
+  }
+  message Return {
+    required Status result = 1;
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+// End of external API.
 
 message FlightPlanAppend {
   extend Method {

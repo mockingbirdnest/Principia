@@ -22,6 +22,7 @@ namespace testing_utilities {
 namespace internal_is_near {
 
 using quantities::DebugString;
+using quantities::Pow;
 
 template<typename T>
 testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
@@ -40,11 +41,12 @@ testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
 }
 
 template<typename T>
-IsNearMatcher<T>::IsNearMatcher(T const& expected,
-                                double const tolerance)
+IsNearMatcher<T>::IsNearMatcher(T const& expected, double const tolerance)
     : expected_(expected),
-      low_(expected / std::sqrt(tolerance)),
-      high_(expected * std::sqrt(tolerance)),
+      low_(std::min(expected * std::sqrt(tolerance),
+                    expected / std::sqrt(tolerance))),
+      high_(std::max(expected * std::sqrt(tolerance),
+                     expected / std::sqrt(tolerance))),
       tolerance_(tolerance) {}
 
 template<typename T>
@@ -55,8 +57,9 @@ bool IsNearMatcher<T>::MatchAndExplain(
   bool const match =  low_ <= actual && actual <= high_;
   if (!match) {
     *listener << "which is not in the range [" << low_ << ", " << high_
-              << "] and is off by "
-              << std::max(actual / expected_, expected_ / actual);
+              << "] and is a factor of "
+              << Pow<2>(std::max(actual / expected_, expected_ / actual))
+              << " from the expected value";
   }
   return match;
 }

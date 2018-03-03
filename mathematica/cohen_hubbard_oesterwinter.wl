@@ -16,9 +16,6 @@ SetDirectory[NotebookDirectory[]];
 <<"fornberg.wl"
 
 
-\[ScriptCapitalN]=14
-
-
 fs[x_,n_]:=Normal[Series[f[\[Xi]],{\[Xi],0,n}]]/.\[Xi]->x;
 f2s[x_,n_]:=Normal[Series[f''[\[Xi]],{\[Xi],0,n}]]/.\[Xi]->x;
 
@@ -27,7 +24,7 @@ f2s[x_,n_]:=Normal[Series[f''[\[Xi]],{\[Xi],0,n}]]/.\[Xi]->x;
 (*The \[Beta] coefficients from page 21.*)
 
 
-\[Beta]=Module[
+\[Beta][\[ScriptCapitalN]_]:=Module[
 {\[CapitalDelta] = GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 1, -# &],\[Delta]},
 \[Delta][m_, n_, j_] := \[CapitalDelta][[m + 1, n + 1, j + 1]];
 With[
@@ -39,17 +36,17 @@ With[
   {j, 0, n - 2}]]];
 
 
-{{LCM@@(Denominator/@#),#*LCM@@(Denominator/@#)}}&[\[Beta]]//TableForm
+{{LCM@@(Denominator/@#),#*LCM@@(Denominator/@#)}}&[\[Beta][14]]//TableForm
 
 
-(fs[-h,\[ScriptCapitalN]+3]-fs[-2h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-i h,\[ScriptCapitalN]+3]\[Beta][[i]],{i,1,Length[\[Beta]]}]//Expand
+With[{\[ScriptCapitalN]=14},(fs[-h,\[ScriptCapitalN]+3]-fs[-2h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-i h,\[ScriptCapitalN]+3]\[Beta][\[ScriptCapitalN]][[i]],{i,1,Length[\[Beta][\[ScriptCapitalN]]]}]]//Expand
 
 
 (* ::Text:: *)
 (*A similar formula, using f(0) and f(-h) instead of f(-h) and f(-2h).*)
 
 
-\[Gamma]=Module[
+\[Gamma][\[ScriptCapitalN]_]:=Module[
 {\[CapitalDelta] = GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 1, -# &],\[Delta]},
 \[Delta][m_, n_, j_] := \[CapitalDelta][[m + 1, n + 1, j + 1]];
 With[
@@ -61,14 +58,14 @@ With[
   {j, 0, n - 2}]]];
 
 
-(fs[0,\[ScriptCapitalN]+3]-fs[-h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-i h,\[ScriptCapitalN]+3]\[Gamma][[i]],{i,1,Length[\[Gamma]]}]//Expand
+With[{\[ScriptCapitalN]=14},(fs[0,\[ScriptCapitalN]+3]-fs[-h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-i h,\[ScriptCapitalN]+3]\[Gamma][\[ScriptCapitalN]][[i]],{i,1,Length[\[Gamma][\[ScriptCapitalN]]]}]]//Expand
 
 
 (* ::Text:: *)
 (*A similar formula, using f(0) and f(-h) instead of f(-h) and f(-2h), and f''(0) through f''(-12h) instead of f''(-h) through f''(-13h).*)
 
 
-\[Eta]=Module[
+\[Eta][\[ScriptCapitalN]_]:=Module[
 {\[CapitalDelta] = GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, -# &],\[Delta]},
 \[Delta][m_, n_, j_] := \[CapitalDelta][[m + 1, n + 1, j + 1]];
 With[
@@ -80,27 +77,27 @@ With[
   {j, 0, n - 2}]]];
 
 
-(fs[0,\[ScriptCapitalN]+3]-fs[-h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-(i-1) h,\[ScriptCapitalN]+3]\[Eta][[i]],{i,1,Length[\[Eta]]}]//Expand
+With[{\[ScriptCapitalN]=14},(fs[0,\[ScriptCapitalN]+3]-fs[-h,\[ScriptCapitalN]+3])/h+h Sum[f2s[-(i-1) h,\[ScriptCapitalN]+3]\[Eta][\[ScriptCapitalN]][[i]],{i,1,Length[\[Eta][\[ScriptCapitalN]]]}]]//Expand
 
 
 (* ::Text:: *)
 (*The backward difference formula.*)
 
 
-\[Delta]=GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, -# &][[1+1,\[ScriptCapitalN]+1]];
+\[Delta][\[ScriptCapitalN]_]:=GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, -# &][[1+1,\[ScriptCapitalN]+1]];
 
 
-1/h Sum[fs[-(i-1) h,\[ScriptCapitalN]+3]\[Delta][[i]],{i,1,Length[\[Delta]]}]//Expand
+With[{\[ScriptCapitalN]=14},1/h Sum[fs[-(i-1) h,\[ScriptCapitalN]+3]\[Delta][\[ScriptCapitalN]][[i]],{i,1,Length[\[Delta][\[ScriptCapitalN]]]}]]//Expand
 
 
 (* ::Text:: *)
 (*The central difference formula; note that this does not actually use f(0).*)
 
 
-\[Kappa]=GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, (-1)^# 2Ceiling[#/2] &][[1+1,\[ScriptCapitalN]+1]];
+\[Kappa][\[ScriptCapitalN]_]:=GenerateFornberg[\[ScriptCapitalN], \[ScriptCapitalN], 0, (-1)^# 2Ceiling[#/2] &][[1+1,\[ScriptCapitalN]+1]];
 
 
-1/h Sum[fs[(-1)^(i-1)2Ceiling[(i-1)/2] h,\[ScriptCapitalN]+3]\[Kappa][[i]],{i,1,Length[\[Kappa]]}]//Expand
+With[{\[ScriptCapitalN]=14},1/h Sum[fs[(-1)^(i-1)2Ceiling[(i-1)/2] h,\[ScriptCapitalN]+3]\[Kappa][\[ScriptCapitalN]][[i]],{i,1,Length[\[Kappa][\[ScriptCapitalN]]]}]]//Expand
 
 
 (* ::Text:: *)
@@ -120,3 +117,17 @@ With[
 
 
 2048 /6435//N
+
+
+GenerateCohenHubbardOesterwinter[\[Alpha]_, \[ScriptCapitalN]_]:=
+Module[
+{cho=Table[\[Alpha][n],{n,2,\[ScriptCapitalN]}],
+commondenominators,
+denominators},
+denominators=Map[Denominator[#]&,cho];
+commondenominators=Map[Fold[LCM,#]&,denominators,{1}];
+MapThread[{#1 #2,#2}&,{cho,commondenominators},1]
+]
+
+
+g=GenerateCohenHubbardOesterwinter[\[Eta],16]

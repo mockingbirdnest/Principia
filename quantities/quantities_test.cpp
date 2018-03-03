@@ -90,7 +90,9 @@ TEST_F(QuantitiesTest, RotationalUnits) {
   // For example, the quantity torque may be thought of as the cross product of
   // force and distance, suggesting the unit newton metre, or it may be thought
   // of as energy per angle, suggesting the unit joule per radian.
-  EXPECT_THAT(SIUnit<Torque>(), Eq(Joule / Radian));
+  // But we do things differently, see the comment in the declaration of
+  // MomentOfInertia.
+  EXPECT_THAT(SIUnit<Torque>(), Eq(Joule * Radian));
 }
 
 TEST_F(QuantitiesTest, IsFinite) {
