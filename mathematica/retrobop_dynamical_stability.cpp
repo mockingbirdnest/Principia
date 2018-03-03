@@ -223,7 +223,7 @@ not_null<std::unique_ptr<Ephemeris<Barycentric>>> ForkEphemeris(
   // where we actually have that information in the ephemeris already.  Consider
   // implementing a dispatching |MassiveBody::Clone|.
   return std::make_unique<Ephemeris<Barycentric>>(
-      std::move(system.bodies()),
+      std::move(system.bodies),
       degrees_of_freedom,
       t,
       /*fitting_tolerance=*/1 * Milli(Metre),
@@ -676,6 +676,7 @@ void AnalyseLocalError() {
   for (int day = 1; day < 500; ++day) {
     Instant const t0 = ksp_epoch + (day - 1) * Day;
     std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = ForkEphemeris(
+        MakeStabilizedKSPSystem(),
         *reference_ephemeris,
         t0,
         integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
