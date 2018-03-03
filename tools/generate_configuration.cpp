@@ -135,7 +135,7 @@ void GenerateConfiguration(std::string const& game_epoch,
       (directory / numerics_blueprint_stem).replace_extension(cfg));
   CHECK(numerics_blueprint_cfg.good());
   numerics_blueprint_cfg <<
-      "principia_numerics_blueprint {\n";
+      "principia_numerics_blueprint:NEEDS[RealSolarSystem] {\n";
 
   numerics_blueprint_cfg << "  ephemeris {\n";
   numerics_blueprint_cfg
