@@ -39,6 +39,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
+using geometry::Velocity;
 using integrators::FixedStepSizeIntegrator;
 using ksp_plugin::Barycentric;
 using physics::DegreesOfFreedom;
@@ -53,9 +54,11 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Sin;
+using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
+using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Kilo;
@@ -132,7 +135,7 @@ constexpr std::array<char const*, 17> names = {
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
-constexpr Time step = 5 * Minute;
+constexpr Time step = 10 * Minute;
 
 constexpr Length jool_system_radius_bound = 3e8 * Metre;
 
@@ -174,6 +177,13 @@ Position<Barycentric> EvaluatePosition(Ephemeris<Barycentric> const& ephemeris,
                                        Instant const& t) {
   return ephemeris.trajectory(ephemeris.bodies()[celestial])->
              EvaluatePosition(t);
+}
+
+Velocity<Barycentric> EvaluateVelocity(Ephemeris<Barycentric> const& ephemeris,
+                                       Celestial const celestial,
+                                       Instant const& t) {
+  return ephemeris.trajectory(ephemeris.bodies()[celestial])->
+             EvaluateVelocity(t);
 }
 
 DegreesOfFreedom<Barycentric> EvaluateDegreesOfFreedom(
@@ -413,6 +423,25 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
   }
 }
 
+void ComputeHighestMoonVelocityError(Ephemeris<Barycentric> const& left,
+                                     Ephemeris<Barycentric> const& right,
+                                     Instant const& t,
+                                     Speed& error,
+                                     Celestial& most_erroneous_moon) {
+  error = Speed{};
+  auto const left_barycentre = JoolSystemBarycentre(left, t).velocity();
+  auto const right_barycentre = JoolSystemBarycentre(right, t).velocity();
+  for (Celestial const moon : jool_moons) {
+    Speed const moon_error =
+        AbsoluteError(EvaluateVelocity(left, moon, t) - left_barycentre,
+                      EvaluateVelocity(right, moon, t) - right_barycentre);
+    if (moon_error > error) {
+      error = moon_error;
+      most_erroneous_moon = moon;
+    }
+  }
+}
+
 }  // namespace
 
 void PlotPredictableYears() {
@@ -462,7 +491,7 @@ void AnalyseGlobalError() {
       step);
   std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
@@ -504,19 +533,33 @@ void AnalyseGlobalError() {
     LOG(INFO) << "year " << year;
 
     if (refined_ephemeris != nullptr) {
-      Length numerical_error;
-      Celestial most_erroneous_moon;
-      ComputeHighestMoonError(*refined_ephemeris,
-                              *reference_ephemeris,
-                              t,
-                              numerical_error,
-                              most_erroneous_moon);
-      LOG(INFO) << "Numerical error: " << numerical_error << " ("
-                << names[most_erroneous_moon] << ")";
-      LOG_IF(INFO, numerical_error < visible_threshold) << "invisible on plots";
-      if (numerical_error > chaotic_threshold) {
-        LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
-        refined_ephemeris.reset();
+      {
+        Length numerical_error;
+        Celestial most_erroneous_moon;
+        ComputeHighestMoonError(*refined_ephemeris,
+                                *reference_ephemeris,
+                                t,
+                                numerical_error,
+                                most_erroneous_moon);
+        LOG(INFO) << "Numerical error in position: " << numerical_error << " ("
+                  << names[most_erroneous_moon] << ")";
+        LOG_IF(INFO, numerical_error < visible_threshold)
+            << "invisible on plots";
+        if (numerical_error > chaotic_threshold) {
+          LOG(INFO) << u8"The wrath of Ляпунов is upon us!";
+          refined_ephemeris.reset();
+        }
+      }
+      {
+        Speed numerical_error;
+        Celestial most_erroneous_moon;
+        ComputeHighestMoonVelocityError(*refined_ephemeris,
+                                        *reference_ephemeris,
+                                        t,
+                                        numerical_error,
+                                        most_erroneous_moon);
+        LOG(INFO) << "Numerical error in velocity: " << numerical_error << " ("
+                  << names[most_erroneous_moon] << ")";
       }
     }
 
