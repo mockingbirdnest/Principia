@@ -21,6 +21,7 @@ class FixedVector final {
  public:
   constexpr FixedVector();  // Zero-initialized.
   constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
+  constexpr explicit FixedVector(std::array<Scalar, size_>&& data);
   FixedVector(
       std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
 

@@ -85,34 +85,56 @@ Scalar const& R3Element<Scalar>::operator[](
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator+=(
     R3Element<Scalar> const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  xy = _mm_add_pd(xy, right.xy);
+  zt = _mm_add_sd(zt, right.zt);
+#else
   x += right.x;
   y += right.y;
   z += right.z;
+#endif
   return *this;
 }
 
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator-=(
     R3Element<Scalar> const& right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  xy = _mm_sub_pd(xy, right.xy);
+  zt = _mm_sub_sd(zt, right.zt);
+#else
   x -= right.x;
   y -= right.y;
   z -= right.z;
+#endif
   return *this;
 }
 
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator*=(double const right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const right_128d = ToM128D(right);
+  xy = _mm_mul_pd(xy, right_128d);
+  zt = _mm_mul_sd(zt, right_128d);
+#else
   x *= right;
   y *= right;
   z *= right;
+#endif
   return *this;
 }
 
 template<typename Scalar>
 R3Element<Scalar>& R3Element<Scalar>::operator/=(double const right) {
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const right_128d = ToM128D(right);
+  xy = _mm_div_pd(xy, right_128d);
+  zt = _mm_div_sd(zt, right_128d);
+#else
   x /= right;
   y /= right;
   z /= right;
+#endif
   return *this;
 }
 
