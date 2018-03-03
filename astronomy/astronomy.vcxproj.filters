@@ -91,6 +91,9 @@
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="sol_numerics_blueprint.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">

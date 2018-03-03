@@ -1,6 +1,7 @@
 syntax = "proto2";
 
 import "serialization/geometry.proto";
+import "serialization/integrators.proto";
 
 package principia.serialization;
 
@@ -72,9 +73,29 @@ message InitialState {
   reserved "body";
 }
 
+message NumericsBlueprint {
+  message Ephemeris {
+    required FixedStepSizeIntegrator.Kind integrator = 1;
+    required string step = 2;
+  }
+  message History {
+    required FixedStepSizeIntegrator.Kind integrator = 1;
+    required string step = 2;
+  }
+  message Psychohistory {
+    required AdaptiveStepSizeIntegrator.Kind integrator = 1;
+    required string length_integration_tolerance = 2;
+    required string speed_integration_tolerance = 3;
+  }
+  required Ephemeris ephemeris = 1;
+  required History history = 2;
+  required Psychohistory psychohistory = 3;
+}
+
 message SolarSystemFile {
   oneof file {
     GravityModel gravity_model = 1;
     InitialState initial_state = 2;
+    NumericsBlueprint numerics_blueprint = 3;
   }
 }

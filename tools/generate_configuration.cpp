@@ -33,7 +33,8 @@ namespace internal_generate_configuration {
 
 void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& gravity_model_stem,
-                           std::string const& initial_state_stem) {
+                           std::string const& initial_state_stem,
+                           std::string const& numerics_blueprint_stem) {
   std::experimental::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
   SolarSystem<ICRFJ2000Equator> solar_system(
@@ -112,6 +113,62 @@ void GenerateConfiguration(std::string const& game_epoch,
     initial_state_cfg << "  }\n";
   }
   initial_state_cfg << "}\n";
+
+  // Parse the numerics blueprint file here, it doesn't belong in class
+  // SolarSystem.
+  std::experimental::filesystem::path numerics_blueprint_filename =
+      (directory / numerics_blueprint_stem).replace_extension(proto_txt);
+  serialization::SolarSystemFile numerics_blueprint;
+  std::ifstream numerics_blueprint_ifstream(numerics_blueprint_filename);
+  CHECK(numerics_blueprint_ifstream.good());
+  google::protobuf::io::IstreamInputStream numerics_blueprint_zcs(
+                                               &numerics_blueprint_ifstream);
+  CHECK(google::protobuf::TextFormat::Parse(&numerics_blueprint_zcs,
+                                            &numerics_blueprint));
+  CHECK(numerics_blueprint.has_numerics_blueprint());
+  auto const& ephemeris = numerics_blueprint.numerics_blueprint().ephemeris();
+  auto const& history = numerics_blueprint.numerics_blueprint().history();
+  auto const& psychohistory =
+      numerics_blueprint.numerics_blueprint().psychohistory();
+
+  std::ofstream numerics_blueprint_cfg(
+      (directory / numerics_blueprint_stem).replace_extension(cfg));
+  CHECK(numerics_blueprint_cfg.good());
+  numerics_blueprint_cfg <<
+      "principia_numerics_blueprint {\n";
+
+  numerics_blueprint_cfg << "  ephemeris {\n";
+  numerics_blueprint_cfg
+      << "    fixed_step_size_integrator = "
+      << serialization::FixedStepSizeIntegrator::Kind_Name(
+            ephemeris.integrator()) << "\n";
+  numerics_blueprint_cfg << "    integration_step_size = " << ephemeris.step()
+                         << "\n";
+  numerics_blueprint_cfg << "  }\n";
+
+  numerics_blueprint_cfg << "  history {\n";
+  numerics_blueprint_cfg
+      << "    fixed_step_size_integrator = "
+      << serialization::FixedStepSizeIntegrator::Kind_Name(
+            history.integrator()) << "\n";
+  numerics_blueprint_cfg << "    integration_step_size = " << history.step()
+                         << "\n";
+  numerics_blueprint_cfg << "  }\n";
+
+  numerics_blueprint_cfg << "  psychohistory {\n";
+  numerics_blueprint_cfg
+      << "    adaptive_step_size_integrator = "
+      << serialization::AdaptiveStepSizeIntegrator::Kind_Name(
+             psychohistory.integrator()) << "\n";
+  numerics_blueprint_cfg << "    length_integration_tolerance = "
+                         << psychohistory.length_integration_tolerance()
+                         << "\n";
+  numerics_blueprint_cfg << "    speed_integration_tolerance = "
+                         << psychohistory.speed_integration_tolerance()
+                         << "\n";
+  numerics_blueprint_cfg << "  }\n";
+
+  numerics_blueprint_cfg << "}\n";
 }
 
 }  // namespace internal_generate_configuration
