@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -137,7 +138,8 @@ class ParallelTestRunner {
             process.StartInfo.RedirectStandardError = true;
             process.StartInfo.FileName = test_binary;
             process.StartInfo.Arguments =
-                "--gtest_filter=" + test_case + line.Split(' ')[2];
+               Encoding.Default.GetString(Encoding.UTF8.GetBytes(
+                    "--gtest_filter=" + test_case + line.Split(' ')[2]));
             process.StartInfo.Arguments +=
                 " --gtest_output=xml:TestResults\\gtest_results_" +
                 test_process_counter++ + ".xml";
