@@ -947,6 +947,14 @@ void Plugin::SetPredictionAdaptiveStepParameters(
   }
 }
 
+bool Plugin::HasCelestial(Index const index) const {
+  return Contains(celestials_, index);
+}
+
+Celestial const& Plugin::GetCelestial(Index const index) const {
+  return *FindOrDie(celestials_, index);
+}
+
 bool Plugin::HasVessel(GUID const& vessel_guid) const {
   return Contains(vessels_, vessel_guid);
 }
