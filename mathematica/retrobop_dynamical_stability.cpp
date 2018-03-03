@@ -135,7 +135,7 @@ constexpr std::array<char const*, 17> names = {
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
-constexpr Time step = 10 * Minute;
+constexpr Time step = 5 * Minute;
 
 constexpr Length jool_system_radius_bound = 3e8 * Metre;
 
@@ -208,6 +208,7 @@ DegreesOfFreedom<Barycentric> JoolSystemBarycentre(
 }
 
 not_null<std::unique_ptr<Ephemeris<Barycentric>>> ForkEphemeris(
+    HierarchicalSystem<Barycentric>::BarycentricSystem system,
     Ephemeris<Barycentric> const& original,
     Instant const& t,
     FixedStepSizeIntegrator<
@@ -218,11 +219,11 @@ not_null<std::unique_ptr<Ephemeris<Barycentric>>> ForkEphemeris(
     degrees_of_freedom.emplace_back(
         original.trajectory(body)->EvaluateDegreesOfFreedom(t));
   }
-  // TODO(eggrobin): it is a bit ugly to make a system just for the bodies,
+  // TODO(eggrobin): it is a bit ugly to pass a system just for the bodies,
   // where we actually have that information in the ephemeris already.  Consider
   // implementing a dispatching |MassiveBody::Clone|.
   return std::make_unique<Ephemeris<Barycentric>>(
-      MakeStabilizedKSPSystem().bodies,
+      std::move(system.bodies()),
       degrees_of_freedom,
       t,
       /*fitting_tolerance=*/1 * Milli(Metre),
@@ -459,6 +460,20 @@ void ProduceCenturyPlots(Ephemeris<Barycentric>& ephemeris) {
   file << Assign("polBop", ExpressIn(Metre, pol_bop_separations));
 }
 
+std::vector<Length> MoonErrors(Ephemeris<Barycentric> const& left,
+                               Ephemeris<Barycentric> const& right,
+                               Instant const& t) {
+  auto const left_barycentre = JoolSystemBarycentre(left, t).position();
+  auto const right_barycentre = JoolSystemBarycentre(right, t).position();
+  std::vector<Length> errors;
+  for (Celestial const moon : jool_moons) {
+    errors.emplace_back(
+        AbsoluteError(EvaluatePosition(left, moon, t) - left_barycentre,
+                      EvaluatePosition(right, moon, t) - right_barycentre));
+  }
+  return errors;
+}
+
 void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
                              Ephemeris<Barycentric> const& right,
                              Instant const& t,
@@ -656,20 +671,15 @@ void AnalyseLocalError() {
       step);
   reference_ephemeris->Prolong(ksp_epoch);
 
-  for (int day = 1;; ++day) {
+  std::vector<std::vector<Length>> moon_errors;
+
+  for (int day = 1; day < 500; ++day) {
     Instant const t0 = ksp_epoch + (day - 1) * Day;
     std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = ForkEphemeris(
         *reference_ephemeris,
         t0,
         integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
         step / 2);
-    std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
-        perturbed_ephemerides = MakePerturbedForkedEphemerides(
-            100,
-            *reference_ephemeris,
-            t0,
-            integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
-            step);
     Instant const t = ksp_epoch + day * Day;
     Bundle bundle{static_cast<int>(std::thread::hardware_concurrency() - 1)};
     if (reference_ephemeris != nullptr) {
@@ -686,15 +696,11 @@ void AnalyseLocalError() {
         return Status::OK;
       });
     }
-    for (auto const& ephemeris : perturbed_ephemerides) {
-      bundle.Add([ephemeris = ephemeris.get(), t]() {
-        ephemeris->Prolong(t);
-        ephemeris->ForgetBefore(t);
-        return Status::OK;
-      });
-    }
     bundle.Join();
     LOG(INFO) << "day " << day;
+
+    moon_errors.emplace_back(
+        MoonErrors(*refined_ephemeris, *reference_ephemeris, t));
 
     {
       Length numerical_error;
@@ -718,25 +724,9 @@ void AnalyseLocalError() {
       LOG(INFO) << "Numerical error in velocity: " << numerical_error << " ("
                 << names[most_erroneous_moon] << ")";
     }
-
-    Length cluster_radius;
-    Celestial most_erroneous_moon;
-    for (auto const& ephemeris : perturbed_ephemerides) {
-      Length moon_error;
-      Celestial moon;
-      ComputeHighestMoonError(*ephemeris,
-                              *reference_ephemeris,
-                              t,
-                              moon_error,
-                              moon);
-      if (moon_error > cluster_radius) {
-        cluster_radius = moon_error;
-        most_erroneous_moon = moon;
-      }
-    }
-    LOG(INFO) << "Cluster radius: " << cluster_radius << " ("
-              << names[most_erroneous_moon] << ")";
   }
+  OFStream file(TEMP_DIR / "local_error.generated.wl");
+  file << Assign("moonErrors", moon_errors);
 }
 
 void StatisticallyAnalyseStability() {

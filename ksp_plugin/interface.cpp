@@ -58,6 +58,8 @@ using geometry::Vector;
 using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
+using integrators::ParseAdaptiveStepSizeIntegrator;
+using integrators::ParseFixedStepSizeIntegrator;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Part;
@@ -94,37 +96,12 @@ namespace {
 int const chunk_size = 64 << 10;
 int const number_of_chunks = 8;
 
-FixedStepSizeIntegrator<Ephemeris<Barycentric>::NewtonianMotionEquation> const&
-ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
-  serialization::FixedStepSizeIntegrator::Kind kind;
-  CHECK(serialization::FixedStepSizeIntegrator::Kind_Parse(integrator_kind,
-                                                           &kind))
-      << "'" << integrator_kind
-      << "' is not a valid FixedStepSizeIntegrator.Kind";
-  serialization::FixedStepSizeIntegrator message;
-  message.set_kind(kind);
-  return FixedStepSizeIntegrator<Ephemeris<
-      Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message);
-}
-
-AdaptiveStepSizeIntegrator<
-    Ephemeris<Barycentric>::NewtonianMotionEquation> const&
-ParseAdaptiveStepSizeIntegrator(std::string const& integrator_kind) {
-  serialization::AdaptiveStepSizeIntegrator::Kind kind;
-  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_Parse(integrator_kind,
-                                                              &kind))
-      << "'" << integrator_kind
-      << "' is not a valid AdaptiveStepSizeIntegrator.Kind";
-  serialization::AdaptiveStepSizeIntegrator message;
-  message.set_kind(kind);
-  return AdaptiveStepSizeIntegrator<Ephemeris<
-      Barycentric>::NewtonianMotionEquation>::ReadFromMessage(message);
-}
-
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
     ConfigurationFixedStepParameters const& parameters) {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      ParseFixedStepSizeIntegrator(parameters.fixed_step_size_integrator),
+      ParseFixedStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(
+          parameters.fixed_step_size_integrator),
       ParseQuantity<Time>(parameters.integration_step_size));
 }
 
@@ -133,7 +110,9 @@ Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
   // It is erroneous for a psychohistory integration to fail, so the |max_steps|
   // must be unlimited.
   return Ephemeris<Barycentric>::AdaptiveStepParameters(
-      ParseAdaptiveStepSizeIntegrator(parameters.adaptive_step_size_integrator),
+      ParseAdaptiveStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(
+          parameters.adaptive_step_size_integrator),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       ParseQuantity<Length>(parameters.length_integration_tolerance),
       ParseQuantity<Speed>(parameters.speed_integration_tolerance));
