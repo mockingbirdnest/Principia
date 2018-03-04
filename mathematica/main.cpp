@@ -21,6 +21,7 @@ using ::principia::base::Contains;
 using ::principia::base::make_not_null_unique;
 using ::principia::quantities::ParseQuantity;
 using ::principia::integrators::ParseFixedStepSizeIntegrator;
+using ::principia::mathematica::LocalErrorAnalyser;
 using ::principia::physics::Ephemeris;
 using ::principia::physics::SolarSystem;
 using ::principia::quantities::Time;
@@ -105,8 +106,7 @@ int main(int argc, char const* argv[]) {
         (std::string("local_error_analysis[") + solar_system->names()[0] + "," +
          solar_system->epoch_literal() + "," + *flags["integrator"] + "," +
          DebugString(time_step) + "].wl");
-    principia::mathematica::LocalErrorAnalyser analyser(
-        std::move(solar_system), integrator, time_step);
+    LocalErrorAnalyser analyser(std::move(solar_system), integrator, time_step);
     analyser.WriteLocalErrors(
         out,
         ParseFixedStepSizeIntegrator<

@@ -19,6 +19,12 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 
+namespace {
+
+constexpr Length fitting_tolerance = 1 * Milli(Metre);
+
+}  // namespace
+
 LocalErrorAnalyser::LocalErrorAnalyser(
     not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system,
     FixedStepSizeIntegrator<
@@ -37,7 +43,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 }
 
 void LocalErrorAnalyser::WriteLocalErrors(
-    std::experimental::filesystem::path path,
+    std::experimental::filesystem::path const& path,
     FixedStepSizeIntegrator<
         Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
         fine_integrator,
@@ -45,12 +51,12 @@ void LocalErrorAnalyser::WriteLocalErrors(
     Time const& granularity,
     Time const& duration) const {
   auto const reference_ephemeris = solar_system_->MakeEphemeris(
-      /*fitting_tolerance=*/1 * Milli(Metre),
+      fitting_tolerance,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator_, step_));
   reference_ephemeris->Prolong(solar_system_->epoch());
   std::vector<std::vector<Length>> errors;
   for (Instant t0 = solar_system_->epoch(),
-               t = solar_system_->epoch() + granularity;
+               t = t0 + granularity;
        t < solar_system_->epoch() + duration;
        t0 = t, t += granularity) {
     std::unique_ptr<Ephemeris<ICRFJ2000Equator>> refined_ephemeris =
@@ -93,7 +99,7 @@ LocalErrorAnalyser::ForkEphemeris(
       solar_system_->MakeAllMassiveBodies(),
       degrees_of_freedom,
       t,
-      /*fitting_tolerance=*/1 * Milli(Metre),
+      fitting_tolerance,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator, step));
 }
 
