@@ -118,6 +118,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
     Step& current_step = previous_steps_.back();
     current_step.time = t;
     current_step.accelerations.resize(dimension);
+    current_step.displacements.reserve(dimension);
 
     // Fill the new step.  We skip the division by ɑk as it is equal to 1.0.
     double const ɑk = ɑ[0];
@@ -372,6 +373,7 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   auto& current_state = this->current_state_;
   auto const& step = this->step_;
 
+  current_state.velocities.reserve(dimension);
   for (int d = 0; d < dimension; ++d) {
     DoublePrecision<Velocity>& velocity = current_state.velocities[d];
     auto it = previous_steps_.rbegin();
