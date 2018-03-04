@@ -1,8 +1,11 @@
 ﻿
 #include <experimental/filesystem>
+#include <experimental/optional>
+#include <map>
 #include <string>
 
 #include "astronomy/frames.hpp"
+#include "base/map_util.hpp"
 #include "glog/logging.h"
 #include "integrators/integrators.hpp"
 #include "physics/ephemeris.hpp"
@@ -13,6 +16,7 @@
 #include "quantities/parser.hpp"
 
 using ::principia::astronomy::ICRFJ2000Equator;
+using ::principia::base::Contains;
 using ::principia::base::make_not_null_unique;
 using ::principia::quantities::ParseQuantity;
 using ::principia::integrators::ParseFixedStepSizeIntegrator;
@@ -50,22 +54,49 @@ int main(int argc, char const* argv[]) {
       LOG(FATAL) << "unexpected target " << target;
     }
   } else if (std::string(argv[1]) == "local_error_analysis") {
-    CHECK_EQ(argc, 7) << "Usage: " << argv[0]
-                      << " <gravity model path> <initial state path> "
-                         "<integrator> <time step> <output directory>";
+    std::map<std::string, std::experimental::optional<std::string>> flags;
+    for (int i = 2; i < argc; ++i) {
+      std::string const flag(argv[i]);
+      std::size_t const name_begin = flag.find_first_not_of("-/");
+      std::size_t const name_end = flag.find('=');
+      if (name_begin == std::string::npos) {
+        LOG(FATAL) << "Invalid flag syntax '" << flag << "', expected\n"
+                   << "(--|/)<flag_name>[=value]";
+      }
+      std::string const flag_name =
+          flag.substr(name_begin, name_end - name_begin);
+      if (name_end != std::string::npos) {
+        flags.emplace(flag_name, flag.substr(name_end + 1, std::string::npos));
+      }
+      flags.emplace(flag_name, std::experimental::nullopt);
+    }
+    if (flags.empty() || Contains(flags, "help") || Contains(flags, "?")) {
+      printf(
+          "Usage:\n"
+          "%s %s\n"
+          "    --gravity_model=<path>\n"
+          "    --initial_state=<path>\n"
+          "    --time_step=<time>\n"
+          "    [--output_directory=<path>] default: .\n",
+          argv[0],
+          argv[1]);
+      exit(0);
+    }
     auto const gravity_model_path =
-        std::experimental::filesystem::path(argv[2]);
+        std::experimental::filesystem::path(*flags["gravity_model"]);
     auto const initial_state_path =
-        std::experimental::filesystem::path(argv[3]);
+        std::experimental::filesystem::path(*flags["initial_state"]);
     auto solar_system = make_not_null_unique<SolarSystem<ICRFJ2000Equator>>(
         gravity_model_path, initial_state_path, /*ignore_frame=*/true);
     auto const& integrator = ParseFixedStepSizeIntegrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(argv[4]);
-    auto const time_step = ParseQuantity<Time>(argv[5]);
+        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
+        *flags["integrator"]);
+    auto const time_step = ParseQuantity<Time>(*flags["time_step"]);
     auto const out =
-        std::experimental::filesystem::path(argv[6]) /
+        std::experimental::filesystem::path(
+            flags["output_directory"].value_or(".")) /
         (std::string("local_error_analysis[") + solar_system->names()[0] + "," +
-         solar_system->epoch_literal() + "," + argv[4] + "," +
+         solar_system->epoch_literal() + "," + *flags["integrator"] + "," +
          DebugString(time_step) + "].wl");
     principia::mathematica::LocalErrorAnalyser analyser(
         std::move(solar_system), integrator, time_step);
