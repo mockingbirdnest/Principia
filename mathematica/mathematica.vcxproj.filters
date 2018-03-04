@@ -29,6 +29,9 @@
     <ClCompile Include="retrobop_dynamical_stability.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="local_error_analysis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mathematica.hpp">
@@ -41,6 +44,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="retrobop_dynamical_stability.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_error_analysis.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

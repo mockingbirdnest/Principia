@@ -50,6 +50,9 @@ class SolarSystem final {
       Length const& fitting_tolerance,
       typename Ephemeris<Frame>::FixedStepParameters const& parameters);
 
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>>
+  MakeAllMassiveBodies();
+
   // The time origin for the initial state.
   Instant const& epoch() const;
   std::string const& epoch_literal() const;
@@ -130,8 +133,6 @@ class SolarSystem final {
   static not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
   MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
 
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-  MakeAllMassiveBodies();
   std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
 
   // If a frame is specified in a message it must match the frame of this

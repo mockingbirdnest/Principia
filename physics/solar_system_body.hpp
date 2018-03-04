@@ -171,6 +171,17 @@ std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
 }
 
 template<typename Frame>
+std::vector<not_null<std::unique_ptr<MassiveBody const>>>
+SolarSystem<Frame>::MakeAllMassiveBodies() {
+  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
+  for (auto const& pair : gravity_model_map_) {
+    serialization::GravityModel::Body const* const body = pair.second;
+    bodies.emplace_back(MakeMassiveBody(*body));
+  }
+  return bodies;
+}
+
+template<typename Frame>
 Instant const& SolarSystem<Frame>::epoch() const {
   return epoch_;
 }
@@ -481,17 +492,6 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
   return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
       body.j2(),
       ParseQuantity<Length>(body.reference_radius()));
-}
-
-template<typename Frame>
-std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystem<Frame>::MakeAllMassiveBodies() {
-  std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
-  for (auto const& pair : gravity_model_map_) {
-    serialization::GravityModel::Body const* const body = pair.second;
-    bodies.emplace_back(MakeMassiveBody(*body));
-  }
-  return bodies;
 }
 
 template<typename Frame>
