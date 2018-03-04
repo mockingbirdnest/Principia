@@ -25,7 +25,14 @@ class LocalErrorAnalyser {
           integrator,
       Time const& step);
 
-  void WriteDailyErrors(std::experimental::filesystem::path path) const;
+  void WriteDailyErrors(
+      std::experimental::filesystem::path path,
+      FixedStepSizeIntegrator<
+          Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+          fine_integrator,
+      Time const& fine_step,
+      Time const& granularity,
+      Time const& duration) const;
 
  private:
   not_null<std::unique_ptr<Ephemeris<ICRFJ2000Equator>>> ForkEphemeris(

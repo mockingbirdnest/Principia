@@ -37,24 +37,28 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 }
 
 void LocalErrorAnalyser::WriteDailyErrors(
-    std::experimental::filesystem::path path) const {
+    std::experimental::filesystem::path path,
+    FixedStepSizeIntegrator<
+        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+        fine_integrator,
+    Time const& fine_step,
+    Time const& granularity,
+    Time const& duration) const {
   auto const reference_ephemeris = solar_system_->MakeEphemeris(
       /*fitting_tolerance=*/1 * Milli(Metre),
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator_, step_));
   reference_ephemeris->Prolong(solar_system_->epoch());
   std::vector<std::vector<Length>> errors;
-  for (int day = 1; day < 500; ++day) {
-    Instant const t0 = solar_system_->epoch() + (day - 1) * Day;
+  for (Instant t0 = solar_system_->epoch(),
+               t = solar_system_->epoch() + granularity;
+       t < solar_system_->epoch() + duration;
+       t0 = t, t += granularity) {
     std::unique_ptr<Ephemeris<ICRFJ2000Equator>> refined_ephemeris =
-        ForkEphemeris(
-            *reference_ephemeris,
-            t0,
-            integrators::BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
-            1 * Minute);
-    Instant const t = solar_system_->epoch() + day * Day;
+        ForkEphemeris(*reference_ephemeris, t0, fine_integrator, fine_step);
     reference_ephemeris->Prolong(t);
     refined_ephemeris->Prolong(t);
-    LOG_IF(INFO, day % 10 == 0) << "Prolonged to " << day << " days.";
+    LOG_EVERY_N(INFO, 10) << "Prolonged to "
+                          << (t - solar_system_->epoch()) / Day << " days.";
 
     errors.emplace_back();
     for (auto const& body_name : solar_system_->names()) {

@@ -1,4 +1,5 @@
 ﻿
+#include <cstdio>
 #include <experimental/filesystem>
 #include <experimental/optional>
 #include <map>
@@ -40,7 +41,7 @@ int main(int argc, char const* argv[]) {
     principia::mathematica::GenerateKeplerProblemWorkErrorGraphs(0.967);
   } else if (std::string(argv[1]) == "retrobop_dynamical_stability") {
     bool produce_file = false;
-    CHECK_GE(argc, 3);
+    CHECK_EQ(argc, 3);
     std::string const target = argv[2];
     if (target == "plot_predictable_years") {
       principia::mathematica::PlotPredictableYears();
@@ -71,16 +72,22 @@ int main(int argc, char const* argv[]) {
       flags.emplace(flag_name, std::experimental::nullopt);
     }
     if (flags.empty() || Contains(flags, "help") || Contains(flags, "?")) {
-      printf(
+      std::printf(
           "Usage:\n"
           "%s %s\n"
           "    --gravity_model=<path>\n"
           "    --initial_state=<path>\n"
-          "    --time_step=<time>\n"
-          "    [--output_directory=<path>] default: .\n",
+          "    --integrator=<fixed_step_size_integrator >\n"
+          "    --time_step=<quantity(time)>\n"
+          "    [--output_directory=<path>] default: .\n"
+          "    [--fine_integrator=<fixed_step_size_integrator >] "
+          "        default: BLANES_MOAN_2002_SRKN_14A\n"
+          "    [--fine_step=<quantity(time)>] default: 1 min\n"
+          "    [--granularity=<quantity(time)>] default: 1 d\n"
+          "    [--duration=<quantity(time)>] default: 500 d\n",
           argv[0],
           argv[1]);
-      exit(0);
+      return 0;
     }
     auto const gravity_model_path =
         std::experimental::filesystem::path(*flags["gravity_model"]);
@@ -100,7 +107,14 @@ int main(int argc, char const* argv[]) {
          DebugString(time_step) + "].wl");
     principia::mathematica::LocalErrorAnalyser analyser(
         std::move(solar_system), integrator, time_step);
-    analyser.WriteDailyErrors(out);
+    analyser.WriteDailyErrors(
+        out,
+        ParseFixedStepSizeIntegrator<
+            Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
+            flags["integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
+        ParseQuantity<Time>(flags["fine_step"].value_or("1 min")),
+        ParseQuantity<Time>(flags["granularity"].value_or("1 d")),
+        ParseQuantity<Time>(flags["duration"].value_or("500 d")));
   } else {
     LOG(FATAL) << "unexpected argument " << argv[1];
   }
