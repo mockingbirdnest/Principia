@@ -36,7 +36,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
   }
 }
 
-void LocalErrorAnalyser::WriteDailyErrors(
+void LocalErrorAnalyser::WriteLocalErrors(
     std::experimental::filesystem::path path,
     FixedStepSizeIntegrator<
         Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&

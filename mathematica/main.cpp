@@ -107,7 +107,7 @@ int main(int argc, char const* argv[]) {
          DebugString(time_step) + "].wl");
     principia::mathematica::LocalErrorAnalyser analyser(
         std::move(solar_system), integrator, time_step);
-    analyser.WriteDailyErrors(
+    analyser.WriteLocalErrors(
         out,
         ParseFixedStepSizeIntegrator<
             Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
