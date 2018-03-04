@@ -4,6 +4,7 @@
 #include "integrators/integrators.hpp"
 
 #include <limits>
+#include <string>
 
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -137,6 +138,19 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_>::FixedStepSizeIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
+template<typename Equation>
+FixedStepSizeIntegrator<Equation> const&
+ParseFixedStepSizeIntegrator(std::string const& integrator_kind) {
+  serialization::FixedStepSizeIntegrator::Kind kind;
+  CHECK(serialization::FixedStepSizeIntegrator::Kind_Parse(integrator_kind,
+                                                           &kind))
+      << "'" << integrator_kind
+      << "' is not a valid FixedStepSizeIntegrator.Kind";
+  serialization::FixedStepSizeIntegrator message;
+  message.set_kind(kind);
+  return FixedStepSizeIntegrator<Equation>::ReadFromMessage(message);
+}
 
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::Parameters::Parameters(
@@ -272,6 +286,19 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
 template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_>::AdaptiveStepSizeIntegrator(
     serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
+
+template<typename Equation>
+AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
+    std::string const& integrator_kind) {
+  serialization::AdaptiveStepSizeIntegrator::Kind kind;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_Parse(integrator_kind,
+                                                              &kind))
+      << "'" << integrator_kind
+      << "' is not a valid AdaptiveStepSizeIntegrator.Kind";
+  serialization::AdaptiveStepSizeIntegrator message;
+  message.set_kind(kind);
+  return AdaptiveStepSizeIntegrator<Equation>::ReadFromMessage(message);
+}
 
 }  // namespace internal_integrators
 }  // namespace integrators

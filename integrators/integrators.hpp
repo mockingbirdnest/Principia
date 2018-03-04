@@ -3,6 +3,7 @@
 
 #include <experimental/optional>
 #include <functional>
+#include <string>
 
 #include "base/not_null.hpp"
 #include "base/status.hpp"
@@ -131,6 +132,10 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
   serialization::FixedStepSizeIntegrator::Kind const kind_;
 };
 
+template<typename Equation>
+FixedStepSizeIntegrator<Equation> const&
+ParseFixedStepSizeIntegrator(std::string const& integrator_kind);
+
 // An integrator using an adaptive step size.
 template<typename ODE_>
 class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
@@ -240,11 +245,17 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   serialization::AdaptiveStepSizeIntegrator::Kind const kind_;
 };
 
+template<typename Equation>
+AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
+    std::string const& integrator_kind);
+
 }  // namespace internal_integrators
 
 using internal_integrators::AdaptiveStepSizeIntegrator;
 using internal_integrators::FixedStepSizeIntegrator;
 using internal_integrators::Integrator;
+using internal_integrators::ParseAdaptiveStepSizeIntegrator;
+using internal_integrators::ParseFixedStepSizeIntegrator;
 
 }  // namespace integrators
 }  // namespace principia
