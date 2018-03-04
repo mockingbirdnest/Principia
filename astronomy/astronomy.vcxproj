@@ -5,9 +5,7 @@
     <RootNamespace>astronomy</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
   <Import Project="$(SolutionDir)principia.props" />
-
   <ItemGroup>
     <None Include="eop_c04.awk" />
     <None Include="experimental_eop_c02.awk" />
@@ -32,6 +30,7 @@
     <Text Include="sol_initial_state_jd_2451564_587154910.proto.txt" />
     <Text Include="sol_initial_state_jd_2451564_808127140.proto.txt" />
     <Text Include="sol_initial_state_jd_2455200_500000000.proto.txt" />
+    <Text Include="sol_numerics_blueprint.proto.txt" />
     <Text Include="test_gravity_model_two_bodies.proto.txt" />
     <Text Include="test_initial_state_two_bodies_circular.proto.txt" />
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
