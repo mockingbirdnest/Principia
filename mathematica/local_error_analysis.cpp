@@ -1,6 +1,8 @@
 
 #include "mathematica/local_error_analysis.hpp"
 
+#include <vector>
+
 #include "astronomy/stabilize_ksp.hpp"
 #include "base/file.hpp"
 #include "mathematica/mathematica.hpp"

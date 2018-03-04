@@ -3,6 +3,7 @@
 
 #include <experimental/optional>
 #include <functional>
+#include <string>
 
 #include "base/not_null.hpp"
 #include "base/status.hpp"

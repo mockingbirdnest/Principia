@@ -4,6 +4,7 @@
 #include "integrators/integrators.hpp"
 
 #include <limits>
+#include <string>
 
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
