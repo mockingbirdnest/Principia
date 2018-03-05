@@ -389,7 +389,7 @@ class KSPSystemConvergenceTest
     return GetParam().iterations;
   }
 
-  int first_step_in_seconds() const {
+  double first_step_in_seconds() const {
     return GetParam().first_step_in_seconds;
   }
 
@@ -473,13 +473,13 @@ INSTANTIATE_TEST_CASE_P(
     AllKSPSystemConvergenceTests,
     KSPSystemConvergenceTest,
     ::testing::Values(
-        // This is our preferred integrator.  For a step of 1680 s it gives a
-        // position error of about 29 m on Laythe and takes about 0.6 s of
+        // This is our preferred integrator.  For a step of 2100 s it gives a
+        // position error of about 111 m on Laythe and takes about 0.44 s of
         // elapsed time.
         ConvergenceTestParameters{
             BlanesMoan2002SRKN14A<Position<KSP>>(),
             /*iterations=*/7,
-            /*first_step_in_seconds=*/105},
+            /*first_step_in_seconds=*/65.625},
         ConvergenceTestParameters{
             McLachlanAtela1992Order5Optimal<Position<KSP>>(),
             /*iterations=*/8,
