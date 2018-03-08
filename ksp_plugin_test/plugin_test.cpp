@@ -469,7 +469,7 @@ TEST_F(PluginTest, Initialization) {
                 Componentwise(
                     AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
                                              .displacement()),
-                                 0, 32764),
+                                 0, 458752),
                     AlmostEquals(
                         to_icrf(plugin_->CelestialFromParent(index).velocity()),
                         441, 9400740)))
@@ -596,11 +596,11 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   plugin_->EndInitialization();
   EXPECT_CALL(plugin_->mock_ephemeris(), Prolong(_)).Times(AnyNumber());
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
-              AlmostEquals(3 * Kilo(Metre), 1, 2));
+              AlmostEquals(3 * Kilo(Metre), 1, 7));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 3));
+              AlmostEquals(1 * Kilo(Metre), 17));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 1, 6));
+              AlmostEquals(1 * Kilo(Metre), 1, 17));
 }
 
 TEST_F(PluginDeathTest, InsertCelestialError) {
@@ -999,12 +999,12 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
     EXPECT_THAT(
         (initial_from_parent.displacement() -
          computed_from_parent.displacement()).Norm(),
-        VanishesBefore(initial_from_parent.displacement().Norm(), 0, 6))
+        VanishesBefore(initial_from_parent.displacement().Norm(), 0, 30))
         << SolarSystemFactory::name(index);
     EXPECT_THAT(
         (initial_from_parent.velocity() -
          computed_from_parent.velocity()).Norm(),
-        VanishesBefore(initial_from_parent.velocity().Norm(), 1117, 1915381))
+        VanishesBefore(initial_from_parent.velocity().Norm(), 277, 3170840))
         << SolarSystemFactory::name(index);
   }
 }
