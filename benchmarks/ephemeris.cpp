@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "astronomy/frames.hpp"
+#include "astronomy/stabilize_ksp.hpp"
 #include "base/not_null.hpp"
 #include "base/thread_pool.hpp"
 #include "geometry/named_quantities.hpp"
@@ -50,6 +51,7 @@ using geometry::Quaternion;
 using geometry::Rotation;
 using geometry::Velocity;
 using integrators::Integrator;
+using integrators::BlanesMoan2002SRKN14A;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
@@ -101,6 +103,40 @@ not_null<std::unique_ptr<SolarSystem<Barycentric>>> SolarSystemAtСпутник1
           /*ignore_frame=*/true);
   SolarSystemFactory::AdjustAccuracy(accuracy, *at_спутник_1_launch);
   return at_спутник_1_launch;
+}
+
+void BM_EphemerisKSPSystem(benchmark::State& state) {
+  Length error;
+  while (state.KeepRunning()) {
+    state.PauseTiming();
+
+    auto at_origin = make_not_null_unique<SolarSystem<Barycentric>>(
+        SOLUTION_DIR / "astronomy" / "kerbol_gravity_model.proto.txt",
+        SOLUTION_DIR / "astronomy" / "kerbol_initial_state_0_0.proto.txt",
+        /*ignore_frame=*/true);
+    astronomy::StabilizeKSP(*at_origin);
+    Instant const final_time = at_origin->epoch() + 100 * JulianYear;
+    auto const ephemeris = at_origin->MakeEphemeris(
+        FittingTolerance(state.range_x()),
+        Ephemeris<Barycentric>::FixedStepParameters(
+            BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+            /*step=*/35 * Minute));
+
+    state.ResumeTiming();
+    ephemeris->Prolong(final_time);
+    state.PauseTiming();
+    error = (at_origin->trajectory(
+                 *ephemeris,
+                 SolarSystemFactory::name(SolarSystemFactory::Sun)).
+                     EvaluatePosition(final_time) -
+             at_origin->trajectory(
+                 *ephemeris,
+                 SolarSystemFactory::name(SolarSystemFactory::Earth)).
+                     EvaluatePosition(final_time)).
+                 Norm();
+    state.ResumeTiming();
+  }
+  state.SetLabel(quantities::DebugString(error / AstronomicalUnit) + " ua");
 }
 
 void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
@@ -492,6 +528,7 @@ BENCHMARK(BM_EphemerisMultithreadingBenchmark)
     ->ArgPair(3, 3)
     ->ArgPair(3, 4)
     ->ArgPair(3, 5);
+BENCHMARK(BM_EphemerisKSPSystem)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemMajorBodiesOnly)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemMinorAndMajorBodies)->Arg(-3);
 BENCHMARK(BM_EphemerisSolarSystemAllBodiesAndOblateness)->Arg(-3);

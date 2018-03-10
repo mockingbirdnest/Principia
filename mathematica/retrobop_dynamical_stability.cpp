@@ -132,7 +132,7 @@ constexpr std::array<char const*, 17> names = {
 
 constexpr Instant ksp_epoch;
 constexpr Instant a_century_hence = ksp_epoch + 100 * JulianYear;
-constexpr Time step = 5 * Minute;
+constexpr Time step = 35 * Minute;
 
 constexpr Length jool_system_radius_bound = 3e8 * Metre;
 
@@ -235,7 +235,7 @@ MakePerturbedEphemerides(int const count,
     for (Celestial const celestial : jool_system) {
       system.degrees_of_freedom[celestial] = {
           system.degrees_of_freedom[celestial].position() +
-              RandomUnitVector(generator) * Milli(Metre),
+              5 * RandomUnitVector(generator) * Milli(Metre),
           system.degrees_of_freedom[celestial].velocity()};
     }
     result.emplace_back(MakeEphemeris(std::move(system), integrator, step));
@@ -418,7 +418,7 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 void PlotPredictableYears() {
   auto const ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
       step);
 
   for (int i = 1; i <= 5; ++i) {
@@ -451,23 +451,23 @@ void PlotPredictableYears() {
 void PlotCentury() {
   ProduceCenturyPlots(*MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
       step));
 }
 
 void AnalyseGlobalError() {
   auto const reference_ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
       step);
   std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
           step);
 
   bool log_radius = true;
@@ -555,7 +555,7 @@ void StatisticallyAnalyseStability() {
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          integrators::QuinlanTremaine1990Order12<Position<Barycentric>>(),
+          integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
           step);
 
   std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
@@ -596,7 +596,7 @@ void StatisticallyAnalyseStability() {
             ephemeris->t_min(),
             1 * Milli(Metre),
             Ephemeris<Barycentric>::FixedStepParameters(
-                integrators::QuinlanTremaine1990Order12<
+                integrators::BlanesMoan2002SRKN14A<
                     Position<Barycentric>>(),
                 step / 2));
         ephemeris->Prolong(t);

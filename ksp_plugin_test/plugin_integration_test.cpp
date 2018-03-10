@@ -744,7 +744,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       AbsoluteError(rendered_prediction->last().degrees_of_freedom().position(),
                     Displacement<World>({1 * Metre, 0 * Metre, 0 * Metre}) +
                         World::origin),
-      IsNear(32 * Milli(Metre), 1.05));
+      IsNear(29 * Milli(Metre), 1.05));
 }
 
 }  // namespace internal_plugin

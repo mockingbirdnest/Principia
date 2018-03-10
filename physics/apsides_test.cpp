@@ -50,6 +50,8 @@ class ApsidesTest : public ::testing::Test {
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST1, true>;
 };
 
+#if !defined(_DEBUG)
+
 TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
   GravitationalParameter const μ = GravitationalConstant * SolarMass;
@@ -260,6 +262,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
     EXPECT_THAT(south_descending_it.time(), Eq(ascending_it.time()));
   }
 }
+
+#endif
 
 }  // namespace internal_apsides
 }  // namespace physics

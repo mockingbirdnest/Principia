@@ -111,7 +111,7 @@ int main(int argc, char const* argv[]) {
         out,
         ParseFixedStepSizeIntegrator<
             Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
-            flags["integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
+            flags["fine_integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
         ParseQuantity<Time>(flags["fine_step"].value_or("1 min")),
         ParseQuantity<Time>(flags["granularity"].value_or("1 d")),
         ParseQuantity<Time>(flags["duration"].value_or("500 d")));
