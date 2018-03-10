@@ -598,7 +598,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
   EXPECT_THAT(plugin_->CelestialFromParent(1).displacement().Norm(),
               AlmostEquals(3 * Kilo(Metre), 1, 7));
   EXPECT_THAT(plugin_->CelestialFromParent(2).displacement().Norm(),
-              AlmostEquals(1 * Kilo(Metre), 17));
+              AlmostEquals(1 * Kilo(Metre), 10, 17));
   EXPECT_THAT(plugin_->CelestialFromParent(3).displacement().Norm(),
               AlmostEquals(1 * Kilo(Metre), 1, 17));
 }
