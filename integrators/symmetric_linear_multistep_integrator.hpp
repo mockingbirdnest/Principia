@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/status.hpp"
-#include "integrators/backward_difference.hpp"
 #include "integrators/cohen_hubbard_oesterwinter.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/double_precision.hpp"
@@ -87,10 +86,6 @@ class SymmetricLinearMultistepIntegrator
     // updated more frequently than once every |instance.step_|.
     void StartupSolve(Instant const& t_final);
 
-    // Performs the velocity computation using a backward difference based on
-    // the positions computed by the main integrator.
-    void ComputeVelocityUsingBackwardDifferences();
-
     // Performs the velocity computation using the Cohen-Hubbard-Oesterwinter
     // method based on the accelerations computed by the main integrator.
     void ComputeVelocityUsingCohenHubbardOesterwinter();
@@ -125,7 +120,6 @@ class SymmetricLinearMultistepIntegrator
       Time const& step) const override;
 
   FixedStepSizeIntegrator<ODE> const& startup_integrator_;
-  BackwardDifference<order_ - 1> const& backward_difference_;
   CohenHubbardOesterwinter<order_> const& cohen_hubbard_oesterwinter_;
   FixedVector<double, half_order_> const ɑ_;
   FixedVector<double, half_order_> const β_numerator_;

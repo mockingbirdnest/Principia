@@ -10,8 +10,6 @@
 #include "geometry/serialization.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
-#define PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER 1
-
 namespace principia {
 namespace integrators {
 namespace internal_symmetric_linear_multistep_integrator {
@@ -136,19 +134,9 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
     status.Update(equation.compute_acceleration(t.value,
                                                 positions,
                                                 current_step.accelerations));
-
-    // Note that we only delete the oldest step *after* computing the velocity.
-    // This means that the velocity computation has access to |order_ + 1|
-    // points and, for backward difference, it makes it possible to reach order
-    // |order_ - 1|.  For Cohen-Hubbard-Oesterwinter this is not necessary: it
-    // makes no sense to go up to order |order_ + 1| so we really only need
-    // |order_| points.
-#if PRINCIPIA_USE_COHEN_HUBBARD_OESTERWINTER
-    ComputeVelocityUsingCohenHubbardOesterwinter();
-#else
-    ComputeVelocityUsingBackwardDifferences();
-#endif
     previous_steps_.pop_front();
+
+    ComputeVelocityUsingCohenHubbardOesterwinter();
 
     // Inform the caller of the new state.
     current_state.time = t;
@@ -311,51 +299,6 @@ Instance::StartupSolve(Instant const& t_final) {
 
 template<typename Position, int order_>
 void SymmetricLinearMultistepIntegrator<Position, order_>::
-Instance::ComputeVelocityUsingBackwardDifferences() {
-  using Displacement = typename ODE::Displacement;
-  using Velocity = typename ODE::Velocity;
-
-  // For the computation of the velocity we use a difference formula as
-  // recommended by Hairer and Lubich (2004), Symmetric multistep methods over
-  // long times, only we use a backward difference, not a centred difference,
-  // because we have not computed the future yet.
-  auto const& backward_difference = integrator_.backward_difference_;
-
-  int const dimension = previous_steps_.back().displacements.size();
-  auto& current_state = this->current_state_;
-  auto const& step = this->step_;
-
-  for (int d = 0; d < dimension; ++d) {
-    DoublePrecision<Velocity>& velocity = current_state.velocities[d];
-    auto it = previous_steps_.rbegin();
-    DoublePrecision<Displacement> weighted_displacement;
-
-    // The computation below is fraught with difficulties because the naïve
-    // formula has massive cancellations and would need to be computed with
-    // double precision multiplications.  Instead, we compute differences of
-    // consecutive positions exactly.  These quantities are of the order of the
-    // final result so it's acceptable to perform ordinary multiplications on
-    // them.  We take advantage of the fact that the numerators sum to 0 to skip
-    // the last term.
-    double numerator = 0.0;
-    DoublePrecision<Displacement> current_displacement = it->displacements[d];
-    for (int i = 0; i < backward_difference.numerators.size - 1; ++i) {
-      numerator += backward_difference.numerators[i];
-      ++it;
-      DoublePrecision<Displacement> next_displacement = it->displacements[d];
-      weighted_displacement +=
-          numerator * (current_displacement - next_displacement).value;
-      current_displacement = next_displacement;
-    }
-
-    velocity = DoublePrecision<Velocity>(
-        (weighted_displacement.value + weighted_displacement.error) /
-        (step * backward_difference.denominator));
-  }
-}
-
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
 Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
@@ -425,8 +368,6 @@ SymmetricLinearMultistepIntegrator(
     : FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>>(kind),
       startup_integrator_(startup_integrator),
-      backward_difference_(
-          FirstDerivativeBackwardDifference<order_ - 1>()),
       cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_>()),
       ɑ_(ɑ),
       β_numerator_(β_numerator),
