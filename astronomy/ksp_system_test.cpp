@@ -473,9 +473,9 @@ INSTANTIATE_TEST_CASE_P(
     AllKSPSystemConvergenceTests,
     KSPSystemConvergenceTest,
     ::testing::Values(
-        // This is our preferred integrator.  For a step of 2100 s it gives a
-        // position error of about 111 m on Laythe and takes about 0.44 s of
-        // elapsed time.
+        // This is our preferred integrator.  For a step of 2100 s and an 
+        // integration over a year, it gives a position error of about 111 m on
+        // Laythe and takes about 0.44 s of elapsed time.
         ConvergenceTestParameters{
             BlanesMoan2002SRKN14A<Position<KSP>>(),
             /*iterations=*/7,
@@ -498,9 +498,9 @@ INSTANTIATE_TEST_CASE_P(
             /*first_step_in_seconds=*/64},
 
         // This is a nice integrator but unfortunately it becomes unstable when
-        // Pol and Bop get too close to one another.  For a step of 600 s it
-        // gives a position error of about 28 m on Bop and takes about 0.7 s of
-        // elapsed time.
+        // Pol and Bop get too close to one another.  For a step of 600 s and an
+        // integration over a year, it gives a position error of about 28 m on
+        // Bop and takes about 0.7 s of elapsed time.
         ConvergenceTestParameters{
             QuinlanTremaine1990Order12<Position<KSP>>(),
             /*iterations=*/5,
