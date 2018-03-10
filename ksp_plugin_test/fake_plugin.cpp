@@ -1,5 +1,5 @@
 
-#include "ksp_plugin_test/test_plugin.hpp"
+#include "ksp_plugin_test/fake_plugin.hpp"
 
 #include <string>
 
@@ -7,7 +7,7 @@
 
 namespace principia {
 namespace ksp_plugin {
-namespace internal_test_plugin {
+namespace internal_fake_plugin {
 
 using physics::MasslessBody;
 using physics::KeplerOrbit;
@@ -16,7 +16,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 
-TestPlugin::TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
+FakePlugin::FakePlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
     : Plugin(/*game_epoch=*/solar_system.epoch_literal(),
              /*solar_system_epoch=*/solar_system.epoch_literal(),
              /*planetarium_rotation=*/0 * Radian) {
@@ -38,7 +38,7 @@ TestPlugin::TestPlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
   EndInitialization();
 }
 
-Vessel& TestPlugin::AddVesselInEarthOrbit(
+Vessel& FakePlugin::AddVesselInEarthOrbit(
     GUID const& vessel_id,
     std::string const& vessel_name,
     PartId const part_id,
@@ -65,6 +65,6 @@ Vessel& TestPlugin::AddVesselInEarthOrbit(
   return *GetVessel(vessel_id);
 }
 
-}  // namespace internal_test_plugin
+}  // namespace internal_fake_plugin
 }  // namespace ksp_plugin
 }  // namespace principia

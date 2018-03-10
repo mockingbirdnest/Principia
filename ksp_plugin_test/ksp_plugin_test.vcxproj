@@ -51,7 +51,7 @@
     <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />
-    <ClCompile Include="test_plugin.cpp" />
+    <ClCompile Include="fake_plugin.cpp" />
     <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +60,7 @@
     <ClInclude Include="mock_manœuvre.hpp" />
     <ClInclude Include="mock_planetarium.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
-    <ClInclude Include="test_plugin.hpp" />
+    <ClInclude Include="fake_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_renderer.hpp" />
