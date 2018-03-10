@@ -14,14 +14,14 @@ VERSION_TRANSLATION_UNIT := base/version.generated.cc
 PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
 PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
 JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
-MOCK_TRANSLATION_UNITS         := $(wildcard */mock_*.cpp)
+FAKE_OR_MOCK_TRANSLATION_UNITS := ksp_plugin_test/test_plugin.cpp $(wildcard */mock_*.cpp)
 BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp */benchmark.cpp)
 TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
-TEST_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(MOCK_TRANSLATION_UNITS)
+TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(FAKE_OR_MOCK_TRANSLATION_UNITS)
 TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
-LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
-JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
-BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
+LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
+BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
 PROTO_FILES                    := $(wildcard */*.proto)
 PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
 PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
@@ -99,7 +99,7 @@ LDFLAGS := $(SHARED_ARGS)
 
 BUILD_DIRECTORY := build/
 
-TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
 TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
 LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
@@ -149,7 +149,7 @@ $(GENERATED_PROFILES) : $(TOOLS_BIN)
 
 ##### C++ compilation
 
-TEST_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
+TEST_OR_FAKE_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
@@ -159,9 +159,9 @@ JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_
 VERSION_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLATION_UNIT:.cc=.o))
 BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
 TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
-MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(MOCK_TRANSLATION_UNITS:.cpp=.o))
+FAKE_OR_MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 
-$(TEST_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
+$(TEST_OR_FAKE_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
@@ -223,7 +223,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
 
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
@@ -268,7 +268,7 @@ normalize_bom:
 
 ##### clang-tidy
 
-$(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
+$(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
 	@mkdir -p $(@D)
 	clang-tidy $< $(tidy_options) -- $(COMPILER_OPTIONS) $(TEST_INCLUDES)
 
@@ -276,7 +276,7 @@ $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy): %--tidy: %
 	@mkdir -p $(@D)
 	clang-tidy $< $(tidy_options) -- $(COMPILER_OPTIONS)
 
-TIDY_TARGETS = $(TEST_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
+TIDY_TARGETS = $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.cpp--tidy) $(LIBRARY_TRANSLATION_UNITS:.cpp=.cpp--tidy)
 
 ########## Convenience targets
 all: test release
