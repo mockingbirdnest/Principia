@@ -473,7 +473,7 @@ INSTANTIATE_TEST_CASE_P(
     AllKSPSystemConvergenceTests,
     KSPSystemConvergenceTest,
     ::testing::Values(
-        // This is our preferred integrator.  For a step of 2100 s and an 
+        // This is our preferred integrator.  For a step of 2100 s and an
         // integration over a year, it gives a position error of about 111 m on
         // Laythe and takes about 0.44 s of elapsed time.
         ConvergenceTestParameters{
