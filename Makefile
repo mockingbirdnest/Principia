@@ -11,20 +11,20 @@ CXX := clang++
 
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
-PLUGIN_TRANSLATION_UNITS       := $(wildcard ksp_plugin/*.cpp)
-PLUGIN_TEST_TRANSLATION_UNITS  := $(wildcard ksp_plugin_test/*.cpp)
-JOURNAL_TRANSLATION_UNITS      := $(wildcard journal/*.cpp)
-FAKE_OR_MOCK_TRANSLATION_UNITS := ksp_plugin_test/test_plugin.cpp $(wildcard */mock_*.cpp)
-BENCHMARK_TRANSLATION_UNITS    := $(wildcard benchmarks/*.cpp */benchmark.cpp)
-TEST_TRANSLATION_UNITS         := $(wildcard */*_test.cpp)
+PLUGIN_TRANSLATION_UNITS               := $(wildcard ksp_plugin/*.cpp)
+PLUGIN_TEST_TRANSLATION_UNITS          := $(wildcard ksp_plugin_test/*.cpp)
+JOURNAL_TRANSLATION_UNITS              := $(wildcard journal/*.cpp)
+FAKE_OR_MOCK_TRANSLATION_UNITS         := ksp_plugin_test/test_plugin.cpp $(wildcard */mock_*.cpp)
+BENCHMARK_TRANSLATION_UNITS            := $(wildcard benchmarks/*.cpp */benchmark.cpp)
+TEST_TRANSLATION_UNITS                 := $(wildcard */*_test.cpp)
 TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS := $(TEST_TRANSLATION_UNITS) $(FAKE_OR_MOCK_TRANSLATION_UNITS)
-TOOLS_TRANSLATION_UNITS        := $(wildcard tools/*.cpp)
-LIBRARY_TRANSLATION_UNITS      := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
-JOURNAL_LIB_TRANSLATION_UNITS  := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
-BASE_LIB_TRANSLATION_UNITS     := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
-PROTO_FILES                    := $(wildcard */*.proto)
-PROTO_TRANSLATION_UNITS        := $(PROTO_FILES:.proto=.pb.cc)
-PROTO_HEADERS                  := $(PROTO_FILES:.proto=.pb.h)
+TOOLS_TRANSLATION_UNITS                := $(wildcard tools/*.cpp)
+LIBRARY_TRANSLATION_UNITS              := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS) $(BENCHMARK_TRANSLATION_UNITS), $(wildcard */*.cpp))
+JOURNAL_LIB_TRANSLATION_UNITS          := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard journal/*.cpp))
+BASE_LIB_TRANSLATION_UNITS             := $(filter-out $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS), $(wildcard base/*.cpp))
+PROTO_FILES                            := $(wildcard */*.proto)
+PROTO_TRANSLATION_UNITS                := $(PROTO_FILES:.proto=.pb.cc)
+PROTO_HEADERS                          := $(PROTO_FILES:.proto=.pb.h)
 
 DEP_DIR := deps/
 
@@ -150,15 +150,15 @@ $(GENERATED_PROFILES) : $(TOOLS_BIN)
 ##### C++ compilation
 
 TEST_OR_FAKE_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
-LIBRARY_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
-PROTO_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
-GMOCK_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
-TOOLS_OBJECTS        := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
-PLUGIN_OBJECTS       := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
-JOURNAL_LIB_OBJECTS  := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
-VERSION_OBJECTS      := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLATION_UNIT:.cc=.o))
-BASE_LIB_OBJECTS     := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
-TEST_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
+LIBRARY_OBJECTS              := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
+PROTO_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
+GMOCK_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+TOOLS_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
+PLUGIN_OBJECTS               := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
+JOURNAL_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
+VERSION_OBJECTS              := $(addprefix $(OBJ_DIRECTORY), $(VERSION_TRANSLATION_UNIT:.cc=.o))
+BASE_LIB_OBJECTS             := $(addprefix $(OBJ_DIRECTORY), $(BASE_LIB_TRANSLATION_UNITS:.cpp=.o)) $(VERSION_OBJECTS)
+TEST_OBJECTS                 := $(addprefix $(OBJ_DIRECTORY), $(TEST_TRANSLATION_UNITS:.cpp=.o))
 FAKE_OR_MOCK_OBJECTS         := $(addprefix $(OBJ_DIRECTORY), $(FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.o))
 
 $(TEST_OR_FAKE_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
