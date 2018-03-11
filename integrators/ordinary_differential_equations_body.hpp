@@ -10,10 +10,20 @@ namespace integrators {
 namespace internal_ordinary_differential_equations {
 
 template<typename... State>
-FirstOrderOrdinaryDifferentialEquation<State...>::SystemState::SystemState(
-    State const& y,
-    Instant const& t)
+ExplicitFirstOrderOrdinaryDifferentialEquation<
+    State...>::SystemState::SystemState(State const& y, Instant const& t)
     : y(y), time(t) {}
+
+template<typename... State>
+Splitting<State...>::SystemState::SystemState(State const& y, Instant const& t)
+    : y(y), time(t) {}
+
+template<typename Position_>
+ExplicitSecondOrderOrdinaryDifferentialEquation<
+    Position_>::SystemState::SystemState(std::vector<Position> const& q,
+                                         std::vector<Velocity> const& v,
+                                         Instant const& t)
+    : positions(q), velocities(v), time(t) {}
 
 template<typename Position_>
 SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(

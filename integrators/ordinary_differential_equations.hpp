@@ -115,20 +115,6 @@ struct Splitting final {
   Flow right_flow;
 };
 
-// TODO(eggrobin): remove the following, this is just testing that it compiles.
-FirstOrderOrdinaryDifferentialEquation<quantities::Length,
-                                       quantities::Speed,
-                                       quantities::Mass,
-                                       double> ode;
-FirstOrderOrdinaryDifferentialEquation<quantities::Length,
-                                       quantities::Speed,
-                                       quantities::Mass,
-                                       double>::SystemState ode_state;
-FirstOrderOrdinaryDifferentialEquation<quantities::Length,
-                                       quantities::Speed,
-                                       quantities::Mass,
-                                       double>::SystemState ode_state_error;
-
 // A differential equation of the form q″ = f(q, q′, t).
 // |Position| is the type of q.
 template<typename Position_>
