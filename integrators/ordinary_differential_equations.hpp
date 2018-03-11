@@ -37,6 +37,51 @@ using quantities::Difference;
 using quantities::Time;
 using quantities::Variation;
 
+// A differential equation of the form y′ = f(y, t).
+// This should use parameter packs, but it confuses MSVC...
+template<typename... State>
+struct FirstOrderOrdinaryDifferentialEquation final {
+  using RightHandSideComputation = std::function<Status(
+      Instant const& t,
+      std::tuple<std::vector<State>...> const& state,
+      std::tuple<std::vector<quantities::Quotient<Difference<State, State>, Time>>...>&
+          derivatives)>;
+
+  struct SystemState final {
+    SystemState() = default;
+    SystemState(std::tuple<std::vector<State>...> const& y, Instant const& t);
+
+    std::tuple<std::vector<DoublePrecision<State>>...> y;
+    DoublePrecision<Instant> time;
+
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.y == rhs.y && lhs.time == rhs.time;
+    }
+  };
+
+  using SystemStateError = std::tuple<std::vector<Difference<State, State>>...>;
+
+  // A functor that computes f(y, t) and stores it in |derivatives|.
+  // This functor must be called with |std::get<i>(derivatives).size()| equal to
+  // |std::get<i>(state).size()| for all i, but there is no requirement on the
+  // values in |derivatives|.
+  RightHandSideComputation compute_derivative;
+};
+
+// TODO(eggrobin): remove the following, this is just testing that it compiles.
+FirstOrderOrdinaryDifferentialEquation<quantities::Length,
+                                       quantities::Speed,
+                                       quantities::Mass,
+                                       double> ode;
+FirstOrderOrdinaryDifferentialEquation<quantities::Length,
+                                       quantities::Speed,
+                                       quantities::Mass,
+                                       double>::SystemState ode_state;
+FirstOrderOrdinaryDifferentialEquation<quantities::Length,
+                                       quantities::Speed,
+                                       quantities::Mass,
+                                       double>::SystemState ode_state_error;
+
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
 template<typename Position_>
@@ -80,10 +125,10 @@ struct SpecialSecondOrderDifferentialEquation final {
     std::vector<Velocity> velocity_error;
   };
 
-  // A functor that computes f(q, t) and stores it in |*accelerations|.
-  // This functor must be called with |accelerations->size()| equal to
-  // |positions->size()|, but there is no requirement on the values in
-  // |*acceleration|.
+  // A functor that computes f(q, t) and stores it in |accelerations|.
+  // This functor must be called with |accelerations.size()| equal to
+  // |positions.size()|, but there is no requirement on the values in
+  // |acceleration|.
   RightHandSideComputation compute_acceleration;
 };
 
