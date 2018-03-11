@@ -34,24 +34,32 @@ using base::Status;
 using geometry::Instant;
 using numerics::DoublePrecision;
 using quantities::Difference;
+using quantities::Quotient;
 using quantities::Time;
 using quantities::Variation;
 
 // A differential equation of the form y′ = f(y, t).
-// This should use parameter packs, but it confuses MSVC...
-template<typename... State>
-struct FirstOrderOrdinaryDifferentialEquation final {
-  using RightHandSideComputation = std::function<Status(
-      Instant const& t,
-      std::tuple<std::vector<State>...> const& state,
-      std::tuple<std::vector<quantities::Quotient<Difference<State, State>, Time>>...>&
-          derivatives)>;
+// |State| is the type of y.
+template<typename... StateTypes>
+struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
+  using State = std::tuple<std::vector<StateTypes>...>;
+  // NOTE(eggrobin): we cannot use |Variation| here because of a bug in MSVC
+  // when parameter packs interact with defaulted template parameters (and
+  // possibly decltype), but this is just
+  //   std::tuple<std::vector<Variation<StateTypes>>...>.
+  using StateVariation = std::tuple<
+      std::vector<Quotient<Difference<StateTypes, StateTypes>, Time>>...>;
+
+  using RightHandSideComputation =
+      std::function<Status(Instant const& t,
+                           State const& state,
+                           StateVariation& derivatives)>;
 
   struct SystemState final {
     SystemState() = default;
-    SystemState(std::tuple<std::vector<State>...> const& y, Instant const& t);
+    SystemState(State const& y, Instant const& t);
 
-    std::tuple<std::vector<DoublePrecision<State>>...> y;
+    std::tuple<std::vector<DoublePrecision<StateTypes>>...> y;
     DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
@@ -59,13 +67,52 @@ struct FirstOrderOrdinaryDifferentialEquation final {
     }
   };
 
-  using SystemStateError = std::tuple<std::vector<Difference<State, State>>...>;
+  // We cannot use |Difference<StateTypes>| here for the same reason.  For some
+  // reason |DoublePrecision<StateTypes>| above works...
+  using SystemStateError =
+      std::tuple<std::vector<Difference<StateTypes, StateTypes>>...>;
 
   // A functor that computes f(y, t) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
   // |std::get<i>(state).size()| for all i, but there is no requirement on the
   // values in |derivatives|.
   RightHandSideComputation compute_derivative;
+};
+
+// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
+// exp(hB) are known.  |State| is the type of X.
+template<typename... StateTypes>
+struct Splitting final {
+  using State = std::tuple<std::vector<StateTypes>...>;
+
+  using Flow = std::function<Status(Instant const& t_initial,
+                                    Instant const& t_final,
+                                    State const& initial_state,
+                                    State& final_state)>;
+
+  struct SystemState final {
+    SystemState() = default;
+    SystemState(State const& y, Instant const& t);
+
+    std::tuple<std::vector<DoublePrecision<StateTypes>>...> y;
+    DoublePrecision<Instant> time;
+
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.y == rhs.y && lhs.time == rhs.time;
+    }
+  };
+
+  // We cannot use |Difference<StateTypes>| here for the same reason.  For some
+  // reason |DoublePrecision<StateTypes>| above works...
+  using SystemStateError =
+      std::tuple<std::vector<Difference<StateTypes, StateTypes>>...>;
+
+  // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
+  // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
+  // The |std::vectors| in X₁ must have the same |size()| as those in X₀, there
+  // is no other requirement on their values.
+  Flow left_flow;
+  Flow right_flow;
 };
 
 // TODO(eggrobin): remove the following, this is just testing that it compiles.
@@ -81,6 +128,56 @@ FirstOrderOrdinaryDifferentialEquation<quantities::Length,
                                        quantities::Speed,
                                        quantities::Mass,
                                        double>::SystemState ode_state_error;
+
+// A differential equation of the form q″ = f(q, q′, t).
+// |Position| is the type of q.
+template<typename Position_>
+struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
+  using Position = Position_;
+  // The type of Δq.
+  using Displacement = Difference<Position>;
+  // The type of q′.
+  using Velocity = Variation<Position>;
+  // The type of q″.
+  using Acceleration = Variation<Velocity>;
+  using RightHandSideComputation =
+      std::function<Status(Instant const& t,
+                           std::vector<Position> const& positions,
+                           std::vector<Velocity> const& velocities,
+                           std::vector<Acceleration>& accelerations)>;
+
+  struct SystemState final {
+    SystemState() = default;
+    SystemState(std::vector<Position> const& q,
+                std::vector<Velocity> const& v,
+                Instant const& t);
+
+    std::vector<DoublePrecision<Position>> positions;
+    std::vector<DoublePrecision<Velocity>> velocities;
+    DoublePrecision<Instant> time;
+
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.positions == rhs.positions &&
+             lhs.velocities == rhs.velocities &&
+             lhs.time == rhs.time;
+    }
+
+    void WriteToMessage(not_null<serialization::SystemState*> message) const;
+    static SystemState ReadFromMessage(
+        serialization::SystemState const& message);
+  };
+
+  struct SystemStateError final {
+    std::vector<Displacement> position_error;
+    std::vector<Velocity> velocity_error;
+  };
+
+  // A functor that computes f(q, t) and stores it in |accelerations|.
+  // This functor must be called with |accelerations.size()| equal to
+  // |positions.size()|, but there is no requirement on the values in
+  // |acceleration|.
+  RightHandSideComputation compute_acceleration;
+};
 
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.

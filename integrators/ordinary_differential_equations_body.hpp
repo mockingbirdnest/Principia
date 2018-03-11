@@ -9,15 +9,16 @@ namespace principia {
 namespace integrators {
 namespace internal_ordinary_differential_equations {
 
-// TODO(egg): for some mysterious reason MSVC wants the full
-// |typename SpecialSecondOrderDifferentialEquation<Position_>::Position|
-// where |Position| would be enough.
+template<typename... State>
+FirstOrderOrdinaryDifferentialEquation<State...>::SystemState::SystemState(
+    State const& y,
+    Instant const& t)
+    : y(y), time(t) {}
+
 template<typename Position_>
 SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
-    std::vector<typename SpecialSecondOrderDifferentialEquation<
-        Position_>::Position> const& q,
-    std::vector<typename SpecialSecondOrderDifferentialEquation<
-        Position_>::Velocity> const& v,
+    std::vector<Position> const& q,
+    std::vector<Velocity> const& v,
     Instant const& t)
     : time(t) {
   for (int i = 0; i < q.size(); ++i) {
