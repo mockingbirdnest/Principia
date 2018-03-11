@@ -109,7 +109,7 @@ struct Splitting final {
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
   // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
-  // The |std::vectors| in X₁ must have the same |size()| as those in X₀, there
+  // The |std::vectors| in X₁ must have the same |size()| as those in X₀.  There
   // is no other requirement on their values.
   Flow left_flow;
   Flow right_flow;
