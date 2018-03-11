@@ -363,7 +363,12 @@ Status PileUp::AdvanceTime(Instant const& t) {
     history_->DeleteFork(psychohistory_);
 
     auto const a = intrinsic_force_ / mass_;
-    auto const intrinsic_acceleration = [a](Instant const& t) { return a; };
+    // NOTE(phl): |a| used to be captured by copy below, which is the logical
+    // thing to do.  However, since it contains an |R3Element|, it must be
+    // aligned on a 16-byte boundary.  Unfortunately, VS2015 gets confused and
+    // aligns the function object on an 8-byte boundary, resulting in an
+    // addressing fault.  With a reference, VS2015 knows what to do.
+    auto const intrinsic_acceleration = [&a](Instant const& t) { return a; };
     CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
                  history_.get(),
                  intrinsic_acceleration,
