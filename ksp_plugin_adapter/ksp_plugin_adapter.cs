@@ -248,6 +248,11 @@ public partial class PrincipiaPluginAdapter
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
       string expected_version = "1.3.1";
+#elif KSP_VERSION_1_4_0
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 4 ||
+        Versioning.Revision != 0) {
+      string expected_version = "1.4.0";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
                 Versioning.version_minor + "." + Versioning.Revision +
@@ -491,8 +496,8 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-      bool success = texture2d.LoadImage(
-          File.ReadAllBytes(full_path));
+      bool success = UnityEngine.ImageConversion.LoadImage(
+          texture2d, File.ReadAllBytes(full_path));
       if (!success) {
         Log.Fatal("Failed to load texture " + full_path);
       }
@@ -650,7 +655,7 @@ public partial class PrincipiaPluginAdapter
       PopupDialog.SpawnPopupDialog(
           anchorMin           : default(UnityEngine.Vector2),
           anchorMax           : default(UnityEngine.Vector2),
-#if KSP_VERSION_1_3_1
+#if KSP_VERSION_1_3_1 || KSP_VERSION_1_4_0
           dialogName          : "Principia error",
 #endif
           title               : "Principia",
