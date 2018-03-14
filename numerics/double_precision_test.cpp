@@ -194,24 +194,6 @@ TEST_F(DoublePrecisionTest, LongAddPositions) {
               Eq(Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre})));
 }
 
-TEST_F(DoublePrecisionTest, DoubleSingle) {
-  DoublePrecision<double> x;
-  x.value = 1.0;
-  x.error = ε²;
-  x += -1.0;
-  EXPECT_THAT(x.value, Eq(ε²));
-  EXPECT_THAT(x.error, Eq(0.0));
-  x -= -1.0;
-  EXPECT_THAT(x.value, Eq(1.0));
-  EXPECT_THAT(x.error, Eq(ε²));
-  DoublePrecision<double> y = x - 1.0;
-  EXPECT_THAT(y.value, Eq(ε²));
-  EXPECT_THAT(y.error, Eq(0.0));
-  DoublePrecision<double> z = y + 1.0;
-  EXPECT_THAT(z.value, Eq(1.0));
-  EXPECT_THAT(z.error, Eq(ε²));
-}
-
 TEST_F(DoublePrecisionTest, DoubleDoubleDouble) {
   using DoubleDouble = DoublePrecision<double>;
   using DoubleDoubleDouble = DoublePrecision<DoubleDouble>;

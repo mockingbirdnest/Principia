@@ -96,16 +96,10 @@ DoublePrecision<Difference<T>> operator-(DoublePrecision<T> const& left);
 template<typename T, typename U>
 DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
                                      DoublePrecision<U> const& right);
-template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     U const& right);
 
 template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right);
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            U const& right);
 
 template<typename T>
 std::string DebugString(DoublePrecision<T> const& double_precision);
