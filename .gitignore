@@ -32,6 +32,7 @@ ipch/
 [Bb]in
 [Dd]ebug*/
 [Rr]elease*/
+.vs/
 
 # Clang output
 *.o
