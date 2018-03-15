@@ -65,23 +65,23 @@
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule">
+    <Reference Include="UnityEngine.CoreModule" Condition="'$(OS)' == 'Unix'">
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.ImageConversionModule">
+    <Reference Include="UnityEngine.ImageConversionModule" Condition="'$(OS)' == 'Unix'">
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule">
+    <Reference Include="UnityEngine.IMGUIModule" Condition="'$(OS)' == 'Unix'">
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.PhysicsModule">
+    <Reference Include="UnityEngine.PhysicsModule" Condition="'$(OS)' == 'Unix'">
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule">
+    <Reference Include="UnityEngine.TextRenderingModule" Condition="'$(OS)' == 'Unix'">
       <HintPath>..\..\KSP Assemblies\1.4.1\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
