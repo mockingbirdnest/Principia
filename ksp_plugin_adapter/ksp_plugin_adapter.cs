@@ -496,8 +496,13 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
+#if KSP_VERSION_1_4_1
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
+#elif KSP_VERSION_1_2_2 || KSP_VERSION_1_3_1
+      bool success = texture2d.LoadImage(
+          File.ReadAllBytes(full_path));
+#endif
       if (!success) {
         Log.Fatal("Failed to load texture " + full_path);
       }
