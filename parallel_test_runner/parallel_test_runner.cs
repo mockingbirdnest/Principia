@@ -22,8 +22,8 @@ class ParallelTestRunner {
   }
 
   const string vsinstr =
-      @"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Team Tools\" +
-      @"Performance Tools\vsinstr.exe";
+      @"C:\Program Files (x86)\Microsoft Visual Studio\Preview\Enterprise\" +
+      @"Team Tools\Performance Tools\vsinstr.exe";
 
   static Task RunProcessAsync(string file_name, string args) {
     var task_completion_source = new TaskCompletionSource<bool>();

@@ -247,26 +247,12 @@ DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
 }
 
 template<typename T, typename U>
-DoublePrecision<Sum<T, U>> operator+(DoublePrecision<T> const& left,
-                                     U const& right) {
-  auto const sum = TwoSum(left.value, right);
-  return QuickTwoSum(sum.value, sum.error + left.error);
-}
-
-template<typename T, typename U>
 DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
                                             DoublePrecision<U> const& right) {
   // Linnainmaa (1981), Software for Doubled-Precision Floating-Point
   // Computations, algorithm longadd.
   auto const sum = TwoDifference(left.value, right.value);
   return QuickTwoSum(sum.value, (sum.error + left.error) - right.error);
-}
-
-template<typename T, typename U>
-DoublePrecision<Difference<T, U>> operator-(DoublePrecision<T> const& left,
-                                            U const& right) {
-  auto const sum = TwoDifference(left.value, right);
-  return QuickTwoSum(sum.value, sum.error + left.error);
 }
 
 template<typename T>
