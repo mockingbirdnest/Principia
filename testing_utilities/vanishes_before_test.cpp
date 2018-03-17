@@ -44,6 +44,8 @@ TEST_F(VanishesBeforeTest, Quantity) {
   EXPECT_THAT(2 * v2, Not(VanishesBefore(v1, 3)));
   Speed const δv = v1 / 100.0;
   Speed v_accumulated;
+  // If the upper bound is an int, the compiler adds 10 times 10 * δv and this
+  // results in no error in the final result.
   for (int i = 1; i <= 100.0; ++i) {
     v_accumulated += δv;
   }
