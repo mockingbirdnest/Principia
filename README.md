@@ -1,5 +1,7 @@
 # Principia
 
+**Coxeter, the March version of Principia, is available.  It has bug fixes, performance improvements, and supports 1.4.1.  Download it [here for 1.2.2](https://goo.gl/MGmmwQ), [here for 1.3.1](https://goo.gl/f4m41R), and [here for 1.4.1](https://goo.gl/QuWbvN).**	
+
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
 N-body gravitation is more complex than the toy physics of the stock game.  Therefore, before using the mod we recommend that you read the [concepts](https://github.com/mockingbirdnest/Principia/wiki/Concepts) document which explains the most important parts of Principia.  In particular, you should learn about the [plotting frame](https://github.com/mockingbirdnest/Principia/wiki/Concepts#plotting-frame) and [flight planning](https://github.com/mockingbirdnest/Principia/wiki/Concepts#flight-planning).
@@ -14,4 +16,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/2eAK1W) and [here for 1.3.1](https://goo.gl/XXjJ6u).  Or, if you don't trust our binary, build the mod from the [Cohen](https://github.com/mockingbirdnest/Principia/releases/tag/2018021521-Cohen) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.2.2](https://goo.gl/MGmmwQ), [here for 1.3.1](https://goo.gl/f4m41R), and [here for 1.4.1](https://goo.gl/QuWbvN).  Or, if you don't trust our binary, build the mod from the [Coxeter](https://github.com/mockingbirdnest/Principia/releases/tag/2018031713-Coxeter) release.
