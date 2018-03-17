@@ -6,12 +6,12 @@ ForEach ($configuration in $configurations) {
     & $_.FullName
   }
 
-  Get-ChildItem ".\Google\googletest\msvc\gtest\$configuration\*" -Include *test.exe | `
+  Get-ChildItem ".\Google\googletest\googletest\msvc\2017\$configuration\*" -Include *test.exe | `
   Foreach-Object {
     & $_.FullName
   }
 
-  Get-ChildItem ".\Google\googlemock\msvc\2015\$configuration\*" -Include *test.exe | `
+  Get-ChildItem ".\Google\googletest\googlemock\msvc\2017\$configuration\*" -Include *test.exe | `
   Foreach-Object {
     & $_.FullName
   }

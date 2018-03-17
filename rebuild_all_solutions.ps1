@@ -1,7 +1,7 @@
 $msbuild = join-path -path (Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\SxS\VS7")."15.0" -childpath "MSBuild\15.0\Bin\msbuild.exe"
 $dependencies = @(".\Google\glog\google-glog.sln",
                   ".\Google\googletest\googletest\msvc\2017\gtest.sln",
-                  ".\Google\googletest\googlemock\msvc\2015\gmock.sln",
+                  ".\Google\googletest\googlemock\msvc\2017\gmock.sln",
                   ".\Google\protobuf\vsprojects\protobuf.sln",
                   ".\Google\benchmark\msvc\google-benchmark.sln")
 
