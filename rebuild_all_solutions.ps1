@@ -9,7 +9,7 @@ function build_solutions($solutions) {
   foreach ($configuration in "Debug", "Release") {
     foreach ($platform in "x64") {
       foreach ($solution in $solutions) {
-        &$msbuild /t:"Clean;Build" /m /property:VisualStudioVersion=15.0 /property:Configuration=$configuration /property:Platform=$platform $solution
+        &$msbuild /t:"Build" /m /property:VisualStudioVersion=15.0 /property:Configuration=$configuration /property:Platform=$platform $solution
         if (!$?) {
           exit 1
         }
