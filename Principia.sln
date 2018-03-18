@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.27512.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "quantities", "quantities\quantities.vcxproj", "{273987F9-5E73-43E6-868E-E9D3C137F01A}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -365,5 +365,8 @@ Global
 		{0AC374A7-36CD-40FC-B831-112389B6D9ED} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{5498EE37-1A80-4DA8-8D81-01892C4C8EEB} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
 		{A0E67E1B-E5A6-45A0-B42C-4330A6643CD7} = {B0F47E49-0EDF-4D58-AB27-F99CCCE4253A}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {332981CB-A6C7-4BD0-9EE0-8E8C6FB4E01A}
 	EndGlobalSection
 EndGlobal
