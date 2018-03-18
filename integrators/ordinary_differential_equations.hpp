@@ -40,26 +40,19 @@ using quantities::Variation;
 
 // A differential equation of the form y′ = f(y, t).
 // |State| is the type of y.
-template<typename... StateTypes>
+template<typename... StateElements>
 struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
-  using State = std::tuple<std::vector<StateTypes>...>;
-  // NOTE(eggrobin): we cannot use |Variation| here because of a bug in MSVC
-  // when parameter packs interact with defaulted template parameters (and
-  // possibly decltype), but this is just
-  //   std::tuple<std::vector<Variation<StateTypes>>...>.
-  using StateVariation = std::tuple<
-      std::vector<Quotient<Difference<StateTypes, StateTypes>, Time>>...>;
+  using State = std::tuple<std::vector<StateElements>...>;
+  using StateVariation = std::tuple<std::vector<Variation<StateElements>>...>;
 
-  using RightHandSideComputation =
-      std::function<Status(Instant const& t,
-                           State const& state,
-                           StateVariation& derivatives)>;
+  using RightHandSideComputation = std::function<
+      Status(Instant const& t, State const& state, StateVariation& variations)>;
 
   struct SystemState final {
     SystemState() = default;
     SystemState(State const& y, Instant const& t);
 
-    std::tuple<std::vector<DoublePrecision<StateTypes>>...> y;
+    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
     DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
@@ -67,10 +60,7 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     }
   };
 
-  // We cannot use |Difference<StateTypes>| here for the same reason.  For some
-  // reason |DoublePrecision<StateTypes>| above works...
-  using SystemStateError =
-      std::tuple<std::vector<Difference<StateTypes, StateTypes>>...>;
+  using SystemStateError = std::tuple<std::vector<Difference<StateElements>>...>;
 
   // A functor that computes f(y, t) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
@@ -81,9 +71,9 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 
 // A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
 // exp(hB) are known.  |State| is the type of X.
-template<typename... StateTypes>
+template<typename... StateElements>
 struct Splitting final {
-  using State = std::tuple<std::vector<StateTypes>...>;
+  using State = std::tuple<std::vector<StateElements>...>;
 
   using Flow = std::function<Status(Instant const& t_initial,
                                     Instant const& t_final,
@@ -94,7 +84,7 @@ struct Splitting final {
     SystemState() = default;
     SystemState(State const& y, Instant const& t);
 
-    std::tuple<std::vector<DoublePrecision<StateTypes>>...> y;
+    std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
     DoublePrecision<Instant> time;
 
     friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
@@ -102,10 +92,10 @@ struct Splitting final {
     }
   };
 
-  // We cannot use |Difference<StateTypes>| here for the same reason.  For some
-  // reason |DoublePrecision<StateTypes>| above works...
+  // We cannot use |Difference<StateElements>| here for the same reason.  For some
+  // reason |DoublePrecision<StateElements>| above works...
   using SystemStateError =
-      std::tuple<std::vector<Difference<StateTypes, StateTypes>>...>;
+      std::tuple<std::vector<Difference<StateElements, StateElements>>...>;
 
   // left_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)A)X₀, and
   // right_flow(t₀, t₁, X₀, X₁) sets X₁ to exp((t₁-t₀)B)X₀.
@@ -161,7 +151,7 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   // A functor that computes f(q, t) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
   // |positions.size()|, but there is no requirement on the values in
-  // |acceleration|.
+  // |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 
