@@ -12,16 +12,16 @@ namespace ksp_plugin {
 namespace internal_integrators {
 
 using geometry::Position;
+using integrators::BlanesMoan2002SRKN14A;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::Quinlan1999Order8A;
-using integrators::QuinlanTremaine1990Order12;
 using quantities::si::Minute;
 using quantities::si::Second;
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-             QuinlanTremaine1990Order12<Position<Barycentric>>(),
-             /*step=*/10 * Minute);
+             BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+             /*step=*/35 * Minute);
 }
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {

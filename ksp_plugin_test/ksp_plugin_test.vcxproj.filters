@@ -167,7 +167,7 @@
     <ClCompile Include="interface_external_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="test_plugin.cpp">
+    <ClCompile Include="fake_plugin.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -190,7 +190,7 @@
     <ClInclude Include="mock_planetarium.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="test_plugin.hpp">
+    <ClInclude Include="fake_plugin.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

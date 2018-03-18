@@ -3,7 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "ksp_plugin_test/test_plugin.hpp"
+#include "ksp_plugin_test/fake_plugin.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
@@ -17,7 +17,7 @@ using base::make_not_null_unique;
 using ksp_plugin::GUID;
 using ksp_plugin::Navigation;
 using ksp_plugin::PartId;
-using ksp_plugin::TestPlugin;
+using ksp_plugin::FakePlugin;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
 using quantities::si::Hour;
@@ -60,7 +60,7 @@ class InterfaceExternalTest : public ::testing::Test {
         vessel_guid, vessel_name, part_id, part_name, low_earth_orbit);
   }
 
-  TestPlugin plugin_;
+  FakePlugin plugin_;
   Vessel* vessel_;
 };
 

@@ -1,9 +1,9 @@
 # Instructions for building Principia on Windows
 
-These instructions are for Visual Studio 2015, using the git
+These instructions are for Visual Studio 2017 version 15.7 preview 1, using the git
 Powershell provided by [GitHub for Windows](https://windows.github.com/).
 
-We assume a working installation of Kerbal Space Program version 1.3 is
+We assume a working installation of Kerbal Space Program version 1.4.1 is
 found in `<KSP directory>`.
 
 The repository is found at https://github.com/mockingbirdnest/Principia.git.
@@ -16,8 +16,7 @@ This directory should not contain any of the following subfolders:
 - `Third Party`.
 
 This project depends upon:
-- the KSP assemblies `Assembly-CSharp.dll` and `Assembly-CSharp-firstpass.dll`,
-  found in `<KSP directory>\KSP_Data\Managed`;
+- the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_Data\Managed`;
 - the Unity assemblies `UnityEngine.dll` and `UnityEngine.UI.dll`, found in
   `<KSP directory>\KSP_Data\Managed`;
 - our [fork](https://github.com/mockingbirdnest/glog) of the Google glog
@@ -40,8 +39,8 @@ In `<root>`, run `git clone https://github.com/mockingbirdnest/Principia.git`.
 
 ### KSP and Unity assemblies
 
-Copy these assemblies to the directory `<root>\KSP Assemblies\1.3`.
-In order to build for KSP 1.2.2, copy the corresponding KSP 1.2.2 assemblies to `<root>\KSP Assemblies\1.2.2`.
+Copy these assemblies to the directory `<root>\KSP Assemblies\1.4.1`.
+In order to build for KSP 1.2.2, copy the corresponding KSP 1.2.2 assemblies to `<root>\KSP Assemblies\1.2.2`.  For KSP 1.3.1 copy the corresponding KSP 1.3.1 assemblies to `<root>\KSP Assemblies\1.3.1`
 
 ### Downloading the Google libraries
 

@@ -35,6 +35,7 @@ using geometry::Sign;
 using geometry::Vector;
 using integrators::FixedStepSizeIntegrator;
 using integrators::BlanesMoan2002SRKN11B;
+using integrators::BlanesMoan2002SRKN14A;
 using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order10;
@@ -388,7 +389,7 @@ class KSPSystemConvergenceTest
     return GetParam().iterations;
   }
 
-  int first_step_in_seconds() const {
+  double first_step_in_seconds() const {
     return GetParam().first_step_in_seconds;
   }
 
@@ -472,10 +473,13 @@ INSTANTIATE_TEST_CASE_P(
     AllKSPSystemConvergenceTests,
     KSPSystemConvergenceTest,
     ::testing::Values(
+        // This is our preferred integrator.  For a step of 2100 s and an
+        // integration over a year, it gives a position error of about 111 m on
+        // Laythe and takes about 0.44 s of elapsed time.
         ConvergenceTestParameters{
-            BlanesMoan2002SRKN11B<Position<KSP>>(),
-            /*iterations=*/8,
-            /*first_step_in_seconds=*/64},
+            BlanesMoan2002SRKN14A<Position<KSP>>(),
+            /*iterations=*/7,
+            /*first_step_in_seconds=*/65.625},
         ConvergenceTestParameters{
             McLachlanAtela1992Order5Optimal<Position<KSP>>(),
             /*iterations=*/8,
@@ -493,9 +497,10 @@ INSTANTIATE_TEST_CASE_P(
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
 
-        // This is our favorite integrator.  For a step of 600 s it gives a
-        // position error of about 28 m on Bop and takes about 0.7 s of elapsed
-        // time.
+        // This is a nice integrator but unfortunately it becomes unstable when
+        // Pol and Bop get too close to one another.  For a step of 600 s and an
+        // integration over a year, it gives a position error of about 28 m on
+        // Bop and takes about 0.7 s of elapsed time.
         ConvergenceTestParameters{
             QuinlanTremaine1990Order12<Position<KSP>>(),
             /*iterations=*/5,

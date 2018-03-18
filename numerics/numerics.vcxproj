@@ -1,12 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9E0AE155-47B1-4090-AF00-038AF87A876D}</ProjectGuid>
     <RootNamespace>numerics</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
   <Import Project="$(SolutionDir)principia.props" />
-
   <ItemGroup>
     <ClInclude Include="fit_hermite_spline.hpp" />
     <ClInclude Include="fit_hermite_spline_body.hpp" />

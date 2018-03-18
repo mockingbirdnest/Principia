@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String next_release_name_ = "Coxeter";
-  private const int next_release_lunation_number_ = 225;
+  private const String next_release_name_ = "Cramer";
+  private const int next_release_lunation_number_ = 226;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2018, 03, 17, 13, 12, 00, TimeSpan.Zero);
+      new DateTimeOffset(2018, 04, 16, 01, 57, 00, TimeSpan.Zero);
 
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
@@ -248,6 +248,11 @@ public partial class PrincipiaPluginAdapter
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
       string expected_version = "1.3.1";
+#elif KSP_VERSION_1_4_1
+    if (Versioning.version_major != 1 ||
+        Versioning.version_minor != 4 ||
+        Versioning.Revision != 1) {
+      string expected_version = "1.4.1";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
                 Versioning.version_minor + "." + Versioning.Revision +
@@ -491,8 +496,13 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
+#if KSP_VERSION_1_4_1
+      bool success = UnityEngine.ImageConversion.LoadImage(
+          texture2d, File.ReadAllBytes(full_path));
+#elif KSP_VERSION_1_2_2 || KSP_VERSION_1_3_1
       bool success = texture2d.LoadImage(
           File.ReadAllBytes(full_path));
+#endif
       if (!success) {
         Log.Fatal("Failed to load texture " + full_path);
       }
@@ -650,7 +660,7 @@ public partial class PrincipiaPluginAdapter
       PopupDialog.SpawnPopupDialog(
           anchorMin           : default(UnityEngine.Vector2),
           anchorMax           : default(UnityEngine.Vector2),
-#if KSP_VERSION_1_3_1
+#if KSP_VERSION_1_3_1 || KSP_VERSION_1_4_1
           dialogName          : "Principia error",
 #endif
           title               : "Principia",

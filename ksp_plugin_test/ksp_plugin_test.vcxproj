@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A942ADF0-62F4-435C-85B2-934D5B666DB8}</ProjectGuid>
     <RootNamespace>ksp_plugin_test</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
@@ -51,7 +51,7 @@
     <ClCompile Include="plugin_integration_test.cpp" />
     <ClCompile Include="plugin_test.cpp" />
     <ClCompile Include="renderer_test.cpp" />
-    <ClCompile Include="test_plugin.cpp" />
+    <ClCompile Include="fake_plugin.cpp" />
     <ClCompile Include="vessel_test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -60,7 +60,7 @@
     <ClInclude Include="mock_manœuvre.hpp" />
     <ClInclude Include="mock_planetarium.hpp" />
     <ClInclude Include="mock_plugin.hpp" />
-    <ClInclude Include="test_plugin.hpp" />
+    <ClInclude Include="fake_plugin.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="mock_renderer.hpp" />

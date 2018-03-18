@@ -60,9 +60,9 @@ TEST_F(AlmostEqualsTest, Quantity) {
   Speed const v2 = v1;
   EXPECT_THAT(v2, AlmostEquals(v1, 0));
   EXPECT_THAT(2 * v2, Not(AlmostEquals(v1, 4)));
-  Speed const δv = v1 / 100;
+  Speed const δv = v1 / 100.0;
   Speed v_accumulated;
-  for (int i = 1; i <= 100; ++i) {
+  for (int i = 1; i <= 100.0; ++i) {
     v_accumulated += δv;
   }
   EXPECT_THAT(v_accumulated, Ne(v1));
