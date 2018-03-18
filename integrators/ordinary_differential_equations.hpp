@@ -70,9 +70,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 };
 
 // A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
-// exp(hB) are known.  |State| is the type of X.
+// exp(hB) are known.  |State| is the type of X.  These equations can be solved
+// using splitting methods.
 template<typename... StateElements>
-struct Splitting final {
+struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
 
   using Flow = std::function<Status(Instant const& t_initial,
