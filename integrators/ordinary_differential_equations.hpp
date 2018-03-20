@@ -54,6 +54,10 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
 
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
     DoublePrecision<Instant> time;
+
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.y == rhs.y && lhs.time == rhs.time;
+    }
   };
 
   using SystemStateError = std::tuple<std::vector<Difference<StateElements>>...>;
@@ -65,15 +69,9 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
   RightHandSideComputation compute_derivative;
 };
 
-template<typename... StateElements>
-bool operator==(typename ExplicitFirstOrderOrdinaryDifferentialEquation<
-                    StateElements...>::SystemState const& lhs,
-                typename ExplicitFirstOrderOrdinaryDifferentialEquation<
-                    StateElements...>::SystemState const& rhs);
-
-// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA)
-// and exp(hB) are known.  |State| is the type of X.  These equations can be
-// solved using splitting methods.
+// A differential equation of the form X′ = A(X, t) + B(X, t), where exp(hA) and
+// exp(hB) are known.  |State| is the type of X.  These equations can be solved
+// using splitting methods.
 template<typename... StateElements>
 struct DecomposableFirstOrderDifferentialEquation final {
   using State = std::tuple<std::vector<StateElements>...>;
@@ -89,6 +87,10 @@ struct DecomposableFirstOrderDifferentialEquation final {
 
     std::tuple<std::vector<DoublePrecision<StateElements>>...> y;
     DoublePrecision<Instant> time;
+
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.y == rhs.y && lhs.time == rhs.time;
+    }
   };
 
   // We cannot use |Difference<StateElements>| here for the same reason.  For some
@@ -103,12 +105,6 @@ struct DecomposableFirstOrderDifferentialEquation final {
   Flow left_flow;
   Flow right_flow;
 };
-
-template<typename... StateElements>
-bool operator==(typename DecomposableFirstOrderDifferentialEquation<
-                    StateElements...>::SystemState const& lhs,
-                typename DecomposableFirstOrderDifferentialEquation<
-                    StateElements...>::SystemState const& rhs);
 
 // A differential equation of the form q″ = f(q, q′, t).
 // |Position| is the type of q.
@@ -137,6 +133,12 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
 
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.positions == rhs.positions &&
+             lhs.velocities == rhs.velocities &&
+             lhs.time == rhs.time;
+    }
+
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
     static SystemState ReadFromMessage(
         serialization::SystemState const& message);
@@ -153,12 +155,6 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
   // |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
-
-template<typename Position_>
-bool operator==(typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-                    Position_>::SystemState const& lhs,
-                typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-                    Position_>::SystemState const& rhs);
 
 // A differential equation of the form q″ = f(q, t).
 // |Position| is the type of q.
@@ -187,6 +183,12 @@ struct SpecialSecondOrderDifferentialEquation final {
     std::vector<DoublePrecision<Velocity>> velocities;
     DoublePrecision<Instant> time;
 
+    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
+      return lhs.positions == rhs.positions &&
+             lhs.velocities == rhs.velocities &&
+             lhs.time == rhs.time;
+    }
+
     void WriteToMessage(not_null<serialization::SystemState*> message) const;
     static SystemState ReadFromMessage(
         serialization::SystemState const& message);
@@ -203,12 +205,6 @@ struct SpecialSecondOrderDifferentialEquation final {
   // |acceleration|.
   RightHandSideComputation compute_acceleration;
 };
-
-template<typename Position_>
-bool operator==(typename SpecialSecondOrderDifferentialEquation<
-                    Position_>::SystemState const& lhs,
-                typename SpecialSecondOrderDifferentialEquation<
-                    Position_>::SystemState const& rhs);
 
 // An initial value problem.
 template<typename ODE>

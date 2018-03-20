@@ -15,26 +15,8 @@ ExplicitFirstOrderOrdinaryDifferentialEquation<
     : y(y), time(t) {}
 
 template<typename... State>
-DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
-    State const& y,
-    Instant const& t)
+Splitting<State...>::SystemState::SystemState(State const& y, Instant const& t)
     : y(y), time(t) {}
-
-template<typename... StateElements>
-bool operator==(typename DecomposableFirstOrderDifferentialEquation<
-                    StateElements...>::SystemState const& lhs,
-                typename DecomposableFirstOrderDifferentialEquation<
-                    StateElements...>::SystemState const& rhs) {
-  return lhs.y == rhs.y && lhs.time == rhs.time;
-}
-
-template<typename... StateElements>
-bool operator==(typename ExplicitFirstOrderOrdinaryDifferentialEquation<
-                    StateElements...>::SystemState const& lhs,
-                typename ExplicitFirstOrderOrdinaryDifferentialEquation<
-                    StateElements...>::SystemState const& rhs) {
-  return lhs.y == rhs.y && lhs.time == rhs.time;
-}
 
 template<typename Position_>
 ExplicitSecondOrderOrdinaryDifferentialEquation<
@@ -42,16 +24,6 @@ ExplicitSecondOrderOrdinaryDifferentialEquation<
                                          std::vector<Velocity> const& v,
                                          Instant const& t)
     : positions(q), velocities(v), time(t) {}
-
-template<typename Position_>
-bool operator==(typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-                    Position_>::SystemState const& lhs,
-                typename ExplicitSecondOrderOrdinaryDifferentialEquation<
-                    Position_>::SystemState const& rhs) {
-  return lhs.positions == rhs.positions &&
-         lhs.velocities == rhs.velocities &&
-         lhs.time == rhs.time;
-}
 
 template<typename Position_>
 SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
@@ -93,16 +65,6 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
   }
   system_state.time = DoublePrecision<Instant>::ReadFromMessage(message.time());
   return system_state;
-}
-
-template<typename Position_>
-bool operator==(typename SpecialSecondOrderDifferentialEquation<
-                    Position_>::SystemState const& lhs,
-                typename SpecialSecondOrderDifferentialEquation<
-                    Position_>::SystemState const& rhs) {
-  return lhs.positions == rhs.positions &&
-         lhs.velocities == rhs.velocities &&
-         lhs.time == rhs.time;
 }
 
 }  // namespace internal_ordinary_differential_equations
