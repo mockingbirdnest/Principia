@@ -2,6 +2,7 @@
 #pragma once
 
 #include <functional>
+#include <tuple>
 #include <vector>
 
 #include "base/not_null.hpp"
@@ -60,7 +61,8 @@ struct ExplicitFirstOrderOrdinaryDifferentialEquation final {
     }
   };
 
-  using SystemStateError = std::tuple<std::vector<Difference<StateElements>>...>;
+  using SystemStateError =
+      std::tuple<std::vector<Difference<StateElements>>...>;
 
   // A functor that computes f(y, t) and stores it in |derivatives|.
   // This functor must be called with |std::get<i>(derivatives).size()| equal to
@@ -93,8 +95,8 @@ struct DecomposableFirstOrderDifferentialEquation final {
     }
   };
 
-  // We cannot use |Difference<StateElements>| here for the same reason.  For some
-  // reason |DoublePrecision<StateElements>| above works...
+  // We cannot use |Difference<StateElements>| here for the same reason.  For
+  // some reason |DoublePrecision<StateElements>| above works...
   using SystemStateError =
       std::tuple<std::vector<Difference<StateElements, StateElements>>...>;
 
