@@ -15,7 +15,9 @@ ExplicitFirstOrderOrdinaryDifferentialEquation<
     : y(y), time(t) {}
 
 template<typename... State>
-Splitting<State...>::SystemState::SystemState(State const& y, Instant const& t)
+DecomposableFirstOrderDifferentialEquation<State...>::SystemState::SystemState(
+    State const& y,
+    Instant const& t)
     : y(y), time(t) {}
 
 template<typename Position_>
