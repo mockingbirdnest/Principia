@@ -369,7 +369,8 @@ TEST_F(InterfaceTest, InsertOrKeepVessel) {
                                  vessel_name,
                                  parent_index,
                                  /*loaded=*/false,
-                                 Ref(inserted)));
+                                 Ref(inserted)))
+      .WillOnce(SetArgReferee<4>(true));
   EXPECT_CALL(*plugin_, HasVessel(vessel_guid))
       .WillOnce(Return(false))
       .WillOnce(Return(true));
