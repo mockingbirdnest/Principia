@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "geometry/sign.hpp"
+#include "integrators/methods.hpp"
 #include "numerics/ulp_distance.hpp"
 #include "quantities/quantities.hpp"
 
@@ -281,7 +282,10 @@ internal_symplectic_runge_kutta_nyström_integrator::
                                           Method::time_reversible,
                                           Method::evaluations,
                                           Method::composition> const&
-    SymplecticRungeKuttaNyströmIntegrator() {
+SymplecticRungeKuttaNyströmIntegrator() {
+  static_assert(
+      std::is_base_of<methods::SymplecticRungeKuttaNyström, Method>::value,
+      "Method must be derived from SymplecticRungeKuttaNyström");
   static internal_symplectic_runge_kutta_nyström_integrator::
       SymplecticRungeKuttaNyströmIntegrator<Position,
                                             Method::order,

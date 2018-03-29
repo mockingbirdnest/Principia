@@ -12,7 +12,7 @@ using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
 
-struct EmbeddedExplicitRungeKuttaNyströmIntegrator : not_constructible {
+struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
   // static constexpr int stages = ...;
@@ -37,7 +37,7 @@ struct SymmetricLinearMultistep : not_constructible {
   // static constexpr double β_denominator = ...;
 };
 
-struct SymplecticRungeKuttaNyströmIntegrator : not_constructible {
+struct SymplecticRungeKuttaNyström : not_constructible {
   enum CompositionMethod {
     BA,   // Neither b₀ nor aᵣ vanishes.
     ABA,  // b₀ = 0.
@@ -124,7 +124,7 @@ struct BlanesMoan2002S10 : SymplecticPartitionedRungeKutta {
                                                    +0.41351430042834400,
                                                    +0.050262764400392200}}};
 };
-struct BlanesMoan2002SRKN6B : SymplecticRungeKuttaNyströmIntegrator {
+struct BlanesMoan2002SRKN6B : SymplecticRungeKuttaNyström {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 6;
@@ -147,7 +147,7 @@ struct BlanesMoan2002SRKN6B : SymplecticRungeKuttaNyströmIntegrator {
                                                    0.39630980149836800,
                                                    0.082984406417405200}}};
 };
-struct BlanesMoan2002SRKN11B : SymplecticRungeKuttaNyströmIntegrator {
+struct BlanesMoan2002SRKN11B : SymplecticRungeKuttaNyström {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 11;
@@ -180,7 +180,7 @@ struct BlanesMoan2002SRKN11B : SymplecticRungeKuttaNyströmIntegrator {
                                                    0.19812867191806700,
                                                    0.041464998518262400}}};
 };
-struct BlanesMoan2002SRKN14A : SymplecticRungeKuttaNyströmIntegrator {
+struct BlanesMoan2002SRKN14A : SymplecticRungeKuttaNyström {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 14;
@@ -246,7 +246,7 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
 struct DormandElMikkawyPrince1986RKN434FM :
-    EmbeddedExplicitRungeKuttaNyströmIntegrator {
+    EmbeddedExplicitRungeKuttaNyström {
   static constexpr int higher_order = 4;
   static constexpr int lower_order = 3;
   static constexpr int stages = 4;
@@ -335,7 +335,7 @@ struct McLachlan1995S5 : SymplecticPartitionedRungeKutta {
                                                    -0.097336042636895508015,
                                                    +0.089269454226475244887}}};
 };
-struct McLachlan1995SB3A4 : SymplecticRungeKuttaNyströmIntegrator {
+struct McLachlan1995SB3A4 : SymplecticRungeKuttaNyström {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 4;
@@ -350,7 +350,7 @@ struct McLachlan1995SB3A4 : SymplecticRungeKuttaNyströmIntegrator {
                                                    0.18819521776883821787}}};
   static constexpr FixedVector<double, stages> b{{{0.0, 1.0, -0.5, -0.5, 1.0}}};
 };
-struct McLachlan1995SB3A5 : SymplecticRungeKuttaNyströmIntegrator {
+struct McLachlan1995SB3A5 : SymplecticRungeKuttaNyström {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 5;
@@ -508,7 +508,7 @@ struct McLachlanAtela1992Order3Optimal : SymplecticPartitionedRungeKutta {
                                                    -0.1879916187991597820,
                                                    +0.9196615230173998571}}};
 };
-struct McLachlanAtela1992Order4Optimal : SymplecticRungeKuttaNyströmIntegrator {
+struct McLachlanAtela1992Order4Optimal : SymplecticRungeKuttaNyström {
   static constexpr int order = 4;
   static constexpr bool time_reversible = false;
   static constexpr int evaluations = 4;
@@ -526,7 +526,7 @@ struct McLachlanAtela1992Order4Optimal : SymplecticRungeKuttaNyströmIntegrator 
                                                    0.7563200005156682911,
                                                    0.3340036032863214255}}};
 };
-struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyströmIntegrator {
+struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyström {
   static constexpr int order = 5;
   static constexpr bool time_reversible = false;
   static constexpr int evaluations = 6;
@@ -585,7 +585,7 @@ struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {
 // remark "we did not use HYBRJ1 to improve the accuracy of method coefficients
 // as we did in section 3.1".  We assume McLachlan's version is accurate.
 // TODO(egg): Derive the coefficients with Mathematica.
-struct OkunborSkeel1994Order6Method13 : SymplecticRungeKuttaNyströmIntegrator {
+struct OkunborSkeel1994Order6Method13 : SymplecticRungeKuttaNyström {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;

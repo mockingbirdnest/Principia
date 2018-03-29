@@ -23,6 +23,8 @@ using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
+using CompositionMethod =
+    methods::SymplecticRungeKuttaNyström::CompositionMethod;
 
 // This class solves ordinary differential equations of following forms using a
 // symplectic Runge-Kutta-Nyström method:
@@ -66,22 +68,15 @@ using quantities::Time;
 // See the documentation for a description of the correspondence between
 // these coefficients and those of a general Runge-Kutta-Nyström method.
 
-using CompositionMethod =
-    methods::SymplecticRungeKuttaNyströmIntegrator::CompositionMethod;
-constexpr CompositionMethod BA =
-    methods::SymplecticRungeKuttaNyströmIntegrator::BA;
-constexpr CompositionMethod ABA =
-    methods::SymplecticRungeKuttaNyströmIntegrator::ABA;
-constexpr CompositionMethod BAB =
-    methods::SymplecticRungeKuttaNyströmIntegrator::BAB;
-
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
   static constexpr int stages_ =
-      composition_ == BA ? evaluations_ : evaluations_ + 1;
+      composition_ == methods::SymplecticRungeKuttaNyström::BA
+          ? evaluations_
+          : evaluations_ + 1;
 
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
@@ -123,6 +118,10 @@ class SymplecticRungeKuttaNyströmIntegrator
       Time const& step) const override;
 
  private:
+  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
+  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
+  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
+
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
@@ -135,10 +134,6 @@ class SymplecticRungeKuttaNyströmIntegrator
 };
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
-
-using internal_symplectic_runge_kutta_nyström_integrator::ABA;
-using internal_symplectic_runge_kutta_nyström_integrator::BA;
-using internal_symplectic_runge_kutta_nyström_integrator::BAB;
 
 template<typename Method, typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
