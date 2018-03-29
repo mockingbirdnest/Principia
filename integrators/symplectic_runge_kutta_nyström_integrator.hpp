@@ -138,6 +138,14 @@ using internal_symplectic_runge_kutta_nyström_integrator::BAB;
 using internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator;
 
+template<typename Method, typename Position>
+SymplecticRungeKuttaNyströmIntegrator<Position,
+                                      Method::order,
+                                      Method::time_reversible,
+                                      Method::evaluations,
+                                      Method::composition> const&
+MakeSymplecticRungeKuttaNyströmIntegrator();
+
 // This method minimizes the error constant.
 // Coefficients from Robert I. McLachlan and Pau Atela (1992),
 // The accuracy of symplectic integrators, table 2.

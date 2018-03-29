@@ -7,6 +7,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -59,18 +60,20 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 
-#define INSTANCE(integrator,                                      \
-                 beginning_of_convergence,                        \
-                 expected_position_error,                         \
-                 expected_velocity_error,                         \
-                 expected_energy_error)                           \
-    SimpleHarmonicMotionTestInstance(integrator<Length>(),        \
-                                     #integrator,                 \
-                                     (beginning_of_convergence),  \
-                                     (expected_position_error),   \
-                                     (expected_velocity_error),   \
-                                     (expected_energy_error),     \
-                                     true)
+#define INSTANCE(integrator,                                         \
+                 beginning_of_convergence,                           \
+                 expected_position_error,                            \
+                 expected_velocity_error,                            \
+                 expected_energy_error)                              \
+  SimpleHarmonicMotionTestInstance(                                  \
+      MakeSymplecticRungeKuttaNyströmIntegrator<methods::integrator, \
+                                                Length>(),           \
+      #integrator,                                                   \
+      (beginning_of_convergence),                                    \
+      (expected_position_error),                                     \
+      (expected_velocity_error),                                     \
+      (expected_energy_error),                                       \
+      true)
 
 #define SPRK_INSTANCE(integrator,                                     \
                       composition,                                    \

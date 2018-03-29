@@ -274,6 +274,22 @@ ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
+template<typename Method, typename Position>
+SymplecticRungeKuttaNyströmIntegrator<Position,
+                                      Method::order,
+                                      Method::time_reversible,
+                                      Method::evaluations,
+                                      Method::composition> const&
+MakeSymplecticRungeKuttaNyströmIntegrator() {
+  static SymplecticRungeKuttaNyströmIntegrator<Position,
+                                      Method::order,
+                                      Method::time_reversible,
+                                      Method::evaluations,
+                                      Method::composition> const integrator(
+                                      Method::kind, Method::a, Method::b);
+  return integrator;
+}
+
 template<typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Position, 4, false, 4, BA> const&
 McLachlanAtela1992Order4Optimal() {
