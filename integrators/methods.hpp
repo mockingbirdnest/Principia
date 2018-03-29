@@ -62,7 +62,7 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   static constexpr int Stages(int const evaluations,
                               bool const first_same_as_last) {
     return first_same_as_last ? evaluations + 1 : evaluations;
-  };
+  }
   // static constexpr int order = ...;
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
@@ -252,8 +252,8 @@ struct DormandElMikkawyPrince1986RKN434FM :
   static constexpr int lower_order = 3;
   static constexpr int stages = 4;
   static constexpr bool first_same_as_last = true;
-  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind
-  =serialization::AdaptiveStepSizeIntegrator::
+  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
+      serialization::AdaptiveStepSizeIntegrator::
           DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM;
   static constexpr FixedVector<double, stages> c{{
       { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0}}};
