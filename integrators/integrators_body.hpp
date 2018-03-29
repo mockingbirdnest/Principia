@@ -8,6 +8,7 @@
 
 #include "base/macros.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
@@ -102,21 +103,35 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
   using FSSI = serialization::FixedStepSizeIntegrator;
   switch (message.kind()) {
     case FSSI::BLANES_MOAN_2002_SRKN_6B:
-      return BlanesMoan2002SRKN6B<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN6B,
+          typename ODE::Position>();
     case FSSI::BLANES_MOAN_2002_SRKN_11B:
-      return BlanesMoan2002SRKN11B<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN11B,
+          typename ODE::Position>();
     case FSSI::BLANES_MOAN_2002_SRKN_14A:
-      return BlanesMoan2002SRKN14A<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A,
+          typename ODE::Position>();
     case FSSI::MCLACHLAN_1995_SB3A_4:
-      return McLachlan1995SB3A4<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<methods::McLachlan1995SB3A4,
+                                                   typename ODE::Position>();
     case FSSI::MCLACHLAN_1995_SB3A_5:
-      return McLachlan1995SB3A5<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<methods::McLachlan1995SB3A5,
+                                                   typename ODE::Position>();
     case FSSI::MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL:
-      return McLachlanAtela1992Order4Optimal<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::McLachlanAtela1992Order4Optimal,
+          typename ODE::Position>();
     case FSSI::MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL:
-      return McLachlanAtela1992Order5Optimal<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::McLachlanAtela1992Order5Optimal,
+          typename ODE::Position>();
     case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
-      return OkunborSkeel1994Order6Method13<typename ODE::Position>();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::OkunborSkeel1994Order6Method13,
+          typename ODE::Position>();
     case FSSI::QUINLAN_1999_ORDER_8A:
       return Quinlan1999Order8A<typename ODE::Position>();
     case FSSI::QUINLAN_1999_ORDER_8B:

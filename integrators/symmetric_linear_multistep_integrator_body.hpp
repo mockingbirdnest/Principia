@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "geometry/serialization.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
 namespace principia {
@@ -423,7 +424,8 @@ template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, -2.0, 2.0, -2.0, 2.0},
       {0.0, 22081.0, -29418.0, 75183.0, -75212.0},
       15120.0);
@@ -434,7 +436,8 @@ template<typename Position>
 SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, 0.0, 0.0, -0.5, -1.0},
       {0.0, 192481.0, 6582.0, 816783.0, -156812.0},
       120960.0);
@@ -446,7 +449,8 @@ SymmetricLinearMultistepIntegrator<Position, 8> const&
 QuinlanTremaine1990Order8() {
   static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0},
       {0.0, 17671.0, -23622.0, 61449.0, -50516.0},
       12096.0);
@@ -458,7 +462,8 @@ SymmetricLinearMultistepIntegrator<Position, 10> const&
 QuinlanTremaine1990Order10() {
   static SymmetricLinearMultistepIntegrator<Position, 10> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, -1.0, 1.0, -1.0, 1.0, -2.0},
       {0.0, 399187.0, -485156.0, 2391436.0, -2816732.0, 4651330.0},
       241920.0);
@@ -470,7 +475,8 @@ SymmetricLinearMultistepIntegrator<Position, 12> const&
 QuinlanTremaine1990Order12() {
   static SymmetricLinearMultistepIntegrator<Position, 12> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0},
       {0.0,
        90987349.0,
@@ -488,7 +494,8 @@ SymmetricLinearMultistepIntegrator<Position, 14> const&
 QuinlanTremaine1990Order14() {
   static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
       serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14,
-      BlanesMoan2002SRKN14A<Position>(),
+      SymplecticRungeKuttaNyströmIntegrator<
+          methods::BlanesMoan2002SRKN14A, Position>(),
       {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0},
       {0.0,
        433489274083.0,
