@@ -3,6 +3,7 @@
 
 #include "base/not_constructible.hpp"
 #include "numerics/fixed_arrays.hpp"
+#include "serialization/integrators.pb.h"
 
 namespace principia {
 namespace integrators {

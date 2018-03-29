@@ -12,6 +12,7 @@
 #include "base/file.hpp"
 #include "base/status.hpp"
 #include "glog/logging.h"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
@@ -25,10 +26,12 @@
 
 #define SLMS_INTEGRATOR(name) \
   { (integrators::name<Length>()), u8###name, 1 }
-#define SRKN_INTEGRATOR(name)                     \
-  {                                               \
-    (integrators::name<Length>()), u8###name,       \
-        (integrators::name<Length>()).evaluations \
+#define SRKN_INTEGRATOR(name)                                 \
+  {                                                           \
+    (integrators::SymplecticRungeKuttaNyströmIntegrator<      \
+        integrators::methods::name,                           \
+        Length>()),                                           \
+        u8###name, (integrators::methods::name::evaluations)  \
   }
 #define SPRK_INTEGRATOR(name, composition)                 \
   {                                                        \
@@ -49,8 +52,6 @@ using geometry::Displacement;
 using geometry::InnerProduct;
 using geometry::Instant;
 using geometry::Velocity;
-using integrators::ABA;
-using integrators::BA;
 using integrators::FixedStepSizeIntegrator;
 using integrators::IntegrationProblem;
 using integrators::SpecialSecondOrderDifferentialEquation;
@@ -94,6 +95,9 @@ using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 using Problem = IntegrationProblem<ODE>;
 
 namespace {
+
+constexpr auto ABA = integrators::methods::SymplecticRungeKuttaNyström::ABA;
+constexpr auto BA = integrators::methods::SymplecticRungeKuttaNyström::BA;
 
 struct SimpleHarmonicMotionPlottedIntegrator final {
   FixedStepSizeIntegrator<ODE> const& integrator;

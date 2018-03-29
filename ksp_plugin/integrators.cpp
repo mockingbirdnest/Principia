@@ -5,6 +5,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 
 namespace principia {
@@ -12,16 +13,18 @@ namespace ksp_plugin {
 namespace internal_integrators {
 
 using geometry::Position;
-using integrators::BlanesMoan2002SRKN14A;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
 using integrators::Quinlan1999Order8A;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::BlanesMoan2002SRKN14A;
 using quantities::si::Minute;
 using quantities::si::Second;
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-             BlanesMoan2002SRKN14A<Position<Barycentric>>(),
-             /*step=*/35 * Minute);
+      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                            Position<Barycentric>>(),
+      /*step=*/35 * Minute);
 }
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
