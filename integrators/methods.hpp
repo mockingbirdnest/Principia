@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "serialization/integrators.pb.h"
@@ -9,6 +10,7 @@ namespace principia {
 namespace integrators {
 namespace methods {
 
+using base::mod;
 using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
@@ -87,17 +89,18 @@ struct AsSymplecticRungeKuttaNyström {
   //              "properties of this integrator");
 
   struct Method : SymplecticRungeKuttaNyström {
-    static constexpr int order = SymplecticRungeKuttaNyström::order;
+    static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;
     static constexpr bool time_reversible =
-        SymplecticRungeKuttaNyström::time_reversible;
-    static constexpr int evaluations = SymplecticRungeKuttaNyström::evaluations;
+        SymplecticPartitionedRungeKuttaMethod::time_reversible;
+    static constexpr int evaluations =
+        SymplecticPartitionedRungeKuttaMethod::evaluations;
     static constexpr CompositionMethod composition =
-        SymplecticRungeKuttaNyström::first_same_as_last
+        SymplecticPartitionedRungeKuttaMethod::first_same_as_last
             ? composition
             : SymplecticRungeKuttaNyström::CompositionMethod::BA;
     static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
         SymplecticPartitionedRungeKuttaMethod::kind;
-    static constexpr int stages = stages(evaluations, composition);
+    static constexpr int stages = Stages(evaluations, composition);
 
     static constexpr FixedVector<double, stages> Shift(
         FixedVector<double, stages> const& a,

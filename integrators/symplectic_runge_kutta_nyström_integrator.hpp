@@ -102,15 +102,20 @@ class SymplecticRungeKuttaNyströmIntegrator
       Time const& step) const override;
 
  private:
-  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
-  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
-  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
-
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
       IntegrationProblem<ODE> const& problem,
       AppendState const& append_state,
       Time const& step) const override;
+
+  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
+  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
+  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
+
+  static constexpr auto composition_ = Method::composition;
+  static constexpr auto stages_ = Method::stages;
+  static constexpr auto a_ = Method::a;
+  static constexpr auto b_ = Method::b;
 
   FixedVector<double, Method::stages> c_;
 };
@@ -120,6 +125,16 @@ class SymplecticRungeKuttaNyströmIntegrator
 template<typename Method, typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<Method, Position> const&
+SymplecticRungeKuttaNyströmIntegrator();
+
+template<typename Method,
+         methods::SymplecticRungeKuttaNyström::CompositionMethod composition,
+         typename Position>
+internal_symplectic_runge_kutta_nyström_integrator::
+    SymplecticRungeKuttaNyströmIntegrator<
+        typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                        composition>::Method,
+        Position> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators

@@ -81,8 +81,9 @@ using ::testing::ValuesIn;
                       expected_velocity_error,                        \
                       expected_energy_error)                          \
   SimpleHarmonicMotionTestInstance(                                   \
-      integrator<Length, Speed>()                                     \
-          .AsRungeKuttaNyströmIntegrator<(composition)>(),            \
+      SymplecticRungeKuttaNyströmIntegrator<methods::integrator,      \
+                                            (composition),            \
+                                            Length>(),                \
       #integrator ".AsRungeKuttaNyströmIntegrator<" #composition ">", \
       (beginning_of_convergence),                                     \
       (expected_position_error),                                      \

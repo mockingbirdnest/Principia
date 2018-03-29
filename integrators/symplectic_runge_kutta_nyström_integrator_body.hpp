@@ -180,9 +180,7 @@ template<typename Method, typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
 SymplecticRungeKuttaNyströmIntegrator()
     : FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(kind),
-      a_(a),
-      b_(b) {
+          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind) {
   DoublePrecision<double> c_i(0.0);
   for (int i = 0; i < stages_; ++i) {
     c_[i] = c_i.value;
