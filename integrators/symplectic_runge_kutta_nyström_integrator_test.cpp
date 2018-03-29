@@ -7,6 +7,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_partitioned_runge_kutta_integrator.hpp"
 #include "quantities/quantities.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -59,18 +60,19 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 
-#define INSTANCE(integrator,                                      \
-                 beginning_of_convergence,                        \
-                 expected_position_error,                         \
-                 expected_velocity_error,                         \
-                 expected_energy_error)                           \
-    SimpleHarmonicMotionTestInstance(integrator<Length>(),        \
-                                     #integrator,                 \
-                                     (beginning_of_convergence),  \
-                                     (expected_position_error),   \
-                                     (expected_velocity_error),   \
-                                     (expected_energy_error),     \
-                                     true)
+#define INSTANCE(integrator,                                                \
+                 beginning_of_convergence,                                  \
+                 expected_position_error,                                   \
+                 expected_velocity_error,                                   \
+                 expected_energy_error)                                     \
+  SimpleHarmonicMotionTestInstance(                                         \
+      SymplecticRungeKuttaNyströmIntegrator<methods::integrator, Length>(), \
+      #integrator,                                                          \
+      (beginning_of_convergence),                                           \
+      (expected_position_error),                                            \
+      (expected_velocity_error),                                            \
+      (expected_energy_error),                                              \
+      true)
 
 #define SPRK_INSTANCE(integrator,                                     \
                       composition,                                    \
@@ -95,8 +97,7 @@ using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 namespace {
 
 template<typename Integrator>
-void TestTermination(
-    Integrator const& integrator) {
+void TestTermination(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
@@ -125,11 +126,11 @@ void TestTermination(
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
-    case BA:
-    case ABA:
+    case methods::SymplecticRungeKuttaNyström::BA:
+    case methods::SymplecticRungeKuttaNyström::ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case BAB:
+    case methods::SymplecticRungeKuttaNyström::BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -182,11 +183,11 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-    case BA:
-    case ABA:
+    case methods::SymplecticRungeKuttaNyström::BA:
+    case methods::SymplecticRungeKuttaNyström::ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case BAB:
+    case methods::SymplecticRungeKuttaNyström::BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -449,26 +450,27 @@ class SimpleHarmonicMotionTestInstance final {
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error,
                                    bool const serializable)
-      : test_termination_(std::bind(TestTermination<Integrator>, integrator)),
+      : test_termination_(std::bind(TestTermination<Integrator>,
+                                    std::cref(integrator))),
         test_1000_seconds_at_1_millisecond_(
             std::bind(Test1000SecondsAt1Millisecond<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       expected_position_error,
                       expected_velocity_error)),
         test_convergence_(
             std::bind(TestConvergence<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       beginning_of_convergence)),
         test_symplecticity_(
             std::bind(TestSymplecticity<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       expected_energy_error)),
         test_time_reversibility_(
             std::bind(TestTimeReversibility<Integrator>,
-                      integrator)),
+                      std::cref(integrator))),
         test_serialization_(
             std::bind(TestSerialization<Integrator>,
-                      integrator)),
+                      std::cref(integrator))),
         name_(name),
         serializable_(serializable) {}
 
@@ -566,145 +568,145 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
           // |BAB| (sometimes called leapfrog and pseudo-leapfrog) for coverage.
           // We test the others as BAB integrators only.
           SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
-                        ABA,
+                        methods::SymplecticRungeKuttaNyström::ABA,
                         0.4 * Second,
                         +4.15606749774469295e-05 * Metre,
                         +4.16264386218978197e-05 * Metre / Second,
                         +5.05049535215751355e-03 * Joule),
           SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.4 * Second,
                         +4.15606749774714325e-05 * Metre,
                         +4.16261832565070940e-05 * Metre / Second,
                         +4.99999039863668893e-03 * Joule),
           SPRK_INSTANCE(Ruth1983,
-                        BA,
+                        methods::SymplecticRungeKuttaNyström::BA,
                         0.1 * Second,
                         +2.77767866216707682e-11 * Metre,
                         +7.01570745942348140e-13 * Metre / Second,
                         +1.15535032619074052e-04 * Joule),
           SPRK_INSTANCE(Suzuki1990,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +1.17211795824800902e-12 * Metre,
                         +1.17471483929154630e-12 * Metre / Second,
                         +5.75983521433620638e-06 * Joule),
           SPRK_INSTANCE(Yoshida1990Order6A,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1.5 * Second,
                         +8.30863156053851526e-14 * Metre,
                         +8.30672336471494077e-14 * Metre / Second,
                         1.28253665132582739e-07 * Joule),
           SPRK_INSTANCE(Yoshida1990Order6B,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +3.32525673663042198e-13 * Metre,
                         +3.32810168313102395e-13 * Metre / Second,
                         +3.39431978840787352e-06 * Joule),
           SPRK_INSTANCE(Yoshida1990Order6C,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +9.58053081312471022e-14 * Metre,
                         +9.58625540059543368e-14 * Metre / Second,
                         +3.58056353333413568e-06 * Joule),
           SPRK_INSTANCE(Yoshida1990Order8A,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.043 * Second,
                         +6.06330957664269476e-13 * Metre,
                         +6.06924233093053545e-13 * Metre / Second,
                         +1.49030436397135091e-05 * Joule),
           SPRK_INSTANCE(Yoshida1990Order8B,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.5 * Second,
                         +4.91648388667442759e-13 * Metre,
                         +4.92134111240716265e-13 * Metre / Second,
                         +1.33083068010186878e-07 * Joule),
           SPRK_INSTANCE(Yoshida1990Order8C,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.9 * Second,
                         +3.13037790133918747e-13 * Metre,
                         +3.13291059761411361e-13 * Metre / Second,
                         +4.68151000188044009e-08 * Joule),
           SPRK_INSTANCE(Yoshida1990Order8D,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1.1 * Second,
                         +2.20309881449054501e-13 * Metre,
                         +2.20490292690556089e-13 * Metre / Second,
                         +1.58094315416690279e-10 * Joule),
           SPRK_INSTANCE(Yoshida1990Order8E,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.3 * Second,
                         +1.39072781069060625e-13 * Metre,
                         +1.39159517242859465e-13 * Metre / Second,
                         +3.42872182312881080e-08 * Joule),
           SPRK_INSTANCE(CandyRozmus1991ForestRuth1990,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.5 * Second,
                         +6.63488881891272086e-11 * Metre,
                         +6.64553828633174248e-11 * Metre / Second,
                         +6.26859072366814374e-05 * Joule),
           SPRK_INSTANCE(McLachlanAtela1992Order2Optimal,
-                        BA,
+                        methods::SymplecticRungeKuttaNyström::BA,
                         0.7 * Second,
                         +2.01685999379921758e-05 * Metre,
                         +2.02003819904818379e-05 * Metre / Second,
                         +8.63068191495619530e-05 * Joule),
           SPRK_INSTANCE(McLachlanAtela1992Order3Optimal,
-                        BA,
+                        methods::SymplecticRungeKuttaNyström::BA,
                         0.09 * Second,
                         +1.21425465168800706e-11 * Metre,
                         +3.68977418063742846e-13 * Metre / Second,
                         +4.72513762963533424e-05 * Joule),
           SPRK_INSTANCE(McLachlan1995S2,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.1 * Second,
                         +1.20001294944783662e-05 * Metre,
                         +1.20190260074261876e-05 * Metre / Second,
                         +4.47986262497312993e-05 * Joule),
           SPRK_INSTANCE(McLachlan1995SS5,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.1 * Second,
                         +1.99751326590558165e-12 * Metre,
                         +2.00208426226478053e-12 * Metre / Second,
                         +3.99026027320115162e-06 * Joule),
           SPRK_INSTANCE(McLachlan1995S4,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         0.1 * Second,
                         +2.20774787340616285e-13 * Metre,
                         +2.21161630675759113e-13 * Metre / Second,
                         +2.11567735630691089e-06 * Joule),
           SPRK_INSTANCE(McLachlan1995S5,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +7.15746906188030607e-14 * Metre,
                         +7.15608128309952463e-14 * Metre / Second,
                         +7.82877597083064813e-07 * Joule),
           SPRK_INSTANCE(McLachlan1995SS9,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +1.23734356094473696e-13 * Metre,
                         +1.23817622821320583e-13 * Metre / Second,
                         +1.29530730030857910e-08 * Joule),
           SPRK_INSTANCE(McLachlan1995SS15,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +9.67281810204667636e-14 * Metre,
                         +9.67836921716980214e-14 * Metre / Second,
                         +1.21325172131037107e-11 * Joule),
           SPRK_INSTANCE(McLachlan1995SS17,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +8.34124436188687923e-14 * Metre,
                         +8.34471380883883285e-14 * Metre / Second,
                         +2.24043006369356590e-12 * Joule),
           SPRK_INSTANCE(BlanesMoan2002S6,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +1.23803745033512769e-13 * Metre,
                         +1.23966809040254589e-13 * Metre / Second,
                         +2.24300146345335349e-07 * Joule),
           SPRK_INSTANCE(BlanesMoan2002S10,
-                        BAB,
+                        methods::SymplecticRungeKuttaNyström::BAB,
                         1 * Second,
                         +7.67632485354496907e-14 * Metre,
                         +7.67372276833100386e-14 * Metre / Second,

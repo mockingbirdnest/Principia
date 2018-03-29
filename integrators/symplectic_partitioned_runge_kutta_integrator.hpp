@@ -72,6 +72,10 @@ class SymplecticPartitionedRungeKuttaIntegrator {
       composition_method> const& AsRungeKuttaNyströmIntegrator() const;
 
  private:
+  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
+  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
+  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
+
   FixedVector<double, stages_> const a_;
   FixedVector<double, stages_> const b_;
 

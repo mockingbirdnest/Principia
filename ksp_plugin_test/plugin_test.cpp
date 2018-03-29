@@ -58,7 +58,6 @@ using geometry::Permutation;
 using geometry::RigidTransformation;
 using geometry::Trivector;
 using integrators::IntegrationProblem;
-using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::MockFixedStepSizeIntegrator;
 using integrators::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;

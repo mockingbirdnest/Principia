@@ -6,6 +6,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/fingerprint2011.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -18,6 +19,8 @@ namespace internal_solar_system {
 
 using astronomy::ICRFJ2000Equator;
 using base::Fingerprint2011;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
@@ -79,8 +82,8 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/1 * Metre,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          integrators::McLachlanAtela1992Order4Optimal<
-              Position<ICRFJ2000Equator>>(),
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
+                                                Position<ICRFJ2000Equator>>(),
           /*step=*/1 * Second));
   auto const earth = solar_system.massive_body(*ephemeris, "Earth");
   EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6e-9);
@@ -131,8 +134,8 @@ TEST_F(SolarSystemTest, KSPSystem) {
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/1 * Metre,
       Ephemeris<KSP>::FixedStepParameters(
-          integrators::McLachlanAtela1992Order4Optimal<
-              Position<KSP>>(),
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
+                                                Position<KSP>>(),
           /*step=*/1 * Second));
   auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
   EXPECT_LT(RelativeError(52.917061 * Zetta(Kilogram), kerbin->mass()), 6e-9);

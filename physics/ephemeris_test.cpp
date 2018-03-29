@@ -13,6 +13,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -46,8 +47,10 @@ using geometry::Frame;
 using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order4Optimal;
+using integrators::methods::McLachlanAtela1992Order5Optimal;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -986,8 +989,8 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   auto ephemeris = solar_system.MakeEphemeris(
       fitting_tolerance,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          integrators::McLachlanAtela1992Order4Optimal<
-              Position<ICRFJ2000Equator>>(),
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
+                                                Position<ICRFJ2000Equator>>(),
           /*step=*/10 * Milli(Second)));
   ephemeris->Prolong(t0 + 10 * T);
 
@@ -1063,7 +1066,8 @@ INSTANTIATE_TEST_CASE_P(
     AllEphemerisTests,
     EphemerisTest,
     ::testing::Values(
-        &McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+        &SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
+                                               Position<ICRFJ2000Equator>>(),
         &Quinlan1999Order8A<Position<ICRFJ2000Equator>>()));
 
 }  // namespace internal_ephemeris
