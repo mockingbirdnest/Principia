@@ -45,7 +45,7 @@ struct SymplecticRungeKuttaNyström : not_constructible {
     BAB,  // aᵣ = 0.
   };
   static constexpr int Stages(int const evaluations,
-                              CompositionMethod composition) {
+                              CompositionMethod const composition) {
     return composition == BA ? evaluations : evaluations + 1;
   }
   // static constexpr int order = ...;
@@ -79,6 +79,13 @@ struct AsSymplecticRungeKuttaNyström {
                                 SymplecticPartitionedRungeKuttaMethod>::value,
                 "Method must be derived from SymplecticPartitionedRungeKutta");
   ///assert composition
+  //
+  //static_assert(first_same_as_last
+  //                  ? composition_method == ABA || composition_method == BAB
+  //                  : composition_method == BA,
+  //              "requested |composition_method| inconsistent with the "
+  //              "properties of this integrator");
+
   struct Method : SymplecticRungeKuttaNyström {
     static constexpr int order = SymplecticRungeKuttaNyström::order;
     static constexpr bool time_reversible =
@@ -91,8 +98,28 @@ struct AsSymplecticRungeKuttaNyström {
     static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
         SymplecticPartitionedRungeKuttaMethod::kind;
     static constexpr int stages = stages(evaluations, composition);
-    //static constexpr FixedVector<double, stages> a(...);
-    //static constexpr FixedVector<double, stages> b(...);
+
+    static constexpr FixedVector<double, stages> Shift(
+        FixedVector<double, stages> const& a,
+        CompositionMethod const composition) {
+      if (composition == ABA) {
+        FixedVector<double, stages> shifted_a;
+        // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
+        // A and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB|
+        // means aᵣ vanishes).
+        for (int i = 0; i < stages; ++i) {
+          shifted_a[i] = a[mod(i - 1, stages)];
+        }
+        return shifted_a;
+      } else {
+        return a;
+      }
+    }
+
+    static constexpr FixedVector<double, stages> a =
+        Shift(SymplecticPartitionedRungeKuttaMethod::a, composition);
+    static constexpr FixedVector<double, stages> b =
+        SymplecticPartitionedRungeKuttaMethod::b;
   };
 };
 
