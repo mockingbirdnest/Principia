@@ -10,6 +10,7 @@
 #define PRINCIPIA_INTEGRATORS_SYMPLECTIC_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_
 
 #include "base/status.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -65,11 +66,14 @@ using quantities::Time;
 // See the documentation for a description of the correspondence between
 // these coefficients and those of a general Runge-Kutta-Nyström method.
 
-enum CompositionMethod {
-  BA,   // Neither b₀ nor aᵣ vanishes.
-  ABA,  // b₀ = 0.
-  BAB,  // aᵣ = 0.
-};
+using CompositionMethod =
+    methods::SymplecticRungeKuttaNyströmIntegrator::CompositionMethod;
+constexpr CompositionMethod BA =
+    methods::SymplecticRungeKuttaNyströmIntegrator::BA;
+constexpr CompositionMethod ABA =
+    methods::SymplecticRungeKuttaNyströmIntegrator::ABA;
+constexpr CompositionMethod BAB =
+    methods::SymplecticRungeKuttaNyströmIntegrator::BAB;
 
 template<typename Position, int order_, bool time_reversible_, int evaluations_,
          CompositionMethod composition_>
