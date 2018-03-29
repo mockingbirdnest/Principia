@@ -43,7 +43,10 @@ struct SymplecticRungeKuttaNyströmIntegrator : not_constructible {
     ABA,  // b₀ = 0.
     BAB,  // aᵣ = 0.
   };
-
+  static constexpr int stages(int const evaluations,
+                              CompositionMethod composition) {
+    return composition == BA ? evaluations : evaluations + 1;
+  };
   // static constexpr int order = ...;
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
@@ -54,6 +57,10 @@ struct SymplecticRungeKuttaNyströmIntegrator : not_constructible {
 };
 
 struct SymplecticPartitionedRungeKutta : not_constructible {
+  static constexpr int stages(int const evaluations,
+                              bool const first_same_as_last) {
+    return first_same_as_last ? evaluations + 1 : evaluations;
+  };
   // static constexpr int order = ...;
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
