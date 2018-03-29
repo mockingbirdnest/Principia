@@ -362,7 +362,7 @@ SymmetricLinearMultistepIntegrator<Position, order_>::
 SymmetricLinearMultistepIntegrator(
     serialization::FixedStepSizeIntegrator::Kind const kind,
     FixedStepSizeIntegrator<ODE> const& startup_integrator,
-    FixedVector<double, half_order_> const & ɑ,
+    FixedVector<double, half_order_> const& ɑ,
     FixedVector<double, half_order_> const& β_numerator,
     double const β_denominator)
     : FixedStepSizeIntegrator<

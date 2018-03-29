@@ -6,10 +6,36 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_methods {
+namespace methods {
 
 using base::not_constructible;
+using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
+
+struct EmbeddedExplicitRungeKuttaNyströmIntegrator : not_constructible {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b_hat = ...;
+  // static constexpr FixedVector<double, stages> b_prime_hat = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+  // static constexpr FixedVector<double, stages> b_prime = ...;
+};
+
+struct SymmetricLinearMultistep : not_constructible {
+  static constexpr int half(int const order) {
+    return order / 2 + 1;
+  };
+  // static constexpr int order = ...;
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
+  // static constexpr FixedVector<double, half(order)> const ɑ(...);
+  // static constexpr FixedVector<double, half(order)> const β_numerator(...);
+  // static constexpr double β_denominator = ...;
+};
 
 struct SymplecticRungeKuttaNyströmIntegrator : not_constructible {
   enum CompositionMethod {
@@ -35,7 +61,6 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr FixedVector<double, order> a(...);
   // static constexpr FixedVector<double, order> b(...);
 };
-
 
 // The following methods have coefficients from Blanes and Moan (2002),
 // Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
@@ -202,6 +227,32 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                  +0.6756035959798288170});
 };
 
+// Coefficients from Dormand, El-Mikkawy and Prince (1986),
+// Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
+// Minimizes the 4th order truncation error.
+struct DormandElMikkawyPrince1986RKN434FM : 
+    EmbeddedExplicitRungeKuttaNyströmIntegrator {
+  static constexpr int higher_order = 4;
+  static constexpr int lower_order = 3;
+  static constexpr int stages = 4;
+  static constexpr bool first_same_as_last = true;
+  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =serialization::AdaptiveStepSizeIntegrator::
+          DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM;
+  static constexpr FixedVector<double, stages> c = 
+      { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a =
+      { 1.0 /   32.0,
+        7.0 / 1000.0, 119.0 / 500.0,
+        1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0};
+  static constexpr FixedVector<double, stages> b_hat =
+      { 1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0};
+  static constexpr FixedVector<double, stages> b_prime_hat =
+      { 1.0 /   14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0};
+  static constexpr FixedVector<double, stages> b = 
+      {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0};
+  static constexpr FixedVector<double, stages> b_prime = 
+      {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0};
+};
 
 // The following methods have coefficients from McLachlan (1995),
 // On the numerical integration of ordinary differential equations by symmetric
@@ -530,6 +581,88 @@ struct OkunborSkeel1994Order6Method13 : SymplecticRungeKuttaNyströmIntegrator {
                                                  0.00016600692650009894});
 };
 
+// The following methods are from Quinlan (1999),
+// Resonances and instabilities in symmetric multistep methods,
+// https://arxiv.org/abs/astro-ph/9901136.
+struct Quinlan1999Order8A : SymmetricLinearMultistep {
+  static constexpr int order = 8;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, -2.0, 2.0, -2.0, 2.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0, 22081.0, -29418.0, 75183.0, -75212.0});
+  static constexpr double β_denominator = 15120.0;
+};
+struct Quinlan1999Order8B : SymmetricLinearMultistep {
+  static constexpr int order = 8;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, 0.0, 0.0, -0.5, -1.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0, 192481.0, 6582.0, 816783.0, -156812.0});
+  static constexpr double β_denominator = 120960.0;
+};
+
+// The following methods are from Quinlan and Tremaine (1990),
+// Symmetric multistep methods for the numerical integration of planetary
+// orbits,
+// http://adsabs.harvard.edu/full/1990AJ....100.1694Q.
+struct QuinlanTremaine1990Order8 : SymmetricLinearMultistep {
+  static constexpr int order = 8;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, -2.0, 2.0, -1.0, 0.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0, 17671.0, -23622.0, 61449.0, -50516.0});
+  static constexpr double β_denominator = 12096.0;
+};
+struct QuinlanTremaine1990Order10 : SymmetricLinearMultistep {
+  static constexpr int order = 10;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, -1.0, 1.0, -1.0, 1.0, -2.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0, 399187.0, -485156.0, 2391436.0, -2816732.0, 4651330.0});
+  static constexpr double β_denominator = 241920.0;
+};
+struct QuinlanTremaine1990Order12 : SymmetricLinearMultistep {
+  static constexpr int order = 12;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0,
+       90987349.0,
+       -229596838.0,
+       812627169.0,
+       -1628539944.0,
+       2714971338.0,
+       -3041896548.0});
+  static constexpr double β_denominator = 53222400.0;
+};
+struct QuinlanTremaine1990Order14 : SymmetricLinearMultistep {
+  static constexpr int order = 14;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14;
+  static constexpr FixedVector<double, half(order)> const ɑ(
+      {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0});
+  static constexpr FixedVector<double, half(order)> const β_numerator(
+      {0.0,
+       433489274083.0,
+       -1364031998256.0,
+       5583113380398.0,
+       -14154444148720.0,
+       28630585332045.0,
+       -42056933842656.0,
+       48471792742212.0});
+  static constexpr double β_denominator = 237758976000.0;
+};
+
 // Coefficients from Ruth (1983), A canonical integration technique,
 // https://accelconf.web.cern.ch/accelconf/p83/PDF/PAC1983_2669.PDF.
 struct Ruth1983 : SymplecticPartitionedRungeKutta {
@@ -828,6 +961,6 @@ struct Yoshida1990Order8E : SymplecticPartitionedRungeKutta {
                                                  +0.651500828787584192418});
 };
 
-}  // namespace internal_methods
+}  // namespace methods
 }  // namespace integrators
 }  // namespace principia
