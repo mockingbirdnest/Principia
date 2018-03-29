@@ -71,6 +71,9 @@
     <ClInclude Include="cohen_hubbard_oesterwinter.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="methods.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">

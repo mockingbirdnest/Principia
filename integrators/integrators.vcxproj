@@ -18,6 +18,7 @@
     <ClInclude Include="backward_difference.hpp" />
     <ClInclude Include="integrators.hpp" />
     <ClInclude Include="integrators_body.hpp" />
+    <ClInclude Include="methods.hpp" />
     <ClInclude Include="mock_integrators.hpp" />
     <ClInclude Include="ordinary_differential_equations.hpp" />
     <ClInclude Include="ordinary_differential_equations_body.hpp" />
