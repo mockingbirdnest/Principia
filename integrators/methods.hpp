@@ -27,7 +27,7 @@ struct SymplecticRungeKuttaNyströmIntegrator : not_constructible {
   // static constexpr FixedVector<double, order> b(...);
 };
 
-struct SymplecticPartitionedRungeKutta : SymplecticRungeKuttaNyströmIntegrator {
+struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr int order = ...;
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
