@@ -75,6 +75,9 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr FixedVector<double, stages> b(...);
 };
 
+// Every SPRK may be transformed into an SRKN by specifying a composition method
+// (the possible composition methods are constrained by the properties of the
+// SPRK).  This struct effects that transformation.
 template<typename SymplecticPartitionedRungeKuttaMethod,
          SymplecticRungeKuttaNyström::CompositionMethod composition_>
 struct AsSymplecticRungeKuttaNyström {
