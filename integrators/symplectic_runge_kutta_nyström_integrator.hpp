@@ -112,8 +112,6 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
-  FixedVector<double, Method::stages> const a_;
-  FixedVector<double, Method::stages> const b_;
   FixedVector<double, Method::stages> c_;
 };
 

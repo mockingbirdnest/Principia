@@ -41,67 +41,10 @@ using numerics::FixedVector;
 // deserialized.
 // TODO(egg): Make them serializable/deserializable.  We need to prevent
 // combinatorial explosion.
-template<typename Position,
-         typename Momentum,
-         int order_,
-         bool time_reversible_,
-         int evaluations_,
-         bool first_same_as_last_>
+template<typename Method, typename Position>
 class SymplecticPartitionedRungeKuttaIntegrator {
-  static constexpr int stages_ = first_same_as_last_ ? evaluations_ + 1
-                                                     : evaluations_;
-
  public:
-  SymplecticPartitionedRungeKuttaIntegrator(
-      FixedVector<double, stages_> const& a,
-      FixedVector<double, stages_> const& b);
-
-  static constexpr int order = order_;
-  static constexpr int evaluations = evaluations_;
-  static constexpr bool time_reversible = time_reversible_;
-  static constexpr bool first_same_as_last = first_same_as_last_;
-
-  // If |first_same_as_last|, |composition_method| must be |ABA| or |BAB|.
-  // Otherwise, it must be |BA|.
-  template<typename SymplecticPartitionedRungeKuttaMethod,
-           methods::SymplecticRungeKuttaNyström::CompositionMethod composition>
-  SymplecticRungeKuttaNyströmIntegrator<
-      typename methods::AsSymplecticRungeKuttaNyström<
-          SymplecticPartitionedRungeKuttaMethod,
-          composition>::Method,
-      Position> const& AsRungeKuttaNyströmIntegrator() const;
-
- private:
-  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
-  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
-  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
-
-  FixedVector<double, stages_> const a_;
-  FixedVector<double, stages_> const b_;
-
-  // The Runge-Kutta-Nyström methods are stored here, so that we can use them
-  // by const-reference as we do for the others.  Since |*this| should be a
-  // static object, this similarly obviates questions of lifetime.
-  // They are mutable since the integrators are handled by by const-reference,
-  // are initialized on-demand, and are not part of the integrator per se.
-
-  template<CompositionMethod composition_method>
-  using SRKN = SymplecticRungeKuttaNyströmIntegrator<Position,
-                                                     order,
-                                                     time_reversible,
-                                                     evaluations,
-                                                     composition_method>;
-  struct NotApplicable final {};
-
-  mutable std::conditional_t<!first_same_as_last,
-                             std::unique_ptr<SRKN<BA>>,
-                             NotApplicable> ba_srkn_;
-  mutable std::conditional_t<first_same_as_last,
-                             std::unique_ptr<SRKN<ABA>>,
-                             NotApplicable> aba_srkn_;
-  mutable std::conditional_t<first_same_as_last,
-                             std::unique_ptr<SRKN<BAB>>,
-                             NotApplicable> bab_srkn_;
+  SymplecticPartitionedRungeKuttaIntegrator();
 };
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
