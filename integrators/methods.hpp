@@ -36,6 +36,439 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr FixedVector<double, order> b(...);
 };
 
+
+// The following methods have coefficients from Blanes and Moan (2002),
+// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
+// http://personales.upv.es/serblaza/2002JCAM.pdf.
+struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 6;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.20951510661336200,
+                                                 -0.14385177317981800,
+                                                 +0.43433666656645600,
+                                                 +0.43433666656645600,
+                                                 -0.14385177317981800,
+                                                 +0.20951510661336200,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.079203696431195700,
+                                                 +0.35317290604977400,
+                                                 -0.042065080357719500,
+                                                 +0.21937695575349960,
+                                                 -0.042065080357719500,
+                                                 +0.35317290604977400,
+                                                 +0.079203696431195700});
+};
+struct BlanesMoan2002S10 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 6;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 10;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.14881644790104200,
+                                                 -0.13238586576778400,
+                                                 +0.067307604692185000,
+                                                 +0.43266640257817500,
+                                                 -0.01640458940361800,
+                                                 -0.01640458940361800,
+                                                 +0.43266640257817500,
+                                                 +0.067307604692185000,
+                                                 -0.13238586576778400,
+                                                 +0.14881644790104200,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.050262764400392200,
+                                                 +0.41351430042834400,
+                                                 +0.045079889794397700,
+                                                 -0.18805485381956900,
+                                                 +0.54196067845078000,
+                                                 -0.7255255585086898,
+                                                 +0.54196067845078000,
+                                                 -0.18805485381956900,
+                                                 +0.045079889794397700,
+                                                 +0.41351430042834400,
+                                                 +0.050262764400392200});
+};
+struct BlanesMoan2002SRKN6B : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 6;
+  static constexpr CompositionMethod composition = BAB;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_6B;
+  static constexpr FixedVector<double, order> a({0.24529895718427100,
+                                                 0.60487266571108000,
+                                                 -0.35017162289535100,
+                                                 -0.35017162289535100,
+                                                 0.60487266571108000,
+                                                 0.24529895718427100,
+                                                 0.0});
+  static constexpr FixedVector<double, order> b({0.082984406417405200,
+                                                 0.39630980149836800,
+                                                 -0.039056304922348600,
+                                                 0.1195241940131508,
+                                                 -0.039056304922348600,
+                                                 0.39630980149836800,
+                                                 0.082984406417405200});
+};
+struct BlanesMoan2002SRKN11B : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 6;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 11;
+  static constexpr CompositionMethod composition = BAB;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_11B;
+  static constexpr FixedVector<double, order> a({0.12322977594627100,
+                                                 0.29055379779955800,
+                                                 -0.12704921262541700,
+                                                 -0.24633176106207500,
+                                                 0.35720887279592800,
+                                                 0.2047770542914700,
+                                                 0.35720887279592800,
+                                                 -0.24633176106207500,
+                                                 -0.12704921262541700,
+                                                 0.29055379779955800,
+                                                 0.12322977594627100,
+                                                 0.0});
+  static constexpr FixedVector<double, order> b({0.041464998518262400,
+                                                 0.19812867191806700,
+                                                 -0.040006192104153300,
+                                                 0.075253984301580700,
+                                                 -0.011511387420687900,
+                                                 0.23666992478693110,
+                                                 0.23666992478693110,
+                                                 -0.011511387420687900,
+                                                 0.075253984301580700,
+                                                 -0.040006192104153300,
+                                                 0.19812867191806700,
+                                                 0.041464998518262400});
+};
+struct BlanesMoan2002SRKN14A : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 6;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 14;
+  static constexpr CompositionMethod composition = ABA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_14A;
+  static constexpr FixedVector<double, order> a({0.037859319840611600,
+                                                 0.10263563310243500,
+                                                 -0.025867888266558700,
+                                                 0.31424140307144700,
+                                                 -0.13014445951741500,
+                                                 0.10641770036954300,
+                                                 -0.0087942431285105800,
+                                                 0.2073050690568954,
+                                                 -0.0087942431285105800,
+                                                 0.10641770036954300,
+                                                 -0.13014445951741500,
+                                                 0.31424140307144700,
+                                                 -0.025867888266558700,
+                                                 0.10263563310243500,
+                                                 0.037859319840611600});
+  static constexpr FixedVector<double, order> b({0.0,
+                                                 0.091719152624461650,
+                                                 0.18398317000500600,
+                                                 -0.056534365832888270,
+                                                 0.0049146887747128540,
+                                                 0.14376112716835800,
+                                                 0.32856769374680400,
+                                                 -0.19641146648645423,
+                                                 -0.19641146648645423,
+                                                 0.32856769374680400,
+                                                 0.14376112716835800,
+                                                 0.0049146887747128540,
+                                                 -0.056534365832888270,
+                                                 0.18398317000500600,
+                                                 0.091719152624461650});
+};
+
+// Coefficients from Forest and Ruth (1990),
+// Fourth-order symplectic integration, equation 4.8.
+// http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf.
+// This scheme was independently discovered by Candy and Rozmus (1991),
+// A Symplectic Integration Algorithm for Separable Hamiltonian Functions
+// (submitted earlier and published later than the Forest and Ruth paper).
+struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 3;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+1.3512071919596576340,
+                                                 -1.7024143839193152681,
+                                                 +1.3512071919596576340,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.6756035959798288170,
+                                                 -0.1756035959798288170,
+                                                 -0.1756035959798288170,
+                                                 +0.6756035959798288170});
+};
+
+
+// The following methods have coefficients from McLachlan (1995),
+// On the numerical integration of ordinary differential equations by symmetric
+// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
+struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 2;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 2;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({0.5, 0.5, 0.0});
+  static constexpr FixedVector<double, order> b({+0.19318332750378357396,
+                                                 +0.61363334499243285207,
+                                                 +0.19318332750378357396});
+};
+struct McLachlan1995SS5 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 5;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.28,
+                                                 +0.6254664284676700450,
+                                                 -0.8109328569353400900,
+                                                 +0.6254664284676700450,
+                                                 +0.28,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.14,
+                                                 +0.45273321423383502251,
+                                                 -0.0927332142338350225,
+                                                 -0.0927332142338350225,
+                                                 +0.45273321423383502251,
+                                                 +0.14});
+};
+struct McLachlan1995S4 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 4;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.54545454545454545455,
+                                                 -0.045454545454545454545,
+                                                 -0.045454545454545454545,
+                                                 +0.54545454545454545455,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.16913927992207204518,
+                                                 -0.29918620390405079951,
+                                                 +1.2600938479639575087,
+                                                 -0.29918620390405079951,
+                                                 +0.16913927992207204518});
+};
+struct McLachlan1995S5 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 5;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a(
+      {+0.4, -0.1, 0.4, -0.1, 0.4, 0.0});
+  static constexpr FixedVector<double, order> b({+0.089269454226475244887,
+                                                 -0.097336042636895508015,
+                                                 +0.50806658841042026313,
+                                                 +0.50806658841042026313,
+                                                 -0.097336042636895508015,
+                                                 +0.089269454226475244887});
+};
+struct McLachlan1995SB3A4 : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 4;
+  static constexpr CompositionMethod composition = ABA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_4;
+  static constexpr FixedVector<double, order> a({0.18819521776883821787,
+                                                 -0.021528551102171551201,
+                                                 0.66666666666666666667,
+                                                 -0.021528551102171551201,
+                                                 0.18819521776883821787});
+  static constexpr FixedVector<double, order> b({0.0, 1.0, -0.5, -0.5, 1.0});
+};
+struct McLachlan1995SB3A5 : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 5;
+  static constexpr CompositionMethod composition = ABA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_5;
+  static constexpr FixedVector<double, order> a({0.4051886183952522772,
+                                                 -0.2871440408165240890,
+                                                 0.3819554224212718118,
+                                                 0.3819554224212718118,
+                                                 -0.2871440408165240890,
+                                                 0.4051886183952522772});
+  static constexpr FixedVector<double, order> b({0.0,
+                                                 -0.041095890410958904110,
+                                                 0.28813559322033898305,
+                                                 0.50592059438123984212,
+                                                 0.28813559322033898305,
+                                                 -0.041095890410958904110});
+};
+struct McLachlan1995SS9 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 6;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 9;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.1867,
+                                                 +0.55549702371247839916,
+                                                 +0.12946694891347535806,
+                                                 -0.84326562338773460855,
+                                                 +0.9432033015235617027,
+                                                 -0.84326562338773460855,
+                                                 +0.12946694891347535806,
+                                                 +0.55549702371247839916,
+                                                 +0.1867,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.09335,
+                                                 +0.37109851185623919958,
+                                                 +0.34248198631297687861,
+                                                 -0.35689933723712962525,
+                                                 +0.0499688390679135471,
+                                                 +0.0499688390679135471,
+                                                 -0.35689933723712962525,
+                                                 +0.34248198631297687861,
+                                                 +0.37109851185623919958,
+                                                 +0.09335});
+};
+struct McLachlan1995SS15 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 8;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 15;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.7416703643506129534,
+                                                 -0.4091008258000315940,
+                                                 +0.1907547102962383800,
+                                                 -0.5738624711160822667,
+                                                 +0.2990641813036559238,
+                                                 +0.3346249182452981838,
+                                                 +0.3152930923967665966,
+                                                 -0.796887939352916354,
+                                                 +0.3152930923967665966,
+                                                 +0.3346249182452981838,
+                                                 +0.2990641813036559238,
+                                                 -0.5738624711160822667,
+                                                 +0.1907547102962383800,
+                                                 -0.4091008258000315940,
+                                                 +0.7416703643506129534,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.37083518217530647672,
+                                                 +0.1662847692752906797,
+                                                 -0.1091730577518966070,
+                                                 -0.1915538804099219434,
+                                                 -0.13739914490621317141,
+                                                 +0.3168445497744770538,
+                                                 +0.32495900532103239021,
+                                                 -0.2407974234780748787,
+                                                 -0.2407974234780748787,
+                                                 +0.32495900532103239021,
+                                                 +0.3168445497744770538,
+                                                 -0.13739914490621317141,
+                                                 -0.1915538804099219434,
+                                                 -0.1091730577518966070,
+                                                 +0.1662847692752906797,
+                                                 +0.37083518217530647672});
+};
+struct McLachlan1995SS17 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 8;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 17;
+  static constexpr bool first_same_as_last = true;
+  static constexpr FixedVector<double, order> a({+0.12886597938144329897,
+                                                 +0.5815140871052509624,
+                                                 -0.41017537146985013753,
+                                                 +0.1851469357165877327,
+                                                 -0.40955234342085141934,
+                                                 +0.14440594108001204106,
+                                                 +0.27833550039367965131,
+                                                 +0.31495668391629485789,
+                                                 -0.626994825405133975,
+                                                 +0.31495668391629485789,
+                                                 +0.27833550039367965131,
+                                                 +0.14440594108001204106,
+                                                 -0.40955234342085141934,
+                                                 +0.1851469357165877327,
+                                                 -0.41017537146985013753,
+                                                 +0.5815140871052509624,
+                                                 +0.12886597938144329897,
+                                                 +0.0});
+  static constexpr FixedVector<double, order> b({+0.064432989690721649485,
+                                                 +0.35519003324334713070,
+                                                 +0.0856693578177004124,
+                                                 -0.11251421787663120244,
+                                                 -0.1122027038521318433,
+                                                 -0.13257320117041968914,
+                                                 +0.2113707207368458462,
+                                                 +0.2966460921549872546,
+                                                 -0.1560190707444195585,
+                                                 -0.1560190707444195585,
+                                                 +0.2966460921549872546,
+                                                 +0.2113707207368458462,
+                                                 -0.13257320117041968914,
+                                                 -0.1122027038521318433,
+                                                 -0.11251421787663120244,
+                                                 +0.0856693578177004124,
+                                                 +0.35519003324334713070,
+                                                 +0.064432989690721649485});
+};
+
+// The following methods have coefficients from Robert I. McLachlan and Pau
+// Atela (1992), The accuracy of symplectic integrators, table 2.
+// http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
+struct McLachlanAtela1992Order2Optimal : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 2;
+  static constexpr bool time_reversible = false;
+  static constexpr int evaluations = 2;
+  static constexpr bool first_same_as_last = false;
+  static constexpr FixedVector<double, order> a({+0.7071067811865475244,
+                                                 +0.2928932188134524756});
+  static constexpr FixedVector<double, order> b({+0.2928932188134524756,
+                                                 +0.7071067811865475244});
+};
+struct McLachlanAtela1992Order3Optimal : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 3;
+  static constexpr bool time_reversible = false;
+  static constexpr int evaluations = 3;
+  static constexpr bool first_same_as_last = false;
+  static constexpr FixedVector<double, order> a({+0.9196615230173998571,
+                                                 -0.1879916187991597820,
+                                                 +0.2683300957817599250});
+  static constexpr FixedVector<double, order> b({+0.2683300957817599250,
+                                                 -0.1879916187991597820,
+                                                 +0.9196615230173998571});
+};
+struct McLachlanAtela1992Order4Optimal : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = false;
+  static constexpr int evaluations = 4;
+  static constexpr CompositionMethod composition = BA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL;
+  static constexpr FixedVector<double, order> a({0.5153528374311229364,
+                                                 -0.085782019412973646,
+                                                 0.4415830236164665242,
+                                                 0.1288461583653841854});
+  static constexpr FixedVector<double, order> b({0.1344961992774310892,
+                                                 -0.2248198030794208058,
+                                                 0.7563200005156682911,
+                                                 0.3340036032863214255});
+};
+struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 5;
+  static constexpr bool time_reversible = false;
+  static constexpr int evaluations = 6;
+  static constexpr CompositionMethod composition = BA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL;
+  static constexpr FixedVector<double, order> a({0.339839625839110000,
+                                                 -0.088601336903027329,
+                                                 0.5858564768259621188,
+                                                 -0.603039356536491888,
+                                                 0.3235807965546976394,
+                                                 0.4423637942197494587});
+  static constexpr FixedVector<double, order> b({0.1193900292875672758,
+                                                 0.6989273703824752308,
+                                                 -0.1713123582716007754,
+                                                 0.4012695022513534480,
+                                                 0.0107050818482359840,
+                                                 -0.0589796254980311632});
+};
+
 // This integrator goes by many names, see Hairer, Lubich, and Wanner (2003),
 // Geometric numerical integration illustrated by the Störmer–Verlet method,
 // http://www.math.kit.edu/ianm3/lehre/geonumint2009s/media/gni_by_stoermer-verlet.pdf,
@@ -61,6 +494,40 @@ struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {
   static constexpr bool first_same_as_last = true;
   static constexpr FixedVector<double, order> a({1.0, 0.0});
   static constexpr FixedVector<double, order> b({0.5, 0.5});
+};
+
+// Coefficients from Okunbor and Skeel (1994),
+// Canonical Runge-Kutta-Nyström methods of orders 5 and 6,
+// http://bionum.cs.purdue.edu/94OkSk.pdf.
+// NOTE(egg): The coefficients were actually copied from McLachlan (1995), they
+// seem to differ after a dozen significant figures or so.  Okunbor and Skeel
+// remark "we did not use HYBRJ1 to improve the accuracy of method coefficients
+// as we did in section 3.1".  We assume McLachlan's version is accurate.
+// TODO(egg): Derive the coefficients with Mathematica.
+struct OkunborSkeel1994Order6Method13 : SymplecticRungeKuttaNyströmIntegrator {
+  static constexpr int order = 6;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 7;
+  static constexpr CompositionMethod composition = ABA;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13;
+  static constexpr FixedVector<double, order> a({-1.0130879789171747298,
+                                                 1.1874295737325427070,
+                                                 -0.018335852096460590340,
+                                                 0.34399425728109261313,
+                                                 0.34399425728109261313,
+                                                 -0.018335852096460590340,
+                                                 1.1874295737325427070,
+                                                 -1.0130879789171747298});
+  static constexpr FixedVector<double, order> b({0.0,
+                                                 0.00016600692650009894,
+                                                 -0.37962421426377360608,
+                                                 0.68913741185181063674,
+                                                 0.38064159097092574080,
+                                                 0.68913741185181063674,
+                                                 -0.37962421426377360608,
+                                                 0.00016600692650009894});
 };
 
 // Coefficients from Ruth (1983), A canonical integration technique,
@@ -359,471 +826,6 @@ struct Yoshida1990Order8E : SymplecticPartitionedRungeKutta {
                                                  -0.97005374555840188834,
                                                  +0.705496062646633332241,
                                                  +0.651500828787584192418});
-};
-
-// Coefficients from Forest and Ruth (1990),
-// Fourth-order symplectic integration, equation 4.8.
-// http://zwe.web.cern.ch/zwe/CAS/biblio/ruth-forest.pdf.
-// This scheme was independently discovered by Candy and Rozmus (1991),
-// A Symplectic Integration Algorithm for Separable Hamiltonian Functions
-// (submitted earlier and published later than the Forest and Ruth paper).
-struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 3;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+1.3512071919596576340,
-                                                 -1.7024143839193152681,
-                                                 +1.3512071919596576340,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.6756035959798288170,
-                                                 -0.1756035959798288170,
-                                                 -0.1756035959798288170,
-                                                 +0.6756035959798288170});
-};
-
-// The following methods have coefficients from Robert I. McLachlan and Pau
-// Atela (1992), The accuracy of symplectic integrators, table 2.
-// http://eaton.math.rpi.edu/CSUMS/Papers/Symplectic/McLachlan_Atela_92.pdf.
-struct McLachlanAtela1992Order2Optimal : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 2;
-  static constexpr bool time_reversible = false;
-  static constexpr int evaluations = 2;
-  static constexpr bool first_same_as_last = false;
-  static constexpr FixedVector<double, order> a({+0.7071067811865475244,
-                                                 +0.2928932188134524756});
-  static constexpr FixedVector<double, order> b({+0.2928932188134524756,
-                                                 +0.7071067811865475244});
-};
-struct McLachlanAtela1992Order3Optimal : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 3;
-  static constexpr bool time_reversible = false;
-  static constexpr int evaluations = 3;
-  static constexpr bool first_same_as_last = false;
-  static constexpr FixedVector<double, order> a({+0.9196615230173998571,
-                                                 -0.1879916187991597820,
-                                                 +0.2683300957817599250});
-  static constexpr FixedVector<double, order> b({+0.2683300957817599250,
-                                                 -0.1879916187991597820,
-                                                 +0.9196615230173998571});
-};
-struct McLachlanAtela1992Order4Optimal : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = false;
-  static constexpr int evaluations = 4;
-  static constexpr CompositionMethod composition = BA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::
-          MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL;
-  static constexpr FixedVector<double, order> a({0.5153528374311229364,
-                                                 -0.085782019412973646,
-                                                 0.4415830236164665242,
-                                                 0.1288461583653841854});
-  static constexpr FixedVector<double, order> b({0.1344961992774310892,
-                                                 -0.2248198030794208058,
-                                                 0.7563200005156682911,
-                                                 0.3340036032863214255});
-};
-struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 5;
-  static constexpr bool time_reversible = false;
-  static constexpr int evaluations = 6;
-  static constexpr CompositionMethod composition = BA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::
-          MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL;
-  static constexpr FixedVector<double, order> a({0.339839625839110000,
-                                                 -0.088601336903027329,
-                                                 0.5858564768259621188,
-                                                 -0.603039356536491888,
-                                                 0.3235807965546976394,
-                                                 0.4423637942197494587});
-  static constexpr FixedVector<double, order> b({0.1193900292875672758,
-                                                 0.6989273703824752308,
-                                                 -0.1713123582716007754,
-                                                 0.4012695022513534480,
-                                                 0.0107050818482359840,
-                                                 -0.0589796254980311632});
-};
-
-// The following methods have coefficients from McLachlan (1995),
-// On the numerical integration of ordinary differential equations by symmetric
-// composition methods, http://www.massey.ac.nz/~rmclachl/sisc95.pdf.
-struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 2;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 2;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({0.5, 0.5, 0.0});
-  static constexpr FixedVector<double, order> b({+0.19318332750378357396,
-                                                 +0.61363334499243285207,
-                                                 +0.19318332750378357396});
-};
-struct McLachlan1995SS5 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 5;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.28,
-                                                 +0.6254664284676700450,
-                                                 -0.8109328569353400900,
-                                                 +0.6254664284676700450,
-                                                 +0.28,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.14,
-                                                 +0.45273321423383502251,
-                                                 -0.0927332142338350225,
-                                                 -0.0927332142338350225,
-                                                 +0.45273321423383502251,
-                                                 +0.14});
-};
-struct McLachlan1995S4 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 4;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.54545454545454545455,
-                                                 -0.045454545454545454545,
-                                                 -0.045454545454545454545,
-                                                 +0.54545454545454545455,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.16913927992207204518,
-                                                 -0.29918620390405079951,
-                                                 +1.2600938479639575087,
-                                                 -0.29918620390405079951,
-                                                 +0.16913927992207204518});
-};
-struct McLachlan1995S5 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 5;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a(
-      {+0.4, -0.1, 0.4, -0.1, 0.4, 0.0});
-  static constexpr FixedVector<double, order> b({+0.089269454226475244887,
-                                                 -0.097336042636895508015,
-                                                 +0.50806658841042026313,
-                                                 +0.50806658841042026313,
-                                                 -0.097336042636895508015,
-                                                 +0.089269454226475244887});
-};
-struct McLachlan1995SB3A4 : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 4;
-  static constexpr CompositionMethod composition = ABA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_4;
-  static constexpr FixedVector<double, order> a({0.18819521776883821787,
-                                                 -0.021528551102171551201,
-                                                 0.66666666666666666667,
-                                                 -0.021528551102171551201,
-                                                 0.18819521776883821787});
-  static constexpr FixedVector<double, order> b({0.0, 1.0, -0.5, -0.5, 1.0});
-};
-struct McLachlan1995SB3A5 : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 5;
-  static constexpr CompositionMethod composition = ABA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SB3A_5;
-  static constexpr FixedVector<double, order> a({0.4051886183952522772,
-                                                 -0.2871440408165240890,
-                                                 0.3819554224212718118,
-                                                 0.3819554224212718118,
-                                                 -0.2871440408165240890,
-                                                 0.4051886183952522772});
-  static constexpr FixedVector<double, order> b({0.0,
-                                                 -0.041095890410958904110,
-                                                 0.28813559322033898305,
-                                                 0.50592059438123984212,
-                                                 0.28813559322033898305,
-                                                 -0.041095890410958904110});
-};
-struct McLachlan1995SS9 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 6;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 9;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.1867,
-                                                 +0.55549702371247839916,
-                                                 +0.12946694891347535806,
-                                                 -0.84326562338773460855,
-                                                 +0.9432033015235617027,
-                                                 -0.84326562338773460855,
-                                                 +0.12946694891347535806,
-                                                 +0.55549702371247839916,
-                                                 +0.1867,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.09335,
-                                                 +0.37109851185623919958,
-                                                 +0.34248198631297687861,
-                                                 -0.35689933723712962525,
-                                                 +0.0499688390679135471,
-                                                 +0.0499688390679135471,
-                                                 -0.35689933723712962525,
-                                                 +0.34248198631297687861,
-                                                 +0.37109851185623919958,
-                                                 +0.09335});
-};
-struct McLachlan1995SS15 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 8;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 15;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.7416703643506129534,
-                                                 -0.4091008258000315940,
-                                                 +0.1907547102962383800,
-                                                 -0.5738624711160822667,
-                                                 +0.2990641813036559238,
-                                                 +0.3346249182452981838,
-                                                 +0.3152930923967665966,
-                                                 -0.796887939352916354,
-                                                 +0.3152930923967665966,
-                                                 +0.3346249182452981838,
-                                                 +0.2990641813036559238,
-                                                 -0.5738624711160822667,
-                                                 +0.1907547102962383800,
-                                                 -0.4091008258000315940,
-                                                 +0.7416703643506129534,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.37083518217530647672,
-                                                 +0.1662847692752906797,
-                                                 -0.1091730577518966070,
-                                                 -0.1915538804099219434,
-                                                 -0.13739914490621317141,
-                                                 +0.3168445497744770538,
-                                                 +0.32495900532103239021,
-                                                 -0.2407974234780748787,
-                                                 -0.2407974234780748787,
-                                                 +0.32495900532103239021,
-                                                 +0.3168445497744770538,
-                                                 -0.13739914490621317141,
-                                                 -0.1915538804099219434,
-                                                 -0.1091730577518966070,
-                                                 +0.1662847692752906797,
-                                                 +0.37083518217530647672});
-};
-struct McLachlan1995SS17 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 8;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 17;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.12886597938144329897,
-                                                 +0.5815140871052509624,
-                                                 -0.41017537146985013753,
-                                                 +0.1851469357165877327,
-                                                 -0.40955234342085141934,
-                                                 +0.14440594108001204106,
-                                                 +0.27833550039367965131,
-                                                 +0.31495668391629485789,
-                                                 -0.626994825405133975,
-                                                 +0.31495668391629485789,
-                                                 +0.27833550039367965131,
-                                                 +0.14440594108001204106,
-                                                 -0.40955234342085141934,
-                                                 +0.1851469357165877327,
-                                                 -0.41017537146985013753,
-                                                 +0.5815140871052509624,
-                                                 +0.12886597938144329897,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.064432989690721649485,
-                                                 +0.35519003324334713070,
-                                                 +0.0856693578177004124,
-                                                 -0.11251421787663120244,
-                                                 -0.1122027038521318433,
-                                                 -0.13257320117041968914,
-                                                 +0.2113707207368458462,
-                                                 +0.2966460921549872546,
-                                                 -0.1560190707444195585,
-                                                 -0.1560190707444195585,
-                                                 +0.2966460921549872546,
-                                                 +0.2113707207368458462,
-                                                 -0.13257320117041968914,
-                                                 -0.1122027038521318433,
-                                                 -0.11251421787663120244,
-                                                 +0.0856693578177004124,
-                                                 +0.35519003324334713070,
-                                                 +0.064432989690721649485});
-};
-
-// The following methods have coefficients from Blanes and Moan (2002),
-// Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
-// http://personales.upv.es/serblaza/2002JCAM.pdf.
-struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 6;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.20951510661336200,
-                                                 -0.14385177317981800,
-                                                 +0.43433666656645600,
-                                                 +0.43433666656645600,
-                                                 -0.14385177317981800,
-                                                 +0.20951510661336200,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.079203696431195700,
-                                                 +0.35317290604977400,
-                                                 -0.042065080357719500,
-                                                 +0.21937695575349960,
-                                                 -0.042065080357719500,
-                                                 +0.35317290604977400,
-                                                 +0.079203696431195700});
-};
-struct BlanesMoan2002S10 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 6;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 10;
-  static constexpr bool first_same_as_last = true;
-  static constexpr FixedVector<double, order> a({+0.14881644790104200,
-                                                 -0.13238586576778400,
-                                                 +0.067307604692185000,
-                                                 +0.43266640257817500,
-                                                 -0.01640458940361800,
-                                                 -0.01640458940361800,
-                                                 +0.43266640257817500,
-                                                 +0.067307604692185000,
-                                                 -0.13238586576778400,
-                                                 +0.14881644790104200,
-                                                 +0.0});
-  static constexpr FixedVector<double, order> b({+0.050262764400392200,
-                                                 +0.41351430042834400,
-                                                 +0.045079889794397700,
-                                                 -0.18805485381956900,
-                                                 +0.54196067845078000,
-                                                 -0.7255255585086898,
-                                                 +0.54196067845078000,
-                                                 -0.18805485381956900,
-                                                 +0.045079889794397700,
-                                                 +0.41351430042834400,
-                                                 +0.050262764400392200});
-};
-struct BlanesMoan2002SRKN6B : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 6;
-  static constexpr CompositionMethod composition = BAB;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_6B;
-  static constexpr FixedVector<double, order> a({0.24529895718427100,
-                                                 0.60487266571108000,
-                                                 -0.35017162289535100,
-                                                 -0.35017162289535100,
-                                                 0.60487266571108000,
-                                                 0.24529895718427100,
-                                                 0.0});
-  static constexpr FixedVector<double, order> b({0.082984406417405200,
-                                                 0.39630980149836800,
-                                                 -0.039056304922348600,
-                                                 0.1195241940131508,
-                                                 -0.039056304922348600,
-                                                 0.39630980149836800,
-                                                 0.082984406417405200});
-};
-struct BlanesMoan2002SRKN11B : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 6;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 11;
-  static constexpr CompositionMethod composition = BAB;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_11B;
-  static constexpr FixedVector<double, order> a({0.12322977594627100,
-                                                 0.29055379779955800,
-                                                 -0.12704921262541700,
-                                                 -0.24633176106207500,
-                                                 0.35720887279592800,
-                                                 0.2047770542914700,
-                                                 0.35720887279592800,
-                                                 -0.24633176106207500,
-                                                 -0.12704921262541700,
-                                                 0.29055379779955800,
-                                                 0.12322977594627100,
-                                                 0.0});
-  static constexpr FixedVector<double, order> b({0.041464998518262400,
-                                                 0.19812867191806700,
-                                                 -0.040006192104153300,
-                                                 0.075253984301580700,
-                                                 -0.011511387420687900,
-                                                 0.23666992478693110,
-                                                 0.23666992478693110,
-                                                 -0.011511387420687900,
-                                                 0.075253984301580700,
-                                                 -0.040006192104153300,
-                                                 0.19812867191806700,
-                                                 0.041464998518262400});
-};
-struct BlanesMoan2002SRKN14A : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 6;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 14;
-  static constexpr CompositionMethod composition = ABA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_SRKN_14A;
-  static constexpr FixedVector<double, order> a({0.037859319840611600,
-                                                 0.10263563310243500,
-                                                 -0.025867888266558700,
-                                                 0.31424140307144700,
-                                                 -0.13014445951741500,
-                                                 0.10641770036954300,
-                                                 -0.0087942431285105800,
-                                                 0.2073050690568954,
-                                                 -0.0087942431285105800,
-                                                 0.10641770036954300,
-                                                 -0.13014445951741500,
-                                                 0.31424140307144700,
-                                                 -0.025867888266558700,
-                                                 0.10263563310243500,
-                                                 0.037859319840611600});
-  static constexpr FixedVector<double, order> b({0.0,
-                                                 0.091719152624461650,
-                                                 0.18398317000500600,
-                                                 -0.056534365832888270,
-                                                 0.0049146887747128540,
-                                                 0.14376112716835800,
-                                                 0.32856769374680400,
-                                                 -0.19641146648645423,
-                                                 -0.19641146648645423,
-                                                 0.32856769374680400,
-                                                 0.14376112716835800,
-                                                 0.0049146887747128540,
-                                                 -0.056534365832888270,
-                                                 0.18398317000500600,
-                                                 0.091719152624461650});
-};
-
-// Coefficients from Okunbor and Skeel (1994),
-// Canonical Runge-Kutta-Nyström methods of orders 5 and 6,
-// http://bionum.cs.purdue.edu/94OkSk.pdf.
-// NOTE(egg): The coefficients were actually copied from McLachlan (1995), they
-// seem to differ after a dozen significant figures or so.  Okunbor and Skeel
-// remark "we did not use HYBRJ1 to improve the accuracy of method coefficients
-// as we did in section 3.1".  We assume McLachlan's version is accurate.
-// TODO(egg): Derive the coefficients with Mathematica.
-struct OkunborSkeel1994Order6Method13 : SymplecticRungeKuttaNyströmIntegrator {
-  static constexpr int order = 6;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 7;
-  static constexpr CompositionMethod composition = ABA;
-  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
-      serialization::FixedStepSizeIntegrator::
-          OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13;
-  static constexpr FixedVector<double, order> a({-1.0130879789171747298,
-                                                 1.1874295737325427070,
-                                                 -0.018335852096460590340,
-                                                 0.34399425728109261313,
-                                                 0.34399425728109261313,
-                                                 -0.018335852096460590340,
-                                                 1.1874295737325427070,
-                                                 -1.0130879789171747298});
-  static constexpr FixedVector<double, order> b({0.0,
-                                                 0.00016600692650009894,
-                                                 -0.37962421426377360608,
-                                                 0.68913741185181063674,
-                                                 0.38064159097092574080,
-                                                 0.68913741185181063674,
-                                                 -0.37962421426377360608,
-                                                 0.00016600692650009894});
 };
 
 }  // namespace internal_methods
