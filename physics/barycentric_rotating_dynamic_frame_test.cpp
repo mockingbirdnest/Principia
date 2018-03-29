@@ -11,6 +11,7 @@
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/mock_continuous_trajectory.hpp"
@@ -36,6 +37,8 @@ using geometry::Frame;
 using geometry::Instant;
 using geometry::Rotation;
 using geometry::Vector;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::Time;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -78,7 +81,8 @@ class BarycentricRotatingDynamicFrameTest : public ::testing::Test {
         ephemeris_(solar_system_.MakeEphemeris(
             /*fitting_tolerance=*/1 * Milli(Metre),
             Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                integrators::McLachlanAtela1992Order4Optimal<
+                SymplecticRungeKuttaNyströmIntegrator<
+                    McLachlanAtela1992Order4Optimal,
                     Position<ICRFJ2000Equator>>(),
                 /*step=*/10 * Milli(Second)))),
         big_(solar_system_.massive_body(*ephemeris_, big)),

@@ -97,8 +97,7 @@ using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 namespace {
 
 template<typename Integrator>
-void TestTermination(
-    Integrator const& integrator) {
+void TestTermination(Integrator const& integrator) {
   Length const q_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Instant const t_initial;
@@ -451,26 +450,27 @@ class SimpleHarmonicMotionTestInstance final {
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error,
                                    bool const serializable)
-      : test_termination_(std::bind(TestTermination<Integrator>, integrator)),
+      : test_termination_(std::bind(TestTermination<Integrator>,
+                                    std::cref(integrator))),
         test_1000_seconds_at_1_millisecond_(
             std::bind(Test1000SecondsAt1Millisecond<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       expected_position_error,
                       expected_velocity_error)),
         test_convergence_(
             std::bind(TestConvergence<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       beginning_of_convergence)),
         test_symplecticity_(
             std::bind(TestSymplecticity<Integrator>,
-                      integrator,
+                      std::cref(integrator),
                       expected_energy_error)),
         test_time_reversibility_(
             std::bind(TestTimeReversibility<Integrator>,
-                      integrator)),
+                      std::cref(integrator))),
         test_serialization_(
             std::bind(TestSerialization<Integrator>,
-                      integrator)),
+                      std::cref(integrator))),
         name_(name),
         serializable_(serializable) {}
 

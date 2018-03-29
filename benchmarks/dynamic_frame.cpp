@@ -12,6 +12,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/numbers.hpp"
@@ -43,7 +44,8 @@ using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Velocity;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order5Optimal;
 using ksp_plugin::Barycentric;
 using quantities::AngularFrequency;
 using quantities::Length;
@@ -136,7 +138,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<Barycentric>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
+                                                Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 
@@ -183,7 +186,8 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
       Ephemeris<Barycentric>::FixedStepParameters(
-          McLachlanAtela1992Order5Optimal<Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
+                                                Position<Barycentric>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(solar_system.epoch() + steps * Δt);
 

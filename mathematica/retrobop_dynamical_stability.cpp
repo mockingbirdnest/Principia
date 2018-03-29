@@ -19,6 +19,8 @@
 #include "base/get_line.hpp"
 #include "base/hexadecimal.hpp"
 #include "ksp_plugin/frames.hpp"
+#include "integrators/methods.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/solar_system.hpp"
@@ -40,6 +42,8 @@ using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
 using integrators::FixedStepSizeIntegrator;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::BlanesMoan2002SRKN14A;
 using ksp_plugin::Barycentric;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -418,7 +422,8 @@ void ComputeHighestMoonError(Ephemeris<Barycentric> const& left,
 void PlotPredictableYears() {
   auto const ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                            Position<Barycentric>>(),
       step);
 
   for (int i = 1; i <= 5; ++i) {
@@ -451,23 +456,27 @@ void PlotPredictableYears() {
 void PlotCentury() {
   ProduceCenturyPlots(*MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                            Position<Barycentric>>(),
       step));
 }
 
 void AnalyseGlobalError() {
   auto const reference_ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                            Position<Barycentric>>(),
       step);
   std::unique_ptr<Ephemeris<Barycentric>> refined_ephemeris = MakeEphemeris(
       MakeStabilizedKSPSystem(),
-      integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+      SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                            Position<Barycentric>>(),
       step / 2);
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                                Position<Barycentric>>(),
           step);
 
   bool log_radius = true;
@@ -555,7 +564,8 @@ void StatisticallyAnalyseStability() {
   std::list<not_null<std::unique_ptr<Ephemeris<Barycentric>>>>
       perturbed_ephemerides = MakePerturbedEphemerides(
           100,
-          integrators::BlanesMoan2002SRKN14A<Position<Barycentric>>(),
+          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                                Position<Barycentric>>(),
           step);
 
   std::map<not_null<Ephemeris<Barycentric>*>, bool> numerically_unsound;
@@ -596,8 +606,8 @@ void StatisticallyAnalyseStability() {
             ephemeris->t_min(),
             1 * Milli(Metre),
             Ephemeris<Barycentric>::FixedStepParameters(
-                integrators::BlanesMoan2002SRKN14A<
-                    Position<Barycentric>>(),
+                SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                                      Position<Barycentric>>(),
                 step / 2));
         ephemeris->Prolong(t);
         ephemeris->ForgetBefore(t);

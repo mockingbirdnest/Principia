@@ -11,6 +11,7 @@
 #include "geometry/rotation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/solar_system.hpp"
@@ -36,6 +37,8 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order4Optimal;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::SIUnit;
@@ -76,7 +79,8 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         ephemeris_(solar_system_.MakeEphemeris(
             /*fitting_tolerance=*/1 * Milli(Metre),
             Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-                integrators::McLachlanAtela1992Order4Optimal<
+                SymplecticRungeKuttaNyströmIntegrator<
+                    McLachlanAtela1992Order4Optimal,
                     Position<ICRFJ2000Equator>>(),
                 /*step=*/10 * Milli(Second)))),
         big_initial_state_(solar_system_.degrees_of_freedom(big)),

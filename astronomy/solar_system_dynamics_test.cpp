@@ -14,6 +14,8 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/integrators.hpp"
+#include "integrators/methods.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/ephemeris.hpp"
@@ -43,13 +45,14 @@ using geometry::Position;
 using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
-using integrators::BlanesMoan2002SRKN11B;
-using integrators::BlanesMoan2002SRKN14A;
 using integrators::FixedStepSizeIntegrator;
-using integrators::McLachlanAtela1992Order5Optimal;
 using integrators::Quinlan1999Order8A;
 using integrators::QuinlanTremaine1990Order10;
 using integrators::QuinlanTremaine1990Order12;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::BlanesMoan2002SRKN11B;
+using integrators::methods::BlanesMoan2002SRKN14A;
+using integrators::methods::McLachlanAtela1992Order5Optimal;
 using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -273,12 +276,12 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2455200_500000000.proto.txt");
 
-  auto const ephemeris =
-      solar_system_at_j2000.MakeEphemeris(
-          /*fitting_tolerance=*/5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+  auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+      /*fitting_tolerance=*/5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                                Position<ICRFJ2000Equator>>(),
+          /*step=*/45 * Minute));
   ephemeris->Prolong(ten_years_later.epoch());
 
   for (int const planet_or_minor_planet :
@@ -388,12 +391,12 @@ TEST(MarsTest, Phobos) {
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
-  auto const ephemeris =
-      solar_system_at_j2000.MakeEphemeris(
-          /*fitting_tolerance=*/5 * Milli(Metre),
-          Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-              BlanesMoan2002SRKN14A<Position<ICRFJ2000Equator>>(),
-              /*step=*/45 * Minute));
+  auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
+      /*fitting_tolerance=*/5 * Milli(Metre),
+      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+          SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
+                                                Position<ICRFJ2000Equator>>(),
+          /*step=*/45 * Minute));
   ephemeris->Prolong(J2000 + 1 * JulianYear);
 
   ContinuousTrajectory<ICRFJ2000Equator> const& mars_trajectory =
@@ -552,11 +555,14 @@ INSTANTIATE_TEST_CASE_P(
     SolarSystemDynamicsConvergenceTest,
     ::testing::Values(
         ConvergenceTestParameters{
-            BlanesMoan2002SRKN11B<Position<ICRFJ2000Equator>>(),
+            SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
+                                                  Position<ICRFJ2000Equator>>(),
             /*iterations=*/8,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
-            McLachlanAtela1992Order5Optimal<Position<ICRFJ2000Equator>>(),
+            SymplecticRungeKuttaNyströmIntegrator<
+                McLachlanAtela1992Order5Optimal,
+                Position<ICRFJ2000Equator>>(),
             /*iterations=*/8,
             /*first_step_in_seconds=*/32},
         ConvergenceTestParameters{

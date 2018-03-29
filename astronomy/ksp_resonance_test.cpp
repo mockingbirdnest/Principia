@@ -9,6 +9,8 @@
 #include "base/file.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
+#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/rigid_motion.hpp"
@@ -33,7 +35,8 @@ using geometry::Position;
 using geometry::Sign;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::McLachlanAtela1992Order5Optimal;
+using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::McLachlanAtela1992Order5Optimal;
 using numerics::Bisect;
 using physics::DegreesOfFreedom;
 using physics::Ephemeris;
@@ -85,7 +88,8 @@ class KSPResonanceTest : public ::testing::Test {
     auto ephemeris = solar_system_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<KSP>::FixedStepParameters(
-            McLachlanAtela1992Order5Optimal<Position<KSP>>(),
+            SymplecticRungeKuttaNyströmIntegrator<
+                McLachlanAtela1992Order5Optimal, Position<KSP>>(),
             /*step=*/Δt));
     jool_ = solar_system_.massive_body(*ephemeris, "Jool");
     laythe_ = solar_system_.massive_body(*ephemeris, "Laythe");
