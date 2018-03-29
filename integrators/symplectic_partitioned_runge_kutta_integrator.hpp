@@ -44,7 +44,15 @@ using numerics::FixedVector;
 template<typename Method, typename Position>
 class SymplecticPartitionedRungeKuttaIntegrator {
  public:
+  static constexpr auto time_reversible = Method::time_reversible;
+  static constexpr auto first_same_as_last = Method::first_same_as_last;
+
   SymplecticPartitionedRungeKuttaIntegrator();
+
+ private:
+  static constexpr auto stages_ = Method::stages;
+  static constexpr auto a_ = Method::a;
+  static constexpr auto b_ = Method::b;
 };
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator

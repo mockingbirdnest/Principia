@@ -15,16 +15,16 @@ template<typename Method, typename Position>
 SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
     SymplecticPartitionedRungeKuttaIntegrator() {
   // TODO(phl): This might be turned into a static_assert.
-  if (Method::first_same_as_last) {
-    CHECK_EQ(0.0, Method::a[Method::stages - 1]);
+  if (first_same_as_last) {
+    CHECK_EQ(0.0, a_[stages_ - 1]);
   }
-  if (Method::time_reversible) {
-    CHECK(Method::first_same_as_last);
-    for (int i = 0; i < Method::stages - 1; ++i) {
-      CHECK_EQ(Method::a[i], Method::a[Method::stages - 2 - i]);
+  if (time_reversible) {
+    CHECK(first_same_as_last);
+    for (int i = 0; i < stages_ - 1; ++i) {
+      CHECK_EQ(a_[i], a_[stages_ - 2 - i]);
     }
-    for (int i = 0; i < Method::stages; ++i) {
-      CHECK_EQ(Method::b[i], Method::b[stages - 1 - i]);
+    for (int i = 0; i < stages_; ++i) {
+      CHECK_EQ(b_[i], b_[stages_ - 1 - i]);
     }
   }
 }
