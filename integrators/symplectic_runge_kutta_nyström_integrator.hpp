@@ -74,6 +74,11 @@ class SymplecticRungeKuttaNyströmIntegrator
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
   using AppendState = typename Integrator<ODE>::AppendState;
 
+  static constexpr auto order = Method::order;
+  static constexpr auto time_reversible = Method::time_reversible;
+  static constexpr auto evaluations = Method::evaluations;
+  static constexpr auto composition = Method::composition;
+
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
@@ -112,7 +117,6 @@ class SymplecticRungeKuttaNyströmIntegrator
   static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
   static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
 
-  static constexpr auto composition_ = Method::composition;
   static constexpr auto stages_ = Method::stages;
   static constexpr auto a_ = Method::a;
   static constexpr auto b_ = Method::b;

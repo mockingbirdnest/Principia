@@ -76,18 +76,19 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
 };
 
 template<typename SymplecticPartitionedRungeKuttaMethod,
-         SymplecticRungeKuttaNyström::CompositionMethod composition>
+         SymplecticRungeKuttaNyström::CompositionMethod composition_>
 struct AsSymplecticRungeKuttaNyström {
   static_assert(std::is_base_of<methods::SymplecticPartitionedRungeKutta,
                                 SymplecticPartitionedRungeKuttaMethod>::value,
                 "Method must be derived from SymplecticPartitionedRungeKutta");
-  ///assert composition
-  //
-  //static_assert(first_same_as_last
-  //                  ? composition_method == ABA || composition_method == BAB
-  //                  : composition_method == BA,
-  //              "requested |composition_method| inconsistent with the "
-  //              "properties of this integrator");
+  static_assert(composition_ != SymplecticRungeKuttaNyström::ABA,
+                "ABA not supported until C++17");
+  static_assert(SymplecticPartitionedRungeKuttaMethod::first_same_as_last
+                    ? composition_ == SymplecticRungeKuttaNyström::ABA ||
+                          composition_ == SymplecticRungeKuttaNyström::BAB
+                    : composition_ == SymplecticRungeKuttaNyström::BA,
+                "requested |composition| inconsistent with the properties of "
+                "this method");
 
   struct Method : SymplecticRungeKuttaNyström {
     static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;
@@ -95,10 +96,7 @@ struct AsSymplecticRungeKuttaNyström {
         SymplecticPartitionedRungeKuttaMethod::time_reversible;
     static constexpr int evaluations =
         SymplecticPartitionedRungeKuttaMethod::evaluations;
-    static constexpr CompositionMethod composition =
-        SymplecticPartitionedRungeKuttaMethod::first_same_as_last
-            ? composition
-            : SymplecticRungeKuttaNyström::CompositionMethod::BA;
+    static constexpr CompositionMethod composition = composition_;
     static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
         SymplecticPartitionedRungeKuttaMethod::kind;
     static constexpr int stages = Stages(evaluations, composition);
@@ -106,6 +104,7 @@ struct AsSymplecticRungeKuttaNyström {
     static constexpr FixedVector<double, stages> Shift(
         FixedVector<double, stages> const& a,
         CompositionMethod const composition) {
+#if 0
       if (composition == ABA) {
         FixedVector<double, stages> shifted_a;
         // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
@@ -116,9 +115,12 @@ struct AsSymplecticRungeKuttaNyström {
         }
         return shifted_a;
       } else {
+#endif
         return a;
+#if 0
       }
-    }
+#endif
+  }
 
     static constexpr FixedVector<double, stages> a =
         Shift(SymplecticPartitionedRungeKuttaMethod::a, composition);
