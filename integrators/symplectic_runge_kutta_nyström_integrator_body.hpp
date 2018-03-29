@@ -262,5 +262,25 @@ SymplecticRungeKuttaNyströmIntegrator() {
   return integrator;
 }
 
+template<typename Method,
+         methods::SymplecticRungeKuttaNyström::CompositionMethod composition,
+         typename Position>
+internal_symplectic_runge_kutta_nyström_integrator::
+    SymplecticRungeKuttaNyströmIntegrator<
+        typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                        composition>::Method,
+        Position> const&
+SymplecticRungeKuttaNyströmIntegrator() {
+  static_assert(
+      std::is_base_of<methods::SymplecticPartitionedRungeKutta, Method>::value,
+      "Method must be derived from SymplecticPartitionedRungeKutta");
+  static internal_symplectic_runge_kutta_nyström_integrator::
+      SymplecticRungeKuttaNyströmIntegrator<
+          typename methods::AsSymplecticRungeKuttaNyström<Method,
+                                                          composition>::Method,
+          Position> const integrator;
+  return integrator;
+}
+
 }  // namespace integrators
 }  // namespace principia
