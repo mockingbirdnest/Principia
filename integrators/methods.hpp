@@ -51,7 +51,7 @@ struct SymplecticRungeKuttaNyström : not_constructible {
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
   // static constexpr CompositionMethod composition = ...;
-  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
   // static constexpr int stages = stages(evaluations, composition);
   // static constexpr FixedVector<double, stages> a(...);
   // static constexpr FixedVector<double, stages> b(...);
@@ -70,6 +70,31 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr FixedVector<double, stages> a(...);
   // static constexpr FixedVector<double, stages> b(...);
 };
+
+template<typename SymplecticPartitionedRungeKuttaMethod,
+         SymplecticRungeKuttaNyström::CompositionMethod composition>
+struct AsSymplecticRungeKuttaNyström {
+  static_assert(std::is_base_of<methods::SymplecticPartitionedRungeKutta,
+                                SymplecticPartitionedRungeKuttaMethod>::value,
+                "Method must be derived from SymplecticPartitionedRungeKutta");
+  ///assert composition
+  struct Method : SymplecticRungeKuttaNyström {
+    static constexpr int order = SymplecticRungeKuttaNyström::order;
+    static constexpr bool time_reversible =
+        SymplecticRungeKuttaNyström::time_reversible;
+    static constexpr int evaluations = SymplecticRungeKuttaNyström::evaluations;
+    static constexpr CompositionMethod composition =
+        SymplecticRungeKuttaNyström::first_same_as_last
+            ? composition
+            : SymplecticRungeKuttaNyström::CompositionMethod::BA;
+    static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+        SymplecticPartitionedRungeKuttaMethod::kind;
+    static constexpr int stages = stages(evaluations, composition);
+    //static constexpr FixedVector<double, stages> a(...);
+    //static constexpr FixedVector<double, stages> b(...);
+  };
+};
+
 
 // The following methods have coefficients from Blanes and Moan (2002),
 // Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,

@@ -63,13 +63,13 @@ class SymplecticPartitionedRungeKuttaIntegrator {
 
   // If |first_same_as_last|, |composition_method| must be |ABA| or |BAB|.
   // Otherwise, it must be |BA|.
-  template<CompositionMethod composition_method>
+  template<typename SymplecticPartitionedRungeKuttaMethod,
+           methods::SymplecticRungeKuttaNyström::CompositionMethod composition>
   SymplecticRungeKuttaNyströmIntegrator<
-      Position,
-      order_,
-      time_reversible_,
-      evaluations_,
-      composition_method> const& AsRungeKuttaNyströmIntegrator() const;
+      typename methods::AsSymplecticRungeKuttaNyström<
+          SymplecticPartitionedRungeKuttaMethod,
+          composition>::Method,
+      Position> const& AsRungeKuttaNyströmIntegrator() const;
 
  private:
   static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;

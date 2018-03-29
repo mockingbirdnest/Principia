@@ -23,8 +23,6 @@ using base::Status;
 using geometry::Instant;
 using numerics::FixedVector;
 using quantities::Time;
-using CompositionMethod =
-    methods::SymplecticRungeKuttaNyström::CompositionMethod;
 
 // This class solves ordinary differential equations of following forms using a
 // symplectic Runge-Kutta-Nyström method:
@@ -68,24 +66,13 @@ using CompositionMethod =
 // See the documentation for a description of the correspondence between
 // these coefficients and those of a general Runge-Kutta-Nyström method.
 
-template<typename Position, int order_, bool time_reversible_, int evaluations_,
-         CompositionMethod composition_>
+template<typename Method, typename Position>
 class SymplecticRungeKuttaNyströmIntegrator
     : public FixedStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
-  static constexpr int stages_ =
-      composition_ == methods::SymplecticRungeKuttaNyström::BA
-          ? evaluations_
-          : evaluations_ + 1;
-
  public:
   using ODE = SpecialSecondOrderDifferentialEquation<Position>;
   using AppendState = typename Integrator<ODE>::AppendState;
-
-  static constexpr int order = order_;
-  static constexpr bool time_reversible = time_reversible_;
-  static constexpr int evaluations = evaluations_;
-  static constexpr CompositionMethod composition = composition_;
 
   class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
    public:
@@ -107,10 +94,7 @@ class SymplecticRungeKuttaNyströmIntegrator
     friend class SymplecticRungeKuttaNyströmIntegrator;
   };
 
-  SymplecticRungeKuttaNyströmIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind kind,
-      FixedVector<double, stages_> const& a,
-      FixedVector<double, stages_> const& b);
+  SymplecticRungeKuttaNyströmIntegrator();
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
       IntegrationProblem<ODE> const& problem,
@@ -128,20 +112,16 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
-  FixedVector<double, stages_> const a_;
-  FixedVector<double, stages_> const b_;
-  FixedVector<double, stages_> c_;
+  FixedVector<double, Method::stages> const a_;
+  FixedVector<double, Method::stages> const b_;
+  FixedVector<double, Method::stages> c_;
 };
 
 }  // namespace internal_symplectic_runge_kutta_nyström_integrator
 
 template<typename Method, typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticRungeKuttaNyströmIntegrator<Position,
-                                          Method::order,
-                                          Method::time_reversible,
-                                          Method::evaluations,
-                                          Method::composition> const&
+    SymplecticRungeKuttaNyströmIntegrator<Method, Position> const&
 SymplecticRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators
