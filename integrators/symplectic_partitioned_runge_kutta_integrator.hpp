@@ -3,14 +3,21 @@
 
 #include <type_traits>
 
-#include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
-#include "numerics/fixed_arrays.hpp"
+#include "base/not_null.hpp"
+#include "base/status.hpp"
+#include "geometry/named_quantities.hpp"
+#include "integrators/integrators.hpp"
+#include "integrators/ordinary_differential_equations.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace integrators {
-namespace internal_symplectic_runge_kutta_nyström_integrator {
+namespace internal_symplectic_partitioned_runge_kutta_integrator {
 
-using numerics::FixedVector;
+using base::not_null;
+using base::Status;
+using geometry::Instant;
+using quantities::Time;
 
 // A symplectic partitioned Runge-Kutta integrator.  Does not subclass
 // |Integrator|; used to generate (less general)
@@ -42,23 +49,62 @@ using numerics::FixedVector;
 // TODO(egg): Make them serializable/deserializable.  We need to prevent
 // combinatorial explosion.
 template<typename Method, typename Position>
-class SymplecticPartitionedRungeKuttaIntegrator {
+class SymplecticPartitionedRungeKuttaIntegrator
+    : public FixedStepSizeIntegrator<
+          DecomposableFirstOrderDifferentialEquation<Position>> {
  public:
+  using ODE = DecomposableFirstOrderDifferentialEquation<Position>;
+  using AppendState = typename Integrator<ODE>::AppendState;
+
   static constexpr auto time_reversible = Method::time_reversible;
   static constexpr auto first_same_as_last = Method::first_same_as_last;
 
+  class Instance : public FixedStepSizeIntegrator<ODE>::Instance {
+   public:
+    Status Solve(Instant const& t_final) override;
+    SymplecticPartitionedRungeKuttaIntegrator const& integrator()
+        const override;
+    not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
+        const override;
+
+    void WriteToMessage(
+        not_null<serialization::IntegratorInstance*> message) const override;
+
+   private:
+    Instance(IntegrationProblem<ODE> const& problem,
+             AppendState const& append_state,
+             Time const& step,
+             SymplecticPartitionedRungeKuttaIntegrator const& integrator);
+
+    SymplecticPartitionedRungeKuttaIntegrator const& integrator_;
+    friend class SymplecticPartitionedRungeKuttaIntegrator;
+  };
+
   SymplecticPartitionedRungeKuttaIntegrator();
 
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step) const override;
+
  private:
+  not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
+      serialization::FixedStepSizeIntegratorInstance const& message,
+      IntegrationProblem<ODE> const& problem,
+      AppendState const& append_state,
+      Time const& step) const override;
+
   static constexpr auto stages_ = Method::stages;
   static constexpr auto a_ = Method::a;
   static constexpr auto b_ = Method::b;
 };
 
-}  // namespace internal_symplectic_runge_kutta_nyström_integrator
+}  // namespace internal_symplectic_partitioned_runge_kutta_integrator
 
-using internal_symplectic_runge_kutta_nyström_integrator::
-    SymplecticPartitionedRungeKuttaIntegrator;
+template<typename Method, typename Position>
+internal_symplectic_partitioned_runge_kutta_integrator::
+    SymplecticPartitionedRungeKuttaIntegrator<Method, Position> const&
+SymplecticPartitionedRungeKuttaIntegrator();
 
 }  // namespace integrators
 }  // namespace principia
