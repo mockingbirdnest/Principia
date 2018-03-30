@@ -25,7 +25,6 @@ message FixedStepSizeIntegrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
   enum Kind {
-    DUMMY = 0;  // For testing.
     BLANES_MOAN_2002_S6 = 36;
     BLANES_MOAN_2002_S10 = 37;
     BLANES_MOAN_2002_SRKN_6B = 1;

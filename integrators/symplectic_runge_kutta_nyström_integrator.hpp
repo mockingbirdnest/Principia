@@ -135,7 +135,7 @@ internal_symplectic_runge_kutta_nyström_integrator::
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
-         methods::SymplecticRungeKuttaNyström::CompositionMethod composition,
+         serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<
