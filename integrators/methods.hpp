@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "base/mod.hpp"
 #include "base/not_constructible.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "serialization/integrators.pb.h"
@@ -9,6 +10,7 @@ namespace principia {
 namespace integrators {
 namespace methods {
 
+using base::mod;
 using base::not_constructible;
 using numerics::FixedStrictlyLowerTriangularMatrix;
 using numerics::FixedVector;
@@ -45,14 +47,14 @@ struct SymplecticRungeKuttaNyström : not_constructible {
     BAB,  // aᵣ = 0.
   };
   static constexpr int Stages(int const evaluations,
-                              CompositionMethod composition) {
+                              CompositionMethod const composition) {
     return composition == BA ? evaluations : evaluations + 1;
   }
   // static constexpr int order = ...;
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
   // static constexpr CompositionMethod composition = ...;
-  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ...;
   // static constexpr int stages = Stages(evaluations, composition);
   // static constexpr FixedVector<double, stages> a(...);
   // static constexpr FixedVector<double, stages> b(...);
@@ -67,10 +69,69 @@ struct SymplecticPartitionedRungeKutta : not_constructible {
   // static constexpr bool time_reversible = ...;
   // static constexpr int evaluations = ...;
   // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::FixedStepSizeIntegrator::Kind kind = ..;
   // static constexpr int stages = Stages(evaluations, first_same_as_last);
   // static constexpr FixedVector<double, stages> a(...);
   // static constexpr FixedVector<double, stages> b(...);
 };
+
+// Every SPRK may be transformed into an SRKN by specifying a composition method
+// (the possible composition methods are constrained by the properties of the
+// SPRK).  This struct effects that transformation.
+template<typename SymplecticPartitionedRungeKuttaMethod,
+         SymplecticRungeKuttaNyström::CompositionMethod composition_>
+struct AsSymplecticRungeKuttaNyström {
+  static_assert(std::is_base_of<methods::SymplecticPartitionedRungeKutta,
+                                SymplecticPartitionedRungeKuttaMethod>::value,
+                "Method must be derived from SymplecticPartitionedRungeKutta");
+  static_assert(composition_ != SymplecticRungeKuttaNyström::ABA,
+                "ABA not supported until C++17");
+  static_assert(SymplecticPartitionedRungeKuttaMethod::first_same_as_last
+                    ? composition_ == SymplecticRungeKuttaNyström::ABA ||
+                          composition_ == SymplecticRungeKuttaNyström::BAB
+                    : composition_ == SymplecticRungeKuttaNyström::BA,
+                "requested |composition| inconsistent with the properties of "
+                "this method");
+
+  struct Method : SymplecticRungeKuttaNyström {
+    static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;
+    static constexpr bool time_reversible =
+        SymplecticPartitionedRungeKuttaMethod::time_reversible;
+    static constexpr int evaluations =
+        SymplecticPartitionedRungeKuttaMethod::evaluations;
+    static constexpr CompositionMethod composition = composition_;
+    static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+        SymplecticPartitionedRungeKuttaMethod::kind;
+    static constexpr int stages = Stages(evaluations, composition);
+
+    static constexpr FixedVector<double, stages> Shift(
+        FixedVector<double, stages> const& a,
+        CompositionMethod const composition) {
+#if 0
+      if (composition == ABA) {
+        FixedVector<double, stages> shifted_a;
+        // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
+        // A and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB|
+        // means aᵣ vanishes).
+        for (int i = 0; i < stages; ++i) {
+          shifted_a[i] = a[mod(i - 1, stages)];
+        }
+        return shifted_a;
+      } else {
+#endif
+        return a;
+#if 0
+      }
+#endif
+  }
+
+    static constexpr FixedVector<double, stages> a =
+        Shift(SymplecticPartitionedRungeKuttaMethod::a, composition);
+    static constexpr FixedVector<double, stages> b =
+        SymplecticPartitionedRungeKuttaMethod::b;
+  };
+};
+
 
 // The following methods have coefficients from Blanes and Moan (2002),
 // Practical symplectic partitioned Runge–Kutta and Runge–Kutta–Nyström methods,
@@ -80,6 +141,8 @@ struct BlanesMoan2002S6 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 6;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_S6;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.20951510661336200,
                                                    -0.14385177317981800,
@@ -101,6 +164,8 @@ struct BlanesMoan2002S10 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 10;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::BLANES_MOAN_2002_S10;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.14881644790104200,
                                                    -0.13238586576778400,
@@ -232,6 +297,9 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 3;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          CANDY_ROZMUS_1991_FOREST_RUTH_1990;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.3512071919596576340,
                                                    -1.7024143839193152681,
@@ -279,36 +347,21 @@ struct McLachlan1995S2 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 2;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_S2;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{0.5, 0.5, 0.0}}};
   static constexpr FixedVector<double, stages> b{{{+0.19318332750378357396,
                                                    +0.61363334499243285207,
                                                    +0.19318332750378357396}}};
 };
-struct McLachlan1995SS5 : SymplecticPartitionedRungeKutta {
-  static constexpr int order = 4;
-  static constexpr bool time_reversible = true;
-  static constexpr int evaluations = 5;
-  static constexpr bool first_same_as_last = true;
-  static constexpr int stages = Stages(evaluations, first_same_as_last);
-  static constexpr FixedVector<double, stages> a{{{+0.28,
-                                                   +0.6254664284676700450,
-                                                   -0.8109328569353400900,
-                                                   +0.6254664284676700450,
-                                                   +0.28,
-                                                   +0.0}}};
-  static constexpr FixedVector<double, stages> b{{{+0.14,
-                                                   +0.45273321423383502251,
-                                                   -0.0927332142338350225,
-                                                   -0.0927332142338350225,
-                                                   +0.45273321423383502251,
-                                                   +0.14}}};
-};
 struct McLachlan1995S4 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 4;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_S4;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.54545454545454545455,
                                                    -0.045454545454545454545,
@@ -326,6 +379,8 @@ struct McLachlan1995S5 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 5;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_S5;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{
       {{+0.4, -0.1, 0.4, -0.1, 0.4, 0.0}}};
@@ -372,11 +427,34 @@ struct McLachlan1995SB3A5 : SymplecticRungeKuttaNyström {
                                                    0.28813559322033898305,
                                                    -0.041095890410958904110}}};
 };
+struct McLachlan1995SS5 : SymplecticPartitionedRungeKutta {
+  static constexpr int order = 4;
+  static constexpr bool time_reversible = true;
+  static constexpr int evaluations = 5;
+  static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SS5;
+  static constexpr int stages = Stages(evaluations, first_same_as_last);
+  static constexpr FixedVector<double, stages> a{{{+0.28,
+                                                   +0.6254664284676700450,
+                                                   -0.8109328569353400900,
+                                                   +0.6254664284676700450,
+                                                   +0.28,
+                                                   +0.0}}};
+  static constexpr FixedVector<double, stages> b{{{+0.14,
+                                                   +0.45273321423383502251,
+                                                   -0.0927332142338350225,
+                                                   -0.0927332142338350225,
+                                                   +0.45273321423383502251,
+                                                   +0.14}}};
+};
 struct McLachlan1995SS9 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 9;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SS9;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.1867,
                                                    +0.55549702371247839916,
@@ -404,6 +482,8 @@ struct McLachlan1995SS15 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SS15;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.7416703643506129534,
                                                    -0.4091008258000315940,
@@ -443,6 +523,8 @@ struct McLachlan1995SS17 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 17;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::MCLACHLAN_1995_SS17;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.12886597938144329897,
                                                    +0.5815140871052509624,
@@ -490,6 +572,9 @@ struct McLachlanAtela1992Order2Optimal : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = false;
   static constexpr int evaluations = 2;
   static constexpr bool first_same_as_last = false;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_2_OPTIMAL;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{
       {{+0.7071067811865475244, +0.2928932188134524756}}};
@@ -501,6 +586,9 @@ struct McLachlanAtela1992Order3Optimal : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = false;
   static constexpr int evaluations = 3;
   static constexpr bool first_same_as_last = false;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          MCLACHLAN_ATELA_1992_ORDER_3_OPTIMAL;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.9196615230173998571,
                                                    -0.1879916187991597820,
@@ -574,6 +662,9 @@ struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 1;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::
+          NEWTON_DELAMBRE_STORMER_VERLET_LEAPFROG;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{1.0, 0.0}}};
   static constexpr FixedVector<double, stages> b{{{0.5, 0.5}}};
@@ -703,6 +794,8 @@ struct Ruth1983 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = false;
   static constexpr int evaluations = 3;
   static constexpr bool first_same_as_last = false;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::RUTH_1983;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{
       {{2.0 / 3.0, -2.0 / 3.0, 1.0}}};
@@ -718,6 +811,8 @@ struct Suzuki1990 : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 5;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::SUZUKI_1990;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.41449077179437573714,
                                                    +0.41449077179437573714,
@@ -744,6 +839,8 @@ struct Yoshida1990Order6A : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_6A;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.78451361047755726382,
                                                    +0.23557321335935813369,
@@ -767,6 +864,8 @@ struct Yoshida1990Order6B : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_6B;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.43984816797678309102,
                                                    +0.00426068187079201616,
@@ -790,6 +889,8 @@ struct Yoshida1990Order6C : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_6C;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.44778256239929793290,
                                                    -2.14403531630538931060,
@@ -813,6 +914,8 @@ struct Yoshida1990Order8A : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_8A;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.04242620869970426435,
                                                    +1.82020630970698006933,
@@ -852,6 +955,8 @@ struct Yoshida1990Order8B : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_8B;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.48819229202921310080,
                                                    -2.33864815101041943098,
@@ -891,6 +996,8 @@ struct Yoshida1990Order8C : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_8C;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.629030650210427818049,
                                                    +1.36934946416874222370,
@@ -930,6 +1037,8 @@ struct Yoshida1990Order8D : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_8D;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+0.914844246229642658287,
                                                    +0.253693336566286009974,
@@ -969,6 +1078,8 @@ struct Yoshida1990Order8E : SymplecticPartitionedRungeKutta {
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
   static constexpr bool first_same_as_last = true;
+  static constexpr serialization::FixedStepSizeIntegrator::Kind kind =
+      serialization::FixedStepSizeIntegrator::YOSHIDA_1990_ORDER_8E;
   static constexpr int stages = Stages(evaluations, first_same_as_last);
   static constexpr FixedVector<double, stages> a{{{+1.30300165757516838484,
                                                    +0.107990467718098279648,
