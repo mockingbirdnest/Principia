@@ -154,9 +154,10 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       return SymmetricLinearMultistepIntegrator<
           methods::QuinlanTremaine1990Order14,
           typename ODE::Position>();
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
   }
-  LOG(FATAL) << "Unexpected kind " << message.DebugString();
-  base::noreturn();
 }
 
 template<typename ODE_>
@@ -303,9 +304,10 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
       return EmbeddedExplicitRungeKuttaNyströmIntegrator<
           methods::DormandElMikkawyPrince1986RKN434FM,
           typename ODE::Position>();
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
   }
-  LOG(FATAL) << "Unexpected kind " << message.DebugString();
-  base::noreturn();
 }
 
 template<typename ODE_>
