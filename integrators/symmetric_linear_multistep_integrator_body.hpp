@@ -38,16 +38,16 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
-  if (previous_steps_.size() < order_) {
+  if (previous_steps_.size() < order) {
     StartupSolve(t_final);
 
     // If |t_final| is not large enough, we may not have generated enough
     // points.  Bail out, we'll continue the next time |Solve| is called.
-    if (previous_steps_.size() < order_) {
+    if (previous_steps_.size() < order) {
       return Status::OK;
     }
   }
-  CHECK_EQ(previous_steps_.size(), order_);
+  CHECK_EQ(previous_steps_.size(), order);
 
   // Argument checks.
   int const dimension = previous_steps_.back().displacements.size();
@@ -58,7 +58,7 @@ Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
   // Current time.
   DoublePrecision<Instant> t = previous_steps_.back().time;
   // Order.
-  int const k = order_;
+  int const k = order;
 
   Status status;
   std::vector<Position> positions(dimension);
@@ -259,19 +259,19 @@ Instance::StartupSolve(Instant const& t_final) {
   Time const startup_step = step / startup_step_divisor;
 
   CHECK(!previous_steps_.empty());
-  CHECK_LT(previous_steps_.size(), order_);
+  CHECK_LT(previous_steps_.size(), order);
 
   auto const startup_append_state =
       [this](typename ODE::SystemState const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
-        if (previous_steps_.size() < order_) {
+        if (previous_steps_.size() < order) {
           this->current_state_ = state;
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
           if (++startup_step_index_ % startup_step_divisor == 0) {
-            CHECK_LT(previous_steps_.size(), order_);
+            CHECK_LT(previous_steps_.size(), order);
             previous_steps_.emplace_back();
             FillStepFromSystemState(this->equation_,
                                     this->current_state_,
@@ -292,10 +292,10 @@ Instance::StartupSolve(Instant const& t_final) {
 
   startup_instance->Solve(
       std::min(current_state.time.value +
-                   (order_ - previous_steps_.size()) * step + step / 2.0,
+                   (order - previous_steps_.size()) * step + step / 2.0,
                t_final));
 
-  CHECK_LE(previous_steps_.size(), order_);
+  CHECK_LE(previous_steps_.size(), order);
 }
 
 template<typename Method, typename Position>
@@ -365,7 +365,7 @@ SymmetricLinearMultistepIntegrator(
     : FixedStepSizeIntegrator<
           SpecialSecondOrderDifferentialEquation<Position>>(Method::kind),
       startup_integrator_(startup_integrator),
-      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_>()) {
+      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order>()) {
   CHECK_EQ(ɑ_[0], 1.0);
   CHECK_EQ(β_numerator_[0], 0.0);
 }
@@ -420,8 +420,13 @@ internal_symmetric_linear_multistep_integrator::
   static_assert(
       std::is_base_of<methods::SymmetricLinearMultistep, Method>::value,
       "Method must be derived from SymmetricLinearMultistep");
+  // TODO(phl): Someday, and that day may never come, I will call upon you to
+  // expose the startup integrator to the clients.  But until that day, accept
+  // this Blanes-Moan integrator as a gift.
   static internal_symmetric_linear_multistep_integrator::
-      SymmetricLinearMultistepIntegrator<Method, Position> const integrator;
+      SymmetricLinearMultistepIntegrator<Method, Position> const integrator(
+          SymplecticRungeKuttaNyströmIntegrator<methods::BlanesMoan2002SRKN14A,
+                                                Position>());
   return integrator;
 }
 
