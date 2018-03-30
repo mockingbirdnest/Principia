@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
 #include "ksp_plugin_test/mock_flight_plan.hpp"
@@ -40,7 +41,8 @@ using geometry::Identity;
 using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockFlightPlan;
@@ -166,7 +168,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                    /*speed_integration_tolerance=*/33}));
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          DormandElMikkawyPrince1986RKN434FM,
+          Position<Barycentric>>(),
       /*max_steps=*/111,
       /*length_integration_tolerance=*/222 * Metre,
       /*speed_integration_tolerance=*/333 * Metre / Second);

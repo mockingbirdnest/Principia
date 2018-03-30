@@ -12,6 +12,7 @@
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -34,8 +35,10 @@ using geometry::R3Element;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::MockFixedStepSizeIntegrator;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN6B;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
@@ -553,7 +556,9 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
                                             Position<Barycentric>>(),
       fixed_step};
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
-      integrators::DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          DormandElMikkawyPrince1986RKN434FM,
+          Position<Barycentric>>(),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*length_integration_tolerance*/ 1 * Micro(Metre),
       /*speed_integration_tolerance=*/1 * Micro(Metre) / Second};

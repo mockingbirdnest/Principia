@@ -4,7 +4,6 @@
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "ksp_plugin/burn.hpp"
@@ -30,7 +29,6 @@ using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
