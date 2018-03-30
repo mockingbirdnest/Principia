@@ -10,6 +10,7 @@
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -33,8 +34,9 @@ using base::dynamic_cast_not_null;
 using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
-using integrators::Quinlan1999Order8A;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order12;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
 using physics::KeplerOrbit;
@@ -71,7 +73,8 @@ class МолнияOrbitTest : public ::testing::Test {
     ephemeris_ = solar_system_2000_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<ICRFJ2000Equator>>(),
             /*step=*/10 * Minute));
   }
 
@@ -119,7 +122,8 @@ TEST_F(МолнияOrbitTest, Satellite) {
       {&trajectory},
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<ICRFJ2000Equator>>(),
           integration_step));
 
   // Remember that because of #228 we need to loop over FlowWithFixedStep.

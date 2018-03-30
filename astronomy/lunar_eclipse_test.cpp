@@ -5,6 +5,7 @@
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/ephemeris.hpp"
@@ -21,7 +22,8 @@ using geometry::AngleBetween;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::SolarSystem;
@@ -62,7 +64,8 @@ class LunarEclipseTest : public ::testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<ICRFJ2000Equator>>(),
             /*step=*/10 * Minute));
     r_sun_ = solar_system_1950_.mean_radius("Sun");
     r_moon_ = solar_system_1950_.mean_radius("Moon");

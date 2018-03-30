@@ -51,11 +51,12 @@ using geometry::Rotation;
 using geometry::Velocity;
 using integrators::Integrator;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::Quinlan1999Order8A;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order12;
 using ksp_plugin::Barycentric;
 using quantities::DebugString;
 using quantities::Frequency;
@@ -89,7 +90,8 @@ Length FittingTolerance(int const scale) {
 
 Ephemeris<Barycentric>::FixedStepParameters EphemerisParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-      QuinlanTremaine1990Order12<Position<Barycentric>>(),
+      SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                         Position<Barycentric>>(),
       /*step=*/10 * Minute);
 }
 
@@ -377,7 +379,8 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
           {&trajectory},
           Ephemeris<Barycentric>::NoIntrinsicAccelerations,
           Ephemeris<Barycentric>::FixedStepParameters(
-              Quinlan1999Order8A<Position<Barycentric>>(),
+              SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                 Position<Barycentric>>(),
               /*step=*/10 * Second)));
     }
     final_time += step;
@@ -501,12 +504,13 @@ void FlowEphemerisWithFixedStepSLMS(
     not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
     Instant const& t,
     Ephemeris<Barycentric>& ephemeris) {
-  auto const instance =
-      ephemeris.NewInstance({trajectory},
-                            Ephemeris<Barycentric>::NoIntrinsicAccelerations,
-                            Ephemeris<Barycentric>::FixedStepParameters(
-                                Quinlan1999Order8A<Position<Barycentric>>(),
-                                /*step=*/10 * Second));
+  auto const instance = ephemeris.NewInstance(
+      {trajectory},
+      Ephemeris<Barycentric>::NoIntrinsicAccelerations,
+      Ephemeris<Barycentric>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<Barycentric>>(),
+          /*step=*/10 * Second));
   ephemeris.FlowWithFixedStep(t, *instance);
 }
 

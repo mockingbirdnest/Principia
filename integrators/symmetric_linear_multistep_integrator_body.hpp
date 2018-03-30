@@ -20,8 +20,8 @@ using geometry::QuantityOrMultivectorSerializer;
 
 int const startup_step_divisor = 16;
 
-template<typename Position, int order_>
-Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
+template<typename Method, typename Position>
+Status SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Solve(
     Instant const& t_final) {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
@@ -38,16 +38,16 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   auto const& step = this->step_;
   auto const& equation = this->equation_;
 
-  if (previous_steps_.size() < order_) {
+  if (previous_steps_.size() < order) {
     StartupSolve(t_final);
 
     // If |t_final| is not large enough, we may not have generated enough
     // points.  Bail out, we'll continue the next time |Solve| is called.
-    if (previous_steps_.size() < order_) {
+    if (previous_steps_.size() < order) {
       return Status::OK;
     }
   }
-  CHECK_EQ(previous_steps_.size(), order_);
+  CHECK_EQ(previous_steps_.size(), order);
 
   // Argument checks.
   int const dimension = previous_steps_.back().displacements.size();
@@ -58,7 +58,7 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   // Current time.
   DoublePrecision<Instant> t = previous_steps_.back().time;
   // Order.
-  int const k = order_;
+  int const k = order;
 
   Status status;
   std::vector<Position> positions(dimension);
@@ -147,22 +147,22 @@ Status SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Solve(
   return status;
 }
 
-template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_> const&
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::integrator()
+template<typename Method, typename Position>
+SymmetricLinearMultistepIntegrator<Method, Position> const&
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::integrator()
     const {
   return integrator_;
 }
 
-template<typename Position, int order_>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Clone() const {
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
@@ -179,8 +179,8 @@ Instance::WriteToMessage(
   extension->set_startup_step_index(startup_step_index_);
 }
 
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
     WriteToMessage(
         not_null<serialization::SymmetricLinearMultistepIntegratorInstance::
                      Step*> const message) const {
@@ -198,9 +198,9 @@ void SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
   time.WriteToMessage(message->mutable_time());
 }
 
-template <typename Position, int order_>
-typename SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
+template<typename Method, typename Position>
+typename SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Step::
     ReadFromMessage(
         serialization::SymmetricLinearMultistepIntegratorInstance::Step const&
             message) {
@@ -222,8 +222,8 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Step::
   return step;
 }
 
-template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
+template<typename Method, typename Position>
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
@@ -236,8 +236,8 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
                           this->previous_steps_.back());
 }
 
-template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
+template<typename Method, typename Position>
+SymmetricLinearMultistepIntegrator<Method, Position>::Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step,
@@ -249,8 +249,8 @@ SymmetricLinearMultistepIntegrator<Position, order_>::Instance::Instance(
       previous_steps_(previous_steps),
       integrator_(integrator) {}
 
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::
 Instance::StartupSolve(Instant const& t_final) {
   auto& current_state = this->current_state_;
   auto const& step = this->step_;
@@ -259,19 +259,19 @@ Instance::StartupSolve(Instant const& t_final) {
   Time const startup_step = step / startup_step_divisor;
 
   CHECK(!previous_steps_.empty());
-  CHECK_LT(previous_steps_.size(), order_);
+  CHECK_LT(previous_steps_.size(), order);
 
   auto const startup_append_state =
       [this](typename ODE::SystemState const& state) {
         // Stop changing anything once we're done with the startup.  We may be
         // called one more time by the |startup_integrator_|.
-        if (previous_steps_.size() < order_) {
+        if (previous_steps_.size() < order) {
           this->current_state_ = state;
           // The startup integrator has a smaller step.  We do not record all
           // the states it computes, but only those that are a multiple of the
           // main integrator step.
           if (++startup_step_index_ % startup_step_divisor == 0) {
-            CHECK_LT(previous_steps_.size(), order_);
+            CHECK_LT(previous_steps_.size(), order);
             previous_steps_.emplace_back();
             FillStepFromSystemState(this->equation_,
                                     this->current_state_,
@@ -292,14 +292,14 @@ Instance::StartupSolve(Instant const& t_final) {
 
   startup_instance->Solve(
       std::min(current_state.time.value +
-                   (order_ - previous_steps_.size()) * step + step / 2.0,
+                   (order - previous_steps_.size()) * step + step / 2.0,
                t_final));
 
-  CHECK_LE(previous_steps_.size(), order_);
+  CHECK_LE(previous_steps_.size(), order);
 }
 
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::
 Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   using Acceleration = typename ODE::Acceleration;
   using Displacement = typename ODE::Displacement;
@@ -339,8 +339,8 @@ Instance::ComputeVelocityUsingCohenHubbardOesterwinter() {
   }
 }
 
-template<typename Position, int order_>
-void SymmetricLinearMultistepIntegrator<Position, order_>::
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::
 Instance::FillStepFromSystemState(ODE const& equation,
                                   typename ODE::SystemState const& state,
                                   Step& step) {
@@ -358,29 +358,22 @@ Instance::FillStepFromSystemState(ODE const& equation,
                                 step.accelerations);
 }
 
-template<typename Position, int order_>
-SymmetricLinearMultistepIntegrator<Position, order_>::
+template<typename Method, typename Position>
+SymmetricLinearMultistepIntegrator<Method, Position>::
 SymmetricLinearMultistepIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind,
-    FixedStepSizeIntegrator<ODE> const& startup_integrator,
-    FixedVector<double, half_order_> const& ɑ,
-    FixedVector<double, half_order_> const& β_numerator,
-    double const β_denominator)
+    FixedStepSizeIntegrator<ODE> const& startup_integrator)
     : FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(kind),
+          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind),
       startup_integrator_(startup_integrator),
-      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order_>()),
-      ɑ_(ɑ),
-      β_numerator_(β_numerator),
-      β_denominator_(β_denominator) {
+      cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order>()) {
   CHECK_EQ(ɑ_[0], 1.0);
   CHECK_EQ(β_numerator_[0], 0.0);
 }
 
-template <typename Position, int order_>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
+SymmetricLinearMultistepIntegrator<Method, Position>::NewInstance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
     Time const& step) const {
@@ -390,11 +383,11 @@ SymmetricLinearMultistepIntegrator<Position, order_>::NewInstance(
       new Instance(problem, append_state, step, *this));
 }
 
-template<typename Position, int order_>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<
     typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
+SymmetricLinearMultistepIntegrator<Method, Position>::ReadFromMessage(
     serialization::FixedStepSizeIntegratorInstance const& message,
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
@@ -420,92 +413,20 @@ SymmetricLinearMultistepIntegrator<Position, order_>::ReadFromMessage(
 
 }  // namespace internal_symmetric_linear_multistep_integrator
 
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8A() {
-  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8A,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, -2.0, 2.0, -2.0, 2.0},
-      {0.0, 22081.0, -29418.0, 75183.0, -75212.0},
-      15120.0);
-  return integrator;
-}
-
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8> const& Quinlan1999Order8B() {
-  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_1999_ORDER_8B,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, 0.0, 0.0, -0.5, -1.0},
-      {0.0, 192481.0, 6582.0, 816783.0, -156812.0},
-      120960.0);
-  return integrator;
-}
-
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 8> const&
-QuinlanTremaine1990Order8() {
-  static SymmetricLinearMultistepIntegrator<Position, 8> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_8,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, -2.0, 2.0, -1.0, 0.0},
-      {0.0, 17671.0, -23622.0, 61449.0, -50516.0},
-      12096.0);
-  return integrator;
-}
-
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 10> const&
-QuinlanTremaine1990Order10() {
-  static SymmetricLinearMultistepIntegrator<Position, 10> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_10,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, -1.0, 1.0, -1.0, 1.0, -2.0},
-      {0.0, 399187.0, -485156.0, 2391436.0, -2816732.0, 4651330.0},
-      241920.0);
-  return integrator;
-}
-
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 12> const&
-QuinlanTremaine1990Order12() {
-  static SymmetricLinearMultistepIntegrator<Position, 12> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_12,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0},
-      {0.0,
-       90987349.0,
-       -229596838.0,
-       812627169.0,
-       -1628539944.0,
-       2714971338.0,
-       -3041896548.0},
-      53222400.0);
-  return integrator;
-}
-
-template<typename Position>
-SymmetricLinearMultistepIntegrator<Position, 14> const&
-QuinlanTremaine1990Order14() {
-  static SymmetricLinearMultistepIntegrator<Position, 14> const integrator(
-      serialization::FixedStepSizeIntegrator::QUINLAN_TREMAINE_1990_ORDER_14,
-      SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A, Position>(),
-      {1.0, -2.0, 2.0, -1.0, 0.0, 0.0, 0.0, 0.0},
-      {0.0,
-       433489274083.0,
-       -1364031998256.0,
-       5583113380398.0,
-       -14154444148720.0,
-       28630585332045.0,
-       -42056933842656.0,
-       48471792742212.0},
-      237758976000.0);
+template<typename Method, typename Position>
+internal_symmetric_linear_multistep_integrator::
+    SymmetricLinearMultistepIntegrator<Method, Position> const&
+    SymmetricLinearMultistepIntegrator() {
+  static_assert(
+      std::is_base_of<methods::SymmetricLinearMultistep, Method>::value,
+      "Method must be derived from SymmetricLinearMultistep");
+  // TODO(phl): Someday, and that day may never come, I will call upon you to
+  // expose the startup integrator to the clients.  But until that day, accept
+  // this Blanes-Moan integrator as a gift.
+  static internal_symmetric_linear_multistep_integrator::
+      SymmetricLinearMultistepIntegrator<Method, Position> const integrator(
+          SymplecticRungeKuttaNyströmIntegrator<methods::BlanesMoan2002SRKN14A,
+                                                Position>());
   return integrator;
 }
 

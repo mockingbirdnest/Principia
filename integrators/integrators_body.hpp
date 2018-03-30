@@ -133,17 +133,27 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
           methods::OkunborSkeel1994Order6Method13,
           typename ODE::Position>();
     case FSSI::QUINLAN_1999_ORDER_8A:
-      return Quinlan1999Order8A<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<methods::Quinlan1999Order8A,
+                                                typename ODE::Position>();
     case FSSI::QUINLAN_1999_ORDER_8B:
-      return Quinlan1999Order8B<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<methods::Quinlan1999Order8B,
+                                                typename ODE::Position>();
     case FSSI::QUINLAN_TREMAINE_1990_ORDER_8:
-      return QuinlanTremaine1990Order8<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<
+          methods::QuinlanTremaine1990Order8,
+          typename ODE::Position>();
     case FSSI::QUINLAN_TREMAINE_1990_ORDER_10:
-      return QuinlanTremaine1990Order10<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<
+          methods::QuinlanTremaine1990Order10,
+          typename ODE::Position>();
     case FSSI::QUINLAN_TREMAINE_1990_ORDER_12:
-      return QuinlanTremaine1990Order12<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<
+          methods::QuinlanTremaine1990Order12,
+          typename ODE::Position>();
     case FSSI::QUINLAN_TREMAINE_1990_ORDER_14:
-      return QuinlanTremaine1990Order14<typename ODE::Position>();
+      return SymmetricLinearMultistepIntegrator<
+          methods::QuinlanTremaine1990Order14,
+          typename ODE::Position>();
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();

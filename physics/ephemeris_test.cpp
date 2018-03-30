@@ -47,10 +47,11 @@ using geometry::Frame;
 using geometry::Rotation;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::Quinlan1999Order8A;
+using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
+using integrators::methods::Quinlan1999Order8A;
 using quantities::Abs;
 using quantities::ArcTan;
 using quantities::Area;
@@ -840,7 +841,9 @@ TEST_P(EphemerisTest, CollisionDetection) {
       {&trajectory},
       Ephemeris<ICRFJ2000Equator>::NoIntrinsicAccelerations,
       Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-          Quinlan1999Order8A<Position<ICRFJ2000Equator>>(), 1e-3 * Second));
+          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                             Position<ICRFJ2000Equator>>(),
+          1e-3 * Second));
 
   EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + short_duration, *instance));
   EXPECT_THAT(ephemeris.FlowWithFixedStep(t0_ + long_duration, *instance),
@@ -1068,7 +1071,8 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         &SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                Position<ICRFJ2000Equator>>(),
-        &Quinlan1999Order8A<Position<ICRFJ2000Equator>>()));
+        &SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                            Position<ICRFJ2000Equator>>()));
 
 }  // namespace internal_ephemeris
 }  // namespace physics

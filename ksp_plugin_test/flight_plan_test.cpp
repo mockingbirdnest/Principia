@@ -7,6 +7,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
@@ -26,7 +27,8 @@ using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
@@ -68,7 +70,8 @@ class FlightPlanTest : public testing::Test {
         /*initial_time=*/t0_ - 2 * π * Second,
         /*fitting_tolerance=*/1 * Milli(Metre),
         Ephemeris<Barycentric>::FixedStepParameters(
-            QuinlanTremaine1990Order12<Position<Barycentric>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<Barycentric>>(),
             /*step=*/10 * Minute));
     navigation_frame_ = std::make_unique<TestNavigationFrame>(
         ephemeris_.get(),

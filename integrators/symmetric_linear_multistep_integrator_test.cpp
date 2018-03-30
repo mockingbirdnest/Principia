@@ -61,17 +61,18 @@ using ::testing::Le;
 using ::testing::Lt;
 using ::testing::ValuesIn;
 
-#define INSTANCE(integrator,                                      \
-                 beginning_of_convergence,                        \
-                 expected_position_error,                         \
-                 expected_velocity_error,                         \
-                 expected_energy_error)                           \
-    SimpleHarmonicMotionTestInstance(integrator<Length>(),        \
-                                     #integrator,                 \
-                                     (beginning_of_convergence),  \
-                                     (expected_position_error),   \
-                                     (expected_velocity_error),   \
-                                     (expected_energy_error))
+#define INSTANCE(integrator,                                             \
+                 beginning_of_convergence,                               \
+                 expected_position_error,                                \
+                 expected_velocity_error,                                \
+                 expected_energy_error)                                  \
+  SimpleHarmonicMotionTestInstance(                                      \
+      SymmetricLinearMultistepIntegrator<methods::integrator, Length>(), \
+      #integrator,                                                       \
+      (beginning_of_convergence),                                        \
+      (expected_position_error),                                         \
+      (expected_velocity_error),                                         \
+      (expected_energy_error))
 
 namespace integrators {
 

@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 #include "gmock/gmock.h"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -23,7 +24,8 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Pow;
 using quantities::Sin;
@@ -62,15 +64,15 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
   initial_state.emplace_back(World::origin, Velocity<World>());
 
-  Ephemeris<World>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0,
-          5 * Milli(Metre),
-          Ephemeris<World>::FixedStepParameters(
-              QuinlanTremaine1990Order12<Position<World>>(),
-              10 * Minute));
+  Ephemeris<World> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0,
+      5 * Milli(Metre),
+      Ephemeris<World>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<World>>(),
+          10 * Minute));
 
   Displacement<World> r(
       {1 * AstronomicalUnit, 2 * AstronomicalUnit, 3 * AstronomicalUnit});
@@ -156,15 +158,15 @@ TEST_F(ApsidesTest, ComputeNodes) {
   bodies.emplace_back(std::unique_ptr<MassiveBody const>(b));
   initial_state.emplace_back(World::origin, Velocity<World>());
 
-  Ephemeris<World>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0,
-          5 * Milli(Metre),
-          Ephemeris<World>::FixedStepParameters(
-              QuinlanTremaine1990Order12<Position<World>>(),
-              10 * Minute));
+  Ephemeris<World> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0,
+      5 * Milli(Metre),
+      Ephemeris<World>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<World>>(),
+          10 * Minute));
 
   KeplerianElements<World> elements;
   elements.eccentricity = 0.25;
