@@ -333,7 +333,8 @@ internal_embedded_explicit_runge_kutta_nyström_integrator::
     EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   static_assert(
-      std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström, Method>::value,
+      std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström,
+                      Method>::value,
       "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
   static internal_embedded_explicit_runge_kutta_nyström_integrator::
       EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const
