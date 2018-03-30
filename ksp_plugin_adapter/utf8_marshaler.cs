@@ -35,12 +35,6 @@ internal class InUTF8Marshaler : UTF8Marshaler {
 
   public override void CleanUpNativeData(IntPtr native_data) {
     Marshal.FreeHGlobal(native_data);
-#if MARSHAL_DEBUG
-    // Useful for debugging things from a console application to see whether
-    // allocating and freeing match.  We cannot use Log.Info here, since that
-    // would recursively call the marshaler and end in overflowing hilarity.
-    Console.WriteLine("freeh " + Convert.ToString(native_data.ToInt64(), 16));
-#endif
   }
 
   public override IntPtr MarshalManagedToNative(object managed_object) {
@@ -53,16 +47,12 @@ internal class InUTF8Marshaler : UTF8Marshaler {
     }
     int size = utf8_.GetByteCount(value);
     IntPtr buffer = Marshal.AllocHGlobal(size + 1);
-    unsafe {
-      byte* begin = (byte*)buffer;
-#if MARSHAL_DEBUG
-      Console.WriteLine("alloch " + Convert.ToString(ptr.ToInt64(), 16));
-#endif
-      fixed (char* utf16_units = value) {
-        utf8_.GetBytes(utf16_units, value.Length, begin, size);
-      }
-      begin[size] = 0;
+    while (bytes_.Length < size + 1) {
+      bytes_ = new byte[2 * bytes_.Length];
     }
+    utf8_.GetBytes(value, 0, value.Length, bytes_, 0);
+    bytes_[size] = 0;
+    Marshal.Copy(bytes_, 0, buffer, size + 1);
     return buffer;
   }
 
@@ -71,6 +61,7 @@ internal class InUTF8Marshaler : UTF8Marshaler {
   }
 
   private readonly static InUTF8Marshaler instance_ = new InUTF8Marshaler();
+  private byte[] bytes_ = new byte[1];
 }
 
 // A marshaler for out parameter or return value UTF-8 strings whose ownership
@@ -85,14 +76,18 @@ internal class OutUTF8Marshaler : UTF8Marshaler {
     throw Log.Fatal("use |InUTF8Marshaler| for in parameters");
   }
 
-  public override unsafe object MarshalNativeToManaged(IntPtr native_data) {
-    sbyte* begin = (sbyte*)native_data;
-    sbyte* end;
-    for (end = begin; *end != 0; ++end) {}
-    return new String(begin, 0, (int)(end - begin), utf8_);
+  public override object MarshalNativeToManaged(IntPtr native_data) {
+    int size;
+    for (size = 0; Marshal.ReadByte(native_data, size) != 0; ++size) {}
+    while (bytes_.Length < size) {
+      bytes_ = new byte[2 * bytes_.Length];
+    }
+    Marshal.Copy(native_data, bytes_, 0, size);
+    return utf8_.GetString(bytes_, 0, size);
   }
 
   private readonly static OutUTF8Marshaler instance_ = new OutUTF8Marshaler();
+  private byte[] bytes_ = new byte[1];
 }
 
 // A marshaler for out parameter or return value UTF-8 strings whose ownership
