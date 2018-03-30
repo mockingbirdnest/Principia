@@ -116,9 +116,9 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
-  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
-  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
-  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
+  static constexpr auto BA = serialization::FixedStepSizeIntegrator::BA;
+  static constexpr auto ABA = serialization::FixedStepSizeIntegrator::ABA;
+  static constexpr auto BAB = serialization::FixedStepSizeIntegrator::BAB;
 
   static constexpr auto stages_ = Method::stages;
   static constexpr auto a_ = Method::a;

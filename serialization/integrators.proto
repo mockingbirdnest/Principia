@@ -1,4 +1,4 @@
-syntax = "proto2";
+﻿syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/numerics.proto";
@@ -65,9 +65,9 @@ message FixedStepSizeIntegrator {
     YOSHIDA_1990_ORDER_8E = 25;
   }
   enum CompositionMethod {
-    BA = 0;
-    ABA = 1;
-    BAB = 2;
+    BA = 0;   // Neither b₀ nor aᵣ vanishes.
+    ABA = 1;  // b₀ = 0.
+    BAB = 2;  // aᵣ = 0.
   }
   required Kind kind = 1;
   optional CompositionMethod composition_method = 2;  // Only for SRKN.
