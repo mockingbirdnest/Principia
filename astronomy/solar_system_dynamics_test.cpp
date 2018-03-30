@@ -46,10 +46,12 @@ using geometry::Rotation;
 using geometry::Velocity;
 using geometry::Wedge;
 using integrators::FixedStepSizeIntegrator;
-using integrators::Quinlan1999Order8A;
-using integrators::QuinlanTremaine1990Order10;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
+using integrators::methods::Quinlan1999Order8A;
+using integrators::methods::QuinlanTremaine1990Order8;
+using integrators::methods::QuinlanTremaine1990Order10;
+using integrators::methods::QuinlanTremaine1990Order12;
 using integrators::methods::BlanesMoan2002SRKN11B;
 using integrators::methods::BlanesMoan2002SRKN14A;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
@@ -561,20 +563,23 @@ INSTANTIATE_TEST_CASE_P(
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
             SymplecticRungeKuttaNyströmIntegrator<
-                McLachlanAtela1992Order5Optimal,
-                Position<ICRFJ2000Equator>>(),
-            /*iterations=*/8,
-            /*first_step_in_seconds=*/32},
+                 McLachlanAtela1992Order5Optimal,
+                 Position<ICRFJ2000Equator>>(),
+             /*iterations=*/8,
+             /*first_step_in_seconds=*/32},
         ConvergenceTestParameters{
-            Quinlan1999Order8A<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                               Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
-            QuinlanTremaine1990Order10<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
+                                               Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
-            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
+                                               Position<ICRFJ2000Equator>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
 
@@ -582,7 +587,8 @@ INSTANTIATE_TEST_CASE_P(
         // position error of about 2.3 m on Miranda and takes about 2.0 s of
         // elapsed time.  For steps larger than about 680 s, the errors explode.
         ConvergenceTestParameters{
-            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<ICRFJ2000Equator>>(),
             /*iterations=*/5,
             /*first_step_in_seconds=*/75}));
 

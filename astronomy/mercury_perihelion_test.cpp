@@ -8,6 +8,7 @@
 #include "geometry/grassmann.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
 #include "physics/degrees_of_freedom.hpp"
@@ -28,7 +29,8 @@ using base::not_null;
 using geometry::AngleBetween;
 using geometry::Instant;
 using geometry::Position;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
@@ -60,7 +62,8 @@ class MercuryPerihelionTest : public testing::Test {
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
-            QuinlanTremaine1990Order12<Position<ICRFJ2000Equator>>(),
+            SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                               Position<ICRFJ2000Equator>>(),
             /*step=*/10 * Minute));
   }
 

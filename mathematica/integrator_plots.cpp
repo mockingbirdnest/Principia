@@ -24,8 +24,13 @@
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
-#define SLMS_INTEGRATOR(name) \
-  { (integrators::name<Length>()), u8###name, 1 }
+#define SLMS_INTEGRATOR(name)                         \
+  {                                                   \
+    (integrators::SymmetricLinearMultistepIntegrator< \
+        integrators::methods::name,                   \
+        Length>()),                                   \
+        u8###name, 1                                  \
+  }
 #define SRKN_INTEGRATOR(name)                                 \
   {                                                           \
     (integrators::SymplecticRungeKuttaNyströmIntegrator<      \

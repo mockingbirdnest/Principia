@@ -14,9 +14,10 @@ namespace internal_integrators {
 
 using geometry::Position;
 using integrators::DormandElMikkawyPrince1986RKN434FM;
-using integrators::Quinlan1999Order8A;
+using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN14A;
+using integrators::methods::Quinlan1999Order8A;
 using quantities::si::Minute;
 using quantities::si::Second;
 
@@ -29,8 +30,9 @@ Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
 
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
-             Quinlan1999Order8A<Position<Barycentric>>(),
-             /*step=*/10 * Second);
+      SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                         Position<Barycentric>>(),
+      /*step=*/10 * Second);
 }
 
 Ephemeris<Barycentric>::AdaptiveStepParameters

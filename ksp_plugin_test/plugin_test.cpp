@@ -20,6 +20,7 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/methods.hpp"
 #include "integrators/mock_integrators.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
@@ -59,7 +60,8 @@ using geometry::RigidTransformation;
 using geometry::Trivector;
 using integrators::IntegrationProblem;
 using integrators::MockFixedStepSizeIntegrator;
-using integrators::QuinlanTremaine1990Order12;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
 using physics::ContinuousTrajectory;
 using physics::Ephemeris;
 using physics::KeplerianElements;
@@ -742,8 +744,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeWithFlightPlan) {
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
-      .WillRepeatedly(
-          ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
+      .WillRepeatedly(ReturnRef(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<Barycentric>>()));
   EXPECT_CALL(plugin_->mock_ephemeris(), ForgetBefore(_)).Times(2);
   EXPECT_CALL(*mock_dynamic_frame, ToThisFrameAtTime(_))
       .WillRepeatedly(Return(
@@ -848,8 +851,9 @@ TEST_F(PluginTest, ForgetAllHistoriesBeforeAfterPredictionFork) {
       .WillRepeatedly(DoAll(AppendToDiscreteTrajectory2(&trajectories[0], dof),
                             Return(Status::OK)));
   EXPECT_CALL(plugin_->mock_ephemeris(), planetary_integrator())
-      .WillRepeatedly(
-          ReturnRef(QuinlanTremaine1990Order12<Position<Barycentric>>()));
+      .WillRepeatedly(ReturnRef(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<Barycentric>>()));
 
   plugin_->renderer().SetPlottingFrame(
       plugin_->NewBodyCentredNonRotatingNavigationFrame(
