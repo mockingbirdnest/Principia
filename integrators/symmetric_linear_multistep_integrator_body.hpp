@@ -421,7 +421,7 @@ internal_symmetric_linear_multistep_integrator::
       std::is_base_of<methods::SymmetricLinearMultistep, Method>::value,
       "Method must be derived from SymmetricLinearMultistep");
   static internal_symmetric_linear_multistep_integrator::
-      SymmetricLinearMultistep<Method, Position> const integrator;
+      SymmetricLinearMultistepIntegrator<Method, Position> const integrator;
   return integrator;
 }
 

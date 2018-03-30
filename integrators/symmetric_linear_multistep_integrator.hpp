@@ -114,7 +114,7 @@ class SymmetricLinearMultistepIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
-  static constexpr auto half_order_ = Method::half_order;
+  static constexpr auto half_order_ = Method::Half(order);
   static constexpr auto ɑ_ = Method::ɑ;
   static constexpr auto β_numerator_ = Method::β_numerator;
   static constexpr auto β_denominator_ = Method::β_denominator;
