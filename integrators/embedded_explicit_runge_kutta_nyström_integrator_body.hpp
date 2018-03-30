@@ -24,72 +24,27 @@ using quantities::DebugString;
 using quantities::Difference;
 using quantities::Quotient;
 
-template<typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, 4, 3, 4, true> const&
-DormandElMikkawyPrince1986RKN434FM() {
-  static EmbeddedExplicitRungeKuttaNyströmIntegrator<
-             Position, 4, 3, 4, true> const integrator(
-      serialization::AdaptiveStepSizeIntegrator::
-          DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM,
-      // c
-      { 0.0         ,   1.0 /   4.0,   7.0 /  10.0,  1.0},
-      // a
-      {
-        1.0 /   32.0,
-        7.0 / 1000.0, 119.0 / 500.0,
-        1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0},
-      // b̂
-      { 1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0},
-      // b̂′
-      { 1.0 /   14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0},
-      // b
-      {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0},
-      // b′
-      {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0});
-  return integrator;
-}
-
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position, higher_order, lower_order,
-                                            stages, first_same_as_last>::
-EmbeddedExplicitRungeKuttaNyströmIntegrator(
-    serialization::AdaptiveStepSizeIntegrator::Kind const kind,
-    FixedVector<double, stages> const& c,
-    FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
-    FixedVector<double, stages> const& b_hat,
-    FixedVector<double, stages> const& b_prime_hat,
-    FixedVector<double, stages> const& b,
-    FixedVector<double, stages> const& b_prime)
+template<typename Method, typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
+EmbeddedExplicitRungeKuttaNyströmIntegrator()
     : AdaptiveStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(kind),
-      c_(c),
-      a_(a),
-      b_hat_(b_hat),
-      b_prime_hat_(b_prime_hat),
-      b_(b),
-      b_prime_(b_prime) {
+          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind) {
   // the first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
   if (first_same_as_last) {
     // Check that the conditions for the FSAL property are satisfied, see for
     // instance Dormand, El-Mikkawy and Prince (1986),
     // Families of Runge-Kutta-Nyström formulae, equation 3.1.
-    CHECK_EQ(1.0, c_[stages - 1]);
-    CHECK_EQ(0.0, b_hat_[stages - 1]);
-    for (int j = 0; j < stages - 1; ++j) {
-      CHECK_EQ(b_hat_[j], a_[stages - 1][j]);
+    CHECK_EQ(1.0, c_[stages_ - 1]);
+    CHECK_EQ(0.0, b_hat_[stages_ - 1]);
+    for (int j = 0; j < stages_ - 1; ++j) {
+      CHECK_EQ(b_hat_[j], a_[stages_ - 1][j]);
     }
   }
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                                   higher_order,
-                                                   lower_order,
-                                                   stages,
-                                                   first_same_as_last>::
+template<typename Method, typename Position>
+Status EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
@@ -154,7 +109,7 @@ Instance::Solve(Instant const& t_final) {
   std::vector<Position> q_stage(dimension);
   // Accelerations at each stage.
   // TODO(egg): this is a rectangular container, use something more appropriate.
-  std::vector<std::vector<Acceleration>> g(stages);
+  std::vector<std::vector<Acceleration>> g(stages_);
   for (auto& g_stage : g) {
     g_stage.resize(dimension);
   }
@@ -212,7 +167,7 @@ Instance::Solve(Instant const& t_final) {
       }
 
       // Runge-Kutta-Nyström iteration; fills |g|.
-      for (int i = first_stage; i < stages; ++i) {
+      for (int i = first_stage; i < stages_; ++i) {
         Instant const t_stage = t.value + (t.error + c[i] * h);
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
@@ -233,7 +188,7 @@ Instance::Solve(Instant const& t_final) {
         Acceleration Σi_b_prime_i_g_ik{};
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
-        for (int i = 0; i < stages; ++i) {
+        for (int i = 0; i < stages_; ++i) {
           Σi_b_hat_i_g_ik       += b_hat[i] * g[i][k];
           Σi_b_i_g_ik           += b[i] * g[i][k];
           Σi_b_prime_hat_i_g_ik += b_prime_hat[i] * g[i][k];
@@ -287,42 +242,23 @@ Instance::Solve(Instant const& t_final) {
   return status;
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last> const&
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
+template<typename Method, typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::integrator() const {
   return integrator_;
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Clone() const {
   return std::unique_ptr<Instance>(new Instance(*this));
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-void EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                                 higher_order,
-                                                 lower_order,
-                                                 stages,
-                                                 first_same_as_last>::
+template<typename Method, typename Position>
+void EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
@@ -336,13 +272,8 @@ Instance::WriteToMessage(
                       extension);
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
+template<typename Method, typename Position>
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::Instance(
     IntegrationProblem<ODE> const& problem,
     AppendState const& append_state,
@@ -353,15 +284,10 @@ Instance::Instance(
           problem, append_state, tolerance_to_error_ratio, parameters),
       integrator_(integrator) {}
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 NewInstance(IntegrationProblem<ODE> const& problem,
             AppendState const& append_state,
             ToleranceToErrorRatio const& tolerance_to_error_ratio,
@@ -375,15 +301,10 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                                                 *this));
 }
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            higher_order,
-                                            lower_order,
-                                            stages,
-                                            first_same_as_last>::
+EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 ReadFromMessage(
     serialization::AdaptiveStepSizeIntegratorInstance const& message,
     IntegrationProblem<ODE> const& problem,
@@ -406,5 +327,19 @@ ReadFromMessage(
 }
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+
+template<typename Method, typename Position>
+internal_embedded_explicit_runge_kutta_nyström_integrator::
+    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator() {
+  static_assert(
+      std::is_base_of<methods::EmbeddedExplicitRungeKuttaNyström, Method>::value,
+      "Method must be derived from EmbeddedExplicitRungeKuttaNyström");
+  static internal_embedded_explicit_runge_kutta_nyström_integrator::
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const
+          integrator;
+  return integrator;
+}
+
 }  // namespace integrators
 }  // namespace principia

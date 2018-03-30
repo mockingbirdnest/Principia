@@ -72,7 +72,9 @@ class EmbeddedExplicitRungeKuttaNyströmIntegratorTest
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
-      DormandElMikkawyPrince1986RKN434FM<Length>();
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandElMikkawyPrince1986RKN434FM,
+          Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;
@@ -177,7 +179,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest,
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
-      DormandElMikkawyPrince1986RKN434FM<Length>();
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandElMikkawyPrince1986RKN434FM,
+          Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -307,7 +311,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
   };
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
-      DormandElMikkawyPrince1986RKN434FM<Length>();
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandElMikkawyPrince1986RKN434FM,
+          Length>();
 
   auto const instance = integrator.NewInstance(problem,
                                                append_state,
@@ -325,7 +331,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Singularity) {
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
-      DormandElMikkawyPrince1986RKN434FM<Length>();
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandElMikkawyPrince1986RKN434FM,
+          Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Speed const v_amplitude = 1 * Metre / Second;
@@ -428,7 +436,9 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
 
 TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Serialization) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
-      DormandElMikkawyPrince1986RKN434FM<Length>();
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandElMikkawyPrince1986RKN434FM,
+          Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
   Time const period = 2 * π * Second;
