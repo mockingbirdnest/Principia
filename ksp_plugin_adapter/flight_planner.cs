@@ -299,11 +299,12 @@ class FlightPlanner : WindowRenderer {
                 }
               }
             }
+            var stock_orbit = guidance_node_.patch;
             Vector3d stock_velocity_at_node_time =
-                vessel_.orbit.getOrbitalVelocityAtUT(
+                stock_orbit.getOrbitalVelocityAtUT(
                                   manoeuvre.burn.initial_time).xzy;
             Vector3d stock_displacement_from_parent_at_node_time =
-                vessel_.orbit.getRelativePositionAtUT(
+                stock_orbit.getRelativePositionAtUT(
                                   manoeuvre.burn.initial_time).xzy;
             UnityEngine.Quaternion stock_frenet_frame_to_world =
                 UnityEngine.Quaternion.LookRotation(
