@@ -26,8 +26,9 @@ using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
@@ -95,7 +96,9 @@ class FlightPlanTest : public testing::Test {
         /*final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
-            DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                DormandElMikkawyPrince1986RKN434FM,
+                Position<Barycentric>>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
@@ -173,7 +176,9 @@ TEST_F(FlightPlanTest, Singular) {
       /*final_time=*/singularity + 100 * Second,
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<Barycentric>>(),
           /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
@@ -397,7 +402,9 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   // unaffected.
   EXPECT_FALSE(flight_plan_->SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
@@ -410,7 +417,9 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   // Increase |max_steps|.  It works.
   EXPECT_TRUE(flight_plan_->SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<Barycentric>>(),
           /*max_steps=*/10000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));

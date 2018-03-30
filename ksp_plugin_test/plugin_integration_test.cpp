@@ -12,6 +12,8 @@
 #include "geometry/permutation.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "physics/massive_body.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -28,7 +30,8 @@ using geometry::AffineMap;
 using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
@@ -711,7 +714,9 @@ TEST_F(PluginIntegrationTest, Prediction) {
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+      EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          DormandElMikkawyPrince1986RKN434FM,
+          Position<Barycentric>>(),
       /*max_steps=*/14,
       /*length_integration_tolerance=*/1 * Milli(Metre),
       /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);

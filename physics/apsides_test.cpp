@@ -23,8 +23,9 @@ using base::not_null;
 using geometry::Displacement;
 using geometry::Frame;
 using geometry::Velocity;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
 using quantities::GravitationalParameter;
 using quantities::Pow;
@@ -94,7 +95,9 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
       Ephemeris<World>::NoIntrinsicAcceleration,
       t0 + 10 * JulianYear,
       Ephemeris<World>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<World>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<World>>(),
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),
@@ -187,7 +190,9 @@ TEST_F(ApsidesTest, ComputeNodes) {
       Ephemeris<World>::NoIntrinsicAcceleration,
       t0 + 10 * JulianYear,
       Ephemeris<World>::AdaptiveStepParameters(
-          DormandElMikkawyPrince1986RKN434FM<Position<World>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<World>>(),
           std::numeric_limits<std::int64_t>::max(),
           1e-3 * Metre,
           1e-3 * Metre / Second),

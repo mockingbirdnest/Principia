@@ -52,8 +52,7 @@ using quantities::Variation;
 // Prince, whose RKNq(p)sF has higher order q, lower order p, comprises
 // s stages, and has the first-same-as-last property.
 
-template<typename Position, int higher_order, int lower_order, int stages,
-         bool first_same_as_last>
+template<typename Method, typename Position>
 class EmbeddedExplicitRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<
                  SpecialSecondOrderDifferentialEquation<Position>> {
@@ -63,16 +62,12 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
 
-  EmbeddedExplicitRungeKuttaNyströmIntegrator(
-      serialization::AdaptiveStepSizeIntegrator::Kind kind,
-      FixedVector<double, stages> const& c,
-      FixedStrictlyLowerTriangularMatrix<double, stages> const& a,
-      FixedVector<double, stages> const& b_hat,
-      FixedVector<double, stages> const& b_prime_hat,
-      FixedVector<double, stages> const& b,
-      FixedVector<double, stages> const& b_prime);
+  static constexpr auto higher_order = Method::higher_order;
+  static constexpr auto lower_order = Method::lower_order;
+  static constexpr auto first_same_as_last = Method::first_same_as_last;
 
-  EmbeddedExplicitRungeKuttaNyströmIntegrator() = delete;
+  EmbeddedExplicitRungeKuttaNyströmIntegrator();
+
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitRungeKuttaNyströmIntegrator(
@@ -119,31 +114,21 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const override;
 
-  FixedVector<double, stages> const c_;
-  FixedStrictlyLowerTriangularMatrix<double, stages> const a_;
-  FixedVector<double, stages> const b_hat_;
-  FixedVector<double, stages> const b_prime_hat_;
-  FixedVector<double, stages> const b_;
-  FixedVector<double, stages> const b_prime_;
+  static constexpr auto stages_ = Method::stages;
+  static constexpr auto c_ = Method::c;
+  static constexpr auto a_ = Method::a;
+  static constexpr auto b_hat_ = Method::b_hat;
+  static constexpr auto b_prime_hat_ = Method::b_prime_hat;
+  static constexpr auto b_ = Method::b;
+  static constexpr auto b_prime_ = Method::b_prime;
 };
-
-// Coefficients from Dormand, El-Mikkawy and Prince (1986),
-// Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
-// Minimizes the 4th order truncation error.
-template<typename Position>
-EmbeddedExplicitRungeKuttaNyströmIntegrator<Position,
-                                            /*higher_order=*/4,
-                                            /*lower_order=*/3,
-                                            /*stages=*/4,
-                                            /*first_same_as_last=*/true> const&
-DormandElMikkawyPrince1986RKN434FM();
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
 
-using internal_embedded_explicit_runge_kutta_nyström_integrator::
-    DormandElMikkawyPrince1986RKN434FM;
-using internal_embedded_explicit_runge_kutta_nyström_integrator::
-    EmbeddedExplicitRungeKuttaNyströmIntegrator;
+template<typename Method, typename Position>
+internal_embedded_explicit_runge_kutta_nyström_integrator::
+    EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position> const&
+EmbeddedExplicitRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators
 }  // namespace principia

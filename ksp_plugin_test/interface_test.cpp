@@ -12,7 +12,6 @@
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "journal/recorder.hpp"
 #include "ksp_plugin/frames.hpp"
 #include "ksp_plugin/identification.hpp"
@@ -44,7 +43,6 @@ using geometry::RigidTransformation;
 using geometry::Rotation;
 using geometry::Vector;
 using geometry::Velocity;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
 using ksp_plugin::AliceSun;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
@@ -60,7 +58,6 @@ using ksp_plugin::Part;
 using ksp_plugin::PartId;
 using ksp_plugin::World;
 using ksp_plugin::WorldSun;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
 using physics::CoordinateFrameField;
 using physics::DegreesOfFreedom;
 using physics::DynamicFrame;

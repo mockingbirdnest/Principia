@@ -13,6 +13,7 @@
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "integrators/methods.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 #include "glog/logging.h"
@@ -30,6 +31,8 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -195,28 +198,34 @@ void SolveHarmonicOscillatorAndComputeError3D(
   state.ResumeTiming();
 }
 
-template<typename Integrator, Integrator const& (*integrator)()>
+template<typename Method, typename Position>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError1D(state, q_error, v_error,
-                                             integrator());
+    SolveHarmonicOscillatorAndComputeError1D(
+        state,
+        q_error,
+        v_error,
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
   state.SetLabel(ss.str());
 }
 
-template<typename Integrator, Integrator const& (*integrator)()>
+template<typename Method, typename Position>
 void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
     benchmark::State& state) {
   Length q_error;
   Speed v_error;
   while (state.KeepRunning()) {
-    SolveHarmonicOscillatorAndComputeError3D(state, q_error, v_error,
-                                             integrator());
+    SolveHarmonicOscillatorAndComputeError3D(
+        state,
+        q_error,
+        v_error,
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>());
   }
   std::stringstream ss;
   ss << q_error << ", " << v_error;
@@ -227,13 +236,11 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    decltype(DormandElMikkawyPrince1986RKN434FM<Length>()),
-    &DormandElMikkawyPrince1986RKN434FM<Length>);
+    methods::DormandElMikkawyPrince1986RKN434FM, Length);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    decltype(DormandElMikkawyPrince1986RKN434FM<Position<World>>()),
-    &DormandElMikkawyPrince1986RKN434FM<Position<World>>);
+    methods::DormandElMikkawyPrince1986RKN434FM, Position<World>);
 
 }  // namespace integrators
 }  // namespace principia

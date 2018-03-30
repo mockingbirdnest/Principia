@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
+#include "integrators/methods.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
@@ -14,7 +15,8 @@ namespace internal_flight_plan {
 using base::make_not_null_unique;
 using geometry::Position;
 using geometry::Velocity;
-using integrators::DormandElMikkawyPrince1986RKN434FM;
+using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
+using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -264,7 +266,9 @@ FlightPlan::FlightPlan()
       root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
-          DormandElMikkawyPrince1986RKN434FM<Position<Barycentric>>(),
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandElMikkawyPrince1986RKN434FM,
+              Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second) {}
