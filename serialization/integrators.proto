@@ -64,7 +64,13 @@ message FixedStepSizeIntegrator {
     YOSHIDA_1990_ORDER_8D = 24;
     YOSHIDA_1990_ORDER_8E = 25;
   }
+  enum CompositionMethod {
+    BA = 0;
+    ABA = 1;
+    BAB = 2;
+  }
   required Kind kind = 1;
+  optional CompositionMethod composition_method = 2;  // Only for SRKN.
 }
 
 message IntegratorInstance {

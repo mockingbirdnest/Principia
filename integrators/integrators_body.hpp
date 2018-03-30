@@ -91,12 +91,6 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
 }
 
 template<typename ODE_>
-void FixedStepSizeIntegrator<ODE_>::WriteToMessage(
-    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
-}
-
-template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
@@ -159,10 +153,6 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       base::noreturn();
   }
 }
-
-template<typename ODE_>
-FixedStepSizeIntegrator<ODE_>::FixedStepSizeIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&
@@ -289,12 +279,6 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
 }
 
 template<typename ODE_>
-void AdaptiveStepSizeIntegrator<ODE_>::WriteToMessage(
-    not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
-}
-
-template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
@@ -309,10 +293,6 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
       base::noreturn();
   }
 }
-
-template<typename ODE_>
-AdaptiveStepSizeIntegrator<ODE_>::AdaptiveStepSizeIntegrator(
-    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(

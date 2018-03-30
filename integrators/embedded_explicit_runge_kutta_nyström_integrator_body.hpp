@@ -26,9 +26,7 @@ using quantities::Quotient;
 
 template<typename Method, typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
-EmbeddedExplicitRungeKuttaNyströmIntegrator()
-    : AdaptiveStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind) {
+EmbeddedExplicitRungeKuttaNyströmIntegrator() {
   // the first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
   if (first_same_as_last) {
@@ -299,6 +297,13 @@ NewInstance(IntegrationProblem<ODE> const& problem,
                                                 tolerance_to_error_ratio,
                                                 parameters,
                                                 *this));
+}
+
+template<typename Method, typename Position>
+void EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
+WriteToMessage(not_null<serialization::AdaptiveStepSizeIntegrator*> message)
+    const {
+  message->set_kind(Method::kind);
 }
 
 template<typename Method, typename Position>

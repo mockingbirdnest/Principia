@@ -109,8 +109,8 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
               AppendState const& append_state,
               Time const& step) const = 0;
 
-  void WriteToMessage(
-      not_null<serialization::FixedStepSizeIntegrator*> message) const;
+  virtual void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> message) const = 0;
   static FixedStepSizeIntegrator const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 
@@ -125,11 +125,7 @@ class FixedStepSizeIntegrator : public Integrator<ODE_> {
       AppendState const& append_state,
       Time const& step) const = 0;
 
-  explicit FixedStepSizeIntegrator(
-      serialization::FixedStepSizeIntegrator::Kind kind);
-
- private:
-  serialization::FixedStepSizeIntegrator::Kind const kind_;
+  FixedStepSizeIntegrator() = default;
 };
 
 template<typename Equation>
@@ -221,8 +217,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
               ToleranceToErrorRatio const& tolerance_to_error_ratio,
               Parameters const& parameters) const = 0;
 
-  void WriteToMessage(
-      not_null<serialization::AdaptiveStepSizeIntegrator*> message) const;
+  virtual void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegrator*> message) const = 0;
   static AdaptiveStepSizeIntegrator const& ReadFromMessage(
       serialization::AdaptiveStepSizeIntegrator const& message);
 
@@ -238,11 +234,7 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
       ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const = 0;
 
-  explicit AdaptiveStepSizeIntegrator(
-      serialization::AdaptiveStepSizeIntegrator::Kind kind);
-
- private:
-  serialization::AdaptiveStepSizeIntegrator::Kind const kind_;
+  AdaptiveStepSizeIntegrator() = default;
 };
 
 template<typename Equation>

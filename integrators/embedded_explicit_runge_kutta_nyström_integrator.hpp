@@ -105,6 +105,10 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
       ToleranceToErrorRatio const& tolerance_to_error_ratio,
       Parameters const& parameters) const override;
 
+  void WriteToMessage(
+      not_null<serialization::AdaptiveStepSizeIntegrator*> message)
+      const override;
+
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>
   ReadFromMessage(

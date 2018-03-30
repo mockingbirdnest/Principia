@@ -362,9 +362,7 @@ template<typename Method, typename Position>
 SymmetricLinearMultistepIntegrator<Method, Position>::
 SymmetricLinearMultistepIntegrator(
     FixedStepSizeIntegrator<ODE> const& startup_integrator)
-    : FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind),
-      startup_integrator_(startup_integrator),
+    : startup_integrator_(startup_integrator),
       cohen_hubbard_oesterwinter_(CohenHubbardOesterwinterOrder<order>()) {
   CHECK_EQ(ɑ_[0], 1.0);
   CHECK_EQ(β_numerator_[0], 0.0);
@@ -381,6 +379,12 @@ SymmetricLinearMultistepIntegrator<Method, Position>::NewInstance(
   // private.
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));
+}
+
+template<typename Method, typename Position>
+void SymmetricLinearMultistepIntegrator<Method, Position>::WriteToMessage(
+    not_null<serialization::FixedStepSizeIntegrator*> message) const {
+  message->set_kind(Method::kind);
 }
 
 template<typename Method, typename Position>
