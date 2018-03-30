@@ -299,11 +299,17 @@ class FlightPlanner : WindowRenderer {
                 }
               }
             }
+            TODO_REMOVE_activate_the_bug_ =
+                UnityEngine.GUILayout.Toggle(TODO_REMOVE_activate_the_bug_,
+                                             "Activate issue #1728");
+            var stock_orbit =
+                TODO_REMOVE_activate_the_bug_ ? vessel_.orbit
+                                              : guidance_node_.patch;
             Vector3d stock_velocity_at_node_time =
-                vessel_.orbit.getOrbitalVelocityAtUT(
+                stock_orbit.getOrbitalVelocityAtUT(
                                   manoeuvre.burn.initial_time).xzy;
             Vector3d stock_displacement_from_parent_at_node_time =
-                vessel_.orbit.getRelativePositionAtUT(
+                stock_orbit.getRelativePositionAtUT(
                                   manoeuvre.burn.initial_time).xzy;
             UnityEngine.Quaternion stock_frenet_frame_to_world =
                 UnityEngine.Quaternion.LookRotation(
@@ -376,6 +382,8 @@ class FlightPlanner : WindowRenderer {
   
   private const double Log10TimeLowerRate = 0.0;
   private const double Log10TimeUpperRate = 7.0;
+
+  private bool TODO_REMOVE_activate_the_bug_ = false;
 }
 
 }  // namespace ksp_plugin_adapter
