@@ -299,12 +299,7 @@ class FlightPlanner : WindowRenderer {
                 }
               }
             }
-            TODO_REMOVE_activate_the_bug_ =
-                UnityEngine.GUILayout.Toggle(TODO_REMOVE_activate_the_bug_,
-                                             "Activate issue #1728");
-            var stock_orbit =
-                TODO_REMOVE_activate_the_bug_ ? vessel_.orbit
-                                              : guidance_node_.patch;
+            var stock_orbit = guidance_node_.patch;
             Vector3d stock_velocity_at_node_time =
                 stock_orbit.getOrbitalVelocityAtUT(
                                   manoeuvre.burn.initial_time).xzy;
@@ -382,8 +377,6 @@ class FlightPlanner : WindowRenderer {
   
   private const double Log10TimeLowerRate = 0.0;
   private const double Log10TimeUpperRate = 7.0;
-
-  private bool TODO_REMOVE_activate_the_bug_ = false;
 }
 
 }  // namespace ksp_plugin_adapter
