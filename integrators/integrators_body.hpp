@@ -12,9 +12,81 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#define PRINCIPIA_CASE_SLMS(kind, method)                      \
+  case serialization::FixedStepSizeIntegrator::kind:           \
+    return SymmetricLinearMultistepIntegrator<methods::method, \
+                                              typename ODE::Position>()
+
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  If we ever need to do
+// this we will need to specialize ReadFromMessage somehow.
+#define PRINCIPIA_CASE_SPRK(kind, method)                                 \
+  case serialization::FixedStepSizeIntegrator::kind:                      \
+    do {                                                                  \
+      CHECK(message.has_composition_method());                            \
+      return SprkAsSrknDeserializer<                                      \
+          ODE,                                                            \
+          methods::method,                                                \
+          methods::method::first_same_as_last>::ReadFromMessage(message); \
+    } while (false)
+
+#define PRINCIPIA_CASE_SRKN(kind, method)                         \
+  case serialization::FixedStepSizeIntegrator::kind:              \
+    return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
+                                                 typename ODE::Position>()
+
 namespace principia {
 namespace integrators {
 namespace internal_integrators {
+
+template<typename ODE, typename Method, bool first_same_as_last>
+class SprkAsSrknDeserializer;
+
+template<typename ODE, typename Method>
+class SprkAsSrknDeserializer<ODE, Method, false> {
+ public:
+  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+};
+
+template<typename ODE, typename Method>
+class SprkAsSrknDeserializer<ODE, Method, true> {
+ public:
+  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+};
+
+template<typename ODE, typename Method>
+FixedStepSizeIntegrator<ODE> const&
+SprkAsSrknDeserializer<ODE, Method, false>::ReadFromMessage(
+    serialization::FixedStepSizeIntegrator const& message) {
+  CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
+           message.composition_method());
+  return SymplecticRungeKuttaNyströmIntegrator<
+      Method,
+      serialization::FixedStepSizeIntegrator::BA,
+      typename ODE::Position>();
+}
+
+template<typename ODE, typename Method>
+FixedStepSizeIntegrator<ODE> const&
+SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
+    serialization::FixedStepSizeIntegrator const& message) {
+  switch (message.composition_method()) {
+    case serialization::FixedStepSizeIntegrator::ABA:
+      LOG(FATAL) << "ABA not supported until C++17: " << message.DebugString();
+    case serialization::FixedStepSizeIntegrator::BAB:
+      return SymplecticRungeKuttaNyströmIntegrator<
+          Method,
+          serialization::FixedStepSizeIntegrator::BAB,
+          typename ODE::Position>();
+    case serialization::FixedStepSizeIntegrator::BA:
+    default:
+      LOG(FATAL) << message.DebugString();
+      base::noreturn();
+  }
+}
 
 template<typename ODE_>
 Integrator<ODE_>::Instance::Instance(
@@ -91,78 +163,89 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
 }
 
 template<typename ODE_>
-void FixedStepSizeIntegrator<ODE_>::WriteToMessage(
-    not_null<serialization::FixedStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
-}
-
-template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
 FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message) {
-  using FSSI = serialization::FixedStepSizeIntegrator;
   switch (message.kind()) {
-    case FSSI::BLANES_MOAN_2002_SRKN_6B:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN6B,
-          typename ODE::Position>();
-    case FSSI::BLANES_MOAN_2002_SRKN_11B:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN11B,
-          typename ODE::Position>();
-    case FSSI::BLANES_MOAN_2002_SRKN_14A:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::BlanesMoan2002SRKN14A,
-          typename ODE::Position>();
-    case FSSI::MCLACHLAN_1995_SB3A_4:
-      return SymplecticRungeKuttaNyströmIntegrator<methods::McLachlan1995SB3A4,
-                                                   typename ODE::Position>();
-    case FSSI::MCLACHLAN_1995_SB3A_5:
-      return SymplecticRungeKuttaNyströmIntegrator<methods::McLachlan1995SB3A5,
-                                                   typename ODE::Position>();
-    case FSSI::MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::McLachlanAtela1992Order4Optimal,
-          typename ODE::Position>();
-    case FSSI::MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::McLachlanAtela1992Order5Optimal,
-          typename ODE::Position>();
-    case FSSI::OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13:
-      return SymplecticRungeKuttaNyströmIntegrator<
-          methods::OkunborSkeel1994Order6Method13,
-          typename ODE::Position>();
-    case FSSI::QUINLAN_1999_ORDER_8A:
-      return SymmetricLinearMultistepIntegrator<methods::Quinlan1999Order8A,
-                                                typename ODE::Position>();
-    case FSSI::QUINLAN_1999_ORDER_8B:
-      return SymmetricLinearMultistepIntegrator<methods::Quinlan1999Order8B,
-                                                typename ODE::Position>();
-    case FSSI::QUINLAN_TREMAINE_1990_ORDER_8:
-      return SymmetricLinearMultistepIntegrator<
-          methods::QuinlanTremaine1990Order8,
-          typename ODE::Position>();
-    case FSSI::QUINLAN_TREMAINE_1990_ORDER_10:
-      return SymmetricLinearMultistepIntegrator<
-          methods::QuinlanTremaine1990Order10,
-          typename ODE::Position>();
-    case FSSI::QUINLAN_TREMAINE_1990_ORDER_12:
-      return SymmetricLinearMultistepIntegrator<
-          methods::QuinlanTremaine1990Order12,
-          typename ODE::Position>();
-    case FSSI::QUINLAN_TREMAINE_1990_ORDER_14:
-      return SymmetricLinearMultistepIntegrator<
-          methods::QuinlanTremaine1990Order14,
-          typename ODE::Position>();
+    PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S6,
+                        BlanesMoan2002S6);
+    PRINCIPIA_CASE_SPRK(BLANES_MOAN_2002_S10,
+                        BlanesMoan2002S10);
+    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_6B,
+                        BlanesMoan2002SRKN6B);
+    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_11B,
+                        BlanesMoan2002SRKN11B);
+    PRINCIPIA_CASE_SRKN(BLANES_MOAN_2002_SRKN_14A,
+                        BlanesMoan2002SRKN14A);
+    PRINCIPIA_CASE_SPRK(CANDY_ROZMUS_1991_FOREST_RUTH_1990,
+                        CandyRozmus1991ForestRuth1990);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S2,
+                        McLachlan1995S2);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S4,
+                        McLachlan1995S4);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_S5,
+                        McLachlan1995S5);
+    PRINCIPIA_CASE_SRKN(MCLACHLAN_1995_SB3A_4,
+                        McLachlan1995SB3A4);
+    PRINCIPIA_CASE_SRKN(MCLACHLAN_1995_SB3A_5,
+                        McLachlan1995SB3A5);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS5,
+                        McLachlan1995SS5);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS9,
+                        McLachlan1995SS9);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS15,
+                        McLachlan1995SS15);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_1995_SS17,
+                        McLachlan1995SS17);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_ATELA_1992_ORDER_2_OPTIMAL,
+                        McLachlanAtela1992Order2Optimal);
+    PRINCIPIA_CASE_SPRK(MCLACHLAN_ATELA_1992_ORDER_3_OPTIMAL,
+                        McLachlanAtela1992Order3Optimal);
+    PRINCIPIA_CASE_SRKN(MCLACHLAN_ATELA_1992_ORDER_4_OPTIMAL,
+                        McLachlanAtela1992Order4Optimal);
+    PRINCIPIA_CASE_SRKN(MCLACHLAN_ATELA_1992_ORDER_5_OPTIMAL,
+                        McLachlanAtela1992Order5Optimal);
+    PRINCIPIA_CASE_SPRK(NEWTON_DELAMBRE_STORMER_VERLET_LEAPFROG,
+                        NewtonDelambreStørmerVerletLeapfrog);
+    PRINCIPIA_CASE_SRKN(OKUNBOR_SKEEL_1994_ORDER_6_METHOD_13,
+                        OkunborSkeel1994Order6Method13);
+    PRINCIPIA_CASE_SLMS(QUINLAN_1999_ORDER_8A,
+                        Quinlan1999Order8A);
+    PRINCIPIA_CASE_SLMS(QUINLAN_1999_ORDER_8B,
+                        Quinlan1999Order8B);
+    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_8,
+                        QuinlanTremaine1990Order8);
+    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_10,
+                        QuinlanTremaine1990Order10);
+    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_12,
+                        QuinlanTremaine1990Order12);
+    PRINCIPIA_CASE_SLMS(QUINLAN_TREMAINE_1990_ORDER_14,
+                        QuinlanTremaine1990Order14);
+    PRINCIPIA_CASE_SPRK(RUTH_1983,
+                        Ruth1983);
+    PRINCIPIA_CASE_SPRK(SUZUKI_1990,
+                        Suzuki1990);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6A,
+                        Yoshida1990Order6A);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6B,
+                        Yoshida1990Order6B);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6C,
+                        Yoshida1990Order6C);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8A,
+                        Yoshida1990Order8A);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8B,
+                        Yoshida1990Order8B);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8C,
+                        Yoshida1990Order8C);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8D,
+                        Yoshida1990Order8D);
+    PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8E,
+                        Yoshida1990Order8E);
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
 }
-
-template<typename ODE_>
-FixedStepSizeIntegrator<ODE_>::FixedStepSizeIntegrator(
-    serialization::FixedStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&
@@ -289,12 +372,6 @@ AdaptiveStepSizeIntegrator<ODE_>::Instance::Instance(
 }
 
 template<typename ODE_>
-void AdaptiveStepSizeIntegrator<ODE_>::WriteToMessage(
-    not_null<serialization::AdaptiveStepSizeIntegrator*> const message) const {
-  message->set_kind(kind_);
-}
-
-template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
@@ -309,10 +386,6 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
       base::noreturn();
   }
 }
-
-template<typename ODE_>
-AdaptiveStepSizeIntegrator<ODE_>::AdaptiveStepSizeIntegrator(
-    serialization::AdaptiveStepSizeIntegrator::Kind const kind) : kind_(kind) {}
 
 template<typename Equation>
 AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
@@ -330,3 +403,7 @@ AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
 }  // namespace internal_integrators
 }  // namespace integrators
 }  // namespace principia
+
+#undef PRINCIPIA_CASE_SLMS
+#undef PRINCIPIA_CASE_SPRK
+#undef PRINCIPIA_CASE_SRKN

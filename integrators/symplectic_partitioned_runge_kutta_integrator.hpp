@@ -87,6 +87,9 @@ class SymplecticPartitionedRungeKuttaIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
+  void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> message) const override;
+
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,

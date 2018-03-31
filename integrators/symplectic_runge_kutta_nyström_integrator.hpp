@@ -106,6 +106,9 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
+  void WriteToMessage(
+      not_null<serialization::FixedStepSizeIntegrator*> message) const override;
+
  private:
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> ReadFromMessage(
       serialization::FixedStepSizeIntegratorInstance const& message,
@@ -113,9 +116,9 @@ class SymplecticRungeKuttaNyströmIntegrator
       AppendState const& append_state,
       Time const& step) const override;
 
-  static constexpr auto BA = methods::SymplecticRungeKuttaNyström::BA;
-  static constexpr auto ABA = methods::SymplecticRungeKuttaNyström::ABA;
-  static constexpr auto BAB = methods::SymplecticRungeKuttaNyström::BAB;
+  static constexpr auto BA = serialization::FixedStepSizeIntegrator::BA;
+  static constexpr auto ABA = serialization::FixedStepSizeIntegrator::ABA;
+  static constexpr auto BAB = serialization::FixedStepSizeIntegrator::BAB;
 
   static constexpr auto stages_ = Method::stages;
   static constexpr auto a_ = Method::a;
@@ -132,7 +135,7 @@ internal_symplectic_runge_kutta_nyström_integrator::
 SymplecticRungeKuttaNyströmIntegrator();
 
 template<typename Method,
-         methods::SymplecticRungeKuttaNyström::CompositionMethod composition,
+         serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<

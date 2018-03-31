@@ -83,7 +83,7 @@ using ::testing::ValuesIn;
   SimpleHarmonicMotionTestInstance(                                       \
       SymplecticRungeKuttaNyströmIntegrator<                              \
           methods::integrator,                                            \
-          methods::SymplecticRungeKuttaNyström::composition,              \
+          serialization::FixedStepSizeIntegrator::composition,            \
           Length>(),                                                      \
       "AsSymplecticRungeKuttaNyström<" #integrator ", " #composition ">", \
       (beginning_of_convergence),                                         \
@@ -128,11 +128,11 @@ void TestTermination(Integrator const& integrator) {
   EXPECT_THAT(solution.back().time.value,
               AllOf(Gt(t_final - step), Le(t_final)));
   switch (integrator.composition) {
-    case methods::SymplecticRungeKuttaNyström::BA:
-    case methods::SymplecticRungeKuttaNyström::ABA:
+    case serialization::FixedStepSizeIntegrator::BA:
+    case serialization::FixedStepSizeIntegrator::ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case methods::SymplecticRungeKuttaNyström::BAB:
+    case serialization::FixedStepSizeIntegrator::BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:
@@ -185,11 +185,11 @@ void Test1000SecondsAt1Millisecond(
 
   EXPECT_EQ(steps, solution.size());
   switch (integrator.composition) {
-    case methods::SymplecticRungeKuttaNyström::BA:
-    case methods::SymplecticRungeKuttaNyström::ABA:
+    case serialization::FixedStepSizeIntegrator::BA:
+    case serialization::FixedStepSizeIntegrator::ABA:
       EXPECT_EQ(steps * integrator.evaluations, evaluations);
       break;
-    case methods::SymplecticRungeKuttaNyström::BAB:
+    case serialization::FixedStepSizeIntegrator::BAB:
       EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
       break;
     default:

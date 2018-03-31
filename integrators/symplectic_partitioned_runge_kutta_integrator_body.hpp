@@ -48,7 +48,7 @@ Instance::WriteToMessage(
 
 template<typename Method, typename Position>
 SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
-    SymplecticPartitionedRungeKuttaIntegrator() {
+SymplecticPartitionedRungeKuttaIntegrator() {
   // TODO(phl): This might be turned into a static_assert.
   if (first_same_as_last) {
     CHECK_EQ(0.0, a_[stages_ - 1]);
@@ -73,6 +73,13 @@ NewInstance(IntegrationProblem<ODE> const& problem,
             Time const& step) const {
   return std::unique_ptr<Instance>(
       new Instance(problem, append_state, step, *this));
+}
+
+template<typename Method, typename Position>
+void SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
+    WriteToMessage(
+        not_null<serialization::FixedStepSizeIntegrator*> message) const {
+  message->set_kind(Method::kind);
 }
 
 template<typename Method, typename Position>

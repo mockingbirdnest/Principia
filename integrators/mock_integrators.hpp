@@ -35,7 +35,9 @@ class MockFixedStepSizeIntegrator
           IntegrationProblem<ODE> const& problem,
           typename Integrator<ODE>::AppendState const& append_state,
           Time const& step));
-
+  MOCK_CONST_METHOD1_T(
+      WriteToMessage,
+      void(not_null<serialization::FixedStepSizeIntegrator*> message));
   MOCK_CONST_METHOD4_T(
       ReadFromMessage,
       not_null<std::unique_ptr<typename Integrator<ODE>::Instance>>(
@@ -50,8 +52,7 @@ class MockFixedStepSizeIntegrator
   }
 
  private:
-  MockFixedStepSizeIntegrator() : FixedStepSizeIntegrator<ODE>(
-      serialization::FixedStepSizeIntegrator::DUMMY) {}
+  MockFixedStepSizeIntegrator() : FixedStepSizeIntegrator<ODE>() {}
 };
 
 }  // namespace internal_integrators

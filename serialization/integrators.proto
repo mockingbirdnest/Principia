@@ -1,4 +1,4 @@
-syntax = "proto2";
+﻿syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/numerics.proto";
@@ -25,7 +25,6 @@ message FixedStepSizeIntegrator {
     optional FixedStepSizeIntegrator extension = 3001;
   }
   enum Kind {
-    DUMMY = 0;  // For testing.
     BLANES_MOAN_2002_S6 = 36;
     BLANES_MOAN_2002_S10 = 37;
     BLANES_MOAN_2002_SRKN_6B = 1;
@@ -64,7 +63,13 @@ message FixedStepSizeIntegrator {
     YOSHIDA_1990_ORDER_8D = 24;
     YOSHIDA_1990_ORDER_8E = 25;
   }
+  enum CompositionMethod {
+    BA = 0;   // Neither b₀ nor aᵣ vanishes.
+    ABA = 1;  // b₀ = 0.
+    BAB = 2;  // aᵣ = 0.
+  }
   required Kind kind = 1;
+  optional CompositionMethod composition_method = 2;  // Only for SRKN.
 }
 
 message IntegratorInstance {

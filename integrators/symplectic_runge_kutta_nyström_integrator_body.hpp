@@ -178,9 +178,7 @@ Instance::Instance(IntegrationProblem<ODE> const& problem,
 
 template<typename Method, typename Position>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
-SymplecticRungeKuttaNyströmIntegrator()
-    : FixedStepSizeIntegrator<
-          SpecialSecondOrderDifferentialEquation<Position>>(Method::kind) {
+SymplecticRungeKuttaNyströmIntegrator() {
   DoublePrecision<double> c_i(0.0);
   for (int i = 0; i < stages_; ++i) {
     c_[i] = c_i.value;
@@ -233,6 +231,13 @@ SymplecticRungeKuttaNyströmIntegrator<Method, Position>::NewInstance(
 }
 
 template<typename Method, typename Position>
+void SymplecticRungeKuttaNyströmIntegrator<Method, Position>::WriteToMessage(
+    not_null<serialization::FixedStepSizeIntegrator*> message) const {
+  message->set_kind(Method::kind);
+  message->set_composition_method(composition);
+}
+
+template<typename Method, typename Position>
 not_null<std::unique_ptr<typename Integrator<
     SpecialSecondOrderDifferentialEquation<Position>>::Instance>>
 SymplecticRungeKuttaNyströmIntegrator<Method, Position>::
@@ -263,7 +268,7 @@ SymplecticRungeKuttaNyströmIntegrator() {
 }
 
 template<typename Method,
-         methods::SymplecticRungeKuttaNyström::CompositionMethod composition,
+         serialization::FixedStepSizeIntegrator::CompositionMethod composition,
          typename Position>
 internal_symplectic_runge_kutta_nyström_integrator::
     SymplecticRungeKuttaNyströmIntegrator<
