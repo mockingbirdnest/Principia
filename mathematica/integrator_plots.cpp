@@ -21,6 +21,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
 #include "mathematica/mathematica.hpp"
+#include "serialization/integrators.pb.h"
 #include "testing_utilities/integration.hpp"
 #include "testing_utilities/numerics.hpp"
 
@@ -38,14 +39,14 @@
         Length>()),                                           \
         u8###name, (integrators::methods::name::evaluations)  \
   }
-#define SPRK_INTEGRATOR(name, composition)                              \
-  {                                                                     \
-    (integrators::SymplecticRungeKuttaNyströmIntegrator<                \
-        integrators::methods::name,                                     \
-        integrators::methods::SymplecticRungeKuttaNyström::composition, \
-        Length>()),                                                     \
-        u8###name " " u8###composition,                                 \
-        (integrators::methods::name::evaluations)                       \
+#define SPRK_INTEGRATOR(name, composition)                   \
+  {                                                          \
+    (integrators::SymplecticRungeKuttaNyströmIntegrator<     \
+        integrators::methods::name,                          \
+        serialization::FixedStepSizeIntegrator::composition, \
+        Length>()),                                          \
+        u8###name " " u8###composition,                      \
+        (integrators::methods::name::evaluations)            \
   }
 
 namespace principia {

@@ -500,6 +500,9 @@ void JournalProtoProcessor::ProcessSingleStringField(
   }
 }
 
+// Listing all the case values below is not helpful.
+#pragma warning(push)
+#pragma warning(disable : 4061)
 void JournalProtoProcessor::ProcessOptionalField(
     FieldDescriptor const* descriptor) {
   field_cxx_optional_assignment_fn_[descriptor] =
@@ -605,6 +608,7 @@ void JournalProtoProcessor::ProcessRequiredField(
         };
   }
 }
+#pragma warning(pop)
 
 void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
   // Useful defaults for the lambdas, which ensure that they are set for all
