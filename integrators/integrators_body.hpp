@@ -12,9 +12,85 @@
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "integrators/symplectic_runge_kutta_nyström_integrator.hpp"
 
+#define PRINCIPIA_CASE_SLMS(kind, method)                      \
+  case serialization::FixedStepSizeIntegrator::kind:           \
+    return SymmetricLinearMultistepIntegrator<methods::method, \
+                                              typename ODE::Position>()
+
+#define PRINCIPIA_CASE_SPRK(kind, method)                                   \
+  case serialization::FixedStepSizeIntegrator::kind:                        \
+    do {                                                                    \
+      if (message.has_composition_method()) {                               \
+        return SprkAsSrknDeserializer<                                      \
+            ODE,                                                            \
+            methods::method,                                                \
+            methods::method::first_same_as_last>::ReadFromMessage(message); \
+      } else {                                                              \
+        return SymplecticPartitionedRungeKuttaIntegrator<                   \
+            methods::method,                                                \
+            typename ODE::Position>();                                      \
+      }                                                                     \
+    } while (true)
+
+#define PRINCIPIA_CASE_SRKN(kind, method)                         \
+  case serialization::FixedStepSizeIntegrator::kind:              \
+    return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
+                                                 typename ODE::Position>()
+
 namespace principia {
 namespace integrators {
 namespace internal_integrators {
+
+template<typename ODE, typename Method, bool first_same_as_last>
+class SprkAsSrknDeserializer;
+
+template<typename ODE, typename Method>
+class SprkAsSrknDeserializer<ODE, Method, false> {
+ public:
+  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+};
+
+template<typename ODE, typename Method>
+class SprkAsSrknDeserializer<ODE, Method, true> {
+ public:
+  static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
+      serialization::FixedStepSizeIntegrator const& message);
+};
+
+template<typename ODE, typename Method>
+FixedStepSizeIntegrator<ODE> const&
+SprkAsSrknDeserializer<ODE, Method, false>::ReadFromMessage(
+    serialization::FixedStepSizeIntegrator const& message) {
+  CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
+           message.composition_method());
+  return SymplecticRungeKuttaNyströmIntegrator<
+      methods::method,
+      serialization::FixedStepSizeIntegrator::BA,
+      typename ODE::Position>();
+}
+
+template<typename ODE, typename Method>
+FixedStepSizeIntegrator<ODE> const&
+SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
+    serialization::FixedStepSizeIntegrator const& message) {
+  switch (message.composition_method()) {
+    case serialization::FixedStepSizeIntegrator::ABA:
+      // TODO(phl): This is using BAB for the ABA case.  Fix once we use C++17.
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::method,
+          serialization::FixedStepSizeIntegrator::BAB,
+          typename ODE::Position>();
+    case serialization::FixedStepSizeIntegrator::BAB:
+      return SymplecticRungeKuttaNyströmIntegrator<
+          methods::method,
+          serialization::FixedStepSizeIntegrator::BAB,
+          typename ODE::Position>();
+    case serialization::FixedStepSizeIntegrator::BA:
+      LOG(FATAL) << message.DebugString();
+      base::noreturn();
+  }
+}
 
 template<typename ODE_>
 Integrator<ODE_>::Instance::Instance(
@@ -89,52 +165,6 @@ FixedStepSizeIntegrator<ODE_>::Instance::Instance(
       step_(step) {
   CHECK_NE(Time(), step_);
 }
-
-#define PRINCIPIA_CASE_SLMS(kind, method)                      \
-  case serialization::FixedStepSizeIntegrator::kind:           \
-    return SymmetricLinearMultistepIntegrator<methods::method, \
-                                              typename ODE::Position>()
-
-// TODO(phl): This is using BAB for the ABA case.  Fix once we use C++17.
-#define PRINCIPIA_CASE_SPRK(kind, method)                      \
-  case serialization::FixedStepSizeIntegrator::kind:           \
-    do {                                                       \
-      if (message.has_composition_method()) {                  \
-        if (methods::method::first_same_as_last) {             \
-          switch (message.composition_method()) {              \
-            case serialization::FixedStepSizeIntegrator::ABA:  \
-              return SymplecticRungeKuttaNyströmIntegrator<    \
-                  methods::method,                             \
-                  serialization::FixedStepSizeIntegrator::BAB, \
-                  typename ODE::Position>();                   \
-            case serialization::FixedStepSizeIntegrator::BAB:  \
-              return SymplecticRungeKuttaNyströmIntegrator<    \
-                  methods::method,                             \
-                  serialization::FixedStepSizeIntegrator::BAB, \
-                  typename ODE::Position>();                   \
-            case serialization::FixedStepSizeIntegrator::BA:   \
-              LOG(FATAL) << message.DebugString();             \
-              base::noreturn();                                \
-          }                                                    \
-        } else {                                               \
-          CHECK_EQ(serialization::FixedStepSizeIntegrator::BA, \
-                   message.composition_method());              \
-          return SymplecticRungeKuttaNyströmIntegrator<        \
-              methods::method,                                 \
-              serialization::FixedStepSizeIntegrator::BA,      \
-              typename ODE::Position>();                       \
-        }                                                      \
-      } else {                                                 \
-        return SymplecticPartitionedRungeKuttaIntegrator<      \
-            methods::method,                                   \
-            typename ODE::Position>();                         \
-      }                                                        \
-    } while (true)
-
-#define PRINCIPIA_CASE_SRKN(kind, method)                         \
-  case serialization::FixedStepSizeIntegrator::kind:              \
-    return SymplecticRungeKuttaNyströmIntegrator<methods::method, \
-                                                 typename ODE::Position>()
 
 template<typename ODE_>
 FixedStepSizeIntegrator<ODE_> const&
@@ -220,9 +250,6 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
       base::noreturn();
   }
 }
-
-#undef PRINCIPIA_CASE_SLMS
-#undef PRINCIPIA_CASE_SRKN
 
 template<typename Equation>
 FixedStepSizeIntegrator<Equation> const&
@@ -380,3 +407,7 @@ AdaptiveStepSizeIntegrator<Equation> const& ParseAdaptiveStepSizeIntegrator(
 }  // namespace internal_integrators
 }  // namespace integrators
 }  // namespace principia
+
+#undef PRINCIPIA_CASE_SLMS
+#undef PRINCIPIA_CASE_SPRK
+#undef PRINCIPIA_CASE_SRKN
