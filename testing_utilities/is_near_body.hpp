@@ -3,11 +3,9 @@
 
 #include "testing_utilities/is_near.hpp"
 
-#include <float.h>
-#include <math.h>
-#include <stdint.h>
-
 #include <algorithm>
+#include <cmath>
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -25,19 +23,19 @@ using quantities::DebugString;
 using quantities::Pow;
 
 template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
+testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
     T const& expected) {
   return testing::MakePolymorphicMatcher(
-      IsNearMatcher<T>(expected, /*tolerance=*/1.1));
+      IsNearMatcher<ExpectedType<T>>(expected, /*tolerance=*/1.1));
 }
 
 template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
+testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
     T const& expected,
     double const tolerance) {
   CHECK_LE(1.0, tolerance);
   return testing::MakePolymorphicMatcher(
-      IsNearMatcher<T>(expected, tolerance));
+      IsNearMatcher<ExpectedType<T>>(expected, tolerance));
 }
 
 template<typename T>
@@ -57,7 +55,7 @@ bool IsNearMatcher<T>::MatchAndExplain(
   bool const match =  low_ <= actual && actual <= high_;
   if (!match) {
     *listener << "which is not in the range [" << low_ << ", " << high_
-              << "] and is a factor of "
+              << u8"] and is a factor of √"
               << Pow<2>(std::max(actual / expected_, expected_ / actual))
               << " from the expected value";
   }
@@ -70,9 +68,10 @@ bool IsNearMatcher<T>::MatchAndExplain(
     testing::MatchResultListener* listener) const {
   bool const match =  low_ <= actual && actual <= high_;
   if (!match) {
-    *listener << "which is not in the range [" << DebugString(low_)
-              << ", " << DebugString(high_) << "] and is off by "
-              << std::max(actual / expected_, expected_ / actual);
+    *listener << "which is not in the range [" << DebugString(low_) << ", "
+              << DebugString(high_) << u8"] and is a factor of √"
+              << Pow<2>(std::max(actual / expected_, expected_ / actual))
+              << " from the expected value";
   }
   return match;
 }
@@ -80,14 +79,14 @@ bool IsNearMatcher<T>::MatchAndExplain(
 template<typename T>
 void IsNearMatcher<T>::DescribeTo(std::ostream* out) const {
   *out << "is within ["<< low_
-       << ", " << high_ << "], i.e., a factor " << tolerance_
+       << ", " << high_ << u8"], i.e., a factor √" << tolerance_
        << " away from " << expected_;
 }
 
 template<typename T>
 void IsNearMatcher<T>::DescribeNegationTo(std::ostream* out) const {
   *out << "is not within ["<< low_
-       << ", " << high_ << "], i.e., a factor " << tolerance_
+       << ", " << high_ << u8"], i.e., a factor √" << tolerance_
        << " away from " << expected_;
 }
 
