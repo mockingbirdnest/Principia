@@ -147,7 +147,7 @@ inline int ParseExponent(std::string const& s) {
   // Parse an int.
   char* interpreted_end;
   char const* const c_string = s.c_str();
-  double const exponent = std::strtol(c_string, &interpreted_end, /*base=*/10);
+  int const exponent = std::strtol(c_string, &interpreted_end, /*base=*/10);
   int const interpreted = interpreted_end - c_string;
   CHECK_LT(0, interpreted) << "invalid integer number " << s;
   return exponent;

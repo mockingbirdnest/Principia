@@ -67,7 +67,7 @@ inline constexpr double Pow<-1>(double x) {
 }
 
 template<>
-inline constexpr double Pow<0>(double x) {
+inline constexpr double Pow<0>(double) {
   return 1;
 }
 
