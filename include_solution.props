@@ -9,7 +9,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir).;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>SOLUTION_DIR=std::experimental::filesystem::path(R"literal($(SolutionDir))literal");TEMP_DIR=std::experimental::filesystem::path(R"literal($(SolutionDir)temp\$(Configuration)\$(Platform)\)literal");%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>SOLUTION_DIR=std::filesystem::path(R"literal($(SolutionDir))literal");TEMP_DIR=std::filesystem::path(R"literal($(SolutionDir)temp\$(Configuration)\$(Platform)\)literal");%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />

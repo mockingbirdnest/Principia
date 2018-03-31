@@ -46,7 +46,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 }
 
 void LocalErrorAnalyser::WriteLocalErrors(
-    std::path const& path,
+    std::filesystem::path const& path,
     FixedStepSizeIntegrator<
         Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
         fine_integrator,

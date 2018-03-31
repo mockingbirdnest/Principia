@@ -80,12 +80,10 @@ Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
         Barycentre<Position<FromFrame>, double>(segment,
                                                 {λ, 1.0 - λ});
     if (first_is_visible) {
-      return std::make_optional<Segment<FromFrame>>(
-                 {segment.first, intercept});
+      return std::make_optional<Segment<FromFrame>>(segment.first, intercept);
     } else {
       CHECK(second_is_visible);
-      return std::make_optional<Segment<FromFrame>>(
-                 {intercept, segment.second});
+      return std::make_optional<Segment<FromFrame>>(intercept, segment.second);
     }
   }
 }

@@ -2,6 +2,7 @@
 
 #include "base/file.hpp"
 
+#include <filesystem>
 #include <string>
 
 #include "base/macros.hpp"
