@@ -98,352 +98,7 @@ using ODE = SpecialSecondOrderDifferentialEquation<Length>;
 
 namespace {
 
-template<typename Integrator>
-void TestTermination(Integrator const& integrator) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Instant const t_initial;
-  Instant const t_final = t_initial + 163 * Second;
-  Time const step = 42 * Second;
-  int const steps = static_cast<int>(std::floor((t_final - t_initial) / step));
-
-  int evaluations = 0;
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, &evaluations);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
-  };
-
-  auto const instance = integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
-
-  EXPECT_EQ(steps, solution.size());
-  EXPECT_THAT(solution.back().time.value,
-              AllOf(Gt(t_final - step), Le(t_final)));
-  switch (integrator.composition) {
-    case serialization::FixedStepSizeIntegrator::BA:
-    case serialization::FixedStepSizeIntegrator::ABA:
-      EXPECT_EQ(steps * integrator.evaluations, evaluations);
-      break;
-    case serialization::FixedStepSizeIntegrator::BAB:
-      EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
-      break;
-    default:
-      LOG(FATAL) << "Invalid composition";
-  }
-  Length q_error;
-  Speed v_error;
-  for (int i = 0; i < steps; ++i) {
-    Time const t = solution[i].time.value - t_initial;
-    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
-  }
-}
-
-// Long integration, change detector.  Also tests the number of steps, their
-// spacing, and the number of evaluations.
-template<typename Integrator>
-void Test1000SecondsAt1Millisecond(
-    Integrator const& integrator,
-    Length const& expected_position_error,
-    Speed const& expected_velocity_error) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Instant const t_initial;
-#if defined(_DEBUG)
-  Instant const t_final = t_initial + 1 * Second;
-#else
-  Instant const t_final = t_initial + 1000 * Second;
-#endif
-  Time const step = 1 * Milli(Second);
-  int const steps = static_cast<int>((t_final - t_initial) / step) - 1;
-
-  int evaluations = 0;
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, &evaluations);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
-  };
-
-  auto const instance = integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
-
-  EXPECT_EQ(steps, solution.size());
-  switch (integrator.composition) {
-    case serialization::FixedStepSizeIntegrator::BA:
-    case serialization::FixedStepSizeIntegrator::ABA:
-      EXPECT_EQ(steps * integrator.evaluations, evaluations);
-      break;
-    case serialization::FixedStepSizeIntegrator::BAB:
-      EXPECT_EQ(steps * integrator.evaluations + 1, evaluations);
-      break;
-    default:
-      LOG(FATAL) << "Invalid composition";
-  }
-  Length q_error;
-  Speed v_error;
-  for (int i = 0; i < steps; ++i) {
-    Length const q = solution[i].positions[0].value;
-    Speed const v = solution[i].velocities[0].value;
-    Time const t = solution[i].time.value - t_initial;
-    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
-    // TODO(egg): we may need decent trig functions for this sort of thing.
-    q_error = std::max(q_error, AbsoluteError(q_initial * Cos(ω * t), q));
-    v_error = std::max(v_error, AbsoluteError(-v_amplitude * Sin(ω * t), v));
-  }
-#if !defined(_DEBUG)
-  EXPECT_EQ(expected_position_error, q_error);
-  EXPECT_EQ(expected_velocity_error, v_error);
-#endif
-}
-
-// Integrates with diminishing step sizes, and checks the order of convergence.
-template<typename Integrator>
-void TestConvergence(Integrator const& integrator,
-                     Time const& beginning_of_convergence) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  AngularFrequency const ω = 1 * Radian / Second;
-  Instant const t_initial;
-#if defined(_DEBUG)
-  Instant const t_final = t_initial + 10 * Second;
-#else
-  Instant const t_final = t_initial + 100 * Second;
-#endif
-
-  Time step = beginning_of_convergence;
-  int const step_sizes = 50;
-  double const step_reduction = 1.1;
-  std::vector<double> log_step_sizes;
-  log_step_sizes.reserve(step_sizes);
-  std::vector<double> log_q_errors;
-  log_step_sizes.reserve(step_sizes);
-  std::vector<double> log_p_errors;
-  log_step_sizes.reserve(step_sizes);
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-  ODE::SystemState final_state;
-  auto const append_state = [&final_state](ODE::SystemState const& state) {
-    final_state = state;
-  };
-
-  for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
-    auto const instance = integrator.NewInstance(problem, append_state, step);
-    instance->Solve(t_final);
-    Time const t = final_state.time.value - t_initial;
-    Length const& q = final_state.positions[0].value;
-    Speed const& v = final_state.velocities[0].value;
-    double const log_q_error = std::log10(
-        AbsoluteError(q / q_initial, Cos(ω * t)));
-    double const log_p_error = std::log10(
-        AbsoluteError(v / v_amplitude, -Sin(ω * t)));
-    if (log_q_error <= -13 || log_p_error <= -13) {
-      // If we keep going the effects of finite precision will drown out
-      // convergence.
-      break;
-    }
-    log_step_sizes.push_back(std::log10(step / Second));
-    log_q_errors.push_back(log_q_error);
-    log_p_errors.push_back(log_p_error);
-  }
-  double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
-  double const q_correlation =
-      PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
-  LOG(INFO) << "Convergence order in q : " << q_convergence_order;
-  LOG(INFO) << "Correlation            : " << q_correlation;
-
-#if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(integrator.order, q_convergence_order),
-              Lt(0.02));
-  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.02));
-#endif
-  double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
-  double const v_correlation =
-      PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
-  LOG(INFO) << "Convergence order in p : " << v_convergence_order;
-  LOG(INFO) << "Correlation            : " << v_correlation;
-#if !defined(_DEBUG)
-  // SPRKs with odd convergence order have a higher convergence order in p.
-  EXPECT_THAT(
-      RelativeError(integrator.order + (integrator.order % 2),
-                    v_convergence_order),
-      Lt(0.02));
-  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
-#endif
-}
-
-// Test that the error in energy does not correlate with the number of steps
-// taken, and checks the actual value of the error.
-template<typename Integrator>
-void TestSymplecticity(Integrator const& integrator,
-                       Energy const& expected_energy_error) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Instant const t_initial;
-  Instant const t_final = t_initial + 500 * Second;
-  Time const step = 0.2 * Second;
-
-  Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy =
-      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
-  };
-
-  auto const instance = integrator.NewInstance(problem, append_state, step);
-  instance->Solve(t_final);
-
-  std::size_t const length = solution.size();
-  std::vector<Energy> energy_error(length);
-  std::vector<Time> time(length);
-  Energy max_energy_error;
-  for (std::size_t i = 0; i < length; ++i) {
-    Length const q_i   = solution[i].positions[0].value;
-    Speed const v_i = solution[i].velocities[0].value;
-    time[i] = solution[i].time.value - t_initial;
-    energy_error[i] =
-        AbsoluteError(initial_energy,
-                      0.5 * m * Pow<2>(v_i) + 0.5 * k * Pow<2>(q_i));
-    max_energy_error = std::max(energy_error[i], max_energy_error);
-  }
-  double const correlation =
-      PearsonProductMomentCorrelationCoefficient(time, energy_error);
-  LOG(INFO) << "Correlation between time and energy error : " << correlation;
-  EXPECT_THAT(correlation, Lt(2e-3));
-  Power const slope = Slope(time, energy_error);
-  LOG(INFO) << "Slope                                     : " << slope;
-  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
-  LOG(INFO) << "Maximum energy error                      : " <<
-      max_energy_error;
-  EXPECT_EQ(expected_energy_error, max_energy_error);
-}
-
-// If the integrator is time-reversible, checks that integrating back and
-// forth with a large time step yields the initial value.  If it is not, checks
-// that there is an error when integrating back and forth.
-template<typename Integrator>
-void TestTimeReversibility(Integrator const& integrator) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Speed const v_amplitude = 1 * Metre / Second;
-  Instant const t_initial;
-  Instant const t_final = t_initial + 100 * Second;
-  // While time-reversibility is an exact property independent of the equation,
-  // if the computed solution explodes, all bits are lost and time-reversibility
-  // utterly fails in finite precision.  A step of 1 second would break
-  // Yoshida's 8A method.
-  Time const step = 0.5 * Second;
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  ODE::SystemState final_state;
-  auto const append_state = [&final_state](ODE::SystemState const& state) {
-    final_state = state;
-  };
-
-  {
-    problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-    auto const instance = integrator.NewInstance(problem, append_state, step);
-    instance->Solve(t_final);
-  }
-
-  {
-    problem.initial_state = final_state;
-    auto const instance = integrator.NewInstance(problem, append_state, -step);
-    instance->Solve(t_initial);
-  }
-
-  EXPECT_EQ(t_initial, final_state.time.value);
-  if (integrator.time_reversible) {
-    EXPECT_THAT(final_state.positions[0].value,
-                AlmostEquals(q_initial, 0, 30));
-    EXPECT_THAT(final_state.velocities[0].value,
-                VanishesBefore(v_amplitude, 0, 70));
-  } else {
-    EXPECT_THAT(AbsoluteError(q_initial,
-                              final_state.positions[0].value),
-                Gt(1e-6 * Metre));
-    EXPECT_THAT(AbsoluteError(v_initial,
-                              final_state.velocities[0].value),
-                Gt(1e-6 * Metre / Second));
-  }
-}
-// Tests that serialization and deserialization work.
-template<typename Integrator>
-void TestSerialization(Integrator const& integrator) {
-  Length const q_initial = 1 * Metre;
-  Speed const v_initial = 0 * Metre / Second;
-  Instant const t_initial;
-  Time const step = 0.2 * Second;
-
-  Mass const m = 1 * Kilogram;
-  Stiffness const k = SIUnit<Stiffness>();
-  Energy const initial_energy =
-      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
-
-  std::vector<ODE::SystemState> solution;
-  ODE harmonic_oscillator;
-  harmonic_oscillator.compute_acceleration =
-      std::bind(ComputeHarmonicOscillatorAcceleration1D,
-                _1, _2, _3, /*evaluations=*/nullptr);
-  IntegrationProblem<ODE> problem;
-  problem.equation = harmonic_oscillator;
-  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
-  auto const append_state = [&solution](ODE::SystemState const& state) {
-    solution.push_back(state);
-  };
-
-  auto const instance1 = integrator.NewInstance(problem, append_state, step);
-  serialization::IntegratorInstance message1;
-  instance1->WriteToMessage(&message1);
-  auto const instance2 =
-      FixedStepSizeIntegrator<typename Integrator::ODE>::Instance::
-          ReadFromMessage(message1, harmonic_oscillator, append_state);
-  serialization::IntegratorInstance message2;
-  instance2->WriteToMessage(&message2);
-  EXPECT_THAT(message1, EqualsProto(message2));
-}
-
-class SimpleHarmonicMotionTestInstance final {
- public:
+struct SimpleHarmonicMotionTestInstance final {
   template<typename Integrator>
   SimpleHarmonicMotionTestInstance(Integrator const& integrator,
                                    std::string const& name,
@@ -452,69 +107,32 @@ class SimpleHarmonicMotionTestInstance final {
                                    Speed const& expected_velocity_error,
                                    Energy const& expected_energy_error,
                                    bool const serializable)
-      : test_termination_(std::bind(TestTermination<Integrator>,
-                                    std::cref(integrator))),
-        test_1000_seconds_at_1_millisecond_(
-            std::bind(Test1000SecondsAt1Millisecond<Integrator>,
-                      std::cref(integrator),
-                      expected_position_error,
-                      expected_velocity_error)),
-        test_convergence_(
-            std::bind(TestConvergence<Integrator>,
-                      std::cref(integrator),
-                      beginning_of_convergence)),
-        test_symplecticity_(
-            std::bind(TestSymplecticity<Integrator>,
-                      std::cref(integrator),
-                      expected_energy_error)),
-        test_time_reversibility_(
-            std::bind(TestTimeReversibility<Integrator>,
-                      std::cref(integrator))),
-        test_serialization_(
-            std::bind(TestSerialization<Integrator>,
-                      std::cref(integrator))),
-        name_(name),
-        serializable_(serializable) {}
+      : integrator(integrator),
+        composition(integrator.composition),
+        evaluations(integrator.evaluations),
+        order(integrator.order),
+        time_reversible(integrator.time_reversible),
+        name(name),
+        beginning_of_convergence(beginning_of_convergence),
+        expected_position_error(expected_position_error),
+        expected_velocity_error(expected_velocity_error),
+        expected_energy_error(expected_energy_error),
+        serializable(serializable) {}
 
-  std::string const& name() const {
-    return name_;
-  }
+  FixedStepSizeIntegrator<ODE> const& integrator;
+  serialization::FixedStepSizeIntegrator::CompositionMethod const composition;
+  int const evaluations;
+  int const order;
+  bool const time_reversible;
 
-  void RunTermination() const {
-    test_termination_();
-  }
+  std::string const name;
 
-  void Run1000SecondsAt1Millisecond() const {
-    test_1000_seconds_at_1_millisecond_();
-  }
+  Time const beginning_of_convergence;
+  Length const expected_position_error;
+  Speed const expected_velocity_error;
+  Energy const expected_energy_error;
 
-  void RunConvergence() const {
-    test_convergence_();
-  }
-
-  void RunSymplecticity()  const {
-    test_symplecticity_();
-  }
-
-  void RunTimeReversibility() const {
-    test_time_reversibility_();
-  }
-
-  void RunSerialization() const {
-    if (serializable_) {
-      test_serialization_();
-    }
-  }
-
- private:
-  std::function<void()> test_termination_;
-  std::function<void()> test_1000_seconds_at_1_millisecond_;
-  std::function<void()> test_convergence_;
-  std::function<void()> test_symplecticity_;
-  std::function<void()> test_time_reversibility_;
-  std::function<void()> test_serialization_;
-  std::string const name_;
-  bool const serializable_;
+  bool const serializable;
 };
 
 // This allows the test output to be legible, i.e.,
@@ -522,7 +140,7 @@ class SimpleHarmonicMotionTestInstance final {
 // "where GetParam() = n-byte object <hex>"
 std::ostream& operator<<(std::ostream& stream,
                          SimpleHarmonicMotionTestInstance instance) {
-  return stream << instance.name();
+  return stream << instance.name;
 }
 
 std::vector<SimpleHarmonicMotionTestInstance> Instances() {
@@ -731,34 +349,349 @@ INSTANTIATE_TEST_CASE_P(SymplecticRungeKuttaNyströmIntegratorTests,
                         SymplecticRungeKuttaNyströmIntegratorTest,
                         ValuesIn(Instances()));
 
+// If the integrator is time-reversible, checks that integrating back and
+// forth with a large time step yields the initial value.  If it is not, checks
+// that there is an error when integrating back and forth.
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
   LOG(INFO) << GetParam();
-  GetParam().RunTimeReversibility();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 100 * Second;
+  // While time-reversibility is an exact property independent of the equation,
+  // if the computed solution explodes, all bits are lost and time-reversibility
+  // utterly fails in finite precision.  A step of 1 second would break
+  // Yoshida's 8A method.
+  Time const step = 0.5 * Second;
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  ODE::SystemState final_state;
+  auto const append_state = [&final_state](ODE::SystemState const& state) {
+    final_state = state;
+  };
+
+  {
+    problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+    auto const instance =
+        GetParam().integrator.NewInstance(problem, append_state, step);
+    instance->Solve(t_final);
+  }
+
+  {
+    problem.initial_state = final_state;
+    auto const instance =
+        GetParam().integrator.NewInstance(problem, append_state, -step);
+    instance->Solve(t_initial);
+  }
+
+  EXPECT_EQ(t_initial, final_state.time.value);
+  if (GetParam().time_reversible) {
+    EXPECT_THAT(final_state.positions[0].value,
+                AlmostEquals(q_initial, 0, 30));
+    EXPECT_THAT(final_state.velocities[0].value,
+                VanishesBefore(v_amplitude, 0, 70));
+  } else {
+    EXPECT_THAT(AbsoluteError(q_initial,
+                              final_state.positions[0].value),
+                Gt(1e-6 * Metre));
+    EXPECT_THAT(AbsoluteError(v_initial,
+                              final_state.velocities[0].value),
+                Gt(1e-6 * Metre / Second));
+  }
 }
 
+// Test that the error in energy does not correlate with the number of steps
+// taken, and checks the actual value of the error.
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Symplecticity) {
   LOG(INFO) << GetParam();
-  GetParam().RunSymplecticity();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 500 * Second;
+  Time const step = 0.2 * Second;
+
+  Mass const m = 1 * Kilogram;
+  Stiffness const k = SIUnit<Stiffness>();
+  Energy const initial_energy =
+      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance =
+      GetParam().integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
+
+  std::size_t const length = solution.size();
+  std::vector<Energy> energy_error(length);
+  std::vector<Time> time(length);
+  Energy max_energy_error;
+  for (std::size_t i = 0; i < length; ++i) {
+    Length const q_i   = solution[i].positions[0].value;
+    Speed const v_i = solution[i].velocities[0].value;
+    time[i] = solution[i].time.value - t_initial;
+    energy_error[i] =
+        AbsoluteError(initial_energy,
+                      0.5 * m * Pow<2>(v_i) + 0.5 * k * Pow<2>(q_i));
+    max_energy_error = std::max(energy_error[i], max_energy_error);
+  }
+  double const correlation =
+      PearsonProductMomentCorrelationCoefficient(time, energy_error);
+  LOG(INFO) << "Correlation between time and energy error : " << correlation;
+  EXPECT_THAT(correlation, Lt(2e-3));
+  Power const slope = Slope(time, energy_error);
+  LOG(INFO) << "Slope                                     : " << slope;
+  EXPECT_THAT(Abs(slope), Lt(2e-6 * SIUnit<Power>()));
+  LOG(INFO) << "Maximum energy error                      : " <<
+      max_energy_error;
+  EXPECT_EQ(GetParam().expected_energy_error, max_energy_error);
 }
 
+// Integrates with diminishing step sizes, and checks the order of convergence.
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << GetParam();
-  GetParam().RunConvergence();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Instant const t_initial;
+#if defined(_DEBUG)
+  Instant const t_final = t_initial + 10 * Second;
+#else
+  Instant const t_final = t_initial + 100 * Second;
+#endif
+
+  Time step = GetParam().beginning_of_convergence;
+  int const step_sizes = 50;
+  double const step_reduction = 1.1;
+  std::vector<double> log_step_sizes;
+  log_step_sizes.reserve(step_sizes);
+  std::vector<double> log_q_errors;
+  log_step_sizes.reserve(step_sizes);
+  std::vector<double> log_p_errors;
+  log_step_sizes.reserve(step_sizes);
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  ODE::SystemState final_state;
+  auto const append_state = [&final_state](ODE::SystemState const& state) {
+    final_state = state;
+  };
+
+  for (int i = 0; i < step_sizes; ++i, step /= step_reduction) {
+    auto const instance =
+        GetParam().integrator.NewInstance(problem, append_state, step);
+    instance->Solve(t_final);
+    Time const t = final_state.time.value - t_initial;
+    Length const& q = final_state.positions[0].value;
+    Speed const& v = final_state.velocities[0].value;
+    double const log_q_error = std::log10(
+        AbsoluteError(q / q_initial, Cos(ω * t)));
+    double const log_p_error = std::log10(
+        AbsoluteError(v / v_amplitude, -Sin(ω * t)));
+    if (log_q_error <= -13 || log_p_error <= -13) {
+      // If we keep going the effects of finite precision will drown out
+      // convergence.
+      break;
+    }
+    log_step_sizes.push_back(std::log10(step / Second));
+    log_q_errors.push_back(log_q_error);
+    log_p_errors.push_back(log_p_error);
+  }
+  double const q_convergence_order = Slope(log_step_sizes, log_q_errors);
+  double const q_correlation =
+      PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_q_errors);
+  LOG(INFO) << "Convergence order in q : " << q_convergence_order;
+  LOG(INFO) << "Correlation            : " << q_correlation;
+
+#if !defined(_DEBUG)
+  EXPECT_THAT(RelativeError(GetParam().order, q_convergence_order),
+              Lt(0.02));
+  EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.02));
+#endif
+  double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
+  double const v_correlation =
+      PearsonProductMomentCorrelationCoefficient(log_step_sizes, log_p_errors);
+  LOG(INFO) << "Convergence order in p : " << v_convergence_order;
+  LOG(INFO) << "Correlation            : " << v_correlation;
+#if !defined(_DEBUG)
+  // SPRKs with odd convergence order have a higher convergence order in p.
+  EXPECT_THAT(RelativeError(GetParam().order + (GetParam().order % 2),
+                            v_convergence_order),
+              Lt(0.02));
+  EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
+#endif
 }
 
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Termination) {
   LOG(INFO) << GetParam();
-  GetParam().RunTermination();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Instant const t_initial;
+  Instant const t_final = t_initial + 163 * Second;
+  Time const step = 42 * Second;
+  int const steps = static_cast<int>(std::floor((t_final - t_initial) / step));
+
+  int evaluations = 0;
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, &evaluations);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance =
+      GetParam().integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
+
+  EXPECT_EQ(steps, solution.size());
+  EXPECT_THAT(solution.back().time.value,
+              AllOf(Gt(t_final - step), Le(t_final)));
+  switch (GetParam().composition) {
+    case serialization::FixedStepSizeIntegrator::BA:
+    case serialization::FixedStepSizeIntegrator::ABA:
+      EXPECT_EQ(steps * GetParam().evaluations, evaluations);
+      break;
+    case serialization::FixedStepSizeIntegrator::BAB:
+      EXPECT_EQ(steps * GetParam().evaluations + 1, evaluations);
+      break;
+    default:
+      LOG(FATAL) << "Invalid composition";
+  }
+  Length q_error;
+  Speed v_error;
+  for (int i = 0; i < steps; ++i) {
+    Time const t = solution[i].time.value - t_initial;
+    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
+  }
 }
 
+// Long integration, change detector.  Also tests the number of steps, their
+// spacing, and the number of evaluations.
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, LongIntegration) {
-  LOG(INFO) << GetParam();
-  GetParam().Run1000SecondsAt1Millisecond();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Speed const v_amplitude = 1 * Metre / Second;
+  AngularFrequency const ω = 1 * Radian / Second;
+  Instant const t_initial;
+#if defined(_DEBUG)
+  Instant const t_final = t_initial + 1 * Second;
+#else
+  Instant const t_final = t_initial + 1000 * Second;
+#endif
+  Time const step = 1 * Milli(Second);
+  int const steps = static_cast<int>((t_final - t_initial) / step) - 1;
+
+  int evaluations = 0;
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, &evaluations);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance =
+      GetParam().integrator.NewInstance(problem, append_state, step);
+  instance->Solve(t_final);
+
+  EXPECT_EQ(steps, solution.size());
+  switch (GetParam().composition) {
+    case serialization::FixedStepSizeIntegrator::BA:
+    case serialization::FixedStepSizeIntegrator::ABA:
+      EXPECT_EQ(steps * GetParam().evaluations, evaluations);
+      break;
+    case serialization::FixedStepSizeIntegrator::BAB:
+      EXPECT_EQ(steps * GetParam().evaluations + 1, evaluations);
+      break;
+    default:
+      LOG(FATAL) << "Invalid composition";
+  }
+  Length q_error;
+  Speed v_error;
+  for (int i = 0; i < steps; ++i) {
+    Length const q = solution[i].positions[0].value;
+    Speed const v = solution[i].velocities[0].value;
+    Time const t = solution[i].time.value - t_initial;
+    EXPECT_THAT(t, AlmostEquals((i + 1) * step, 0));
+    // TODO(egg): we may need decent trig functions for this sort of thing.
+    q_error = std::max(q_error, AbsoluteError(q_initial * Cos(ω * t), q));
+    v_error = std::max(v_error, AbsoluteError(-v_amplitude * Sin(ω * t), v));
+  }
+#if !defined(_DEBUG)
+  EXPECT_EQ(GetParam().expected_position_error, q_error);
+  EXPECT_EQ(GetParam().expected_velocity_error, v_error);
+#endif
 }
 
+// Tests that serialization and deserialization work.
 TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Serialization) {
   LOG(INFO) << GetParam();
-  GetParam().RunSerialization();
+  Length const q_initial = 1 * Metre;
+  Speed const v_initial = 0 * Metre / Second;
+  Instant const t_initial;
+  Time const step = 0.2 * Second;
+
+  Mass const m = 1 * Kilogram;
+  Stiffness const k = SIUnit<Stiffness>();
+  Energy const initial_energy =
+      0.5 * m * Pow<2>(v_initial) + 0.5 * k * Pow<2>(q_initial);
+
+  std::vector<ODE::SystemState> solution;
+  ODE harmonic_oscillator;
+  harmonic_oscillator.compute_acceleration =
+      std::bind(ComputeHarmonicOscillatorAcceleration1D,
+                _1, _2, _3, /*evaluations=*/nullptr);
+  IntegrationProblem<ODE> problem;
+  problem.equation = harmonic_oscillator;
+  problem.initial_state = {{q_initial}, {v_initial}, t_initial};
+  auto const append_state = [&solution](ODE::SystemState const& state) {
+    solution.push_back(state);
+  };
+
+  auto const instance1 =
+      GetParam().integrator.NewInstance(problem, append_state, step);
+  serialization::IntegratorInstance message1;
+  instance1->WriteToMessage(&message1);
+  auto const instance2 =
+      FixedStepSizeIntegrator<ODE>::Instance::ReadFromMessage(
+          message1, harmonic_oscillator, append_state);
+  serialization::IntegratorInstance message2;
+  instance2->WriteToMessage(&message2);
+  EXPECT_THAT(message1, EqualsProto(message2));
 }
 
 }  // namespace integrators
