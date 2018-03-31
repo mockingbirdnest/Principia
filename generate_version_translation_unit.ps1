@@ -1,5 +1,5 @@
 $solutiondir = resolve-path $args[0]
-$env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin"
+$env:Path += ";$env:programfiles\Git\bin;$env:localappdata\GitHub\Portab~1\bin;$env:localappdata\GitHub\Portab~1\mingw32\bin"
 $newdate = [DateTime](git log -1 --format=%cd --date=iso-strict)
 $newversion = (git describe --tags --always --dirty --abbrev=40 --long)
 $headerpath = (join-path $solutiondir "base/version.generated.cc")
