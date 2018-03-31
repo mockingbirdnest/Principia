@@ -78,7 +78,7 @@ struct Dimensions : not_constructible {
 };
 
 template<typename Dimensions>
-struct DimensionsAreSerializable {
+struct DimensionsAreSerializable : std::true_type {
   static_assert(ExponentSerializer::IsSerializable(Dimensions::Length),
                 "Invalid length exponent");
   static_assert(ExponentSerializer::IsSerializable(Dimensions::Mass),
