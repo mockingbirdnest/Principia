@@ -89,15 +89,18 @@ struct AsSymplecticRungeKuttaNyström {
   static_assert(std::is_base_of<SymplecticPartitionedRungeKutta,
                                 SymplecticPartitionedRungeKuttaMethod>::value,
                 "Method must be derived from SymplecticPartitionedRungeKutta");
+  static_assert(
+      !SymplecticPartitionedRungeKuttaMethod::first_same_as_last ||
+          composition_ == serialization::FixedStepSizeIntegrator::ABA ||
+          composition_ == serialization::FixedStepSizeIntegrator::BAB,
+      "requested |composition| must be ABA or BAB for this first-same-as-last "
+      "method");
+  static_assert(SymplecticPartitionedRungeKuttaMethod::first_same_as_last ||
+                    composition_ == serialization::FixedStepSizeIntegrator::BA,
+                "requested |composition| must be BA for this method which is "
+                "not first-same-as-last");
   static_assert(composition_ != serialization::FixedStepSizeIntegrator::ABA,
                 "ABA not supported until C++17");
-  static_assert(
-      SymplecticPartitionedRungeKuttaMethod::first_same_as_last
-          ? composition_ == serialization::FixedStepSizeIntegrator::ABA ||
-                composition_ == serialization::FixedStepSizeIntegrator::BAB
-          : composition_ == serialization::FixedStepSizeIntegrator::BA,
-      "requested |composition| inconsistent with the properties of "
-      "this method");
 
   struct Method : SymplecticRungeKuttaNyström {
     static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;

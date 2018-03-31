@@ -29,7 +29,7 @@
           ODE,                                                            \
           methods::method,                                                \
           methods::method::first_same_as_last>::ReadFromMessage(message); \
-    } while (true)
+    } while (false)
 
 #define PRINCIPIA_CASE_SRKN(kind, method)                         \
   case serialization::FixedStepSizeIntegrator::kind:              \
@@ -75,11 +75,7 @@ SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
     serialization::FixedStepSizeIntegrator const& message) {
   switch (message.composition_method()) {
     case serialization::FixedStepSizeIntegrator::ABA:
-      // TODO(phl): This is using BAB for the ABA case.  Fix once we use C++17.
-      return SymplecticRungeKuttaNyströmIntegrator<
-          Method,
-          serialization::FixedStepSizeIntegrator::BAB,
-          typename ODE::Position>();
+      LOG(FATAL) << "ABA not supported until C++17: " << message.DebugString();
     case serialization::FixedStepSizeIntegrator::BAB:
       return SymplecticRungeKuttaNyströmIntegrator<
           Method,
