@@ -60,8 +60,11 @@ TEST(Status, ConstructorZero) {
   EXPECT_EQ("OK", status.ToString());
 }
 
-TEST(Status, CheckOK) {
+TEST(Status, CheckOKOK) {
   CHECK_OK(Status::OK);
+}
+
+TEST(StatusDeathTest, CheckOKCANCELLED) {
   EXPECT_DEATH({
     CHECK_OK(Status::CANCELLED);
   }, "CANCELLED");
