@@ -17,19 +17,18 @@
     return SymmetricLinearMultistepIntegrator<methods::method, \
                                               typename ODE::Position>()
 
-#define PRINCIPIA_CASE_SPRK(kind, method)                                   \
-  case serialization::FixedStepSizeIntegrator::kind:                        \
-    do {                                                                    \
-      if (message.has_composition_method()) {                               \
-        return SprkAsSrknDeserializer<                                      \
-            ODE,                                                            \
-            methods::method,                                                \
-            methods::method::first_same_as_last>::ReadFromMessage(message); \
-      } else {                                                              \
-        return SymplecticPartitionedRungeKuttaIntegrator<                   \
-            methods::method,                                                \
-            typename ODE::Position>();                                      \
-      }                                                                     \
+// We do not deserialize an SPRK per se, but only when it is converted to an
+// SRKN.  The reason is that an SPRK is for a different kind of equation than
+// an SRKN, so the two would return different types.  If we ever need to do
+// this we will need to specialize ReadFromMessage somehow.
+#define PRINCIPIA_CASE_SPRK(kind, method)                                 \
+  case serialization::FixedStepSizeIntegrator::kind:                      \
+    do {                                                                  \
+      CHECK(message.has_composition_method());                            \
+      return SprkAsSrknDeserializer<                                      \
+          ODE,                                                            \
+          methods::method,                                                \
+          methods::method::first_same_as_last>::ReadFromMessage(message); \
     } while (true)
 
 #define PRINCIPIA_CASE_SRKN(kind, method)                         \
@@ -65,7 +64,7 @@ SprkAsSrknDeserializer<ODE, Method, false>::ReadFromMessage(
   CHECK_EQ(serialization::FixedStepSizeIntegrator::BA,
            message.composition_method());
   return SymplecticRungeKuttaNyströmIntegrator<
-      methods::method,
+      Method,
       serialization::FixedStepSizeIntegrator::BA,
       typename ODE::Position>();
 }
@@ -78,15 +77,16 @@ SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
     case serialization::FixedStepSizeIntegrator::ABA:
       // TODO(phl): This is using BAB for the ABA case.  Fix once we use C++17.
       return SymplecticRungeKuttaNyströmIntegrator<
-          methods::method,
+          Method,
           serialization::FixedStepSizeIntegrator::BAB,
           typename ODE::Position>();
     case serialization::FixedStepSizeIntegrator::BAB:
       return SymplecticRungeKuttaNyströmIntegrator<
-          methods::method,
+          Method,
           serialization::FixedStepSizeIntegrator::BAB,
           typename ODE::Position>();
     case serialization::FixedStepSizeIntegrator::BA:
+    default:
       LOG(FATAL) << message.DebugString();
       base::noreturn();
   }
