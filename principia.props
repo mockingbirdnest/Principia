@@ -71,6 +71,7 @@
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj /w14714</AdditionalOptions>
       <AdditionalOptions Condition="$(ProjectName) != serialization">/w14061 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>

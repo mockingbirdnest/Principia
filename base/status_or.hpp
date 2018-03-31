@@ -86,8 +86,8 @@
 //  }
 //
 
-#include <experimental/optional>
 #include <new>
+#include <optional>
 #include <string>
 #include <utility>
 
@@ -145,7 +145,7 @@ class StatusOr final {
 
  private:
   Status status_;
-  std::experimental::optional<T> value_;
+  std::optional<T> value_;
 
   template<typename U>
   friend class StatusOr;

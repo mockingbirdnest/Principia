@@ -5,6 +5,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include "base/not_constructible.hpp"
@@ -256,7 +257,7 @@ class DiscreteTrajectory : public Forkable<DiscreteTrajectory<Frame>,
 
   Timeline timeline_;
 
-  std::experimental::optional<Downsampling> downsampling_;
+  std::optional<Downsampling> downsampling_;
 
   template<typename, typename>
   friend class internal_forkable::ForkableIterator;

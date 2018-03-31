@@ -2,7 +2,7 @@
 #pragma once
 
 #include <deque>
-#include <experimental/optional>
+#include <optional>
 #include <map>
 #include <memory>
 #include <vector>
@@ -226,13 +226,11 @@ class Forkable {
   Tr4jectory* parent_ = nullptr;
 
   // This iterator is never at |end()|.
-  std::experimental::optional<typename Children::iterator>
-      position_in_parent_children_;
+  std::optional<typename Children::iterator> position_in_parent_children_;
 
   // This iterator is at |end()| if the fork time is not in the parent timeline,
   // i.e. is the parent timeline's own fork time.
-  std::experimental::optional<TimelineConstIterator>
-      position_in_parent_timeline_;
+  std::optional<TimelineConstIterator> position_in_parent_timeline_;
   Children children_;
 
   template<typename, typename>

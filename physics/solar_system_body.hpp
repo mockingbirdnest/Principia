@@ -3,6 +3,7 @@
 
 #include "physics/solar_system.hpp"
 
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <set>
@@ -55,7 +56,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 
 inline serialization::GravityModel ParseGravityModel(
-    std::experimental::filesystem::path const& gravity_model_filename) {
+    std::filesystem::path const& gravity_model_filename) {
   serialization::SolarSystemFile gravity_model;
   std::ifstream gravity_model_ifstream(gravity_model_filename);
   CHECK(gravity_model_ifstream.good());
@@ -68,7 +69,7 @@ inline serialization::GravityModel ParseGravityModel(
 }
 
 inline serialization::InitialState ParseInitialState(
-    std::experimental::filesystem::path const& initial_state_filename) {
+    std::filesystem::path const& initial_state_filename) {
   serialization::SolarSystemFile initial_state;
   std::ifstream initial_state_ifstream(initial_state_filename);
   CHECK(initial_state_ifstream.good());
@@ -82,8 +83,8 @@ inline serialization::InitialState ParseInitialState(
 
 template<typename Frame>
 SolarSystem<Frame>::SolarSystem(
-    std::experimental::filesystem::path const& gravity_model_filename,
-    std::experimental::filesystem::path const& initial_state_filename,
+    std::filesystem::path const& gravity_model_filename,
+    std::filesystem::path const& initial_state_filename,
     bool const ignore_frame)
     : SolarSystem(ParseGravityModel(gravity_model_filename),
                   ParseInitialState(initial_state_filename),

@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <experimental/optional>
 #include <functional>
 #include <memory>
+#include <optional>
 
 #include "base/not_null.hpp"
 #include "geometry/affine_map.hpp"
@@ -189,7 +189,7 @@ class Renderer {
 
   not_null<std::unique_ptr<NavigationFrame>> plotting_frame_;
 
-  std::experimental::optional<Target> target_;
+  std::optional<Target> target_;
 };
 
 }  // namespace internal_renderer

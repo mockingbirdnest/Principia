@@ -1,7 +1,6 @@
 ﻿
 #include "physics/solar_system.hpp"
 
-#include <experimental/filesystem>
 #include <ios>
 
 #include "astronomy/frames.hpp"

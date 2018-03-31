@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <map>
 #include <memory>
@@ -15,7 +15,7 @@ class Player final {
  public:
   using PointerMap = std::map<std::uint64_t, void*>;
 
-  explicit Player(std::experimental::filesystem::path const& path);
+  explicit Player(std::filesystem::path const& path);
 
   // Replays the next message in the journal.  Returns false at end of journal.
   bool Play();

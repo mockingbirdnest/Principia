@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
+#include <optional>
 #include <list>
 
 #include "base/not_null.hpp"
@@ -61,7 +61,7 @@ class Subset final {
     int rank_ = 0;
 
     // Do not require a default constructor for |Properties|.
-    std::experimental::optional<Properties> properties_;
+    std::optional<Properties> properties_;
 
     friend class Subset<T>;
   };

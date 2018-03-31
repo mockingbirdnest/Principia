@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <experimental/optional>
+#include <optional>
 #include <vector>
 
 #include "geometry/sign.hpp"
@@ -65,7 +65,7 @@ Instance::Solve(Instant const& t_final) {
   // restartability.
 
   // State before the last, truncated step.
-  std::experimental::optional<typename ODE::SystemState> final_state;
+  std::optional<typename ODE::SystemState> final_state;
 
   // Argument checks.
   int const dimension = current_state.positions.size();

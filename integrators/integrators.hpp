@@ -1,7 +1,6 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #define PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 
-#include <experimental/optional>
 #include <functional>
 #include <string>
 

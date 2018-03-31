@@ -1,7 +1,7 @@
 ﻿
 #include "tools/generate_configuration.hpp"
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <iomanip>
 #include <limits>
 #include <string>
@@ -35,7 +35,7 @@ void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& gravity_model_stem,
                            std::string const& initial_state_stem,
                            std::string const& numerics_blueprint_stem) {
-  std::experimental::filesystem::path const directory =
+  std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
   SolarSystem<ICRFJ2000Equator> solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
@@ -116,7 +116,7 @@ void GenerateConfiguration(std::string const& game_epoch,
 
   // Parse the numerics blueprint file here, it doesn't belong in class
   // SolarSystem.
-  std::experimental::filesystem::path numerics_blueprint_filename =
+  std::filesystem::path numerics_blueprint_filename =
       (directory / numerics_blueprint_stem).replace_extension(proto_txt);
   serialization::SolarSystemFile numerics_blueprint;
   std::ifstream numerics_blueprint_ifstream(numerics_blueprint_filename);

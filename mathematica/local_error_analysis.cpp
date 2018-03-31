@@ -1,6 +1,7 @@
 
 #include "mathematica/local_error_analysis.hpp"
 
+#include <filesystem>
 #include <vector>
 
 #include "astronomy/stabilize_ksp.hpp"
@@ -45,7 +46,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 }
 
 void LocalErrorAnalyser::WriteLocalErrors(
-    std::experimental::filesystem::path const& path,
+    std::path const& path,
     FixedStepSizeIntegrator<
         Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
         fine_integrator,

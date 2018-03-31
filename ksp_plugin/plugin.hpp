@@ -6,6 +6,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <utility>
@@ -113,12 +114,12 @@ class Plugin {
   // All the bodies must be inserted using the same method.
   virtual void InsertCelestialAbsoluteCartesian(
       Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
+      std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Cartesian::Body const& initial_state);
   virtual void InsertCelestialJacobiKeplerian(
       Index celestial_index,
-      std::experimental::optional<Index> const& parent_index,
+      std::optional<Index> const& parent_index,
       serialization::GravityModel::Body const& gravity_model,
       serialization::InitialState::Keplerian::Body const& initial_state);
 
@@ -256,8 +257,7 @@ class Plugin {
   virtual RigidMotion<Barycentric, World> BarycentricToWorld(
       bool reference_part_is_unmoving,
       PartId reference_part_id,
-      std::experimental::optional<Position<World>> const&
-          main_body_centre) const;
+      std::optional<Position<World>> const& main_body_centre) const;
 
   // Simulates the system until instant |t|.  Sets |current_time_| to |t|.
   // Must be called after initialization.
@@ -441,7 +441,7 @@ class Plugin {
   void InitializeIndices(
       std::string const& name,
       Index celestial_index,
-      std::experimental::optional<Index> const& parent_index);
+      std::optional<Index> const& parent_index);
 
   // Computes the value returned by |PlanetariumRotation|.  Must be called
   // whenever |main_body_| or |planetarium_rotation_| changes.
@@ -477,12 +477,12 @@ class Plugin {
   serialization::InitialState initial_state_;
   std::map<std::string, Index> name_to_index_;
   std::map<Index, std::string> index_to_name_;
-  std::map<Index, std::experimental::optional<Index>> parents_;
+  std::map<Index, std::optional<Index>> parents_;
   // The ephemeris is only constructed once, so this is an initialization
   // object.  The other parameters must be persisted to create new vessels.
   // Since this is not persisted directly, it is optional so that it can be null
   // in a deserialized object.
-  std::experimental::optional<Ephemeris<Barycentric>::FixedStepParameters>
+  std::optional<Ephemeris<Barycentric>::FixedStepParameters>
       ephemeris_parameters_;
 
   GUIDToOwnedVessel vessels_;
@@ -503,8 +503,7 @@ class Plugin {
   ThreadPool<Status> vessel_thread_pool_;
 
   Angle planetarium_rotation_;
-  std::experimental::optional<Rotation<Barycentric, AliceSun>>
-      cached_planetarium_rotation_;
+  std::optional<Rotation<Barycentric, AliceSun>> cached_planetarium_rotation_;
   // The game epoch in real time.
   Instant game_epoch_;
   // The current in-game universal time.

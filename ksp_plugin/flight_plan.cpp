@@ -1,7 +1,7 @@
 ﻿
 #include "ksp_plugin/flight_plan.hpp"
 
-#include <experimental/optional>
+#include <optional>
 #include <vector>
 
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
@@ -89,7 +89,7 @@ void FlightPlan::ForgetBefore(Instant const& time,
                               std::function<void()> const& on_empty) {
   // Find the first segment to keep.  Note that incrementing by 2 ensures that
   // we only look at coasts.
-  std::experimental::optional<int> first_to_keep;
+  std::optional<int> first_to_keep;
   for (int i = 0; i < segments_.size(); i += 2) {
     if (time <= segments_[i]->last().time()) {
       first_to_keep = i;

@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <optional>
 #include <vector>
 
 #include "gtest/gtest.h"
@@ -112,7 +113,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
                  apoapsides,
                  periapsides);
 
-  std::experimental::optional<Instant> previous_time;
+  std::optional<Instant> previous_time;
   std::map<Instant, DegreesOfFreedom<World>> all_apsides;
   for (auto it = apoapsides.Begin(); it != apoapsides.End(); ++it) {
     Instant const time = it.time();
@@ -123,7 +124,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     previous_time = time;
   }
 
-  previous_time = std::experimental::nullopt;
+  previous_time = std::nullopt;
   for (auto it = periapsides.Begin(); it != periapsides.End(); ++it) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
@@ -135,8 +136,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
   EXPECT_EQ(6, all_apsides.size());
 
-  previous_time = std::experimental::nullopt;
-  std::experimental::optional<Position<World>> previous_position;
+  previous_time = std::nullopt;
+  std::optional<Position<World>> previous_position;
   for (auto const& pair : all_apsides) {
     Instant const time = pair.first;
     Position<World> const position = pair.second.position();
@@ -209,7 +210,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                ascending_nodes,
                descending_nodes);
 
-  std::experimental::optional<Instant> previous_time;
+  std::optional<Instant> previous_time;
   for (auto it = ascending_nodes.Begin(); it != ascending_nodes.End(); ++it) {
     Instant const time = it.time();
     EXPECT_THAT((it.degrees_of_freedom().position() - World::origin)
@@ -223,7 +224,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
     previous_time = time;
   }
 
-  previous_time = std::experimental::nullopt;
+  previous_time = std::nullopt;
   for (auto it = descending_nodes.Begin(); it != descending_nodes.End(); ++it) {
     Instant const time = it.time();
     EXPECT_THAT(

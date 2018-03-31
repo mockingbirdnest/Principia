@@ -2,6 +2,7 @@
 #include "ksp_plugin/renderer.hpp"
 
 #include <algorithm>
+#include <optional>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -50,12 +51,12 @@ void Renderer::SetTargetVessel(
 }
 
 void Renderer::ClearTargetVessel() {
-  target_ = std::experimental::nullopt;
+  target_ = std::nullopt;
 }
 
 void Renderer::ClearTargetVesselIf(not_null<Vessel*> const vessel) {
   if (target_ && target_->vessel == vessel) {
-    target_ = std::experimental::nullopt;
+    target_ = std::nullopt;
   }
 }
 

@@ -3,6 +3,7 @@
 
 #include <limits>
 #include <map>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -1028,7 +1029,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   EXPECT_EQ(10, apoapsides1.Size());
   EXPECT_EQ(10, periapsides1.Size());
 
-  std::experimental::optional<Instant> previous_time;
+  std::optional<Instant> previous_time;
   std::set<Instant> all_times;
   for (auto it1 = apoapsides1.Begin(), it2 = apoapsides2.Begin();
        it1 != apoapsides1.End() && it2 != apoapsides2.End();
@@ -1047,7 +1048,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     previous_time = time;
   }
 
-  previous_time = std::experimental::nullopt;
+  previous_time = std::nullopt;
   for (auto it1 = periapsides1.Begin(), it2 = periapsides2.Begin();
        it1 != periapsides1.End() && it2 != periapsides2.End();
        ++it1, ++it2) {
@@ -1065,7 +1066,7 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
     previous_time = time;
   }
 
-  previous_time = std::experimental::nullopt;
+  previous_time = std::nullopt;
   for (Instant const& time : all_times) {
     if (previous_time) {
       EXPECT_LT(AbsoluteError(time - *previous_time, 0.5 * T),

@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -21,7 +22,7 @@ class MockPlugin : public Plugin {
   MOCK_METHOD4(
       InsertCelestialAbsoluteCartesian,
       void(Index celestial_index,
-           std::experimental::optional<Index> const& parent_index,
+           std::optional<Index> const& parent_index,
            serialization::GravityModel::Body const& gravity_model,
            serialization::InitialState::Cartesian::Body const& initial_state));
 

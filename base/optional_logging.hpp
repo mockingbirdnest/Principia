@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
+#include <optional>
 
 // We need to pollute the |::| namespace in order for lookup to work, like
 // glog/stl_logging.h.  The following caveat from glog/stl_logging.h applies
@@ -19,6 +19,6 @@
 // If |optional|, logs |*optional|, otherwise, logs |"nullopt"|.
 template<typename T>
 std::ostream& operator<<(std::ostream& out,
-                         std::experimental::optional<T> const& optional);
+                         std::optional<T> const& optional);
 
 #include "base/optional_logging_body.hpp"

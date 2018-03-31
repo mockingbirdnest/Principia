@@ -2,6 +2,7 @@
 #include "ksp_plugin/interface.hpp"
 
 #include <limits>
+#include <optional>
 #include <string>
 
 #include "astronomy/epoch.hpp"
@@ -265,7 +266,7 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
   EXPECT_CALL(*plugin_,
               InsertCelestialAbsoluteCartesian(
                   celestial_index,
-                  std::experimental::make_optional(parent_index),
+                  std::make_optional(parent_index),
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 
@@ -319,7 +320,7 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   EXPECT_CALL(*plugin_,
               InsertCelestialAbsoluteCartesian(
                   celestial_index,
-                  std::experimental::make_optional(parent_index),
+                  std::make_optional(parent_index),
                   EqualsProto(gravity_model),
                   EqualsProto(initial_state)));
 

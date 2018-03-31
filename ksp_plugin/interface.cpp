@@ -4,8 +4,10 @@
 #include <cctype>
 #include <cmath>
 #include <cstring>
+#include <filesystem>
 #include <iomanip>
 #include <limits>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -122,8 +124,8 @@ serialization::GravityModel::Body MakeGravityModel(
     BodyParameters const& body_parameters) {
   // Logging operators would dereference a null C string.
   auto const make_optional_c_string = [](char const* const c_string) {
-    return (c_string == nullptr) ? std::experimental::nullopt
-                                 : std::experimental::make_optional(c_string);
+    return (c_string == nullptr) ? std::nullopt
+                                 : std::make_optional(c_string);
   };
   LOG(INFO)
       << __FUNCTION__ << "\n"
@@ -189,9 +191,8 @@ void principia__ActivateRecorder(bool const activate) {
     std::tm* const localtime = std::localtime(&time);
     std::stringstream name;
     name << std::put_time(localtime, "JOURNAL.%Y%m%d-%H%M%S");
-    journal::Recorder* const recorder =
-        new journal::Recorder(std::experimental::filesystem::path("glog") /
-                                  "Principia" / name.str());
+    journal::Recorder* const recorder = new journal::Recorder(
+        std::filesystem::path("glog") / "Principia" / name.str());
     journal::Recorder::Activate(recorder);
   } else if (!activate && journal::Recorder::IsActivated()) {
     journal::Recorder::Deactivate();
@@ -271,8 +272,8 @@ QP principia__CelestialWorldDegreesOfFreedom(Plugin const* const plugin,
               origin.reference_part_is_unmoving,
               origin.reference_part_id,
               origin.reference_part_is_at_origin
-                  ? std::experimental::nullopt
-                  : std::experimental::make_optional(
+                  ? std::nullopt
+                  : std::make_optional(
                         FromXYZ<Position<World>>(
                             origin.main_body_centre_in_world))),
           FromGameTime(*plugin, time))));
@@ -424,8 +425,8 @@ QP principia__GetPartActualDegreesOfFreedom(Plugin const* const plugin,
               origin.reference_part_is_unmoving,
               origin.reference_part_id,
               origin.reference_part_is_at_origin
-                  ? std::experimental::nullopt
-                  : std::experimental::make_optional(
+                  ? std::nullopt
+                  : std::make_optional(
                         FromXYZ<Position<World>>(
                             origin.main_body_centre_in_world))))));
 }
@@ -601,8 +602,8 @@ void principia__InsertCelestialAbsoluteCartesian(
   initial_state.set_vz(vz);
   plugin->InsertCelestialAbsoluteCartesian(
       celestial_index,
-      parent_index == nullptr ? std::experimental::nullopt
-                              : std::experimental::make_optional(*parent_index),
+      parent_index == nullptr ? std::nullopt
+                              : std::make_optional(*parent_index),
       MakeGravityModel(body_parameters),
       initial_state);
   return m.Return();
@@ -646,8 +647,8 @@ void principia__InsertCelestialJacobiKeplerian(
   }
   plugin->InsertCelestialJacobiKeplerian(
       celestial_index,
-      parent_index == nullptr ? std::experimental::nullopt
-                              : std::experimental::make_optional(*parent_index),
+      parent_index == nullptr ? std::nullopt
+                              : std::make_optional(*parent_index),
       MakeGravityModel(body_parameters),
       initial_state);
   return m.Return();

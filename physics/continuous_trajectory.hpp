@@ -2,7 +2,7 @@
 #pragma once
 
 #include <atomic>
-#include <experimental/optional>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -211,7 +211,7 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   mutable std::atomic_int last_accessed_polynomial_ = 0;
 
   // The time at which this trajectory starts.  Set for a nonempty trajectory.
-  std::experimental::optional<Instant> first_time_;
+  std::optional<Instant> first_time_;
 
   // The points that have not yet been incorporated in a polynomial.  Nonempty
   // for a nonempty trajectory.

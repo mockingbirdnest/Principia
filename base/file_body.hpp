@@ -13,13 +13,13 @@ namespace internal_file {
 
 inline OFStream::OFStream() {}
 
-inline OFStream::OFStream(std::experimental::filesystem::path const& path) {
+inline OFStream::OFStream(std::filesystem::path const& path) {
 #if PRINCIPIA_COMPILER_MSVC
   CHECK(path.has_filename()) << path;
-  std::experimental::filesystem::path directory = path;
+  std::filesystem::path directory = path;
   directory.remove_filename();
-  if (!std::experimental::filesystem::exists(directory)) {
-    CHECK(std::experimental::filesystem::create_directories(directory))
+  if (!std::filesystem::exists(directory)) {
+    CHECK(std::filesystem::create_directories(directory))
         << directory;
   }
 #endif

@@ -6,6 +6,7 @@
 #include <limits>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
@@ -238,7 +239,7 @@ class PluginTest : public testing::Test {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastMajorBody;
          ++index) {
-      std::experimental::optional<Index> parent_index;
+      std::optional<Index> parent_index;
       if (index != SolarSystemFactory::Sun) {
         parent_index = SolarSystemFactory::parent(index);
       }
@@ -319,7 +320,7 @@ TEST_F(PluginTest, Serialization) {
   keplerian_sun.set_name(SolarSystemFactory::name(SolarSystemFactory::Sun));
   plugin->InsertCelestialJacobiKeplerian(
       SolarSystemFactory::Sun,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       solar_system_->gravity_model_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)),
       keplerian_sun);
@@ -509,7 +510,7 @@ TEST_F(PluginTest, HierarchicalInitialization) {
       &initial_state));
   plugin_->InsertCelestialJacobiKeplerian(
       0,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       gravity_model,
       initial_state);
 
@@ -608,7 +609,7 @@ TEST_F(PluginDeathTest, InsertCelestialError) {
   EXPECT_DEATH({
       plugin_->InsertCelestialAbsoluteCartesian(
           42,
-          /*parent_index=*/std::experimental::nullopt,
+          /*parent_index=*/std::nullopt,
           solar_system_->gravity_model_message(
               SolarSystemFactory::name(SolarSystemFactory::Sun)),
           solar_system_->cartesian_initial_state_message(
@@ -1031,7 +1032,7 @@ TEST_F(PluginTest, Navball) {
       &gravity_model));
   plugin.InsertCelestialAbsoluteCartesian(
       SolarSystemFactory::Sun,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       gravity_model,
       solar_system_->cartesian_initial_state_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)));
@@ -1081,7 +1082,7 @@ TEST_F(PluginTest, NavballTargetVessel) {
       &gravity_model));
   plugin.InsertCelestialAbsoluteCartesian(
       SolarSystemFactory::Sun,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       gravity_model,
       solar_system_->cartesian_initial_state_message(
           SolarSystemFactory::name(SolarSystemFactory::Sun)));
@@ -1114,7 +1115,7 @@ TEST_F(PluginTest, Frenet) {
                 0 * Radian);
   plugin.InsertCelestialAbsoluteCartesian(
       SolarSystemFactory::Earth,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       solar_system_->gravity_model_message(
           SolarSystemFactory::name(SolarSystemFactory::Earth)),
       solar_system_->cartesian_initial_state_message(

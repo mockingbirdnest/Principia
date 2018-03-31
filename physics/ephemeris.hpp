@@ -1,7 +1,6 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
 #include <functional>
 #include <limits>
 #include <map>

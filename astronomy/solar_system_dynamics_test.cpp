@@ -1,7 +1,6 @@
 ﻿
 #include <algorithm>
-#include <experimental/filesystem>
-#include <experimental/optional>
+#include <optional>
 #include <map>
 #include <string>
 #include <tuple>
@@ -92,10 +91,8 @@ class SolarSystemDynamicsTest : public testing::Test {
   struct OrbitError final {
     Angle separation_per_orbit;
     Angle inclination_drift_per_orbit;
-    std::experimental::optional<Angle>
-        longitude_of_ascending_node_drift_per_orbit;
-    std::experimental::optional<Angle>
-        argument_of_periapsis_drift_per_orbit;
+    std::optional<Angle> longitude_of_ascending_node_drift_per_orbit;
+    std::optional<Angle> argument_of_periapsis_drift_per_orbit;
   };
 
   SolarSystemDynamicsTest() {
@@ -166,8 +163,7 @@ class SolarSystemDynamicsTest : public testing::Test {
     enum LocalFrameTag { tag };
     using ParentEquator = Frame<LocalFrameTag, tag, /*frame_is_inertial=*/true>;
     auto const z = Bivector<double, ICRFJ2000Equator>({0, 0, 1});
-    std::experimental::optional<Rotation<ICRFJ2000Equator, ParentEquator>>
-        rotation;
+    std::optional<Rotation<ICRFJ2000Equator, ParentEquator>> rotation;
 
     if (SolarSystemFactory::parent(index) == SolarSystemFactory::Sun) {
       Bivector<AngularMomentum, ICRFJ2000Equator>

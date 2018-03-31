@@ -1,6 +1,7 @@
 
 #include "ksp_plugin_test/fake_plugin.hpp"
 
+#include <optional>
 #include <string>
 
 #include "testing_utilities/solar_system_factory.hpp"
@@ -23,11 +24,10 @@ FakePlugin::FakePlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
   for (int index = SolarSystemFactory::Sun;
        index <= SolarSystemFactory::LastBody;
        ++index) {
-    std::experimental::optional<Index> parent_index =
+    std::optional<Index> parent_index =
         index == SolarSystemFactory::Sun
-            ? std::experimental::nullopt
-            : std::experimental::make_optional(
-                  SolarSystemFactory::parent(index));
+            ? std::nullopt
+            : std::make_optional(SolarSystemFactory::parent(index));
     InsertCelestialAbsoluteCartesian(
         index,
         parent_index,

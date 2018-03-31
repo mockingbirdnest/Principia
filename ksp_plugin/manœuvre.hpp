@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
+#include <optional>
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
@@ -127,8 +127,8 @@ class Manœuvre {
   Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;
   Vector<double, Frenet<Frame>> const direction_;
-  std::experimental::optional<Time> duration_;
-  std::experimental::optional<Instant> initial_time_;
+  std::optional<Time> duration_;
+  std::optional<Instant> initial_time_;
   not_null<std::unique_ptr<DynamicFrame<InertialFrame, Frame> const>> frame_;
   bool const is_inertially_fixed_;
   DiscreteTrajectory<InertialFrame> const* coasting_trajectory_ = nullptr;

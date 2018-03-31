@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -50,7 +50,7 @@ class Perspective final {
   // Returns the part of |segment| that is behind the focal plane as seen from
   // the camera.  Returns nullopt if |segment| is entirely in front of the focal
   // plane.
-  std::experimental::optional<Segment<FromFrame>>
+  std::optional<Segment<FromFrame>>
   SegmentBehindFocalPlane(Segment<FromFrame> const& segment) const;
 
   // The square of the tangent of the angular distance between the given points

@@ -1,7 +1,7 @@
 ﻿
 #include "testing_utilities/solar_system_factory.hpp"
 
-#include <experimental/optional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -76,8 +76,8 @@ class SolarSystemFactoryTest : public testing::Test {
       DegreesOfFreedom<ICRFJ2000Equator> const& tertiary_dof,
       MassiveBody const& secondary_body,
       DegreesOfFreedom<ICRFJ2000Equator> const& secondary_dof,
-      std::experimental::optional<MassiveBody const&> const& primary_body,
-      std::experimental::optional<
+      std::optional<MassiveBody const&> const& primary_body,
+      std::optional<
           DegreesOfFreedom<ICRFJ2000Equator> const&> const primary_dof,
       std::string message) {
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const tertiary_secondary =
@@ -119,8 +119,8 @@ class SolarSystemFactoryTest : public testing::Test {
                            tertiary_dof,
                            secondary_body,
                            secondary_dof,
-                           /*tertiary_body=*/std::experimental::nullopt,
-                           /*tertiary=*/std::experimental::nullopt,
+                           /*tertiary_body=*/std::nullopt,
+                           /*tertiary=*/std::nullopt,
                            message);
   }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -12,7 +12,7 @@ namespace internal_file {
 class OFStream {
  public:
   OFStream();
-  explicit OFStream(std::experimental::filesystem::path const& path);
+  explicit OFStream(std::filesystem::path const& path);
   ~OFStream();
 
   OFStream& operator=(OFStream&& other);

@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <map>
 #include <string>
 #include <vector>
@@ -33,10 +33,9 @@ class SolarSystem final {
  public:
   // Constructs a solar system from the given files, which must contain text
   // format for SolarSystemFile protocol buffers.
-  SolarSystem(
-      std::experimental::filesystem::path const& gravity_model_filename,
-      std::experimental::filesystem::path const& initial_state_filename,
-      bool ignore_frame = false);
+  SolarSystem(std::filesystem::path const& gravity_model_filename,
+              std::filesystem::path const& initial_state_filename,
+              bool ignore_frame = false);
 
   // Construct a solar system from the given messages.
   SolarSystem(serialization::GravityModel const& gravity_model,

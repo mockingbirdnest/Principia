@@ -2,6 +2,7 @@
 #include "ksp_plugin/planetarium.hpp"
 
 #include <algorithm>
+#include <optional>
 #include <vector>
 
 #include "geometry/point.hpp"
@@ -62,7 +63,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod0(
   auto const field_of_view_radius² =
       perspective_.focal() * perspective_.focal() *
       parameters_.tan_field_of_view_ * parameters_.tan_field_of_view_;
-  std::experimental::optional<Position<Navigation>> previous_position;
+  std::optional<Position<Navigation>> previous_position;
   RP2Lines<Length, Camera> rp2_lines;
   for (auto const& plottable_segment : plottable_segments) {
     // Apply the projection to the current plottable segment.
@@ -110,7 +111,7 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod1(
   RP2Lines<Length, Camera> new_rp2_lines;
   for (auto const& rp2_line : rp2_lines) {
     RP2Line<Length, Camera> new_rp2_line;
-    std::experimental::optional<RP2Point<Length, Camera>> start_rp2_point;
+    std::optional<RP2Point<Length, Camera>> start_rp2_point;
     for (int i = 0; i < rp2_line.size(); ++i) {
       RP2Point<Length, Camera> const& rp2_point = rp2_line[i];
       if (i == 0) {
@@ -169,11 +170,11 @@ RP2Lines<Length, Camera> Planetarium::PlotMethod2(
 
   Instant t;
   double estimated_tan²_error;
-  std::experimental::optional<DegreesOfFreedom<Barycentric>>
+  std::optional<DegreesOfFreedom<Barycentric>>
       degrees_of_freedom_in_barycentric;
   Position<Navigation> position;
 
-  std::experimental::optional<Position<Navigation>> last_endpoint;
+  std::optional<Position<Navigation>> last_endpoint;
 
   int steps_accepted = 0;
 
