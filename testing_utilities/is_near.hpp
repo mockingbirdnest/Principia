@@ -15,7 +15,8 @@ template<typename T>
 class IsNearMatcher;
 
 template<typename T>
-using ExpectedType = std::conditional_t<std::is_arithmetic<T>::value, double, T>;
+using ExpectedType =
+    std::conditional_t<std::is_arithmetic<T>::value, double, T>;
 
 // Calls the next function with |tolerance| set to 1.1.
 template<typename T>

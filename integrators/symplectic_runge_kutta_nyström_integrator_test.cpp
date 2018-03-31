@@ -526,7 +526,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(q_convergence_order, IsNear(static_cast<double>(GetParam().order), 1.04));
+  EXPECT_THAT(q_convergence_order,
+              IsNear(static_cast<double>(GetParam().order), 1.04));
   EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.02));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
