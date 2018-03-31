@@ -36,14 +36,7 @@ template<typename Method, typename Position>
 void SymplecticPartitionedRungeKuttaIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
-  FixedStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
-  auto* const extension =
-      message
-          ->MutableExtension(
-              serialization::FixedStepSizeIntegratorInstance::extension)
-          ->MutableExtension(
-              serialization::SymplecticPartitionedRungeKuttaIntegratorInstance::
-                  extension);
+  LOG(FATAL) << "WriteToMessage NYI";
 }
 
 template<typename Method, typename Position>
@@ -90,12 +83,7 @@ ReadFromMessage(serialization::FixedStepSizeIntegratorInstance const& message,
                 IntegrationProblem<ODE> const& problem,
                 AppendState const& append_state,
                 Time const& step) const {
-  CHECK(message.HasExtension(
-      serialization::SymplecticRungeKuttaNystromIntegratorInstance::extension))
-      << message.DebugString();
-
-  return std::unique_ptr<typename Integrator<ODE>::Instance>(
-      new Instance(problem, append_state, step, *this));
+  LOG(FATAL) << "ReadFromMessage NYI";
 }
 
 }  // namespace internal_symplectic_partitioned_runge_kutta_integrator
