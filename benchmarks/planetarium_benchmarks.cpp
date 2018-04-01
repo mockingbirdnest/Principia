@@ -73,8 +73,8 @@ Perspective<Navigation, Camera> PolarPerspective(
                                    {0 * Metre, 0 * Metre, distance_from_earth}),
           Camera::origin,
           Rotation<Navigation, Camera>(Vector<double, Navigation>({1, 0, 0}),
-                                       Vector<double, Navigation>({0, 0, 1}),
-                                       Bivector<double, Navigation>({0, -1, 0}))
+                                       Vector<double, Navigation>({0, -1, 0}),
+                                       Bivector<double, Navigation>({0, 0, -1}))
               .Forget()),
       focal};
 }
@@ -123,14 +123,14 @@ class Satellites {
     goes_8_elements.argument_of_periapsis = 192.8349 * Degree;
     goes_8_elements.mean_anomaly = 121.5613 * Degree;
     goes_8_elements.mean_motion = 1.00264613 * (2 * π * Radian / Day);
+
+    ephemeris_->Prolong(goes_8_epoch);
     KeplerOrbit<Barycentric> const goes_8_orbit(
         *earth_, MasslessBody{}, goes_8_elements, goes_8_epoch);
     goes_8_trajectory_.Append(
         goes_8_epoch,
         ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(goes_8_epoch) +
             goes_8_orbit.StateVectors(goes_8_epoch));
-
-    ephemeris_->Prolong(goes_8_epoch);
     auto goes_8_instance = ephemeris_->NewInstance(
         {&goes_8_trajectory_},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
@@ -205,8 +205,8 @@ void RunBenchmark(benchmark::State& state,
   }
   Length min_x = Infinity<Length>();
   Length min_y = Infinity<Length>();
-  Length max_x = Infinity<Length>();
-  Length max_y = Infinity<Length>();
+  Length max_x = -Infinity<Length>();
+  Length max_y = -Infinity<Length>();
   for (auto const& line : lines) {
     for (auto const& point : line) {
       min_x = std::min(min_x, point.x());
@@ -216,7 +216,7 @@ void RunBenchmark(benchmark::State& state,
     }
   }
   state.SetLabel(std::to_string(total_points / iterations) + " points in " +
-                 std::to_string(total_lines / iterations) + " within [" +
+                 std::to_string(total_lines / iterations) + " lines within [" +
                  DebugString(min_x) + ", " + DebugString(max_x) + "] × [" +
                  DebugString(min_y) + ", " + DebugString(max_y) + "]");
 }
