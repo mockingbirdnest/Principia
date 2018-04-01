@@ -382,7 +382,7 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
   switch (message.kind()) {
     case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
       return EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          methods::DormandElMikkawyPrince1986RKN434FM,
+          methods::DormandالمكاوىPrince1986RKN434FM,
           typename ODE::Position>();
     default:
       LOG(FATAL) << message.kind();

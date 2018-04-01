@@ -32,7 +32,7 @@ using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using quantities::Abs;
 using quantities::Acceleration;
 using quantities::AngularFrequency;
@@ -236,11 +236,11 @@ void BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D(
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator1D,
-    methods::DormandElMikkawyPrince1986RKN434FM, Length);
+    methods::DormandالمكاوىPrince1986RKN434FM, Length);
 
 BENCHMARK_TEMPLATE2(
     BM_EmbeddedExplicitRungeKuttaNyströmIntegratorSolveHarmonicOscillator3D,
-    methods::DormandElMikkawyPrince1986RKN434FM, Position<World>);
+    methods::DormandالمكاوىPrince1986RKN434FM, Position<World>);
 
 }  // namespace integrators
 }  // namespace principia

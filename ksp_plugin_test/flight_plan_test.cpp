@@ -28,7 +28,7 @@ using geometry::Position;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
@@ -97,7 +97,7 @@ class FlightPlanTest : public testing::Test {
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                DormandElMikkawyPrince1986RKN434FM,
+                DormandالمكاوىPrince1986RKN434FM,
                 Position<Barycentric>>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
@@ -177,7 +177,7 @@ TEST_F(FlightPlanTest, Singular) {
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
         EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
@@ -403,7 +403,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   EXPECT_FALSE(flight_plan_->SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
@@ -418,7 +418,7 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
   EXPECT_TRUE(flight_plan_->SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/10000,
           /*length_integration_tolerance=*/1 * Milli(Metre),

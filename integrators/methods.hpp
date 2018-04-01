@@ -313,10 +313,10 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                    +0.6756035959798288170}}};
 };
 
-// Coefficients from Dormand, El-Mikkawy and Prince (1986),
+// Coefficients from Dormand, المكاوى (El-Mikkawy), and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
-struct DormandElMikkawyPrince1986RKN434FM :
+struct DormandالمكاوىPrince1986RKN434FM :
     EmbeddedExplicitRungeKuttaNyström {
   static constexpr int higher_order = 4;
   static constexpr int lower_order = 3;

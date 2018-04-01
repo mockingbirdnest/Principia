@@ -32,7 +32,7 @@ using geometry::Bivector;
 using geometry::Identity;
 using geometry::Permutation;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::KeplerianElements;
 using physics::MassiveBody;
 using physics::SolarSystem;
@@ -715,7 +715,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandElMikkawyPrince1986RKN434FM,
+          DormandالمكاوىPrince1986RKN434FM,
           Position<Barycentric>>(),
       /*max_steps=*/14,
       /*length_integration_tolerance=*/1 * Milli(Metre),

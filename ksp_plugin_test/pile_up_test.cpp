@@ -38,7 +38,7 @@ using integrators::MockFixedStepSizeIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::BlanesMoan2002SRKN6B;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using physics::DegreesOfFreedom;
 using physics::MassiveBody;
 using physics::MockEphemeris;
@@ -557,7 +557,7 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       fixed_step};
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_parameters{
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandElMikkawyPrince1986RKN434FM,
+          DormandالمكاوىPrince1986RKN434FM,
           Position<Barycentric>>(),
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       /*length_integration_tolerance*/ 1 * Micro(Metre),
