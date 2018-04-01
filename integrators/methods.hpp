@@ -99,8 +99,6 @@ struct AsSymplecticRungeKuttaNyström {
                     composition_ == serialization::FixedStepSizeIntegrator::BA,
                 "requested |composition| must be BA for this method which is "
                 "not first-same-as-last");
-  static_assert(composition_ != serialization::FixedStepSizeIntegrator::ABA,
-                "ABA not supported until C++17");
 
   struct Method : SymplecticRungeKuttaNyström {
     static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;
@@ -114,30 +112,25 @@ struct AsSymplecticRungeKuttaNyström {
     static constexpr int stages = Stages(evaluations, composition);
 
     static constexpr FixedVector<double, stages> Shift(
-        FixedVector<double, stages> const& a,
-        CompositionMethod const composition) {
-#if 0
-      if (composition == ABA) {
-        FixedVector<double, stages> shifted_a;
-        // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
-        // A and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB|
-        // means aᵣ vanishes).
-        for (int i = 0; i < stages; ++i) {
-          shifted_a[i] = a[mod(i - 1, stages)];
-        }
-        return shifted_a;
-      } else {
-#endif
-        return a;
-#if 0
+        FixedVector<double, stages> const& a) {
+      FixedVector<double, stages> shifted_a;
+      for (int i = 0; i < stages; ++i) {
+        shifted_a[i] = a[mod(i - 1, stages)];
       }
-#endif
-  }
+      return shifted_a;
+    }
 
-    static constexpr FixedVector<double, stages> a =
-        Shift(SymplecticPartitionedRungeKuttaMethod::a, composition);
-    static constexpr FixedVector<double, stages> b =
-        SymplecticPartitionedRungeKuttaMethod::b;
+    static constexpr FixedVector<double, stages> a{
+        composition == serialization::FixedStepSizeIntegrator::ABA
+            ? SymplecticPartitionedRungeKuttaMethod::b
+            : SymplecticPartitionedRungeKuttaMethod::a};
+    // SymplecticPartitionedRungeKuttaMethod is a |BAB| method, with A and B
+    // interchangeable.  Exchanging A and B shifts |a| (because |ABA| means b₀
+    // vanishes, whereas |BAB| means aᵣ vanishes).
+    static constexpr FixedVector<double, stages> b{
+        composition == serialization::FixedStepSizeIntegrator::ABA
+            ? Shift(SymplecticPartitionedRungeKuttaMethod::a)
+            : SymplecticPartitionedRungeKuttaMethod::b};
   };
 };
 
