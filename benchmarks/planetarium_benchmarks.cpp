@@ -3,8 +3,7 @@
 
 #include "ksp_plugin/planetarium.hpp"
 
-#include <random>
-#include <vector>
+#include <algorithm>
 
 #include "astronomy/time_scales.hpp"
 #include "benchmark/benchmark.h"
@@ -176,7 +175,6 @@ class Satellites {
   not_null<MassiveBody const*> const earth_;
   not_null<std::unique_ptr<NavigationFrame>> const earth_centred_inertial_;
   DiscreteTrajectory<Barycentric> goes_8_trajectory_;
-
 };
 
 }  // namespace
