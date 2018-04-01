@@ -71,19 +71,10 @@ git checkout master
 git pull
 popd
 
-if [ ! -d "eggsperimental_filesystem" ]; then
-  git clone "https://github.com/Norgg/eggsperimental_filesystem.git"
+if [ ! -d "compatilibity" ]; then
+  git clone "https://github.com/mockingbirdnest/compatibility"
 fi
-pushd eggsperimental_filesystem
-git checkout master
-git pull
-popd
-
-# Optional doesn't need to be compiled either
-if [ ! -d "Optional" ]; then
-  git clone "https://github.com/mockingbirdnest/Optional.git"
-fi
-pushd Optional
+pushd compatibility
 git checkout master
 git pull
 popd
