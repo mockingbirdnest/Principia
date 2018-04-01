@@ -805,9 +805,11 @@ struct Ruth1983 : SymplecticPartitionedRungeKutta {
       {{7.0 / 24.0, 3.0 / 4.0, -1.0 / 24.0}}};
 };
 
-// Coefficients from 鈴木 (1990), Fractal decomposition of exponential
+// Coefficients from 鈴木 (Suzuki, 1990), Fractal decomposition of exponential
 // operators with applications to many-body theories and Monte Carlo
-// simulations.
+// simulations; see also the Japanese version,
+// 量子系のフラクタル経路積分法 と量子コヒーレンス,
+// https://www.jstage.jst.go.jp/article/soken/82/3/82_KJ00004703731/_pdf.
 struct 鈴木1990 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
@@ -830,7 +832,7 @@ struct 鈴木1990 : SymplecticPartitionedRungeKutta {
                                                    +0.20724538589718786857}}};
 };
 
-// The following methods have coefficients from 吉田 (1990),
+// The following methods have coefficients from 吉田 (Yoshida, 1990),
 // Construction of higher order symplectic integrators
 // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
 // NOTE(egg): The coefficients were derived from equations 5.4 through 5.17
