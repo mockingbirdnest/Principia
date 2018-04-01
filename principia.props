@@ -134,7 +134,6 @@
   </ItemDefinitionGroup>
 
   <!--Import our property sheets.-->
-  <Import Project="$(SolutionDir)third_party_optional.props" />
   <Import Project="$(SolutionDir)suppress_useless_warnings.props" />
   <Import Project="$(SolutionDir)profiling.props" />
   <Import Project="$(SolutionDir)include_solution.props" />
