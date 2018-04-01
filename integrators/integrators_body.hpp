@@ -75,7 +75,10 @@ SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
     serialization::FixedStepSizeIntegrator const& message) {
   switch (message.composition_method()) {
     case serialization::FixedStepSizeIntegrator::ABA:
-      LOG(FATAL) << "ABA not supported until C++17: " << message.DebugString();
+      return SymplecticRungeKuttaNyströmIntegrator<
+          Method,
+          serialization::FixedStepSizeIntegrator::ABA,
+          typename ODE::Position>();
     case serialization::FixedStepSizeIntegrator::BAB:
       return SymplecticRungeKuttaNyströmIntegrator<
           Method,

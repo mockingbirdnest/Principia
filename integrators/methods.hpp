@@ -99,8 +99,6 @@ struct AsSymplecticRungeKuttaNyström {
                     composition_ == serialization::FixedStepSizeIntegrator::BA,
                 "requested |composition| must be BA for this method which is "
                 "not first-same-as-last");
-  static_assert(composition_ != serialization::FixedStepSizeIntegrator::ABA,
-                "ABA not supported until C++17");
 
   struct Method : SymplecticRungeKuttaNyström {
     static constexpr int order = SymplecticPartitionedRungeKuttaMethod::order;
@@ -116,7 +114,6 @@ struct AsSymplecticRungeKuttaNyström {
     static constexpr FixedVector<double, stages> Shift(
         FixedVector<double, stages> const& a,
         CompositionMethod const composition) {
-#if 0
       if (composition == ABA) {
         FixedVector<double, stages> shifted_a;
         // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
@@ -127,17 +124,14 @@ struct AsSymplecticRungeKuttaNyström {
         }
         return shifted_a;
       } else {
-#endif
         return a;
-#if 0
       }
-#endif
   }
 
-    static constexpr FixedVector<double, stages> a =
-        Shift(SymplecticPartitionedRungeKuttaMethod::a, composition);
-    static constexpr FixedVector<double, stages> b =
-        SymplecticPartitionedRungeKuttaMethod::b;
+    static constexpr FixedVector<double, stages> a{
+      Shift(SymplecticPartitionedRungeKuttaMethod::a, composition)};
+    static constexpr FixedVector<double, stages> b{
+      SymplecticPartitionedRungeKuttaMethod::b};
   };
 };
 

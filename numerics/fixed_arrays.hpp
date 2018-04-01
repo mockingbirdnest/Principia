@@ -28,7 +28,7 @@ class FixedVector final {
   bool operator==(FixedVector const& right) const;
   FixedVector& operator=(std::initializer_list<Scalar> const& right);
 
-  Scalar& operator[](int index);
+  constexpr Scalar& operator[](int index);
   constexpr Scalar const& operator[](int index) const;
 
   operator std::vector<Scalar>() const;

@@ -49,12 +49,9 @@ DotProduct<ScalarLeft, ScalarRight, size, 0>::Compute(Left const& left,
 
 template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector() {
-  // TODO(phl): This used to be:
-  //   Scalar zero{};
-  //   data_.fill(zero);
-  // which is more readable since it makes the zero-initialization explicit.
-  // Unfortunately, this is not constexpr in C++11.
-  data_.fill({});
+  for (auto& element : data_) {
+    element = {};
+  }
 }
 
 template<typename Scalar, int size_>
@@ -88,7 +85,7 @@ FixedVector<Scalar, size_>& FixedVector<Scalar, size_>::operator=(
 }
 
 template<typename Scalar, int size_>
-Scalar& FixedVector<Scalar, size_>::operator[](int const index) {
+constexpr Scalar& FixedVector<Scalar, size_>::operator[](int const index) {
   return data_[index];
 }
 

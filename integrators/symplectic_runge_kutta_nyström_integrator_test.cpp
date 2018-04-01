@@ -187,14 +187,12 @@ std::vector<SimpleHarmonicMotionTestInstance> Instances() {
           // We test |NewtonDelambreStørmerVerletLeapfrog| both as |ABA| and
           // |BAB| (sometimes called leapfrog and pseudo-leapfrog) for coverage.
           // We test the others as BAB integrators only.
-#if 0
           SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
                         ABA,
                         0.4 * Second,
                         +4.15606749774469295e-05 * Metre,
                         +4.16264386218978197e-05 * Metre / Second,
                         +5.05049535215751355e-03 * Joule),
-#endif
           SPRK_INSTANCE(NewtonDelambreStørmerVerletLeapfrog,
                         BAB,
                         0.4 * Second,
