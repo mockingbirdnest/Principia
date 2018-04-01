@@ -71,7 +71,7 @@ git checkout master
 git pull
 popd
 
-if [ ! -d "compatilibity" ]; then
+if [ ! -d "compatibility" ]; then
   git clone "https://github.com/mockingbirdnest/compatibility"
 fi
 pushd compatibility
