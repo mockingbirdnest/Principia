@@ -191,6 +191,10 @@
       <Link>real_solar_system\initial_state_jd_2433282_500000000.cfg</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="..\astronomy\sol_numerics_blueprint.cfg">
+      <Link>real_solar_system\sol_numerics_blueprint.cfg</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ksp_plugin_adapter.dll.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

@@ -30,7 +30,7 @@ TEST_F(IsNearTest, Quantity) {
 }
 
 TEST_F(IsNearTest, Negatives) {
-  EXPECT_THAT(π - std::exp(π), IsNear(-20, 1.00001));
+  EXPECT_THAT(π - std::exp(π), IsNear(-20, 1.0001));
 }
 
 }  // namespace testing_utilities

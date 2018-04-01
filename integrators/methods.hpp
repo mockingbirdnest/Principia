@@ -112,8 +112,7 @@ struct AsSymplecticRungeKuttaNyström {
     static constexpr int stages = Stages(evaluations, composition);
 
     static constexpr FixedVector<double, stages> Shift(
-        FixedVector<double, stages> const& a,
-        CompositionMethod const composition) {
+        FixedVector<double, stages> const& a) {
       if (composition == ABA) {
         FixedVector<double, stages> shifted_a;
         // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
@@ -126,12 +125,16 @@ struct AsSymplecticRungeKuttaNyström {
       } else {
         return a;
       }
-  }
+    }
 
     static constexpr FixedVector<double, stages> a{
-      Shift(SymplecticPartitionedRungeKuttaMethod::a, composition)};
+        composition == serialization::FixedStepSizeIntegrator::ABA
+            ? SymplecticPartitionedRungeKuttaMethod::b
+            : SymplecticPartitionedRungeKuttaMethod::a};
     static constexpr FixedVector<double, stages> b{
-      SymplecticPartitionedRungeKuttaMethod::b};
+        composition == serialization::FixedStepSizeIntegrator::ABA
+            ? Shift(SymplecticPartitionedRungeKuttaMethod::a)
+            : SymplecticPartitionedRungeKuttaMethod::b};
   };
 };
 

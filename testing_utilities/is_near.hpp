@@ -2,6 +2,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
@@ -13,15 +14,19 @@ namespace internal_is_near {
 template<typename T>
 class IsNearMatcher;
 
+template<typename T>
+using ExpectedType =
+    std::conditional_t<std::is_arithmetic<T>::value, double, T>;
+
 // Calls the next function with |tolerance| set to 1.1.
 template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
+testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
     T const& expected);
 
 // Checks that |expected| is in the range
 // [expected / √tolerance, expected √tolerance].
 template<typename T>
-testing::PolymorphicMatcher<IsNearMatcher<T>> IsNear(
+testing::PolymorphicMatcher<IsNearMatcher<ExpectedType<T>>> IsNear(
     T const& expected,
     double tolerance);
 

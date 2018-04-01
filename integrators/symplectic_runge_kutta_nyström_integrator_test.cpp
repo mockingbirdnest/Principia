@@ -47,7 +47,6 @@ using testing_utilities::ComputeHarmonicOscillatorAcceleration1D;
 using testing_utilities::EqualsProto;
 using testing_utilities::IsNear;
 using testing_utilities::PearsonProductMomentCorrelationCoefficient;
-using testing_utilities::RelativeError;
 using testing_utilities::Slope;
 using testing_utilities::VanishesBefore;
 using ::std::placeholders::_1;
@@ -525,8 +524,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << q_correlation;
 
 #if !defined(_DEBUG)
-  EXPECT_THAT(RelativeError(GetParam().order, q_convergence_order),
-              Lt(0.02));
+  EXPECT_THAT(q_convergence_order,
+              IsNear(static_cast<double>(GetParam().order), 1.04));
   EXPECT_THAT(q_correlation, IsNear(1.0, /*tolerance=*/1.02));
 #endif
   double const v_convergence_order = Slope(log_step_sizes, log_p_errors);
@@ -536,9 +535,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, Convergence) {
   LOG(INFO) << "Correlation            : " << v_correlation;
 #if !defined(_DEBUG)
   // SPRKs with odd convergence order have a higher convergence order in p.
-  EXPECT_THAT(RelativeError(GetParam().order + (GetParam().order % 2),
-                            v_convergence_order),
-              Lt(0.02));
+  EXPECT_THAT(v_convergence_order,
+              IsNear(GetParam().order + (GetParam().order % 2), 1.05));
   EXPECT_THAT(v_correlation, IsNear(1.0, /*tolerance=*/1.02));
 #endif
 }
