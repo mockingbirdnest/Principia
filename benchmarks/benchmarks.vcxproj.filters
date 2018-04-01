@@ -47,6 +47,9 @@
     <ClCompile Include="newhall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="planetarium.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
