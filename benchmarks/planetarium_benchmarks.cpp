@@ -187,7 +187,6 @@ void RunBenchmark(benchmark::State& state,
   Planetarium planetarium = satellites.MakePlanetarium(perspective);
   RP2Lines<Length, Camera> lines;
   int total_lines = 0;
-  int total_points = 0;
   int iterations = 0;
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   while (state.KeepRunning()) {
@@ -195,19 +194,16 @@ void RunBenchmark(benchmark::State& state,
                                     satellites.GOES8Trajectory().End(),
                                     now,
                                     /*reverse=*/false);
-    state.PauseTiming();
     total_lines += lines.size();
-    for (auto const& line : lines) {
-      total_points += line.size();
-    }
     ++iterations;
-    state.ResumeTiming();
   }
   Length min_x = Infinity<Length>();
   Length min_y = Infinity<Length>();
   Length max_x = -Infinity<Length>();
   Length max_y = -Infinity<Length>();
+  int points = 0;
   for (auto const& line : lines) {
+    points += line.size();
     for (auto const& point : line) {
       min_x = std::min(min_x, point.x());
       min_y = std::min(min_y, point.y());
@@ -215,7 +211,7 @@ void RunBenchmark(benchmark::State& state,
       max_y = std::max(max_y, point.y());
     }
   }
-  state.SetLabel(std::to_string(total_points / iterations) + " points in " +
+  state.SetLabel(std::to_string(points) + " points in " +
                  std::to_string(total_lines / iterations) + " lines within [" +
                  DebugString(min_x) + ", " + DebugString(max_x) + "] × [" +
                  DebugString(min_y) + ", " + DebugString(max_y) + "]");
