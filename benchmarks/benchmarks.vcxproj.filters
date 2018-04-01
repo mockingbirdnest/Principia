@@ -47,7 +47,10 @@
     <ClCompile Include="newhall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="planetarium.cpp">
+    <ClCompile Include="..\ksp_plugin\planetarium.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="planetarium_benchmarks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
