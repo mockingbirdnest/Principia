@@ -87,7 +87,7 @@ ifeq ($(UNAME_S),Linux)
     SHAREDFLAG := -shared
 endif
 ifeq ($(UNAME_S),Darwin)
-    INCLUDES += -I$(DEP_DIR)compatibility/optional
+    INCLUDES += -I$(DEP_DIR)compatibility/optional -I$(DEP_DIR)Optional
     SHARED_ARGS += -mmacosx-version-min=10.11 -arch x86_64
     MDTOOL ?= "/Applications/Xamarin Studio.app/Contents/MacOS/mdtool"
     SHAREDFLAG := -dynamiclib

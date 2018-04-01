@@ -79,6 +79,15 @@ git checkout master
 git pull
 popd
 
+# Optional doesn't need to be compiled either
+if [ ! -d "Optional" ]; then
+  git clone "https://github.com/mockingbirdnest/Optional.git"
+fi
+pushd Optional
+git checkout master
+git pull
+popd
+
 # TODO(egg): This probably needs to be compiled
 if [ ! -d "benchmark" ]; then
   git clone "https://github.com/mockingbirdnest/benchmark"
