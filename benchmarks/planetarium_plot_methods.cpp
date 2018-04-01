@@ -138,7 +138,7 @@ class Satellites {
                                            *goes_8_instance));
   }
 
-  DiscreteTrajectory<Barycentric> const& GOES8Trajectory() const {
+  DiscreteTrajectory<Barycentric> const& goes_8_trajectory() const {
     return goes_8_trajectory_;
   }
 
@@ -186,10 +186,11 @@ void RunBenchmark(benchmark::State& state,
   RP2Lines<Length, Camera> lines;
   int total_lines = 0;
   int iterations = 0;
+  // This is the time of a lunar eclipse in January 2000.
   constexpr Instant now = "2000-01-21T04:41:30,5"_TT;
   while (state.KeepRunning()) {
-    lines = planetarium.PlotMethod2(satellites.GOES8Trajectory().Begin(),
-                                    satellites.GOES8Trajectory().End(),
+    lines = planetarium.PlotMethod2(satellites.goes_8_trajectory().Begin(),
+                                    satellites.goes_8_trajectory().End(),
                                     now,
                                     /*reverse=*/false);
     total_lines += lines.size();
@@ -219,26 +220,23 @@ void BM_PlanetariumPlotMethod2NearPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(near));
 }
 
-BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective);
-
 void BM_PlanetariumPlotMethod2FarPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(far));
 }
-
-BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective);
 
 void BM_PlanetariumPlotMethod2NearEquatorialPerspective(
     benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(near));
 }
 
-BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective);
-
 void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
     benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(far));
 }
 
+BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective);
+BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective);
+BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective);
 BENCHMARK(BM_PlanetariumPlotMethod2FarEquatorialPerspective);
 
 }  // namespace geometry

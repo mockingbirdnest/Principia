@@ -17,7 +17,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="newhall.cpp" />
     <ClCompile Include="perspective.cpp" />
-    <ClCompile Include="planetarium_benchmarks.cpp" />
+    <ClCompile Include="planetarium_plot_methods.cpp" />
     <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
