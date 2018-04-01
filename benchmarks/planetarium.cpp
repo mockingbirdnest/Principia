@@ -124,7 +124,7 @@ class Satellites {
     goes_8_elements.mean_anomaly = 121.5613 * Degree;
     goes_8_elements.mean_motion = 1.00264613 * (2 * π * Radian / Day);
     KeplerOrbit<Barycentric> const goes_8_orbit(
-        earth_, MasslessBody{}, goes_8_elements, goes_8_epoch);
+        *earth_, MasslessBody{}, goes_8_elements, goes_8_epoch);
     goes_8_trajectory_.Append(
         goes_8_epoch,
         ephemeris_->trajectory(earth_)->EvaluateDegreesOfFreedom(goes_8_epoch) +
@@ -135,7 +135,8 @@ class Satellites {
         {&goes_8_trajectory_},
         Ephemeris<Barycentric>::NoIntrinsicAccelerations,
         HistoryParameters());
-    ephemeris_->FlowWithFixedStep(goes_8_epoch + 100 * Day, goes_8_instance)
+    CHECK_OK(ephemeris_->FlowWithFixedStep(goes_8_epoch + 100 * Day,
+                                           *goes_8_instance));
   }
 
   DiscreteTrajectory<Barycentric> const& GOES8Trajectory() const {
@@ -149,8 +150,10 @@ class Satellites {
         /*sphere_radius_multiplier=*/1,
         /*angular_resolution=*/0.4 * ArcMinute,
         /*field_of_view=*/90 * Degree);
-    Planetarium planetarium(
-        parameters, perspective, &ephemeris_, &earth_centred_inertial_);
+    return Planetarium(parameters,
+                       perspective,
+                       ephemeris_.get(),
+                       earth_centred_inertial_.get());
   }
 
  private:
@@ -215,36 +218,30 @@ void RunBenchmark(benchmark::State& state,
   state.SetLabel(std::to_string(total_points / iterations) + " points in " +
                  std::to_string(total_lines / iterations) + " within [" +
                  DebugString(min_x) + ", " + DebugString(max_x) + "] × [" +
-                 DebugString(min_y) + ", " + DebugString(max_y) + "]")
+                 DebugString(min_y) + ", " + DebugString(max_y) + "]");
 }
 
-void BM_PlanetariumPlotMethod2NearPolarPerspective(
-    benchmark::State& state,
-    Perspective<Navigation, Camera> const& perspective) {
+void BM_PlanetariumPlotMethod2NearPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(near));
 }
 
 BENCHMARK(BM_PlanetariumPlotMethod2NearPolarPerspective);
 
-void BM_PlanetariumPlotMethod2FarPolarPerspective(
-    benchmark::State& state,
-    Perspective<Navigation, Camera> const& perspective) {
+void BM_PlanetariumPlotMethod2FarPolarPerspective(benchmark::State& state) {
   RunBenchmark(state, PolarPerspective(far));
 }
 
 BENCHMARK(BM_PlanetariumPlotMethod2FarPolarPerspective);
 
 void BM_PlanetariumPlotMethod2NearEquatorialPerspective(
-    benchmark::State& state,
-    Perspective<Navigation, Camera> const& perspective) {
+    benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(near));
 }
 
 BENCHMARK(BM_PlanetariumPlotMethod2NearEquatorialPerspective);
 
 void BM_PlanetariumPlotMethod2FarEquatorialPerspective(
-    benchmark::State& state,
-    Perspective<Navigation, Camera> const& perspective) {
+    benchmark::State& state) {
   RunBenchmark(state, EquatorialPerspective(far));
 }
 
