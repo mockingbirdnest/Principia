@@ -67,12 +67,12 @@ TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
 INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)Optional -I$(DEP_DIR)eggsperimental_filesystem/
 SHARED_ARGS   := \
-	-std=c++1z -stdlib=libc++ -O3 -g                                        \
-	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer              \
-	-Wall -Wpedantic                                                        \
-	-DPROJECT_DIR='std::experimental::filesystem::path("$(PROJECT_DIR)")'   \
-	-DSOLUTION_DIR='std::experimental::filesystem::path("$(SOLUTION_DIR)")' \
-	-DTEMP_DIR='std::experimental::filesystem::path("/tmp")'                \
+	-std=c++1z -stdlib=libc++ -O3 -g                           \
+	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
+	-Wall -Wpedantic                                           \
+	-DPROJECT_DIR='std::filesystem::path("$(PROJECT_DIR)")'    \
+	-DSOLUTION_DIR='std::filesystem::path("$(SOLUTION_DIR)")'  \
+	-DTEMP_DIR='std::filesystem::path("/tmp")'                 \
 	-DNDEBUG
 
 ifeq ($(UNAME_S),Linux)
