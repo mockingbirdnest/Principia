@@ -358,8 +358,8 @@ TEST_P(SymplecticRungeKuttaNyströmIntegratorTest, TimeReversibility) {
   Instant const t_final = t_initial + 100 * Second;
   // While time-reversibility is an exact property independent of the equation,
   // if the computed solution explodes, all bits are lost and time-reversibility
-  // utterly fails in finite precision.  A step of 1 second would break
-  // 吉田's 8A method.
+  // utterly fails in finite precision.  A step of 1 second would break 吉田's
+  // 8A method.
   Time const step = 0.5 * Second;
 
   std::vector<ODE::SystemState> solution;
