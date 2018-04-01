@@ -2,6 +2,7 @@
 #pragma once
 
 #include <deque>
+#include <optional>
 #include <vector>
 
 #include "physics/forkable.hpp"
@@ -210,8 +211,8 @@ It3rator Forkable<Tr4jectory, It3rator>::LowerBound(Instant const& time) const {
   // This queue is parallel to |iterator.ancestry_|, and each entry is an
   // iterator in the corresponding ancestry timeline.  Note that we use a
   // |nullopt| sentinel for the innermost timeline.
-  std::deque<std::experimental::optional<TimelineConstIterator>> fork_points;
-  fork_points.push_front(std::experimental::nullopt);
+  std::deque<std::optional<TimelineConstIterator>> fork_points;
+  fork_points.push_front(std::nullopt);
 
   // Go up the ancestry chain until we find a (nonempty) timeline that covers
   // |time| (that is, |time| is on or after the first time of the timeline).
@@ -388,8 +389,8 @@ Forkable<Tr4jectory, It3rator>::DetachForkWithCopiedBegin() {
 
   // Clear all the pointers to the parent.
   parent_ = nullptr;
-  position_in_parent_children_ = std::experimental::nullopt;
-  position_in_parent_timeline_ = std::experimental::nullopt;
+  position_in_parent_children_ = std::nullopt;
+  position_in_parent_timeline_ = std::nullopt;
 
   return std::move(owned_this);
 }
@@ -421,7 +422,7 @@ template<typename Tr4jectory, typename It3rator>
 void Forkable<Tr4jectory, It3rator>::WriteSubTreeToMessage(
     not_null<serialization::DiscreteTrajectory*> const message,
     std::vector<Tr4jectory*>& forks) const {
-  std::experimental::optional<Instant> last_instant;
+  std::optional<Instant> last_instant;
   serialization::DiscreteTrajectory::Litter* litter = nullptr;
   for (auto const& pair : children_) {
     Instant const& fork_time = pair.first;

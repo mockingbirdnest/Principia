@@ -7,7 +7,7 @@
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
-#include <experimental/optional>
+#include <optional>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
@@ -37,8 +37,8 @@ class OblateBody : public RotatingBody<Frame> {
                Length const& reference_radius);
 
    private:
-    std::experimental::optional<Order2ZonalCoefficient> j2_;
-    std::experimental::optional<
+    std::optional<Order2ZonalCoefficient> j2_;
+    std::optional<
         Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
     template<typename F>
     friend class OblateBody;

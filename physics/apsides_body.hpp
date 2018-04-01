@@ -3,6 +3,7 @@
 
 #include "physics/apsides.hpp"
 
+#include <optional>
 #include <vector>
 
 #include "base/array.hpp"
@@ -30,11 +31,10 @@ void ComputeApsides(Trajectory<Frame> const& reference,
                     typename DiscreteTrajectory<Frame>::Iterator const end,
                     DiscreteTrajectory<Frame>& apoapsides,
                     DiscreteTrajectory<Frame>& periapsides) {
-  std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<DegreesOfFreedom<Frame>>
-      previous_degrees_of_freedom;
-  std::experimental::optional<Square<Length>> previous_squared_distance;
-  std::experimental::optional<Variation<Square<Length>>>
+  std::optional<Instant> previous_time;
+  std::optional<DegreesOfFreedom<Frame>> previous_degrees_of_freedom;
+  std::optional<Square<Length>> previous_squared_distance;
+  std::optional<Variation<Square<Length>>>
       previous_squared_distance_derivative;
 
   Instant const t_min = reference.t_min();
@@ -125,9 +125,9 @@ void ComputeNodes(typename DiscreteTrajectory<Frame>::Iterator begin,
                   Vector<double, Frame> const& north,
                   DiscreteTrajectory<Frame>& ascending,
                   DiscreteTrajectory<Frame>& descending) {
-  std::experimental::optional<Instant> previous_time;
-  std::experimental::optional<Length> previous_z;
-  std::experimental::optional<Speed> previous_z_speed;
+  std::optional<Instant> previous_time;
+  std::optional<Length> previous_z;
+  std::optional<Speed> previous_z_speed;
 
   for (auto it = begin; it != end; ++it) {
     Instant const time = it.time();

@@ -1,6 +1,5 @@
 ﻿
 #include <algorithm>
-#include <experimental/filesystem>
 #include <map>
 #include <string>
 #include <vector>

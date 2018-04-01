@@ -1,7 +1,6 @@
 ﻿
 #include <algorithm>
 #include <chrono>
-#include <experimental/filesystem>
 #include <fstream>
 #include <map>
 #include <string>

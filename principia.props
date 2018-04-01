@@ -71,6 +71,7 @@
       <AdditionalIncludeDirectories>C:\Program Files;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/bigobj /w14714</AdditionalOptions>
       <AdditionalOptions Condition="$(ProjectName) != serialization">/w14061 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <WarningLevel Condition="!$(PrincipiaCompilerClangLLVM)">Level3</WarningLevel>
       <WarningLevel Condition="$(PrincipiaCompilerClangLLVM) and
                                $(ProjectName) == serialization">TurnOffAllWarnings</WarningLevel>
@@ -133,7 +134,6 @@
   </ItemDefinitionGroup>
 
   <!--Import our property sheets.-->
-  <Import Project="$(SolutionDir)third_party_optional.props" />
   <Import Project="$(SolutionDir)suppress_useless_warnings.props" />
   <Import Project="$(SolutionDir)profiling.props" />
   <Import Project="$(SolutionDir)include_solution.props" />

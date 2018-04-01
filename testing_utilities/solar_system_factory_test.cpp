@@ -1,7 +1,7 @@
 ﻿
 #include "testing_utilities/solar_system_factory.hpp"
 
-#include <experimental/optional>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -76,10 +76,11 @@ class SolarSystemFactoryTest : public testing::Test {
       DegreesOfFreedom<ICRFJ2000Equator> const& tertiary_dof,
       MassiveBody const& secondary_body,
       DegreesOfFreedom<ICRFJ2000Equator> const& secondary_dof,
-      std::experimental::optional<MassiveBody const&> const& primary_body,
-      std::experimental::optional<
-          DegreesOfFreedom<ICRFJ2000Equator> const&> const primary_dof,
-      std::string message) {
+      std::optional<std::reference_wrapper<MassiveBody const>> const&
+          primary_body,
+      std::optional <std::reference_wrapper<
+          DegreesOfFreedom<ICRFJ2000Equator> const>> const& primary_dof,
+      std::string const& message) {
     RelativeDegreesOfFreedom<ICRFJ2000Equator> const tertiary_secondary =
         tertiary_dof - secondary_dof;
     KeplerOrbit<ICRFJ2000Equator> orbit{
@@ -112,15 +113,15 @@ class SolarSystemFactoryTest : public testing::Test {
       DegreesOfFreedom<ICRFJ2000Equator> const& tertiary_dof,
       MassiveBody const& secondary_body,
       DegreesOfFreedom<ICRFJ2000Equator> const& secondary_dof,
-      std::string message) {
+      std::string const& message) {
     TestStronglyBoundOrbit(excentricity,
                            relative_error,
                            tertiary_body,
                            tertiary_dof,
                            secondary_body,
                            secondary_dof,
-                           /*tertiary_body=*/std::experimental::nullopt,
-                           /*tertiary=*/std::experimental::nullopt,
+                           /*primary_body=*/std::nullopt,
+                           /*primary_dof=*/std::nullopt,
                            message);
   }
 

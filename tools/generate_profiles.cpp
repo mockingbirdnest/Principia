@@ -1,7 +1,7 @@
 ﻿
 #include "tools/generate_profiles.hpp"
 
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 
 #include "glog/logging.h"
@@ -25,11 +25,9 @@ void GenerateProfiles() {
   processor.ProcessMessages();
 
   // Now write the output.
-  std::experimental::filesystem::path const journal =
-      SOLUTION_DIR / "journal";
-  std::experimental::filesystem::path const ksp_plugin =
-      SOLUTION_DIR / "ksp_plugin";
-  std::experimental::filesystem::path const ksp_plugin_adapter =
+  std::filesystem::path const journal = SOLUTION_DIR / "journal";
+  std::filesystem::path const ksp_plugin = SOLUTION_DIR / "ksp_plugin";
+  std::filesystem::path const ksp_plugin_adapter =
       SOLUTION_DIR / "ksp_plugin_adapter";
 
   std::ofstream profiles_generated_h(journal / "profiles.generated.h");

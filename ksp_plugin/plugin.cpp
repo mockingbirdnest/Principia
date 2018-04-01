@@ -3,12 +3,13 @@
 
 #include <algorithm>
 #include <cmath>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <ios>
 #include <limits>
 #include <list>
 #include <map>
+#include <optional>
 #include <string>
 #include <thread>
 #include <utility>
@@ -127,7 +128,7 @@ Plugin::~Plugin() {
 
 void Plugin::InsertCelestialAbsoluteCartesian(
     Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
+    std::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Cartesian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
@@ -139,7 +140,7 @@ void Plugin::InsertCelestialAbsoluteCartesian(
 
 void Plugin::InsertCelestialJacobiKeplerian(
     Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index,
+    std::optional<Index> const& parent_index,
     serialization::GravityModel::Body const& gravity_model,
     serialization::InitialState::Keplerian::Body const& initial_state) {
   CHECK_EQ(gravity_model.name(), initial_state.name());
@@ -641,8 +642,7 @@ DegreesOfFreedom<World> Plugin::CelestialWorldDegreesOfFreedom(
 RigidMotion<Barycentric, World> Plugin::BarycentricToWorld(
     bool const reference_part_is_unmoving,
     PartId const reference_part_id,
-    std::experimental::optional<Position<World>> const&
-        main_body_centre) const {
+    std::optional<Position<World>> const& main_body_centre) const {
   BodyCentredNonRotatingDynamicFrame<Barycentric, MainBodyCentred> const
       main_body_frame{ephemeris_.get(), main_body_};
 
@@ -1407,7 +1407,7 @@ Plugin::Plugin(
 void Plugin::InitializeIndices(
     std::string const& name,
     Index const celestial_index,
-    std::experimental::optional<Index> const& parent_index) {
+    std::optional<Index> const& parent_index) {
   bool inserted;
   std::tie(std::ignore, inserted) =
       name_to_index_.emplace(name, celestial_index);

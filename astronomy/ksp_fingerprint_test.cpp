@@ -1,4 +1,4 @@
-#include <experimental/filesystem>
+
 #include <string>
 
 #include "astronomy/solar_system_fingerprints.hpp"

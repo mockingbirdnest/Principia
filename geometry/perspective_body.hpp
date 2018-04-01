@@ -60,7 +60,7 @@ operator()(Position<FromFrame> const& point) const {
 }
 
 template<typename FromFrame, typename ToFrame>
-std::experimental::optional<Segment<FromFrame>>
+std::optional<Segment<FromFrame>>
 Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
     Segment<FromFrame> const& segment) const {
   Vector<double, FromFrame> const z =
@@ -72,7 +72,7 @@ Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
   if (first_is_visible && second_is_visible) {
     return segment;
   } else if (!first_is_visible && !second_is_visible) {
-    return std::experimental::nullopt;
+    return std::nullopt;
   } else {
     // λ determines where the segment intersects the focal plane.
     double const λ = (focal_ - z2) / (z1 - z2);
@@ -80,12 +80,10 @@ Perspective<FromFrame, ToFrame>::SegmentBehindFocalPlane(
         Barycentre<Position<FromFrame>, double>(segment,
                                                 {λ, 1.0 - λ});
     if (first_is_visible) {
-      return std::experimental::make_optional<Segment<FromFrame>>(
-                 {segment.first, intercept});
+      return std::make_optional<Segment<FromFrame>>(segment.first, intercept);
     } else {
       CHECK(second_is_visible);
-      return std::experimental::make_optional<Segment<FromFrame>>(
-                 {intercept, segment.second});
+      return std::make_optional<Segment<FromFrame>>(intercept, segment.second);
     }
   }
 }

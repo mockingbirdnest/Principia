@@ -2,6 +2,7 @@
 #include "journal/player.hpp"
 
 #include <chrono>
+#include <filesystem>
 #include <string>
 
 #include "base/array.hpp"
@@ -18,7 +19,7 @@ using base::UniqueBytes;
 
 namespace journal {
 
-Player::Player(std::experimental::filesystem::path const& path)
+Player::Player(std::filesystem::path const& path)
     : stream_(path, std::ios::in) {
   CHECK(!stream_.fail());
 }

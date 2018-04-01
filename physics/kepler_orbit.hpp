@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include <experimental/optional>
+#include <optional>
 #include <ostream>
 #include <string>
 
@@ -28,53 +28,53 @@ struct KeplerianElements final {
   // I. These elements determine the shape and size of the conic.  Two are
   // needed, from two different numbered categories below.
   // 1. eccentricity.
-  std::experimental::optional<double> eccentricity;
+  std::optional<double> eccentricity;
   // The following two elements are NaN for elliptic orbits.
-  std::experimental::optional<Angle> asymptotic_true_anomaly;
-  std::experimental::optional<Angle> turning_angle;
+  std::optional<Angle> asymptotic_true_anomaly;
+  std::optional<Angle> turning_angle;
   // 2. semimajor axis.
-  std::experimental::optional<Length> semimajor_axis;
-  std::experimental::optional<SpecificEnergy> specific_energy;
-  std::experimental::optional<SpecificEnergy> characteristic_energy;
+  std::optional<Length> semimajor_axis;
+  std::optional<SpecificEnergy> specific_energy;
+  std::optional<SpecificEnergy> characteristic_energy;
   // The following two elements are NaN for hyperbolic orbits.
-  std::experimental::optional<AngularFrequency> mean_motion;
-  std::experimental::optional<Time> period;
+  std::optional<AngularFrequency> mean_motion;
+  std::optional<Time> period;
   // The following two elements are NaN for elliptic orbits.
-  std::experimental::optional<AngularFrequency> hyperbolic_mean_motion;
-  std::experimental::optional<Speed> hyperbolic_excess_velocity;
+  std::optional<AngularFrequency> hyperbolic_mean_motion;
+  std::optional<Speed> hyperbolic_excess_velocity;
   // 3. semiminor axis.  The |semiminor_axis| is NaN for hyperbolic orbits, the
   // |impact_parameter| is NaN for elliptic orbits.
-  std::experimental::optional<Length> semiminor_axis;
-  std::experimental::optional<Length> impact_parameter;
+  std::optional<Length> semiminor_axis;
+  std::optional<Length> impact_parameter;
   // 4. semilatus rectum.
-  std::experimental::optional<Length> semilatus_rectum;
-  std::experimental::optional<SpecificAngularMomentum>
+  std::optional<Length> semilatus_rectum;
+  std::optional<SpecificAngularMomentum>
       specific_angular_momentum;
   // 5. periapsis distance.
-  std::experimental::optional<Length> periapsis_distance;
+  std::optional<Length> periapsis_distance;
   // 6. apoapsis distance.
-  std::experimental::optional<Length> apoapsis_distance;
+  std::optional<Length> apoapsis_distance;
 
   // II. These elements determine the orientation of the conic.  Three are
   // needed.
   Angle inclination;
   Angle longitude_of_ascending_node;
-  std::experimental::optional<Angle> argument_of_periapsis;
-  std::experimental::optional<Angle> longitude_of_periapsis;
+  std::optional<Angle> argument_of_periapsis;
+  std::optional<Angle> longitude_of_periapsis;
 
   // III. These elements determine a point on the conic.  One is needed.
-  std::experimental::optional<Angle> true_anomaly;
+  std::optional<Angle> true_anomaly;
 #if NOT_YET_IMPLEMENTED
-  std::experimental::optional<Angle> true_longitude;
-  std::experimental::optional<Time> time_since_periapsis;
+  std::optional<Angle> true_longitude;
+  std::optional<Time> time_since_periapsis;
 #endif
   // The mean anomaly and mean longitude are NaN for hyperbolic orbits.
-  std::experimental::optional<Angle> mean_anomaly;
+  std::optional<Angle> mean_anomaly;
 #if NOT_YET_IMPLEMENTED
-  std::experimental::optional<Angle> mean_longitude;
+  std::optional<Angle> mean_longitude;
 #endif
   // The hyperbolic mean anomaly is NaN for elliptic orbits.
-  std::experimental::optional<Angle> hyperbolic_mean_anomaly;
+  std::optional<Angle> hyperbolic_mean_anomaly;
 
   void WriteToMessage(
       not_null<serialization::KeplerianElements*> message) const;

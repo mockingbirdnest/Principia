@@ -9,7 +9,7 @@ ACTION_TEMPLATE(FillUniquePtr,
                 // Note the comma between int and k:
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(ptr)) {
-  std::tr1::get<k>(args)->reset(ptr);
+  std::get<k>(args)->reset(ptr);
 }
 
 }  // namespace testing_utilities

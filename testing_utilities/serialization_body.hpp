@@ -9,8 +9,7 @@
 namespace principia {
 namespace testing_utilities {
 
-inline std::string ReadFromBinaryFile(
-    std::experimental::filesystem::path const& filename) {
+inline std::string ReadFromBinaryFile(std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
   CHECK(file.good()) << filename;
   std::string binary;
@@ -24,7 +23,7 @@ inline std::string ReadFromBinaryFile(
 }
 
 inline std::string ReadFromHexadecimalFile(
-    std::experimental::filesystem::path const& filename) {
+    std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename);
   CHECK(file.good()) << filename;
   std::string hex;
@@ -41,9 +40,8 @@ inline std::string ReadFromHexadecimalFile(
   return hex;
 }
 
-inline void WriteToBinaryFile(
-    std::experimental::filesystem::path const& filename,
-    std::string const& serialized) {
+inline void WriteToBinaryFile(std::filesystem::path const& filename,
+                              std::string const& serialized) {
   std::fstream file = std::fstream(filename,
                                    std::ios::binary | std::ios::out);
   CHECK(file.good()) << filename;
@@ -51,9 +49,8 @@ inline void WriteToBinaryFile(
   file.close();
 }
 
-inline void WriteToHexadecimalFile(
-    std::experimental::filesystem::path const& filename,
-    std::string const& serialized) {
+inline void WriteToHexadecimalFile(std::filesystem::path const& filename,
+                                   std::string const& serialized) {
   std::fstream file = std::fstream(filename,
                                    std::ios::out);
   CHECK(file.good()) << filename;

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -118,11 +119,10 @@ class PluginIntegrationTest : public testing::Test {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastBody;
          ++index) {
-      std::experimental::optional<Index> parent_index =
+      std::optional<Index> parent_index =
           index == SolarSystemFactory::Sun
-              ? std::experimental::nullopt
-              : std::experimental::make_optional(
-                    SolarSystemFactory::parent(index));
+              ? std::nullopt
+              : std::make_optional(SolarSystemFactory::parent(index));
       plugin_->InsertCelestialAbsoluteCartesian(
           index,
           parent_index,
@@ -455,8 +455,8 @@ TEST_F(PluginIntegrationTest, PhysicsBubble) {
           /*declination_of_pole=*/90 * Degree));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
-      /*parent_index=*/std::experimental::nullopt,
-      /*keplerian_elements=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
+      /*keplerian_elements=*/std::nullopt,
       std::move(sun_body));
   plugin.EndInitialization();
 
@@ -690,7 +690,7 @@ TEST_F(PluginIntegrationTest, Prediction) {
       &initial_state));
   plugin.InsertCelestialJacobiKeplerian(
       celestial,
-      /*parent_index=*/std::experimental::nullopt,
+      /*parent_index=*/std::nullopt,
       gravity_model,
       initial_state);
   plugin.EndInitialization();

@@ -2,7 +2,6 @@
 #pragma once
 
 #include <cctype>
-#include <experimental/filesystem>
 #include <set>
 #include <string>
 #include <vector>

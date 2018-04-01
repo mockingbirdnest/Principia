@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <sstream>
 #include <utility>
 #include <vector>
@@ -128,7 +129,7 @@ void ContinuousTrajectory<Frame>::ForgetBefore(Instant const& time) {
   // If there are no |polynomials_| left, clear everything.  Otherwise, update
   // the first time.
   if (polynomials_.empty()) {
-    first_time_ = std::experimental::nullopt;
+    first_time_ = std::nullopt;
     last_points_.clear();
     last_accessed_polynomial_ = 0;
   } else {

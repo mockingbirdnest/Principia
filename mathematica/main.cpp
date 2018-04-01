@@ -1,7 +1,6 @@
 ﻿
 #include <cstdio>
-#include <experimental/filesystem>
-#include <experimental/optional>
+#include <filesystem>
 #include <map>
 #include <string>
 
@@ -56,7 +55,7 @@ int main(int argc, char const* argv[]) {
       LOG(FATAL) << "unexpected target " << target;
     }
   } else if (std::string(argv[1]) == "local_error_analysis") {
-    std::map<std::string, std::experimental::optional<std::string>> flags;
+    std::map<std::string, std::optional<std::string>> flags;
     for (int i = 2; i < argc; ++i) {
       std::string const flag(argv[i]);
       std::size_t const name_begin = flag.find_first_not_of("-/");
@@ -70,7 +69,7 @@ int main(int argc, char const* argv[]) {
       if (name_end != std::string::npos) {
         flags.emplace(flag_name, flag.substr(name_end + 1, std::string::npos));
       }
-      flags.emplace(flag_name, std::experimental::nullopt);
+      flags.emplace(flag_name, std::nullopt);
     }
     if (flags.empty() || Contains(flags, "help") || Contains(flags, "?")) {
       std::printf(
@@ -91,9 +90,9 @@ int main(int argc, char const* argv[]) {
       return 0;
     }
     auto const gravity_model_path =
-        std::experimental::filesystem::path(*flags["gravity_model"]);
+        std::filesystem::path(*flags["gravity_model"]);
     auto const initial_state_path =
-        std::experimental::filesystem::path(*flags["initial_state"]);
+        std::filesystem::path(*flags["initial_state"]);
     auto solar_system = make_not_null_unique<SolarSystem<ICRFJ2000Equator>>(
         gravity_model_path, initial_state_path, /*ignore_frame=*/true);
     auto const& integrator = ParseFixedStepSizeIntegrator<
@@ -101,7 +100,7 @@ int main(int argc, char const* argv[]) {
         *flags["integrator"]);
     auto const time_step = ParseQuantity<Time>(*flags["time_step"]);
     auto const out =
-        std::experimental::filesystem::path(
+        std::filesystem::path(
             flags["output_directory"].value_or(".")) /
         (std::string("local_error_analysis[") + solar_system->names()[0] + "," +
          solar_system->epoch_literal() + "," + *flags["integrator"] + "," +
