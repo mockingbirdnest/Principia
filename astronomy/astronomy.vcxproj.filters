@@ -41,6 +41,9 @@
     <None Include="sol_gravity_model.cfg">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="sol_numerics_blueprint.cfg">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt">

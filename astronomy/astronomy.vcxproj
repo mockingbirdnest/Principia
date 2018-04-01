@@ -15,6 +15,7 @@
     <None Include="query.f" />
     <None Include="sol_gravity_model.cfg" />
     <None Include="sol_initial_state_jd_2433282_500000000.cfg" />
+    <None Include="sol_numerics_blueprint.cfg" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="kerbol_gravity_model.proto.txt" />
