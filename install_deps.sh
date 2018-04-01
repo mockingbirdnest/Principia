@@ -79,13 +79,12 @@ git checkout master
 git pull
 popd
 
-# Optional doesn't need to be compiled either
 if [ ! -d "Optional" ]; then
-  git clone "https://github.com/mockingbirdnest/Optional.git"
+  mkdir Optional
 fi
 pushd Optional
-git checkout master
-git pull
+curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78fa0eb5aa927ad046487f/include/optional" > principia_optional_impl
+touch __undef_macros
 popd
 
 # TODO(egg): This probably needs to be compiled
