@@ -113,24 +113,20 @@ struct AsSymplecticRungeKuttaNyström {
 
     static constexpr FixedVector<double, stages> Shift(
         FixedVector<double, stages> const& a) {
-      if (composition == ABA) {
-        FixedVector<double, stages> shifted_a;
-        // |*this| is a |BAB| method, with A and B interchangeable.  Exchanging
-        // A and B shifts |a_| (because |ABA| means b₀ vanishes, whereas |BAB|
-        // means aᵣ vanishes).
-        for (int i = 0; i < stages; ++i) {
-          shifted_a[i] = a[mod(i - 1, stages)];
-        }
-        return shifted_a;
-      } else {
-        return a;
+      FixedVector<double, stages> shifted_a;
+      for (int i = 0; i < stages; ++i) {
+        shifted_a[i] = a[mod(i - 1, stages)];
       }
+      return shifted_a;
     }
 
     static constexpr FixedVector<double, stages> a{
         composition == serialization::FixedStepSizeIntegrator::ABA
             ? SymplecticPartitionedRungeKuttaMethod::b
             : SymplecticPartitionedRungeKuttaMethod::a};
+    // SymplecticPartitionedRungeKuttaMethod is a |BAB| method, with A and B
+    // interchangeable.  Exchanging A and B shifts |a| (because |ABA| means b₀
+    // vanishes, whereas |BAB| means aᵣ vanishes).
     static constexpr FixedVector<double, stages> b{
         composition == serialization::FixedStepSizeIntegrator::ABA
             ? Shift(SymplecticPartitionedRungeKuttaMethod::a)
