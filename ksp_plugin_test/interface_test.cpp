@@ -218,7 +218,7 @@ TEST_F(InterfaceDeathTest, ActivateRecorder) {
     journal::Recorder::Deactivate();
     // Fails because the glog directory doesn't exist.
     principia__ActivateRecorder(true);
-  }, "glog.Principia.JOURNAL");
+  }, "glog.*Principia.*JOURNAL");
 }
 
 TEST_F(InterfaceTest, Log) {
