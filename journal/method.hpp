@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
