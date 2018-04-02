@@ -3,10 +3,10 @@
 
 #include <functional>
 #include <memory>
+#include <type_traits>
 
 #include "base/not_constructible.hpp"
 #include "base/not_null.hpp"
-#include "base/void_if_exists.hpp"
 
 namespace principia {
 namespace journal {
@@ -14,7 +14,6 @@ namespace internal_method {
 
 using base::not_constructible;
 using base::not_null;
-using base::void_if_exists;
 
 // The parameter |Profile| is expected to have the following structure:
 //
@@ -41,20 +40,20 @@ using base::void_if_exists;
 template<typename P, typename = void>
 struct has_in : std::false_type, not_constructible {};
 template<typename P>
-struct has_in<P, void_if_exists<typename P::In>> : std::true_type,
-                                                   not_constructible {};
+struct has_in<P, std::void_t<typename P::In>> : std::true_type,
+                                                not_constructible {};
 
 template<typename P, typename = void>
 struct has_out : std::false_type {};
 template<typename P>
-struct has_out<P, void_if_exists<typename P::Out>> : std::true_type,
-                                                     not_constructible {};
+struct has_out<P, std::void_t<typename P::Out>> : std::true_type,
+                                                  not_constructible {};
 
 template<typename P, typename = void>
 struct has_return : std::false_type {};
 template<typename P>
-struct has_return<P, void_if_exists<typename P::Return>> : std::true_type,
-                                                           not_constructible {};
+struct has_return<P, std::void_t<typename P::Return>> : std::true_type,
+                                                        not_constructible {};
 
 template<typename Profile>
 class Method final {
