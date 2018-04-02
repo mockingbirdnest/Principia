@@ -12,6 +12,7 @@
 namespace principia {
 namespace testing_utilities {
 
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Speed;
 using quantities::Time;
@@ -31,7 +32,7 @@ class StatisticsTest : public testing::Test {
   }
 
   std::size_t const population_size_ = 100;
-  Time::Inverse const sampling_rate = 8 / Second;
+  Inverse<Time> const sampling_rate = 8 / Second;
   Length const x0_ = - 12 * Metre;
   Speed const v_ = 42 * Metre / Second;
   std::vector<Time> t_;

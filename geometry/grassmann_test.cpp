@@ -23,6 +23,7 @@
 namespace principia {
 
 using quantities::Charge;
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Pressure;
 using quantities::Product;
@@ -122,7 +123,7 @@ TEST_F(GrassmannTest, MixedScalarMultiplication) {
       SpeedOfLight / Parsec,
       -π,
        0, 1);
-  Time::Inverse t = -3 / Second;
+  Inverse<Time> t = -3 / Second;
   EXPECT_EQ((t * Vector<Length, World>(u_)), (Vector<Length, World>(u_) * t));
   EXPECT_EQ((Vector<Length, World>(v_) * t) / t, (Vector<Length, World>(v_)));
 }

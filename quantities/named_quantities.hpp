@@ -17,6 +17,9 @@ using Product = decltype(std::declval<Left>() * std::declval<Right>());
 template<typename Left, typename Right>
 using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
 
+template<typename Q>
+using Inverse = Quotient<double, Q>;
+
 template<typename T, int exponent>
 using Exponentiation =
     typename internal_generators::ExponentiationGenerator<T, exponent>::Type;
@@ -32,10 +35,13 @@ using SquareRoot = NthRoot<Q, 2>;
 template<typename Q>
 using CubeRoot = NthRoot<Q, 3>;
 
-// The result type of the derivative of a |Value|-valued function with respect
-// to its |Argument|-valued argument.
-template<typename Value, typename Argument>
-using Derivative = Quotient<Difference<Value>, Difference<Argument>>;
+// The result type of the N-th derivative of a |Value|-valued function with
+// respect to its |Argument|-valued argument.
+template<typename Value, typename Argument, int order = 1>
+using Derivative = typename std::conditional_t<
+    order == 0,
+    Value,
+    Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>
@@ -104,8 +110,8 @@ using CatalyticActivity = Quotient<Amount, Time>;
 using Wavenumber = Quotient<Angle, Length>;
 
 // Spectroscopy
-using Frequency               = Time::Inverse;
-using SpectroscopicWavenumber = Length::Inverse;
+using Frequency               = Inverse<Time>;
+using SpectroscopicWavenumber = Inverse<Length>;
 
 // Electromagnetism
 using Charge              = Product<Current, Time>;

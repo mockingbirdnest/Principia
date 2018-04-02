@@ -79,11 +79,11 @@ struct InternalEstrinEvaluator {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -99,11 +99,11 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, 1> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
@@ -119,18 +119,18 @@ struct InternalEstrinEvaluator<Value, Argument, degree, low, 0> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          EstrinEvaluator>::Coefficients;
 
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> Evaluate(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> Evaluate(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low> EvaluateDerivative(
+  FORCE_INLINE(static) Derivative<Value, Argument, low> EvaluateDerivative(
       Coefficients const& coefficients,
       Argument const& argument,
       ArgumentSquares const& argument_squares);
 };
 
 template<typename Value, typename Argument, int degree, int low, int subdegree>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -151,7 +151,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low, int subdegree>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, subdegree>::
 EvaluateDerivative(Coefficients const& coefficients,
                    Argument const& argument,
@@ -173,7 +173,7 @@ EvaluateDerivative(Coefficients const& coefficients,
 }
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 1>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -183,7 +183,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 0>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -192,7 +192,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 0>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 1>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -202,7 +202,7 @@ InternalEstrinEvaluator<Value, Argument, degree, low, 1>::EvaluateDerivative(
 }
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalEstrinEvaluator<Value, Argument, degree, low, 0>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument,
@@ -250,10 +250,10 @@ struct InternalHornerEvaluator {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          HornerEvaluator>::Coefficients;
 
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low>
+  FORCE_INLINE(static) Derivative<Value, Argument, low>
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  FORCE_INLINE(static) NthDerivative<Value, Argument, low>
+  FORCE_INLINE(static) Derivative<Value, Argument, low>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };
@@ -264,16 +264,16 @@ struct InternalHornerEvaluator<Value, Argument, degree, degree> {
       typename PolynomialInMonomialBasis<Value, Argument, degree,
                                          HornerEvaluator>::Coefficients;
 
-  FORCE_INLINE(static) NthDerivative<Value, Argument, degree>
+  FORCE_INLINE(static) Derivative<Value, Argument, degree>
   Evaluate(Coefficients const& coefficients,
            Argument const& argument);
-  FORCE_INLINE(static) NthDerivative<Value, Argument, degree>
+  FORCE_INLINE(static) Derivative<Value, Argument, degree>
   EvaluateDerivative(Coefficients const& coefficients,
                      Argument const& argument);
 };
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalHornerEvaluator<Value, Argument, degree, low>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -284,7 +284,7 @@ InternalHornerEvaluator<Value, Argument, degree, low>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree, int low>
-NthDerivative<Value, Argument, low>
+Derivative<Value, Argument, low>
 InternalHornerEvaluator<Value, Argument, degree, low>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -295,7 +295,7 @@ InternalHornerEvaluator<Value, Argument, degree, low>::EvaluateDerivative(
 }
 
 template<typename Value, typename Argument, int degree>
-NthDerivative<Value, Argument, degree>
+Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, degree>::Evaluate(
     Coefficients const& coefficients,
     Argument const& argument) {
@@ -303,7 +303,7 @@ InternalHornerEvaluator<Value, Argument, degree, degree>::Evaluate(
 }
 
 template<typename Value, typename Argument, int degree>
-NthDerivative<Value, Argument, degree>
+Derivative<Value, Argument, degree>
 InternalHornerEvaluator<Value, Argument, degree, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
