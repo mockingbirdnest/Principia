@@ -12,10 +12,9 @@ typename Normed<T, Void>::NormType Normed<T, Void>::Norm(T const& vector) {
 }
 
 template<typename T>
-typename Normed<T, base::void_if_exists<decltype(std::declval<T>().Norm())>>::
-    NormType
-    Normed<T, base::void_if_exists<decltype(std::declval<T>().Norm())>>::Norm(
-        T const& vector) {
+typename Normed<T, std::void_t<decltype(std::declval<T>().Norm())>>::NormType
+Normed<T, std::void_t<decltype(std::declval<T>().Norm())>>::Norm(
+    T const& vector) {
   return vector.Norm();
 }
 

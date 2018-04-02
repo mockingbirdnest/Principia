@@ -137,9 +137,6 @@
     <ClInclude Include="shared_lock_guard_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="void_if_exists.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ranges.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

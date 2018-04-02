@@ -50,7 +50,6 @@
     <ClInclude Include="unique_ptr_logging_body.hpp" />
     <ClInclude Include="version.generated.h" />
     <ClInclude Include="version.hpp" />
-    <ClInclude Include="void_if_exists.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="array_test.cpp" />
