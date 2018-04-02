@@ -37,14 +37,11 @@ using CubeRoot = NthRoot<Q, 3>;
 
 // The result type of the N-th derivative of a |Value|-valued function with
 // respect to its |Argument|-valued argument.
-template<typename Value, typename Argument, int order>
-using NthDerivative = typename std::conditional_t<
+template<typename Value, typename Argument, int order = 1>
+using Derivative = typename std::conditional_t<
     order == 0,
     Value,
     Quotient<Difference<Value>, Exponentiation<Difference<Argument>, order>>>;
-
-template<typename Value, typename Argument>
-using Derivative = NthDerivative<Value, Argument, 1>;
 
 // |Variation<T>| is the type of the time derivative of a |T|-valued function.
 template<typename T>

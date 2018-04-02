@@ -16,20 +16,19 @@ namespace internal_polynomial {
 using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
-using quantities::NthDerivative;
 
 template<typename Value, typename Argument, typename>
-struct NthDerivativesGenerator;
+struct DerivativesGenerator;
 template<typename Value, typename Argument, int... orders>
-struct NthDerivativesGenerator<Value,
-                               Argument,
-                               std::integer_sequence<int, orders...>> {
-  using Type = std::tuple<NthDerivative<Value, Argument, orders>...>;
+struct DerivativesGenerator<Value,
+                            Argument,
+                            std::integer_sequence<int, orders...>> {
+  using Type = std::tuple<Derivative<Value, Argument, orders>...>;
 };
 
 template<typename Value, typename Argument, typename Sequence>
-using NthDerivatives =
-    typename NthDerivativesGenerator<Value, Argument, Sequence>::Type;
+using Derivatives =
+    typename DerivativesGenerator<Value, Argument, Sequence>::Type;
 
 // |Value| must belong to an affine space.  |Argument| must belong to a ring or
 // to Point based on a ring.
@@ -69,9 +68,9 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
   using Coefficients =
-      NthDerivatives<Value,
-                     Argument,
-                     std::make_integer_sequence<int, degree_ + 1>>;
+      Derivatives<Value,
+                  Argument,
+                  std::make_integer_sequence<int, degree_ + 1>>;
 
   // The coefficients are applied to powers of argument.
   explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
@@ -102,9 +101,9 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
   using Coefficients =
-      NthDerivatives<Value,
-                     Argument,
-                     std::make_integer_sequence<int, degree_ + 1>>;
+      Derivatives<Value,
+                  Argument,
+                  std::make_integer_sequence<int, degree_ + 1>>;
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
@@ -130,7 +129,6 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
 }  // namespace internal_polynomial
 
-using internal_polynomial::NthDerivative;
 using internal_polynomial::Polynomial;
 using internal_polynomial::PolynomialInMonomialBasis;
 
