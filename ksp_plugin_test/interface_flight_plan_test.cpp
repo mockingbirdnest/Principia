@@ -42,7 +42,7 @@ using geometry::OrthogonalMap;
 using geometry::RigidTransformation;
 using geometry::Rotation;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using ksp_plugin::Barycentric;
 using ksp_plugin::Index;
 using ksp_plugin::MockFlightPlan;
@@ -169,7 +169,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
       EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandElMikkawyPrince1986RKN434FM,
+          DormandالمكاوىPrince1986RKN434FM,
           Position<Barycentric>>(),
       /*max_steps=*/111,
       /*length_integration_tolerance=*/222 * Metre,

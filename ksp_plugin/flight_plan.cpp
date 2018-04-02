@@ -16,7 +16,7 @@ using base::make_not_null_unique;
 using geometry::Position;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -267,7 +267,7 @@ FlightPlan::FlightPlan()
       ephemeris_(testing_utilities::make_not_null<Ephemeris<Barycentric>*>()),
       adaptive_step_parameters_(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,

@@ -50,7 +50,7 @@ using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
-using integrators::methods::DormandElMikkawyPrince1986RKN434FM;
+using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
 using integrators::methods::McLachlanAtela1992Order5Optimal;
 using integrators::methods::Quinlan1999Order8A;
@@ -243,7 +243,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       t0_ + period,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<ICRFJ2000Equator>>(),
           max_steps,
           1e-9 * Metre,
@@ -256,7 +256,7 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       trajectory.last().time(),
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<ICRFJ2000Equator>>(),
           max_steps,
           1e-9 * Metre,
@@ -459,7 +459,7 @@ TEST_P(EphemerisTest, EarthProbe) {
       t0_ + period,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<ICRFJ2000Equator>>(),
           max_steps,
           1e-9 * Metre,
@@ -525,7 +525,7 @@ TEST_P(EphemerisTest, EarthProbe) {
                   t0_ + std::numeric_limits<double>::infinity() * Second,
                   Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
                       EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                          DormandElMikkawyPrince1986RKN434FM,
+                          DormandالمكاوىPrince1986RKN434FM,
                           Position<ICRFJ2000Equator>>(),
                       max_steps,
                       1e-9 * Metre,
@@ -766,7 +766,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       t0_ + duration,
       Ephemeris<ICRFJ2000Equator>::AdaptiveStepParameters(
           EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandElMikkawyPrince1986RKN434FM,
+              DormandالمكاوىPrince1986RKN434FM,
               Position<ICRFJ2000Equator>>(),
           max_steps,
           1e-9 * Metre,

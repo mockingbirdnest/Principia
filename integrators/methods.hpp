@@ -313,10 +313,10 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                    +0.6756035959798288170}}};
 };
 
-// Coefficients from Dormand, El-Mikkawy and Prince (1986),
+// Coefficients from Dormand, المكاوى (El-Mikkawy), and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
-struct DormandElMikkawyPrince1986RKN434FM :
+struct DormandالمكاوىPrince1986RKN434FM :
     EmbeddedExplicitRungeKuttaNyström {
   static constexpr int higher_order = 4;
   static constexpr int lower_order = 3;
@@ -805,10 +805,12 @@ struct Ruth1983 : SymplecticPartitionedRungeKutta {
       {{7.0 / 24.0, 3.0 / 4.0, -1.0 / 24.0}}};
 };
 
-// Coefficients from Suzuki (1990), Fractal decomposition of exponential
+// Coefficients from 鈴木 (Suzuki, 1990), Fractal decomposition of exponential
 // operators with applications to many-body theories and Monte Carlo
-// simulations.
-struct Suzuki1990 : SymplecticPartitionedRungeKutta {
+// simulations; see also the Japanese version,
+// 量子系のフラクタル経路積分法 と量子コヒーレンス,
+// https://www.jstage.jst.go.jp/article/soken/82/3/82_KJ00004703731/_pdf.
+struct 鈴木1990 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 5;
@@ -830,13 +832,13 @@ struct Suzuki1990 : SymplecticPartitionedRungeKutta {
                                                    +0.20724538589718786857}}};
 };
 
-// The following methods have coefficients from Yoshida (1990),
+// The following methods have coefficients from 吉田 (Yoshida, 1990),
 // Construction of higher order symplectic integrators
 // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
 // NOTE(egg): The coefficients were derived from equations 5.4 through 5.17
 // rather than computed from the wᵢ given in tables 1 and 2.  The results were
 // then cross-checked against those obtained from the tables.
-struct Yoshida1990Order6A : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order6A : SymplecticPartitionedRungeKutta {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
@@ -861,7 +863,7 @@ struct Yoshida1990Order6A : SymplecticPartitionedRungeKutta {
                                                    +0.51004341191845769875,
                                                    +0.392256805238778631910}}};
 };
-struct Yoshida1990Order6B : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order6B : SymplecticPartitionedRungeKutta {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
@@ -886,7 +888,7 @@ struct Yoshida1990Order6B : SymplecticPartitionedRungeKutta {
                                                    +0.72205442492378755359,
                                                    +0.71992408398839154551}}};
 };
-struct Yoshida1990Order6C : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order6C : SymplecticPartitionedRungeKutta {
   static constexpr int order = 6;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 7;
@@ -911,7 +913,7 @@ struct Yoshida1990Order6C : SymplecticPartitionedRungeKutta {
                                                    -0.34812637695304568885,
                                                    +0.72389128119964896645}}};
 };
-struct Yoshida1990Order8A : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order8A : SymplecticPartitionedRungeKutta {
   static constexpr int order = 8;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
@@ -952,7 +954,7 @@ struct Yoshida1990Order8A : SymplecticPartitionedRungeKutta {
                                                    +1.43131625920334216684,
                                                    +0.521213104349852132174}}};
 };
-struct Yoshida1990Order8B : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order8B : SymplecticPartitionedRungeKutta {
   static constexpr int order = 8;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
@@ -993,7 +995,7 @@ struct Yoshida1990Order8B : SymplecticPartitionedRungeKutta {
                                                    -0.42522792949060316509,
                                                    +0.744096146014606550401}}};
 };
-struct Yoshida1990Order8C : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order8C : SymplecticPartitionedRungeKutta {
   static constexpr int order = 8;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
@@ -1034,7 +1036,7 @@ struct Yoshida1990Order8C : SymplecticPartitionedRungeKutta {
                                                    +0.999190057189585020872,
                                                    +0.314515325105213909024}}};
 };
-struct Yoshida1990Order8D : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order8D : SymplecticPartitionedRungeKutta {
   static constexpr int order = 8;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;
@@ -1075,7 +1077,7 @@ struct Yoshida1990Order8D : SymplecticPartitionedRungeKutta {
                                                    +0.584268791397964334130,
                                                    +0.457422123114821329143}}};
 };
-struct Yoshida1990Order8E : SymplecticPartitionedRungeKutta {
+struct 吉田1990Order8E : SymplecticPartitionedRungeKutta {
   static constexpr int order = 8;
   static constexpr bool time_reversible = true;
   static constexpr int evaluations = 15;

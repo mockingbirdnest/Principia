@@ -227,23 +227,23 @@ FixedStepSizeIntegrator<ODE_>::ReadFromMessage(
     PRINCIPIA_CASE_SPRK(RUTH_1983,
                         Ruth1983);
     PRINCIPIA_CASE_SPRK(SUZUKI_1990,
-                        Suzuki1990);
+                        鈴木1990);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6A,
-                        Yoshida1990Order6A);
+                        吉田1990Order6A);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6B,
-                        Yoshida1990Order6B);
+                        吉田1990Order6B);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_6C,
-                        Yoshida1990Order6C);
+                        吉田1990Order6C);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8A,
-                        Yoshida1990Order8A);
+                        吉田1990Order8A);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8B,
-                        Yoshida1990Order8B);
+                        吉田1990Order8B);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8C,
-                        Yoshida1990Order8C);
+                        吉田1990Order8C);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8D,
-                        Yoshida1990Order8D);
+                        吉田1990Order8D);
     PRINCIPIA_CASE_SPRK(YOSHIDA_1990_ORDER_8E,
-                        Yoshida1990Order8E);
+                        吉田1990Order8E);
     default:
       LOG(FATAL) << message.kind();
       base::noreturn();
@@ -382,7 +382,7 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
   switch (message.kind()) {
     case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
       return EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          methods::DormandElMikkawyPrince1986RKN434FM,
+          methods::DormandالمكاوىPrince1986RKN434FM,
           typename ODE::Position>();
     default:
       LOG(FATAL) << message.kind();
