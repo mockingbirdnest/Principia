@@ -19,6 +19,7 @@ namespace internal_чебышёв_series {
 
 using base::not_null;
 using geometry::Instant;
+using quantities::Inverse;
 using quantities::Time;
 using quantities::Variation;
 
@@ -75,7 +76,7 @@ class ЧебышёвSeries final {
  private:
   Instant t_min_;
   Instant t_max_;
-  Time::Inverse one_over_duration_;
+  Inverse<Time> one_over_duration_;
   EvaluationHelper<Vector> helper_;
 };
 
