@@ -16,38 +16,7 @@ namespace internal_polynomial {
 using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
-
-// TODO(phl): We would like to define NthDerivative in named_quantities.hpp
-// thus:
-//
-//   template<typename Value, typename Argument, int order>
-//   using NthDerivative = typename std::conditional_t<
-//       order == 0,
-//       Value,
-//       Quotient<Difference<Value>,
-//                Exponentiation<Difference<Argument>, order>>>;
-//
-//   template<typename Value, typename Argument>
-//   using Derivative = NthDerivative<Value, Argument, 1>;
-//
-// Unfortunately VS2015 is buggy and this interacts poorly with the
-// std::integer_sequence below (we get the wrong types).  Revisit once MSFT has
-// fixed their bugs.
-
-template<typename Value, typename Argument, int order>
-struct NthDerivativeGenerator {
-  using Type = Derivative<
-      typename NthDerivativeGenerator<Value, Argument, order - 1>::Type,
-      Argument>;
-};
-template<typename Value, typename Argument>
-struct NthDerivativeGenerator<Value, Argument, 0> {
-  using Type = Value;
-};
-
-template<typename Value, typename Argument, int order>
-using NthDerivative =
-    typename NthDerivativeGenerator<Value, Argument, order>::Type;
+using quantities::NthDerivative;
 
 template<typename Value, typename Argument, typename>
 struct NthDerivativesGenerator;
