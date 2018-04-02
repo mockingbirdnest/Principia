@@ -51,7 +51,6 @@ template<typename D>
 class Quantity final {
  public:
   using Dimensions = D;
-  using Inverse = Quotient<double, Quantity>;
 
   constexpr Quantity();
 
@@ -97,7 +96,7 @@ class Quantity final {
       double left,
       Quantity<RDimensions> const& right);
   template<typename RDimensions>
-  friend constexpr typename Quantity<RDimensions>::Inverse operator/(
+  friend constexpr Quotient<double, Quantity<RDimensions>> operator/(
       double left,
       Quantity<RDimensions> const& right);
 
@@ -122,7 +121,7 @@ template<typename RDimensions>
 constexpr Quantity<RDimensions>
 operator*(double, Quantity<RDimensions> const&);
 template<typename RDimensions>
-constexpr typename Quantity<RDimensions>::Inverse
+constexpr Quotient<double, Quantity<RDimensions>>
 operator/(double, Quantity<RDimensions> const&);
 
 // Returns the base or derived SI Unit of |Q|.

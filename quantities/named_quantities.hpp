@@ -17,6 +17,9 @@ using Product = decltype(std::declval<Left>() * std::declval<Right>());
 template<typename Left, typename Right>
 using Quotient = decltype(std::declval<Left>() / std::declval<Right>());
 
+template<typename Q>
+using Inverse = Quotient<double, Q>;
+
 template<typename T, int exponent>
 using Exponentiation =
     typename internal_generators::ExponentiationGenerator<T, exponent>::Type;
@@ -110,8 +113,8 @@ using CatalyticActivity = Quotient<Amount, Time>;
 using Wavenumber = Quotient<Angle, Length>;
 
 // Spectroscopy
-using Frequency               = Time::Inverse;
-using SpectroscopicWavenumber = Length::Inverse;
+using Frequency               = Inverse<Time>;
+using SpectroscopicWavenumber = Inverse<Length>;
 
 // Electromagnetism
 using Charge              = Product<Current, Time>;

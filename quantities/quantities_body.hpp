@@ -157,10 +157,10 @@ FORCE_INLINE(constexpr) Quantity<RDimensions> operator*(
 }
 
 template<typename RDimensions>
-constexpr typename Quantity<RDimensions>::Inverse operator/(
+constexpr Quotient<double, Quantity<RDimensions>> operator/(
     double const left,
     Quantity<RDimensions> const& right) {
-  return typename Quantity<RDimensions>::Inverse(left / right.magnitude_);
+  return Quotient<double, Quantity<RDimensions>>(left / right.magnitude_);
 }
 
 template<typename Q>

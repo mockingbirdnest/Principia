@@ -21,7 +21,7 @@ constexpr AngularMomentum ReducedPlanckConstant =
 constexpr Quotient<GravitationalParameter, Mass> GravitationalConstant =
     6.67384e-11 * si::Newton * Pow<2>(si::Metre) / Pow<2>(si::Kilogram);
 constexpr Entropy BoltzmannConstant = 1.3806488e-23 * (si::Joule / si::Kelvin);
-constexpr Amount::Inverse AvogadroConstant = 6.02214129 * (1 / si::Mole);
+constexpr Inverse<Amount> AvogadroConstant = 6.02214129 * (1 / si::Mole);
 
 constexpr Mass   ElectronMass     = 9.10938291e-31 * si::Kilogram;
 constexpr Mass   ProtonMass       = 1.672621777e-27 * si::Kilogram;
