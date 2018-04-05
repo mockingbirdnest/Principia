@@ -61,19 +61,31 @@ inline std::int64_t DelegatingArrayOutputStream::ByteCount() const {
 }
 
 inline PullSerializer::PullSerializer(int const chunk_size,
-                                      int const number_of_chunks)
-    : chunk_size_(chunk_size),
+                                      int const number_of_chunks,
+                                      Compressor* const compressor)
+    : compressor_(compressor),
+      chunk_size_(chunk_size),
+      compressed_chunk_size_(
+          compressor == nullptr ? chunk_size_
+                                : compressor->MaxCompressedLength(chunk_size_)),
       number_of_chunks_(number_of_chunks),
-      data_(std::make_unique<std::uint8_t[]>(chunk_size_ * number_of_chunks_)),
+      number_of_compression_chunks_(compressor == nullptr ? 0 : 1),
+      data_(std::make_unique<std::uint8_t[]>(
+          compressed_chunk_size_ *
+          (number_of_chunks_ + number_of_compression_chunks_))),
       stream_(Bytes(data_.get(), chunk_size_),
               std::bind(&PullSerializer::Push, this, _1)) {
   // Mark all the chunks as free except the last one which is a sentinel for the
   // |queue_|.  The 0th chunk has been passed to the stream, but it's still free
-  // until the first call to |on_full|.
+  // until the first call to |on_full|.  Note that the last
+  // |compressed_chunk_size_ - chunk_size_| bytes of each chunk are not
+  // considered as free.
   for (int i = 0; i < number_of_chunks_ - 1; ++i) {
-    free_.push(data_.get() + i * chunk_size_);
+    free_.push(data_.get() + i * compressed_chunk_size_);
   }
-  queue_.push(Bytes(data_.get() + (number_of_chunks_ - 1) * chunk_size_, 0));
+  queue_.push(Bytes(data_.get() +
+                        (number_of_chunks_ - 1) * compressed_chunk_size_,
+                    0));
 }
 
 inline PullSerializer::~PullSerializer() {
