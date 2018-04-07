@@ -25,19 +25,20 @@ internal static class Loader {
         is_cxx_installed = IsVCRedistInstalled();
         required_cxx_packages =
             "the Visual C++ Redistributable Packages for Visual Studio " +
-            "2015 on x64";
+            "2017 on x64";
         possible_dll_paths =
             new String[] {@"GameData\Principia\x64\principia.dll"};
         break;
       // Both Mac and Linux report |PlatformID.Unix|, so we treat them together
-      // (we probably don't actually encounter |PlatformID.MacOSX|.
+      // (we probably don't actually encounter |PlatformID.MacOSX|).
       case PlatformID.Unix:
       case PlatformID.MacOSX:
         possible_dll_paths = new String[] {
             @"GameData/Principia/Linux64/principia.so",
             @"GameData/Principia/MacOS64/principia.so"};
         is_cxx_installed = null;
-        required_cxx_packages = "libc++ and libc++abi 3.9.1-2";
+        required_cxx_packages = "libc++ and libc++abi 6.0-2 (Linux) or " +
+                                "El Capitan or later (MacOS)";
         break;
       default:
         return "The operating system " + Environment.OSVersion +
@@ -78,12 +79,11 @@ internal static class Loader {
 
   private static bool IsVCRedistInstalled() {
     // NOTE(phl): This GUID is specific to:
-    //   Microsoft Visual C++ 2015 Redistributable (x86) - 14.0.24212
+    //   Microsoft Visual C++ 2017 Redistributable (x64) - 14.11.25325
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
-         @"Software\Classes\Installer\Dependencies\" +
-             "{323dad84-0974-4d90-a1c1-e006c7fdbb7d}",
+         @"Software\Classes\Installer\Dependencies\,,amd64,14.0,bundle",
          writable : false);
     if (key == null) {
       return false;
@@ -91,7 +91,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.0.24212.0";
+      return version != null && version == "14.11.25325.0";
     }
   }
 
