@@ -91,7 +91,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.11.25325";
+      return version != null && version == "14.11.25325.0";
     }
   }
 
