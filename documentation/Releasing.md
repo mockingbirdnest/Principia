@@ -22,7 +22,7 @@ git push la-vache --tags
 - [ ] Run `Build > Rebuild Solution`.  This makes sure that the tools and generated code are up-to-date.  It also creates the `journal_test.exe` binary.
 - [ ] Select project `ksp_physics` and run `Build > Profile Guided Optimization > Instrument`.
 - [ ] Select project `journal` and run `Project > Set as StartUp Project`
-- [ ] With project `journal` selected, run `Project > Properties`.  For configuration `Release` select the `Debugging` page and set `Command Arguments` to `--gtest_filter=PlayerTest*Benchmarks --gtest_also_run_disabled_tests`.
+- [ ] With project `journal` selected, run `Project > Properties`.  For configuration `Release` select the `Debugging` page and set `Command Arguments` to `--gtest_filter=PlayerTest*Benchmarks --gtest_also_run_disabled_tests`.  Also set `Environment` to `PATH=$(VC_PGO_RunTime_Dir);$(LocalDebuggerEnvironment)`.
 - [ ] Run `Debug > Start Without Debugging`.
 - [ ] Answer `Do Not Continue With Build` to the dialog box that asks if you would want to rebuild `ksp_physics`.
 - [ ] Answer `Yes` to the dialog box that informs you that there were build errors.
