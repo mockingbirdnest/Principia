@@ -19,7 +19,7 @@ class FixedMatrix;
 template<typename Scalar, int size_>
 class FixedVector final {
  public:
-  constexpr FixedVector();  // Zero-initialized.
+  constexpr FixedVector() = default;
   constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
   constexpr explicit FixedVector(std::array<Scalar, size_>&& data);
   FixedVector(
@@ -36,7 +36,10 @@ class FixedVector final {
   static constexpr int size = size_;
 
  private:
-  std::array<Scalar, size> data_;
+  // This member is aggregate-initialized with an empty list initializer, which
+  // performs value initialization on the components.  For quantities this calls
+  // the default constructor, for non-class types this does zero-initialization.
+  std::array<Scalar, size> data_{};
 
   template<typename L, typename R, int r, int c>
   friend FixedVector<Product<L, R>, r> operator*(
