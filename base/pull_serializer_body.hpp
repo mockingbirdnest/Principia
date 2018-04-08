@@ -80,12 +80,14 @@ inline PullSerializer::PullSerializer(int const chunk_size,
   // until the first call to |on_full|.  Note that the last
   // |compressed_chunk_size_ - chunk_size_| bytes of each chunk are not
   // considered as free.
-  for (int i = 0; i < number_of_chunks_ - 1; ++i) {
+  for (int i = 0; i < number_of_chunks_ + number_of_compression_chunks_ - 1;
+       ++i) {
     free_.push(data_.get() + i * compressed_chunk_size_);
   }
-  queue_.push(Bytes(data_.get() +
-                        (number_of_chunks_ - 1) * compressed_chunk_size_,
-                    0));
+  queue_.push(Bytes(
+      data_.get() + (number_of_chunks_ + number_of_compression_chunks_ - 1) *
+                        compressed_chunk_size_,
+      0));
 }
 
 inline PullSerializer::~PullSerializer() {
@@ -132,15 +134,24 @@ inline Bytes PullSerializer::Pull() {
 inline Bytes PullSerializer::Push(Bytes const bytes) {
   Bytes result;
   CHECK_GE(chunk_size_, bytes.size);
+  if (compressor_ != nullptr) {
+    std::unique_lock<std::mutex> l(lock_);
+    CHECK_LE(2u + number_of_compression_chunks_, free_.size());
+    Bytes compressed_result = free_.front();
+    free_.pop();
+    compressor_->CompressStream(&result, &compressed_result);
+    free_.push(result);
+  }
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_room_.wait(l, [this]() {
       // -1 here is because we want to ensure that there is an entry in the
-      // (real) free list.
+      // free list, in addition to |result| and to
+      // |number_of_compression_chunks_| (if present).
       return queue_.size() < static_cast<std::size_t>(number_of_chunks_) - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
-    CHECK_LE(2u, free_.size());
+    CHECK_LE(2u + number_of_compression_chunks_, free_.size());
     CHECK_EQ(free_.front(), bytes.data);
     free_.pop();
     result = Bytes(free_.front(), chunk_size_);
