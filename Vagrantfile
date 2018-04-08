@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "ubuntu" do |ubuntu|
     ubuntu.vm.box = "ubuntu/bionic64"
     ubuntu.vm.box_url = "https://app.vagrantup.com/ubuntu/boxes/bionic64/versions/20180315.0.0/providers/virtualbox.box"
-    ubuntu.vm.synced_folder "../KSP Assemblies", "/home/ubuntu/KSP Assemblies", id: "Assemblies"
+    ubuntu.vm.synced_folder "../KSP Assemblies", "/home/vagrant/KSP Assemblies", id: "Assemblies"
 
     script = <<SCRIPT
 echo Provisioning Principia
