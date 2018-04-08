@@ -48,13 +48,6 @@ DotProduct<ScalarLeft, ScalarRight, size, 0>::Compute(Left const& left,
 }
 
 template<typename Scalar, int size_>
-constexpr FixedVector<Scalar, size_>::FixedVector() {
-  for (auto& element : data_) {
-    element = {};
-  }
-}
-
-template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector(
     std::array<Scalar, size_> const& data)
     : data_(data) {}
