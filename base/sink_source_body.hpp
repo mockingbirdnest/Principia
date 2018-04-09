@@ -19,13 +19,13 @@ size_t principia::base::internal_sink_source::ArraySource<Element>::Available()
 }
 
 template<typename Element>
-const char* ArraySource<Element>::Peek(std::int64_t* const length) {
-  length = array_.size - next_to_read_;
+const char* ArraySource<Element>::Peek(size_t* const length) {
+  *length = array_.size - next_to_read_;
   return array_.data + next_to_read_;
 }
 
 template<typename Element>
-void ArraySource<Element>::Skip(std::int64_t const n) {
+void ArraySource<Element>::Skip(size_t const n) {
   next_to_read_ += n;
 }
 
@@ -46,7 +46,7 @@ void principia::base::internal_sink_source::ArraySink<Element>::Append(
 }
 
 template<typename Element>
-char* ArraySink<Element>::GetAppendBufferVariable(
+char* ArraySink<Element>::GetAppendBuffer(
     size_t const min_size,
     size_t const desired_size_hint,
     char* const scratch,

@@ -5,6 +5,8 @@
 
 #include <algorithm>
 
+#include "base/sink_source.hpp"
+
 namespace principia {
 namespace base {
 namespace internal_pull_serializer {
@@ -135,12 +137,14 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
   Bytes result;
   CHECK_GE(chunk_size_, bytes.size);
   if (compressor_ != nullptr) {
-    std::unique_lock<std::mutex> l(lock_);
+    std::unique_lock<std::mutex> l(lock_);////NONONO
     CHECK_LE(2u + number_of_compression_chunks_, free_.size());
-    Bytes compressed_result = free_.front();
+    Bytes compressed_bytes(free_.front(), chunk_size_ + compressed_chunk_size_);
     free_.pop();
-    compressor_->CompressStream(&result, &compressed_result);
-    free_.push(result);
+    ArraySource<std::uint8_t> source(bytes);
+    ArraySink<std::uint8_t> sink(compressed_bytes);
+    compressor_->CompressStream(&source, &sink);
+    free_.push(compressed_bytes.data);
   }
   {
     std::unique_lock<std::mutex> l(lock_);
