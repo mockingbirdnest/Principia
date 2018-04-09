@@ -18,13 +18,13 @@ class ArraySource : public google::compression::Source {
 
   virtual size_t Available() const override;
 
-  virtual const char* Peek(std::int64_t* len) override;
+  virtual const char* Peek(std::int64_t* length) override;
 
   virtual void Skip(std::int64_t n) override;
 
  private:
   const Array<Element> array_;
-  std::int64_t next_to_read_;
+  std::int64_t next_to_read_ = 0;
 };
 
 template<typename Element>
@@ -41,7 +41,7 @@ class ArraySink : public google::compression::Sink {
 
  private:
   const Array<Element> array_;
-  std::int64_t next_to_write_;
+  std::int64_t next_to_write_ = 0;
 };
 
 }  // namespace internal_sink_source
