@@ -32,7 +32,9 @@ class PullSerializerTest : public ::testing::Test {
  protected:
   PullSerializerTest()
       : pull_serializer_(
-            std::make_unique<PullSerializer>(chunk_size, number_of_chunks)),
+            std::make_unique<PullSerializer>(chunk_size,
+                                             number_of_chunks,
+                                             /*compressor=*/nullptr)),
         stream_(Bytes(data_, small_chunk_size),
                 std::bind(&PullSerializerTest::OnFull,
                           this,
@@ -136,8 +138,9 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     std::uint8_t* data = &actual_serialized_trajectory[0];
 
     // The serialization happens concurrently with the test.
-    pull_serializer_ =
-        std::make_unique<PullSerializer>(chunk_size, number_of_chunks);
+    pull_serializer_ = std::make_unique<PullSerializer>(chunk_size,
+                                                        number_of_chunks,
+                                                        /*compressor=*/nullptr);
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();

@@ -21,7 +21,7 @@ size_t principia::base::internal_sink_source::ArraySource<Element>::Available()
 template<typename Element>
 const char* ArraySource<Element>::Peek(size_t* const length) {
   *length = array_.size - next_to_read_;
-  return array_.data + next_to_read_;
+  return reinterpret_cast<const char*>(array_.data + next_to_read_);
 }
 
 template<typename Element>
@@ -39,7 +39,7 @@ void principia::base::internal_sink_source::ArraySink<Element>::Append(
     const char* const data,
     size_t const n) {
   // Do no copying if the caller filled in the result of GetAppendBuffer()
-  if (data != array_.data + next_to_write_) {
+  if (data != reinterpret_cast<const char*>(array_.data + next_to_write_)) {
     memcpy(array_.data + next_to_write_, data, n);
   }
   next_to_write_ += n;
@@ -52,11 +52,11 @@ char* ArraySink<Element>::GetAppendBuffer(
     char* const scratch,
     size_t const scratch_size,
     size_t* const allocated_size) {
-  *allocated_size = array_.size - next_to_write_;
-  return array_.data + next_to_write_;
+  *allocated_size = std::min(static_cast<std::int64_t>(desired_size_hint),
+                             array_.size - next_to_write_);
+  return reinterpret_cast<char*>(array_.data + next_to_write_);
 }
 
 }  // namespace internal_sink_source
 }  // namespace base
 }  // namespace principia
-
