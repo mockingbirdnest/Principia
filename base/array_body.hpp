@@ -130,6 +130,13 @@ BoundedArray<Element, max_size>::size() const {
 }
 
 template<typename Element>
+void swap(Array<Element>& left, Array<Element>& right) {
+  auto const temp = right;
+  right = left;
+  left = temp;
+}
+
+template<typename Element>
 bool operator==(Array<Element> left, Array<Element> right) {
   if (left.size != right.size) {
     return false;

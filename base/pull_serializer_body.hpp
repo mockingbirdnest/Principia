@@ -72,9 +72,8 @@ inline PullSerializer::PullSerializer(int const chunk_size,
                                 : compressor->MaxCompressedLength(chunk_size_)),
       number_of_chunks_(number_of_chunks),
       number_of_compression_chunks_(compressor == nullptr ? 0 : 1),
-      data_(std::make_unique<std::uint8_t[]>(
-          compressed_chunk_size_ *
-          (number_of_chunks_ + number_of_compression_chunks_))),
+      data_(std::make_unique<std::uint8_t[]>(compressed_chunk_size_ *
+                                             number_of_chunks_)),
       stream_(Bytes(data_.get(), chunk_size_),
               std::bind(&PullSerializer::Push, this, _1)) {
   // Mark all the chunks as free except the last one which is a sentinel for the
@@ -82,14 +81,11 @@ inline PullSerializer::PullSerializer(int const chunk_size,
   // until the first call to |on_full|.  Note that the last
   // |compressed_chunk_size_ - chunk_size_| bytes of each chunk are not
   // considered as free.
-  for (int i = 0; i < number_of_chunks_ + number_of_compression_chunks_ - 1;
-       ++i) {
+  for (int i = 0; i < number_of_chunks_ - 1; ++i) {
     free_.push(data_.get() + i * compressed_chunk_size_);
   }
-  queue_.push(Bytes(
-      data_.get() + (number_of_chunks_ + number_of_compression_chunks_ - 1) *
-                        compressed_chunk_size_,
-      0));
+  queue_.push(
+      Bytes(data_.get() + (number_of_chunks_ - 1) * compressed_chunk_size_, 0));
 }
 
 inline PullSerializer::~PullSerializer() {
@@ -133,18 +129,29 @@ inline Bytes PullSerializer::Pull() {
   return result;
 }
 
-inline Bytes PullSerializer::Push(Bytes const bytes) {
+inline Bytes PullSerializer::Push(Bytes bytes) {
   Bytes result;
   CHECK_GE(chunk_size_, bytes.size);
   if (compressor_ != nullptr) {
-    std::unique_lock<std::mutex> l(lock_);////NONONO
-    CHECK_LE(2u + number_of_compression_chunks_, free_.size());
-    Bytes compressed_bytes(free_.front(), chunk_size_ + compressed_chunk_size_);
-    free_.pop();
+    Bytes compressed_bytes;
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      CHECK_LE(2u + number_of_compression_chunks_, free_.size());
+      free_.pop();
+      compressed_bytes = Bytes(free_.front(), compressed_chunk_size_);
+    }
+    // We maintain the invariant that the chunk being filled is at the front of
+    // the |free_| queue.
     ArraySource<std::uint8_t> source(bytes);
     ArraySink<std::uint8_t> sink(compressed_bytes);
     compressor_->CompressStream(&source, &sink);
-    free_.push(compressed_bytes.data);
+    {
+      std::unique_lock<std::mutex> l(lock_);
+      free_.pop();
+      free_.push(bytes.data);
+      free_.push(compressed_bytes.data);
+      bytes = compressed_bytes;
+    }
   }
   {
     std::unique_lock<std::mutex> l(lock_);
@@ -152,7 +159,8 @@ inline Bytes PullSerializer::Push(Bytes const bytes) {
       // -1 here is because we want to ensure that there is an entry in the
       // free list, in addition to |result| and to
       // |number_of_compression_chunks_| (if present).
-      return queue_.size() < static_cast<std::size_t>(number_of_chunks_) - 1;
+      return queue_.size() < static_cast<std::size_t>(number_of_chunks_) -
+                                 number_of_compression_chunks_ - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
     CHECK_LE(2u + number_of_compression_chunks_, free_.size());
