@@ -3,7 +3,8 @@ $dependencies = @(".\Google\glog\google-glog.sln",
                   ".\Google\googletest\googletest\msvc\2017\gtest.sln",
                   ".\Google\googletest\googlemock\msvc\2017\gmock.sln",
                   ".\Google\protobuf\vsprojects\protobuf.sln",
-                  ".\Google\benchmark\msvc\google-benchmark.sln")
+                  ".\Google\benchmark\msvc\google-benchmark.sln",
+                  ".\Google\gipfeli\msvc\gipfeli.sln")
 
 function build_solutions($solutions) {
   foreach ($configuration in "Debug", "Release") {
