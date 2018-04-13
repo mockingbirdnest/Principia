@@ -33,6 +33,8 @@ class ArraySink : public google::compression::Sink {
   explicit ArraySink(Array<Element> const& array);
   ~ArraySink() override = default;
 
+  Array<Element> array() const;
+
   virtual void Append(const char* data, size_t n) override;
 
   char* GetAppendBuffer(size_t min_size,

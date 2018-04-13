@@ -125,8 +125,8 @@ TEST_F(PullSerializerTest, SerializationSizes) {
 
 TEST_F(PullSerializerTest, SerializationGipfeli) {
   Compressor* compressor = google::compression::NewGipfeliCompressor();
-  std::string compressed;
-  std::string uncompressed;
+  std::string uncompressed1;
+  std::string uncompressed2;
   {
     auto trajectory = BuildTrajectory();
     pull_serializer_->Start(std::move(trajectory));
@@ -136,14 +136,14 @@ TEST_F(PullSerializerTest, SerializationGipfeli) {
         break;
       }
       for (int i = 0; i < bytes.size; ++i) {
-        uncompressed.append(1, bytes.data[i]);
+        uncompressed1.append(1, bytes.data[i]);
       }
     }
   }
   {
     auto const compressed_pull_serializer =
         std::make_unique<PullSerializer>(chunk_size,
-                                         number_of_chunks,
+                                         /*number_of_chunks=*/4,
                                          compressor);
     auto trajectory = BuildTrajectory();
     compressed_pull_serializer->Start(std::move(trajectory));
@@ -152,21 +152,17 @@ TEST_F(PullSerializerTest, SerializationGipfeli) {
       if (bytes.size == 0) {
         break;
       }
+      std::string compressed;
+      std::string uncompressed;
       for (int i = 0; i < bytes.size; ++i) {
         compressed.append(1, bytes.data[i]);
       }
+      compressor->Uncompress(compressed, &uncompressed);
+      uncompressed2.append(uncompressed);
     }
   }
 
-  // In pratice we expect compression to compress.
-  EXPECT_LT(compressed.size(), uncompressed.size());
-
-  std::string compressed2;
-  std::string uncompressed2;
-  compressor->Compress(uncompressed, &compressed2);
-  compressor->Uncompress(compressed, &uncompressed2);
-  EXPECT_EQ(compressed, compressed2);
-  EXPECT_EQ(uncompressed, uncompressed2);
+  EXPECT_EQ(uncompressed1, uncompressed2);
 }
 
 TEST_F(PullSerializerTest, SerializationThreading) {

@@ -35,6 +35,14 @@ principia::base::internal_sink_source::ArraySink<Element>::ArraySink(
     : array_(array) {}
 
 template<typename Element>
+Array<Element> ArraySink<Element>::array() const {
+  Array<Element> result;
+  result.data = array_.data;
+  result.size = next_to_write_;
+  return result;
+}
+
+template<typename Element>
 void principia::base::internal_sink_source::ArraySink<Element>::Append(
     const char* const data,
     size_t const n) {
