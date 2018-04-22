@@ -344,8 +344,7 @@ void principia__DeserializePlugin(char const* const serialization,
   if (*deserializer == nullptr) {
     LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size,
-                                         number_of_chunks,
-                                         /*compressor=*/nullptr);
+                                         number_of_chunks);
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
         std::move(message),
@@ -836,7 +835,9 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
     LOG(INFO) << "Begin plugin serialization";
-    *serializer = new PullSerializer(chunk_size, number_of_chunks);
+    *serializer = new PullSerializer(chunk_size,
+                                     number_of_chunks,
+                                     /*compressor=*/nullptr);
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
