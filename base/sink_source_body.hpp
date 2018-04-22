@@ -3,6 +3,8 @@
 
 #include "base/sink_source.hpp"
 
+#include <algorithm>
+
 namespace principia {
 namespace base {
 namespace internal_sink_source {

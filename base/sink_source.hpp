@@ -16,11 +16,11 @@ class ArraySource : public google::compression::Source {
   explicit ArraySource(Array<Element> const& array);
   ~ArraySource() override = default;
 
-  virtual size_t Available() const override;
+  size_t Available() const override;
 
-  virtual const char* Peek(size_t* length) override;
+  const char* Peek(size_t* length) override;
 
-  virtual void Skip(size_t n) override;
+  void Skip(size_t n) override;
 
  private:
   const Array<Element> array_;
@@ -35,7 +35,7 @@ class ArraySink : public google::compression::Sink {
 
   Array<Element> array() const;
 
-  virtual void Append(const char* data, size_t n) override;
+  void Append(const char* data, size_t n) override;
 
   char* GetAppendBuffer(size_t min_size,
                         size_t desired_size_hint,
