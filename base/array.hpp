@@ -102,10 +102,6 @@ class BoundedArray final {
 using Bytes = Array<std::uint8_t>;
 using UniqueBytes = UniqueArray<std::uint8_t>;
 
-// Swap.
-template<typename Element>
-void swap(Array<Element>& left, Array<Element>& right);
-
 // Deep comparisons.
 template<typename Element>
 bool operator==(Array<Element> left, Array<Element> right);
