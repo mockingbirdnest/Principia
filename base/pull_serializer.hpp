@@ -58,11 +58,12 @@ class DelegatingArrayOutputStream
 // irrespective of the size of the message to serialize.
 class PullSerializer final {
  public:
-  // The |size| of the data objects returned by |Pull| are never greater than
+  // The |size| of the data objects enqueued by |Push| is never greater than
   // |chunk_size|.  At most |number_of_chunks| chunks are held in the internal
   // queue.  This class uses at most
-  // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
-  //TODO(phl):comment
+  // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.  Note that in the
+  // presence of compression |chunk_size| is replaced by |compressed_chunk_size|
+  // in this formula.
   PullSerializer(int chunk_size, int number_of_chunks, Compressor* compressor);
   ~PullSerializer();
 
@@ -75,6 +76,11 @@ class PullSerializer final {
   // available.  Returns a |Bytes| object of |size| 0 at the end of the
   // serialization.  The returned object may become invalid the next time |Pull|
   // is called.
+  // In the absence of compression, the data produced by |Pull| constitute a
+  // stream and the boundaries between chunks are irrelevant.  In the presence
+  // of compression however, the data producted by |Pull| are made of blocks and
+  // the boundaries between chunks are relevant and must be preserved by the
+  // clients and used when feeding data back to the deserializer.
   Bytes Pull();
 
  private:
@@ -86,9 +92,21 @@ class PullSerializer final {
   std::unique_ptr<google::protobuf::Message const> message_;
 
   Compressor* const compressor_;
+
+  // The chunk size passed at construction.  The stream outputs chunks of that
+  // size.
   int const chunk_size_;
+
+  // The maximum size of a chunk after compression.  Greater than |chunk_size_|
+  // because the compressor will occasionally expand data.  This is the size of
+  // the chunks in |data_|.
   int const compressed_chunk_size_;
+
+  // The number of chunks passed at construction, used to size |data_|.
   int const number_of_chunks_;
+
+  // How many of the |number_of_chunks_| chunks in |data_| are reserved for
+  // compression.
   int const number_of_compression_chunks_;
 
   // The array supporting the stream and the stream itself.
