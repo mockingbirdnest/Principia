@@ -11,13 +11,15 @@
 #include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
-#include "gipfeli/gipfeli.h"
+#include "gipfeli/compression.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace principia {
 namespace base {
 namespace internal_push_deserializer {
+
+using google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling
 // of the case where the array is empty.  It calls the |on_empty| function
@@ -57,7 +59,9 @@ class PushDeserializer final {
   // |chunk_size|.  The internal queue holds at most |number_of_chunks| chunks.
   // Therefore, this class uses at most
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
-  PushDeserializer(int chunk_size, int number_of_chunks);
+  PushDeserializer(int chunk_size,
+                   int number_of_chunks,
+                   Compressor* compressor);
   ~PushDeserializer();
 
   // Starts the deserializer, which will proceed to deserialize data into
@@ -85,8 +89,15 @@ class PushDeserializer final {
 
   std::unique_ptr<google::protobuf::Message> message_;
 
+  Compressor* const compressor_;
+
+  //TODO(phl):comments
   int const chunk_size_;
+  int const compressed_chunk_size_;
   int const number_of_chunks_;
+
+  UniqueBytes uncompressed_data_;
+
   DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 

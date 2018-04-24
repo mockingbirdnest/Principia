@@ -45,7 +45,8 @@ class PushDeserializerTest : public ::testing::Test {
                                              /*compressor=*/nullptr)),
         push_deserializer_(
             std::make_unique<PushDeserializer>(deserializer_chunk_size,
-                                               number_of_chunks)),
+                                               number_of_chunks,
+                                               /*compressor=*/nullptr)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty,
                           this,
                           std::ref(strings_))) {}
@@ -158,7 +159,7 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   for (int i = 0; i < runs_per_test; ++i) {
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        deserializer_chunk_size, number_of_chunks);
+        deserializer_chunk_size, number_of_chunks, /*compressor=*/nullptr);
 
     written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
                                                 byte_size);
@@ -188,7 +189,7 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
                                                         number_of_chunks,
                                                         /*compressor=*/nullptr);
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        deserializer_chunk_size, number_of_chunks);
+        deserializer_chunk_size, number_of_chunks, /*compressor=*/nullptr);
 
     pull_serializer_->Start(std::move(written_trajectory));
     push_deserializer_->Start(
