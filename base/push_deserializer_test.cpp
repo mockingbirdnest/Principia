@@ -13,8 +13,10 @@
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace base {
@@ -25,6 +27,7 @@ using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
+using testing_utilities::EqualsProto;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
 
@@ -150,6 +153,59 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_EQ(23, stream_.ByteCount());
 }
 
+TEST_F(PushDeserializerTest, DeserializationGipfeli) {
+  Compressor* compressor = google::compression::NewGipfeliCompressor();
+  DiscreteTrajectory read_trajectory1;
+  DiscreteTrajectory read_trajectory2;
+
+  auto const written_trajectory = BuildTrajectory();
+  int const byte_size = written_trajectory->ByteSize();
+
+  {
+    auto const serialized_trajectory =
+        std::make_unique<std::uint8_t[]>(byte_size);
+    written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                                byte_size);
+    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+    push_deserializer_->Start(
+        std::move(read_trajectory),
+        [&read_trajectory1](google::protobuf::Message const& read_trajectory) {
+          read_trajectory1.CopyFrom(read_trajectory);
+        });
+    Bytes bytes(serialized_trajectory.get(), byte_size);
+    push_deserializer_->Push(bytes, nullptr);
+    push_deserializer_->Push(Bytes(), nullptr);
+  }
+  {
+    auto const compressed_push_deserializer =
+        std::make_unique<PushDeserializer>(deserializer_chunk_size,
+                                           number_of_chunks,
+                                           compressor);
+    auto const written_trajectory = BuildTrajectory();
+    int const byte_size = written_trajectory->ByteSize();
+    auto const uncompressed = written_trajectory->SerializePartialAsString();
+    std::string compressed;
+    compressor->Compress(uncompressed, &compressed);
+    LOG(ERROR)<<compressed.size()<<" "<<uncompressed.size();
+    auto const serialized_trajectory =
+        std::make_unique<std::uint8_t[]>(compressed.size());
+    for (int i = 0; i < compressed.size(); ++i) {
+      serialized_trajectory[i] = compressed[i];
+    }
+    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+    compressed_push_deserializer->Start(
+        std::move(read_trajectory),
+        [&read_trajectory2](google::protobuf::Message const& read_trajectory) {
+          read_trajectory2.CopyFrom(read_trajectory);
+        });
+    Bytes bytes(serialized_trajectory.get(), byte_size);
+    compressed_push_deserializer->Push(bytes, nullptr);
+    compressed_push_deserializer->Push(Bytes(), nullptr);
+  }
+
+  EXPECT_THAT(read_trajectory1, EqualsProto(read_trajectory2));
+}
+
 TEST_F(PushDeserializerTest, DeserializationThreading) {
   auto const written_trajectory = BuildTrajectory();
   int const byte_size = written_trajectory->ByteSize();
@@ -213,7 +269,7 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
   }
 }
 
-// Check that deserialization fails if we stomp on one extra bytes.
+// Check that deserialization fails if we stomp on one extra byte.
 TEST_F(PushDeserializerDeathTest, Stomp) {
   EXPECT_DEATH({
     const int stomp_chunk = 77;
