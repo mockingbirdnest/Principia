@@ -83,7 +83,7 @@ inline PushDeserializer::PushDeserializer(int const chunk_size,
       compressed_chunk_size_(
           compressor == nullptr ? chunk_size_
                                 : compressor->MaxCompressedLength(chunk_size_)),
-      number_of_chunks_(compressor == nullptr ? 0 : number_of_chunks),
+      number_of_chunks_(number_of_chunks),
       uncompressed_data_(chunk_size_),
       stream_(std::bind(&PushDeserializer::Pull, this)) {
   // This sentinel ensures that the two queue are correctly out of step.
@@ -154,8 +154,7 @@ inline void PushDeserializer::Push(Bytes const bytes,
       is_last = current.size <= queued_chunk_size;
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
-        return queue_.size() <
-               static_cast<std::size_t>(number_of_chunks_);
+        return queue_.size() < static_cast<std::size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data,
                      std::min(current.size,
