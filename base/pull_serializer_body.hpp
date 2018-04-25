@@ -122,7 +122,7 @@ inline Bytes PullSerializer::Pull() {
     // The element at the front of the queue is the one that was last returned
     // by |Pull| and must be dropped and freed.
     queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
-    CHECK_LE(2u, queue_.size());
+    CHECK_LE(2, queue_.size());
     free_.push(queue_.front().data);
     queue_.pop();
     result = queue_.front();
@@ -139,7 +139,7 @@ inline Bytes PullSerializer::Push(Bytes bytes) {
     Bytes compressed_bytes;
     {
       std::unique_lock<std::mutex> l(lock_);
-      CHECK_LE(1u + number_of_compression_chunks_, free_.size());
+      CHECK_LE(1 + number_of_compression_chunks_, free_.size());
       free_.pop();
       compressed_bytes = Bytes(free_.front(), compressed_chunk_size_);
       free_.push(bytes.data);
@@ -164,7 +164,7 @@ inline Bytes PullSerializer::Push(Bytes bytes) {
                                  number_of_compression_chunks_ - 1;
     });
     queue_.emplace(bytes.data, bytes.size);
-    CHECK_LE(2u + number_of_compression_chunks_, free_.size());
+    CHECK_LE(2 + number_of_compression_chunks_, free_.size());
     CHECK_EQ(free_.front(), bytes.data);
     free_.pop();
     result = Bytes(free_.front(), chunk_size_);
