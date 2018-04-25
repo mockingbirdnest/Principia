@@ -166,6 +166,7 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
         std::make_unique<std::uint8_t[]>(byte_size);
     written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
                                                 byte_size);
+
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_->Start(
         std::move(read_trajectory),
@@ -184,22 +185,31 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
     auto const written_trajectory = BuildTrajectory();
     int const byte_size = written_trajectory->ByteSize();
     auto const uncompressed = written_trajectory->SerializePartialAsString();
-    std::string compressed;
-    compressor->Compress(uncompressed, &compressed);
-    LOG(ERROR)<<compressed.size()<<" "<<uncompressed.size();
-    auto const serialized_trajectory =
-        std::make_unique<std::uint8_t[]>(compressed.size());
-    for (int i = 0; i < compressed.size(); ++i) {
-      serialized_trajectory[i] = compressed[i];
-    }
+
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     compressed_push_deserializer->Start(
         std::move(read_trajectory),
         [&read_trajectory2](google::protobuf::Message const& read_trajectory) {
           read_trajectory2.CopyFrom(read_trajectory);
         });
-    Bytes bytes(serialized_trajectory.get(), byte_size);
-    compressed_push_deserializer->Push(bytes, nullptr);
+
+    std::vector<std::unique_ptr<std::uint8_t[]>> compressed_chunks;
+    for (int i = 0; i < uncompressed.size(); i += deserializer_chunk_size) {
+      std::string compressed;
+      compressor->Compress(
+          uncompressed.substr(
+              i,
+              std::min(deserializer_chunk_size,
+                       static_cast<int>(uncompressed.size()) - i)),
+          &compressed);
+      compressed_chunks.push_back(
+          std::make_unique<std::uint8_t[]>(compressed.size()));
+      for (int j = 0; j < compressed.size(); ++j) {
+        compressed_chunks.back()[j] = compressed[j];
+      }
+      Bytes bytes(compressed_chunks.back().get(), compressed.size());
+      compressed_push_deserializer->Push(bytes, nullptr);
+    }
     compressed_push_deserializer->Push(Bytes(), nullptr);
   }
 

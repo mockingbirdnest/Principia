@@ -182,13 +182,14 @@ inline Bytes PushDeserializer::Pull() {
     done_.pop();
     // Get the next |Bytes| object to process and remove it from |queue_|.
     // Uncompress it if needed.
-    if (compressor_ == nullptr) {
-      result = queue_.front();
+    auto const& front = queue_.front();
+    if (front.size == 0 || compressor_ == nullptr) {
+      result = front;
     } else {
-      ArraySource<std::uint8_t> source(queue_.front());
+      ArraySource<std::uint8_t> source(front);
       ArraySink<std::uint8_t> sink(uncompressed_data_.get());
-      compressor_->UncompressStream(&source, &sink);
-      result = uncompressed_data_.get();
+      CHECK(compressor_->UncompressStream(&source, &sink));
+      result = sink.array();
     }
     queue_.pop();
   }
