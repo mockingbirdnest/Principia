@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "gipfeli/compression.h"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
 
@@ -13,6 +15,7 @@ namespace principia {
 namespace base {
 namespace internal_pull_serializer {
 
+using google::compression::Compressor;
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
@@ -32,7 +35,9 @@ class PullSerializerTest : public ::testing::Test {
  protected:
   PullSerializerTest()
       : pull_serializer_(
-            std::make_unique<PullSerializer>(chunk_size, number_of_chunks)),
+            std::make_unique<PullSerializer>(chunk_size,
+                                             number_of_chunks,
+                                             /*compressor=*/nullptr)),
         stream_(Bytes(data_, small_chunk_size),
                 std::bind(&PullSerializerTest::OnFull,
                           this,
@@ -118,6 +123,48 @@ TEST_F(PullSerializerTest, SerializationSizes) {
   EXPECT_THAT(actual_sizes, ElementsAreArray(expected_sizes));
 }
 
+TEST_F(PullSerializerTest, SerializationGipfeli) {
+  Compressor* compressor = google::compression::NewGipfeliCompressor();
+  std::string uncompressed1;
+  std::string uncompressed2;
+  {
+    auto trajectory = BuildTrajectory();
+    pull_serializer_->Start(std::move(trajectory));
+    for (;;) {
+      Bytes const bytes = pull_serializer_->Pull();
+      if (bytes.size == 0) {
+        break;
+      }
+      for (int i = 0; i < bytes.size; ++i) {
+        uncompressed1.append(1, bytes.data[i]);
+      }
+    }
+  }
+  {
+    auto const compressed_pull_serializer =
+        std::make_unique<PullSerializer>(chunk_size,
+                                         /*number_of_chunks=*/4,
+                                         compressor);
+    auto trajectory = BuildTrajectory();
+    compressed_pull_serializer->Start(std::move(trajectory));
+    for (;;) {
+      Bytes const bytes = compressed_pull_serializer->Pull();
+      if (bytes.size == 0) {
+        break;
+      }
+      std::string compressed;
+      std::string uncompressed;
+      for (int i = 0; i < bytes.size; ++i) {
+        compressed.append(1, bytes.data[i]);
+      }
+      compressor->Uncompress(compressed, &uncompressed);
+      uncompressed2.append(uncompressed);
+    }
+  }
+
+  EXPECT_EQ(uncompressed1, uncompressed2);
+}
+
 TEST_F(PullSerializerTest, SerializationThreading) {
   DiscreteTrajectory read_trajectory;
   auto const trajectory = BuildTrajectory();
@@ -136,8 +183,9 @@ TEST_F(PullSerializerTest, SerializationThreading) {
     std::uint8_t* data = &actual_serialized_trajectory[0];
 
     // The serialization happens concurrently with the test.
-    pull_serializer_ =
-        std::make_unique<PullSerializer>(chunk_size, number_of_chunks);
+    pull_serializer_ = std::make_unique<PullSerializer>(chunk_size,
+                                                        number_of_chunks,
+                                                        /*compressor=*/nullptr);
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
       Bytes const bytes = pull_serializer_->Pull();

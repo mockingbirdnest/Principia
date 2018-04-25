@@ -141,6 +141,8 @@
   <Import Project="$(SolutionDir)google_protobuf.props" />
   <Import Project="$(SolutionDir)..\Google\glog\vsprojects\portability_macros.props" />
   <Import Project="$(SolutionDir)google_glog.props" />
+  <Import Project="$(SolutionDir)..\Google\gipfeli\msvc\portability_macros.props" />
+  <Import Project="$(SolutionDir)google_gipfeli.props" />
   <Import Project="$(SolutionDir)generate_version_translation_unit.props" />
 
   <ImportGroup Condition="$(ProjectName) == benchmarks or

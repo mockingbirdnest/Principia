@@ -11,6 +11,7 @@
 #include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "gipfeli/gipfeli.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 

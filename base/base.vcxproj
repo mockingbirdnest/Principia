@@ -40,6 +40,8 @@
     <ClInclude Include="ranges_body.hpp" />
     <ClInclude Include="shared_lock_guard.hpp" />
     <ClInclude Include="shared_lock_guard_body.hpp" />
+    <ClInclude Include="sink_source.hpp" />
+    <ClInclude Include="sink_source_body.hpp" />
     <ClInclude Include="status.hpp" />
     <ClInclude Include="status_or.hpp" />
     <ClInclude Include="status_or_body.hpp" />

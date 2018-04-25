@@ -12,8 +12,6 @@ namespace principia {
 namespace base {
 namespace internal_push_deserializer {
 
-using std::swap;
-
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
     std::function<Bytes()> on_empty)
     : on_empty_(std::move(on_empty)),

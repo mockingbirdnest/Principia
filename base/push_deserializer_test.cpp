@@ -39,8 +39,10 @@ const char start[] = "START";
 class PushDeserializerTest : public ::testing::Test {
  protected:
   PushDeserializerTest()
-      : pull_serializer_(std::make_unique<PullSerializer>(serializer_chunk_size,
-                                                          number_of_chunks)),
+      : pull_serializer_(
+            std::make_unique<PullSerializer>(serializer_chunk_size,
+                                             number_of_chunks,
+                                             /*compressor=*/nullptr)),
         push_deserializer_(
             std::make_unique<PushDeserializer>(deserializer_chunk_size,
                                                number_of_chunks)),
@@ -183,7 +185,8 @@ TEST_F(PushDeserializerTest, SerializationDeserialization) {
     std::uint8_t* data = &storage[0];
 
     pull_serializer_ = std::make_unique<PullSerializer>(serializer_chunk_size,
-                                                        number_of_chunks);
+                                                        number_of_chunks,
+                                                        /*compressor=*/nullptr);
     push_deserializer_ = std::make_unique<PushDeserializer>(
         deserializer_chunk_size, number_of_chunks);
 
