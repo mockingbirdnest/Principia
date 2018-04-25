@@ -87,7 +87,6 @@ class PushDeserializerTest : public ::testing::Test {
     EXPECT_EQ(actual_serialized, expected_serialized);
   }
 
-
   static void Stomp(Bytes const& bytes) {
     std::memset(bytes.data, 0xCD, static_cast<std::size_t>(bytes.size));
   }
@@ -100,6 +99,43 @@ class PushDeserializerTest : public ::testing::Test {
     std::string& front = strings.front();
     return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
                  static_cast<std::int64_t>(front.size()));
+  }
+
+  // Exercises concurrent serialization and deserialization.
+  void TestSerializationDeserialization(Compressor* const compressor) {
+    auto const trajectory = BuildTrajectory();
+    int const byte_size = trajectory->ByteSize();
+    for (int i = 0; i < runs_per_test; ++i) {
+      auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+      auto written_trajectory = BuildTrajectory();
+      auto storage = std::make_unique<std::uint8_t[]>(byte_size);
+      std::uint8_t* data = &storage[0];
+
+      pull_serializer_ = std::make_unique<PullSerializer>(
+          serializer_chunk_size, /*number_of_chunks=*/4, compressor);
+      push_deserializer_ = std::make_unique<PushDeserializer>(
+          deserializer_chunk_size, number_of_chunks, compressor);
+
+      pull_serializer_->Start(std::move(written_trajectory));
+      push_deserializer_->Start(std::move(read_trajectory),
+                                PushDeserializerTest::CheckSerialization);
+      for (;;) {
+        Bytes const bytes = pull_serializer_->Pull();
+        std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
+        push_deserializer_->Push(
+            Bytes(data, bytes.size),
+            std::bind(&PushDeserializerTest::Stomp, Bytes(data, bytes.size)));
+        data = &data[bytes.size];
+        if (bytes.size == 0) {
+          break;
+        }
+      }
+
+      // Destroying the deserializer waits until deserialization is done.  It is
+      // important that this happens before |storage| is destroyed.
+      pull_serializer_.reset();
+      push_deserializer_.reset();
+    }
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
@@ -241,42 +277,9 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   }
 }
 
-// Exercise concurrent serialization and deserialization.
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
-  auto const trajectory = BuildTrajectory();
-  int const byte_size = trajectory->ByteSize();
-  for (int i = 0; i < runs_per_test; ++i) {
-    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
-    auto written_trajectory = BuildTrajectory();
-    auto storage = std::make_unique<std::uint8_t[]>(byte_size);
-    std::uint8_t* data = &storage[0];
-
-    pull_serializer_ = std::make_unique<PullSerializer>(serializer_chunk_size,
-                                                        number_of_chunks,
-                                                        /*compressor=*/nullptr);
-    push_deserializer_ = std::make_unique<PushDeserializer>(
-        deserializer_chunk_size, number_of_chunks, /*compressor=*/nullptr);
-
-    pull_serializer_->Start(std::move(written_trajectory));
-    push_deserializer_->Start(
-        std::move(read_trajectory), PushDeserializerTest::CheckSerialization);
-    for (;;) {
-      Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
-      push_deserializer_->Push(Bytes(data, bytes.size),
-                               std::bind(&PushDeserializerTest::Stomp,
-                                         Bytes(data, bytes.size)));
-      data = &data[bytes.size];
-      if (bytes.size == 0) {
-        break;
-      }
-    }
-
-    // Destroying the deserializer waits until deserialization is done.  It is
-    // important that this happens before |storage| is destroyed.
-    pull_serializer_.reset();
-    push_deserializer_.reset();
-  }
+  TestSerializationDeserialization(/*compressor=*/nullptr);
+  TestSerializationDeserialization(google::compression::NewGipfeliCompressor());
 }
 
 // Check that deserialization fails if we stomp on one extra byte.
