@@ -212,9 +212,12 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
     Bytes bytes(serialized_trajectory.get(), byte_size);
     push_deserializer_->Push(bytes, nullptr);
     push_deserializer_->Push(Bytes(), nullptr);
+
+    // Destroying the deserializer waits until deserialization is done.
+    push_deserializer_.reset();
   }
   {
-    auto const compressed_push_deserializer =
+    auto compressed_push_deserializer =
         std::make_unique<PushDeserializer>(deserializer_chunk_size,
                                            number_of_chunks,
                                            compressor);
@@ -247,6 +250,9 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
       compressed_push_deserializer->Push(bytes, nullptr);
     }
     compressed_push_deserializer->Push(Bytes(), nullptr);
+
+    // Destroying the deserializer waits until deserialization is done.
+    compressed_push_deserializer.reset();
   }
 
   EXPECT_THAT(read_trajectory1, EqualsProto(read_trajectory2));
