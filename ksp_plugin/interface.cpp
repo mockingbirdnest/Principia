@@ -28,6 +28,7 @@
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
+#include "gipfeli/gipfeli.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
@@ -95,8 +96,9 @@ using quantities::si::Tonne;
 
 namespace {
 
-int const chunk_size = 64 << 10;
-int const number_of_chunks = 8;
+constexpr char gipfeli[] = "gipfeli";
+constexpr int chunk_size = 64 << 10;
+constexpr int number_of_chunks = 8;
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
     ConfigurationFixedStepParameters const& parameters) {
@@ -172,6 +174,16 @@ serialization::GravityModel::Body MakeGravityModel(
     gravity_model.set_reference_radius(body_parameters.reference_radius);
   }
   return gravity_model;
+}
+
+google::compression::Compressor* NewCompressor(const char* const compressor) {
+  if (compressor == nullptr) {
+    return nullptr;
+  } else if (strcmp(compressor, gipfeli) == 0) {
+     return google::compression::NewGipfeliCompressor();
+  } else {
+    LOG(FATAL) << "Unknown compressor " << *compressor;
+  }
 }
 
 }  // namespace
@@ -330,11 +342,13 @@ void principia__DeleteString(char const** const native_string) {
 void principia__DeserializePlugin(char const* const serialization,
                                   int const serialization_size,
                                   PushDeserializer** const deserializer,
-                                  Plugin const** const plugin) {
+                                  Plugin const** const plugin,
+                                  char const* const compressor) {
   journal::Method<journal::DeserializePlugin> m({serialization,
                                                  serialization_size,
                                                  deserializer,
-                                                 plugin},
+                                                 plugin,
+                                                 compressor},
                                                 {deserializer, plugin});
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
@@ -344,8 +358,8 @@ void principia__DeserializePlugin(char const* const serialization,
   if (*deserializer == nullptr) {
     LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size,
-                                         number_of_chunks,
-                                         /*compressor=*/nullptr);
+                                          number_of_chunks,
+                                          NewCompressor(compressor));
     auto message = make_not_null_unique<serialization::Plugin>();
     (*deserializer)->Start(
         std::move(message),
@@ -827,7 +841,8 @@ char const* principia__SayHello() {
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
 char const* principia__SerializePlugin(Plugin const* const plugin,
-                                       PullSerializer** const serializer) {
+                                       PullSerializer** const serializer,
+                                       char const* const compressor) {
   journal::Method<journal::SerializePlugin> m({plugin, serializer},
                                               {serializer});
   CHECK_NOTNULL(plugin);
@@ -838,7 +853,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
     LOG(INFO) << "Begin plugin serialization";
     *serializer = new PullSerializer(chunk_size,
                                      number_of_chunks,
-                                     /*compressor=*/nullptr);
+                                     NewCompressor(compressor));
     auto message = make_not_null_unique<serialization::Plugin>();
     plugin->WriteToMessage(message.get());
     (*serializer)->Start(std::move(message));
