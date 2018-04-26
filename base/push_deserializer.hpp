@@ -91,9 +91,16 @@ class PushDeserializer final {
 
   Compressor* const compressor_;
 
-  //TODO(phl):comments
+  // The chunk size passed at construction.  The stream consumes chunks of that
+  // size.
   int const chunk_size_;
+
+  // The maximum size of a chunk after compression.  Greater than |chunk_size_|
+  // because the compressor will occasionally expand data.  This is the
+  // maximum size of the chunks passed to |Push| by the client.
   int const compressed_chunk_size_;
+
+  // The number of chunks passed at construction, used to size |data_|.
   int const number_of_chunks_;
 
   UniqueBytes uncompressed_data_;
