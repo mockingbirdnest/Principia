@@ -55,7 +55,7 @@ public partial class PrincipiaPluginAdapter
     Vectors = 31,
   };
 
-  private const String principia_key_ = "serialized_plugin";
+  private const String principia_serialized_plugin_ = "serialized_plugin";
   private const String principia_initial_state_config_name_ =
       "principia_initial_state";
   private const String principia_gravity_model_config_name_ =
@@ -127,6 +127,10 @@ public partial class PrincipiaPluginAdapter
   // Whether a journal will be recorded when the plugin is next constructed.
   [KSPField(isPersistant = true)]
   private bool must_record_journal_ = false;
+
+  // Whether to compress saves.
+  [KSPField(isPersistant = true)]
+  private string serialization_compression_ = "";
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -595,12 +599,14 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       String serialization;
       IntPtr serializer = IntPtr.Zero;
+      serialization_compression_ = "gipfeli";
       for (;;) {
-        serialization = plugin_.SerializePlugin(ref serializer);
+        serialization = plugin_.SerializePlugin(ref serializer,
+                                                serialization_compression_);
         if (serialization == null) {
           break;
         }
-        node.AddValue(principia_key_, serialization);
+        node.AddValue(principia_serialized_plugin_, serialization);
       }
     }
   }
@@ -611,7 +617,7 @@ public partial class PrincipiaPluginAdapter
       journaling_ = true;
       Log.ActivateRecorder(true);
     }
-    if (node.HasValue(principia_key_)) {
+    if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
       Log.SetBufferedLogging(buffered_logging_);
@@ -620,15 +626,20 @@ public partial class PrincipiaPluginAdapter
       Log.SetVerboseLogging(verbose_logging_);
 
       IntPtr deserializer = IntPtr.Zero;
-      String[] serializations = node.GetValues(principia_key_);
+      String[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
         Interface.DeserializePlugin(serialization,
                                     serialization.Length,
                                     ref deserializer,
-                                    ref plugin_);
+                                    ref plugin_,
+                                    serialization_compression_);
       }
-      Interface.DeserializePlugin("", 0, ref deserializer, ref plugin_);
+      Interface.DeserializePlugin("",
+                                  0,
+                                  ref deserializer,
+                                  ref plugin_,
+                                  serialization_compression_);
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 

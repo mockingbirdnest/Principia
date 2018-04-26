@@ -177,7 +177,7 @@ serialization::GravityModel::Body MakeGravityModel(
 }
 
 google::compression::Compressor* NewCompressor(const char* const compressor) {
-  if (compressor == nullptr) {
+  if (compressor == nullptr || strlen(compressor) == 0) {
     return nullptr;
   } else if (strcmp(compressor, gipfeli) == 0) {
      return google::compression::NewGipfeliCompressor();
