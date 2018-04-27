@@ -6,6 +6,7 @@
 #include <cstring>
 #include <functional>
 #include <list>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -102,7 +103,9 @@ class PushDeserializerTest : public ::testing::Test {
   }
 
   // Exercises concurrent serialization and deserialization.
-  void TestSerializationDeserialization(Compressor* const compressor) {
+  void TestSerializationDeserialization(
+      std::unique_ptr<Compressor> serializer_compressor,
+      std::unique_ptr<Compressor> deserializer_compressor) {
     auto const trajectory = BuildTrajectory();
     int const byte_size = trajectory->ByteSize();
     for (int i = 0; i < runs_per_test; ++i) {
@@ -111,10 +114,15 @@ class PushDeserializerTest : public ::testing::Test {
       auto storage = std::make_unique<std::uint8_t[]>(byte_size);
       std::uint8_t* data = &storage[0];
 
-      pull_serializer_ = std::make_unique<PullSerializer>(
-          serializer_chunk_size, /*number_of_chunks=*/4, compressor);
-      push_deserializer_ = std::make_unique<PushDeserializer>(
-          deserializer_chunk_size, number_of_chunks, compressor);
+      pull_serializer_ =
+          std::make_unique<PullSerializer>(serializer_chunk_size,
+                                           /*number_of_chunks=*/4,
+                                           std::move(serializer_compressor));
+      push_deserializer_ =
+          std::make_unique<PushDeserializer>(
+              deserializer_chunk_size,
+              number_of_chunks,
+              std::move(deserializer_compressor));
 
       pull_serializer_->Start(std::move(written_trajectory));
       push_deserializer_->Start(std::move(read_trajectory),
@@ -190,7 +198,6 @@ TEST_F(PushDeserializerTest, Stream) {
 }
 
 TEST_F(PushDeserializerTest, DeserializationGipfeli) {
-  Compressor* compressor = google::compression::NewGipfeliCompressor();
   DiscreteTrajectory read_trajectory1;
   DiscreteTrajectory read_trajectory2;
 
@@ -218,9 +225,10 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
   }
   {
     auto compressed_push_deserializer =
-        std::make_unique<PushDeserializer>(deserializer_chunk_size,
-                                           number_of_chunks,
-                                           compressor);
+        std::make_unique<PushDeserializer>(
+            deserializer_chunk_size,
+            number_of_chunks,
+            google::compression::NewGipfeliCompressor());
     auto const written_trajectory = BuildTrajectory();
     int const byte_size = written_trajectory->ByteSize();
     auto const uncompressed = written_trajectory->SerializePartialAsString();
@@ -233,6 +241,7 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
         });
 
     std::vector<std::unique_ptr<std::uint8_t[]>> compressed_chunks;
+    auto compressor = google::compression::NewGipfeliCompressor();
     for (int i = 0; i < uncompressed.size(); i += deserializer_chunk_size) {
       std::string compressed;
       compressor->Compress(
@@ -284,8 +293,11 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
 }
 
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
-  TestSerializationDeserialization(/*compressor=*/nullptr);
-  TestSerializationDeserialization(google::compression::NewGipfeliCompressor());
+  TestSerializationDeserialization(/*serializer_compressor=*/nullptr,
+                                   /*deserializer_compressor=*/nullptr);
+  TestSerializationDeserialization(
+      /*serializer_compressor=*/google::compression::NewGipfeliCompressor(),
+      /*deserializer_compressor=*/google::compression::NewGipfeliCompressor());
 }
 
 // Check that deserialization fails if we stomp on one extra byte.

@@ -75,14 +75,16 @@ inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
   return byte_count_;
 }
 
-inline PushDeserializer::PushDeserializer(int const chunk_size,
-                                          int const number_of_chunks,
-                                          Compressor* const compressor)
-    : compressor_(compressor),
+inline PushDeserializer::PushDeserializer(
+    int const chunk_size,
+    int const number_of_chunks,
+    std::unique_ptr<Compressor> compressor)
+    : compressor_(std::move(compressor)),
       chunk_size_(chunk_size),
       compressed_chunk_size_(
-          compressor == nullptr ? chunk_size_
-                                : compressor->MaxCompressedLength(chunk_size_)),
+          compressor_ == nullptr
+              ? chunk_size_
+              : compressor_->MaxCompressedLength(chunk_size_)),
       number_of_chunks_(number_of_chunks),
       uncompressed_data_(chunk_size_),
       stream_(std::bind(&PushDeserializer::Pull, this)) {
