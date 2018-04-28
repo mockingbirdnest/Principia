@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 #include <utility>
@@ -176,11 +177,12 @@ serialization::GravityModel::Body MakeGravityModel(
   return gravity_model;
 }
 
-google::compression::Compressor* NewCompressor(const char* const compressor) {
+std::unique_ptr<google::compression::Compressor> NewCompressor(
+    const char* const compressor) {
   if (compressor == nullptr || strlen(compressor) == 0) {
     return nullptr;
   } else if (strcmp(compressor, gipfeli) == 0) {
-     return google::compression::NewGipfeliCompressor();
+    return google::compression::NewGipfeliCompressor();
   } else {
     LOG(FATAL) << "Unknown compressor " << *compressor;
   }
