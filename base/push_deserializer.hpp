@@ -61,7 +61,7 @@ class PushDeserializer final {
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
   PushDeserializer(int chunk_size,
                    int number_of_chunks,
-                   Compressor* compressor);
+                   std::unique_ptr<Compressor> compressor);
   ~PushDeserializer();
 
   // Starts the deserializer, which will proceed to deserialize data into
@@ -89,7 +89,7 @@ class PushDeserializer final {
 
   std::unique_ptr<google::protobuf::Message> message_;
 
-  Compressor* const compressor_;
+  std::unique_ptr<Compressor> const compressor_;
 
   // The chunk size passed at construction.  The stream consumes chunks of that
   // size.
