@@ -571,11 +571,13 @@ TEST_F(InterfaceTest, DeserializePlugin) {
           hexadecimal_simple_plugin_.c_str(),
           hexadecimal_simple_plugin_.size(),
           &deserializer,
-          &plugin);
+          &plugin,
+          /*compressor=*/nullptr);
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
                                0,
                                &deserializer,
-                               &plugin);
+                               &plugin,
+                               /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -590,11 +592,13 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),
           &deserializer,
-          &plugin);
+          &plugin,
+          /*compressor=*/nullptr);
   principia__DeserializePlugin(hexadecimal_plugin.c_str(),
                                0,
                                &deserializer,
-                               &plugin);
+                               &plugin,
+                               /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
