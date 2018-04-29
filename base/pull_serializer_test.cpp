@@ -124,7 +124,6 @@ TEST_F(PullSerializerTest, SerializationSizes) {
 }
 
 TEST_F(PullSerializerTest, SerializationGipfeli) {
-  Compressor* compressor = google::compression::NewGipfeliCompressor();
   std::string uncompressed1;
   std::string uncompressed2;
   {
@@ -142,11 +141,13 @@ TEST_F(PullSerializerTest, SerializationGipfeli) {
   }
   {
     auto const compressed_pull_serializer =
-        std::make_unique<PullSerializer>(chunk_size,
-                                         /*number_of_chunks=*/4,
-                                         compressor);
+        std::make_unique<PullSerializer>(
+            chunk_size,
+            /*number_of_chunks=*/4,
+            google::compression::NewGipfeliCompressor());
     auto trajectory = BuildTrajectory();
     compressed_pull_serializer->Start(std::move(trajectory));
+    auto compressor = google::compression::NewGipfeliCompressor();
     for (;;) {
       Bytes const bytes = compressed_pull_serializer->Pull();
       if (bytes.size == 0) {

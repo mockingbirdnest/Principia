@@ -64,14 +64,15 @@ inline std::int64_t DelegatingArrayOutputStream::ByteCount() const {
 
 inline PullSerializer::PullSerializer(int const chunk_size,
                                       int const number_of_chunks,
-                                      Compressor* const compressor)
-    : compressor_(compressor),
+                                      std::unique_ptr<Compressor> compressor)
+    : compressor_(std::move(compressor)),
       chunk_size_(chunk_size),
       compressed_chunk_size_(
-          compressor == nullptr ? chunk_size_
-                                : compressor->MaxCompressedLength(chunk_size_)),
+          compressor_ == nullptr
+              ? chunk_size_
+              : compressor_->MaxCompressedLength(chunk_size_)),
       number_of_chunks_(number_of_chunks),
-      number_of_compression_chunks_(compressor == nullptr ? 0 : 1),
+      number_of_compression_chunks_(compressor_ == nullptr ? 0 : 1),
       data_(std::make_unique<std::uint8_t[]>(compressed_chunk_size_ *
                                              number_of_chunks_)),
       stream_(Bytes(data_.get(), chunk_size_),
