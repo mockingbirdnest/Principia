@@ -14,7 +14,8 @@ static const __m128d sign_bit =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0x8000'0000'0000'0000));
 static const __m128d sign_exponent_and_sixteen_bits_of_mantissa =
     _mm_castsi128_pd(_mm_cvtsi64_si128(0xFFFF'FFF0'0000'0000));
-// No overflow or underflow occurs in intermediate computations for y ∈ [y₁, y₂].
+// No overflow or underflow occurs in intermediate computations for
+// y ∈ [y₁, y₂].
 // NOTE(egg): the σs do not rescale enough to put the least normal or greatest
 // finite magnitudes inside the non-rescaling range; for very small and very
 // large values, rescaling occurs twice.
