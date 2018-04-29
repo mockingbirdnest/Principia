@@ -32,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cbrt.cpp" />
+    <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
