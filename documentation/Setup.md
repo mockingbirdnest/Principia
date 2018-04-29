@@ -12,8 +12,7 @@ dependencies.
 This directory should not contain any of the following subfolders:
 - `Principia`;
 - `KSP Assemblies`;
-- `Google`;
-- `Third Party`.
+- `Google`.
 
 This project depends upon:
 - the KSP assembly `Assembly-CSharp.dll`, found in `<KSP directory>\KSP_Data\Managed`;
