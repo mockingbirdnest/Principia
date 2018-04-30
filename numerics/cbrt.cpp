@@ -46,7 +46,9 @@ double cbrt(double const y) {
     }
     return cbrt(y * σ₂⁻³) * σ₂;
   }
-  // Approximate ∛y with an error below 3,2 %.
+  // Approximate ∛y with an error below 3,2 %.  The value of C is chosen to
+  // minimize the maximal error of ξ as an approximation of ∛y, ignoring
+  // rounding.
   std::uint64_t const Y = _mm_cvtsi128_si64(_mm_castpd_si128(abs_y_0));
   std::uint64_t const Q = C + Y / 3;
   double const q = _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(Q)));
@@ -59,12 +61,12 @@ double cbrt(double const y) {
   double const x³ = x * x * x;
   double const x⁶ = x³ * x³;
   double const y² = y * y;
+  double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x)), sign);
   double const numerator =
-      x * (x³ - abs_y) * ((5 * x³ + 17 * abs_y) * x³ + 5 * y²);
+      x_sign_y * (x³ - abs_y) * ((5 * x³ + 17 * abs_y) * x³ + 5 * y²);
   double const denominator =
       (7 * x³ + 42 * abs_y) * x⁶ + (30 * x³ + 2 * abs_y) * y²;
-  return _mm_cvtsd_f64(
-      _mm_or_pd(_mm_set_sd(x - numerator / denominator), sign));
+  return x_sign_y - numerator / denominator;
 }
 
 }  // namespace numerics
