@@ -62,7 +62,9 @@ UniqueArray<std::uint8_t> HexadecimalEncode(Array<std::uint8_t const> input,
                                             bool const null_terminated) {
   base::UniqueArray<std::uint8_t> output((input.size << 1) +
                                          (null_terminated ? 1 : 0));
-  base::HexadecimalEncode(input, output.get());
+  if (output.size > 0) {
+    base::HexadecimalEncode(input, output.get());
+  }
   if (null_terminated) {
     output.data[output.size - 1] = 0;
   }
@@ -92,7 +94,9 @@ void HexadecimalDecode(Array<std::uint8_t const> input,
 
 UniqueArray<std::uint8_t> HexadecimalDecode(Array<std::uint8_t const> input) {
   UniqueArray<std::uint8_t> output(input.size >> 1);
-  HexadecimalDecode({input.data, input.size & ~1}, output.get());
+  if (output.size > 0) {
+    HexadecimalDecode({ input.data, input.size & ~1 }, output.get());
+  }
   return output;
 }
 

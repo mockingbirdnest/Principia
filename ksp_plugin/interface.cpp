@@ -359,13 +359,12 @@ void principia__DeserializePlugin(char const* const serialization,
   std::uint8_t const* const hexadecimal =
       reinterpret_cast<std::uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;
-  int const byte_size = hexadecimal_size >> 1;
   // Ownership of the following pointer is transfered to the deserializer using
   // the callback to |Push|.
   auto bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
 
   // Push the data, taking ownership of it.
-  (*deserializer)->Push(Bytes(bytes.get()),
+  (*deserializer)->Push(bytes.get(),
                         [b = bytes.data.release()]() { delete[] b; });
 
   // If the data was empty, delete the deserializer.  This ensures that
