@@ -58,6 +58,18 @@ void HexadecimalEncode(Array<std::uint8_t const> input,
     std::memcpy(output.data, &byte_to_hexadecimal_digits[*input.data << 1], 2);
   }
 }
+UniqueArray<std::uint8_t> HexadecimalEncode(Array<std::uint8_t const> input,
+                                            bool const null_terminated) {
+  base::UniqueArray<std::uint8_t> output((input.size << 1) +
+                                         (null_terminated ? 1 : 0));
+  if (output.size > 0) {
+    base::HexadecimalEncode(input, output.get());
+  }
+  if (null_terminated) {
+    output.data[output.size - 1] = 0;
+  }
+  return output;
+}
 
 void HexadecimalDecode(Array<std::uint8_t const> input,
                        Array<std::uint8_t> output) {
@@ -78,6 +90,14 @@ void HexadecimalDecode(Array<std::uint8_t const> input,
     *output.data = (hexadecimal_digits_to_nibble[*input.data] << 4) |
                    hexadecimal_digits_to_nibble[*(input.data + 1)];
   }
+}
+
+UniqueArray<std::uint8_t> HexadecimalDecode(Array<std::uint8_t const> input) {
+  UniqueArray<std::uint8_t> output(input.size >> 1);
+  if (output.size > 0) {
+    HexadecimalDecode({ input.data, input.size & ~1 }, output.get());
+  }
+  return output;
 }
 
 }  // namespace base

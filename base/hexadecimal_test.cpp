@@ -52,6 +52,14 @@ TEST_F(HexadecimalTest, EncodeAndDecode) {
   EXPECT_EQ(bytes_, bytes);
 }
 
+TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
+  auto const digits =
+      HexadecimalEncode(bytes_.get(), /*null_terminated=*/false);
+  EXPECT_EQ(uppercase_digits_, digits);
+  auto const bytes = HexadecimalDecode(digits.get());
+  EXPECT_EQ(bytes_, bytes);
+}
+
 TEST_F(HexadecimalTest, InPlace) {
   auto buffer = std::make_unique<std::uint8_t[]>(digit_count);
   std::memcpy(&buffer[1], bytes_.data.get(), byte_count);
