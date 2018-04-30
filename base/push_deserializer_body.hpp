@@ -169,6 +169,14 @@ inline void PushDeserializer::Push(Bytes const bytes,
   } while (!is_last);
 }
 
+inline void PushDeserializer::Push(UniqueBytes bytes)
+{
+  Bytes const unowned_bytes = bytes.get();
+  bytes.data.release();
+  Push(unowned_bytes,
+       /*done=*/[b = unowned_bytes.data]() { delete[] b; });
+}
+
 inline Bytes PushDeserializer::Pull() {
   Bytes result;
   {
