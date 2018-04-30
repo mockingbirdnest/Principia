@@ -73,9 +73,7 @@ std::unique_ptr<serialization::Method> Player::Read() {
   std::uint8_t const* const hexadecimal =
       reinterpret_cast<std::uint8_t const*>(line.c_str());
   int const hexadecimal_size = strlen(line.c_str());
-  UniqueBytes bytes(hexadecimal_size >> 1);
-  HexadecimalDecode({hexadecimal, hexadecimal_size},
-                    {bytes.data.get(), bytes.size});
+  auto const bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
   auto method = std::make_unique<serialization::Method>();
   CHECK(method->ParseFromArray(bytes.data.get(),
                                static_cast<int>(bytes.size)));
