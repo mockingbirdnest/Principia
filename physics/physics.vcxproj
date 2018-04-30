@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="apsides_test.cpp" />
     <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
     <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp" />

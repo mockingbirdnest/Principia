@@ -7,6 +7,7 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="generate_configuration.cpp" />
     <ClCompile Include="generate_profiles.cpp" />
     <ClCompile Include="journal_proto_processor.cpp" />

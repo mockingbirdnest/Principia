@@ -10,6 +10,7 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="ephemeris.cpp" />
