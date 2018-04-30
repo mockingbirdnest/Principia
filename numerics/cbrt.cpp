@@ -61,7 +61,7 @@ double cbrt(double const y) {
   double const x³ = x * x * x;
   double const x⁶ = x³ * x³;
   double const y² = y * y;
-  double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x)), sign);
+  double const x_sign_y = _mm_cvtsd_f64(_mm_or_pd(_mm_set_sd(x), sign));
   double const numerator =
       x_sign_y * (x³ - abs_y) * ((5 * x³ + 17 * abs_y) * x³ + 5 * y²);
   double const denominator =
