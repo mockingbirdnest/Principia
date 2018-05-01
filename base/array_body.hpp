@@ -27,7 +27,8 @@ UniqueArray<Element>::UniqueArray() : size(0) {}
 template<typename Element>
 template<typename Size, typename>
 UniqueArray<Element>::UniqueArray(Size const size)
-    : data(new std::uint8_t[static_cast<std::size_t>(size)]),
+    : data(size == 0 ? nullptr
+                     : new std::uint8_t[static_cast<std::size_t>(size)]),
       size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>

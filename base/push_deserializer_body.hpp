@@ -5,6 +5,7 @@
 
 #include <algorithm>
 
+#include "base/sink_source.hpp"
 #include "glog/logging.h"
 #include "google/protobuf/io/coded_stream_inl.h"
 
@@ -74,10 +75,18 @@ inline std::int64_t DelegatingArrayInputStream::ByteCount() const {
   return byte_count_;
 }
 
-inline PushDeserializer::PushDeserializer(int const chunk_size,
-                                          int const number_of_chunks)
-    : chunk_size_(chunk_size),
+inline PushDeserializer::PushDeserializer(
+    int const chunk_size,
+    int const number_of_chunks,
+    std::unique_ptr<Compressor> compressor)
+    : compressor_(std::move(compressor)),
+      chunk_size_(chunk_size),
+      compressed_chunk_size_(
+          compressor_ == nullptr
+              ? chunk_size_
+              : compressor_->MaxCompressedLength(chunk_size_)),
       number_of_chunks_(number_of_chunks),
+      uncompressed_data_(chunk_size_),
       stream_(std::bind(&PushDeserializer::Pull, this)) {
   // This sentinel ensures that the two queue are correctly out of step.
   done_.push(nullptr);
@@ -128,23 +137,43 @@ inline void PushDeserializer::Push(Bytes const bytes,
   // circumstances.  The |done| callback is attached to the last chunk.
   Bytes current = bytes;
   CHECK_LE(0, bytes.size);
+
+  // Decide how much data we are going to push on the queue.  In the presence of
+  // compression we have to respect the boundary of the incoming block.  In the
+  // absence of compression we have a stream so we can cut into as many chunks
+  // as we like.
+  int queued_chunk_size;
+  if (compressor_ == nullptr) {
+    queued_chunk_size = chunk_size_;
+  } else {
+    CHECK_LE(bytes.size, compressed_chunk_size_);
+    queued_chunk_size = compressed_chunk_size_;
+  }
+
   bool is_last;
   do {
     {
-      is_last = current.size <= chunk_size_;
+      is_last = current.size <= queued_chunk_size;
       std::unique_lock<std::mutex> l(lock_);
       queue_has_room_.wait(l, [this]() {
         return queue_.size() < static_cast<std::size_t>(number_of_chunks_);
       });
       queue_.emplace(current.data,
                      std::min(current.size,
-                              static_cast<std::int64_t>(chunk_size_)));
+                              static_cast<std::int64_t>(queued_chunk_size)));
       done_.emplace(is_last ? std::move(done) : nullptr);
     }
     queue_has_elements_.notify_all();
-    current.data = &current.data[chunk_size_];
-    current.size -= chunk_size_;
+    current.data = &current.data[queued_chunk_size];
+    current.size -= queued_chunk_size;
   } while (!is_last);
+}
+
+inline void PushDeserializer::Push(UniqueBytes bytes) {
+  Bytes const unowned_bytes = bytes.get();
+  bytes.data.release();
+  Push(unowned_bytes,
+       /*done=*/[b = unowned_bytes.data]() { delete[] b; });
 }
 
 inline Bytes PushDeserializer::Pull() {
@@ -161,7 +190,16 @@ inline Bytes PushDeserializer::Pull() {
     }
     done_.pop();
     // Get the next |Bytes| object to process and remove it from |queue_|.
-    result = queue_.front();
+    // Uncompress it if needed.
+    auto const& front = queue_.front();
+    if (front.size == 0 || compressor_ == nullptr) {
+      result = front;
+    } else {
+      ArraySource<std::uint8_t> source(front);
+      ArraySink<std::uint8_t> sink(uncompressed_data_.get());
+      CHECK(compressor_->UncompressStream(&source, &sink));
+      result = sink.array();
+    }
     queue_.pop();
   }
   queue_has_room_.notify_all();

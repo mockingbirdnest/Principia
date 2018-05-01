@@ -11,13 +11,15 @@
 #include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
-#include "gipfeli/gipfeli.h"
+#include "gipfeli/compression.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 
 namespace principia {
 namespace base {
 namespace internal_push_deserializer {
+
+using google::compression::Compressor;
 
 // An input stream based on an array that delegates to a function the handling
 // of the case where the array is empty.  It calls the |on_empty| function
@@ -57,7 +59,9 @@ class PushDeserializer final {
   // |chunk_size|.  The internal queue holds at most |number_of_chunks| chunks.
   // Therefore, this class uses at most
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.
-  PushDeserializer(int chunk_size, int number_of_chunks);
+  PushDeserializer(int chunk_size,
+                   int number_of_chunks,
+                   std::unique_ptr<Compressor> compressor);
   ~PushDeserializer();
 
   // Starts the deserializer, which will proceed to deserialize data into
@@ -77,6 +81,9 @@ class PushDeserializer final {
   // associated with |bytes| in |done|.
   void Push(Bytes bytes, std::function<void()> done);
 
+  // Same as above but ownership is taken.
+  void Push(UniqueBytes bytes);
+
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
   // is available.  Used as a callback for the underlying
@@ -85,8 +92,22 @@ class PushDeserializer final {
 
   std::unique_ptr<google::protobuf::Message> message_;
 
+  std::unique_ptr<Compressor> const compressor_;
+
+  // The chunk size passed at construction.  The stream consumes chunks of that
+  // size.
   int const chunk_size_;
+
+  // The maximum size of a chunk after compression.  Greater than |chunk_size_|
+  // because the compressor will occasionally expand data.  This is the
+  // maximum size of the chunks passed to |Push| by the client.
+  int const compressed_chunk_size_;
+
+  // The number of chunks passed at construction, used to size |data_|.
   int const number_of_chunks_;
+
+  UniqueBytes uncompressed_data_;
+
   DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
 

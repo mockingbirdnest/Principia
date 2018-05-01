@@ -64,7 +64,9 @@ class PullSerializer final {
   // |number_of_chunks * (chunk_size + O(1)) + O(1)| bytes.  Note that in the
   // presence of compression |chunk_size| is replaced by |compressed_chunk_size|
   // in this formula.
-  PullSerializer(int chunk_size, int number_of_chunks, Compressor* compressor);
+  PullSerializer(int chunk_size,
+                 int number_of_chunks,
+                 std::unique_ptr<Compressor> compressor);
   ~PullSerializer();
 
   // Starts the serializer, which will proceed to serialize |message|.  This
@@ -91,7 +93,7 @@ class PullSerializer final {
 
   std::unique_ptr<google::protobuf::Message const> message_;
 
-  Compressor* const compressor_;
+  std::unique_ptr<Compressor> const compressor_;
 
   // The chunk size passed at construction.  The stream outputs chunks of that
   // size.

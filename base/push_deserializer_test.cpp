@@ -6,6 +6,7 @@
 #include <cstring>
 #include <functional>
 #include <list>
+#include <memory>
 #include <string>
 #include <thread>
 #include <vector>
@@ -13,8 +14,10 @@
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
+#include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace base {
@@ -25,6 +28,7 @@ using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
 using serialization::Quantity;
+using testing_utilities::EqualsProto;
 using ::std::placeholders::_1;
 using ::testing::ElementsAreArray;
 
@@ -45,7 +49,8 @@ class PushDeserializerTest : public ::testing::Test {
                                              /*compressor=*/nullptr)),
         push_deserializer_(
             std::make_unique<PushDeserializer>(deserializer_chunk_size,
-                                               number_of_chunks)),
+                                               number_of_chunks,
+                                               /*compressor=*/nullptr)),
         stream_(std::bind(&PushDeserializerTest::OnEmpty,
                           this,
                           std::ref(strings_))) {}
@@ -83,7 +88,6 @@ class PushDeserializerTest : public ::testing::Test {
     EXPECT_EQ(actual_serialized, expected_serialized);
   }
 
-
   static void Stomp(Bytes const& bytes) {
     std::memset(bytes.data, 0xCD, static_cast<std::size_t>(bytes.size));
   }
@@ -96,6 +100,50 @@ class PushDeserializerTest : public ::testing::Test {
     std::string& front = strings.front();
     return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
                  static_cast<std::int64_t>(front.size()));
+  }
+
+  // Exercises concurrent serialization and deserialization.
+  void TestSerializationDeserialization(
+      std::unique_ptr<Compressor> serializer_compressor,
+      std::unique_ptr<Compressor> deserializer_compressor) {
+    auto const trajectory = BuildTrajectory();
+    int const byte_size = trajectory->ByteSize();
+    for (int i = 0; i < runs_per_test; ++i) {
+      auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+      auto written_trajectory = BuildTrajectory();
+      auto storage = std::make_unique<std::uint8_t[]>(byte_size);
+      std::uint8_t* data = &storage[0];
+
+      pull_serializer_ =
+          std::make_unique<PullSerializer>(serializer_chunk_size,
+                                           /*number_of_chunks=*/4,
+                                           std::move(serializer_compressor));
+      push_deserializer_ =
+          std::make_unique<PushDeserializer>(
+              deserializer_chunk_size,
+              number_of_chunks,
+              std::move(deserializer_compressor));
+
+      pull_serializer_->Start(std::move(written_trajectory));
+      push_deserializer_->Start(std::move(read_trajectory),
+                                PushDeserializerTest::CheckSerialization);
+      for (;;) {
+        Bytes const bytes = pull_serializer_->Pull();
+        std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
+        push_deserializer_->Push(
+            Bytes(data, bytes.size),
+            std::bind(&PushDeserializerTest::Stomp, Bytes(data, bytes.size)));
+        data = &data[bytes.size];
+        if (bytes.size == 0) {
+          break;
+        }
+      }
+
+      // Destroying the deserializer waits until deserialization is done.  It is
+      // important that this happens before |storage| is destroyed.
+      pull_serializer_.reset();
+      push_deserializer_.reset();
+    }
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
@@ -149,6 +197,76 @@ TEST_F(PushDeserializerTest, Stream) {
   EXPECT_EQ(23, stream_.ByteCount());
 }
 
+TEST_F(PushDeserializerTest, DeserializationGipfeli) {
+  DiscreteTrajectory read_trajectory1;
+  DiscreteTrajectory read_trajectory2;
+
+  auto const written_trajectory = BuildTrajectory();
+  int const byte_size = written_trajectory->ByteSize();
+
+  {
+    auto const serialized_trajectory =
+        std::make_unique<std::uint8_t[]>(byte_size);
+    written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
+                                                byte_size);
+
+    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+    push_deserializer_->Start(
+        std::move(read_trajectory),
+        [&read_trajectory1](google::protobuf::Message const& read_trajectory) {
+          read_trajectory1.CopyFrom(read_trajectory);
+        });
+    Bytes bytes(serialized_trajectory.get(), byte_size);
+    push_deserializer_->Push(bytes, nullptr);
+    push_deserializer_->Push(Bytes(), nullptr);
+
+    // Destroying the deserializer waits until deserialization is done.
+    push_deserializer_.reset();
+  }
+  {
+    auto compressed_push_deserializer =
+        std::make_unique<PushDeserializer>(
+            deserializer_chunk_size,
+            number_of_chunks,
+            google::compression::NewGipfeliCompressor());
+    auto const written_trajectory = BuildTrajectory();
+    int const byte_size = written_trajectory->ByteSize();
+    auto const uncompressed = written_trajectory->SerializePartialAsString();
+
+    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
+    compressed_push_deserializer->Start(
+        std::move(read_trajectory),
+        [&read_trajectory2](google::protobuf::Message const& read_trajectory) {
+          read_trajectory2.CopyFrom(read_trajectory);
+        });
+
+    std::vector<std::unique_ptr<std::uint8_t[]>> compressed_chunks;
+    auto compressor = google::compression::NewGipfeliCompressor();
+    for (int i = 0; i < uncompressed.size(); i += deserializer_chunk_size) {
+      std::string compressed;
+      compressor->Compress(
+          uncompressed.substr(
+              i,
+              std::min(deserializer_chunk_size,
+                       static_cast<int>(uncompressed.size()) - i)),
+          &compressed);
+      compressed_chunks.push_back(
+          std::make_unique<std::uint8_t[]>(compressed.size()));
+      for (int j = 0; j < compressed.size(); ++j) {
+        compressed_chunks.back()[j] = compressed[j];
+      }
+      Bytes bytes(compressed_chunks.back().get(), compressed.size());
+      compressed_push_deserializer->Push(bytes, nullptr);
+    }
+    compressed_push_deserializer->Push(Bytes(), nullptr);
+
+    // Destroying the deserializer waits until deserialization is done.
+    compressed_push_deserializer.reset();
+  }
+
+  EXPECT_THAT(read_trajectory1, EqualsProto(read_trajectory2));
+}
+
 TEST_F(PushDeserializerTest, DeserializationThreading) {
   auto const written_trajectory = BuildTrajectory();
   int const byte_size = written_trajectory->ByteSize();
@@ -158,7 +276,7 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   for (int i = 0; i < runs_per_test; ++i) {
     auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
     push_deserializer_ = std::make_unique<PushDeserializer>(
-        deserializer_chunk_size, number_of_chunks);
+        deserializer_chunk_size, number_of_chunks, /*compressor=*/nullptr);
 
     written_trajectory->SerializePartialToArray(&serialized_trajectory[0],
                                                 byte_size);
@@ -174,45 +292,15 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
   }
 }
 
-// Exercise concurrent serialization and deserialization.
 TEST_F(PushDeserializerTest, SerializationDeserialization) {
-  auto const trajectory = BuildTrajectory();
-  int const byte_size = trajectory->ByteSize();
-  for (int i = 0; i < runs_per_test; ++i) {
-    auto read_trajectory = make_not_null_unique<DiscreteTrajectory>();
-    auto written_trajectory = BuildTrajectory();
-    auto storage = std::make_unique<std::uint8_t[]>(byte_size);
-    std::uint8_t* data = &storage[0];
-
-    pull_serializer_ = std::make_unique<PullSerializer>(serializer_chunk_size,
-                                                        number_of_chunks,
-                                                        /*compressor=*/nullptr);
-    push_deserializer_ = std::make_unique<PushDeserializer>(
-        deserializer_chunk_size, number_of_chunks);
-
-    pull_serializer_->Start(std::move(written_trajectory));
-    push_deserializer_->Start(
-        std::move(read_trajectory), PushDeserializerTest::CheckSerialization);
-    for (;;) {
-      Bytes const bytes = pull_serializer_->Pull();
-      std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
-      push_deserializer_->Push(Bytes(data, bytes.size),
-                               std::bind(&PushDeserializerTest::Stomp,
-                                         Bytes(data, bytes.size)));
-      data = &data[bytes.size];
-      if (bytes.size == 0) {
-        break;
-      }
-    }
-
-    // Destroying the deserializer waits until deserialization is done.  It is
-    // important that this happens before |storage| is destroyed.
-    pull_serializer_.reset();
-    push_deserializer_.reset();
-  }
+  TestSerializationDeserialization(/*serializer_compressor=*/nullptr,
+                                   /*deserializer_compressor=*/nullptr);
+  TestSerializationDeserialization(
+      /*serializer_compressor=*/google::compression::NewGipfeliCompressor(),
+      /*deserializer_compressor=*/google::compression::NewGipfeliCompressor());
 }
 
-// Check that deserialization fails if we stomp on one extra bytes.
+// Check that deserialization fails if we stomp on one extra byte.
 TEST_F(PushDeserializerDeathTest, Stomp) {
   EXPECT_DEATH({
     const int stomp_chunk = 77;
