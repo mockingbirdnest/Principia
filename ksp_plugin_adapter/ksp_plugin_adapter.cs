@@ -599,7 +599,6 @@ public partial class PrincipiaPluginAdapter
     if (PluginRunning()) {
       String serialization;
       IntPtr serializer = IntPtr.Zero;
-      serialization_compression_ = "gipfeli";
       for (;;) {
         serialization = plugin_.SerializePlugin(ref serializer,
                                                 serialization_compression_);
@@ -640,6 +639,9 @@ public partial class PrincipiaPluginAdapter
                                   ref deserializer,
                                   ref plugin_,
                                   serialization_compression_);
+      if (serialization_compression_ == "") {
+        serialization_compression_ = "gipfeli";
+      }
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
