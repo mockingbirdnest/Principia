@@ -7,18 +7,30 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "numerics/double_precision.hpp"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
 namespace numerics {
 
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 using ::testing::Truly;
 
 class CubeRootTest : public ::testing::Test {
  protected:
-  static std::uint64_t bits(double const x) {
+  static std::uint64_t Bits(double const x) {
     return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_set_sd(x)));
+  }
+
+  static double FromBits(std::uint64_t const x) {
+    return _mm_cvtsd_f64(_mm_castsi128_pd(_mm_cvtsi64_si128(x)));
+  }
+
+  static double ULP(double const x) {
+    return FromBits(Bits(x) + 1) - x;
   }
 };
 
@@ -34,8 +46,8 @@ TEST_F(CubeRootTest, Rescaling) {
 }
 
 TEST_F(CubeRootTest, SpecialValues) {
-  EXPECT_THAT(bits(Cbrt(0)), Eq(0));
-  EXPECT_THAT(bits(Cbrt(-0.0)), Eq(0x8000'0000'0000'0000));
+  EXPECT_THAT(Bits(Cbrt(0)), Eq(0));
+  EXPECT_THAT(Bits(Cbrt(-0.0)), Eq(0x8000'0000'0000'0000));
   EXPECT_THAT(Cbrt(std::numeric_limits<double>::infinity()),
               Eq(std::numeric_limits<double>::infinity()));
   EXPECT_THAT(Cbrt(-std::numeric_limits<double>::infinity()),
@@ -60,7 +72,21 @@ TEST_F(CubeRootTest, Sign) {
 }
 
 TEST_F(CubeRootTest, ParticularlyBadRounding) {
-  EXPECT_THAT(Cbrt(0x1.14E35E87EA5DFp0), Eq(0x1.06C80FCCA8E18p0));
+  constexpr double y = 0x1.14E35E87EA5DFp0;
+  double const x = Cbrt(y);
+  DoublePrecision<double> x² = TwoProduct(x, x);
+  DoublePrecision<DoublePrecision<double>> x³ =
+      TwoSum(TwoProduct(x².value, x), TwoProduct(x².error, x));
+  CHECK_EQ(x³.error.error, 0) << x³;
+  auto const long_y =
+      DoublePrecision<DoublePrecision<double>>(DoublePrecision<double>(y));
+  DoublePrecision<DoublePrecision<double>> numerator = long_y - x³;
+  DoublePrecision<DoublePrecision<double>> denominator =
+      TwoSum(TwoProduct(x².value, 3), TwoProduct(x².error, 3));
+  double const x_error = numerator.value.value / denominator.value.value +
+                         numerator.value.error / denominator.value.value;
+  double const x_ulps = x_error / ULP(x);
+  EXPECT_THAT(x_ulps, AllOf(Gt(0.5000551), Lt(0.5000552))) << x_ulps - 0.5;
 }
 
 }  // namespace numerics
