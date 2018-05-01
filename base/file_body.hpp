@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
@@ -20,8 +21,16 @@ inline OFStream::OFStream(std::filesystem::path const& path) {
   std::filesystem::path directory = path;
   directory.remove_filename();
   if (!std::filesystem::exists(directory)) {
-    CHECK(std::filesystem::create_directories(directory))
-        << directory;
+    // VS 2017 15.7 Preview 5 has a bug where it returns false if the path ends
+    // with a \.
+#if _MSC_FULL_VER <= 191426412
+    auto d = directory.native();
+    d = d.substr(0, d.size() - 1);
+    directory = d;
+#endif
+    std::error_code e;
+    CHECK(std::filesystem::create_directories(directory, e))
+        << directory << " " << e << " " << e.message();
   }
 #endif
   stream_.open(path);
