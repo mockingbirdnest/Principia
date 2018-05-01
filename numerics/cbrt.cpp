@@ -27,7 +27,7 @@ constexpr double σ₂ = 0x1p154;
 constexpr double σ₂⁻³ = 1 / (σ₂ * σ₂ * σ₂);
 static_assert(σ₁⁻³ * y₁ == y₂, "Incorrect σ₁");
 static_assert(σ₂⁻³ * y₂ == y₁, "Incorrect σ₂");
-double cbrt(double const y) {
+double Cbrt(double const y) {
   __m128d const y_0 = _mm_set_sd(y);
   __m128d const sign = _mm_and_pd(sign_bit, y_0);
   __m128d const abs_y_0 = _mm_andnot_pd(sign_bit, y_0);
@@ -39,12 +39,12 @@ double cbrt(double const y) {
     if (abs_y == 0) {
       return y;
     }
-    return cbrt(y * σ₁⁻³) * σ₁;
+    return Cbrt(y * σ₁⁻³) * σ₁;
   } else if (abs_y > y₂) {
     if (abs_y == std::numeric_limits<double>::infinity()) {
       return y;
     }
-    return cbrt(y * σ₂⁻³) * σ₂;
+    return Cbrt(y * σ₂⁻³) * σ₂;
   }
   // Approximate ∛y with an error below 3,2 %.  The value of C is chosen to
   // minimize the maximal error of ξ as an approximation of ∛y, ignoring

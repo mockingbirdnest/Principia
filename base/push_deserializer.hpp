@@ -81,6 +81,9 @@ class PushDeserializer final {
   // associated with |bytes| in |done|.
   void Push(Bytes bytes, std::function<void()> done);
 
+  // Same as above but ownership is taken.
+  void Push(UniqueBytes bytes);
+
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
   // is available.  Used as a callback for the underlying
