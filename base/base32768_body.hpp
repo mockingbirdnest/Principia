@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 #include <map>
 #include <string>
 #include <vector>
@@ -52,7 +53,7 @@ char16_t Encode(Repertoire const r, int const k) {
   return (*encode[r])[k];
 }
 
-char16_t Decode(Repertoire const r, char16_t const code_point) {
+int Decode(Repertoire const r, char16_t const code_point) {
   static std::array<std::map<char16_t, int>*, 2> decode = []() {
     std::array<std::map<char16_t, int>*, 2> result;
     for (int r = Begin; r < End; ++r) {
@@ -74,68 +75,35 @@ char16_t Decode(Repertoire const r, char16_t const code_point) {
   return (*decode[r])[code_point];
 }
 
-var lookupEncode = {} var lookupDecode =
-    {} Object.keys(blockStartChars)
-        .forEach(function(repertoire){
-            lookupEncode[repertoire] = {} lookupDecode[repertoire] =
-                {} blockStartChars[repertoire].split('').forEach(function(chr,
-                                                                          i) {
-                  var blockStartCodePoint = chr.charCodeAt(0) var blockStartK =
-                      blockSize *
-                      i for (var offset = 0; offset < blockSize; offset++) {
-                    var codePoint =
-                        blockStartCodePoint + offset var k =
-                            blockStartK + offset lookupEncode[repertoire][k] =
-                                codePoint lookupDecode[repertoire][codePoint] =
-                                    k
-                  }
-                })}) /**
-                 If `repertoire` is 0, encode a 15-bit number K to a 16-bit
-                 Unicode code point. If `repertoire` is 1, encode a 7-bit number
-                 K to a 16-bit Unicode code point chosen from the special
-                 repertoire.
-                 */
-    encode_pair : function(pair) {
-  var k = pair.k
-    var repertoire = pair.repertoire
-
-    // Bounds check
-    var numBits = MAGIC_NUMBER_A - repertoire * MAGIC_NUMBER_B
-    if (k < 0 || (1 << numBits) <= k) {
-      throw new Error('Unrecognised `k`: ' + String(k))
-    }
-  if (!(repertoire in lookupEncode)) {
-    throw new Error('Unrecognised `repertoire`: ' + String(repertoire))
-  }
-  if (!(k in lookupEncode[repertoire])) {
-    throw new Error("Can't encode " + String(k))
-  }
-
-  return lookupEncode[repertoire][k]
-},
-
-}  // namespace internal_base32768
-
 void Base32768Encode(Array<std::uint8_t const> input,
                      Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
-  // We iterate backward.
-  // |input <= &output[1]| is still valid because we write two bytes of output
-  // from reading one byte of input, so output[1] and output[0] are written
-  // after reading input[0].  Greater values of |output| would
-  // overwrite input data before it is read, unless there is no overlap, i.e.,
-  // |&output[input_size << 1] <= input|.
-  CHECK(input.data <= &output.data[1] ||
-        &output.data[input.size << 1] <= input.data) << "bad overlap";
-  CHECK_GE(output.size, input.size << 1) << "output too small";
-  // We want the result to start at |output.data[0]|.
-  output.data = output.data + ((input.size - 1) << 1);
-  input.data = input.data + input.size - 1;
-  for (std::uint8_t const* const input_rend = input.data - input.size;
-       input.data != input_rend;
-       --input.data, output.data -= 2) {
-    std::memcpy(output.data, &byte_to_Base32768_digits[*input.data << 1], 2);
+  //TODO(phl): What if input and output overlap?
+
+  constexpr std::int64_t bits_per_byte = 8;
+  constexpr std::int64_t bits_per_code_point = 15;
+  constexpr std::int64_t bytes_per_code_point = 3;
+
+  std::uint8_t const* const input_end = input.data + input.size;
+  std::int64_t input_bit_index = 0;
+  for (; input.data != input_end; output.data += 2) {
+    std::int64_t data;
+    //TODO(phl): end of input
+    std::memcpy(&data, input.data, bytes_per_code_point);
+    std::int64_t mask =
+        (1 << bits_per_code_point - 1)
+        << (3 * bits_per_byte - bits_per_code_point - input_bit_index);
+    std::int64_t code_point = (data & mask)
+                              << (bits_per_code_point - input_bit_index);
+    CHECK_LE(0, code_point);
+    CHECK_LT(code_point, 1 << bits_per_code_point);
+    //TODO(phl):repertoire
+    std::memcpy(output.data, &Encode(TenBits, code_point), 2);
+
+    input_bit_index += bits_per_code_point;
+    input.data += input_bit_index / bits_per_byte;
+    input_bit_index %= bits_per_byte;
   }
 }
 UniqueArray<std::uint8_t> Base32768Encode(Array<std::uint8_t const> input,
@@ -180,5 +148,6 @@ UniqueArray<std::uint8_t> Base32768Decode(Array<std::uint8_t const> input) {
   return output;
 }
 
+}  // namespace internal_base32768
 }  // namespace base
 }  // namespace principia

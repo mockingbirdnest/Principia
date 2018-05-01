@@ -7,6 +7,7 @@
 
 namespace principia {
 namespace base {
+namespace internal_base32768 {
 
 // The result is upper-case.  Either |input.data <= &output.data[1]| or
 // |&output.data[input.size << 1] <= input.data| must hold, in particular,
@@ -36,6 +37,11 @@ inline void Base32768Decode(Array<std::uint8_t const> input,
 // may not be null-terminated.
 inline UniqueArray<std::uint8_t> Base32768Decode(
     Array<std::uint8_t const> input);
+
+}  // namespace internal_base32768
+
+using internal_base32768::Base32768Decode;
+using internal_base32768::Base32768Encode;
 
 }  // namespace base
 }  // namespace principia
