@@ -4,15 +4,10 @@
 
 #include <filesystem>
 #include <string>
+#include <system_error>
 
 #include "base/macros.hpp"
 #include "glog/logging.h"
-
-// In 15.7.0 preview 2 <filesystem> is not yet up to speed compared to
-// <experimental/filesystem>.
-#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER <= 191426316
-#include <experimental/filesystem>
-#endif
 
 namespace principia {
 namespace base {
@@ -25,17 +20,18 @@ inline OFStream::OFStream(std::filesystem::path const& path) {
   CHECK(path.has_filename()) << path;
   std::filesystem::path directory = path;
   directory.remove_filename();
-#if _MSC_FULL_VER <= 191426316
-  if (!std::experimental::filesystem::exists(directory.native())) {
-    CHECK(std::experimental::filesystem::create_directories(directory.native()))
-        << directory;
-  }
-#else
   if (!std::filesystem::exists(directory)) {
-    CHECK(std::filesystem::create_directories(directory))
-        << directory;
-  }
+    // VS 2017 15.7 Preview 5 has a bug where it returns false if the path ends
+    // with a \.
+#if _MSC_FULL_VER <= 191426412
+    auto d = directory.native();
+    d = d.substr(0, d.size() - 1);
+    directory = d;
 #endif
+    std::error_code e;
+    CHECK(std::filesystem::create_directories(directory, e))
+        << directory << " " << e << " " << e.message();
+  }
 #endif
   stream_.open(path);
   CHECK(stream_.good()) << path;
