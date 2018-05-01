@@ -1,4 +1,4 @@
-
+ï»¿
 #include "numerics/cbrt.hpp"
 
 #include <pmmintrin.h>
@@ -74,15 +74,15 @@ TEST_F(CubeRootTest, Sign) {
 TEST_F(CubeRootTest, ParticularlyBadRounding) {
   constexpr double y = 0x1.14E35E87EA5DFp0;
   double const x = Cbrt(y);
-  DoublePrecision<double> x² = TwoProduct(x, x);
-  DoublePrecision<DoublePrecision<double>> x³ =
-      TwoSum(TwoProduct(x².value, x), TwoProduct(x².error, x));
-  CHECK_EQ(x³.error.error, 0) << x³;
+  DoublePrecision<double> xÂ² = TwoProduct(x, x);
+  DoublePrecision<DoublePrecision<double>> xÂ³ =
+      TwoSum(TwoProduct(xÂ².value, x), TwoProduct(xÂ².error, x));
+  CHECK_EQ(xÂ³.error.error, 0) << xÂ³;
   auto const long_y =
       DoublePrecision<DoublePrecision<double>>(DoublePrecision<double>(y));
-  DoublePrecision<DoublePrecision<double>> numerator = long_y - x³;
+  DoublePrecision<DoublePrecision<double>> numerator = long_y - xÂ³;
   DoublePrecision<DoublePrecision<double>> denominator =
-      TwoSum(TwoProduct(x².value, 3), TwoProduct(x².error, 3));
+      TwoSum(TwoProduct(xÂ².value, 3), TwoProduct(xÂ².error, 3));
   double const x_error = numerator.value.value / denominator.value.value +
                          numerator.value.error / denominator.value.value;
   double const x_ulps = x_error / ULP(x);
