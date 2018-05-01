@@ -216,11 +216,9 @@ void Part::FillContainingPileUpFromMessage(
 }
 
 std::string Part::ShortDebugString() const {
-  UniqueBytes hex_id(sizeof(part_id_) * 2 + 1);
   Array<std::uint8_t const> id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
-  HexadecimalEncode(id_bytes, hex_id.get());
-  hex_id.data[sizeof(part_id_) * 2] = '\0';
+  auto const hex_id = HexadecimalEncode(id_bytes, /*null_terminated=*/true);
   return name_ + " (" + reinterpret_cast<char const*>(hex_id.data.get()) + ")";
 }
 

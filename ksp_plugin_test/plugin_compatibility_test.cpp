@@ -92,11 +92,9 @@ class PluginCompatibilityTest : public testing::Test {
     file.close();
 
     // Parse the hexadecimal data and convert it to binary data.
-    UniqueBytes bin(hex.size() / 2);
-    HexadecimalDecode(
+    auto const bin = HexadecimalDecode(
         Array<std::uint8_t const>(
-            reinterpret_cast<std::uint8_t const*>(hex.c_str()), hex.size()),
-        bin.get());
+            reinterpret_cast<std::uint8_t const*>(hex.c_str()), hex.size()));
 
     // Construct a protocol buffer from the binary data.
     google::protobuf::io::CodedInputStream coded_input_stream(

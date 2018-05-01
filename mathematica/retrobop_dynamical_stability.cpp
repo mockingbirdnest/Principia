@@ -152,9 +152,7 @@ std::unique_ptr<Message> Read(std::ifstream& file) {
   std::uint8_t const* const hexadecimal =
       reinterpret_cast<std::uint8_t const*>(line.data());
   int const hexadecimal_size = line.size();
-  UniqueBytes bytes(hexadecimal_size >> 1);
-  HexadecimalDecode({hexadecimal, hexadecimal_size},
-                    {bytes.data.get(), bytes.size});
+  auto const bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
   auto message = std::make_unique<Message>();
   CHECK(
       message->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));

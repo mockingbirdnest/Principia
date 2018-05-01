@@ -376,19 +376,13 @@ void principia__DeserializePlugin(char const* const serialization,
   std::uint8_t const* const hexadecimal =
       reinterpret_cast<std::uint8_t const*>(serialization);
   int const hexadecimal_size = serialization_size;
-  int const byte_size = hexadecimal_size >> 1;
-  // Ownership of the following pointer is transfered to the deserializer using
-  // the callback to |Push|.
-  std::uint8_t* bytes = new std::uint8_t[byte_size];
-  HexadecimalDecode({hexadecimal, hexadecimal_size}, {bytes, byte_size});
-
-  // Push the data, taking ownership of it.
-  (*deserializer)->Push(Bytes(&bytes[0], byte_size),
-                        [bytes]() { delete[] bytes; });
+  auto bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
+  auto const bytes_size = bytes.size;
+  (*deserializer)->Push(std::move(bytes));
 
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
-  if (byte_size == 0) {
+  if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
   }
@@ -875,10 +869,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   }
 
   // Convert to hexadecimal and return to the client.
-  std::int64_t const hexadecimal_size = (bytes.size << 1) + 1;
-  UniqueBytes hexadecimal(hexadecimal_size);
-  HexadecimalEncode(bytes, hexadecimal.get());
-  hexadecimal.data.get()[hexadecimal_size - 1] = '\0';
+  auto hexadecimal = HexadecimalEncode(bytes, /*null_terminated=*/true);
   return m.Return(reinterpret_cast<char const*>(hexadecimal.data.release()));
 }
 
