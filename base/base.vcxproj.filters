@@ -149,6 +149,12 @@
     <ClInclude Include="sink_source_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="base32768.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base32768_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
