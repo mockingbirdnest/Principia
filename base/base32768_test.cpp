@@ -27,7 +27,6 @@ class Base32768Test : public testing::Test {
     EXPECT_EQ(0,
               std::char_traits<char16_t>::compare(
                   output32768, base32768, base32768_length));
-    LOG(ERROR) << base32768_length;
     for (int i = 0; i < base32768_length; ++i) {
       EXPECT_EQ(output32768[i], base32768[i])
           << "index=" << i << " actual=" << std::hex << output32768[i]
