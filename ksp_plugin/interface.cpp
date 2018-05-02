@@ -98,7 +98,6 @@ using quantities::si::Tonne;
 namespace {
 
 constexpr char gipfeli[] = "gipfeli";
-constexpr char none[] = "none";
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
 
@@ -180,7 +179,7 @@ serialization::GravityModel::Body MakeGravityModel(
 
 std::unique_ptr<google::compression::Compressor> NewCompressor(
     const char* const compressor) {
-  if (compressor == nullptr || strcmp(compressor, none) == 0) {
+  if (compressor == nullptr || strlen(compressor) == 0) {
     return nullptr;
   } else if (strcmp(compressor, gipfeli) == 0) {
     return google::compression::NewGipfeliCompressor();
