@@ -17,6 +17,13 @@ namespace base {
 
 namespace internal_base32768 {
 
+constexpr std::int64_t bits_per_byte = 8;
+constexpr std::int64_t bits_per_code_point = 15;
+constexpr std::int64_t bytes_per_code_point =
+    (bits_per_code_point + 2 * bits_per_byte - 2) / bits_per_byte;
+static_assert(bytes_per_code_point == 3,
+              "End of input padding below won't be correct");
+
 enum Repertoire {
   Begin = 0,
   TenBits = 0,
@@ -81,25 +88,40 @@ void Base32768Encode(Array<std::uint8_t const> input,
   CHECK_NOTNULL(output.data);
   //TODO(phl): What if input and output overlap?
 
-  constexpr std::int64_t bits_per_byte = 8;
-  constexpr std::int64_t bits_per_code_point = 15;
-  constexpr std::int64_t bytes_per_code_point = 3;
-
   std::uint8_t const* const input_end = input.data + input.size;
   std::int64_t input_bit_index = 0;
   for (; input.data != input_end; output.data += 2) {
     std::int64_t data;
-    //TODO(phl): end of input
-    std::memcpy(&data, input.data, bytes_per_code_point);
-    std::int64_t mask =
-        (1 << bits_per_code_point - 1)
-        << (3 * bits_per_byte - bits_per_code_point - input_bit_index);
+
+    // Prepare for normal encoding.
+    std::int64_t mask = (1 << bits_per_code_point - 1)
+                        << (bytes_per_code_point * bits_per_byte -
+                            bits_per_code_point - input_bit_index);
+    Repertoire repertoire = TenBits;
+
+    if (input_end - input.data >= bytes_per_code_point) {
+      // Extract three bytes.
+      std::memcpy(&data, input.data, bytes_per_code_point);
+    } else if (input_end - input.data == 2) {
+      // Extract the last two bytes and pad with 1s.
+      std::memcpy(&data, input.data, 2);
+      data <<= bits_per_byte;
+      data |= (1 << bits_per_byte) - 1;
+    } else if (input_end - input.data == 1) {
+      // Extract the last byte and pad with 1s.
+      std::memcpy(&data, input.data, 1);
+      data <<= bits_per_byte;
+      data |= (1 << bits_per_byte) - 1;
+      // Switch to special encoding.
+      mask = (1 << bits_per_code_point - 1)
+             << (2 * bits_per_byte - bits_per_code_point - input_bit_index);
+      repertoire = TwoBits;
+    }
     std::int64_t code_point = (data & mask)
                               << (bits_per_code_point - input_bit_index);
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
-    //TODO(phl):repertoire
-    std::memcpy(output.data, &Encode(TenBits, code_point), 2);
+    std::memcpy(output.data, &Encode(repertoire, code_point), 2);
 
     input_bit_index += bits_per_code_point;
     input.data += input_bit_index / bits_per_byte;
@@ -123,21 +145,6 @@ void Base32768Decode(Array<std::uint8_t const> input,
                      Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
-  input.size &= ~1;
-  // |output <= &input[1]| is still valid because we write one byte of output
-  // from reading two bytes of input, so output[0] is written after reading
-  // input[0] and input[1].  Greater values of |output| would overwrite input
-  // data before it is read, unless there is no overlap, i.e.,
-  // |&input[input_size] <= output|.
-  CHECK(output.data <= &input.data[1] ||
-        &input.data[input.size] <= output.data) << "bad overlap";
-  CHECK_GE(output.size, input.size / 2) << "output too small";
-  for (std::uint8_t const* const input_end = input.data + input.size;
-       input.data != input_end;
-       input.data += 2, ++output.data) {
-    *output.data = (Base32768_digits_to_nibble[*input.data] << 4) |
-                   Base32768_digits_to_nibble[*(input.data + 1)];
-  }
 }
 
 UniqueArray<std::uint8_t> Base32768Decode(Array<std::uint8_t const> input) {
