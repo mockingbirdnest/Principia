@@ -101,8 +101,8 @@ TEST_F(CubeRootTest, BoundsOfTheRescalingRange) {
   EXPECT_THAT(Cbrt(0x1.0'0000'0000'0002p-225),
               Eq(0x1p-75 * Cbrt(0x1.0'0000'0000'0002p0)));
   EXPECT_THAT(Cbrt(0x1p237), Eq(0x1p79));
-  EXPECT_THAT(Cbrt(0x1.F'FFFF'FFFF'FFFFp236),
-              Eq(0x1p79 * Cbrt(0x1.F'FFFF'FFFF'FFFFp-1)));
+  EXPECT_THAT(Cbrt(0x1.F'FFFF'FFFF'FFFEp236),
+              Eq(0x1p79 * Cbrt(0x1.F'FFFF'FFFF'FFFEp-1)));
 }
 
 TEST_F(CubeRootTest, Sign) {
