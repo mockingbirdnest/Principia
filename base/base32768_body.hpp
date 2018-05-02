@@ -91,13 +91,13 @@ void Base32768Encode(Array<std::uint8_t const> input,
 
   std::uint8_t const* const input_end = input.data + input.size;
   std::int64_t input_bit_index = 0;
-  while (input.data != input_end) {
+  while (input.data < input_end) {
     std::int32_t data;
 
     // Prepare for normal encoding.
-    std::int32_t mask = ((1 << bits_per_code_point) - 1)
-                        << (bytes_per_code_point * bits_per_byte -
-                            bits_per_code_point - input_bit_index);
+    std::int32_t shift = bytes_per_code_point * bits_per_byte -
+                         bits_per_code_point - input_bit_index;
+    std::int32_t mask = ((1 << bits_per_code_point) - 1) << shift;
     Repertoire repertoire = TenBits;
 
     LOG(ERROR) << input_end - input.data;
@@ -117,22 +117,23 @@ void Base32768Encode(Array<std::uint8_t const> input,
              ((1 << 2 * bits_per_byte) - 1);
       if (input_bit_index > 0) {
         // Switch to special encoding.
-        mask = ((1 << bits_per_final_code_point) - 1)
-               << (bytes_per_code_point * bits_per_byte -
-                   bits_per_final_code_point - input_bit_index);
+        shift = bytes_per_code_point * bits_per_byte -
+                bits_per_final_code_point - input_bit_index;
+        mask = ((1 << bits_per_final_code_point) - 1) << shift;
         repertoire = TwoBits;
       }
     }
     LOG(ERROR) << std::hex << data << " " << mask << " " << input_bit_index;
-    std::int32_t code_point =
-        (data & mask) >> (bytes_per_code_point * bits_per_byte -
-                          bits_per_code_point - input_bit_index);
+    std::int32_t code_point = (data & mask) >> shift;
     LOG(ERROR) << std::hex << code_point;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
     LOG(ERROR) << std::hex << Encode(repertoire, code_point);
     std::memcpy(output.data, &Encode(repertoire, code_point), sizeof(char16_t));
 
+    // The following computation may cause |input.data| to overshoot the end if
+    // using the special encoding at the end.  This is safe as soon as the loop
+    // condition uses <.
     input_bit_index += bits_per_code_point;
     input.data += input_bit_index / bits_per_byte;
     input_bit_index %= bits_per_byte;
