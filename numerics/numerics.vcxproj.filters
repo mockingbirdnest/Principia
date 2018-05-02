@@ -77,6 +77,9 @@
     <ClInclude Include="newhall_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="cbrt.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -104,6 +107,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="newhall_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cbrt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cbrt_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
