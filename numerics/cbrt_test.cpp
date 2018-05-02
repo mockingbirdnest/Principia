@@ -20,33 +20,19 @@ using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Truly;
 
-#define EXPECT_SIGNAL_NONE(double_expression, signals)        \
-  do {                                                      \
-    std::feclearexcept(FE_ALL_EXCEPT);                      \
-    double const volatile expression = (double_expression); \
-    EXPECT_THAT(std::fetestexcept(signals), Eq(0))          \
-        << "while evaluating " #double_expression;          \
-  } while (false)
-
-#define EXPECT_SIGNAL_ALL(double_expression, signals)           \
-  do {                                                      \
-    std::feclearexcept(FE_ALL_EXCEPT);                      \
-    double const volatile expression = (double_expression); \
-    EXPECT_THAT(std::fetestexcept(signals), Eq(signals))    \
-        << "while evaluating " #double_expression;          \
+#define EXPECT_SIGNALS(expression, exceptions)                         \
+  do {                                                                 \
+    std::feclearexcept(FE_ALL_EXCEPT);                                 \
+    auto const volatile evaluated_signaling_expression = (expression); \
+    EXPECT_THAT(std::fetestexcept(FE_ALL_EXCEPT), Eq((exceptions)))    \
+        << "while evaluating " #expression;                            \
   } while (false)
 
 class CubeRootTest : public ::testing::Test {
  protected:
-  static bool is_signaling(double const x) {
-    if (!std::isnan(x)) {
-      return false;
-    }
-    _MM_SET_EXCEPTION_STATE(0);
-    double const volatile y = x * x;
-    LOG(ERROR) <<std::hex<< Bits(y);
-    return _MM_GET_EXCEPTION_STATE() & _MM_EXCEPT_INVALID;
-  }
+  CubeRootTest()
+      : quiet_dead_beef_(FromBits(0x7FF8'0000'DEAD'BEEF)),
+        signaling_dead_beef_(FromBits(0x7FF0'0000'DEAD'BEEF)) {}
 
   static std::uint64_t Bits(double const x) {
     return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_set_sd(x)));
@@ -59,6 +45,11 @@ class CubeRootTest : public ::testing::Test {
   static double ULP(double const x) {
     return FromBits(Bits(x) + 1) - x;
   }
+
+  double const quiet_dead_beef_;
+  // Microsoft's std::numeric_limits<double>::signaling_NaN() is actually quiet,
+  // so we make our own.
+  double const signaling_dead_beef_;
 };
 
 TEST_F(CubeRootTest, Cbrt2) {
@@ -84,22 +75,25 @@ TEST_F(CubeRootTest, SpecialValues) {
   EXPECT_THAT(Cbrt(-std::numeric_limits<double>::quiet_NaN()),
               Truly(&std::isnan<double>));
   // Preserve the payload of quiet NaNs as per IEEE 754-2008 6.2.
-  EXPECT_THAT(Bits(Cbrt(FromBits(0x7FF8'0000'DEAD'BEEF))),
-              Eq(0x7FF8'0000'DEAD'BEEF));
-  // Microsoft's std::numeric_limits<double>::signaling_NaN() is actually quiet,
-  // so we make our own.
-  EXPECT_THAT(Bits(Cbrt(FromBits(0x7FF0'0000'DEAD'BEEF))),
-              Eq(0x7FF8'0000'DEAD'BEEF));
+  EXPECT_THAT(Bits(Cbrt(quiet_dead_beef_)), Eq(Bits(quiet_dead_beef_)));
+  EXPECT_THAT(Bits(Cbrt(signaling_dead_beef_)), Eq(Bits(quiet_dead_beef_)));
 }
 
 // This cube root is not correct as far as the inexact exception is concerned,
 // but it should be OK otherwise (in other words, the only other exception it
 // signals is the invalid operation exception on an sNaN operand).
 TEST_F(CubeRootTest, Exceptions) {
-  EXPECT_SIGNAL_ALL(Cbrt(2), FE_INEXACT);
-  EXPECT_SIGNAL_NONE(Cbrt(2), ~FE_INEXACT);
-  EXPECT_SIGNAL_ALL(Cbrt(8), FE_INEXACT);  // This is incorrect.
-  EXPECT_SIGNAL_NONE(Cbrt(8), ~FE_INEXACT);
+  EXPECT_SIGNALS(Cbrt(2), FE_INEXACT);
+  EXPECT_SIGNALS(Cbrt(8), FE_INEXACT);  // Erroneously.
+  EXPECT_SIGNALS(Cbrt(signaling_dead_beef_), FE_INVALID);
+  EXPECT_SIGNALS(Cbrt(quiet_dead_beef_), 0);
+  EXPECT_SIGNALS(Cbrt(0), 0);
+  EXPECT_SIGNALS(Cbrt(-0.0), 0);
+  EXPECT_SIGNALS(Cbrt(std::numeric_limits<double>::infinity()), 0);
+  EXPECT_SIGNALS(Cbrt(-std::numeric_limits<double>::infinity()), 0);
+  EXPECT_SIGNALS(Cbrt(0x1p1021), FE_INEXACT);
+  EXPECT_SIGNALS(Cbrt(0x1p-1022), FE_INEXACT);
+  EXPECT_SIGNALS(Cbrt(0x1p-1073), FE_INEXACT);
 }
 
 TEST_F(CubeRootTest, BoundsOfTheRescalingRange) {

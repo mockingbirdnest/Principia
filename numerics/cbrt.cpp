@@ -32,6 +32,14 @@ double Cbrt(double const y) {
   __m128d const sign = _mm_and_pd(sign_bit, y_0);
   __m128d const abs_y_0 = _mm_andnot_pd(sign_bit, y_0);
   double const abs_y = _mm_cvtsd_f64(abs_y_0);
+  if (y != y) {
+    // The usual logic will produce a qNaN when given a NaN, but will not
+    // preserve the payload and will signal overflows (q will be a nonsensical
+    // large value, and q³ will overflow).  Further, the rescaling comparisons
+    // will signal the invalid operation exception for quiet NaNs (although that
+    // would be easy to work around using the unordered compare intrinsics).
+    return y + y;
+  }
   // TODO(egg): we take the absolute value two or three times when going through
   // the rescaling paths; consider having a cbrt_positive function, or a
   // cbrt_positive_unscaled function and four rescaling paths.
