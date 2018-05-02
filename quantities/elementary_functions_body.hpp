@@ -41,7 +41,7 @@ SquareRoot<Q> Sqrt(Q const& x) {
 
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
-  return SIUnit<CubeRoot<Q>>() * numerics::cbrt(x / SIUnit<Q>());
+  return SIUnit<CubeRoot<Q>>() * numerics::Cbrt(x / SIUnit<Q>());
 }
 
 template<int exponent>
