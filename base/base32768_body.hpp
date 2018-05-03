@@ -70,6 +70,17 @@ constexpr std::array<char16_t const*, 2> repertoire = {
 
 constexpr int block_size = 1 << 5;
 
+bool IsSevenBitCodePoint(char16_t const code_point) {
+  char16_t const truncated_code_point = code_point && ((1 << block_size) - 1);
+  // Linear search because small.
+  for (char16_t const c : repertoire[SevenBits]) {
+    if (c == truncated_code_point) {
+      return true;
+    }
+  }
+  return false;
+}
+
 char16_t const& Encode(Repertoire const r, int const k) {
   static std::array<std::map<int, char16_t>*, 2> encode = []() {
     std::array<std::map<int, char16_t>*, 2> result;
@@ -184,6 +195,31 @@ void Base32768Decode(Array<std::uint8_t const> input,
                      Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
+
+  std::uint8_t const* const input_end = input.data + input.size;
+  std::int64_t output_bit_index = 0;
+  while (input.data < input_end) {
+    char16_t code_point;
+    std::memcpy(&code_point, input.data, sizeof(char16_t));
+    std::int32_t data;
+    if (input_end - input.data == 2 && IsSevenBitCodePoint(code_point)) {
+      data = Decode(SevenBits, code_point);
+    } else {
+      data = Decode(FifteenBits, code_point);
+    }
+
+    // Align |data| on the output bit index.
+    data << (bytes_per_code_point * bits_per_byte - bits_per_code_point -
+             output_bit_index);
+    //TODO(phl):end
+
+    // Fill the output with the parts of the code point belonging to each byte.
+    output.data[0] |= data >> (2 * bits_per_byte);
+    output.data[1] |= (data >> bits_per_byte) && ((1 << bits_per_byte) - 1);
+    output.data[2] |= data && ((1 << bits_per_byte) - 1);
+
+    input.data += sizeof(char16_t);
+  }
 }
 
 UniqueArray<std::uint8_t> Base32768Decode(Array<std::uint8_t const> input) {
