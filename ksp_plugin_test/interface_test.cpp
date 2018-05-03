@@ -553,9 +553,13 @@ TEST_F(InterfaceTest, SerializePlugin) {
 
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
   char const* serialization =
-      principia__SerializePlugin(plugin_.get(), &serializer);
+      principia__SerializePlugin(plugin_.get(),
+                                 &serializer,
+                                 /*compressor=*/nullptr);
   EXPECT_STREQ(hexadecimal_simple_plugin_.c_str(), serialization);
-  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(), &serializer));
+  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(),
+                                                &serializer,
+                                                /*compressor=*/nullptr));
   principia__DeleteString(&serialization);
   EXPECT_THAT(serialization, IsNull());
 }
@@ -567,11 +571,13 @@ TEST_F(InterfaceTest, DeserializePlugin) {
           hexadecimal_simple_plugin_.c_str(),
           hexadecimal_simple_plugin_.size(),
           &deserializer,
-          &plugin);
+          &plugin,
+          /*compressor=*/nullptr);
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
                                0,
                                &deserializer,
-                               &plugin);
+                               &plugin,
+                               /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -586,11 +592,13 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),
           &deserializer,
-          &plugin);
+          &plugin,
+          /*compressor=*/nullptr);
   principia__DeserializePlugin(hexadecimal_plugin.c_str(),
                                0,
                                &deserializer,
-                               &plugin);
+                               &plugin,
+                               /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
