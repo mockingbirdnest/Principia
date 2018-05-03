@@ -71,10 +71,12 @@ constexpr std::array<char16_t const*, 2> repertoire = {
 constexpr int block_size = 1 << 5;
 
 bool IsSevenBitCodePoint(char16_t const code_point) {
-  char16_t const truncated_code_point = code_point && ((1 << block_size) - 1);
+  char16_t const truncated_code_point = code_point && (block_size - 1);
   // Linear search because small.
-  for (char16_t const c : repertoire[SevenBits]) {
-    if (c == truncated_code_point) {
+  for (int i = 0;
+       i < std::char_traits<char16_t>::length(repertoire[SevenBits]);
+       ++i) {
+    if (repertoire[SevenBits][i] == truncated_code_point) {
       return true;
     }
   }
@@ -199,24 +201,34 @@ void Base32768Decode(Array<std::uint8_t const> input,
   std::uint8_t const* const input_end = input.data + input.size;
   std::int64_t output_bit_index = 0;
   while (input.data < input_end) {
+    bool const at_end = input_end - input.data == 2;
     char16_t code_point;
     std::memcpy(&code_point, input.data, sizeof(char16_t));
     std::int32_t data;
-    if (input_end - input.data == 2 && IsSevenBitCodePoint(code_point)) {
-      data = Decode(SevenBits, code_point);
-    } else {
-      data = Decode(FifteenBits, code_point);
+    std::int32_t shift = bytes_per_code_point * bits_per_byte -
+                         bits_per_code_point - output_bit_index;
+    Repertoire repertoire = FifteenBits;
+    if (at_end && IsSevenBitCodePoint(code_point)) {
+      shift = bytes_per_code_point * bits_per_byte - bits_per_final_code_point -
+              output_bit_index;
+      repertoire = SevenBits;
     }
 
     // Align |data| on the output bit index.
-    data << (bytes_per_code_point * bits_per_byte - bits_per_code_point -
-             output_bit_index);
-    //TODO(phl):end
+    data = Decode(repertoire, code_point);
+    data <<= shift;
 
     // Fill the output with the parts of the code point belonging to each byte.
     output.data[0] |= data >> (2 * bits_per_byte);
-    output.data[1] |= (data >> bits_per_byte) && ((1 << bits_per_byte) - 1);
-    output.data[2] |= data && ((1 << bits_per_byte) - 1);
+    ++output.data;
+    if (shift < 2 * bits_per_byte) {
+      output.data[0] |= (data >> bits_per_byte) && ((1 << bits_per_byte) - 1);
+      ++output.data;
+    }
+    if (shift < bits_per_byte) {
+      output.data[0] |= data && ((1 << bits_per_byte) - 1);
+      ++output.data;
+    }
 
     input.data += sizeof(char16_t);
   }
