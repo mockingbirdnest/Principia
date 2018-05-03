@@ -255,11 +255,11 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   auto const periods_at_epoch =
       ComputePeriods(*ephemeris, ephemeris->t_min());
   EXPECT_THAT(RelativeError(periods_at_epoch.at(laythe_),
-                            expected_periods_.at(laythe_)), IsNear(1.36e-3));
+                            expected_periods_.at(laythe_)), IsNear(1.4e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(vall_),
                             expected_periods_.at(vall_)), IsNear(2.6e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.908e-3));
+                            expected_periods_.at(tylo_)), IsNear(0.91e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(bop_),
                             expected_periods_.at(bop_)), IsNear(9.0e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(pol_),
@@ -269,13 +269,13 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_short_term.at(laythe_),
-                            expected_periods_.at(laythe_)), IsNear(1.51e-3));
+                            expected_periods_.at(laythe_)), IsNear(1.5e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(vall_),
-                            expected_periods_.at(vall_)), IsNear(20.8e-3));
+                            expected_periods_.at(vall_)), IsNear(21e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(10.4e-3));
+                            expected_periods_.at(tylo_)), IsNear(10e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(63.5e-3));
+                            expected_periods_.at(bop_)), IsNear(64e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
                             expected_periods_.at(pol_)), IsNear(4.2e-3));
 
@@ -290,9 +290,9 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Stock)) {
   EXPECT_THAT(periods_at_mid_term.at(vall_), Eq(Infinity<Time>()));
   EXPECT_THAT(periods_at_mid_term.at(tylo_), Eq(Infinity<Time>()));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(0.384));
+                            expected_periods_.at(bop_)), IsNear(0.38));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(0.297));
+                            expected_periods_.at(pol_)), IsNear(0.30));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
@@ -314,11 +314,11 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_epoch.at(vall_),
                             expected_periods_.at(vall_)), IsNear(5.0e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.738e-3));
+                            expected_periods_.at(tylo_)), IsNear(0.74e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(12.9e-3));
+                            expected_periods_.at(bop_)), IsNear(13e-3));
   EXPECT_THAT(RelativeError(periods_at_epoch.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(10.6e-3));
+                            expected_periods_.at(pol_)), IsNear(11e-3));
 
   auto const periods_at_short_term =
       ComputePeriods(*ephemeris,
@@ -328,11 +328,11 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_short_term.at(vall_),
                             expected_periods_.at(vall_)), IsNear(7.8e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.758e-3));
+                            expected_periods_.at(tylo_)), IsNear(0.76e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(bop_),
                             expected_periods_.at(bop_)), IsNear(7.6e-3));
   EXPECT_THAT(RelativeError(periods_at_short_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(21.9e-3));
+                            expected_periods_.at(pol_)), IsNear(22e-3));
 
   ephemeris->Prolong(mid_term_);
   EXPECT_OK(ephemeris->last_severe_integration_status());
@@ -344,9 +344,9 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(vall_),
                             expected_periods_.at(vall_)), IsNear(3.0e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.729e-3));
+                            expected_periods_.at(tylo_)), IsNear(0.73e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(14.9e-3));
+                            expected_periods_.at(bop_)), IsNear(15e-3));
   EXPECT_THAT(RelativeError(periods_at_mid_term.at(pol_),
                             expected_periods_.at(pol_)), IsNear(9.5e-3));
 
@@ -358,13 +358,13 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
                             expected_periods_.at(laythe_)), IsNear(4.8e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
-                            expected_periods_.at(vall_)), IsNear(5.65e-3));
+                            expected_periods_.at(vall_)), IsNear(5.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),
-                            expected_periods_.at(tylo_)), IsNear(0.745e-3));
+                            expected_periods_.at(tylo_)), IsNear(0.75e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(bop_),
-                            expected_periods_.at(bop_)), IsNear(42.70e-3));
+                            expected_periods_.at(bop_)), IsNear(43e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(pol_),
-                            expected_periods_.at(pol_)), IsNear(9.93e-3));
+                            expected_periods_.at(pol_)), IsNear(9.9e-3));
 
   LogEphemeris(*ephemeris,
                ephemeris->t_max() - 5 * longest_joolian_period_,
