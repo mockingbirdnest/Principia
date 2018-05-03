@@ -70,6 +70,7 @@ TEST_F(Base32768Test, EncodeCaseEmpty) {
   char const binary[] = "";
   char16_t const base32768[] = u"";
   CheckEncoding(binary, /*binary_length=*/0, base32768);
+  CheckDecoding(binary, /*binary_length=*/0, base32768);
 }
 
 TEST_F(Base32768Test, EncodeEveryByte) {
@@ -124,6 +125,7 @@ TEST_F(Base32768Test, EncodeEveryByte) {
                                u"默ꍜꖞ藏昧蹋鹙꒾"
                                u"ꡟ";
   CheckEncoding(binary, /*binary_length=*/256, base32768);
+  CheckDecoding(binary, /*binary_length=*/256, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWrRle) {
@@ -188,6 +190,7 @@ TEST_F(Base32768Test, EncodeHatetrisWrRle) {
                                u"◐扨䑀ᯗңᒁ虠螐ڰ"
                                u"ɏ";
   CheckEncoding(binary, /*binary_length=*/306, base32768);
+  CheckDecoding(binary, /*binary_length=*/306, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWr) {
@@ -262,6 +265,7 @@ TEST_F(Base32768Test, EncodeHatetrisWr) {
                                u"䙊箺紋厷儢箸僣"
                                u"ᠵ暊";
   CheckEncoding(binary, /*binary_length=*/360, base32768);
+  CheckDecoding(binary, /*binary_length=*/360, base32768);
 }
 
 }  // namespace base

@@ -196,10 +196,9 @@ UniqueArray<std::uint8_t> Base32768Encode(Array<std::uint8_t const> input,
 void Base32768Decode(Array<std::uint8_t const> input,
                      Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
-  CHECK_NOTNULL(output.data);
+  CHECK(input.size == 0 || output.data != nullptr);
 
   std::uint8_t const* const input_end = input.data + input.size;
-  output.data[0] = 0;
   std::int64_t output_bit_index = 0;
   while (input.data < input_end) {
     bool const at_end = input_end - input.data == 2;
@@ -218,20 +217,22 @@ void Base32768Decode(Array<std::uint8_t const> input,
 
     // Align |data| on the output bit index.
     data = Decode(repertoire, code_point);
-    LOG(ERROR) << std::hex << data << " " << shift;
     data <<= shift;
-    LOG(ERROR) << std::hex << data;
+    LOG(ERROR) << std::hex << data << " " << shift;
 
     // Fill the output with the parts of the code point belonging to each byte.
-    output.data[0] |= (data >> (2 * bits_per_byte));
-    LOG(ERROR)<<std::hex<< (data >> (2 * bits_per_byte));
-    LOG(ERROR) << std::hex<< (int)output.data[0];
+    if (output_bit_index == 0) {
+      output.data[0] = (data >> (2 * bits_per_byte));
+    } else {
+      output.data[0] |= (data >> (2 * bits_per_byte));
+    }
+    LOG(ERROR) << std::hex << (int)output.data[0];
     if (shift < 2 * bits_per_byte) {
       output.data[1] = (data >> bits_per_byte) & ((1 << bits_per_byte) - 1);
-      LOG(ERROR) << std::hex << (int)output.data[0];
+      LOG(ERROR) << std::hex << (int)output.data[1];
       if (shift < bits_per_byte) {
         output.data[2] = data & ((1 << bits_per_byte) - 1);
-        LOG(ERROR) << std::hex << (int)output.data[0];
+        LOG(ERROR) << std::hex << (int)output.data[2];
       }
     }
 
