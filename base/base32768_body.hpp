@@ -199,11 +199,13 @@ void Base32768Decode(Array<std::uint8_t const> input,
   CHECK_NOTNULL(output.data);
 
   std::uint8_t const* const input_end = input.data + input.size;
+  output.data[0] = 0;
   std::int64_t output_bit_index = 0;
   while (input.data < input_end) {
     bool const at_end = input_end - input.data == 2;
     char16_t code_point;
     std::memcpy(&code_point, input.data, sizeof(char16_t));
+    LOG(ERROR) << std::hex << code_point;
     std::int32_t data;
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - output_bit_index;
@@ -216,20 +218,26 @@ void Base32768Decode(Array<std::uint8_t const> input,
 
     // Align |data| on the output bit index.
     data = Decode(repertoire, code_point);
+    LOG(ERROR) << std::hex << data << " " << shift;
     data <<= shift;
+    LOG(ERROR) << std::hex << data;
 
     // Fill the output with the parts of the code point belonging to each byte.
-    output.data[0] |= data >> (2 * bits_per_byte);
-    ++output.data;
+    output.data[0] |= (data >> (2 * bits_per_byte));
+    LOG(ERROR)<<std::hex<< (data >> (2 * bits_per_byte));
+    LOG(ERROR) << std::hex<< (int)output.data[0];
     if (shift < 2 * bits_per_byte) {
-      output.data[0] |= (data >> bits_per_byte) && ((1 << bits_per_byte) - 1);
-      ++output.data;
-    }
-    if (shift < bits_per_byte) {
-      output.data[0] |= data && ((1 << bits_per_byte) - 1);
-      ++output.data;
+      output.data[1] = (data >> bits_per_byte) & ((1 << bits_per_byte) - 1);
+      LOG(ERROR) << std::hex << (int)output.data[0];
+      if (shift < bits_per_byte) {
+        output.data[2] = data & ((1 << bits_per_byte) - 1);
+        LOG(ERROR) << std::hex << (int)output.data[0];
+      }
     }
 
+    output_bit_index += bits_per_code_point;
+    output.data += output_bit_index / bits_per_byte;
+    output_bit_index %= bits_per_byte;
     input.data += sizeof(char16_t);
   }
 }
