@@ -1517,11 +1517,7 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
                                    /*mean_motion_ulps=*/0,
                                    /*period_ulps=*/0,
                                    /*hyperbolic_mean_motion_ulps=*/0,
-#if PRINCIPIA_COMPILER_MSVC
-                                   /*hyperbolic_excess_velocity_ulps=*/1,
-#else
                                    /*hyperbolic_excess_velocity_ulps=*/0,
-#endif
                                    /*semiminor_axis_ulps=*/0,
                                    /*impact_parameter_ulps=*/1,
                                    /*semilatus_rectum_ulps=*/1,
