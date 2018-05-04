@@ -146,7 +146,7 @@ BoundedArray<Element, max_size>::size() const {
 inline UniqueBytes SerializeAsBytes(
     google::protobuf::MessageLite const& message) {
   UniqueBytes bytes(message.ByteSizeLong());
-  message.SerializeToArray(bytes.data, bytes.size);
+  message.SerializeToArray(bytes.data.get(), bytes.size);
   return std::move(bytes);
 }
 
