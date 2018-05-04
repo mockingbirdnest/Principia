@@ -16,6 +16,7 @@ namespace principia {
 namespace astronomy {
 
 using base::Fingerprint2011;
+using base::SerializeAsBytes;
 using geometry::Frame;
 using physics::SolarSystem;
 using ::testing::Eq;
@@ -40,9 +41,7 @@ TEST_F(KSPFingerprintTest, Stock) {
   auto const hierarchical_system = solar_system_.MakeHierarchicalSystem();
   serialization::HierarchicalSystem message;
   hierarchical_system->WriteToMessage(&message);
-  std::string const serialized_message = message.SerializeAsString();
-  uint64_t const fingerprint = Fingerprint2011(serialized_message.c_str(),
-                               serialized_message.size());
+  uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Stock KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
   EXPECT_THAT(fingerprint, Eq(KSPStockSystemFingerprint));
@@ -53,9 +52,7 @@ TEST_F(KSPFingerprintTest, Corrected) {
   auto const hierarchical_system = solar_system_.MakeHierarchicalSystem();
   serialization::HierarchicalSystem message;
   hierarchical_system->WriteToMessage(&message);
-  std::string const serialized_message = message.SerializeAsString();
-  uint64_t const fingerprint = Fingerprint2011(serialized_message.c_str(),
-                               serialized_message.size());
+  uint64_t const fingerprint = Fingerprint2011(SerializeAsBytes(message).get());
   LOG(INFO) << "Corrected KSP fingerprint is 0x" << std::hex << std::uppercase
             << fingerprint;
   EXPECT_THAT(fingerprint, Eq(KSPStabilizedSystemFingerprint));

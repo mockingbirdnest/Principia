@@ -10,6 +10,7 @@
 namespace principia {
 
 using base::HexadecimalEncode;
+using base::SerializeAsBytes;
 using base::UniqueBytes;
 
 namespace journal {
@@ -25,10 +26,7 @@ Recorder::~Recorder() {
 
 void Recorder::Write(serialization::Method const& method) {
   CHECK_LT(0, method.ByteSize()) << method.DebugString();
-  UniqueBytes bytes(method.ByteSize());
-  method.SerializeToArray(bytes.data.get(), static_cast<int>(bytes.size));
-
-  auto const hexadecimal = HexadecimalEncode(bytes.get(),
+  auto const hexadecimal = HexadecimalEncode(SerializeAsBytes(method).get(),
                                              /*null_terminated=*/true);
   stream_ << hexadecimal.data.get() << "\n";
   stream_.flush();

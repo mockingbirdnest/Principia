@@ -45,9 +45,8 @@ void HexadecimalEncode(Array<std::uint8_t const> input, Array<char> output) {
   // after reading input[0].  Greater values of |output| would
   // overwrite input data before it is read, unless there is no overlap, i.e.,
   // |&output[input_size << 1] <= input|.
-  CHECK(reinterpret_cast<char const*>(input.data) <= &output.data[1] ||
-        &output.data[input.size << 1] <=
-            reinterpret_cast<char const*>(input.data))
+  CHECK(input.data <= static_cast<void*>(&output.data[1]) ||
+        static_cast<void*>(&output.data[input.size << 1]) <= input.data)
       << "bad overlap";
   CHECK_GE(output.size, input.size << 1) << "output too small";
   // We want the result to start at |output.data[0]|.
@@ -80,8 +79,8 @@ void HexadecimalDecode(Array<char const> input, Array<std::uint8_t> output) {
   // input[0] and input[1].  Greater values of |output| would overwrite input
   // data before it is read, unless there is no overlap, i.e.,
   // |&input[input_size] <= output|.
-  CHECK(reinterpret_cast<char*>(output.data) <= &input.data[1] ||
-        &input.data[input.size] <= reinterpret_cast<char*>(output.data))
+  CHECK(static_cast<void*>(output.data) <= &input.data[1] ||
+        &input.data[input.size] <= static_cast<void*>(output.data))
       << "bad overlap";
   CHECK_GE(output.size, input.size / 2) << "output too small";
   for (char const* const input_end = input.data + input.size;

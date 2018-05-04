@@ -6,6 +6,8 @@
 #include <memory>
 #include <string>
 
+#include "google/protobuf/message_lite.h"
+
 namespace principia {
 namespace base {
 
@@ -120,6 +122,9 @@ class BoundedArray final {
 // Specializations.
 using Bytes = Array<std::uint8_t>;
 using UniqueBytes = UniqueArray<std::uint8_t>;
+
+inline UniqueBytes SerializeAsBytes(
+    google::protobuf::MessageLite const& message);
 
 // Deep comparisons.
 template<typename LeftElement, typename RightElement>

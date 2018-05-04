@@ -9,6 +9,9 @@
 namespace principia {
 namespace testing_utilities {
 
+// TODO(egg): This should use |UniqueBytes| or |Bytes| rather than |std::string|
+// for non-text bytes.
+
 inline std::string ReadFromBinaryFile(std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
   CHECK(file.good()) << filename;

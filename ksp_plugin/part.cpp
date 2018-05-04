@@ -219,7 +219,7 @@ std::string Part::ShortDebugString() const {
   Array<std::uint8_t const> id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
   auto const hex_id = HexadecimalEncode(id_bytes, /*null_terminated=*/true);
-  return name_ + " (" + reinterpret_cast<char const*>(hex_id.data.get()) + ")";
+  return name_ + " (" + hex_id.data.get() + ")";
 }
 
 std::ostream& operator<<(std::ostream& out, Part const& part) {
