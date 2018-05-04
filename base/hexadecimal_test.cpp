@@ -18,43 +18,37 @@ namespace base {
 class HexadecimalTest : public testing::Test {
  protected:
   HexadecimalTest()
-    : bytes_(byte_count),
+    : bytes_("\x00\x7F\x80\xFF\x67\x68\0A\x07"),
+      lowercase_digits_("00""7f""80""ff""67""68""0a""07"),
+      uppercase_digits_("00""7F""80""FF""67""68""0A""07"),
       digits_(digit_count) {
-    std::string const lowercase_digits = "00""7f""80""ff""67""68""0a""07";
-    std::string const uppercase_digits = "00""7F""80""FF""67""68""0A""07";
-    std::memcpy(bytes_.data.get(), "\0\x7F\x80\xFFgh\n\7", byte_count);
-    lowercase_digits_ = UniqueBytes(lowercase_digits.size());
-    uppercase_digits_ = UniqueBytes(uppercase_digits.size());
-    std::memcpy(lowercase_digits_.data.get(),
-                lowercase_digits.c_str(),
-                lowercase_digits.size());
-    std::memcpy(uppercase_digits_.data.get(),
-                uppercase_digits.c_str(),
-                uppercase_digits.size());
+    CHECK_EQ(bytes_.size, byte_count);
+    CHECK_EQ(lowercase_digits_.size, digit_count);
+    CHECK_EQ(uppercase_digits_.size, digit_count);
   }
 
   static std::int64_t const byte_count = 8;
   static std::int64_t const digit_count = byte_count << 1;
 
-  UniqueBytes bytes_;
+  Array<std::uint8_t const> bytes_;
+  Array<std::uint8_t const> const lowercase_digits_;
+  Array<std::uint8_t const> const uppercase_digits_;
   UniqueBytes digits_;
-  UniqueBytes lowercase_digits_;
-  UniqueBytes uppercase_digits_;
 };
 
 using HexadecimalDeathTest = HexadecimalTest;
 
 TEST_F(HexadecimalTest, EncodeAndDecode) {
-  HexadecimalEncode(bytes_.get(), digits_.get());
+  HexadecimalEncode(bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
   UniqueBytes bytes(byte_count);
   HexadecimalDecode(digits_.get(), bytes.get());
-  EXPECT_EQ(bytes_, bytes);
+  EXPECT_EQ(bytes_, bytes.get());
 }
 
 TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
   auto const digits =
-      HexadecimalEncode(bytes_.get(), /*null_terminated=*/false);
+      HexadecimalEncode(bytes_, /*null_terminated=*/false);
   EXPECT_EQ(uppercase_digits_, digits);
   auto const bytes = HexadecimalDecode(digits.get());
   EXPECT_EQ(bytes_, bytes);
@@ -62,15 +56,15 @@ TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
 
 TEST_F(HexadecimalTest, InPlace) {
   auto buffer = std::make_unique<std::uint8_t[]>(digit_count);
-  std::memcpy(&buffer[1], bytes_.data.get(), byte_count);
+  std::memcpy(&buffer[1], bytes_.data, byte_count);
   HexadecimalEncode({&buffer[1], byte_count}, {&buffer[0], digit_count});
   EXPECT_EQ(uppercase_digits_, Bytes(&buffer[0], digit_count));
-  std::memcpy(&buffer[0], bytes_.data.get(), byte_count);
+  std::memcpy(&buffer[0], bytes_.data, byte_count);
   HexadecimalEncode({&buffer[0], byte_count}, {&buffer[0], digit_count});
   EXPECT_EQ(uppercase_digits_, Bytes(&buffer[0], digit_count));
   HexadecimalDecode({&buffer[0], digit_count}, {&buffer[1], byte_count});
   EXPECT_EQ(bytes_, Bytes(&buffer[1], byte_count));
-  std::memcpy(&buffer[0], uppercase_digits_.data.get(), digit_count);
+  std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
   HexadecimalDecode({&buffer[0], digit_count}, {&buffer[0], byte_count});
   EXPECT_EQ(bytes_, Bytes(&buffer[0], byte_count));
 }
@@ -79,7 +73,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   std::int64_t const digits_size = digit_count + 42;
   UniqueBytes digits(digits_size);
   std::memset(digits.data.get(), 'X', digits_size);
-  HexadecimalEncode(bytes_.get(), digits.get());
+  HexadecimalEncode(bytes_, digits.get());
   EXPECT_EQ(uppercase_digits_, Bytes(digits.data.get(), digit_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&digits.data[digit_count],
                                         &digits.data[digits_size]),
@@ -87,7 +81,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   std::int64_t const bytes_size = byte_count + 42;
   UniqueBytes bytes(bytes_size);
   std::memset(bytes.data.get(), 'Y', bytes_size);
-  HexadecimalDecode(uppercase_digits_.get(), bytes.get());
+  HexadecimalDecode(uppercase_digits_, bytes.get());
   EXPECT_EQ(bytes_, Bytes(bytes.data.get(), byte_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&bytes.data[byte_count],
                                         &bytes.data[bytes_size]),
@@ -96,11 +90,11 @@ TEST_F(HexadecimalTest, LargeOutput) {
 
 TEST_F(HexadecimalTest, Adjacent) {
   auto buffer = std::make_unique<std::uint8_t[]>(digit_count + byte_count);
-  std::memcpy(&buffer[0], bytes_.data.get(), byte_count);
+  std::memcpy(&buffer[0], bytes_.data, byte_count);
   HexadecimalEncode({&buffer[0], byte_count},
                     {&buffer[byte_count], digit_count});
   EXPECT_EQ(uppercase_digits_, Bytes(&buffer[byte_count], digit_count));
-  std::memcpy(&buffer[0], uppercase_digits_.data.get(), digit_count);
+  std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
   HexadecimalDecode({&buffer[0], digit_count},
                     {&buffer[digit_count], byte_count});
   EXPECT_EQ(bytes_, Bytes(&buffer[digit_count], byte_count));
@@ -143,9 +137,9 @@ TEST_F(HexadecimalDeathTest, Size) {
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<std::uint8_t> bytes(byte_count);
-  HexadecimalDecode(lowercase_digits_.get(), {bytes.data(), bytes.size()});
+  HexadecimalDecode(lowercase_digits_, {bytes.data(), bytes.size()});
   EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
-  HexadecimalDecode(uppercase_digits_.get(), {bytes.data(), bytes.size()});
+  HexadecimalDecode(uppercase_digits_, {bytes.data(), bytes.size()});
   EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
 }
 

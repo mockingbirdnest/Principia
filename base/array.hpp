@@ -24,6 +24,25 @@ struct Array final {
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>
   Array(Element* data, Size size);
+  // Construction from a string literal if |Element| is a character type or some
+  // flavour of byte.
+  template<std::size_t size_plus_1,
+           typename Character,
+           typename = std::enable_if_t<
+               size_plus_1 >= 1 &&
+               (std::is_same<Element, signed char const>::value ||
+                std::is_same<Element, unsigned char const>::value ||
+                std::is_same<Element, std::int8_t const>::value ||
+                std::is_same<Element, std::uint8_t const>::value ||
+                std::is_same<Element, std::byte const>::value ||
+                std::is_same<Element, char const>::value ||
+                std::is_same<Element, wchar_t const>::value ||
+                std::is_same<Element, char16_t const>::value ||
+                std::is_same<Element, char32_t const>::value) &&
+               (std::is_same<Element, Character>::value ||
+                (sizeof(Element) == 1 &&
+                 std::is_same<Character, char const>::value))>>
+  constexpr explicit Array(Character (&characters)[size_plus_1]);
 
   Element* data;
   std::int64_t size;  // In number of elements.
@@ -103,15 +122,30 @@ using Bytes = Array<std::uint8_t>;
 using UniqueBytes = UniqueArray<std::uint8_t>;
 
 // Deep comparisons.
-template<typename Element>
-bool operator==(Array<Element> left, Array<Element> right);
-template<typename Element>
-bool operator==(Array<Element> left, UniqueArray<Element> const& right);
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left, Array<Element> right);
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left,
-                UniqueArray<Element> const& right);
+template<typename LeftElement, typename RightElement>
+using EnableIfEquatable =
+    std::enable_if_t<std::is_same<decltype(std::declval<LeftElement>() ==
+                                           std::declval<RightElement>()),
+                                  bool>::value>;
+template<typename LeftElement,
+         typename RightElement,
+         typename = EnableIfEquatable<LeftElement, RightElement>>
+bool operator==(Array<LeftElement> left, Array<RightElement> right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = EnableIfEquatable<LeftElement, RightElement>>
+bool operator==(Array<LeftElement> left,
+                UniqueArray<RightElement> const& right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = EnableIfEquatable<LeftElement, RightElement>>
+bool operator==(UniqueArray<LeftElement> const& left,
+                Array<RightElement> right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = EnableIfEquatable<LeftElement, RightElement>>
+bool operator==(UniqueArray<LeftElement> const& left,
+                UniqueArray<RightElement> const& right);
 
 }  // namespace base
 }  // namespace principia

@@ -22,6 +22,20 @@ Array<Element>::Array(Element* const data, Size const size)
     : data(data), size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
+template<std::size_t size_plus_1, typename Character, typename>
+constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
+    : data((Element*)characters), size(size_plus_1 - 1) {
+  // The |enable_if|s should prevent this from failing, but we explicitly
+  // check that the cast is trivial or reinterprets a |char const*|.  The cast
+  // is C-style rather than a reinterpret so that this constructor is constexpr
+  // in the trivial case.
+  static_assert(std::is_same<Element, Character>::value ||
+                    std::is_same<Character, char const>::value,
+                "reinterpret_cast is unsafe");
+  CHECK_EQ(characters[size], 0);
+}
+
+template<typename Element>
 UniqueArray<Element>::UniqueArray() : size(0) {}
 
 template<typename Element>
@@ -130,8 +144,8 @@ BoundedArray<Element, max_size>::size() const {
   return size_;
 }
 
-template<typename Element>
-bool operator==(Array<Element> left, Array<Element> right) {
+template<typename LeftElement, typename RightElement, typename>
+bool operator==(Array<LeftElement> left, Array<RightElement> right) {
   if (left.size != right.size) {
     return false;
   }
@@ -140,19 +154,21 @@ bool operator==(Array<Element> left, Array<Element> right) {
                      static_cast<std::size_t>(right.size)) == 0;
 }
 
-template<typename Element>
-bool operator==(Array<Element> left, UniqueArray<Element> const& right) {
+template<typename LeftElement, typename RightElement, typename>
+bool operator==(Array<LeftElement> left,
+                UniqueArray<RightElement> const& right) {
   return left == right.get();
 }
 
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left, Array<Element> right) {
+template<typename LeftElement, typename RightElement, typename>
+bool operator==(UniqueArray<LeftElement> const& left,
+                Array<RightElement> right) {
   return left.get() == right;
 }
 
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left,
-                UniqueArray<Element> const& right) {
+template<typename LeftElement, typename RightElement, typename>
+bool operator==(UniqueArray<LeftElement> const& left,
+                UniqueArray<RightElement> const& right) {
   return left.get() == right.get();
 }
 
