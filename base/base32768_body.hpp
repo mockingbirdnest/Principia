@@ -71,7 +71,7 @@ constexpr std::array<char16_t const*, 2> repertoire = {
 constexpr int block_size = 1 << 5;
 
 bool IsSevenBitCodePoint(char16_t const code_point) {
-  char16_t const truncated_code_point = code_point && (block_size - 1);
+  char16_t const truncated_code_point = code_point & ~(block_size - 1);
   // Linear search because small.
   for (int i = 0;
        i < std::char_traits<char16_t>::length(repertoire[SevenBits]);
@@ -199,12 +199,12 @@ void Base32768Decode(Array<std::uint8_t const> input,
   CHECK(input.size == 0 || output.data != nullptr);
 
   std::uint8_t const* const input_end = input.data + input.size;
+  std::uint8_t const* const output_end = output.data + output.size;
   std::int64_t output_bit_index = 0;
   while (input.data < input_end) {
     bool const at_end = input_end - input.data == 2;
     char16_t code_point;
     std::memcpy(&code_point, input.data, sizeof(char16_t));
-    LOG(ERROR) << std::hex << code_point;
     std::int32_t data;
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - output_bit_index;
@@ -218,7 +218,6 @@ void Base32768Decode(Array<std::uint8_t const> input,
     // Align |data| on the output bit index.
     data = Decode(repertoire, code_point);
     data <<= shift;
-    LOG(ERROR) << std::hex << data << " " << shift;
 
     // Fill the output with the parts of the code point belonging to each byte.
     if (output_bit_index == 0) {
@@ -226,13 +225,10 @@ void Base32768Decode(Array<std::uint8_t const> input,
     } else {
       output.data[0] |= (data >> (2 * bits_per_byte));
     }
-    LOG(ERROR) << std::hex << (int)output.data[0];
-    if (shift < 2 * bits_per_byte) {
+    if (shift < 2 * bits_per_byte && output_end - output.data > 1) {
       output.data[1] = (data >> bits_per_byte) & ((1 << bits_per_byte) - 1);
-      LOG(ERROR) << std::hex << (int)output.data[1];
-      if (shift < bits_per_byte) {
+      if (shift < bits_per_byte && output_end - output.data > 2) {
         output.data[2] = data & ((1 << bits_per_byte) - 1);
-        LOG(ERROR) << std::hex << (int)output.data[2];
       }
     }
 
