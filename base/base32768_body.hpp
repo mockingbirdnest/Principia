@@ -25,12 +25,45 @@ constexpr std::int64_t bytes_per_code_point =
 static_assert(bytes_per_code_point == 3,
               "End of input padding below won't be correct");
 
-enum Repertoire {
-  Begin = 0,
-  FifteenBits = 0,
-  SevenBits = 1,
-  End = 2,
+class Repertoire {
+ public:
+  virtual ~Repertoire() = default;
+
+  virtual char16_t const& Encode(std::uint16_t const k) = 0;
+  virtual std::uint16_t const& Decode(char16_t const code_point) = 0;
 };
+
+template<std::size_t block_count, std::size_t block_size>
+class CachingRepertoire : public Repertoire {
+ public:
+  char16_t const& Encode(std::uint16_t const k) override;
+  std::uint16_t const& Decode(char16_t const code_point) override;
+
+ private:
+  template<std::size_t block_count_plus_1>
+  constexpr CachingRepertoire(
+    char16_t const (&begin_block)[block_count_plus_1]);
+
+  char16_t const* begin_block_;
+  std::array<char16_t, block_count * block_size> encoding_cache_;
+  std::array<std::uint16_t, sizeof(char16_t)> decoding_cache_;
+};
+
+template<std::size_t block_count, std::size_t block_size>
+template<std::size_t block_count_plus_1>
+constexpr CachingRepertoire<block_count, block_size>::CachingRepertoire(
+    char16_t const (&begin_block)[block_count_plus_1])
+    : begin_block_(begin_block) {
+  // Check null-termination.
+  assert(begin_block_[block_count] == 0);
+  // Check ordering and lack of overlap.
+  for (char16_t const* block = begin_block_;
+       block < begin_block_ + block_count_ - 1;
+       ++block) {
+    assert(*block < *(block + 1));
+    assert(*(block + 1) - *block >= block_size);
+  }
+}
 
 constexpr std::array<char16_t const*, 2> repertoire = {
     u"ҠԀڀڠݠހ߀ကႠᄀᄠᅀᆀᇠሀሠበዠጠᎠᏀᐠᑀᑠᒀᒠᓀᓠᔀᔠᕀᕠ"
