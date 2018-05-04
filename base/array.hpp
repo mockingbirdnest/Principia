@@ -17,7 +17,7 @@ struct Array final {
   // Mostly useful for adding constness.
   template<typename OtherElement,
            typename = typename std::enable_if<
-               std::is_convertible<OtherElement, Element>::value>::type>
+               std::is_convertible<OtherElement*, Element*>::value>::type>
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
   template<typename Size,
