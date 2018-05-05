@@ -43,7 +43,7 @@
 namespace principia {
 namespace base {
 
-char constexpr π_1000_hexadecimal_digits[] =
+constexpr char π_1000_hexadecimal_digits[] =
     "3243F6A8885A308D313198A2E03707344A4093822299F31D0082EFA98EC4E6C89452821E63"
     "8D01377BE5466CF34E90C6CC0AC29B7C97C50DD3F84D5B5B54709179216D5D98979FB1BD13"
     "10BA698DFB5AC2FFD72DBD01ADFB7B8E1AFED6A267E96BA7C9045F12C7F9924A19947B3916"
@@ -59,7 +59,7 @@ char constexpr π_1000_hexadecimal_digits[] =
     "9456F9FB47D84A5C33B8B5EBEE06F75D885C12073401A449F56C16AA64ED3AA62363F77061"
     "BFEDF72429B023D37D0D724D00A1248DB0FEAD";
 
-char constexpr π_500_bytes[] =
+static Array<std::uint8_t const> const π_500_bytes(
     "\x32\x43\xF6\xA8\x88\x5A\x30\x8D\x31\x31\x98\xA2\xE0\x37\x07\x34\x4A\x40"
     "\x93\x82\x22\x99\xF3\x1D\x00\x82\xEF\xA9\x8E\xC4\xE6\xC8\x94\x52\x82\x1E"
     "\x63\x8D\x01\x37\x7B\xE5\x46\x6C\xF3\x4E\x90\xC6\xCC\x0A\xC2\x9B\x7C\x97"
@@ -87,16 +87,16 @@ char constexpr π_500_bytes[] =
     "\x66\x6C\xA5\x93\xE8\x24\x30\xE8\x88\xCE\xE8\x61\x94\x56\xF9\xFB\x47\xD8"
     "\x4A\x5C\x33\xB8\xB5\xEB\xEE\x06\xF7\x5D\x88\x5C\x12\x07\x34\x01\xA4\x49"
     "\xF5\x6C\x16\xAA\x64\xED\x3A\xA6\x23\x63\xF7\x70\x61\xBF\xED\xF7\x24\x29"
-    "\xB0\x23\xD3\x7D\x0D\x72\x4D\x00\xA1\x24\x8D\xB0\xFE\xAD";
+    "\xB0\x23\xD3\x7D\x0D\x72\x4D\x00\xA1\x24\x8D\xB0\xFE\xAD");
 
 int const copies_of_π = 10000;
 
 void HexEncode(benchmark::State& state,
                bool& correct,
                std::vector<std::uint8_t> const& input_bytes,
-               std::vector<std::uint8_t> const& expected_digits) {
+               std::vector<char> const& expected_digits) {
   state.PauseTiming();
-  std::vector<std::uint8_t> digits(input_bytes.size() << 1);
+  std::vector<char> digits(input_bytes.size() << 1);
   state.ResumeTiming();
   HexadecimalEncode({input_bytes.data(), input_bytes.size()},
                     {digits.data(), digits.size()});
@@ -106,28 +106,29 @@ void HexEncode(benchmark::State& state,
 }
 
 std::vector<std::uint8_t> PiBytes() {
-  std::string const pi_bytes(π_500_bytes, 500);
-  std::string bytes_str;
-  bytes_str.reserve(500 * copies_of_π);
+  std::vector<std::uint8_t> bytes;
+  bytes.reserve(500 * copies_of_π);
   for (int i = 0; i < copies_of_π; ++i) {
-    bytes_str += pi_bytes;
+    bytes.insert(bytes.end(),
+                 π_500_bytes.data,
+                 π_500_bytes.data + π_500_bytes.size);
   }
-  return std::vector<std::uint8_t>(bytes_str.begin(), bytes_str.end());
+  return bytes;
 }
 
-std::vector<std::uint8_t> PiDigits() {
+std::vector<char> PiDigits() {
   std::string digits_str;
   digits_str.reserve(1000 * copies_of_π);
   for (int i = 0; i < copies_of_π; ++i) {
     digits_str += π_1000_hexadecimal_digits;
   }
-  return std::vector<std::uint8_t>(digits_str.begin(), digits_str.end());
+  return std::vector<char>(digits_str.begin(), digits_str.end());
 }
 
 void BM_EncodePi(benchmark::State& state) {
   bool correct = true;
   std::vector<std::uint8_t> const input_bytes = PiBytes();
-  std::vector<std::uint8_t> const expected_digits = PiDigits();
+  std::vector<char> const expected_digits = PiDigits();
   while (state.KeepRunning()) {
     HexEncode(state, correct, input_bytes, expected_digits);
   }
@@ -140,7 +141,7 @@ BENCHMARK(BM_EncodePi);
 
 void HexDecode(benchmark::State& state,
                bool& correct,
-               std::vector<std::uint8_t> const& input_digits,
+               std::vector<char> const& input_digits,
                std::vector<std::uint8_t> const& expected_bytes) {
   state.PauseTiming();
   std::vector<std::uint8_t> bytes(input_digits.size() / 2);
@@ -154,7 +155,7 @@ void HexDecode(benchmark::State& state,
 
 void BM_DecodePi(benchmark::State& state) {
   bool correct = true;
-  std::vector<std::uint8_t> input_digits = PiDigits();
+  std::vector<char> input_digits = PiDigits();
   std::vector<std::uint8_t> expected_bytes = PiBytes();
   while (state.KeepRunning()) {
     HexDecode(state, correct, input_digits, expected_bytes);

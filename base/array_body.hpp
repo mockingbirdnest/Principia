@@ -32,7 +32,11 @@ constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
   static_assert(std::is_same<Element, Character>::value ||
                     std::is_same<Character, char const>::value,
                 "reinterpret_cast is unsafe");
-  CHECK_EQ(characters[size], 0);
+  if (characters[size] != 0) {
+    LOG(FATAL) << "Array constructed with a character array terminated by the "
+                  "non-null 0x"
+               << std::hex << static_cast<uint32_t>(characters[size]);
+  }
 }
 
 template<typename Element>
