@@ -9,6 +9,7 @@
 #include <type_traits>
 
 #include "quantities/si.hpp"
+#include "numerics/cbrt.hpp"
 
 namespace principia {
 namespace quantities {
@@ -40,7 +41,7 @@ SquareRoot<Q> Sqrt(Q const& x) {
 
 template<typename Q>
 CubeRoot<Q> Cbrt(Q const& x) {
-  return SIUnit<CubeRoot<Q>>() * std::cbrt(x / SIUnit<Q>());
+  return SIUnit<CubeRoot<Q>>() * numerics::Cbrt(x / SIUnit<Q>());
 }
 
 template<int exponent>

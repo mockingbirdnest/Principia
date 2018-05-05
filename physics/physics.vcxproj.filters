@@ -223,5 +223,8 @@
     <ClCompile Include="apsides_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\numerics\cbrt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

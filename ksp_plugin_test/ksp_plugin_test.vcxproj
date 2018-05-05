@@ -32,6 +32,7 @@
     <ClCompile Include="..\ksp_plugin\plugin.cpp" />
     <ClCompile Include="..\ksp_plugin\renderer.cpp" />
     <ClCompile Include="..\ksp_plugin\vessel.cpp" />
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="benchmark.cpp" />
     <ClCompile Include="celestial_test.cpp" />
     <ClCompile Include="flight_plan_test.cpp" />

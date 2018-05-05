@@ -40,6 +40,7 @@
     <ClCompile Include="..\base\version.generated.cc" />
     <ClCompile Include="..\journal\profiles.cpp" />
     <ClCompile Include="..\journal\recorder.cpp" />
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="burn.cpp" />
     <ClCompile Include="celestial.cpp" />
     <ClCompile Include="flight_plan.cpp" />
