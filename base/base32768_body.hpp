@@ -34,8 +34,8 @@ class Repertoire {
   //constexpr Repertoire() = default;
   //virtual ~Repertoire() = default;
 
-  virtual char16_t const& Encode(std::uint16_t const k) = 0;
-  virtual std::uint16_t const& Decode(char16_t const code_point) = 0;
+  virtual char16_t const& Encode(std::uint16_t const k) const = 0;
+  virtual std::uint16_t const& Decode(char16_t const code_point) const = 0;
 };
 
 template<std::size_t block_size, std::size_t block_count>
@@ -45,8 +45,8 @@ class CachingRepertoire : public Repertoire {
   constexpr CachingRepertoire(
       char16_t const (&blocks_begin)[block_count_plus_1]);
 
-  char16_t const& Encode(std::uint16_t const k) override;
-  std::uint16_t const& Decode(char16_t const code_point) override;
+  char16_t const& Encode(std::uint16_t const k) const override;
+  std::uint16_t const& Decode(char16_t const code_point) const override;
 
  private:
   char16_t const* const blocks_begin_;
@@ -80,20 +80,20 @@ constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
       char16_t const code_point = block_start_code_point + offset;
       int const k = block_start_k + offset;
       encoding_cache_[k] = code_point;
-      decoding_cache_[code_point] = k;
+      //decoding_cache_[code_point] = k;
     }
   }
 }
 
 template<std::size_t block_size, std::size_t block_count>
 char16_t const& CachingRepertoire<block_size, block_count>::Encode(
-    std::uint16_t const k) {
+    std::uint16_t const k) const {
   return encoding_cache_[k];
 }
 
 template<std::size_t block_size, std::size_t block_count>
 std::uint16_t const& CachingRepertoire<block_size, block_count>::Decode(
-    char16_t const code_point) {
+    char16_t const code_point) const {
   return decoding_cache_[code_point];
 }
 
@@ -152,7 +152,7 @@ void Base32768Encode(Array<std::uint8_t const> input,
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - input_bit_index;
     std::int32_t mask = ((1 << bits_per_code_point) - 1) << shift;
-    Repertoire repertoire = FifteenBits;
+    Repertoire const* repertoire = &fifteen_bits;
 
     if (input_end - input.data >= bytes_per_code_point) {
       // Extract three bytes.
@@ -173,13 +173,14 @@ void Base32768Encode(Array<std::uint8_t const> input,
         shift = bytes_per_code_point * bits_per_byte -
                 bits_per_final_code_point - input_bit_index;
         mask = ((1 << bits_per_final_code_point) - 1) << shift;
-        repertoire = SevenBits;
+        repertoire = &seven_bits;
       }
     }
     std::int32_t code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
-    std::memcpy(output.data, &Encode(repertoire, code_point), sizeof(char16_t));
+    std::memcpy(
+        output.data, &(repertoire->Encode(code_point)), sizeof(char16_t));
 
     // The following computation may cause |input.data| to overshoot the end if
     // using the special encoding at the end.  This is safe as soon as the loop
