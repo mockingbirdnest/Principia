@@ -134,28 +134,27 @@ inline UniqueBytes SerializeAsBytes(
     google::protobuf::MessageLite const& message);
 
 // Deep comparisons.
-template<typename LeftElement, typename RightElement>
-using EnableIfEquatable =
-    std::enable_if_t<std::is_same<decltype(std::declval<LeftElement>() ==
-                                           std::declval<RightElement>()),
-                                  bool>::value>;
 template<typename LeftElement,
          typename RightElement,
-         typename = EnableIfEquatable<LeftElement, RightElement>>
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
 bool operator==(Array<LeftElement> left, Array<RightElement> right);
 template<typename LeftElement,
          typename RightElement,
-         typename = EnableIfEquatable<LeftElement, RightElement>>
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
 bool operator==(Array<LeftElement> left,
                 UniqueArray<RightElement> const& right);
 template<typename LeftElement,
          typename RightElement,
-         typename = EnableIfEquatable<LeftElement, RightElement>>
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
 bool operator==(UniqueArray<LeftElement> const& left,
                 Array<RightElement> right);
 template<typename LeftElement,
          typename RightElement,
-         typename = EnableIfEquatable<LeftElement, RightElement>>
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
 bool operator==(UniqueArray<LeftElement> const& left,
                 UniqueArray<RightElement> const& right);
 
