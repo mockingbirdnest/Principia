@@ -4,10 +4,13 @@
 #include "base/base32768.hpp"
 
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <map>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "glog/logging.h"
@@ -17,22 +20,115 @@ namespace base {
 
 namespace internal_base32768 {
 
-constexpr std::int64_t bits_per_byte = 8;
-constexpr std::int64_t bits_per_code_point = 15;
-constexpr std::int64_t bits_per_final_code_point = 7;
-constexpr std::int64_t bytes_per_code_point =
-    (bits_per_code_point + 2 * bits_per_byte - 2) / bits_per_byte;
-static_assert(bytes_per_code_point == 3,
-              "End of input padding below won't be correct");
+// Ceiling log2 of n.  8 -> 3, 7 -> 2.
+constexpr int CeilingLog2(int const n) {
+  return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
+}
 
-enum Repertoire {
-  Begin = 0,
-  FifteenBits = 0,
-  SevenBits = 1,
-  End = 2,
+// A repertoire is used to encode or decode integers into Basic Multilingual
+// Plane code points.
+class Repertoire {
+ public:
+  virtual char16_t const& Encode(std::uint16_t const k) const = 0;
+  virtual std::uint16_t Decode(char16_t const code_point) const = 0;
 };
 
-constexpr std::array<char16_t const*, 2> repertoire = {
+// A caching repertoire builds at constructions caches for fast encoding and
+// decoding.
+template<std::int64_t block_size, std::int64_t block_count>
+class CachingRepertoire : public Repertoire {
+ public:
+  constexpr std::int64_t EncodingBits() const;
+
+  char16_t const& Encode(std::uint16_t const k) const override;
+  std::uint16_t Decode(char16_t const code_point) const override;
+
+ private:
+  template<std::int64_t block_count_plus_1>
+  constexpr CachingRepertoire(
+      char16_t const (&blocks_begin)[block_count_plus_1]);
+
+  char16_t const* const blocks_begin_;
+  char16_t const* const blocks_end_;
+
+  // These arrays are sparse: not all entries are filled with useful data.  The
+  // caller must encode values which are within [0, block_count * block_size[,
+  // and must decode characters which lie within the blocks of this repertoire.
+  std::array<char16_t, block_count * block_size> encoding_cache_;
+  std::array<std::conditional_t<
+                 (CeilingLog2(block_size) + CeilingLog2(block_count) > 8),
+                 std::uint16_t,
+                 std::uint8_t>,
+             std::numeric_limits<char16_t>::max()>
+      decoding_cache_;
+
+  template<std::int64_t s, std::int64_t c>
+  friend constexpr CachingRepertoire<s, c - 1> MakeRepertoire(
+    char16_t const (&blocks_begin)[c]);
+};
+
+template<std::int64_t block_size, std::int64_t block_count_plus_1>
+constexpr CachingRepertoire<block_size, block_count_plus_1 - 1> MakeRepertoire(
+    char16_t const (&blocks_begin)[block_count_plus_1]);
+
+template<std::int64_t block_size, std::int64_t block_count>
+template<std::int64_t block_count_plus_1>
+constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
+  char16_t const (&blocks_begin)[block_count_plus_1])
+  : blocks_begin_(blocks_begin), blocks_end_(blocks_begin_ + block_count) {
+  static_assert(block_count_plus_1 == block_count + 1,
+                "Incorrect literal size");
+  // Check null-termination.
+  assert(blocks_begin_[block_count] == 0);
+  // Check ordering and lack of overlap.
+  for (char16_t const* block = blocks_begin_;
+       block < blocks_end_ - 1;
+       ++block) {
+    assert(*block < *(block + 1));
+    assert(*(block + 1) - *block >= block_size);
+  }
+
+  for (int block = 0; block < blocks_end_ - blocks_begin_; ++block) {
+    char16_t const block_start_code_point = blocks_begin_[block];
+    int const block_start_k = block_size * block;
+    for (int offset = 0; offset < block_size; ++offset) {
+      char16_t const code_point = block_start_code_point + offset;
+      int const k = block_start_k + offset;
+      encoding_cache_[k] = code_point;
+      decoding_cache_[code_point] = k;
+    }
+  }
+}
+
+template<std::int64_t block_size, std::int64_t block_count>
+constexpr std::int64_t
+CachingRepertoire<block_size, block_count>::EncodingBits() const {
+  return CeilingLog2(block_size) + CeilingLog2(block_count);
+}
+
+template<std::int64_t block_size, std::int64_t block_count>
+char16_t const& CachingRepertoire<block_size, block_count>::Encode(
+    std::uint16_t const k) const {
+  // Check that the integer to encode has the expected number of bits.
+  CHECK_EQ(0, k & ~((1 << EncodingBits()) - 1)) << std::hex << k;
+  return encoding_cache_[k];
+}
+
+template<std::int64_t block_size, std::int64_t block_count>
+std::uint16_t CachingRepertoire<block_size, block_count>::Decode(
+    char16_t const code_point) const {
+  return decoding_cache_[code_point];
+}
+
+template<std::int64_t block_size, std::int64_t block_count_plus_1>
+constexpr CachingRepertoire<block_size, block_count_plus_1 - 1> MakeRepertoire(
+    char16_t const (&blocks_begin)[block_count_plus_1]) {
+  return CachingRepertoire<block_size, block_count_plus_1 - 1>(blocks_begin);
+}
+
+constexpr int block_size = 1 << 5;
+
+constexpr auto fifteen_bits = MakeRepertoire<block_size>(
     u"ҠԀڀڠݠހ߀ကႠᄀᄠᅀᆀᇠሀሠበዠጠᎠᏀᐠᑀᑠᒀᒠᓀᓠᔀᔠᕀᕠ"
     u"ᖀᖠᗀᗠᘀᘠᙀᚠᛀកᠠᡀᣀᦀ᧠ᨠᯀᰀᴀ⇠⋀⍀⍠⎀⎠⏀␀─┠╀╠▀"
     u"■◀◠☀☠♀♠⚀⚠⛀⛠✀✠❀➀➠⠀⠠⡀⡠⢀⢠⣀⣠⤀⤠⥀⥠⦠⨠⩀⪀"
@@ -64,68 +160,16 @@ constexpr std::array<char16_t const*, 2> repertoire = {
     u"陠隀隠雀雠需霠靀靠鞀鞠韀韠頀頠顀顠颀颠飀飠餀餠饀饠馀馠駀駠騀騠驀"
     u"驠骀骠髀髠鬀鬠魀魠鮀鮠鯀鯠鰀鰠鱀鱠鲀鲠鳀鳠鴀鴠鵀鵠鶀鶠鷀鷠鸀鸠鹀"
     u"鹠麀麠黀黠鼀鼠齀齠龀龠ꀀꀠꁀꁠꂀꂠꃀꃠꄀꄠꅀꅠꆀꆠꇀꇠꈀꈠꉀꉠꊀ"
-    u"ꊠꋀꋠꌀꌠꍀꍠꎀꎠꏀꏠꐀꐠꑀꑠ꒠ꔀꔠꕀꕠꖀꖠꗀꗠꙀꚠꛀ꜀꜠ꝀꞀꡀ",  // length = 1 << 10
-    u"ƀɀɠʀ",        // length = 1 << 2
-};
+    u"ꊠꋀꋠꌀꌠꍀꍠꎀꎠꏀꏠꐀꐠꑀꑠ꒠ꔀꔠꕀꕠꖀꖠꗀꗠꙀꚠꛀ꜀꜠ꝀꞀꡀ");
+constexpr auto seven_bits = MakeRepertoire<block_size>(u"ƀɀɠʀ");
 
-constexpr int block_size = 1 << 5;
-
-bool IsSevenBitCodePoint(char16_t const code_point) {
-  char16_t const truncated_code_point = code_point & ~(block_size - 1);
-  // Linear search because small.
-  for (int i = 0;
-       i < std::char_traits<char16_t>::length(repertoire[SevenBits]);
-       ++i) {
-    if (repertoire[SevenBits][i] == truncated_code_point) {
-      return true;
-    }
-  }
-  return false;
-}
-
-char16_t const& Encode(Repertoire const r, int const k) {
-  static std::array<std::map<int, char16_t>*, 2> encode = []() {
-    std::array<std::map<int, char16_t>*, 2> result;
-    for (int r = Begin; r < End; ++r) {
-      result[r] = new std::map<int, char16_t>;
-      for (int block = 0;
-        block < std::char_traits<char16_t>::length(repertoire[r]);
-        ++block) {
-        char16_t const block_start_code_point = repertoire[r][block];
-        int const block_start_k = block_size * block;
-        for (int offset = 0; offset < block_size; ++offset) {
-          char16_t const code_point = block_start_code_point + offset;
-          int const k = block_start_k + offset;
-          (*result[r])[k] = code_point;
-        }
-      }
-    }
-    return result;
-  }();
-  return (*encode[r])[k];
-}
-
-int const& Decode(Repertoire const r, char16_t const code_point) {
-  static std::array<std::map<char16_t, int>*, 2> decode = []() {
-    std::array<std::map<char16_t, int>*, 2> result;
-    for (int r = Begin; r < End; ++r) {
-      result[r] = new std::map<char16_t, int>;
-      for (int block = 0;
-        block < std::char_traits<char16_t>::length(repertoire[r]);
-        ++block) {
-        char16_t const block_start_code_point = repertoire[r][block];
-        int const block_start_k = block_size * block;
-        for (int offset = 0; offset < block_size; ++offset) {
-          char16_t const code_point = block_start_code_point + offset;
-          int const k = block_start_k + offset;
-          (*result[r])[code_point] = k;
-        }
-      }
-    }
-    return result;
-  }();
-  return (*decode[r])[code_point];
-}
+constexpr std::int64_t bits_per_byte = 8;
+constexpr std::int64_t bits_per_code_point = fifteen_bits.EncodingBits();
+constexpr std::int64_t bits_per_final_code_point = seven_bits.EncodingBits();
+constexpr std::int64_t bytes_per_code_point =
+    (bits_per_code_point + 2 * bits_per_byte - 2) / bits_per_byte;
+static_assert(bytes_per_code_point == 3,
+              "End of input padding below won't be correct");
 
 void Base32768Encode(Array<std::uint8_t const> input,
                      Array<std::uint8_t> output) {
@@ -141,7 +185,7 @@ void Base32768Encode(Array<std::uint8_t const> input,
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - input_bit_index;
     std::int32_t mask = ((1 << bits_per_code_point) - 1) << shift;
-    Repertoire repertoire = FifteenBits;
+    Repertoire const* repertoire = &fifteen_bits;
 
     if (input_end - input.data >= bytes_per_code_point) {
       // Extract three bytes.
@@ -162,13 +206,14 @@ void Base32768Encode(Array<std::uint8_t const> input,
         shift = bytes_per_code_point * bits_per_byte -
                 bits_per_final_code_point - input_bit_index;
         mask = ((1 << bits_per_final_code_point) - 1) << shift;
-        repertoire = SevenBits;
+        repertoire = &seven_bits;
       }
     }
     std::int32_t code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
-    std::memcpy(output.data, &Encode(repertoire, code_point), sizeof(char16_t));
+    std::memcpy(
+        output.data, &(repertoire->Encode(code_point)), sizeof(char16_t));
 
     // The following computation may cause |input.data| to overshoot the end if
     // using the special encoding at the end.  This is safe as soon as the loop
