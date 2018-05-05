@@ -172,7 +172,7 @@ static_assert(bytes_per_code_point == 3,
               "End of input padding below won't be correct");
 
 void Base32768Encode(Array<std::uint8_t const> input,
-                     Array<std::uint8_t> output) {
+                     Array<char16_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK(input.size == 0 || output.data != nullptr);
 
@@ -212,8 +212,7 @@ void Base32768Encode(Array<std::uint8_t const> input,
     std::int32_t code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
-    std::memcpy(
-        output.data, &(repertoire->Encode(code_point)), sizeof(char16_t));
+    *output.data = repertoire->Encode(code_point);
 
     // The following computation may cause |input.data| to overshoot the end if
     // using the special encoding at the end.  This is safe as soon as the loop
@@ -221,14 +220,14 @@ void Base32768Encode(Array<std::uint8_t const> input,
     input_bit_index += bits_per_code_point;
     input.data += input_bit_index / bits_per_byte;
     input_bit_index %= bits_per_byte;
-    output.data += sizeof(char16_t);
+    ++output.data;
   }
 }
-UniqueArray<std::uint8_t> Base32768Encode(Array<std::uint8_t const> input,
-                                          bool const null_terminated) {
+UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
+                                      bool const null_terminated) {
   // TODO(phl): Add a function to compute the output size.
-  base::UniqueArray<std::uint8_t> output((input.size << 1) +
-                                         (null_terminated ? 1 : 0));
+  base::UniqueArray<char16_t> output((input.size << 1) +
+                                     (null_terminated ? 1 : 0));
   if (output.size > 0) {
     base::Base32768Encode(input, output.get());
   }
@@ -238,13 +237,12 @@ UniqueArray<std::uint8_t> Base32768Encode(Array<std::uint8_t const> input,
   return output;
 }
 
-void Base32768Decode(Array<std::uint8_t const> input,
-                     Array<std::uint8_t> output) {
+void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
 }
 
-UniqueArray<std::uint8_t> Base32768Decode(Array<std::uint8_t const> input) {
+UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
   UniqueArray<std::uint8_t> output(input.size >> 1);
   if (output.size > 0) {
     Base32768Decode({ input.data, input.size & ~1 }, output.get());
