@@ -10,6 +10,7 @@
 #include <limits>
 #include <map>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "glog/logging.h"
@@ -24,11 +25,12 @@ constexpr int CeilingLog2(int const n) {
   return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
 }
 
-// A repertoire is used to encode or decode integer into code points.
+// A repertoire is used to encode or decode integers into Basic Multilingual
+// Plane code points.
 class Repertoire {
  public:
   virtual char16_t const& Encode(std::uint16_t const k) const = 0;
-  virtual std::uint16_t const& Decode(char16_t const code_point) const = 0;
+  virtual std::uint16_t Decode(char16_t const code_point) const = 0;
 };
 
 // A caching repertoire builds at constructions caches for fast encoding and
@@ -36,24 +38,33 @@ class Repertoire {
 template<std::int64_t block_size, std::int64_t block_count>
 class CachingRepertoire : public Repertoire {
  public:
+  constexpr std::int64_t EncodingBits() const;
+
+  char16_t const& Encode(std::uint16_t const k) const override;
+  std::uint16_t Decode(char16_t const code_point) const override;
+
+ private:
   template<std::int64_t block_count_plus_1>
   constexpr CachingRepertoire(
       char16_t const (&blocks_begin)[block_count_plus_1]);
 
-  constexpr std::int64_t EncodingBits() const;
-
-  char16_t const& Encode(std::uint16_t const k) const override;
-  std::uint16_t const& Decode(char16_t const code_point) const override;
-
- private:
   char16_t const* const blocks_begin_;
   char16_t const* const blocks_end_;
 
   // These arrays are sparse: not all entries are filled with useful data.  The
-  // client must encode and decode values which are part of the cache.
+  // caller must encode values which are within [0, block_count * block_size[,
+  // and must decode characters which lie within the blocks of this repertoire.
   std::array<char16_t, block_count * block_size> encoding_cache_;
-  std::array<std::uint16_t, std::numeric_limits<char16_t>::max()>
+  std::array<std::conditional_t<
+                 (CeilingLog2(block_size) + CeilingLog2(block_count) > 8),
+                 std::uint16_t,
+                 std::uint8_t>,
+             std::numeric_limits<char16_t>::max()>
       decoding_cache_;
+
+  template<std::int64_t s, std::int64_t c>
+  friend constexpr CachingRepertoire<s, c - 1> MakeRepertoire(
+    char16_t const (&blocks_begin)[c]);
 };
 
 template<std::int64_t block_size, std::int64_t block_count_plus_1>
@@ -104,7 +115,7 @@ char16_t const& CachingRepertoire<block_size, block_count>::Encode(
 }
 
 template<std::int64_t block_size, std::int64_t block_count>
-std::uint16_t const& CachingRepertoire<block_size, block_count>::Decode(
+std::uint16_t CachingRepertoire<block_size, block_count>::Decode(
     char16_t const code_point) const {
   return decoding_cache_[code_point];
 }
