@@ -1,10 +1,11 @@
 ﻿
 #pragma once
 
+#include "base/hexadecimal.hpp"
+
 #include <cstdint>
 #include <cstring>
 
-#include "base/hexadecimal.hpp"
 #include "glog/logging.h"
 
 namespace principia {

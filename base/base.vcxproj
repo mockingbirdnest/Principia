@@ -6,9 +6,26 @@
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalOptions>/w14061 /constexpr:steps200000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalOptions>/w14061 /constexpr:steps200000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_LLVM|x64'">
+    <ClCompile>
+      <AdditionalOptions>/w14061 /constexpr:steps200000 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="array.hpp" />
     <ClInclude Include="array_body.hpp" />
+    <ClInclude Include="base32768.hpp" />
+    <ClInclude Include="base32768_body.hpp" />
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
@@ -55,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="array_test.cpp" />
+    <ClCompile Include="base32768_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />

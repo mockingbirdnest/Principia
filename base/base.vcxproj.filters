@@ -149,6 +149,12 @@
     <ClInclude Include="sink_source_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="base32768.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base32768_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -191,6 +197,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="thread_pool_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base32768_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
