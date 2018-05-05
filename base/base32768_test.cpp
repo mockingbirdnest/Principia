@@ -33,6 +33,27 @@ class Base32768Test : public testing::Test {
           << " expected=" << base32768[i];
     }
   }
+
+  void CheckDecoding(char const* const binary,
+                     int const binary_length,
+                     const char16_t* const base32768) {
+    int const base32768_length = std::char_traits<char16_t>::length(base32768);
+    Array<std::uint8_t const> input(
+        reinterpret_cast<std::uint8_t const*>(base32768),
+        sizeof(char16_t) * base32768_length);
+    UniqueBytes output(binary_length);
+    Base32768Decode(input, output.get());
+    char const* const output_char =
+        reinterpret_cast<char*>(output.get().data);
+    EXPECT_EQ(0,
+              std::char_traits<char>::compare(
+                  output_char, binary, binary_length));
+    for (int i = 0; i < binary_length; ++i) {
+      EXPECT_EQ(output_char[i], binary[i])
+          << "index=" << i << " actual=" << std::hex << output_char[i]
+          << " expected=" << binary[i];
+    }
+  }
 };
 
 using Base32768DeathTest = Base32768Test;
@@ -43,12 +64,14 @@ TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
                         "\xe9\x80\x09\x98\xec\xf8\x42";
   char16_t const base32768[] = u"遮視塀⤠䶌Ԇ堹麢";
   CheckEncoding(binary, /*binary_length=*/15, base32768);
+  CheckDecoding(binary, /*binary_length=*/15, base32768);
 }
 
 TEST_F(Base32768Test, EncodeEmpty) {
   char const binary[] = "";
   char16_t const base32768[] = u"";
   CheckEncoding(binary, /*binary_length=*/0, base32768);
+  CheckDecoding(binary, /*binary_length=*/0, base32768);
 }
 
 TEST_F(Base32768Test, EncodeEveryByte) {
@@ -75,6 +98,7 @@ TEST_F(Base32768Test, EncodeEveryByte) {
                                u"默ꍜꖞ藏昧蹋鹙꒾"
                                u"ꡟ";
   CheckEncoding(binary, /*binary_length=*/256, base32768);
+  CheckDecoding(binary, /*binary_length=*/256, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWrRle) {
@@ -139,6 +163,7 @@ TEST_F(Base32768Test, EncodeHatetrisWrRle) {
                                u"◐扨䑀ᯗңᒁ虠螐ڰ"
                                u"ɏ";
   CheckEncoding(binary, /*binary_length=*/306, base32768);
+  CheckDecoding(binary, /*binary_length=*/306, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWr) {
@@ -213,6 +238,7 @@ TEST_F(Base32768Test, EncodeHatetrisWr) {
                                u"䙊箺紋厷儢箸僣"
                                u"ᠵ暊";
   CheckEncoding(binary, /*binary_length=*/360, base32768);
+  CheckDecoding(binary, /*binary_length=*/360, base32768);
 }
 
 }  // namespace base
