@@ -50,51 +50,49 @@ class CachingRepertoire : public Repertoire {
  private:
   template<std::int64_t block_count_plus_1>
   constexpr CachingRepertoire(
-      char16_t const (&blocks_begin)[block_count_plus_1]);
+      char16_t const (&blocks)[block_count_plus_1]);
 
-  char16_t const* const blocks_begin_;
-  char16_t const* const blocks_end_;
+  char16_t const* const blocks_;
 
   // These arrays are sparse: not all entries are filled with useful data.  The
   // caller must encode values which are within [0, block_count * block_size[,
   // and must decode characters which lie within the blocks of this repertoire.
   std::array<char16_t, block_count * block_size> encoding_cache_;
   // Using a C array because MSVC gets confused with an std::array.
-  std::conditional_t<(CeilingLog2(block_size) + CeilingLog2(block_count) > 8),
+  std::conditional_t<(CeilingLog2(block_size * block_count) > 8),
                      std::uint16_t,
                      std::uint8_t>
       decoding_cache_[std::numeric_limits<char16_t>::max()];
 
   template<std::int64_t s, std::int64_t c>
   friend constexpr CachingRepertoire<s, c - 1> MakeRepertoire(
-    char16_t const (&blocks_begin)[c]);
+    char16_t const (&blocks)[c]);
 };
 
 template<std::int64_t block_size, std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count_plus_1 - 1> MakeRepertoire(
-    char16_t const (&blocks_begin)[block_count_plus_1]);
+    char16_t const (&blocks)[block_count_plus_1]);
 
 template<std::int64_t block_size, std::int64_t block_count>
 template<std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
-    char16_t const (&blocks_begin)[block_count_plus_1])
-    : blocks_begin_(blocks_begin),
-      blocks_end_(blocks_begin_ + block_count),
+    char16_t const (&blocks)[block_count_plus_1])
+    : blocks_(blocks),
       decoding_cache_() {
+  // Don't do pointer arithmetic in this constructor, it confuses MSVC.
   static_assert(block_count_plus_1 == block_count + 1,
                 "Incorrect literal size");
+
   // Check null-termination.
-  assert(blocks_begin_[block_count] == 0);
+  assert(blocks_[block_count] == 0);
   // Check ordering and lack of overlap.
-  for (char16_t const* block = blocks_begin_;
-       block < blocks_end_ - 1;
-       ++block) {
-    assert(*block < *(block + 1));
-    assert(*(block + 1) - *block >= block_size);
+  for (int block = 0; block < block_count - 1; ++block) {
+    assert(blocks_[block] < blocks_[block + 1]);
+    assert(blocks_[block + 1] - blocks_[block] >= block_size);
   }
 
-  for (int block = 0; block < blocks_end_ - blocks_begin_; ++block) {
-    char16_t const block_start_code_point = blocks_begin_[block];
+  for (int block = 0; block < block_count; ++block) {
+    char16_t const block_start_code_point = blocks_[block];
     int const block_start_k = block_size * block;
     for (int offset = 0; offset < block_size; ++offset) {
       char16_t const code_point = block_start_code_point + offset;
@@ -108,7 +106,7 @@ constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
 template<std::int64_t block_size, std::int64_t block_count>
 constexpr std::int64_t
 CachingRepertoire<block_size, block_count>::EncodingBits() const {
-  return CeilingLog2(block_size) + CeilingLog2(block_count);
+  return CeilingLog2(block_size * block_count);
 }
 
 template<std::int64_t block_size, std::int64_t block_count>
@@ -117,10 +115,8 @@ bool CachingRepertoire<block_size, block_count>::CanEncode(
   char16_t const truncated_code_point = code_point & ~(block_size - 1);
   // Linear search because small: we only call this function for the 7-bit
   // encoding.
-  for (char16_t const* block = blocks_begin_;
-       block < blocks_end_ - 1;
-       ++block) {
-    if (*block == truncated_code_point) {
+  for (int block = 0; block < block_count; ++block) {
+    if (blocks_[block] == truncated_code_point) {
       return true;
     }
   }
@@ -143,8 +139,8 @@ std::uint16_t CachingRepertoire<block_size, block_count>::Decode(
 
 template<std::int64_t block_size, std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count_plus_1 - 1> MakeRepertoire(
-    char16_t const (&blocks_begin)[block_count_plus_1]) {
-  return CachingRepertoire<block_size, block_count_plus_1 - 1>(blocks_begin);
+    char16_t const (&blocks)[block_count_plus_1]) {
+  return CachingRepertoire<block_size, block_count_plus_1 - 1>(blocks);
 }
 
 constexpr int block_size = 1 << 5;
