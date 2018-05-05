@@ -29,8 +29,8 @@ constexpr int CeilingLog2(int const n) {
 // Plane code points.
 class Repertoire {
  public:
-  virtual char16_t const& Encode(std::uint16_t const k) const = 0;
-  virtual std::uint16_t Decode(char16_t const code_point) const = 0;
+  virtual char16_t const& Encode(std::uint16_t  k) const = 0;
+  virtual std::uint16_t Decode(char16_t code_point) const = 0;
 };
 
 // A caching repertoire builds at constructions caches for fast encoding and
@@ -40,8 +40,12 @@ class CachingRepertoire : public Repertoire {
  public:
   constexpr std::int64_t EncodingBits() const;
 
-  char16_t const& Encode(std::uint16_t const k) const override;
-  std::uint16_t Decode(char16_t const code_point) const override;
+  // Returns true if this repertoire is capable of encoding the given code
+  // point.
+  bool CanEncode(char16_t code_point) const;
+
+  char16_t const& Encode(std::uint16_t k) const override;
+  std::uint16_t Decode(char16_t code_point) const override;
 
  private:
   template<std::int64_t block_count_plus_1>
@@ -55,12 +59,11 @@ class CachingRepertoire : public Repertoire {
   // caller must encode values which are within [0, block_count * block_size[,
   // and must decode characters which lie within the blocks of this repertoire.
   std::array<char16_t, block_count * block_size> encoding_cache_;
-  std::array<std::conditional_t<
-                 (CeilingLog2(block_size) + CeilingLog2(block_count) > 8),
-                 std::uint16_t,
-                 std::uint8_t>,
-             std::numeric_limits<char16_t>::max()>
-      decoding_cache_;
+  // Using a C array because MSVC gets confused with an std::array.
+  std::conditional_t<(CeilingLog2(block_size) + CeilingLog2(block_count) > 8),
+                     std::uint16_t,
+                     std::uint8_t>
+      decoding_cache_[std::numeric_limits<char16_t>::max()];
 
   template<std::int64_t s, std::int64_t c>
   friend constexpr CachingRepertoire<s, c - 1> MakeRepertoire(
@@ -74,8 +77,10 @@ constexpr CachingRepertoire<block_size, block_count_plus_1 - 1> MakeRepertoire(
 template<std::int64_t block_size, std::int64_t block_count>
 template<std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
-  char16_t const (&blocks_begin)[block_count_plus_1])
-  : blocks_begin_(blocks_begin), blocks_end_(blocks_begin_ + block_count) {
+    char16_t const (&blocks_begin)[block_count_plus_1])
+    : blocks_begin_(blocks_begin),
+      blocks_end_(blocks_begin_ + block_count),
+      decoding_cache_() {
   static_assert(block_count_plus_1 == block_count + 1,
                 "Incorrect literal size");
   // Check null-termination.
@@ -104,6 +109,22 @@ template<std::int64_t block_size, std::int64_t block_count>
 constexpr std::int64_t
 CachingRepertoire<block_size, block_count>::EncodingBits() const {
   return CeilingLog2(block_size) + CeilingLog2(block_count);
+}
+
+template<std::int64_t block_size, std::int64_t block_count>
+bool CachingRepertoire<block_size, block_count>::CanEncode(
+    char16_t const code_point) const {
+  char16_t const truncated_code_point = code_point & ~(block_size - 1);
+  // Linear search because small: we only call this function for the 7-bit
+  // encoding.
+  for (char16_t const* block = blocks_begin_;
+       block < blocks_end_ - 1;
+       ++block) {
+    if (*block == truncated_code_point) {
+      return true;
+    }
+  }
+  return false;
 }
 
 template<std::int64_t block_size, std::int64_t block_count>
@@ -253,15 +274,15 @@ void Base32768Decode(Array<std::uint8_t const> input,
     std::int32_t data;
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - output_bit_index;
-    Repertoire repertoire = FifteenBits;
-    if (at_end && IsSevenBitCodePoint(code_point)) {
+    Repertoire const* repertoire = &fifteen_bits;
+    if (at_end && seven_bits.CanEncode(code_point)) {
       shift = bytes_per_code_point * bits_per_byte - bits_per_final_code_point -
               output_bit_index;
-      repertoire = SevenBits;
+      repertoire = &seven_bits;
     }
 
     // Align |data| on the output bit index.
-    data = Decode(repertoire, code_point);
+    data = repertoire->Decode(code_point);
     data <<= shift;
 
     // Fill the output with the parts of the code point belonging to each byte.
