@@ -136,33 +136,29 @@ TEST_F(HexadecimalDeathTest, Size) {
   std::vector<std::uint8_t> bytes(byte_count);
   std::vector<char> digits(digit_count);
   EXPECT_DEATH({
-    HexadecimalEncode({bytes.data(), bytes.size()},
-                      {digits.data(), digits.size() - 1});
+    HexadecimalEncode(bytes, {digits.data(), digits.size() - 1});
   }, "too small");
   EXPECT_DEATH({
-    HexadecimalDecode({digits.data(), digits.size()},
-                      {bytes.data(), bytes.size() - 1});
+    HexadecimalDecode(digits, {bytes.data(), bytes.size() - 1});
   }, "too small");
 }
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<std::uint8_t> bytes(byte_count);
-  HexadecimalDecode(lowercase_digits_, {bytes.data(), bytes.size()});
-  EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
-  HexadecimalDecode(uppercase_digits_, {bytes.data(), bytes.size()});
-  EXPECT_EQ(bytes_, Bytes(bytes.data(), bytes.size()));
+  HexadecimalDecode(lowercase_digits_, bytes);
+  EXPECT_EQ(bytes_, Bytes(bytes));
+  HexadecimalDecode(uppercase_digits_, bytes);
+  EXPECT_EQ(bytes_, Bytes(bytes));
 }
 
 TEST_F(HexadecimalTest, Invalid) {
   std::vector<std::uint8_t> bytes(1);
   std::vector<char> digits = {'a', 'b', 'c'};
-  HexadecimalDecode({digits.data(), digits.size()},
-                    {bytes.data(), bytes.size()});
+  HexadecimalDecode(digits, bytes);
   EXPECT_THAT(bytes, ElementsAre('\xAB'));
   digits = {'0', 'a', 'g', 'c', 'd', 'e'};
   bytes.resize(3);
-  HexadecimalDecode({digits.data(), digits.size()},
-                    {bytes.data(), bytes.size()});
+  HexadecimalDecode(digits, bytes);
   EXPECT_THAT(bytes, ElementsAre('\x0A', '\x0C', '\xDE'));
 }
 

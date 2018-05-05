@@ -22,6 +22,11 @@ Array<Element>::Array(Element* const data, Size const size)
     : data(data), size(static_cast<std::int64_t>(size)) {}
 
 template<typename Element>
+template<typename Container, typename>
+constexpr Array<Element>::Array(Container container)
+    : data(container.data()), size(static_cast<std::int64_t>(container.size())) {}
+
+template<typename Element>
 template<std::size_t size_plus_1, typename Character, typename>
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
     : data((Element*)characters), size(size_plus_1 - 1) {

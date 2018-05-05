@@ -98,8 +98,7 @@ void HexEncode(benchmark::State& state,
   state.PauseTiming();
   std::vector<char> digits(input_bytes.size() << 1);
   state.ResumeTiming();
-  HexadecimalEncode({input_bytes.data(), input_bytes.size()},
-                    {digits.data(), digits.size()});
+  HexadecimalEncode(input_bytes, digits);
   state.PauseTiming();
   correct &= digits == expected_digits;
   state.ResumeTiming();
@@ -146,8 +145,7 @@ void HexDecode(benchmark::State& state,
   state.PauseTiming();
   std::vector<std::uint8_t> bytes(input_digits.size() / 2);
   state.ResumeTiming();
-  HexadecimalDecode({input_digits.data(), input_digits.size()},
-                    {bytes.data(), bytes.size()});
+  HexadecimalDecode(input_digits, bytes);
   state.PauseTiming();
   correct &= bytes == expected_bytes;
   state.ResumeTiming();
