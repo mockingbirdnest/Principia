@@ -35,6 +35,7 @@
     <ClInclude Include="wide_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="elementary_functions_test.cpp" />
     <ClCompile Include="parser_test.cpp" />
     <ClCompile Include="quantities_test.cpp" />

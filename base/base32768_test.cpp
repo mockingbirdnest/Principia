@@ -27,6 +27,16 @@ class Base32768Test : public testing::Test {
           << " expected=" << base32768.data[i];
     }
   }
+
+  void CheckDecoding(Array<std::uint8_t const> const binary,
+                     Array<char16_t const> const base32768) {
+    UniqueBytes output(binary.size);
+    Base32768Decode(base32768, output.get());
+    EXPECT_EQ(0, std::memcmp(output.data.get(), binary.data, binary.size));
+    for (int i = 0; i < binary.size; ++i) {
+      EXPECT_EQ(output.data[i], binary.data[i]) << "index=" << i;
+    }
+  }
 };
 
 using Base32768DeathTest = Base32768Test;
@@ -37,17 +47,19 @@ TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
                                          "\xe9\x80\x09\x98\xec\xf8\x42");
   Array<char16_t const> const base32768(u"遮視塀⤠䶌Ԇ堹麢");
   CheckEncoding(binary, base32768);
+  CheckDecoding(binary, base32768);
 }
 
 TEST_F(Base32768Test, EncodeEmpty) {
   Array<std::uint8_t const> const binary("");
   Array<char16_t const> const base32768(u"");
   CheckEncoding(binary, base32768);
+  CheckDecoding(binary, base32768);
 }
 
 TEST_F(Base32768Test, EncodeEveryByte) {
-  std::uint8_t binary[256];
-  for (int c = 0; c < 256; ++c) {
+  std::array<std::uint8_t, 256> binary;
+  for (int c = 0; c < binary.size(); ++c) {
     binary[c] = c;
   }
   Array<char16_t const> const base32768(
@@ -69,7 +81,8 @@ TEST_F(Base32768Test, EncodeEveryByte) {
       u"靑彙䋼铞涯刏耻镏"
       u"默ꍜꖞ藏昧蹋鹙꒾"
       u"ꡟ");
-  CheckEncoding({binary, 256}, base32768);
+  CheckEncoding(binary, base32768);
+  CheckDecoding(binary, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWrRle) {
@@ -136,6 +149,7 @@ TEST_F(Base32768Test, EncodeHatetrisWrRle) {
       u"◐扨䑀ᯗңᒁ虠螐ڰ"
       u"ɏ");
   CheckEncoding(binary, base32768);
+  CheckDecoding(binary, base32768);
 }
 
 TEST_F(Base32768Test, EncodeHatetrisWr) {
@@ -212,6 +226,7 @@ TEST_F(Base32768Test, EncodeHatetrisWr) {
       u"䙊箺紋厷儢箸僣"
       u"ᠵ暊");
   CheckEncoding(binary, base32768);
+  CheckDecoding(binary, base32768);
 }
 
 }  // namespace base

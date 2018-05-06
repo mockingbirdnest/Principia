@@ -9,6 +9,7 @@
   <ItemGroup>
     <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="integrator_plots.cpp" />
     <ClCompile Include="local_error_analysis.cpp" />
     <ClCompile Include="retrobop_dynamical_stability.cpp" />

@@ -182,8 +182,10 @@ TEST_F(ElementaryFunctionsTest, HyperbolicFunctions) {
 }
 
 TEST_F(ElementaryFunctionsTest, ExpLogAndRoots) {
+  // The ULP distance is 1 if everything is correctly rounded.
   EXPECT_THAT(std::exp(std::log(2) / 2), AlmostEquals(Sqrt(2), 1));
-  EXPECT_THAT(std::exp(std::log(2) / 3), AlmostEquals(Cbrt(2), 1));
+  // The ULP distance is 0 if everything is correctly rounded.
+  EXPECT_THAT(std::exp(std::log(2) / 3), AlmostEquals(Cbrt(2), 0));
   EXPECT_THAT(
       Sqrt(Rood),
       AlmostEquals(std::exp(std::log(Rood / Pow<2>(Foot)) / 2) * Foot, 0));
