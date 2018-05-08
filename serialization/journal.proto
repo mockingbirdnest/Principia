@@ -911,7 +911,7 @@ message HasEncounteredApocalypse {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   message Out {
-    required fixed64 details = 1 [(pointer_to) = "char const",
+    required fixed64 details = 1 [(is_utf8) = true,
                                   (is_produced) = true];
   }
   message Return {
@@ -1562,7 +1562,7 @@ message SerializePlugin {
                                      (is_produced_if) = "result != nullptr"];
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "char const",
+    required fixed64 result = 1 [(is_utf8) = true,
                                  (is_produced_if) = "result != nullptr"];
   }
   optional In in = 1;
@@ -1864,6 +1864,10 @@ extend google.protobuf.FieldOptions {
   // result should not be checked against the expected result.  Should only be
   // used when debugging issues with the replay.
   optional bool omit_check = 50007;
+
+  // For a fixed64 field that is produced, indicates that it is encoded in UTF-8
+  // and represented as a "char const*".
+  optional bool is_utf8 = 50008;
 }
 
 extend google.protobuf.MessageOptions {
