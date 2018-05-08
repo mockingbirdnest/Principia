@@ -29,7 +29,7 @@ constexpr int CeilingLog2(int const n) {
 // Plane code points.
 class Repertoire {
  public:
-  virtual char16_t const& Encode(std::uint16_t  k) const = 0;
+  virtual char16_t Encode(std::uint16_t  k) const = 0;
   virtual std::uint16_t Decode(char16_t code_point) const = 0;
 };
 

@@ -154,13 +154,6 @@ BoundedArray<Element, max_size>::size() const {
   return size_;
 }
 
-inline UniqueBytes SerializeAsBytes(
-    google::protobuf::MessageLite const& message) {
-  UniqueBytes bytes(message.ByteSizeLong());
-  message.SerializeToArray(bytes.data.get(), bytes.size);
-  return std::move(bytes);
-}
-
 template<typename LeftElement, typename RightElement, typename>
 bool operator==(Array<LeftElement> left, Array<RightElement> right) {
   if (left.size != right.size) {
