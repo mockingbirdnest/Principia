@@ -374,7 +374,7 @@ void principia__DeserializePlugin(char const* const serialization,
 
   // If the data was empty, delete the deserializer.  This ensures that
   // |*plugin| is filled.
-  if (bytes.size == 0) {
+  if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
   }

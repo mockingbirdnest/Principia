@@ -34,7 +34,7 @@ struct Array final {
           std::is_convertible<decltype(std::declval<Container>().data()),
                               Element*>::value &&
           std::is_integral<decltype(std ::declval<Container>().size())>::value>>
-  constexpr Array(Container container);
+  constexpr Array(Container& container);
 
   // Construction from a string literal if |Element| is a character type or some
   // flavour of byte.
@@ -129,9 +129,6 @@ class BoundedArray final {
 // Specializations.
 using Bytes = Array<std::uint8_t>;
 using UniqueBytes = UniqueArray<std::uint8_t>;
-
-inline UniqueBytes SerializeAsBytes(
-    google::protobuf::MessageLite const& message);
 
 // Deep comparisons.
 template<typename LeftElement,

@@ -25,6 +25,7 @@
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
+#include "base/serialization.hpp"
 #include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"

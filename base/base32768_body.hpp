@@ -44,7 +44,7 @@ class CachingRepertoire : public Repertoire {
   // point.
   bool CanEncode(char16_t code_point) const;
 
-  char16_t const& Encode(std::uint16_t k) const override;
+  char16_t Encode(std::uint16_t k) const override;
   std::uint16_t Decode(char16_t code_point) const override;
 
  private:
@@ -124,7 +124,7 @@ bool CachingRepertoire<block_size, block_count>::CanEncode(
 }
 
 template<std::int64_t block_size, std::int64_t block_count>
-char16_t const& CachingRepertoire<block_size, block_count>::Encode(
+char16_t CachingRepertoire<block_size, block_count>::Encode(
     std::uint16_t const k) const {
   // Check that the integer to encode has the expected number of bits.
   CHECK_EQ(0, k & ~((1 << EncodingBits()) - 1)) << std::hex << k;
@@ -229,7 +229,7 @@ void Base32768Encode(Array<std::uint8_t const> input,
     std::int32_t code_point = (data & mask) >> shift;
     CHECK_LE(0, code_point);
     CHECK_LT(code_point, 1 << bits_per_code_point);
-    *output.data = repertoire->Encode(code_point);
+    output.data[0] = repertoire->Encode(code_point);
 
     // The following computation may cause |input.data| to overshoot the end if
     // using the special encoding at the end.  This is safe as soon as the loop
@@ -263,20 +263,18 @@ void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
   std::int64_t output_bit_index = 0;
   while (input.data < input_end) {
     bool const at_end = input_end - input.data == 1;
-    char16_t code_point;
-    std::memcpy(&code_point, input.data, sizeof(char16_t));
     std::int32_t data;
     std::int32_t shift = bytes_per_code_point * bits_per_byte -
                          bits_per_code_point - output_bit_index;
     Repertoire const* repertoire = &fifteen_bits;
-    if (at_end && seven_bits.CanEncode(code_point)) {
+    if (at_end && seven_bits.CanEncode(input.data[0])) {
       shift = bytes_per_code_point * bits_per_byte - bits_per_final_code_point -
               output_bit_index;
       repertoire = &seven_bits;
     }
 
     // Align |data| on the output bit index.
-    data = repertoire->Decode(code_point);
+    data = repertoire->Decode(input.data[0]);
     data <<= shift;
 
     // Fill the output with the parts of the code point belonging to each byte.

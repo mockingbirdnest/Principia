@@ -23,13 +23,15 @@ Array<Element>::Array(Element* const data, Size const size)
 
 template<typename Element>
 template<typename Container, typename>
-constexpr Array<Element>::Array(Container container)
-    : data(container.data()), size(static_cast<std::int64_t>(container.size())) {}
+constexpr Array<Element>::Array(Container& container)
+    : data(container.data()),
+      size(static_cast<std::int64_t>(container.size())) {}
 
 template<typename Element>
 template<std::size_t size_plus_1, typename Character, typename>
 constexpr Array<Element>::Array(Character (&characters)[size_plus_1])
-    : data((Element*)characters), size(size_plus_1 - 1) {
+    : data((Element*)characters),  // NOLINT(readability/casting)
+      size(size_plus_1 - 1) {
   // The |enable_if|s should prevent this from failing, but we explicitly
   // check that the cast is trivial or reinterprets a |char const*|.  The cast
   // is C-style rather than a reinterpret so that this constructor is constexpr

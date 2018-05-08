@@ -47,8 +47,7 @@ TEST_F(HexadecimalTest, EncodeAndDecode) {
 }
 
 TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
-  auto const digits =
-      HexadecimalEncode(bytes_, /*null_terminated=*/false);
+  auto const digits = HexadecimalEncode(bytes_, /*null_terminated=*/false);
   EXPECT_EQ(uppercase_digits_, digits);
   auto const bytes = HexadecimalDecode(digits.get());
   EXPECT_EQ(bytes_, bytes);
