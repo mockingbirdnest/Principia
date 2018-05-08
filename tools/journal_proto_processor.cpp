@@ -471,7 +471,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
              options.HasExtension(journal::serialization::is_produced_if))
       << descriptor->full_name()
       << " is a string field and cannot be produced. Use a fixed64 field that "
-      << "is a pointer to char const instead.";
+      << "has the (is_utf8) = true option instead.";
 
   // Note that it is important to use an out marshmallow for return fields,
   // hence the use of the |in_| set here.
