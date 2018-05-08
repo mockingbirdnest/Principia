@@ -4,6 +4,11 @@ import "google/protobuf/descriptor.proto";
 
 package principia.journal.serialization;
 
+// Encoding of string-like fields.
+enum Encoding {
+  UTF_8 = 1;  // Represented as "char const*".
+}
+
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
@@ -911,7 +916,7 @@ message HasEncounteredApocalypse {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   message Out {
-    required fixed64 details = 1 [(is_utf8) = true,
+    required fixed64 details = 1 [(encoding) = UTF_8,
                                   (is_produced) = true];
   }
   message Return {
@@ -1562,7 +1567,7 @@ message SerializePlugin {
                                      (is_produced_if) = "result != nullptr"];
   }
   message Return {
-    required fixed64 result = 1 [(is_utf8) = true,
+    required fixed64 result = 1 [(encoding) = UTF_8,
                                  (is_produced_if) = "result != nullptr"];
   }
   optional In in = 1;
@@ -1865,9 +1870,9 @@ extend google.protobuf.FieldOptions {
   // used when debugging issues with the replay.
   optional bool omit_check = 50007;
 
-  // For a fixed64 field that is produced, indicates that it is encoded in UTF-8
-  // and represented as a "char const*".
-  optional bool is_utf8 = 50008;
+  // For a fixed64 field that is produced and denotes a string, indicates the
+  // encoding and the representation.
+  optional Encoding encoding = 50008;
 }
 
 extend google.protobuf.MessageOptions {
