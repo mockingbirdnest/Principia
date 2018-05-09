@@ -88,17 +88,17 @@ class PushDeserializerTest : public ::testing::Test {
     EXPECT_EQ(actual_serialized, expected_serialized);
   }
 
-  static void Stomp(Bytes const& bytes) {
+  static void Stomp(Array<std::uint8_t> const& bytes) {
     std::memset(bytes.data, 0xCD, static_cast<std::size_t>(bytes.size));
   }
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Bytes OnEmpty(std::list<std::string>& strings) {
+  Array<std::uint8_t> OnEmpty(std::list<std::string>& strings) {
     strings.pop_front();
     CHECK(!strings.empty());
     std::string& front = strings.front();
-    return Bytes(reinterpret_cast<std::uint8_t*>(&front[0]),
+    return Array<std::uint8_t>(reinterpret_cast<std::uint8_t*>(&front[0]),
                  static_cast<std::int64_t>(front.size()));
   }
 
@@ -128,11 +128,11 @@ class PushDeserializerTest : public ::testing::Test {
       push_deserializer_->Start(std::move(read_trajectory),
                                 PushDeserializerTest::CheckSerialization);
       for (;;) {
-        Bytes const bytes = pull_serializer_->Pull();
+        Array<std::uint8_t> const bytes = pull_serializer_->Pull();
         std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
         push_deserializer_->Push(
-            Bytes(data, bytes.size),
-            std::bind(&PushDeserializerTest::Stomp, Bytes(data, bytes.size)));
+            Array<std::uint8_t>(data, bytes.size),
+            std::bind(&PushDeserializerTest::Stomp, Array<std::uint8_t>(data, bytes.size)));
         data = &data[bytes.size];
         if (bytes.size == 0) {
           break;
@@ -216,9 +216,9 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
         [&read_trajectory1](google::protobuf::Message const& read_trajectory) {
           read_trajectory1.CopyFrom(read_trajectory);
         });
-    Bytes bytes(serialized_trajectory.get(), byte_size);
+    Array<std::uint8_t> bytes(serialized_trajectory.get(), byte_size);
     push_deserializer_->Push(bytes, nullptr);
-    push_deserializer_->Push(Bytes(), nullptr);
+    push_deserializer_->Push(Array<std::uint8_t>(), nullptr);
 
     // Destroying the deserializer waits until deserialization is done.
     push_deserializer_.reset();
@@ -255,10 +255,10 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
       for (int j = 0; j < compressed.size(); ++j) {
         compressed_chunks.back()[j] = compressed[j];
       }
-      Bytes bytes(compressed_chunks.back().get(), compressed.size());
+      Array<std::uint8_t> bytes(compressed_chunks.back().get(), compressed.size());
       compressed_push_deserializer->Push(bytes, nullptr);
     }
-    compressed_push_deserializer->Push(Bytes(), nullptr);
+    compressed_push_deserializer->Push(Array<std::uint8_t>(), nullptr);
 
     // Destroying the deserializer waits until deserialization is done.
     compressed_push_deserializer.reset();
@@ -282,10 +282,10 @@ TEST_F(PushDeserializerTest, DeserializationThreading) {
                                                 byte_size);
     push_deserializer_->Start(
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
-    Bytes bytes(serialized_trajectory.get(), byte_size);
+    Array<std::uint8_t> bytes(serialized_trajectory.get(), byte_size);
     push_deserializer_->Push(bytes,
                              std::bind(&PushDeserializerTest::Stomp, bytes));
-    push_deserializer_->Push(Bytes(), nullptr);
+    push_deserializer_->Push(Array<std::uint8_t>(), nullptr);
 
     // Destroying the deserializer waits until deserialization is done.
     push_deserializer_.reset();
@@ -314,13 +314,13 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     int left = byte_size;
     for (int i = 0; i < byte_size; i += stomp_chunk) {
-      Bytes bytes(&serialized_trajectory[i], std::min(left, stomp_chunk));
+      Array<std::uint8_t> bytes(&serialized_trajectory[i], std::min(left, stomp_chunk));
       push_deserializer_->Push(bytes,
                                std::bind(&PushDeserializerTest::Stomp,
-                                         Bytes(bytes.data, bytes.size + 1)));
+                                         Array<std::uint8_t>(bytes.data, bytes.size + 1)));
       left -= stomp_chunk;
     }
-    push_deserializer_->Push(Bytes(), nullptr);
+    push_deserializer_->Push(Array<std::uint8_t>(), nullptr);
     push_deserializer_.reset();
     }, "failed.*Parse");
 }

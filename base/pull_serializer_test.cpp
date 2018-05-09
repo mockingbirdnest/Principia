@@ -38,7 +38,7 @@ class PullSerializerTest : public ::testing::Test {
             std::make_unique<PullSerializer>(chunk_size,
                                              number_of_chunks,
                                              /*compressor=*/nullptr)),
-        stream_(Bytes(data_, small_chunk_size),
+        stream_(Array<std::uint8_t>(data_, small_chunk_size),
                 std::bind(&PullSerializerTest::OnFull,
                           this,
                           _1,
@@ -72,10 +72,10 @@ class PullSerializerTest : public ::testing::Test {
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Bytes OnFull(Bytes const bytes, std::list<std::string>& strings) {
+  Array<std::uint8_t> OnFull(Array<std::uint8_t> const bytes, std::list<std::string>& strings) {
     strings.push_back(std::string(reinterpret_cast<const char*>(&bytes.data[0]),
                                   static_cast<std::size_t>(bytes.size)));
-    return Bytes(data_, small_chunk_size);
+    return Array<std::uint8_t>(data_, small_chunk_size);
   }
 
   std::unique_ptr<PullSerializer> pull_serializer_;
@@ -114,7 +114,7 @@ TEST_F(PullSerializerTest, SerializationSizes) {
   std::vector<std::int64_t> expected_sizes(53, chunk_size);
   expected_sizes.push_back(53);
   for (;;) {
-    Bytes const bytes = pull_serializer_->Pull();
+    Array<std::uint8_t> const bytes = pull_serializer_->Pull();
     if (bytes.size == 0) {
       break;
     }
@@ -130,7 +130,7 @@ TEST_F(PullSerializerTest, SerializationGipfeli) {
     auto trajectory = BuildTrajectory();
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
-      Bytes const bytes = pull_serializer_->Pull();
+      Array<std::uint8_t> const bytes = pull_serializer_->Pull();
       if (bytes.size == 0) {
         break;
       }
@@ -149,7 +149,7 @@ TEST_F(PullSerializerTest, SerializationGipfeli) {
     compressed_pull_serializer->Start(std::move(trajectory));
     auto compressor = google::compression::NewGipfeliCompressor();
     for (;;) {
-      Bytes const bytes = compressed_pull_serializer->Pull();
+      Array<std::uint8_t> const bytes = compressed_pull_serializer->Pull();
       if (bytes.size == 0) {
         break;
       }
@@ -189,7 +189,7 @@ TEST_F(PullSerializerTest, SerializationThreading) {
                                                         /*compressor=*/nullptr);
     pull_serializer_->Start(std::move(trajectory));
     for (;;) {
-      Bytes const bytes = pull_serializer_->Pull();
+      Array<std::uint8_t> const bytes = pull_serializer_->Pull();
       std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
       data = &data[bytes.size];
       if (bytes.size == 0) {

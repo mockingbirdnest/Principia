@@ -12,7 +12,7 @@ namespace principia {
 
 using base::HexadecimalEncode;
 using base::SerializeAsBytes;
-using base::UniqueBytes;
+using base::UniqueArray;
 
 namespace journal {
 

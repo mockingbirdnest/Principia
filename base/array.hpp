@@ -123,11 +123,6 @@ class BoundedArray final {
   std::int32_t size_;
 };
 
-
-// Specializations.
-using Bytes = Array<std::uint8_t>;
-using UniqueBytes = UniqueArray<std::uint8_t>;
-
 // Deep comparisons.
 template<typename LeftElement,
          typename RightElement,

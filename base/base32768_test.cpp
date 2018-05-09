@@ -30,7 +30,7 @@ class Base32768Test : public testing::Test {
 
   void CheckDecoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
-    UniqueBytes output(binary.size);
+    UniqueArray<std::uint8_t> output(binary.size);
     Base32768Decode(base32768, output.get());
     EXPECT_EQ(0, std::memcmp(output.data.get(), binary.data, binary.size));
     for (int i = 0; i < binary.size; ++i) {

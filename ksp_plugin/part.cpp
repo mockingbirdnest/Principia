@@ -15,7 +15,7 @@ namespace internal_part {
 using base::Array;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
-using base::UniqueBytes;
+using base::UniqueArray;
 
 Part::Part(
     PartId const part_id,

@@ -48,7 +48,7 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using base::Bytes;
+using base::Array;
 using base::check_not_null;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
@@ -848,7 +848,7 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   }
 
   // Pull a chunk.
-  Bytes bytes;
+  Array<std::uint8_t> bytes;
   bytes = (*serializer)->Pull();
 
   // If this is the end of the serialization, delete the serializer and return a

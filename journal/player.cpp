@@ -15,7 +15,7 @@ namespace principia {
 
 using base::GetLine;
 using base::HexadecimalDecode;
-using base::UniqueBytes;
+using base::UniqueArray;
 
 namespace journal {
 

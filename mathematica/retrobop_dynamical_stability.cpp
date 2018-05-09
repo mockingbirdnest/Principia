@@ -34,7 +34,7 @@ using base::Status;
 using base::GetLine;
 using base::HexadecimalDecode;
 using base::OFStream;
-using base::UniqueBytes;
+using base::UniqueArray;
 using geometry::BarycentreCalculator;
 using geometry::Instant;
 using geometry::Position;

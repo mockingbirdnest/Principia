@@ -5,9 +5,9 @@
 namespace principia {
 namespace base {
 
-inline UniqueBytes SerializeAsBytes(
+inline UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message) {
-  UniqueBytes bytes(message.ByteSizeLong());
+  UniqueArray<std::uint8_t> bytes(message.ByteSizeLong());
   message.SerializeToArray(bytes.data.get(), bytes.size);
   return std::move(bytes);
 }

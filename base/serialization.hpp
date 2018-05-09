@@ -7,7 +7,7 @@
 namespace principia {
 namespace base {
 
-inline UniqueBytes SerializeAsBytes(
+inline UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message);
 
 }  // namespace base

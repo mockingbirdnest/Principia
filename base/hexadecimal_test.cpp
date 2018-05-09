@@ -18,7 +18,7 @@ namespace base {
 class HexadecimalTest : public testing::Test {
  protected:
   HexadecimalTest()
-    : bytes_("\x00\x7F\x80\xFF\x67\x68\0A\x07"),
+    : bytes_("\x00\x7F\x80\xFF\x67\x68\x0A\x07"),
       lowercase_digits_("00""7f""80""ff""67""68""0a""07"),
       uppercase_digits_("00""7F""80""FF""67""68""0A""07"),
       digits_(digit_count) {
@@ -30,7 +30,7 @@ class HexadecimalTest : public testing::Test {
   static std::int64_t const byte_count = 8;
   static std::int64_t const digit_count = byte_count << 1;
 
-  Array<std::uint8_t const> bytes_;
+  Array<std::uint8_t const> const bytes_;
   Array<char const> const lowercase_digits_;
   Array<char const> const uppercase_digits_;
   UniqueArray<char> const digits_;
@@ -41,7 +41,7 @@ using HexadecimalDeathTest = HexadecimalTest;
 TEST_F(HexadecimalTest, EncodeAndDecode) {
   HexadecimalEncode(bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
-  UniqueBytes bytes(byte_count);
+  UniqueArray<std::uint8_t> bytes(byte_count);
   HexadecimalDecode(digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, bytes.get());
 }
@@ -63,14 +63,14 @@ TEST_F(HexadecimalTest, InPlace) {
   std::memcpy(&buffer[0], bytes_.data, byte_count);
   HexadecimalEncode({&buffer[0], byte_count},
                     {&buffer_characters[0], digit_count});
-  EXPECT_EQ(uppercase_digits_, Bytes(&buffer[0], digit_count));
+  EXPECT_EQ(uppercase_digits_, Array<std::uint8_t>(&buffer[0], digit_count));
   HexadecimalDecode({&buffer_characters[0], digit_count},
                     {&buffer[1], byte_count});
-  EXPECT_EQ(bytes_, Bytes(&buffer[1], byte_count));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[1], byte_count));
   std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
   HexadecimalDecode({&buffer_characters[0], digit_count},
                     {&buffer[0], byte_count});
-  EXPECT_EQ(bytes_, Bytes(&buffer[0], byte_count));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[0], byte_count));
 }
 
 TEST_F(HexadecimalTest, LargeOutput) {
@@ -83,10 +83,10 @@ TEST_F(HexadecimalTest, LargeOutput) {
                                         &digits.data[digits_size]),
               Each('X'));
   std::int64_t const bytes_size = byte_count + 42;
-  UniqueBytes bytes(bytes_size);
+  UniqueArray<std::uint8_t> bytes(bytes_size);
   std::memset(bytes.data.get(), 'Y', bytes_size);
   HexadecimalDecode(uppercase_digits_, bytes.get());
-  EXPECT_EQ(bytes_, Bytes(bytes.data.get(), byte_count));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes.data.get(), byte_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&bytes.data[byte_count],
                                         &bytes.data[bytes_size]),
               Each('Y'));
@@ -99,14 +99,15 @@ TEST_F(HexadecimalTest, Adjacent) {
   std::memcpy(&buffer[0], bytes_.data, byte_count);
   HexadecimalEncode({&buffer[0], byte_count},
                     {&buffer_characters[byte_count], digit_count});
-  EXPECT_EQ(uppercase_digits_, Bytes(&buffer[byte_count], digit_count));
+  EXPECT_EQ(uppercase_digits_,
+            Array<std::uint8_t>(&buffer[byte_count], digit_count));
   std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
   HexadecimalDecode({&buffer_characters[0], digit_count},
                     {&buffer[digit_count], byte_count});
-  EXPECT_EQ(bytes_, Bytes(&buffer[digit_count], byte_count));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[digit_count], byte_count));
   HexadecimalDecode({&buffer_characters[0], digit_count + 1},
                     {&buffer[digit_count], byte_count});
-  EXPECT_EQ(bytes_, Bytes(&buffer[digit_count], byte_count));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[digit_count], byte_count));
 }
 
 TEST_F(HexadecimalDeathTest, Overlap) {
@@ -145,9 +146,9 @@ TEST_F(HexadecimalDeathTest, Size) {
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<std::uint8_t> bytes(byte_count);
   HexadecimalDecode(lowercase_digits_, bytes);
-  EXPECT_EQ(bytes_, Bytes(bytes));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes));
   HexadecimalDecode(uppercase_digits_, bytes);
-  EXPECT_EQ(bytes_, Bytes(bytes));
+  EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes));
 }
 
 TEST_F(HexadecimalTest, Invalid) {

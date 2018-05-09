@@ -23,7 +23,7 @@ namespace ksp_plugin {
 namespace internal_plugin {
 
 using base::Array;
-using base::UniqueBytes;
+using base::UniqueArray;
 using base::HexadecimalDecode;
 using geometry::Bivector;
 using geometry::Trivector;
