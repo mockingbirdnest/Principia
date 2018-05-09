@@ -320,10 +320,22 @@ void JournalProtoProcessor::ProcessRequiredFixed32Field(
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
-  CHECK(options.HasExtension(journal::serialization::pointer_to))
-      << descriptor->full_name() << " is missing a (pointer_to) option";
-  std::string const& pointer_to =
-      options.GetExtension(journal::serialization::pointer_to);
+  CHECK(!options.HasExtension(journal::serialization::pointer_to) ||
+        !options.HasExtension(journal::serialization::encoding))
+      << descriptor->full_name()
+      << " cannot have both a (pointer_to) and an (encoding) option";
+  std::string pointer_to;
+  if (options.HasExtension(journal::serialization::pointer_to)) {
+    pointer_to = options.GetExtension(journal::serialization::pointer_to);
+  }
+  if (options.HasExtension(journal::serialization::encoding)) {
+    switch (options.GetExtension(journal::serialization::encoding)) {
+      case journal::serialization::UTF_8:
+        pointer_to = "char const";
+        break;
+    }
+  }
+
   if (options.HasExtension(journal::serialization::is_subject)) {
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
@@ -381,13 +393,17 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
   // Special handlings for produced C-style strings: these are seen from the C#
   // as strings, and marshalled with immediate destruction.
-  if (pointer_to == "char const" &&
+  if (options.HasExtension(journal::serialization::encoding) &&
       (options.HasExtension(journal::serialization::is_produced) ||
        options.HasExtension(journal::serialization::is_produced_if))) {
     field_cs_type_[descriptor] = "String";
-    field_cs_marshal_[descriptor] =
-        "MarshalAs(UnmanagedType.CustomMarshaler, "
-        "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+    switch (options.GetExtension(journal::serialization::encoding)) {
+      case journal::serialization::UTF_8:
+        field_cs_marshal_[descriptor] =
+            "MarshalAs(UnmanagedType.CustomMarshaler, "
+            "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+        break;
+    }
   }
 
   field_cxx_deserializer_fn_[descriptor] =
@@ -463,7 +479,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
              options.HasExtension(journal::serialization::is_produced_if))
       << descriptor->full_name()
       << " is a string field and cannot be produced. Use a fixed64 field that "
-      << "is a pointer to char const instead.";
+      << "has the (encoding) option instead.";
 
   // Note that it is important to use an out marshmallow for return fields,
   // hence the use of the |in_| set here.
