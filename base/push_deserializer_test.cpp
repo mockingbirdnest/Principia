@@ -14,6 +14,7 @@
 #include "base/array.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
+#include "base/serialization.hpp"
 #include "gipfeli/gipfeli.h"
 #include "gmock/gmock.h"
 #include "serialization/physics.pb.h"
@@ -24,6 +25,7 @@ namespace base {
 namespace internal_push_deserializer {
 
 using base::not_null;
+using base::SerializeAsBytes;
 using serialization::DiscreteTrajectory;
 using serialization::Pair;
 using serialization::Point;
@@ -82,9 +84,8 @@ class PushDeserializerTest : public ::testing::Test {
   }
 
   static void CheckSerialization(google::protobuf::Message const& message) {
-    std::string const actual_serialized = message.SerializeAsString();
-    std::string const expected_serialized =
-        BuildTrajectory()->SerializeAsString();
+    auto const actual_serialized = SerializeAsBytes(message);
+    auto const expected_serialized = SerializeAsBytes(*BuildTrajectory());
     EXPECT_EQ(actual_serialized, expected_serialized);
   }
 
