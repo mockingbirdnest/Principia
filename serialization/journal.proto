@@ -6,7 +6,7 @@ package principia.journal.serialization;
 
 // Encoding of string-like fields.
 enum Encoding {
-  UTF_8 = 1;  // Represented as "char const*".
+  UTF_8 = 1;  // Represented as "char const*" in C++ code.
 }
 
 // These two messages must come first because the other interchange messages use
