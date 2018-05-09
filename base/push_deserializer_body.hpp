@@ -181,16 +181,16 @@ inline Array<std::uint8_t> PushDeserializer::Pull() {
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-    // The front of |done_| is the callback for the |Array<std::uint8_t>| object that was just
-    // processed.  Run it now.
+    // The front of |done_| is the callback for the |Array<std::uint8_t>| object
+    // that was just processed.  Run it now.
     CHECK(!done_.empty());
     auto const done = done_.front();
     if (done != nullptr) {
       done();
     }
     done_.pop();
-    // Get the next |Array<std::uint8_t>| object to process and remove it from |queue_|.
-    // Uncompress it if needed.
+    // Get the next |Array<std::uint8_t>| object to process and remove it from
+    // |queue_|.  Uncompress it if needed.
     auto const& front = queue_.front();
     if (front.size == 0 || compressor_ == nullptr) {
       result = front;

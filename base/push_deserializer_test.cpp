@@ -132,7 +132,8 @@ class PushDeserializerTest : public ::testing::Test {
         std::memcpy(data, bytes.data, static_cast<std::size_t>(bytes.size));
         push_deserializer_->Push(
             Array<std::uint8_t>(data, bytes.size),
-            std::bind(&PushDeserializerTest::Stomp, Array<std::uint8_t>(data, bytes.size)));
+            std::bind(&PushDeserializerTest::Stomp,
+                      Array<std::uint8_t>(data, bytes.size)));
         data = &data[bytes.size];
         if (bytes.size == 0) {
           break;
@@ -255,7 +256,8 @@ TEST_F(PushDeserializerTest, DeserializationGipfeli) {
       for (int j = 0; j < compressed.size(); ++j) {
         compressed_chunks.back()[j] = compressed[j];
       }
-      Array<std::uint8_t> bytes(compressed_chunks.back().get(), compressed.size());
+      Array<std::uint8_t> bytes(compressed_chunks.back().get(),
+                                compressed.size());
       compressed_push_deserializer->Push(bytes, nullptr);
     }
     compressed_push_deserializer->Push(Array<std::uint8_t>(), nullptr);
@@ -314,10 +316,12 @@ TEST_F(PushDeserializerDeathTest, Stomp) {
       std::move(read_trajectory), &PushDeserializerTest::CheckSerialization);
     int left = byte_size;
     for (int i = 0; i < byte_size; i += stomp_chunk) {
-      Array<std::uint8_t> bytes(&serialized_trajectory[i], std::min(left, stomp_chunk));
-      push_deserializer_->Push(bytes,
-                               std::bind(&PushDeserializerTest::Stomp,
-                                         Array<std::uint8_t>(bytes.data, bytes.size + 1)));
+      Array<std::uint8_t> bytes(&serialized_trajectory[i],
+                                std::min(left, stomp_chunk));
+      push_deserializer_->Push(
+          bytes,
+          std::bind(&PushDeserializerTest::Stomp,
+                    Array<std::uint8_t>(bytes.data, bytes.size + 1)));
       left -= stomp_chunk;
     }
     push_deserializer_->Push(Array<std::uint8_t>(), nullptr);

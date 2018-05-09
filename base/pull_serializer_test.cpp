@@ -72,7 +72,8 @@ class PullSerializerTest : public ::testing::Test {
 
   // Returns the first string in the list.  Note that the very first string is
   // always discarded.
-  Array<std::uint8_t> OnFull(Array<std::uint8_t> const bytes, std::list<std::string>& strings) {
+  Array<std::uint8_t> OnFull(Array<std::uint8_t> const bytes,
+                             std::list<std::string>& strings) {
     strings.push_back(std::string(reinterpret_cast<const char*>(&bytes.data[0]),
                                   static_cast<std::size_t>(bytes.size)));
     return Array<std::uint8_t>(data_, small_chunk_size);
