@@ -10,6 +10,9 @@ namespace base {
 inline UniqueArray<std::uint8_t> SerializeAsBytes(
     google::protobuf::MessageLite const& message);
 
+template<typename Message>
+Message ParseFromBytes(Array<std::uint8_t const> bytes);
+
 }  // namespace base
 }  // namespace principia
 

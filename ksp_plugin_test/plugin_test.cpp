@@ -15,6 +15,7 @@
 #include "astronomy/time_scales.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
+#include "base/serialization.hpp"
 #include "base/status.hpp"
 #include "geometry/identity.hpp"
 #include "geometry/named_quantities.hpp"
@@ -52,6 +53,7 @@ using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
 using base::not_null;
+using base::SerializeAsBytes;
 using base::Status;
 using geometry::AngularVelocity;
 using geometry::Bivector;
@@ -261,16 +263,16 @@ class PluginTest : public testing::Test {
   void PrintSerializedPlugin(const Plugin& plugin) {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
-    std::string const serialized = message.SerializeAsString();
+    auto const serialized = SerializeAsBytes(message);
     WriteToBase32768File(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.32k",
-        serialized);
+        serialized.get());
     WriteToBinaryFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin",
-        serialized);
+        serialized.get());
     WriteToHexadecimalFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex",
-        serialized);
+        serialized.get());
   }
 
   static RigidMotion<ICRFJ2000Equator, Barycentric> const id_icrf_barycentric_;
