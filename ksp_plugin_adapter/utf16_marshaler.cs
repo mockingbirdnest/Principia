@@ -13,7 +13,7 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
     return -1;
   }
 
-  public static new ICustomMarshaler GetInstance(String s) {
+  public static ICustomMarshaler GetInstance(String s) {
     return instance_;
   }
 
@@ -29,8 +29,8 @@ internal class OutOwnedUTF16Marshaler : ICustomMarshaler {
     return Marshal.PtrToStringUni(native_data);
   }
 
-  private readonly static OutOwnedUTF8Marshaler instance_ =
-      new OutOwnedUTF8Marshaler();
+  private readonly static OutOwnedUTF16Marshaler instance_ =
+      new OutOwnedUTF16Marshaler();
 }
 
 }  // namespace ksp_plugin_adapter
