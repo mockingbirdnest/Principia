@@ -480,6 +480,10 @@ void JournalProtoProcessor::ProcessRequiredBytesField(
                                   "MarshalTypeRef = typeof(OutUTF16Marshaler))";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char16_t const*";
+  field_cxx_arguments_fn_[descriptor] =
+      [](std::string const& identifier) -> std::vector<std::string> {
+        return {identifier + ".c_str()"};
+      };
   field_cxx_deserializer_fn_[descriptor] =
       [](std::string const& expr) {
         return "DeserializeUtf16(" + expr + ")";

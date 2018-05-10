@@ -49,10 +49,15 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
   }
 }
 
-char16_t const* DeserializeUtf16(std::string const& serialized) {
+// This function uses a |std::string| to store non-UTF-8 data (UTF-16
+// specifically) because proto is silly and uses |std::string| for bytes as well
+// as string.
+std::u16string DeserializeUtf16(std::string const& serialized) {
+  std::u16string result(serialized.size() / sizeof(char16_t), u'\0');
   // The result is char16_t-null-terminated because of the way the serialized
   // string was built in SerializeUtf16.
-  return reinterpret_cast<char16_t const*>(serialized.c_str());
+  std::memcpy(result.data(), serialized.c_str(), serialized.size());
+  return result;
 }
 
 template<typename T>
@@ -60,6 +65,7 @@ std::uint64_t SerializePointer(T* t) {
   return reinterpret_cast<std::uint64_t>(t);
 }
 
+// See the comment on |DeserializeUtf16| regarding the usage of |std::string|.
 std::string SerializeUtf16(char16_t const* const deserialized) {
   // Note that the string constructed here contains the final char16_t null.
   return std::string(
