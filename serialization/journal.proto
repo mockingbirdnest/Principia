@@ -343,14 +343,14 @@ message DeserializePluginBase32768 {
     required bytes serialization = 1 [(encoding) = UTF_16];
     required fixed64 deserializer = 2
         [(pointer_to) = "PushDeserializer",
-         (is_consumed_if) = "serialization->empty()"];
+         (is_consumed_if) = "serialization[0] == u'\\0'"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
     optional string compressor = 4;
   }
   message Out {
     required fixed64 deserializer = 1
         [(pointer_to) = "PushDeserializer",
-         (is_produced_if) = "!serialization->empty()"];
+         (is_produced_if) = "serialization[0] != u'\\0'"];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
                                  (is_produced) = true];
   }

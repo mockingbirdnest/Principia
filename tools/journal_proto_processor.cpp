@@ -611,6 +611,7 @@ void JournalProtoProcessor::ProcessRequiredField(
       break;
     case FieldDescriptor::TYPE_BYTES:
       ProcessRequiredBytesField(descriptor);
+      break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
       break;

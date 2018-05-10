@@ -335,23 +335,35 @@ void principia__DeleteString(char const** const native_string) {
   return m.Return();
 }
 
+// Same as above, but for std::u16string.
+void principia__DeleteU16String(char16_t const** const native_string) {
+}
+
+void principia__DeserializePluginBase32768(
+    char16_t const* const serialization,
+    PushDeserializer** const deserializer,
+    Plugin const** const plugin,
+    char const* const compressor) {}
+
 // The caller takes ownership of |**plugin| when it is not null.  No transfer of
 // ownership of |*serialization| or |**deserializer|.  |*deserializer| and
 // |*plugin| must be null on the first call and must be passed unchanged to the
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When
 // this last call returns, |*plugin| is not null and may be used by the caller.
-void principia__DeserializePlugin(char const* const serialization,
-                                  int const serialization_size,
-                                  PushDeserializer** const deserializer,
-                                  Plugin const** const plugin,
-                                  char const* const compressor) {
-  journal::Method<journal::DeserializePlugin> m({serialization,
-                                                 serialization_size,
-                                                 deserializer,
-                                                 plugin,
-                                                 compressor},
-                                                {deserializer, plugin});
+void principia__DeserializePluginHexadecimal(
+    char const* const serialization,
+    int const serialization_size,
+    PushDeserializer** const deserializer,
+    Plugin const** const plugin,
+    char const* const compressor) {
+  journal::Method<journal::DeserializePluginHexadecimal> m({serialization,
+                                                            serialization_size,
+                                                            deserializer,
+                                                            plugin,
+                                                            compressor},
+                                                           {deserializer,
+                                                            plugin});
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
@@ -832,15 +844,23 @@ char const* principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
+char16_t const* principia__SerializePluginBase32768(
+    Plugin const* const plugin,
+    PullSerializer** const serializer,
+    char const* const compressor) {
+  return nullptr;
+}
+
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
-char const* principia__SerializePlugin(Plugin const* const plugin,
-                                       PullSerializer** const serializer,
-                                       char const* const compressor) {
-  journal::Method<journal::SerializePlugin> m({plugin, serializer},
-                                              {serializer});
+char const* principia__SerializePluginHexadecimal(
+    Plugin const* const plugin,
+    PullSerializer** const serializer,
+    char const* const compressor) {
+  journal::Method<journal::SerializePluginHexadecimal> m({plugin, serializer},
+                                                         {serializer});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
