@@ -262,6 +262,9 @@ class PluginTest : public testing::Test {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     std::string const serialized = message.SerializeAsString();
+    WriteToBase32768File(
+        SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.32k",
+        serialized);
     WriteToBinaryFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin",
         serialized);
