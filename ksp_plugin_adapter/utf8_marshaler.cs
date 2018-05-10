@@ -105,5 +105,9 @@ internal class OutOwnedUTF8Marshaler : OutUTF8Marshaler {
       new OutOwnedUTF8Marshaler();
 }
 
+// TODO(egg): Implement these marshmallows.
+internal class InUTF16Marshaler : InUTF8Marshaler { }
+internal class OutOwnedUTF16Marshaler : OutOwnedUTF8Marshaler { }
+
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

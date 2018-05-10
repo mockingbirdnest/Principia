@@ -600,8 +600,9 @@ public partial class PrincipiaPluginAdapter
       String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        serialization = plugin_.SerializePlugin(ref serializer,
-                                                serialization_compression_);
+        serialization = plugin_.SerializePluginHexadecimal(
+                            ref serializer,
+                            serialization_compression_);
         if (serialization == null) {
           break;
         }
@@ -628,17 +629,17 @@ public partial class PrincipiaPluginAdapter
       String[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
-        Interface.DeserializePlugin(serialization,
-                                    serialization.Length,
-                                    ref deserializer,
-                                    ref plugin_,
-                                    serialization_compression_);
+        Interface.DeserializePluginHexadecimal(serialization,
+                                               serialization.Length,
+                                               ref deserializer,
+                                               ref plugin_,
+                                               serialization_compression_);
       }
-      Interface.DeserializePlugin("",
-                                  0,
-                                  ref deserializer,
-                                  ref plugin_,
-                                  serialization_compression_);
+      Interface.DeserializePluginHexadecimal("",
+                                             0,
+                                             ref deserializer,
+                                             ref plugin_,
+                                             serialization_compression_);
       if (serialization_compression_ == "") {
         serialization_compression_ = "gipfeli";
       }

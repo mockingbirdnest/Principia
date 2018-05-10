@@ -7,6 +7,7 @@ package principia.journal.serialization;
 // Encoding of string-like fields.
 enum Encoding {
   UTF_8 = 1;  // Represented as "char const*" in C++ code.
+  UTF_16 = 2;  // Represented as "char16_t const*" in C++ code.
 }
 
 // These two messages must come first because the other interchange messages use
@@ -127,7 +128,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5152.
+  extensions 5000 to 5999;  // Last used: 5155.
 }
 
 message AdvanceTime {
@@ -319,9 +320,47 @@ message DeleteString {
   optional Out out = 2;
 }
 
-message DeserializePlugin {
+message DeleteU16String {
   extend Method {
-    optional DeserializePlugin extension = 5050;
+    optional DeleteU16String extension = 5155;
+  }
+  message In {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const",
+                                        (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeserializePluginBase32768 {
+  extend Method {
+    optional DeserializePluginBase32768 extension = 5153;
+  }
+  message In {
+    required bytes serialization = 1 [(encoding) = UTF_16];
+    required fixed64 deserializer = 2
+        [(pointer_to) = "PushDeserializer",
+         (is_consumed_if) = "serialization[0] == u'\\0'"];
+    required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
+    optional string compressor = 4;
+  }
+  message Out {
+    required fixed64 deserializer = 1
+        [(pointer_to) = "PushDeserializer",
+         (is_produced_if) = "serialization[0] != u'\\0'"];
+    required fixed64 plugin = 2 [(pointer_to) = "Plugin const",
+                                 (is_produced) = true];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeserializePluginHexadecimal {
+  extend Method {
+    optional DeserializePluginHexadecimal extension = 5050;
   }
   message In {
     required string serialization = 1 [(size) = "serialization_size"];
@@ -1550,9 +1589,34 @@ message SayHello {
   optional Return return = 3;
 }
 
-message SerializePlugin {
+message SerializePluginBase32768 {
   extend Method {
-    optional SerializePlugin extension = 5054;
+    optional SerializePluginBase32768 extension = 5154;
+  }
+  message In {
+    required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
+                                 (is_subject) = true];
+    required fixed64 serializer = 2
+        [(pointer_to) = "PullSerializer",
+         (is_consumed_if) = "result == nullptr"];
+    optional string compressor = 3;
+  }
+  message Out {
+    required fixed64 serializer = 1 [(pointer_to) = "PullSerializer",
+                                     (is_produced_if) = "result != nullptr"];
+  }
+  message Return {
+    required fixed64 result = 1 [(encoding) = UTF_16,
+                                 (is_produced_if) = "result != nullptr"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+  optional Return return = 3;
+}
+
+message SerializePluginHexadecimal {
+  extend Method {
+    optional SerializePluginHexadecimal extension = 5054;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",

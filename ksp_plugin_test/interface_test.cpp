@@ -553,13 +553,14 @@ TEST_F(InterfaceTest, SerializePlugin) {
 
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
   char const* serialization =
-      principia__SerializePlugin(plugin_.get(),
-                                 &serializer,
-                                 /*compressor=*/nullptr);
+      principia__SerializePluginHexadecimal(plugin_.get(),
+                                            &serializer,
+                                            /*compressor=*/nullptr);
   EXPECT_STREQ(hexadecimal_simple_plugin_.c_str(), serialization);
-  EXPECT_EQ(nullptr, principia__SerializePlugin(plugin_.get(),
-                                                &serializer,
-                                                /*compressor=*/nullptr));
+  EXPECT_EQ(nullptr,
+            principia__SerializePluginHexadecimal(plugin_.get(),
+                                                  &serializer,
+                                                  /*compressor=*/nullptr));
   principia__DeleteString(&serialization);
   EXPECT_THAT(serialization, IsNull());
 }
@@ -567,17 +568,17 @@ TEST_F(InterfaceTest, SerializePlugin) {
 TEST_F(InterfaceTest, DeserializePlugin) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
-  principia__DeserializePlugin(
+  principia__DeserializePluginHexadecimal(
           hexadecimal_simple_plugin_.c_str(),
           hexadecimal_simple_plugin_.size(),
           &deserializer,
           &plugin,
           /*compressor=*/nullptr);
-  principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
-                               0,
-                               &deserializer,
-                               &plugin,
-                               /*compressor=*/nullptr);
+  principia__DeserializePluginHexadecimal(hexadecimal_simple_plugin_.c_str(),
+                                          0,
+                                          &deserializer,
+                                          &plugin,
+                                          /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -588,17 +589,17 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
   Plugin const* plugin = nullptr;
   std::string const hexadecimal_plugin = ReadFromHexadecimalFile(
       R"(P:\Public Mockingbird\Principia\Crashes\1595\persistent.proto.hex)");
-  principia__DeserializePlugin(
+  principia__DeserializePluginHexadecimal(
           hexadecimal_plugin.c_str(),
           hexadecimal_plugin.size(),
           &deserializer,
           &plugin,
           /*compressor=*/nullptr);
-  principia__DeserializePlugin(hexadecimal_plugin.c_str(),
-                               0,
-                               &deserializer,
-                               &plugin,
-                               /*compressor=*/nullptr);
+  principia__DeserializePluginHexadecimal(hexadecimal_plugin.c_str(),
+                                          0,
+                                          &deserializer,
+                                          &plugin,
+                                          /*compressor=*/nullptr);
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
