@@ -48,14 +48,14 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using base::Bytes;
+using base::Array;
 using base::check_not_null;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
-using base::UniqueBytes;
+using base::UniqueArray;
 using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
@@ -327,11 +327,7 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // |**native_string|.
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
-  // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
-  // cannot be aliased.
-  auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
-  TakeOwnershipArray(&unsigned_string);
-  *native_string = reinterpret_cast<char const*>(unsigned_string);
+  TakeOwnershipArray(native_string);
   return m.Return();
 }
 
@@ -384,10 +380,7 @@ void principia__DeserializePluginHexadecimal(
   }
 
   // Decode the hexadecimal representation.
-  std::uint8_t const* const hexadecimal =
-      reinterpret_cast<std::uint8_t const*>(serialization);
-  int const hexadecimal_size = serialization_size;
-  auto bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
+  auto bytes = HexadecimalDecode({serialization, serialization_size});
   auto const bytes_size = bytes.size;
   (*deserializer)->Push(std::move(bytes));
 
@@ -487,12 +480,11 @@ bool principia__HasEncounteredApocalypse(
   std::string details_string;
   bool const has_encountered_apocalypse =
       CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(&details_string);
-  UniqueBytes allocated_details(details_string.size() + 1);
+  UniqueArray<char> allocated_details(details_string.size() + 1);
   std::memcpy(allocated_details.data.get(),
               details_string.data(),
               details_string.size() + 1);
-  *CHECK_NOTNULL(details) =
-      reinterpret_cast<char const*>(allocated_details.data.release());
+  *CHECK_NOTNULL(details) = allocated_details.data.release();
   return m.Return(has_encountered_apocalypse);
 }
 
@@ -876,7 +868,7 @@ char const* principia__SerializePluginHexadecimal(
   }
 
   // Pull a chunk.
-  Bytes bytes;
+  Array<std::uint8_t> bytes;
   bytes = (*serializer)->Pull();
 
   // If this is the end of the serialization, delete the serializer and return a
@@ -889,7 +881,7 @@ char const* principia__SerializePluginHexadecimal(
 
   // Convert to hexadecimal and return to the client.
   auto hexadecimal = HexadecimalEncode(bytes, /*null_terminated=*/true);
-  return m.Return(reinterpret_cast<char const*>(hexadecimal.data.release()));
+  return m.Return(hexadecimal.data.release());
 }
 
 // Sets the maximum number of seconds which logs may be buffered for.

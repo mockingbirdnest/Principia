@@ -15,8 +15,8 @@ using std::placeholders::_1;
 using std::swap;
 
 inline DelegatingArrayOutputStream::DelegatingArrayOutputStream(
-    Bytes const bytes,
-    std::function<Bytes(Bytes const bytes)> on_full)
+    Array<std::uint8_t> const bytes,
+    std::function<Array<std::uint8_t>(Array<std::uint8_t> const bytes)> on_full)
     : bytes_(bytes),
       on_full_(std::move(on_full)),
       byte_count_(0),
@@ -52,7 +52,7 @@ inline void DelegatingArrayOutputStream::BackUp(int count) {
   // times, well, notifying the client doesn't hurt as long as we don't pass a
   // size of 0.
   if (position_ > 0) {
-    bytes_ = on_full_(Bytes(bytes_.data, position_));
+    bytes_ = on_full_(Array<std::uint8_t>(bytes_.data, position_));
     position_ = 0;
   }
   last_returned_size_ = 0;
@@ -75,7 +75,7 @@ inline PullSerializer::PullSerializer(int const chunk_size,
       number_of_compression_chunks_(compressor_ == nullptr ? 0 : 1),
       data_(std::make_unique<std::uint8_t[]>(compressed_chunk_size_ *
                                              number_of_chunks_)),
-      stream_(Bytes(data_.get(), chunk_size_),
+      stream_(Array<std::uint8_t>(data_.get(), chunk_size_),
               std::bind(&PullSerializer::Push, this, _1)) {
   // Check the compatibility of the wait conditions in Push and Pull.
   CHECK_GT(number_of_chunks_ - number_of_compression_chunks_ - 1, 1);
@@ -88,8 +88,8 @@ inline PullSerializer::PullSerializer(int const chunk_size,
   for (int i = 0; i < number_of_chunks_ - 1; ++i) {
     free_.push(data_.get() + i * compressed_chunk_size_);
   }
-  queue_.push(
-      Bytes(data_.get() + (number_of_chunks_ - 1) * compressed_chunk_size_, 0));
+  queue_.push(Array<std::uint8_t>(
+      data_.get() + (number_of_chunks_ - 1) * compressed_chunk_size_, 0));
 }
 
 inline PullSerializer::~PullSerializer() {
@@ -106,18 +106,18 @@ inline void PullSerializer::Start(
     CHECK(message_->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client
     // knows that this is the end.
-    Bytes bytes;
+    Array<std::uint8_t> bytes;
     {
       std::unique_lock<std::mutex> l(lock_);
       CHECK(!free_.empty());
-      bytes = Bytes(free_.front(), 0);
+      bytes = Array<std::uint8_t>(free_.front(), 0);
     }
     Push(bytes);
   });
 }
 
-inline Bytes PullSerializer::Pull() {
-  Bytes result;
+inline Array<std::uint8_t> PullSerializer::Pull() {
+  Array<std::uint8_t> result;
   {
     std::unique_lock<std::mutex> l(lock_);
     // The element at the front of the queue is the one that was last returned
@@ -133,16 +133,17 @@ inline Bytes PullSerializer::Pull() {
   return result;
 }
 
-inline Bytes PullSerializer::Push(Bytes bytes) {
-  Bytes result;
+inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
+  Array<std::uint8_t> result;
   CHECK_GE(chunk_size_, bytes.size);
   if (bytes.size > 0 && compressor_ != nullptr) {
-    Bytes compressed_bytes;
+    Array<std::uint8_t> compressed_bytes;
     {
       std::unique_lock<std::mutex> l(lock_);
       CHECK_LE(1 + number_of_compression_chunks_, free_.size());
       free_.pop();
-      compressed_bytes = Bytes(free_.front(), compressed_chunk_size_);
+      compressed_bytes =
+          Array<std::uint8_t>(free_.front(), compressed_chunk_size_);
       free_.push(bytes.data);
     }
     // We maintain the invariant that the chunk being filled is at the front of
@@ -168,7 +169,7 @@ inline Bytes PullSerializer::Push(Bytes bytes) {
     CHECK_LE(2 + number_of_compression_chunks_, free_.size());
     CHECK_EQ(free_.front(), bytes.data);
     free_.pop();
-    result = Bytes(free_.front(), chunk_size_);
+    result = Array<std::uint8_t>(free_.front(), chunk_size_);
     CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
   queue_has_elements_.notify_all();

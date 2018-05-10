@@ -15,7 +15,7 @@ namespace interface {
 
 using base::Error;
 using base::StatusOr;
-using base::UniqueBytes;
+using base::UniqueArray;
 using geometry::AngularVelocity;
 using ksp_plugin::FlightPlan;
 using ksp_plugin::Navigation;
