@@ -34,7 +34,7 @@ using base::Status;
 using base::GetLine;
 using base::HexadecimalDecode;
 using base::OFStream;
-using base::UniqueBytes;
+using base::UniqueArray;
 using geometry::BarycentreCalculator;
 using geometry::Instant;
 using geometry::Position;
@@ -142,22 +142,6 @@ constexpr Length jool_system_radius_bound = 3e8 * Metre;
 constexpr std::array<Celestial, 6> jool_system =
     {Jool, Laythe, Vall, Tylo, Bop, Pol};
 constexpr std::array<Celestial, 5> jool_moons = {Laythe, Vall, Tylo, Bop, Pol};
-
-template<typename Message>
-std::unique_ptr<Message> Read(std::ifstream& file) {
-  std::string const line = GetLine(file);
-  if (line.empty()) {
-    return nullptr;
-  }
-  std::uint8_t const* const hexadecimal =
-      reinterpret_cast<std::uint8_t const*>(line.data());
-  int const hexadecimal_size = line.size();
-  auto const bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
-  auto message = std::make_unique<Message>();
-  CHECK(
-      message->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
-  return std::move(message);
-}
 
 HierarchicalSystem<Barycentric>::BarycentricSystem MakeStabilizedKSPSystem() {
   static auto const& system = *[]() {

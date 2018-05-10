@@ -25,6 +25,7 @@
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
+#include "base/serialization.hpp"
 #include "base/status.hpp"
 #include "base/unique_ptr_logging.hpp"
 #include "geometry/affine_map.hpp"
@@ -66,6 +67,7 @@ using base::Fingerprint2011;
 using base::make_not_null_unique;
 using base::OFStream;
 using base::not_null;
+using base::SerializeAsBytes;
 using base::Status;
 using geometry::AffineMap;
 using geometry::AngularVelocity;
@@ -183,9 +185,8 @@ void Plugin::EndInitialization() {
     auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
     serialization::HierarchicalSystem message;
     hierarchical_system->WriteToMessage(&message);
-    std::string const serialized_message = message.SerializeAsString();
     uint64_t const system_fingerprint =
-        Fingerprint2011(serialized_message.c_str(), serialized_message.size());
+        Fingerprint2011(SerializeAsBytes(message).get());
     LOG(INFO) << "System fingerprint is " << std::hex << std::uppercase
               << system_fingerprint;
 
@@ -195,9 +196,8 @@ void Plugin::EndInitialization() {
       auto const hierarchical_system = solar_system.MakeHierarchicalSystem();
       serialization::HierarchicalSystem message;
       hierarchical_system->WriteToMessage(&message);
-      std::string const serialized_message = message.SerializeAsString();
-      uint64_t const system_fingerprint = Fingerprint2011(
-          serialized_message.c_str(), serialized_message.size());
+      uint64_t const system_fingerprint =
+          Fingerprint2011(SerializeAsBytes(message).get());
       LOG(INFO) << "System fingerprint after stabilization is " << std::hex
                 << std::uppercase << system_fingerprint;
       CHECK_EQ(KSPStabilizedSystemFingerprint, system_fingerprint)
@@ -267,15 +267,13 @@ void Plugin::EndInitialization() {
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
-  std::string const bytes = ephemeris_message.SerializeAsString();
-  auto const hex = base::HexadecimalEncode(
-      base::Array<std::uint8_t const>(
-          reinterpret_cast<std::uint8_t const*>(bytes.data()), bytes.size()),
-      /*null_terminated=*/true);
+  auto const hex =
+      base::HexadecimalEncode(SerializeAsBytes(ephemeris_message).get(),
+                              /*null_terminated=*/true);
   // Begin and end markers to make sure the hex did not get clipped (this might
   // happen if the message is very big).
   LOG(INFO) << "Ephemeris at initialization:\nbegin\n"
-            << reinterpret_cast<char const*>(hex.data.get()) << "\nend";
+            << hex.data.get() << "\nend";
 
   initializing_.Flop();
 }
