@@ -54,8 +54,6 @@ T DeserializePointer(Player::PointerMap const& pointer_map,
 // as string.
 std::u16string DeserializeUtf16(std::string const& serialized) {
   std::u16string result(serialized.size() / sizeof(char16_t), u'\0');
-  // The result is char16_t-null-terminated because of the way the serialized
-  // string was built in SerializeUtf16.
   std::memcpy(result.data(), serialized.c_str(), serialized.size());
   return result;
 }
@@ -71,7 +69,7 @@ std::string SerializeUtf16(char16_t const* const deserialized) {
   return std::string(
       reinterpret_cast<char const*>(deserialized),
       sizeof(char16_t) *
-          (std::char_traits<char16_t const>::length(deserialized) + 1));
+          (std::char_traits<char16_t const>::length(deserialized)));
 }
 
 }  // namespace
