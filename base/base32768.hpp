@@ -6,8 +6,8 @@
 #include "base/array.hpp"
 
 // This file implements the base 32768 encoding defined by
-// https://github.com/qntm/base32768 (MIT License).  This is a complete
-// reimplementation in C++.
+// https://github.com/qntm/base32768.  This is a complete reimplementation in
+// C++.
 
 namespace principia {
 namespace base {

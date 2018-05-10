@@ -312,18 +312,17 @@ UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
 std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
   // In order to decide how many bytes the input will decode to, we need to
   // figure out if the last code point encodes 7 bits or 15 bits.
+  std::int64_t encoded_bits;
   if (input.size > 0 && seven_bits.CanEncode(input.data[input.size - 1])) {
-    // See the comment below.
-    return ((input.size - 1) * bits_per_code_point +
-            bits_per_final_code_point) /
-           bits_per_byte;
+    encoded_bits =
+        (input.size - 1) * bits_per_code_point + bits_per_final_code_point;
   }
   else {
-    // No need to add anything before doing the division, because either we have
-    // a multiple of 15 bits, in which case the division is exact; or there is
-    // padding and the truncation has the right effect.
-    return input.size * bits_per_code_point / bits_per_byte;
+    encoded_bits = input.size * bits_per_code_point / bits_per_byte;
   }
+  // Either we have a multiple of 15 bits, in which case the division is exact;
+  // or there is padding, and truncation has the right effect.
+  return encoded_bits / bits_per_byte;
 }
 
 }  // namespace internal_base32768
