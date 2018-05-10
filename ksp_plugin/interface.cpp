@@ -22,6 +22,7 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
+#include "base/base32768.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -50,6 +51,8 @@ using astronomy::J2000;
 using astronomy::ParseTT;
 using base::Array;
 using base::check_not_null;
+using base::Base32768Decode;
+using base::Base32768Encode;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
@@ -339,18 +342,60 @@ void principia__DeleteU16String(char16_t const** const native_string) {
   return m.Return();
 }
 
-void principia__DeserializePluginBase32768(
-    char16_t const* const serialization,
-    PushDeserializer** const deserializer,
-    Plugin const** const plugin,
-    char const* const compressor) {}
-
 // The caller takes ownership of |**plugin| when it is not null.  No transfer of
 // ownership of |*serialization| or |**deserializer|.  |*deserializer| and
 // |*plugin| must be null on the first call and must be passed unchanged to the
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When
 // this last call returns, |*plugin| is not null and may be used by the caller.
+void principia__DeserializePluginBase32768(
+    char16_t const* const serialization,
+    PushDeserializer** const deserializer,
+    Plugin const** const plugin,
+    char const* const compressor) {
+  journal::Method<journal::DeserializePluginBase32768> m({serialization,
+                                                          deserializer,
+                                                          plugin,
+                                                          compressor},
+                                                         {deserializer,
+                                                          plugin});
+  CHECK_NOTNULL(serialization);
+  CHECK_NOTNULL(deserializer);
+  CHECK_NOTNULL(plugin);
+
+  // Create and start a deserializer if the caller didn't provide one.
+  if (*deserializer == nullptr) {
+    LOG(INFO) << "Begin plugin deserialization";
+    *deserializer = new PushDeserializer(
+        chunk_size, number_of_chunks, NewCompressor(compressor));
+    auto message = make_not_null_unique<serialization::Plugin>();
+    (*deserializer)
+        ->Start(std::move(message),
+                [plugin](google::protobuf::Message const& message) {
+                  *plugin =
+                      Plugin::ReadFromMessage(
+                          static_cast<serialization::Plugin const&>(message))
+                          .release();
+                });
+  }
+
+  // Decode the base 32768 representation.
+  auto bytes = Base32768Decode(
+                   {serialization,
+                    std::char_traits<char16_t const>::length(serialization)});
+  auto const bytes_size = bytes.size;
+  (*deserializer)->Push(std::move(bytes));
+
+  // If the data was empty, delete the deserializer.  This ensures that
+  // |*plugin| is filled.
+  if (bytes_size == 0) {
+    LOG(INFO) << "End plugin deserialization";
+    TakeOwnership(deserializer);
+  }
+  return m.Return();
+}
+
+// Same contract as the base 32768 deserialization.
 void principia__DeserializePluginHexadecimal(
     char const* const serialization,
     int const serialization_size,
@@ -840,17 +885,48 @@ char const* principia__SayHello() {
   return m.Return("Hello from native C++!");
 }
 
-char16_t const* principia__SerializePluginBase32768(
-    Plugin const* const plugin,
-    PullSerializer** const serializer,
-    char const* const compressor) {
-  return nullptr;
-}
-
 // |plugin| must not be null.  The caller takes ownership of the result, except
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
+char16_t const* principia__SerializePluginBase32768(
+    Plugin const* const plugin,
+    PullSerializer** const serializer,
+    char const* const compressor) {
+  journal::Method<journal::SerializePluginBase32768> m({plugin, serializer},
+                                                       {serializer});
+  CHECK_NOTNULL(plugin);
+  CHECK_NOTNULL(serializer);
+
+  // Create and start a serializer if the caller didn't provide one.
+  if (*serializer == nullptr) {
+    LOG(INFO) << "Begin plugin serialization";
+    *serializer = new PullSerializer(chunk_size,
+                                     number_of_chunks,
+                                     NewCompressor(compressor));
+    auto message = make_not_null_unique<serialization::Plugin>();
+    plugin->WriteToMessage(message.get());
+    (*serializer)->Start(std::move(message));
+  }
+
+  // Pull a chunk.
+  Array<std::uint8_t> bytes;
+  bytes = (*serializer)->Pull();
+
+  // If this is the end of the serialization, delete the serializer and return a
+  // nullptr.
+  if (bytes.size == 0) {
+    LOG(INFO) << "End plugin serialization";
+    TakeOwnership(serializer);
+    return m.Return(nullptr);
+  }
+
+  // Convert to base 32768 and return to the client.
+  auto base32768 = Base32768Encode(bytes, /*null_terminated=*/true);
+  return m.Return(base32768.data.release());
+}
+
+// Same contract as the base 32768 deserialization.
 char const* principia__SerializePluginHexadecimal(
     Plugin const* const plugin,
     PullSerializer** const serializer,
