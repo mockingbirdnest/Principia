@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/not_null.hpp"
+#include "base/serialization.hpp"
 #include "geometry/affine_map.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/linear_map.hpp"
@@ -32,6 +33,7 @@ namespace internal_planetarium {
 using astronomy::InfinitePast;
 using astronomy::InfiniteFuture;
 using base::make_not_null_unique;
+using base::ParseFromBytes;
 using geometry::AngularVelocity;
 using geometry::Bivector;
 using geometry::Displacement;
@@ -239,31 +241,28 @@ TEST_F(PlanetariumTest, PlotMethod2) {
 
 #if !defined(_DEBUG)
 TEST_F(PlanetariumTest, RealSolarSystem) {
-  serialization::DiscreteTrajectory discrete_trajectory_message;
-  discrete_trajectory_message.ParseFromString(ReadFromBinaryFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_trajectory.proto.bin"));
-  auto discrete_trajectory =
-      DiscreteTrajectory<Barycentric>::ReadFromMessage(
-          discrete_trajectory_message, {});
+  auto discrete_trajectory = DiscreteTrajectory<Barycentric>::ReadFromMessage(
+      ParseFromBytes<serialization::DiscreteTrajectory>(
+          ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                             "planetarium_trajectory.proto.bin")),
+      /*forks=*/{});
 
-  serialization::Ephemeris ephemeris_message;
-  ephemeris_message.ParseFromString(ReadFromBinaryFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_ephemeris.proto.bin"));
-  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(ephemeris_message);
+  auto ephemeris = Ephemeris<Barycentric>::ReadFromMessage(
+      ParseFromBytes<serialization::Ephemeris>(
+          ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                             "planetarium_ephemeris.proto.bin")));
 
-  serialization::DynamicFrame plotting_frame_message;
-  plotting_frame_message.ParseFromString(
-      ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
-                         "planetarium_plotting_frame.proto.bin"));
-  auto plotting_frame =
-      NavigationFrame::ReadFromMessage(plotting_frame_message, ephemeris.get());
+  auto plotting_frame = NavigationFrame::ReadFromMessage(
+      ParseFromBytes<serialization::DynamicFrame>(
+          ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                             "planetarium_plotting_frame.proto.bin")),
+      ephemeris.get());
 
-  serialization::AffineMap affine_map_message;
-  affine_map_message.ParseFromString(ReadFromBinaryFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "planetarium_to_camera.proto.bin"));
   auto rigid_transformation =
       RigidTransformation<Navigation, Camera>::ReadFromMessage(
-          affine_map_message);
+          ParseFromBytes<serialization::AffineMap>(
+              ReadFromBinaryFile(SOLUTION_DIR / "ksp_plugin_test" /
+                                 "planetarium_to_camera.proto.bin")));
 
   EXPECT_EQ(23423, discrete_trajectory->Size());
 

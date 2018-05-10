@@ -4,11 +4,13 @@
 #include <limits>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "astronomy/epoch.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/serialization.hpp"
 #include "geometry/named_quantities.hpp"
 #include "google/protobuf/text_format.h"
 #include "gmock/gmock.h"
@@ -34,6 +36,7 @@ namespace interface {
 using astronomy::ModifiedJulianDate;
 using base::check_not_null;
 using base::make_not_null_unique;
+using base::ParseFromBytes;
 using base::PullSerializer;
 using base::PushDeserializer;
 using geometry::AngularVelocity;
@@ -149,7 +152,7 @@ class InterfaceTest : public testing::Test {
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
   std::string const hexadecimal_simple_plugin_;
-  std::string const serialized_simple_plugin_;
+  std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
   static journal::Recorder* recorder_;
 };
@@ -548,8 +551,8 @@ TEST_F(InterfaceTest, Apocalypse) {
 
 TEST_F(InterfaceTest, SerializePlugin) {
   PullSerializer* serializer = nullptr;
-  principia::serialization::Plugin message;
-  message.ParseFromString(serialized_simple_plugin_);
+  auto const message = ParseFromBytes<principia::serialization::Plugin>(
+      serialized_simple_plugin_);
 
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
   char const* serialization =

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
@@ -14,6 +15,7 @@
 
 namespace principia {
 
+using base::ParseFromBytes;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__FutureCatchUpVessel;
@@ -28,14 +30,9 @@ using testing_utilities::ReadFromBinaryFile;
 namespace ksp_plugin {
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
-  std::string const binary_plugin = ReadFromBinaryFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "3 vessels.proto.bin");
-  serialization::Plugin serialized_plugin;
-  // TODO(phl): For some reason this doesn't CHECK because it wants to read
-  // beyond the end |binary_plugin|.  Figure out why (could it be an extra
-  // byte?).
-  serialized_plugin.ParseFromString(binary_plugin);
-  auto const plugin = Plugin::ReadFromMessage(serialized_plugin);
+  auto const plugin = Plugin::ReadFromMessage(
+      ParseFromBytes<serialization::Plugin>(ReadFromBinaryFile(
+          SOLUTION_DIR / "ksp_plugin_test" / "3 vessels.proto.bin")));
 
   std::vector<GUID> const vessel_guids = {
       "70ff8dc0-a4dd-4b8c-868b-35ddb01e32bc",
