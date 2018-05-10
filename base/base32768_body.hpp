@@ -253,7 +253,7 @@ UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
   return output;
 }
 
-int Base32768EncodedLength(Array<std::uint8_t const> input) {
+std::int64_t Base32768EncodedLength(Array<std::uint8_t const> const input) {
   return (input.size * bits_per_byte + bits_per_code_point - 1) /
          bits_per_code_point;
 }
@@ -309,7 +309,7 @@ UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
   return output;
 }
 
-int Base32768DecodedLength(Array<char16_t const> input) {
+std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
   // In order to decide how many bytes the input will decode to, we need to
   // figure out if the last code point encodes 7 bits or 15 bits.
   if (input.size > 0 && seven_bits.CanEncode(input.data[input.size - 1])) {

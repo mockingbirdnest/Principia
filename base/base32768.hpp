@@ -24,7 +24,7 @@ inline UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
                                              bool null_terminated);
 
 // Length of the encoded form, in char16_t.
-inline int Base32768EncodedLength(Array<std::uint8_t const> input);
+inline std::int64_t Base32768EncodedLength(Array<std::uint8_t const> input);
 
 // Decodes |input| into |output|, which must be large enough to hold the decoded
 // form.
@@ -36,7 +36,7 @@ inline void Base32768Decode(Array<char16_t const> input,
 inline UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input);
 
 // Length of the decoded form, in uint8_t.
-inline int Base32768DecodedLength(Array<char16_t const> input);
+inline std::int64_t Base32768DecodedLength(Array<char16_t const> input);
 
 }  // namespace internal_base32768
 
