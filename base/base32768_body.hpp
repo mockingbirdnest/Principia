@@ -316,8 +316,7 @@ std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
   if (input.size > 0 && seven_bits.CanEncode(input.data[input.size - 1])) {
     encoded_bits =
         (input.size - 1) * bits_per_code_point + bits_per_final_code_point;
-  }
-  else {
+  } else {
     encoded_bits = input.size * bits_per_code_point / bits_per_byte;
   }
   // Either we have a multiple of 15 bits, in which case the division is exact;
