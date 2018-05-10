@@ -333,6 +333,9 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
       case journal::serialization::UTF_8:
         pointer_to = "char const";
         break;
+      case journal::serialization::UTF_16:
+        pointer_to = "char16_t const";
+        break;
     }
   }
 
@@ -403,6 +406,11 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
             "MarshalAs(UnmanagedType.CustomMarshaler, "
             "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
         break;
+      case journal::serialization::UTF_16:
+        field_cs_marshal_[descriptor] =
+            "MarshalAs(UnmanagedType.CustomMarshaler, "
+            "MarshalTypeRef = typeof(OutOwnedUTF16Marshaler))";
+        break;
     }
   }
 
@@ -445,6 +453,41 @@ void JournalProtoProcessor::ProcessRequiredBoolField(
   field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.I1)";
   field_cs_private_type_[descriptor] = "Byte";
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
+}
+
+void JournalProtoProcessor::ProcessRequiredBytesField(
+  FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  LOG_IF(FATAL,
+    options.HasExtension(journal::serialization::is_produced) ||
+    options.HasExtension(journal::serialization::is_produced_if))
+    << descriptor->full_name()
+    << " is a bytes field and cannot be produced. Use a fixed64 field that "
+    << "has the (encoding) option instead.";
+  LOG_IF(FATAL,
+         !options.HasExtension(journal::serialization::encoding) ||
+         options.GetExtension(journal::serialization::encoding) !=
+         journal::serialization::UTF_16)
+      << descriptor->full_name()
+      << " is a bytes field and must have the (encoding) = UTF_16 option.";
+
+  // Note that it is important to use an out marshmallow for return fields,
+  // hence the use of the |in_| set here.
+  field_cs_marshal_[descriptor] =
+      Contains(in_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(InUTF16Marshaler))"
+                                : "MarshalAs(UnmanagedType.CustomMarshaler, "
+                                  "MarshalTypeRef = typeof(OutUTF16Marshaler))";
+  field_cs_type_[descriptor] = "String";
+  field_cxx_type_[descriptor] = "char16_t const*";
+  field_cxx_deserializer_fn_[descriptor] =
+      [](std::string const& expr) {
+        return "DeserializeUtf16(" + expr + ")";
+      };
+  field_cxx_serializer_fn_[descriptor] =
+      [](std::string const& expr) {
+        return "SerializeUtf16(" + expr + ")";
+      };
 }
 
 void JournalProtoProcessor::ProcessRequiredDoubleField(
@@ -566,6 +609,8 @@ void JournalProtoProcessor::ProcessRequiredField(
     case FieldDescriptor::TYPE_BOOL:
       ProcessRequiredBoolField(descriptor);
       break;
+    case FieldDescriptor::TYPE_BYTES:
+      ProcessRequiredBytesField(descriptor);
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);
       break;
