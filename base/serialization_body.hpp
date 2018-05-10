@@ -1,7 +1,5 @@
 #pragma once
 
-#include <algorithm>
-
 #include "base/hexadecimal.hpp"
 #include "base/serialization.hpp"
 
