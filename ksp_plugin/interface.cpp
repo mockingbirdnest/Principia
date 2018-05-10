@@ -331,8 +331,12 @@ void principia__DeleteString(char const** const native_string) {
   return m.Return();
 }
 
-// Same as above, but for std::u16string.
+// Same as above, but for char16_t.
 void principia__DeleteU16String(char16_t const** const native_string) {
+  journal::Method<journal::DeleteU16String> m({native_string},
+                                              {native_string});
+  TakeOwnershipArray(native_string);
+  return m.Return();
 }
 
 void principia__DeserializePluginBase32768(
