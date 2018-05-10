@@ -103,6 +103,7 @@ using testing_utilities::make_not_null;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
+using testing_utilities::WriteToBase32768File;
 using testing_utilities::WriteToBinaryFile;
 using testing_utilities::WriteToHexadecimalFile;
 using ::testing::AllOf;

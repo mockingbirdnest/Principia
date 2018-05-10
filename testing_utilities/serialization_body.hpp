@@ -8,10 +8,28 @@
 #include <string>
 #include <vector>
 
+#include "base/base32768.hpp"
+
 namespace principia {
 namespace testing_utilities {
 
-inline std::vector<std::uint8_t> ReadFromBinaryFile(
+std::u16string ReadFromBase32768File(
+    std::filesystem::path const& filename) {
+  auto file = std::basic_fstream<char16_t>(filename);
+  CHECK(file.good()) << filename;
+  std::u16string base32768;
+  while (!file.eof()) {
+    std::u16string line;
+    std::getline(file, line);
+    for (auto const c : line) {
+      base32768.push_back(c);
+    }
+  }
+  file.close();
+  return base32768;
+}
+
+std::vector<std::uint8_t> ReadFromBinaryFile(
     std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
   CHECK(file.good()) << filename;
@@ -23,7 +41,7 @@ inline std::vector<std::uint8_t> ReadFromBinaryFile(
   return binary;
 }
 
-inline std::string ReadFromHexadecimalFile(
+std::string ReadFromHexadecimalFile(
     std::filesystem::path const& filename) {
   std::fstream file = std::fstream(filename);
   CHECK(file.good()) << filename;
@@ -41,7 +59,25 @@ inline std::string ReadFromHexadecimalFile(
   return hex;
 }
 
-inline void WriteToBinaryFile(
+void WriteToBase32768File(std::filesystem::path const& filename,
+                          base::Array<std::uint8_t const> serialized) {
+  auto file = std::basic_fstream<char16_t>(filename, std::ios::out);
+  CHECK(file.good()) << filename;
+  auto const base32768 =
+      base::Base32768Encode(serialized, /*null_terminated=*/false);
+  for (int i = 0; i < base32768.size; ++i) {
+    file << base32768.data[i];
+    if (i % 40 == 0) {
+      file << '\n';
+    }
+  }
+  if (base32768.size % 40 != 0) {
+    file << '\n';
+  }
+  file.close();
+}
+
+void WriteToBinaryFile(
     std::filesystem::path const& filename,
     base::Array<std::uint8_t const> const serialized) {
   std::fstream file = std::fstream(filename,
@@ -51,7 +87,7 @@ inline void WriteToBinaryFile(
   file.close();
 }
 
-inline void WriteToHexadecimalFile(
+void WriteToHexadecimalFile(
     std::filesystem::path const& filename,
     base::Array<std::uint8_t const> const serialized) {
   std::fstream file = std::fstream(filename, std::ios::out);

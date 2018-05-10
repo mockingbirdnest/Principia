@@ -88,6 +88,7 @@ using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
+using testing_utilities::ReadFromBase32768File;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadFromHexadecimalFile;
 using ::testing::AllOf;
@@ -554,8 +555,8 @@ TEST_F(InterfaceTest, Apocalypse) {
 
 TEST_F(InterfaceTest, SerializePluginBase32768) {
   PullSerializer* serializer = nullptr;
-  principia::serialization::Plugin message;
-  message.ParseFromString(serialized_simple_plugin_);
+  auto const message = ParseFromBytes<principia::serialization::Plugin>(
+      serialized_simple_plugin_);
 
   EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
   char16_t const* serialization =
