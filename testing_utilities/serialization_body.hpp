@@ -13,20 +13,26 @@
 namespace principia {
 namespace testing_utilities {
 
+inline void PrintUtf16ToFile(char16_t const c, std::fstream& file) {
+  char chars[sizeof(char16_t)];
+  std::memcpy(chars, &c, sizeof(char16_t));
+  file << chars[0] << chars[1];
+}
+
 std::u16string ReadFromBase32768File(
     std::filesystem::path const& filename) {
-  auto file = std::basic_fstream<char16_t>(filename);
-  CHECK(file.good()) << filename;
-  std::u16string base32768;
-  while (!file.eof()) {
-    std::u16string line;
-    std::getline(file, line);
-    for (auto const c : line) {
-      base32768.push_back(c);
+  std::vector<std::uint8_t> const binary = ReadFromBinaryFile(filename);
+  std::u16string base32768(binary.size() >> 1, u'\0');
+  std::memcpy(base32768.data(), binary.data(), binary.size());
+
+  // Base 32768 doesn't use ASCII characters so strip them.
+  std::u16string result;
+  for (char16_t c : base32768) {
+    if (c > u'\x00FF' && c != u'\xFEFF') {
+      result.append(1, c);
     }
   }
-  file.close();
-  return base32768;
+  return result;
 }
 
 std::vector<std::uint8_t> ReadFromBinaryFile(
@@ -61,18 +67,25 @@ std::string ReadFromHexadecimalFile(
 
 void WriteToBase32768File(std::filesystem::path const& filename,
                           base::Array<std::uint8_t const> serialized) {
-  auto file = std::basic_fstream<char16_t>(filename, std::ios::out);
+  std::fstream file = std::fstream(filename,
+                                   std::ios::binary | std::ios::out);
   CHECK(file.good()) << filename;
   auto const base32768 =
       base::Base32768Encode(serialized, /*null_terminated=*/false);
-  for (int i = 0; i < base32768.size; ++i) {
-    file << base32768.data[i];
-    if (i % 40 == 0) {
-      file << '\n';
+
+  PrintUtf16ToFile(u'\uFEFF', file);
+  int index = 0;
+  while (index < base32768.size) {
+    PrintUtf16ToFile(base32768.data[index], file);
+    ++index;
+    if (index % 40 == 0) {
+      PrintUtf16ToFile(u'\r', file);
+      PrintUtf16ToFile(u'\n', file);
     }
   }
-  if (base32768.size % 40 != 0) {
-    file << '\n';
+  if (index % 40 != 0) {
+      PrintUtf16ToFile(u'\r', file);
+      PrintUtf16ToFile(u'\n', file);
   }
   file.close();
 }
@@ -92,14 +105,16 @@ void WriteToHexadecimalFile(
     base::Array<std::uint8_t const> const serialized) {
   std::fstream file = std::fstream(filename, std::ios::out);
   CHECK(file.good()) << filename;
-  for (int i = 0; i < serialized.size; ++i) {
+  int index = 0;
+  while (index < serialized.size) {
     file << std::hex << std::uppercase << std::setw(2) << std::setfill('0')
-         << static_cast<int>(serialized.data[i]);
-    if (i % 40 == 0) {
+         << static_cast<int>(serialized.data[index]);
+    ++index;
+    if (index % 40 == 0) {
       file << '\n';
     }
   }
-  if (serialized.size % 40 != 0) {
+  if (index % 40 != 0) {
     file << '\n';
   }
   file.close();

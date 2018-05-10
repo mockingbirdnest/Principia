@@ -580,7 +580,7 @@ TEST_F(InterfaceTest, DeserializePluginBase32768) {
           &deserializer,
           &plugin,
           /*compressor=*/nullptr);
-  principia__DeserializePluginBase32768(base32768_simple_plugin_.c_str(),
+  principia__DeserializePluginBase32768(u"",
                                         &deserializer,
                                         &plugin,
                                         /*compressor=*/nullptr);

@@ -392,7 +392,7 @@ TEST_F(PluginTest, Serialization) {
   VesselSet collided_vessels;
   plugin->CatchUpLaggingVessels(collided_vessels);
 
-#if 0
+#if 1
   // Uncomment this block to print out a serialized "simple" plugin for
   // interface_test.cpp.
   PrintSerializedPlugin(*plugin);
