@@ -242,8 +242,7 @@ void Base32768Encode(Array<std::uint8_t const> input,
 }
 UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
                                       bool const null_terminated) {
-  // TODO(phl): Add a function to compute the output size.
-  base::UniqueArray<char16_t> output((input.size << 1) +
+  base::UniqueArray<char16_t> output(Base32768EncodedLength(input) +
                                      (null_terminated ? 1 : 0));
   if (output.size > 0) {
     base::Base32768Encode(input, output.get());
@@ -252,6 +251,11 @@ UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
     output.data[output.size - 1] = 0;
   }
   return output;
+}
+
+std::int64_t Base32768EncodedLength(Array<std::uint8_t const> const input) {
+  return (input.size * bits_per_byte + bits_per_code_point - 1) /
+         bits_per_code_point;
 }
 
 void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
@@ -298,11 +302,26 @@ void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
 }
 
 UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
-  UniqueArray<std::uint8_t> output(input.size >> 1);
+  UniqueArray<std::uint8_t> output(Base32768DecodedLength(input));
   if (output.size > 0) {
     Base32768Decode({input.data, input.size & ~1}, output.get());
   }
   return output;
+}
+
+std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
+  // In order to decide how many bytes the input will decode to, we need to
+  // figure out if the last code point encodes 7 bits or 15 bits.
+  std::int64_t encoded_bits;
+  if (input.size > 0 && seven_bits.CanEncode(input.data[input.size - 1])) {
+    encoded_bits =
+        (input.size - 1) * bits_per_code_point + bits_per_final_code_point;
+  } else {
+    encoded_bits = input.size * bits_per_code_point;
+  }
+  // Either we have a multiple of 15 bits, in which case the division is exact;
+  // or there is padding, and truncation has the right effect.
+  return encoded_bits / bits_per_byte;
 }
 
 }  // namespace internal_base32768

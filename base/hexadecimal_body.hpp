@@ -61,7 +61,8 @@ void HexadecimalEncode(Array<std::uint8_t const> input, Array<char> output) {
 }
 UniqueArray<char> HexadecimalEncode(Array<std::uint8_t const> const input,
                                     bool const null_terminated) {
-  UniqueArray<char> output((input.size << 1) + (null_terminated ? 1 : 0));
+  UniqueArray<char> output(HexadecimalEncodedLength(input) +
+                           (null_terminated ? 1 : 0));
   if (output.size > 0) {
     HexadecimalEncode(input, output.get());
   }
@@ -69,6 +70,10 @@ UniqueArray<char> HexadecimalEncode(Array<std::uint8_t const> const input,
     output.data[output.size - 1] = 0;
   }
   return output;
+}
+
+std::int64_t HexadecimalEncodedLength(Array<std::uint8_t const> const input) {
+  return input.size << 1;
 }
 
 void HexadecimalDecode(Array<char const> input, Array<std::uint8_t> output) {
@@ -93,11 +98,15 @@ void HexadecimalDecode(Array<char const> input, Array<std::uint8_t> output) {
 }
 
 UniqueArray<std::uint8_t> HexadecimalDecode(Array<char const> const input) {
-  UniqueArray<std::uint8_t> output(input.size >> 1);
+  UniqueArray<std::uint8_t> output(HexadecimalDecodedLength(input));
   if (output.size > 0) {
     HexadecimalDecode({input.data, input.size & ~1}, output.get());
   }
   return output;
+}
+
+std::int64_t HexadecimalDecodedLength(Array<char const> const input) {
+  return input.size >> 1;
 }
 
 }  // namespace base

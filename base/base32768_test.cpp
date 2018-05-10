@@ -16,6 +16,7 @@ class Base32768Test : public testing::Test {
  protected:
   void CheckEncoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
+    CHECK_EQ(base32768.size, Base32768EncodedLength(binary));
     UniqueArray<char16_t> output(base32768.size);
     Base32768Encode(binary, output.get());
     EXPECT_EQ(0,
@@ -30,6 +31,7 @@ class Base32768Test : public testing::Test {
 
   void CheckDecoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
+    CHECK_EQ(binary.size, Base32768DecodedLength(base32768));
     UniqueArray<std::uint8_t> output(binary.size);
     Base32768Decode(base32768, output.get());
     EXPECT_EQ(0, std::memcmp(output.data.get(), binary.data, binary.size));
