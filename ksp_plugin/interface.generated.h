@@ -234,7 +234,18 @@ void CDECL principia__DeleteString(
     char const** const native_string);
 
 extern "C" PRINCIPIA_DLL
-void CDECL principia__DeserializePlugin(
+void CDECL principia__DeleteU16String(
+    char16_t const** const native_string);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__DeserializePluginBase32768(
+    char16_t const* const serialization,
+    PushDeserializer** const deserializer,
+    Plugin const** const plugin,
+    char const* const compressor);
+
+extern "C" PRINCIPIA_DLL
+void CDECL principia__DeserializePluginHexadecimal(
     char const* const serialization,
     int const serialization_size,
     PushDeserializer** const deserializer,
@@ -690,7 +701,13 @@ extern "C" PRINCIPIA_DLL
 char const* CDECL principia__SayHello();
 
 extern "C" PRINCIPIA_DLL
-char const* CDECL principia__SerializePlugin(
+char16_t const* CDECL principia__SerializePluginBase32768(
+    Plugin const* const plugin,
+    PullSerializer** const serializer,
+    char const* const compressor);
+
+extern "C" PRINCIPIA_DLL
+char const* CDECL principia__SerializePluginHexadecimal(
     Plugin const* const plugin,
     PullSerializer** const serializer,
     char const* const compressor);

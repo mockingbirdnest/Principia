@@ -235,9 +235,24 @@ internal static partial class Interface {
       ref IntPtr native_string);
 
   [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__DeserializePlugin",
+             EntryPoint        = "principia__DeleteU16String",
              CallingConvention = CallingConvention.Cdecl)]
-  internal static extern void DeserializePlugin(
+  internal static extern void DeleteU16String(
+      ref IntPtr native_string);
+
+  [DllImport(dllName           : dll_path,
+             EntryPoint        = "principia__DeserializePluginBase32768",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeserializePluginBase32768(
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF16Marshaler))] String serialization,
+      ref IntPtr deserializer,
+      ref IntPtr plugin,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String compressor);
+
+  [DllImport(dllName           : dll_path,
+             EntryPoint        = "principia__DeserializePluginHexadecimal",
+             CallingConvention = CallingConvention.Cdecl)]
+  internal static extern void DeserializePluginHexadecimal(
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String serialization,
       int serialization_size,
       ref IntPtr deserializer,
@@ -863,10 +878,19 @@ internal static partial class Interface {
   internal static extern String SayHello();
 
   [DllImport(dllName           : dll_path,
-             EntryPoint        = "principia__SerializePlugin",
+             EntryPoint        = "principia__SerializePluginBase32768",
+             CallingConvention = CallingConvention.Cdecl)]
+  [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF16Marshaler))]
+  internal static extern String SerializePluginBase32768(
+      this IntPtr plugin,
+      ref IntPtr serializer,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String compressor);
+
+  [DllImport(dllName           : dll_path,
+             EntryPoint        = "principia__SerializePluginHexadecimal",
              CallingConvention = CallingConvention.Cdecl)]
   [return : MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))]
-  internal static extern String SerializePlugin(
+  internal static extern String SerializePluginHexadecimal(
       this IntPtr plugin,
       ref IntPtr serializer,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String compressor);

@@ -478,7 +478,56 @@ void DeleteString::Run(Message const& message, Player::PointerMap& pointer_map) 
   Delete(pointer_map, in.native_string());
 }
 
-void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
+void DeleteU16String::Fill(In const& in, not_null<Message*> const message) {
+  message->mutable_in()->set_native_string(SerializePointer(*in.native_string));
+}
+
+void DeleteU16String::Fill(Out const& out, not_null<Message*> const message) {
+  message->mutable_out()->set_native_string(SerializePointer(*out.native_string));
+}
+
+void DeleteU16String::Run(Message const& message, Player::PointerMap& pointer_map) {
+  auto const& in = message.in();
+  auto native_string = DeserializePointer<char16_t const*>(pointer_map, in.native_string());
+  auto const& out = message.out();
+  interface::principia__DeleteU16String(&native_string);
+  Delete(pointer_map, in.native_string());
+}
+
+void DeserializePluginBase32768::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_serialization(SerializeUtf16(in.serialization));
+  m->set_deserializer(SerializePointer(*in.deserializer));
+  m->set_plugin(SerializePointer(*in.plugin));
+  if (in.compressor != nullptr) {
+    m->set_compressor(in.compressor);
+  }
+}
+
+void DeserializePluginBase32768::Fill(Out const& out, not_null<Message*> const message) {
+  auto* const m = message->mutable_out();
+  m->set_deserializer(SerializePointer(*out.deserializer));
+  m->set_plugin(SerializePointer(*out.plugin));
+}
+
+void DeserializePluginBase32768::Run(Message const& message, Player::PointerMap& pointer_map) {
+  auto const& in = message.in();
+  auto serialization = DeserializeUtf16(in.serialization());
+  auto deserializer = DeserializePointer<PushDeserializer*>(pointer_map, in.deserializer());
+  auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
+  auto compressor = in.has_compressor() ? in.compressor().c_str() : nullptr;
+  auto const& out = message.out();
+  interface::principia__DeserializePluginBase32768(serialization, &deserializer, &plugin, compressor);
+  if (serialization[0] == u'\0') {
+    Delete(pointer_map, in.deserializer());
+  }
+  if (serialization[0] != u'\0') {
+    Insert(pointer_map, out.deserializer(), deserializer);
+  }
+  Insert(pointer_map, out.plugin(), plugin);
+}
+
+void DeserializePluginHexadecimal::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_serialization(std::string(in.serialization, in.serialization_size));
   m->set_deserializer(SerializePointer(*in.deserializer));
@@ -488,20 +537,20 @@ void DeserializePlugin::Fill(In const& in, not_null<Message*> const message) {
   }
 }
 
-void DeserializePlugin::Fill(Out const& out, not_null<Message*> const message) {
+void DeserializePluginHexadecimal::Fill(Out const& out, not_null<Message*> const message) {
   auto* const m = message->mutable_out();
   m->set_deserializer(SerializePointer(*out.deserializer));
   m->set_plugin(SerializePointer(*out.plugin));
 }
 
-void DeserializePlugin::Run(Message const& message, Player::PointerMap& pointer_map) {
+void DeserializePluginHexadecimal::Run(Message const& message, Player::PointerMap& pointer_map) {
   auto const& in = message.in();
   auto serialization = &in.serialization();
   auto deserializer = DeserializePointer<PushDeserializer*>(pointer_map, in.deserializer());
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto compressor = in.has_compressor() ? in.compressor().c_str() : nullptr;
   auto const& out = message.out();
-  interface::principia__DeserializePlugin(serialization->c_str(), serialization->size(), &deserializer, &plugin, compressor);
+  interface::principia__DeserializePluginHexadecimal(serialization->c_str(), serialization->size(), &deserializer, &plugin, compressor);
   if (serialization->empty()) {
     Delete(pointer_map, in.deserializer());
   }
@@ -1891,7 +1940,7 @@ void SayHello::Run(Message const& message, Player::PointerMap& pointer_map) {
   PRINCIPIA_CHECK_EQ(message.return_().result().c_str(), result);
 }
 
-void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
+void SerializePluginBase32768::Fill(In const& in, not_null<Message*> const message) {
   auto* const m = message->mutable_in();
   m->set_plugin(SerializePointer(in.plugin));
   m->set_serializer(SerializePointer(*in.serializer));
@@ -1900,21 +1949,56 @@ void SerializePlugin::Fill(In const& in, not_null<Message*> const message) {
   }
 }
 
-void SerializePlugin::Fill(Out const& out, not_null<Message*> const message) {
+void SerializePluginBase32768::Fill(Out const& out, not_null<Message*> const message) {
   message->mutable_out()->set_serializer(SerializePointer(*out.serializer));
 }
 
-void SerializePlugin::Fill(Return const& result, not_null<Message*> const message) {
+void SerializePluginBase32768::Fill(Return const& result, not_null<Message*> const message) {
   message->mutable_return_()->set_result(SerializePointer(result));
 }
 
-void SerializePlugin::Run(Message const& message, Player::PointerMap& pointer_map) {
+void SerializePluginBase32768::Run(Message const& message, Player::PointerMap& pointer_map) {
   auto const& in = message.in();
   auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
   auto serializer = DeserializePointer<PullSerializer*>(pointer_map, in.serializer());
   auto compressor = in.has_compressor() ? in.compressor().c_str() : nullptr;
   auto const& out = message.out();
-  auto const result = interface::principia__SerializePlugin(plugin, &serializer, compressor);
+  auto const result = interface::principia__SerializePluginBase32768(plugin, &serializer, compressor);
+  if (result == nullptr) {
+    Delete(pointer_map, in.serializer());
+  }
+  if (result != nullptr) {
+    Insert(pointer_map, out.serializer(), serializer);
+  }
+  if (result != nullptr) {
+    Insert(pointer_map, message.return_().result(), result);
+  }
+}
+
+void SerializePluginHexadecimal::Fill(In const& in, not_null<Message*> const message) {
+  auto* const m = message->mutable_in();
+  m->set_plugin(SerializePointer(in.plugin));
+  m->set_serializer(SerializePointer(*in.serializer));
+  if (in.compressor != nullptr) {
+    m->set_compressor(in.compressor);
+  }
+}
+
+void SerializePluginHexadecimal::Fill(Out const& out, not_null<Message*> const message) {
+  message->mutable_out()->set_serializer(SerializePointer(*out.serializer));
+}
+
+void SerializePluginHexadecimal::Fill(Return const& result, not_null<Message*> const message) {
+  message->mutable_return_()->set_result(SerializePointer(result));
+}
+
+void SerializePluginHexadecimal::Run(Message const& message, Player::PointerMap& pointer_map) {
+  auto const& in = message.in();
+  auto plugin = DeserializePointer<Plugin const*>(pointer_map, in.plugin());
+  auto serializer = DeserializePointer<PullSerializer*>(pointer_map, in.serializer());
+  auto compressor = in.has_compressor() ? in.compressor().c_str() : nullptr;
+  auto const& out = message.out();
+  auto const result = interface::principia__SerializePluginHexadecimal(plugin, &serializer, compressor);
   if (result == nullptr) {
     Delete(pointer_map, in.serializer());
   }

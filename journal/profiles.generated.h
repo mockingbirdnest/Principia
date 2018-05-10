@@ -180,7 +180,41 @@ struct DeleteString : not_constructible {
                   Player::PointerMap& pointer_map);
 };
 
-struct DeserializePlugin : not_constructible {
+struct DeleteU16String : not_constructible {
+  struct In final {
+    char16_t const** const native_string;
+  };
+  struct Out final {
+    char16_t const** const native_string;
+  };
+
+  using Message = serialization::DeleteU16String;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  Player::PointerMap& pointer_map);
+};
+
+struct DeserializePluginBase32768 : not_constructible {
+  struct In final {
+    char16_t const* const serialization;
+    PushDeserializer** const deserializer;
+    Plugin const** const plugin;
+    char const* const compressor;
+  };
+  struct Out final {
+    PushDeserializer** const deserializer;
+    Plugin const** const plugin;
+  };
+
+  using Message = serialization::DeserializePluginBase32768;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  Player::PointerMap& pointer_map);
+};
+
+struct DeserializePluginHexadecimal : not_constructible {
   struct In final {
     char const* const serialization;
     int const serialization_size;
@@ -193,7 +227,7 @@ struct DeserializePlugin : not_constructible {
     Plugin const** const plugin;
   };
 
-  using Message = serialization::DeserializePlugin;
+  using Message = serialization::DeserializePluginHexadecimal;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Run(Message const& message,
@@ -1318,7 +1352,26 @@ struct SayHello : not_constructible {
                   Player::PointerMap& pointer_map);
 };
 
-struct SerializePlugin : not_constructible {
+struct SerializePluginBase32768 : not_constructible {
+  struct In final {
+    Plugin const* const plugin;
+    PullSerializer** const serializer;
+    char const* const compressor;
+  };
+  struct Out final {
+    PullSerializer** const serializer;
+  };
+  using Return = char16_t const*;
+
+  using Message = serialization::SerializePluginBase32768;
+  static void Fill(In const& in, not_null<Message*> const message);
+  static void Fill(Out const& out, not_null<Message*> const message);
+  static void Fill(Return const& result, not_null<Message*> const message);
+  static void Run(Message const& message,
+                  Player::PointerMap& pointer_map);
+};
+
+struct SerializePluginHexadecimal : not_constructible {
   struct In final {
     Plugin const* const plugin;
     PullSerializer** const serializer;
@@ -1329,7 +1382,7 @@ struct SerializePlugin : not_constructible {
   };
   using Return = char const*;
 
-  using Message = serialization::SerializePlugin;
+  using Message = serialization::SerializePluginHexadecimal;
   static void Fill(In const& in, not_null<Message*> const message);
   static void Fill(Out const& out, not_null<Message*> const message);
   static void Fill(Return const& result, not_null<Message*> const message);
