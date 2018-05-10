@@ -16,9 +16,7 @@ inline std::vector<std::uint8_t> ReadFromBinaryFile(
   std::fstream file = std::fstream(filename, std::ios::in | std::ios::binary);
   CHECK(file.good()) << filename;
   std::vector<std::uint8_t> binary;
-  while (!file.eof()) {
-    char c;
-    file.get(c);
+  for (char c; file.get(c);) {
     binary.push_back(static_cast<std::uint8_t>(c));
   }
   file.close();

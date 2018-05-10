@@ -30,14 +30,9 @@ using testing_utilities::ReadFromBinaryFile;
 namespace ksp_plugin {
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
-  auto const binary_plugin = ReadFromBinaryFile(
-      SOLUTION_DIR / "ksp_plugin_test" / "3 vessels.proto.bin");
-  serialization::Plugin serialized_plugin;
-  // TODO(phl): For some reason this doesn't CHECK because it wants to read
-  // beyond the end |binary_plugin|.  Figure out why (could it be an extra
-  // byte?).
-  serialized_plugin.ParseFromArray(binary_plugin.data(), binary_plugin.size());
-  auto const plugin = Plugin::ReadFromMessage(serialized_plugin);
+  auto const plugin = Plugin::ReadFromMessage(
+      ParseFromBytes<serialization::Plugin>(ReadFromBinaryFile(
+          SOLUTION_DIR / "ksp_plugin_test" / "3 vessels.proto.bin")));
 
   std::vector<GUID> const vessel_guids = {
       "70ff8dc0-a4dd-4b8c-868b-35ddb01e32bc",
