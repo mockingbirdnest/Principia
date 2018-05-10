@@ -41,9 +41,11 @@ using HexadecimalDeathTest = HexadecimalTest;
 TEST_F(HexadecimalTest, EncodeAndDecode) {
   HexadecimalEncode(bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
+  EXPECT_EQ(uppercase_digits_.size, HexadecimalEncodedLength(bytes_));
   UniqueArray<std::uint8_t> bytes(byte_count);
   HexadecimalDecode(digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, bytes.get());
+  EXPECT_EQ(bytes_.size, HexadecimalDecodedLength(digits_.get()));
 }
 
 TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
