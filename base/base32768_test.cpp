@@ -2,6 +2,7 @@
 #include "base/base32768.hpp"
 
 #include <memory>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -9,8 +10,34 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
+MATCHER_P(EqualsBytes, expected, "") {
+  auto const actual = arg;
+  if (actual.size != expected.size) {
+    *result_listener << "\nDifferent length: " << actual.size << " vs. "
+                     << expected.size;
+    return false;
+  }
+  for (int i = 0; i < actual.size; ++i) {
+    if (actual.data[i] != expected.data[i]) {
+      *result_listener << "\nBytes differ at index " << i << "/" << actual.size
+                       << ": " << std::hex << static_cast<int>(actual.data[i])
+                       << " vs. " << static_cast<int>(expected.data[i]);
+      return false;
+    }
+  }
+  return true;
+}
+
 namespace principia {
 namespace base {
+
+void PrintTo(Array<std::uint8_t> bytes, std::ostream* os) {
+  *os << std::hex;
+  for (int i = 0; i < bytes.size; ++i) {
+    *os << static_cast<int>(bytes.data[i]) << " ";
+  }
+  *os << "\n";
+}
 
 class Base32768Test : public testing::Test {
  protected:
@@ -224,6 +251,25 @@ TEST_F(Base32768Test, EncodeHatetrisWr) {
                                         u"ᠵ暊");
   CheckEncoding(binary, base32768);
   CheckDecoding(binary, base32768);
+}
+
+TEST_F(Base32768Test, Random) {
+  std::mt19937_64 random(42);
+  std::uniform_int_distribution<std::uint64_t> length_distribution(100, 150);
+  std::uniform_int_distribution<int> bytes_distribution(0, 256);
+  for (int test = 0; test < 1000; ++test) {
+    UniqueArray<std::uint8_t> binary1(length_distribution(random));
+    for (int i = 0; i < binary1.size; ++i) {
+      binary1.data[i] = bytes_distribution(random);
+    }
+
+    UniqueArray<char16_t> const base32768 =
+        Base32768Encode(binary1.get(),
+                        /*null_terminated=*/false);
+    UniqueArray<std::uint8_t> binary2 = Base32768Decode(base32768.get());
+
+    EXPECT_THAT(binary2.get(), EqualsBytes(binary1.get())) << "test: " << test;
+  }
 }
 
 }  // namespace base
