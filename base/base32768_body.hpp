@@ -304,7 +304,7 @@ void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
 UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
   UniqueArray<std::uint8_t> output(Base32768DecodedLength(input));
   if (output.size > 0) {
-    Base32768Decode({input.data, input.size & ~1}, output.get());
+    Base32768Decode(input, output.get());
   }
   return output;
 }
