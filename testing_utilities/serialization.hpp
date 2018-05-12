@@ -19,6 +19,9 @@ inline std::vector<std::uint8_t> ReadFromBinaryFile(
 inline std::string ReadFromHexadecimalFile(
     std::filesystem::path const& filename);
 
+inline std::vector<std::string> ReadLinesFromHexadecimalFile(
+    std::filesystem::path const& filename);
+
 inline void WriteToBase32768File(std::filesystem::path const& filename,
                                  base::Array<std::uint8_t const> serialized);
 
