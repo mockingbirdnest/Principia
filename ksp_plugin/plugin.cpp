@@ -1258,9 +1258,6 @@ void Plugin::WriteToMessage(
   for (auto* const pile_up : pile_ups_) {
     pile_up->WriteToMessage(message->add_pile_up());
   }
-
-  LOG(INFO) << NAMED(message->SpaceUsed());
-  LOG(INFO) << NAMED(message->ByteSize());
 }
 
 not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
