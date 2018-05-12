@@ -1,5 +1,5 @@
 ﻿
-// .\Release\x64\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=Base32768  // NOLINT(whitespace/line_length)
+// .\Release\x64\benchmarks.exe --benchmark_min_time=2 --benchmark_repetitions=10 --benchmark_filter=Hexadecimal  // NOLINT(whitespace/line_length)
 
 #include "base/hexadecimal.hpp"
 
@@ -66,10 +66,10 @@ void BM_HexadecimalDecode(benchmark::State& state) {
     auto const start = start_distribution(random);
     auto const size = size_distribution(random);
     Array<char> const hexadecimal(&preallocated_hexadecimal.data[start], size);
-    bytes_processed += size * sizeof(char);
     state.ResumeTiming();
 
     UniqueArray<std::uint8_t> const binary = HexadecimalDecode(hexadecimal);
+    bytes_processed += binary.size;
     benchmark::DoNotOptimize(binary);
   }
   state.SetBytesProcessed(bytes_processed);
