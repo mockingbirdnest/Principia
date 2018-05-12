@@ -65,6 +65,28 @@ std::string ReadFromHexadecimalFile(
   return hex;
 }
 
+std::vector<std::string> ReadLinesFromHexadecimalFile(
+    std::filesystem::path const& filename) {
+  std::fstream file = std::fstream(filename);
+  CHECK(file.good()) << filename;
+  std::vector<std::string> hex;
+  while (!file.eof()) {
+    std::string line;
+    std::getline(file, line);
+    hex.push_back("");
+    for (auto const c : line) {
+      if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+        hex.back().push_back(c);
+      }
+    }
+    if (hex.back().empty()) {
+      hex.pop_back();
+    }
+  }
+  file.close();
+  return hex;
+}
+
 void WriteToBase32768File(std::filesystem::path const& filename,
                           base::Array<std::uint8_t const> serialized) {
   std::fstream file = std::fstream(filename,

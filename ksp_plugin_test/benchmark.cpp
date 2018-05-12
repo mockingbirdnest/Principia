@@ -30,7 +30,7 @@ using quantities::Time;
 using quantities::si::Hertz;
 using quantities::si::Second;
 using testing_utilities::ReadFromBinaryFile;
-using testing_utilities::ReadFromHexadecimalFile;
+using testing_utilities::ReadLinesFromHexadecimalFile;
 
 namespace ksp_plugin {
 
@@ -68,27 +68,30 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
 }
 
 void BM_PluginDeserializationBenchmark(benchmark::State& state) {
-  char const compressor[] = "";
-  std::string const hexadecimal_simple_plugin(
-      ReadFromHexadecimalFile(
-          SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex"));
+  char const compressor[] = "gipfeli";
+  auto const gipfeli_plugin(
+      ReadLinesFromHexadecimalFile(
+          SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex"));
 
   int bytes_processed = 0;
   for (auto _ : state) {
     PushDeserializer* deserializer = nullptr;
     Plugin const* plugin = nullptr;
-    principia__DeserializePluginHexadecimal(hexadecimal_simple_plugin.c_str(),
-                                            hexadecimal_simple_plugin.size(),
-                                            &deserializer,
-                                            &plugin,
-                                            compressor);
-    principia__DeserializePluginHexadecimal(hexadecimal_simple_plugin.c_str(),
+    int l = 1;
+    for (auto const& line : gipfeli_plugin) {
+      principia__DeserializePluginHexadecimal(line.c_str(),
+                                              line.size(),
+                                              &deserializer,
+                                              &plugin,
+                                              compressor);
+    }
+    principia__DeserializePluginHexadecimal("",
                                             0,
                                             &deserializer,
                                             &plugin,
                                             compressor);
     principia__DeletePlugin(&plugin);
-    bytes_processed += hexadecimal_simple_plugin.size() >> 1;
+    bytes_processed += gipfeli_plugin.size() >> 1;
   }
   state.SetBytesProcessed(bytes_processed);
 }
