@@ -471,13 +471,7 @@ void JournalProtoProcessor::ProcessRequiredBytesField(
       << descriptor->full_name()
       << " is a bytes field and must have the (encoding) = UTF_16 option.";
 
-  // Note that it is important to use an out marshmallow for return fields,
-  // hence the use of the |in_| set here.
-  field_cs_marshal_[descriptor] =
-      Contains(in_, descriptor) ? "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                  "MarshalTypeRef = typeof(InUTF16Marshaler))"
-                                : "MarshalAs(UnmanagedType.CustomMarshaler, "
-                                  "MarshalTypeRef = typeof(OutUTF16Marshaler))";
+  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.LPWStr)";
   field_cs_type_[descriptor] = "String";
   field_cxx_type_[descriptor] = "char16_t const*";
   field_cxx_arguments_fn_[descriptor] =
