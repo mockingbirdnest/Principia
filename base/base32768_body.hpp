@@ -53,6 +53,7 @@ class CachingRepertoire : public Repertoire {
       char16_t const (&blocks)[block_count_plus_1]);
 
   char16_t const* const blocks_;
+  std::int64_t const encoding_bits_;
 
   // These arrays are sparse: not all entries are filled with useful data.  The
   // caller must encode values which are within [0, block_count * block_size[,
@@ -78,6 +79,7 @@ template<std::int64_t block_count_plus_1>
 constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
     char16_t const (&blocks)[block_count_plus_1])
     : blocks_(blocks),
+      encoding_bits_(CeilingLog2(block_size * block_count)),
       decoding_cache_() {
   // Don't do pointer arithmetic in this constructor, it confuses MSVC.
   static_assert(block_count_plus_1 == block_count + 1,
@@ -106,7 +108,7 @@ constexpr CachingRepertoire<block_size, block_count>::CachingRepertoire(
 template<std::int64_t block_size, std::int64_t block_count>
 constexpr std::int64_t
 CachingRepertoire<block_size, block_count>::EncodingBits() const {
-  return CeilingLog2(block_size * block_count);
+  return encoding_bits_;
 }
 
 template<std::int64_t block_size, std::int64_t block_count>
@@ -127,7 +129,7 @@ template<std::int64_t block_size, std::int64_t block_count>
 char16_t CachingRepertoire<block_size, block_count>::Encode(
     std::uint16_t const k) const {
   // Check that the integer to encode has the expected number of bits.
-  CHECK_EQ(0, k & ~((1 << EncodingBits()) - 1)) << std::hex << k;
+  DCHECK_EQ(0, k & ~((1 << EncodingBits()) - 1)) << std::hex << k;
   return encoding_cache_[k];
 }
 
