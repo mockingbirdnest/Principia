@@ -255,7 +255,7 @@ public partial class PrincipiaPluginAdapter
 #elif KSP_VERSION_1_4_3
     if (!(Versioning.version_major == 1 &&
           Versioning.version_minor == 4 &&
-          (Versioning.Revision == 1 || Versioning.Revision == 2))) {
+          (Versioning.Revision >= 1 && Versioning.Revision <= 3))) {
       string expected_version = "1.4.3, 1.4.2, and 1.4.1";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
