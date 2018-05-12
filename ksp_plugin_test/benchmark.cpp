@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "base/push_deserializer.hpp"
 #include "base/serialization.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/named_quantities.hpp"
@@ -16,8 +17,11 @@
 namespace principia {
 
 using base::ParseFromBytes;
+using base::PushDeserializer;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
+using interface::principia__DeletePlugin;
+using interface::principia__DeserializePluginHexadecimal;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
@@ -26,6 +30,7 @@ using quantities::Time;
 using quantities::si::Hertz;
 using quantities::si::Second;
 using testing_utilities::ReadFromBinaryFile;
+using testing_utilities::ReadFromHexadecimalFile;
 
 namespace ksp_plugin {
 
@@ -42,7 +47,7 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   static constexpr int warp_factor = 6E6;
   static constexpr Frequency refresh_frequency = 50 * Hertz;
   static constexpr Time step = warp_factor / refresh_frequency;
-  while (state.KeepRunning()) {
+  for (auto _ : state) {
     principia__AdvanceTime(
         plugin.get(),
         (plugin->CurrentTime() + step - plugin->GameEpoch()) / Second,
@@ -62,9 +67,37 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
   }
 }
 
+void BM_PluginDeserializationBenchmark(benchmark::State& state) {
+  char const compressor[] = "";
+  std::string const hexadecimal_simple_plugin(
+      ReadFromHexadecimalFile(
+          SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex"));
+
+  int bytes_processed = 0;
+  for (auto _ : state) {
+    PushDeserializer* deserializer = nullptr;
+    Plugin const* plugin = nullptr;
+    principia__DeserializePluginHexadecimal(hexadecimal_simple_plugin.c_str(),
+                                            hexadecimal_simple_plugin.size(),
+                                            &deserializer,
+                                            &plugin,
+                                            compressor);
+    principia__DeserializePluginHexadecimal(hexadecimal_simple_plugin.c_str(),
+                                            0,
+                                            &deserializer,
+                                            &plugin,
+                                            compressor);
+    principia__DeletePlugin(&plugin);
+    bytes_processed += hexadecimal_simple_plugin.size() >> 1;
+  }
+  state.SetBytesProcessed(bytes_processed);
+}
+
+BENCHMARK(BM_PluginDeserializationBenchmark);
 BENCHMARK(BM_PluginIntegrationBenchmark);
 
-TEST(PluginBenchmark, DISABLED_3Vessels) {
+// .\Release\x64\ksp_plugin_test_tests.exe --gtest_filter=PluginBenchmark.DISABLED_All --gtest_also_run_disabled_tests  // NOLINT
+TEST(PluginBenchmark, DISABLED_All) {
   benchmark::RunSpecifiedBenchmarks();
 }
 
