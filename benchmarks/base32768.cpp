@@ -32,6 +32,7 @@ void BM_Base32768Encode(benchmark::State& state) {
     UniqueArray<char16_t> const base32768 =
         Base32768Encode(binary.get(),
                         /*null_terminated=*/false);
+    benchmark::DoNotOptimize(base32768);
   }
   state.SetBytesProcessed(bytes_processed);
 }
@@ -69,6 +70,7 @@ void BM_Base32768Decode(benchmark::State& state) {
     state.ResumeTiming();
 
     UniqueArray<std::uint8_t> const binary = Base32768Decode(base32768);
+    benchmark::DoNotOptimize(binary);
   }
   state.SetBytesProcessed(bytes_processed);
 }
