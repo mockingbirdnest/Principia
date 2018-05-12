@@ -66,10 +66,10 @@ void BM_Base32768Decode(benchmark::State& state) {
     auto const start = start_distribution(random);
     auto const size = size_distribution(random);
     Array<char16_t> const base32768(&preallocated_base32768.data[start], size);
-    bytes_processed += size * sizeof(char16_t);
     state.ResumeTiming();
 
     UniqueArray<std::uint8_t> const binary = Base32768Decode(base32768);
+    bytes_processed += binary.size;
     benchmark::DoNotOptimize(binary);
   }
   state.SetBytesProcessed(bytes_processed);
