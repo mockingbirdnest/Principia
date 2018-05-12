@@ -84,6 +84,7 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
                                               &deserializer,
                                               &plugin,
                                               compressor);
+      bytes_processed += line.size() >> 1;
     }
     principia__DeserializePluginHexadecimal("",
                                             0,
@@ -91,7 +92,6 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
                                             &plugin,
                                             compressor);
     principia__DeletePlugin(&plugin);
-    bytes_processed += gipfeli_plugin.size() >> 1;
   }
   state.SetBytesProcessed(bytes_processed);
 }
