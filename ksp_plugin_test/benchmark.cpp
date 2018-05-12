@@ -104,11 +104,12 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
   Plugin const* plugin = DeserializePluginFromLines(gipfeli_plugin,
                                                     compressor,
                                                     bytes_processed);
+  LOG(ERROR)<<bytes_processed;
 
-  bytes_processed = 0;
   for (auto _ : state) {
     PullSerializer* serializer = nullptr;
     char const* serialization = nullptr;
+  bytes_processed = 0;
     for (;;) {
       serialization = principia__SerializePluginHexadecimal(plugin,
                                                             &serializer,
@@ -119,6 +120,7 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
       bytes_processed += std::strlen(serialization) >> 1;
       delete serialization;
     }
+    LOG(ERROR)<<bytes_processed;
   }
 
   state.SetBytesProcessed(bytes_processed);
