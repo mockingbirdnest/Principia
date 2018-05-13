@@ -6,6 +6,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message Integrator {
   extensions 3000 to 3999;  // Last used: 3001.
 }
