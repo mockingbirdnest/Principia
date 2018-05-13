@@ -34,6 +34,15 @@ struct Array final {
           std::is_integral<decltype(std ::declval<Container>().size())>::value>>
   constexpr Array(Container& container);
 
+  template<
+      typename Container,
+      typename = std::enable_if_t<
+          std::is_convertible<decltype(std::declval<Container const>().data()),
+                              Element*>::value &&
+          std::is_integral<
+              decltype(std ::declval<Container const>().size())>::value>>
+  constexpr Array(Container const& container);
+
   // Construction from a string literal if |Element| is a character type or some
   // flavour of byte.
   template<std::size_t size_plus_1,
