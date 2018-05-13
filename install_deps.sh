@@ -77,6 +77,7 @@ fi
 pushd gipfeli
 git checkout master
 git pull
+make
 popd
 
 if [ ! -d "compatibility" ]; then

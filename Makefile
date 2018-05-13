@@ -62,6 +62,7 @@ endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)/gipfeli/libgipfeli.a \
 	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
