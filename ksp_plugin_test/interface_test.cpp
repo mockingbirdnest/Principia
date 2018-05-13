@@ -88,7 +88,6 @@ using quantities::si::Tonne;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
 using testing_utilities::FillUniquePtr;
-using testing_utilities::ReadFromBase32768File;
 using testing_utilities::ReadFromBinaryFile;
 using testing_utilities::ReadFromHexadecimalFile;
 using ::testing::AllOf;
@@ -146,15 +145,12 @@ class InterfaceTest : public testing::Test {
 
   InterfaceTest()
       : plugin_(make_not_null_unique<StrictMock<MockPlugin>>()),
-        base32768_simple_plugin_(ReadFromBase32768File(
-            SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.32k")),
         hexadecimal_simple_plugin_(ReadFromHexadecimalFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.hex")),
         serialized_simple_plugin_(ReadFromBinaryFile(
             SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin")) {}
 
   not_null<std::unique_ptr<StrictMock<MockPlugin>>> plugin_;
-  std::u16string const base32768_simple_plugin_;
   std::string const hexadecimal_simple_plugin_;
   std::vector<std::uint8_t> const serialized_simple_plugin_;
   Instant const t0_;
@@ -551,41 +547,6 @@ TEST_F(InterfaceTest, Apocalypse) {
   EXPECT_STREQ(silly_string, details);
   principia__DeleteString(&details);
   EXPECT_THAT(details, IsNull());
-}
-
-TEST_F(InterfaceTest, SerializePluginBase32768) {
-  PullSerializer* serializer = nullptr;
-  auto const message = ParseFromBytes<principia::serialization::Plugin>(
-      serialized_simple_plugin_);
-
-  EXPECT_CALL(*plugin_, WriteToMessage(_)).WillOnce(SetArgPointee<0>(message));
-  char16_t const* serialization =
-      principia__SerializePluginBase32768(plugin_.get(),
-                                          &serializer,
-                                          /*compressor=*/nullptr);
-  EXPECT_EQ(base32768_simple_plugin_, std::u16string(serialization));
-  EXPECT_EQ(nullptr,
-            principia__SerializePluginBase32768(plugin_.get(),
-                                                &serializer,
-                                                /*compressor=*/nullptr));
-  principia__DeleteU16String(&serialization);
-  EXPECT_THAT(serialization, IsNull());
-}
-
-TEST_F(InterfaceTest, DeserializePluginBase32768) {
-  PushDeserializer* deserializer = nullptr;
-  Plugin const* plugin = nullptr;
-  principia__DeserializePluginBase32768(
-          base32768_simple_plugin_.c_str(),
-          &deserializer,
-          &plugin,
-          /*compressor=*/nullptr);
-  principia__DeserializePluginBase32768(u"",
-                                        &deserializer,
-                                        &plugin,
-                                        /*compressor=*/nullptr);
-  EXPECT_THAT(plugin, NotNull());
-  principia__DeletePlugin(&plugin);
 }
 
 TEST_F(InterfaceTest, SerializePluginHexadecimal) {

@@ -6,12 +6,15 @@
 #include <vector>
 
 #include "base/array.hpp"
+#include "base/macros.hpp"
 
 namespace principia {
 namespace testing_utilities {
 
+#if PRINCIPIA_COMPILER_MSVC
 inline std::u16string ReadFromBase32768File(
     std::filesystem::path const& filename);
+#endif
 
 inline std::vector<std::uint8_t> ReadFromBinaryFile(
     std::filesystem::path const& filename);
@@ -22,8 +25,10 @@ inline std::string ReadFromHexadecimalFile(
 inline std::vector<std::string> ReadLinesFromHexadecimalFile(
     std::filesystem::path const& filename);
 
+#if PRINCIPIA_COMPILER_MSVC
 inline void WriteToBase32768File(std::filesystem::path const& filename,
                                  base::Array<std::uint8_t const> serialized);
+#endif
 
 inline void WriteToBinaryFile(std::filesystem::path const& filename,
                               base::Array<std::uint8_t const> serialized);
