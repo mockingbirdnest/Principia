@@ -2,6 +2,8 @@ syntax = "proto2";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message Quantity {
   // The following is encoded as a varint 128 because the exponents that are
   // generally non-zero occupy the low bits.

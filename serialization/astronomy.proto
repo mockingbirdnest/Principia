@@ -5,6 +5,8 @@ import "serialization/integrators.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message GravityModel {
   message Body {
     required string name = 1;

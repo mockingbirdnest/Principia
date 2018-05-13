@@ -4,6 +4,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message AffineMap {
   required Frame from_frame = 4;
   required Frame to_frame = 5;

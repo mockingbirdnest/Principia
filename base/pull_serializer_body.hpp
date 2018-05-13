@@ -100,8 +100,14 @@ inline PullSerializer::~PullSerializer() {
 
 inline void PullSerializer::Start(
     not_null<std::unique_ptr<google::protobuf::Message const>> message) {
+  owned_message_ = std::move(message);
+  Start(owned_message_.get());
+}
+
+inline void PullSerializer::Start(
+    not_null<google::protobuf::Message const*> const message) {
   CHECK(thread_ == nullptr);
-  message_ = std::move(message);
+  message_ = message;
   thread_ = std::make_unique<std::thread>([this](){
     CHECK(message_->SerializeToZeroCopyStream(&stream_));
     // Put a sentinel at the end of the serialized stream so that the client
