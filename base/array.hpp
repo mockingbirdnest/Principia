@@ -41,7 +41,6 @@ struct Array final {
            typename = std::enable_if_t<
                size_plus_1 >= 1 &&
                (std::is_same<Element, unsigned char const>::value ||
-                std::is_same<Element, std::byte const>::value ||
                 std::is_same<Element, char const>::value ||
                 std::is_same<Element, wchar_t const>::value ||
                 std::is_same<Element, char16_t const>::value ||
