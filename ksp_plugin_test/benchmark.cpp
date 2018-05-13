@@ -38,7 +38,7 @@ namespace ksp_plugin {
 
 // The caller takes ownership of the result, but it's inconvenient to express
 // with |std::unique_ptr|.
-Plugin const* DeserializePluginFromLines(
+std::unique_ptr<Plugin const> DeserializePluginFromLines(
     std::vector<std::string> const& lines,
     char const* const compressor,
     int& bytes_processed) {
@@ -57,7 +57,7 @@ Plugin const* DeserializePluginFromLines(
                                           0,
                                           &deserializer,
                                           &plugin, compressor);
-  return plugin;
+  return std::unique_ptr<Plugin const>(plugin);
 }
 
 void BM_PluginIntegrationBenchmark(benchmark::State& state) {
@@ -101,15 +101,16 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
       ReadLinesFromHexadecimalFile(
           SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex"));
   int bytes_processed = 0;
-  Plugin const* plugin = DeserializePluginFromLines(gipfeli_plugin,
-                                                    compressor,
-                                                    bytes_processed);
+  auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
+                                                 compressor,
+                                                 bytes_processed);
+
+  bytes_processed = 0;
   for (auto _ : state) {
     PullSerializer* serializer = nullptr;
     char const* serialization = nullptr;
-  bytes_processed = 0;
     for (;;) {
-      serialization = principia__SerializePluginHexadecimal(plugin,
+      serialization = principia__SerializePluginHexadecimal(plugin.get(),
                                                             &serializer,
                                                             compressor);
       if (serialization == nullptr) {
@@ -121,7 +122,6 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
   }
 
   state.SetBytesProcessed(bytes_processed);
-  principia__DeletePlugin(&plugin);
 }
 
 void BM_PluginDeserializationBenchmark(benchmark::State& state) {
@@ -133,10 +133,10 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
   int bytes_processed = 0;
   for (auto _ : state) {
     PushDeserializer* deserializer = nullptr;
-    Plugin const* plugin = DeserializePluginFromLines(gipfeli_plugin,
-                                                      compressor,
-                                                      bytes_processed);
-    principia__DeletePlugin(&plugin);
+    auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
+                                                   compressor,
+                                                   bytes_processed);
+    benchmark::DoNotOptimize(plugin);
   }
   state.SetBytesProcessed(bytes_processed);
 }
