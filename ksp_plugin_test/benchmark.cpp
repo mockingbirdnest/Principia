@@ -104,8 +104,6 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
   Plugin const* plugin = DeserializePluginFromLines(gipfeli_plugin,
                                                     compressor,
                                                     bytes_processed);
-  LOG(ERROR)<<bytes_processed;
-
   for (auto _ : state) {
     PullSerializer* serializer = nullptr;
     char const* serialization = nullptr;
@@ -120,7 +118,6 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
       bytes_processed += std::strlen(serialization) >> 1;
       delete serialization;
     }
-    LOG(ERROR)<<bytes_processed;
   }
 
   state.SetBytesProcessed(bytes_processed);
