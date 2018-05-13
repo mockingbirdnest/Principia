@@ -103,7 +103,6 @@ using testing_utilities::make_not_null;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::VanishesBefore;
-using testing_utilities::WriteToBase32768File;
 using testing_utilities::WriteToBinaryFile;
 using testing_utilities::WriteToHexadecimalFile;
 using ::testing::AllOf;
@@ -265,9 +264,6 @@ class PluginTest : public testing::Test {
     serialization::Plugin message;
     plugin.WriteToMessage(&message);
     auto const serialized = SerializeAsBytes(message);
-    WriteToBase32768File(
-        SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.32k",
-        serialized.get());
     WriteToBinaryFile(
         SOLUTION_DIR / "ksp_plugin_test" / "simple_plugin.proto.bin",
         serialized.get());

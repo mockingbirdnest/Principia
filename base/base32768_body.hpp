@@ -13,7 +13,12 @@
 #include <type_traits>
 #include <vector>
 
+#include "base/macros.hpp"
 #include "glog/logging.h"
+
+// Clang doesn't have a correct |std::array| yet, and we don't actually use this
+// code, so let's get rid of the entire body.
+#if PRINCIPIA_COMPILER_MSVC
 
 namespace principia {
 namespace base {
@@ -329,3 +334,5 @@ std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
 }  // namespace internal_base32768
 }  // namespace base
 }  // namespace principia
+
+#endif

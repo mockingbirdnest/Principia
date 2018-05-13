@@ -62,11 +62,12 @@ endif
 
 TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
 LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)/gipfeli/libgipfeli.a \
 	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
-INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)compatibility/filesystem
+INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)gipfeli/include
 SHARED_ARGS   := \
 	-std=c++1z -stdlib=libc++ -O3 -g                           \
 	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
@@ -188,7 +189,7 @@ $(PROTO_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
 
 ##### tools
 
-$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS)
+$(TOOLS_BIN): $(TOOLS_OBJECTS) $(PROTO_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(LIBS) -o $@
 
