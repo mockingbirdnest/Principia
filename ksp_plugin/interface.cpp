@@ -31,6 +31,7 @@
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "gipfeli/gipfeli.h"
+#include "google/protobuf/arena.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
@@ -63,6 +64,7 @@ using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
+using google::protobuf::Arena;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::ParseAdaptiveStepSizeIntegrator;
@@ -936,15 +938,18 @@ char const* principia__SerializePluginHexadecimal(
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
+  static not_null<Arena*> arena = new Arena;
+
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
     LOG(INFO) << "Begin plugin serialization";
     *serializer = new PullSerializer(chunk_size,
                                      number_of_chunks,
                                      NewCompressor(compressor));
-    auto message = make_not_null_unique<serialization::Plugin>();
-    plugin->WriteToMessage(message.get());
-    (*serializer)->Start(std::move(message));
+    not_null<serialization::Plugin*> const message =
+        Arena::CreateMessage<serialization::Plugin>(arena);
+    plugin->WriteToMessage(message);
+    (*serializer)->Start(message);
   }
 
   // Pull a chunk.
@@ -955,6 +960,7 @@ char const* principia__SerializePluginHexadecimal(
   // nullptr.
   if (bytes.size == 0) {
     LOG(INFO) << "End plugin serialization";
+    arena->Reset();
     TakeOwnership(serializer);
     return m.Return(nullptr);
   }
