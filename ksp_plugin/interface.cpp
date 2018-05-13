@@ -415,15 +415,18 @@ void principia__DeserializePluginHexadecimal(
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
 
+  static not_null<Arena*> arena = new Arena;
+
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
     LOG(INFO) << "Begin plugin deserialization";
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
-    auto message = make_not_null_unique<serialization::Plugin>();
+    not_null<serialization::Plugin*> const message =
+        Arena::CreateMessage<serialization::Plugin>(arena);
     (*deserializer)->Start(
-        std::move(message),
+        message,
         [plugin](google::protobuf::Message const& message) {
           *plugin = Plugin::ReadFromMessage(
               static_cast<serialization::Plugin const&>(message)).release();
@@ -440,6 +443,7 @@ void principia__DeserializePluginHexadecimal(
   if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
+    arena->Reset();
   }
   return m.Return();
 }
@@ -960,8 +964,8 @@ char const* principia__SerializePluginHexadecimal(
   // nullptr.
   if (bytes.size == 0) {
     LOG(INFO) << "End plugin serialization";
-    arena->Reset();
     TakeOwnership(serializer);
+    arena->Reset();
     return m.Return(nullptr);
   }
 
