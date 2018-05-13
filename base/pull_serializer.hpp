@@ -74,6 +74,7 @@ class PullSerializer final {
   // method must be called at most once for each serializer object.
   void Start(
       not_null<std::unique_ptr<google::protobuf::Message const>> message);
+  void Start(not_null<google::protobuf::Message const*> message);
 
   // Obtain the next chunk of data from the serializer.  Blocks if no data is
   // available.  Returns a |Array<std::uint8_t>| object of |size| 0 at the end
@@ -92,7 +93,10 @@ class PullSerializer final {
   // underlying |DelegatingArrayOutputStream|.
   Array<std::uint8_t> Push(Array<std::uint8_t> bytes);
 
-  std::unique_ptr<google::protobuf::Message const> message_;
+  // |owned_message_| is null if this object doesn't own the message.
+  // |message_| is non-null after Start.
+  std::unique_ptr<google::protobuf::Message const> owned_message_;
+  google::protobuf::Message const* message_ = nullptr;
 
   std::unique_ptr<Compressor> const compressor_;
 

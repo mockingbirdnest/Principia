@@ -72,6 +72,8 @@ class PushDeserializer final {
   // 0).
   void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
              std::function<void(google::protobuf::Message const&)> done);
+  void Start(not_null<google::protobuf::Message*> message,
+             std::function<void(google::protobuf::Message const&)> done);
 
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
@@ -91,7 +93,10 @@ class PushDeserializer final {
   // |DelegatingArrayOutputStream|.
   Array<std::uint8_t> Pull();
 
-  std::unique_ptr<google::protobuf::Message> message_;
+  // |owned_message_| is null if this object doesn't own the message.
+  // |message_| is non-null after Start.
+  std::unique_ptr<google::protobuf::Message> owned_message_;
+  google::protobuf::Message* message_ = nullptr;
 
   std::unique_ptr<Compressor> const compressor_;
 
