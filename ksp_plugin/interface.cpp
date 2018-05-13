@@ -937,6 +937,7 @@ char16_t const* principia__SerializePluginBase32768(
   auto base32768 = Base32768Encode(bytes, /*null_terminated=*/true);
   return m.Return(base32768.data.release());
 }
+
 // Same contract as the base 32768 deserialization.
 char const* principia__SerializePluginHexadecimal(
     Plugin const* const plugin,
