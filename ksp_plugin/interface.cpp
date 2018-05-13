@@ -64,7 +64,6 @@ using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
-using google::protobuf::Arena;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::ParseAdaptiveStepSizeIntegrator;
@@ -99,12 +98,21 @@ using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using ::google::protobuf::Arena;
+using ::google::protobuf::ArenaOptions;
 
 namespace {
 
 constexpr char gipfeli[] = "gipfeli";
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
+
+static not_null<Arena*> arena = []() {
+  ArenaOptions options;
+  options.initial_block_size = chunk_size;
+  options.max_block_size = 16 * chunk_size;
+  return new Arena(options);
+}();
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
     ConfigurationFixedStepParameters const& parameters) {
@@ -414,8 +422,6 @@ void principia__DeserializePluginHexadecimal(
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
-
-  static not_null<Arena*> arena = new Arena;
 
   // Create and start a deserializer if the caller didn't provide one.
   if (*deserializer == nullptr) {
@@ -941,8 +947,6 @@ char const* principia__SerializePluginHexadecimal(
                                                          {serializer});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
-
-  static not_null<Arena*> arena = new Arena;
 
   // Create and start a serializer if the caller didn't provide one.
   if (*serializer == nullptr) {
