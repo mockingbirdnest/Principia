@@ -5,6 +5,6 @@ package principia.serialization;
 message Quantity {
   // The following is encoded as a varint 128 because the exponents that are
   // generally non-zero occupy the low bits.
-  optional uint64 dimensions = 1;
+  required uint64 dimensions = 1;
   required double magnitude = 2;
 }
