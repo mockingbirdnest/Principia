@@ -19,6 +19,7 @@ inline void PrintUtf16ToFile(char16_t const c, std::fstream& file) {
   file << chars[0] << chars[1];
 }
 
+#if PRINCIPIA_COMPILER_MSVC
 std::u16string ReadFromBase32768File(
     std::filesystem::path const& filename) {
   std::vector<std::uint8_t> const binary = ReadFromBinaryFile(filename);
@@ -34,6 +35,7 @@ std::u16string ReadFromBase32768File(
   }
   return result;
 }
+#endif
 
 std::vector<std::uint8_t> ReadFromBinaryFile(
     std::filesystem::path const& filename) {
@@ -87,6 +89,7 @@ std::vector<std::string> ReadLinesFromHexadecimalFile(
   return hex;
 }
 
+#if PRINCIPIA_COMPILER_MSVC
 void WriteToBase32768File(std::filesystem::path const& filename,
                           base::Array<std::uint8_t const> serialized) {
   std::fstream file = std::fstream(filename,
@@ -111,6 +114,7 @@ void WriteToBase32768File(std::filesystem::path const& filename,
   }
   file.close();
 }
+#endif
 
 void WriteToBinaryFile(
     std::filesystem::path const& filename,
