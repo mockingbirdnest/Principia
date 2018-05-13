@@ -44,17 +44,6 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.2.2|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Release\1.2.2 Compatibility\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_2_2</DefineConstants>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
       <HintPath>..\..\KSP Assemblies\1.4.3\Assembly-CSharp.dll</HintPath>

@@ -242,12 +242,7 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
-#if KSP_VERSION_1_2_2
-    if (Versioning.version_major != 1 ||
-        Versioning.version_minor != 2 ||
-        Versioning.Revision != 2) {
-      string expected_version = "1.2.2";
-#elif KSP_VERSION_1_3_1
+#if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
@@ -503,7 +498,7 @@ public partial class PrincipiaPluginAdapter
 #if KSP_VERSION_1_4_3
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
-#elif KSP_VERSION_1_2_2 || KSP_VERSION_1_3_1
+#elif KSP_VERSION_1_3_1
       bool success = texture2d.LoadImage(
           File.ReadAllBytes(full_path));
 #endif
@@ -2063,20 +2058,11 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
       if (DateTimeOffset.Now > next_release_date_) {
-#if KSP_VERSION_1_2_2
-        UnityEngine.GUILayout.TextArea(
-            "Announcement: the new moon of lunation number " +
-            next_release_lunation_number_ +
-            " has come; please update KSP to version 1.3.1 and download the " +
-            "latest Principia release, " + next_release_name_ + ". Note that " +
-            "RealismOverhaul and RealSolarSystem now support KSP 1.3.1.");
-#else
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
             next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
-#endif
       }
       String version;
       String unused_build_date;
