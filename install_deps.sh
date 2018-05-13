@@ -71,6 +71,14 @@ git checkout master
 git pull
 popd
 
+if [ ! -d "gipfeli" ]; then
+  git clone "https://github.com/mockingbirdnest/gipfeli"
+fi
+pushd gipfeli
+git checkout master
+git pull
+popd
+
 if [ ! -d "compatibility" ]; then
   git clone "https://github.com/mockingbirdnest/compatibility"
 fi
