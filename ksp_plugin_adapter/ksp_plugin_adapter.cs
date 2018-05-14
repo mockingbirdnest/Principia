@@ -1805,45 +1805,49 @@ public partial class PrincipiaPluginAdapter
               bool is_burn = i % 2 == 1;
               var rendered_segments = plugin_.FlightPlanRenderedSegment(
                   main_vessel_guid, sun_world_position, i);
-              if (rendered_segments.IteratorAtEnd()) {
-                Log.Info("Skipping segment " + i);
-                continue;
-              }
-              Vector3d position_at_start =
-                  (Vector3d)rendered_segments.
-                      IteratorGetDiscreteTrajectoryXYZ();
-              {
-                IntPtr rp2_lines_iterator =
-                    planetarium.PlanetariumPlotFlightPlanSegment(
-                        plugin_,
-                        чебышёв_plotting_method_,
-                        main_vessel_guid,
-                        i);
-                GLLines.PlotAndDeleteRP2Lines(
-                    rp2_lines_iterator,
-                    is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
-                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
-              }
-              if (is_burn) {
-                int manoeuvre_index = i / 2;
-                NavigationManoeuvreFrenetTrihedron manoeuvre =
-                    plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                        main_vessel_guid,
-                        manoeuvre_index);
-                double scale = (ScaledSpace.ScaledToLocalSpace(
-                                    MapView.MapCamera.transform.position) -
-                                position_at_start).magnitude * 0.015;
-                Action<XYZ, UnityEngine.Color> add_vector =
-                    (world_direction, colour) => {
-                      UnityEngine.GL.Color(colour);
-                      GLLines.AddSegment(
-                          position_at_start,
-                          position_at_start +
-                              scale * (Vector3d)world_direction);
-                    };
-                add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
-                add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
-                add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+              try {
+                if (rendered_segments.IteratorAtEnd()) {
+                  Log.Info("Skipping segment " + i);
+                  continue;
+                }
+                Vector3d position_at_start =
+                    (Vector3d)rendered_segments.
+                        IteratorGetDiscreteTrajectoryXYZ();
+                {
+                  IntPtr rp2_lines_iterator =
+                      planetarium.PlanetariumPlotFlightPlanSegment(
+                          plugin_,
+                          чебышёв_plotting_method_,
+                          main_vessel_guid,
+                          i);
+                  GLLines.PlotAndDeleteRP2Lines(
+                      rp2_lines_iterator,
+                      is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
+                      is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+                }
+                if (is_burn) {
+                  int manoeuvre_index = i / 2;
+                  NavigationManoeuvreFrenetTrihedron manoeuvre =
+                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                          main_vessel_guid,
+                          manoeuvre_index);
+                  double scale = (ScaledSpace.ScaledToLocalSpace(
+                                      MapView.MapCamera.transform.position) -
+                                  position_at_start).magnitude * 0.015;
+                  Action<XYZ, UnityEngine.Color> add_vector =
+                      (world_direction, colour) => {
+                        UnityEngine.GL.Color(colour);
+                        GLLines.AddSegment(
+                            position_at_start,
+                            position_at_start +
+                                scale * (Vector3d)world_direction);
+                      };
+                  add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
+                  add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
+                  add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+                }
+              } finally {
+                Interface.IteratorDelete(ref rendered_segments);
               }
             }
           }
