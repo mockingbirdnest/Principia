@@ -1877,6 +1877,11 @@ extend google.protobuf.FieldOptions {
   optional string is_consumed_if = 50004;
   optional string is_produced_if = 50005;
 
+  // For a fixed64 field that is produced, indicates that it should follow the
+  // Dispose pattern and gives the suffix of the names of the disposable class
+  // and the marshaller.
+  optional string disposable = 50009;
+
   // For a fixed64 field (which is used to represent a pointer), indicates that
   // it should be the subject in C# methods.
   optional bool is_subject = 50006;

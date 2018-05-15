@@ -343,6 +343,14 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
     field_cs_type_[descriptor] = "this IntPtr";
+  } else if (options.HasExtension(journal::serialization::disposable)) {
+    CHECK(options.HasExtension(journal::serialization::is_produced) ||
+          options.HasExtension(journal::serialization::is_produced_if))
+      << descriptor->full_name() << " must be produced to be disposable";
+    field_cs_type_[descriptor] =
+        "Disposable" + options.GetExtension(journal::serialization::disposable);
+    field_cs_marshal_[descriptor] =
+        options.GetExtension(journal::serialization::disposable) + "Marshaller";
   } else {
     field_cs_type_[descriptor] = "IntPtr";
   }
@@ -351,7 +359,7 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
   if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
     CHECK(!options.HasExtension(journal::serialization::is_consumed) &&
           !options.HasExtension(journal::serialization::is_consumed_if))
-        << "out parameter " + descriptor->full_name() + " cannot be consumed";
+        << "out parameter " << descriptor->full_name() << " cannot be consumed";
   }
 
   if (options.HasExtension(journal::serialization::is_consumed)) {
