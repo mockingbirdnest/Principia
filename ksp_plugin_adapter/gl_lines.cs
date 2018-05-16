@@ -90,10 +90,10 @@ internal static class GLLines {
     // First evaluate the total size of the lines.
     int size = 0;
     for (;
-          !rp2_lines_iterator.IteratorAtEnd();
-          rp2_lines_iterator.IteratorIncrement()) {
+         !rp2_lines_iterator.IteratorAtEnd();
+         rp2_lines_iterator.IteratorIncrement()) {
       using (DisposableIterator rp2_line_iterator =
-                  rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
         size += rp2_line_iterator.IteratorSize();
       }
     }
@@ -102,10 +102,10 @@ internal static class GLLines {
     rp2_lines_iterator.IteratorReset();
     int index = 0;
     for (;
-          !rp2_lines_iterator.IteratorAtEnd();
-          rp2_lines_iterator.IteratorIncrement()) {
+         !rp2_lines_iterator.IteratorAtEnd();
+         rp2_lines_iterator.IteratorIncrement()) {
       using (DisposableIterator rp2_line_iterator =
-                  rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
         XY? previous_rp2_point = null;
         for (;
              !rp2_line_iterator.IteratorAtEnd();

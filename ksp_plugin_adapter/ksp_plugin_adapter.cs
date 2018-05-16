@@ -1438,7 +1438,7 @@ public partial class PrincipiaPluginAdapter
         plugin_.FutureWaitForVesselToCatchUp(ref future,
                                              out collided_vessels);
         for (; !collided_vessels.IteratorAtEnd();
-              collided_vessels.IteratorIncrement()) {
+             collided_vessels.IteratorIncrement()) {
           Guid vessel_guid =
               new Guid(collided_vessels.IteratorGetVesselGuid());
           Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
@@ -1802,7 +1802,7 @@ public partial class PrincipiaPluginAdapter
                 plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
             for (int i = 0; i < number_of_segments; ++i) {
               bool is_burn = i % 2 == 1;
-              using (var rendered_segments =
+              using (DisposableIterator rendered_segments =
                         plugin_.FlightPlanRenderedSegment(main_vessel_guid,
                                                           sun_world_position,
                                                           i)) {
