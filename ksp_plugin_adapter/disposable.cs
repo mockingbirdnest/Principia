@@ -24,6 +24,7 @@ class DisposableIterator : IDisposable {
     GC.SuppressFinalize(this);
   }
 
+  // Exclusively for use by the marshaller.
   public IntPtr IntPtr {
     get {
       return iterator_;

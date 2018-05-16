@@ -339,14 +339,10 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     }
   }
 
-  if (options.HasExtension(journal::serialization::is_subject)) {
-    CHECK(options.GetExtension(journal::serialization::is_subject))
-        << descriptor->full_name() << " has incorrect (is_subject) option";
-    field_cs_type_[descriptor] = "this IntPtr";
-  } else if (options.HasExtension(journal::serialization::disposable)) {
-    CHECK(options.HasExtension(journal::serialization::is_produced) ||
-          options.HasExtension(journal::serialization::is_produced_if))
-      << descriptor->full_name() << " must be produced to be disposable";
+  if (options.HasExtension(journal::serialization::disposable)) {
+    CHECK(!options.HasExtension(journal::serialization::is_consumed) ||
+          !options.HasExtension(journal::serialization::is_consumed_if))
+      << descriptor->full_name() << " must not be consumed to be disposable";
     field_cs_type_[descriptor] =
         options.GetExtension(journal::serialization::disposable);
     field_cs_marshal_[descriptor] =
@@ -356,6 +352,11 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
         "Marshaller))";
   } else {
     field_cs_type_[descriptor] = "IntPtr";
+  }
+  if (options.HasExtension(journal::serialization::is_subject)) {
+    CHECK(options.GetExtension(journal::serialization::is_subject))
+        << descriptor->full_name() << " has incorrect (is_subject) option";
+    field_cs_type_[descriptor] = "this " + field_cs_type_[descriptor];
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 

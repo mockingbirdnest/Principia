@@ -18,7 +18,11 @@ internal class DisposableIteratorMarshaller : ICustomMarshaler {
   void ICustomMarshaler.CleanUpNativeData(IntPtr native_data) {}
 
   IntPtr ICustomMarshaler.MarshalManagedToNative(object managed_object) {
-    throw Log.Fatal("No disposable marshaller for in parameters");
+    if (managed_object == null) {
+      return IntPtr.Zero;
+    }
+    var disposable_iterator = managed_object as DisposableIterator;
+    return disposable_iterator.IntPtr;
   }
 
   object ICustomMarshaler.MarshalNativeToManaged(IntPtr iterator) {
