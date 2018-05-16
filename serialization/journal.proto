@@ -716,6 +716,7 @@ message FlightPlanRenderedSegment {
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -1878,8 +1879,7 @@ extend google.protobuf.FieldOptions {
   optional string is_produced_if = 50005;
 
   // For a fixed64 field that is produced, indicates that it should follow the
-  // Dispose pattern and gives the suffix of the names of the disposable class
-  // and the marshaller.
+  // Dispose pattern and gives the name of the disposable class.
   optional string disposable = 50009;
 
   // For a fixed64 field (which is used to represent a pointer), indicates that

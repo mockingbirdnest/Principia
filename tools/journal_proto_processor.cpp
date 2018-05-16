@@ -348,9 +348,12 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
           options.HasExtension(journal::serialization::is_produced_if))
       << descriptor->full_name() << " must be produced to be disposable";
     field_cs_type_[descriptor] =
-        "Disposable" + options.GetExtension(journal::serialization::disposable);
+        options.GetExtension(journal::serialization::disposable);
     field_cs_marshal_[descriptor] =
-        options.GetExtension(journal::serialization::disposable) + "Marshaller";
+        "MarshalAs(UnmanagedType.CustomMarshaler, "
+        "MarshalTypeRef = typeof(" +
+        options.GetExtension(journal::serialization::disposable) +
+        "Marshaller))";
   } else {
     field_cs_type_[descriptor] = "IntPtr";
   }
