@@ -1803,15 +1803,16 @@ public partial class PrincipiaPluginAdapter
                 plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
             for (int i = 0; i < number_of_segments; ++i) {
               bool is_burn = i % 2 == 1;
-              var rendered_segments = plugin_.FlightPlanRenderedSegment(
-                  main_vessel_guid, sun_world_position, i);
-              try {
-                if (rendered_segments.IteratorAtEnd()) {
+              using (var rendered_segments =
+                        plugin_.FlightPlanRenderedSegment(main_vessel_guid,
+                                                          sun_world_position,
+                                                          i)) {
+                if (rendered_segments.IntPtr.IteratorAtEnd()) {
                   Log.Info("Skipping segment " + i);
                   continue;
                 }
                 Vector3d position_at_start =
-                    (Vector3d)rendered_segments.
+                    (Vector3d)rendered_segments.IntPtr.
                         IteratorGetDiscreteTrajectoryXYZ();
                 {
                   IntPtr rp2_lines_iterator =
@@ -1846,8 +1847,6 @@ public partial class PrincipiaPluginAdapter
                   add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
                   add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
                 }
-              } finally {
-                Interface.IteratorDelete(ref rendered_segments);
               }
             }
           }
