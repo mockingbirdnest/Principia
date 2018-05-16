@@ -41,11 +41,11 @@ internal class MapNodePool {
     pool_index_ = 0;
   }
 
-  public void RenderAndDeleteMarkers(IntPtr apsis_iterator,
-                                     MapObject.ObjectType type,
-                                     NodeSource source,
-                                     Vessel vessel,
-                                     CelestialBody celestial) {
+  public void RenderMarkers(DisposableIterator apsis_iterator,
+                            MapObject.ObjectType type,
+                            NodeSource source,
+                            Vessel vessel,
+                            CelestialBody celestial) {
     for (; !apsis_iterator.IteratorAtEnd();
          apsis_iterator.IteratorIncrement()) {
       QP apsis = apsis_iterator.IteratorGetDiscreteTrajectoryQP();
@@ -70,7 +70,6 @@ internal class MapNodePool {
       }
       properties_[nodes_[pool_index_++]] = node_properties;
     }
-    Interface.IteratorDelete(ref apsis_iterator);
   }
 
   private KSP.UI.Screens.Mapview.MapNode MakePoolNode() {

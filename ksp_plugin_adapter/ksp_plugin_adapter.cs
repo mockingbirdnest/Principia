@@ -1276,13 +1276,15 @@ public partial class PrincipiaPluginAdapter
 
     // Advance the lagging vessels and kill those which collided with a
     // celestial.
-    IntPtr collided_vessels;
-    plugin_.CatchUpLaggingVessels(out collided_vessels);
-    for (; !collided_vessels.IteratorAtEnd();
-         collided_vessels.IteratorIncrement()) {
-      Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
-      Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
-      vessel?.Die();
+    {
+      DisposableIterator collided_vessels;
+      plugin_.CatchUpLaggingVessels(out collided_vessels);
+      for (; !collided_vessels.IteratorAtEnd();
+            collided_vessels.IteratorIncrement()) {
+        Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+        Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
+        vessel?.Die();
+      }
     }
 
     UpdatePredictions();
@@ -1432,12 +1434,13 @@ public partial class PrincipiaPluginAdapter
       var all_collided_vessels = new HashSet<Vessel>();
       foreach (var f in vessel_futures_) {
         var future = f;
-        IntPtr collided_vessels;
+        DisposableIterator collided_vessels;
         plugin_.FutureWaitForVesselToCatchUp(ref future,
                                              out collided_vessels);
         for (; !collided_vessels.IteratorAtEnd();
-             collided_vessels.IteratorIncrement()) {
-          Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+              collided_vessels.IteratorIncrement()) {
+          Guid vessel_guid =
+              new Guid(collided_vessels.IteratorGetVesselGuid());
           Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
           all_collided_vessels.Add(vessel);
         }
@@ -1748,52 +1751,48 @@ public partial class PrincipiaPluginAdapter
       IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
       try {
         GLLines.Draw(() => {
-          {
-            IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPsychohistory(
-                    plugin_,
-                    чебышёв_plotting_method_,
-                    main_vessel_guid);
-            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Lime,
-                                          GLLines.Style.FADED);
+          using (DisposableIterator rp2_lines_iterator =
+                    planetarium.PlanetariumPlotPsychohistory(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid)) {
+            GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                 XKCDColors.Lime,
+                                 GLLines.Style.FADED);
           }
           RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-          {
-            IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPrediction(
-                    plugin_,
-                    чебышёв_plotting_method_,
-                    main_vessel_guid);
-            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Fuchsia,
-                                          GLLines.Style.SOLID);
+          using (DisposableIterator rp2_lines_iterator =
+                    planetarium.PlanetariumPlotPrediction(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid)) {
+            GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                 XKCDColors.Fuchsia,
+                                 GLLines.Style.SOLID);
           }
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
               !plotting_frame_selector_.get().target_override &&
               target_id != null && plugin_.HasVessel(target_id)) {
-            {
-              IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPsychohistory(
-                      plugin_,
-                      чебышёв_plotting_method_,
-                      target_id);
-              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Goldenrod,
-                                            GLLines.Style.FADED);
+            using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotPsychohistory(
+                          plugin_,
+                          чебышёв_plotting_method_,
+                          target_id)) {
+              GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                   XKCDColors.Goldenrod,
+                                   GLLines.Style.FADED);
             }
             RenderPredictionMarkers(target_id, sun_world_position);
-            {
-              IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPrediction(
-                      plugin_,
-                      чебышёв_plotting_method_,
-                      target_id);
-              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.LightMauve,
-                                            GLLines.Style.SOLID);
+            using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotPrediction(
+                          plugin_,
+                          чебышёв_plotting_method_,
+                          target_id)) {
+              GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                   XKCDColors.LightMauve,
+                                   GLLines.Style.SOLID);
             }
           }
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
@@ -1807,21 +1806,20 @@ public partial class PrincipiaPluginAdapter
                         plugin_.FlightPlanRenderedSegment(main_vessel_guid,
                                                           sun_world_position,
                                                           i)) {
-                if (rendered_segments.IntPtr.IteratorAtEnd()) {
+                if (rendered_segments.IteratorAtEnd()) {
                   Log.Info("Skipping segment " + i);
                   continue;
                 }
                 Vector3d position_at_start =
-                    (Vector3d)rendered_segments.IntPtr.
+                    (Vector3d)rendered_segments.
                         IteratorGetDiscreteTrajectoryXYZ();
-                {
-                  IntPtr rp2_lines_iterator =
-                      planetarium.PlanetariumPlotFlightPlanSegment(
-                          plugin_,
-                          чебышёв_plotting_method_,
-                          main_vessel_guid,
-                          i);
-                  GLLines.PlotAndDeleteRP2Lines(
+                using (DisposableIterator rp2_lines_iterator =
+                          planetarium.PlanetariumPlotFlightPlanSegment(
+                              plugin_,
+                              чебышёв_plotting_method_,
+                              main_vessel_guid,
+                              i)) {
+                  GLLines.PlotRP2Lines(
                       rp2_lines_iterator,
                       is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
                       is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
@@ -1864,9 +1862,9 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       Vessel target = plotting_frame_selector_.get().target_override;
-      IntPtr ascending_nodes_iterator;
-      IntPtr descending_nodes_iterator;
-      IntPtr approaches_iterator;
+      DisposableIterator ascending_nodes_iterator;
+      DisposableIterator descending_nodes_iterator;
+      DisposableIterator approaches_iterator;
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
@@ -1874,19 +1872,19 @@ public partial class PrincipiaPluginAdapter
       plugin_.RenderedPredictionClosestApproaches(vessel_guid,
                                                   sun_world_position,
                                                   out approaches_iterator);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
@@ -1895,20 +1893,20 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
-        IntPtr apoapsis_iterator;
-        IntPtr periapsis_iterator;
+        DisposableIterator apoapsis_iterator;
+        DisposableIterator periapsis_iterator;
         plugin_.RenderedPredictionApsides(vessel_guid,
                                           celestial.flightGlobalsIndex,
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : celestial);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.PREDICTION,
@@ -1922,19 +1920,19 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.get().selected_celestial.referenceBody;
-        IntPtr ascending_nodes_iterator;
-        IntPtr descending_nodes_iterator;
+        DisposableIterator ascending_nodes_iterator;
+        DisposableIterator descending_nodes_iterator;
         plugin_.RenderedPredictionNodes(vessel_guid,
                                         sun_world_position,
                                         out ascending_nodes_iterator,
                                         out descending_nodes_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : primary);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             descending_nodes_iterator,
             MapObject.ObjectType.DescendingNode,
             MapNodePool.NodeSource.PREDICTION,
@@ -1948,9 +1946,9 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       Vessel target = plotting_frame_selector_.get().target_override;
-      IntPtr ascending_nodes_iterator;
-      IntPtr descending_nodes_iterator;
-      IntPtr approaches_iterator;
+      DisposableIterator ascending_nodes_iterator;
+      DisposableIterator descending_nodes_iterator;
+      DisposableIterator approaches_iterator;
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
@@ -1958,19 +1956,19 @@ public partial class PrincipiaPluginAdapter
       plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
                                                   sun_world_position,
                                                   out approaches_iterator);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
@@ -1979,20 +1977,20 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
-        IntPtr apoapsis_iterator;
-        IntPtr periapsis_iterator;
+        DisposableIterator apoapsis_iterator;
+        DisposableIterator periapsis_iterator;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
                                           celestial.flightGlobalsIndex,
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
             vessel    : null,
             celestial : celestial);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
@@ -2006,19 +2004,19 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.get().selected_celestial.referenceBody;
-        IntPtr ascending_nodes_iterator;
-        IntPtr descending_nodes_iterator;
+        DisposableIterator ascending_nodes_iterator;
+        DisposableIterator descending_nodes_iterator;
         plugin_.FlightPlanRenderedNodes(vessel_guid,
                                         sun_world_position,
                                         out ascending_nodes_iterator,
                                         out descending_nodes_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : primary);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             descending_nodes_iterator,
             MapObject.ObjectType.DescendingNode,
             MapNodePool.NodeSource.PREDICTION,
