@@ -152,6 +152,7 @@ message CatchUpLaggingVessels {
   }
   message Out {
     required fixed64 collided_vessels = 1 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
                                            (is_produced) = true];
   }
   optional In in = 1;
@@ -657,8 +658,10 @@ message FlightPlanRenderedApsides {
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
                                       (is_produced) = true];
   }
   optional In in = 1;
@@ -676,8 +679,10 @@ message FlightPlanRenderedClosestApproaches {
     required XYZ sun_world_position = 3;
   }
   message Out {
-    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
-                                             (is_produced) = true];
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -695,8 +700,10 @@ message FlightPlanRenderedNodes {
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
     required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
   }
   optional In in = 1;
@@ -824,6 +831,7 @@ message FutureWaitForVesselToCatchUp {
   message Out {
     required fixed64 future = 1 [(pointer_to) = "PileUpFuture"];
     required fixed64 collided_vessels = 2 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
                                            (is_produced) = true];
   }
   optional In in = 1;
@@ -1092,8 +1100,9 @@ message IteratorAtEnd {
     optional IteratorAtEnd extension = 5083;
   }
   message In {
-    required fixed64 iterator = 1
-        [(pointer_to) = "Iterator const", (is_subject) = true];
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
   }
   message Return {
     required bool result = 1;
@@ -1123,6 +1132,7 @@ message IteratorGetDiscreteTrajectoryQP {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1138,6 +1148,7 @@ message IteratorGetDiscreteTrajectoryTime {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1153,6 +1164,7 @@ message IteratorGetDiscreteTrajectoryXYZ {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1168,10 +1180,12 @@ message IteratorGetRP2LinesIterator {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -1184,6 +1198,7 @@ message IteratorGetRP2LineXY {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1199,6 +1214,7 @@ message IteratorGetVesselGuid {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1214,6 +1230,7 @@ message IteratorIncrement {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   optional In in = 1;
@@ -1225,6 +1242,7 @@ message IteratorReset {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   optional In in = 1;
@@ -1236,6 +1254,7 @@ message IteratorSize {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1419,6 +1438,7 @@ message PlanetariumPlotFlightPlanSegment {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1438,6 +1458,7 @@ message PlanetariumPlotPrediction {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1457,6 +1478,7 @@ message PlanetariumPlotPsychohistory {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1486,8 +1508,10 @@ message RenderedPredictionApsides {
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
                                       (is_produced) = true];
   }
   optional In in = 1;
@@ -1505,8 +1529,10 @@ message RenderedPredictionClosestApproaches {
     required XYZ sun_world_position = 3;
   }
   message Out {
-    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
-                                             (is_produced) = true];
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1524,8 +1550,10 @@ message RenderedPredictionNodes {
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
     required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
   }
   optional In in = 1;
@@ -1878,8 +1906,8 @@ extend google.protobuf.FieldOptions {
   optional string is_consumed_if = 50004;
   optional string is_produced_if = 50005;
 
-  // For a fixed64 field that is produced, indicates that it should follow the
-  // Dispose pattern and gives the name of the disposable class.
+  // For a fixed64 field that is not consumed, indicates that it should follow
+  // the Dispose pattern and gives the name of the disposable class.
   optional string disposable = 50009;
 
   // For a fixed64 field (which is used to represent a pointer), indicates that
