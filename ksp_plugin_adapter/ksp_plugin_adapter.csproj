@@ -131,6 +131,8 @@
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="culture.cs" />
     <Compile Include="differential_slider.cs" />
+    <Compile Include="disposable.cs" />
+    <Compile Include="disposable_marshaller.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />

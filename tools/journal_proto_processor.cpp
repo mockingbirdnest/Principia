@@ -339,19 +339,31 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
     }
   }
 
+  if (options.HasExtension(journal::serialization::disposable)) {
+    CHECK(!options.HasExtension(journal::serialization::is_consumed) ||
+          !options.HasExtension(journal::serialization::is_consumed_if))
+      << descriptor->full_name() << " must not be consumed to be disposable";
+    field_cs_type_[descriptor] =
+        options.GetExtension(journal::serialization::disposable);
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, "
+        "MarshalTypeRef = typeof(" +
+        options.GetExtension(journal::serialization::disposable) +
+        "Marshaller))";
+  } else {
+    field_cs_type_[descriptor] = "IntPtr";
+  }
   if (options.HasExtension(journal::serialization::is_subject)) {
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
-    field_cs_type_[descriptor] = "this IntPtr";
-  } else {
-    field_cs_type_[descriptor] = "IntPtr";
+    field_cs_type_[descriptor] = "this " + field_cs_type_[descriptor];
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
   if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
     CHECK(!options.HasExtension(journal::serialization::is_consumed) &&
           !options.HasExtension(journal::serialization::is_consumed_if))
-        << "out parameter " + descriptor->full_name() + " cannot be consumed";
+        << "out parameter " << descriptor->full_name() << " cannot be consumed";
   }
 
   if (options.HasExtension(journal::serialization::is_consumed)) {

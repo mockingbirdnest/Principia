@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 
 #include "base/not_null.hpp"
 #include "serialization/journal.pb.h"
@@ -17,13 +18,18 @@ class Recorder final {
   explicit Recorder(std::filesystem::path const& path);
   ~Recorder();
 
-  void Write(serialization::Method const& method);
+  // Locking is used to ensure that the pairs of writes don't get intermixed.
+  void WriteAtConstruction(serialization::Method const& method);
+  void WriteAtDestruction(serialization::Method const& method);
 
   static void Activate(base::not_null<Recorder*> recorder);
   static void Deactivate();
   static bool IsActivated();
 
  private:
+  void WriteLocked(serialization::Method const& method);
+
+  std::mutex lock_;
   std::ofstream stream_;
 
   static thread_local Recorder* active_recorder_;
