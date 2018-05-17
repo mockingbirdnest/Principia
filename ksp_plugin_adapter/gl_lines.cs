@@ -41,8 +41,8 @@ internal static class GLLines {
     }
   }
 
-  public static IntPtr NewPlanetarium(IntPtr plugin,
-                                       XYZ sun_world_position) {
+  public static DisposablePlanetarium NewPlanetarium(IntPtr plugin,
+                                                     XYZ sun_world_position) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
     UnityEngine.Vector3 opengl_camera_x_in_world =
         camera.cameraToWorldMatrix.MultiplyVector(

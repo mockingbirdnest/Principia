@@ -1403,6 +1403,7 @@ message PlanetariumCreate {
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Planetarium",
+                                 (disposable) = "DisposablePlanetarium",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -1430,6 +1431,7 @@ message PlanetariumPlotFlightPlanSegment {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
@@ -1451,6 +1453,7 @@ message PlanetariumPlotPrediction {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
@@ -1471,6 +1474,7 @@ message PlanetariumPlotPsychohistory {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
