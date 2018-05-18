@@ -1748,8 +1748,8 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
-      try {
+      using (DisposablePlanetarium planetarium =
+                GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {
           using (DisposableIterator rp2_lines_iterator =
                     planetarium.PlanetariumPlotPsychohistory(
@@ -1849,8 +1849,6 @@ public partial class PrincipiaPluginAdapter
             }
           }
         });
-      } finally {
-        Interface.PlanetariumDelete(ref planetarium);
       }
       map_node_pool_.Update();
     } else {
