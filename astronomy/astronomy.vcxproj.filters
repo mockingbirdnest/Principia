@@ -97,6 +97,12 @@
     <Text Include="sol_numerics_blueprint.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="trappist_gravity_model.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="trappist_initial_state.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">

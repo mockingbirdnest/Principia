@@ -1,0 +1,91 @@
+initial_state {
+  keplerian {
+    body {
+      name : "Trappist-1A"
+    }
+    body {
+      name                          : "Trappist-1b"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00622
+        semimajor_axis              : "0.01154775 au"
+        inclination                 : "89.56 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "336.86 deg"
+        mean_anomaly                : "203.12 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1c"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00654
+        semimajor_axis              : "0.01581512 au"
+        inclination                 : "89.70 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "282.45 deg"
+        mean_anomaly                : "69.86 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1d"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00837
+        semimajor_axis              : "0.02228038 au"
+        inclination                 : "89.89 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "-8.73 deg"
+        mean_anomaly                : "173.92 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1e"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00510
+        semimajor_axis              : "0.02928285 au"
+        inclination                 : "89.736 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "108.37 deg"
+        mean_anomaly                : "347.95 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1f"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.01007
+        semimajor_axis              : "0.03853361 au"
+        inclination                 : "89.719 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "368.81 deg"
+        mean_anomaly                : "113.61 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1g"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00208
+        semimajor_axis              : "0.04687692 au"
+        inclination                 : "89.721 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "191.34 deg"
+        mean_anomaly                : "265.08 rad"
+      }
+    }
+    body {
+      name                          : "Trappist-1h"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00567
+        semimajor_axis              : "0.06193488 au"
+        inclination                 : "89.796 deg"
+        longitude_of_ascending_node : "0 rad"
+        argument_of_periapsis       : "338.92 deg"
+        mean_anomaly                : "269.72 rad"
+      }
+    }
+  }
+}

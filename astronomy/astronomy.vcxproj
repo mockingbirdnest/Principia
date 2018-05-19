@@ -35,6 +35,8 @@
     <Text Include="test_gravity_model_two_bodies.proto.txt" />
     <Text Include="test_initial_state_two_bodies_circular.proto.txt" />
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
+    <Text Include="trappist_gravity_model.proto.txt" />
+    <Text Include="trappist_initial_state.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />
