@@ -83,5 +83,31 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
   }
 }
 
+TEST_F(TrappistDynamicsTest, Transits) {
+  Instant const a_century_later = system_.epoch() + 100 * JulianYear;
+  ephemeris_->Prolong(a_century_later);
+
+  auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
+  auto const& star_trajectory = ephemeris_->trajectory(star);
+
+  auto const bodies = ephemeris_->bodies();
+  Instant const first_transit = "JD2457282.805700000"_TT;
+  for (auto const& planet : bodies) {
+    if (planet != star) {
+      auto const& planet_trajectory = ephemeris_->trajectory(planet);
+      auto const relative_dof =
+          planet_trajectory->EvaluateDegreesOfFreedom(first_transit) -
+          star_trajectory->EvaluateDegreesOfFreedom(first_transit);
+      KeplerOrbit<Trappist> const planet_orbit(
+          *star, *planet, relative_dof, first_transit);
+      LOG(ERROR)
+          << planet->name() << " " /*<< relative_dof << " "*/
+          << (*planet_orbit.elements_at_epoch().longitude_of_periapsis +
+              *planet_orbit.elements_at_epoch().true_anomaly) /
+                 quantities::si::Degree;
+    }
+  }
+}
+
 }  // namespace astronomy
 }  // namespace principia
