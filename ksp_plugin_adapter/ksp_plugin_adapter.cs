@@ -65,7 +65,55 @@ public partial class PrincipiaPluginAdapter
 
   private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
+  
+  // Toolbar toggles
 
+  private ToolbarToggle ui_toggle_;
+  private ToolbarToggle settings_toggle_;
+  private ToolbarToggle plotting_frame_toggle_;
+  private ToolbarToggle target_celestial_toggle_;
+  private ToolbarToggle target_vessel_toggle_;
+  private ToolbarToggle patched_conics_toggle_;
+  private ToolbarToggle sun_lens_flare_toggle_;
+  private bool toolbar_toggles_initialized_ = false;
+  
+  private void InitializeToolbarToggles() {
+    ui_toggle_ = new ToolbarToggle(
+        id: "UI",
+        tooltip: "Toggle Principia UI",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        get: () => show_main_window_,
+        set: value => {
+          show_main_window_ = value;
+          if (value) toolbar_button_.SetTrue(makeCall: false);
+          else toolbar_button_.SetFalse(makeCall: false);
+        });
+    //settings_toggle_ = new ToolbarToggle(
+    //    id: "Settings",
+    //    tooltip: "Principia Settings",
+    //    visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER));
+    target_celestial_toggle_ = new ToolbarToggle(
+        id: "TargetCelestial",
+        tooltip: "Select Target Celestial",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+    target_vessel_toggle_ = new ToolbarToggle(
+        id: "TargetVessel",
+        tooltip: "Select Target Vessel",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+    patched_conics_toggle_ = new ToolbarToggle(
+        id: "PatchedConics",
+        tooltip: "Toggle Patched Conics",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION));
+    sun_lens_flare_toggle_ = new ToolbarToggle(
+        id: "SunLensFlare",
+        tooltip: "Sun Lens Flare",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        get: () => Sun.Instance.sunFlare.enabled,
+        set: value => Sun.Instance.sunFlare.enabled = value);
+    
+    toolbar_toggles_initialized_ = true;
+  }
+  
   // "Persistant" is a KSP typo.
   [KSPField(isPersistant = true)]
   private bool show_main_window_ = true;
@@ -85,12 +133,7 @@ public partial class PrincipiaPluginAdapter
   private Controlled<FlightPlanner> flight_planner_;
   private MapNodePool map_node_pool_;
 
-  private bool selecting_active_vessel_target_ = false;
-  private bool selecting_target_celestial_ = false;
-
   private IntPtr plugin_ = IntPtr.Zero;
-
-  private bool display_patched_conics_ = false;
 
   private readonly double[] prediction_length_tolerances_ =
       {1e-3, 1e-2, 1e0, 1e1, 1e2, 1e3, 1e4};
@@ -721,9 +764,15 @@ public partial class PrincipiaPluginAdapter
                                     ALWAYS,
               texture         : toolbar_button_texture);
     }
+
+    // Blizzy's toolbar
+    if (KSP.UI.Screens.ApplicationLauncher.Ready && !toolbar_toggles_initialized_) {
+      InitializeToolbarToggles();
+    }
+
     // Make sure the state of the toolbar button remains consistent with the
     // state of the window.
-    if (show_main_window_) {
+    if (ui_toggle_.Value) {
       toolbar_button_?.SetTrue(makeCall : false);
     } else {
       toolbar_button_?.SetFalse(makeCall : false);
@@ -732,7 +781,7 @@ public partial class PrincipiaPluginAdapter
     if (hide_all_gui_) {
       WindowUtilities.ClearLock(this);
       return;
-    } else if (show_main_window_) {
+    } else if (ui_toggle_.Value) {
       UnityEngine.GUI.skin = null;
       main_window_rectangle_.xMin = main_window_x_;
       main_window_rectangle_.yMin = main_window_y_;
@@ -1618,7 +1667,7 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (display_patched_conics_ || !is_manageable(vessel)) {
+    if (patched_conics_toggle_.Value || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
@@ -1672,9 +1721,9 @@ public partial class PrincipiaPluginAdapter
   private void OnCelestialNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                     Mouse.Buttons buttons) {
     if (buttons == Mouse.Buttons.Left) {
-      if (selecting_target_celestial_) {
+      if (target_celestial_toggle_.Value) {
         FlightGlobals.fetch.SetVesselTarget(node.mapObject.celestialBody);
-        selecting_target_celestial_ = false;
+        target_celestial_toggle_.Value = false;
       } else if (PlanetariumCamera.fetch.target != node.mapObject) {
         PlanetariumCamera.fetch.SetTarget(node.mapObject);
       }
@@ -1683,9 +1732,9 @@ public partial class PrincipiaPluginAdapter
 
   private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                  Mouse.Buttons buttons) {
-    if (selecting_active_vessel_target_) {
+    if (target_vessel_toggle_.Value) {
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
-      selecting_active_vessel_target_ = false;
+      target_vessel_toggle_.Value = false;
     } else if (buttons == Mouse.Buttons.Left &&
                PlanetariumCamera.fetch.target != node.mapObject) {
       PlanetariumCamera.fetch.SetTarget(node.mapObject);
@@ -1697,7 +1746,7 @@ public partial class PrincipiaPluginAdapter
         !UnityEngine.EventSystems.EventSystem.current
              .IsPointerOverGameObject() &&
         Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus &&
-        !selecting_active_vessel_target_) {
+        !target_vessel_toggle_.Value) {
       var ray = PlanetariumCamera.Camera.ScreenPointToRay(
           UnityEngine.Input.mousePosition);
       foreach (var celestial in FlightGlobals.Bodies) {
@@ -1706,9 +1755,9 @@ public partial class PrincipiaPluginAdapter
                            ScaledSpace.LocalToScaledSpace(celestial.position) -
                                ray.origin).magnitude;
         if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius) {
-          if (selecting_target_celestial_) {
+          if (target_celestial_toggle_.Value) {
             FlightGlobals.fetch.SetVesselTarget(celestial);
-            selecting_target_celestial_ = false;
+            target_celestial_toggle_.Value = false;
           } else if (PlanetariumCamera.fetch.target != celestial.MapObject) {
             PlanetariumCamera.fetch.SetTarget(celestial.MapObject);
           }
@@ -2049,11 +2098,11 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void ShowMainWindow() {
-    show_main_window_ = true;
+    ui_toggle_.Value = true;
   }
 
   private void HideMainWindow() {
-    show_main_window_ = false;
+    ui_toggle_.Value = false;
   }
 
   private void DrawMainWindow(int window_id) {
@@ -2082,10 +2131,10 @@ public partial class PrincipiaPluginAdapter
       if (MapView.MapIsEnabled &&
           FlightGlobals.ActiveVessel?.orbitTargeter != null) {
         using (new HorizontalLayout()) {
-          selecting_active_vessel_target_ = UnityEngine.GUILayout.Toggle(
-              selecting_active_vessel_target_, "Select target vessel...");
-          if (selecting_active_vessel_target_) {
-            selecting_target_celestial_ = false;
+          target_vessel_toggle_.Value = UnityEngine.GUILayout.Toggle(
+              target_vessel_toggle_.Value, "Select target vessel...");
+          if (target_vessel_toggle_.Value) {
+            target_celestial_toggle_.Value = false;
           }
           if (FlightGlobals.fetch.VesselTarget?.GetVessel()) {
             UnityEngine.GUILayout.Label(
@@ -2094,7 +2143,7 @@ public partial class PrincipiaPluginAdapter
                 UnityEngine.GUILayout.ExpandWidth(true));
             if (UnityEngine.GUILayout.Button("Clear",
                                              UnityEngine.GUILayout.Width(50))) {
-              selecting_active_vessel_target_ = false;
+              target_vessel_toggle_.Value = false;
               FlightGlobals.fetch.SetVesselTarget(null);
             }
             if (UnityEngine.GUILayout.Button("Switch To")) {
@@ -2106,7 +2155,7 @@ public partial class PrincipiaPluginAdapter
           }
         }
       } else {
-        selecting_active_vessel_target_ = false;
+        target_vessel_toggle_.Value = false;
       }
       ReferenceFrameSelection();
       if (PluginRunning()) {
@@ -2223,19 +2272,19 @@ public partial class PrincipiaPluginAdapter
   }
 
   private void KSPFeatures() {
-    display_patched_conics_ = UnityEngine.GUILayout.Toggle(
-        value : display_patched_conics_,
+    patched_conics_toggle_.Value = UnityEngine.GUILayout.Toggle(
+        value : patched_conics_toggle_.Value,
         text  : "Display patched conics (do not use for flight planning!)");
-    Sun.Instance.sunFlare.enabled =
-        UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
-                                     text  : "Enable Sun lens flare");
+    sun_lens_flare_toggle_.Value = UnityEngine.GUILayout.Toggle(
+        value : sun_lens_flare_toggle_.Value,
+        text  : "Enable Sun lens flare");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
       using (new HorizontalLayout()) {
-        selecting_target_celestial_ = UnityEngine.GUILayout.Toggle(
-            selecting_target_celestial_, "Select target celestial...");
-        if (selecting_target_celestial_) {
-          selecting_active_vessel_target_ = false;
+        target_celestial_toggle_.Value = UnityEngine.GUILayout.Toggle(
+            target_celestial_toggle_.Value, "Select target celestial...");
+        if (target_celestial_toggle_.Value) {
+          target_vessel_toggle_.Value = false;
         }
         CelestialBody target_celestial =
             FlightGlobals.fetch.VesselTarget as CelestialBody;
@@ -2244,13 +2293,13 @@ public partial class PrincipiaPluginAdapter
                                       UnityEngine.GUILayout.ExpandWidth(true));
           if (UnityEngine.GUILayout.Button("Clear",
                                            UnityEngine.GUILayout.Width(50))) {
-            selecting_target_celestial_ = false;
+            target_celestial_toggle_.Value = false;
             FlightGlobals.fetch.SetVesselTarget(null);
           }
         }
       }
     } else {
-      selecting_target_celestial_ = false;
+      target_celestial_toggle_.Value = false;
     }
   }
 

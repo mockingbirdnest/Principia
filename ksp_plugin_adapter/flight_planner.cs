@@ -26,13 +26,14 @@ class FlightPlanner : WindowRenderer {
                         TimeSpan.FromSeconds(
                             value - plugin_.FlightPlanGetInitialTime(
                                         vessel_.id.ToString()))));
-
+    
+    InitializeToolbarToggle();
   }
 
   protected override void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (show_planner_) {
+    if (show_planner_toggle_.Value) {
       window_rectangle_ = UnityEngine.GUILayout.Window(
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
@@ -51,9 +52,21 @@ class FlightPlanner : WindowRenderer {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button("Flight plan...")) {
-      show_planner_ = !show_planner_;
+      show_planner_toggle_.Value = !show_planner_toggle_.Value;
     }
     UnityEngine.GUI.skin = old_skin;
+  }
+  
+  // Toolbar toggle
+  private static ToolbarToggle show_planner_toggle_;
+
+  private void InitializeToolbarToggle() {
+    if (show_planner_toggle_ == null) {
+      show_planner_toggle_ = new ToolbarToggle(
+          id: "FlightPlan",
+          tooltip: "Flight Plan",
+          visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+    }
   }
 
   private void RenderPlanner(int window_id) {
@@ -370,7 +383,6 @@ class FlightPlanner : WindowRenderer {
 
   private DifferentialSlider final_time_;
 
-  private bool show_planner_ = false;
   private bool show_guidance_ = false;
   private ManeuverNode guidance_node_;
   private UnityEngine.Rect window_rectangle_;

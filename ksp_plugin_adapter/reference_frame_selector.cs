@@ -57,6 +57,8 @@ class ReferenceFrameSelector : WindowRenderer {
     on_change_(FrameParameters());
     window_rectangle_.x = UnityEngine.Screen.width / 2;
     window_rectangle_.y = UnityEngine.Screen.height / 3;
+
+    InitializeToolbarToggle();
   }
 
   public FrameType frame_type { get; private set; }
@@ -259,7 +261,19 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public void Hide() {
-    show_selector_ = false;
+    show_selector_toggle_.Value = false;
+  }
+
+  // Toolbar toggle
+  private static ToolbarToggle show_selector_toggle_;
+
+  private void InitializeToolbarToggle() {
+    if (show_selector_toggle_ == null) {
+      show_selector_toggle_ = new ToolbarToggle(
+          id: "PlottingFrame",
+          tooltip: "Plotting Frame Selection",
+          visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION));
+    }
   }
 
   public void RenderButton() {
@@ -267,7 +281,7 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
-      show_selector_ = !show_selector_;
+      show_selector_toggle_.Value = !show_selector_toggle_.Value;
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -275,7 +289,7 @@ class ReferenceFrameSelector : WindowRenderer {
   protected override void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (show_selector_) {
+    if (show_selector_toggle_.Value) {
       window_rectangle_ = UnityEngine.GUILayout.Window(
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
@@ -396,7 +410,6 @@ class ReferenceFrameSelector : WindowRenderer {
   private Callback on_change_;
   // Not owned.
   private IntPtr plugin_;
-  private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private readonly string name_;
