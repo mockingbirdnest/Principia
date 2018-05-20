@@ -50,6 +50,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
 using quantities::Length;
+using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::Speed;
 using quantities::si::Radian;
@@ -451,7 +452,7 @@ void SolarSystem<Frame>::ReplaceElements(
 template<typename Frame>
 void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK(body.has_name());
-  CHECK(body.has_gravitational_parameter()) << body.name();
+  CHECK(body.has_gravitational_parameter() || body.has_mass()) << body.name();
   CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
            body.has_axis_right_ascension()) << body.name();
@@ -468,9 +469,19 @@ template<typename Frame>
 not_null<std::unique_ptr<MassiveBody::Parameters>>
 SolarSystem<Frame>::MakeMassiveBodyParameters(
     serialization::GravityModel::Body const& body) {
-  return make_not_null_unique<MassiveBody::Parameters>(
-      body.name(),
-      ParseQuantity<GravitationalParameter>(body.gravitational_parameter()));
+  switch (body.massive_case()) {
+    case serialization::GravityModel::Body::kGravitationalParameter:
+      return make_not_null_unique<MassiveBody::Parameters>(
+          body.name(),
+          ParseQuantity<GravitationalParameter>(
+              body.gravitational_parameter()));
+    case serialization::GravityModel::Body::kMass:
+      return make_not_null_unique<MassiveBody::Parameters>(
+          body.name(), ParseQuantity<Mass>(body.mass()));
+    case serialization::GravityModel::Body::MASSIVE_NOT_SET:
+      LOG(FATAL) << body.name();
+  }
+  LOG(FATAL) << body.name();
 }
 
 template<typename Frame>

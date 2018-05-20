@@ -67,6 +67,7 @@ using internal_frames::ICRFJ2000Equator;
 using internal_frames::ICRFJ200EquatorialToEcliptic;
 using internal_frames::SolarSystemBarycentreEcliptic;
 using internal_frames::SolarSystemBarycentreEquator;
+using internal_frames::Trappist;
 
 }  // namespace astronomy
 }  // namespace principia

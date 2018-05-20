@@ -1,6 +1,6 @@
 initial_state {
   solar_system_frame : TRAPPIST
-  epoch : "JD2457322.515310000"
+  epoch : "JD2457282.805700000"
   keplerian {
     body {
       name : "Trappist-1A"

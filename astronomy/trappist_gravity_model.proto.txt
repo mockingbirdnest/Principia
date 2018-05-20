@@ -1,9 +1,10 @@
-﻿gravity_model {
+gravity_model {
+  solar_system_frame : TRAPPIST
+
   # Star.
   body {
-    name        : "Trappist-1A"
-    mass        : "0.0890 M☉"
-    mean_radius : "0.1210 R☉"
+    name : "Trappist-1A"
+    mass : "0.0890 M☉"
   }
 
   # Planets.
