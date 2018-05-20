@@ -53,6 +53,7 @@ using quantities::Length;
 using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::Speed;
+using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
 
@@ -287,13 +288,20 @@ KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
     serialization::InitialState::Keplerian::Body::Elements const& elements) {
   KeplerianElements<Frame> result;
   result.eccentricity = elements.eccentricity();
-  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
-  if (elements.has_semimajor_axis()) {
-    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
-  }
-  if (elements.has_mean_motion()) {
-    result.mean_motion =
-        ParseQuantity<AngularFrequency>(elements.mean_motion());
+  switch (elements.category2_case()) {
+    case serialization::InitialState::Keplerian::Body::Elements::kSemimajorAxis:
+      result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::kMeanMotion:
+      result.mean_motion =
+          ParseQuantity<AngularFrequency>(elements.mean_motion());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::kPeriod:
+      result.period = ParseQuantity<Time>(elements.period());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::
+         CATEGORY2_NOT_SET:
+      LOG(FATAL) << elements.DebugString();
   }
   result.inclination = ParseQuantity<Angle>(elements.inclination());
   result.longitude_of_ascending_node =

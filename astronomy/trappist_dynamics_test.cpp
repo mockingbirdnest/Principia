@@ -35,7 +35,7 @@ class TrappistDynamicsTest : public ::testing::Test {
  protected:
 };
 
-TEST_F(TrappistDynamicsTest, Smoke) {
+TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
   SolarSystem<Trappist> trappist_system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -46,7 +46,7 @@ TEST_F(TrappistDynamicsTest, Smoke) {
       Ephemeris<Trappist>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                              Position<Trappist>>(),
-          /*step=*/0.08 * Day));
+          /*step=*/0.07 * Day));
 
   Instant const a_century_later = trappist_system.epoch() + 100 * JulianYear;
   ephemeris->Prolong(a_century_later);

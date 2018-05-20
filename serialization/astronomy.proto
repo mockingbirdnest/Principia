@@ -50,10 +50,12 @@ message InitialState {
   message Keplerian {
     message Body {
       message Elements {
-        // Exactly one of the optional fields below must be present.
         required double eccentricity = 1;
-        optional string semimajor_axis = 2;
-        optional string mean_motion = 3;
+        oneof category2 {  // See kepler_orbit.hpp.
+          string semimajor_axis = 2;
+          string mean_motion = 3;
+          string period = 8;
+        }
         required string inclination = 4;
         required string longitude_of_ascending_node = 5;
         required string argument_of_periapsis = 6;
