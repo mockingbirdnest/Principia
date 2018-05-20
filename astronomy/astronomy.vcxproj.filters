@@ -100,7 +100,7 @@
     <Text Include="trappist_gravity_model.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="trappist_initial_state.proto.txt">
+    <Text Include="trappist_initial_state_jd_2457322_515310000.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>
@@ -175,6 +175,9 @@
     </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trappist_dynamics_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

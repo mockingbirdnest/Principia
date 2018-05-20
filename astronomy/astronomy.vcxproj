@@ -36,7 +36,7 @@
     <Text Include="test_initial_state_two_bodies_circular.proto.txt" />
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
     <Text Include="trappist_gravity_model.proto.txt" />
-    <Text Include="trappist_initial_state.proto.txt" />
+    <Text Include="trappist_initial_state_jd_2457322_515310000.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />
@@ -63,6 +63,7 @@
     <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
+    <ClCompile Include="trappist_dynamics_test.cpp" />
     <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
 </Project>

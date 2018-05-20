@@ -153,10 +153,11 @@ message Frame {
     FRENET = 1;
   }
 
-  // The frame tags used in the solar system simulation.
+  // The frame tags used in the astronomical simulations.
   enum SolarSystemTag {
     ICRF_J2000_ECLIPTIC = 1;
     ICRF_J2000_EQUATOR = 2;
+    TRAPPIST = 3;
   }
 
   // The frame tags used in tests.

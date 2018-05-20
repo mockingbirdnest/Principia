@@ -86,7 +86,7 @@ using ::testing::Gt;
 
 namespace astronomy {
 
-class SolarSystemDynamicsTest : public testing::Test {
+class SolarSystemDynamicsTest : public ::testing::Test {
  protected:
   struct OrbitError final {
     Angle separation_per_orbit;

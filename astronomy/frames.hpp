@@ -42,6 +42,11 @@ using ICRFJ2000Equator =
     Frame<serialization::Frame::SolarSystemTag,
           serialization::Frame::ICRF_J2000_EQUATOR, true>;
 
+//TODO(phl):comment
+using Trappist =
+    Frame<serialization::Frame::SolarSystemTag,
+          serialization::Frame::TRAPPIST, true>;
+
 // Rotation around the common x axis mapping equatorial coordinates to ecliptic
 // coordinates.  The angle is the one defined by the XVIth General Assembly of
 // the International Astronomical Union.
