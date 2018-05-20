@@ -82,9 +82,6 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
   EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
   principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
   EXPECT_THAT(navigation_frame, IsNull());
-  EXPECT_CALL(renderer, GetPlottingFrame())
-      .WillOnce(Return(mock_navigation_frame));
-  EXPECT_EQ(mock_navigation_frame, principia__GetPlottingFrame(plugin_.get()));
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
