@@ -5,6 +5,7 @@
 
 #include <array>
 #include <string>
+#include "quantities/astronomy.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
@@ -115,6 +116,13 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Kilo(si::Metre));
   } else if (s == "au") {
     return Unit(si::AstronomicalUnit);
+  // Units of mass.
+  } else if (s == "kg") {
+    return Unit(si::Kilogram);
+  } else if (s == u8"M☉") {
+    return Unit(astronomy::SolarMass);
+  } else if (s == u8"M🜨") {
+    return Unit(astronomy::EarthMass);
   // Units of time.
   } else if (s == "ms") {
     return Unit(si::Milli(si::Second));
