@@ -6,11 +6,13 @@
 #include "base/array.hpp"
 #include "base/hexadecimal.hpp"
 #include "glog/logging.h"
+#include "base/serialization.hpp"
 
 namespace principia {
 
 using base::HexadecimalEncode;
-using base::UniqueBytes;
+using base::SerializeAsBytes;
+using base::UniqueArray;
 
 namespace journal {
 
@@ -23,15 +25,14 @@ Recorder::~Recorder() {
   stream_.close();
 }
 
-void Recorder::Write(serialization::Method const& method) {
-  CHECK_LT(0, method.ByteSize()) << method.DebugString();
-  UniqueBytes bytes(method.ByteSize());
-  method.SerializeToArray(bytes.data.get(), static_cast<int>(bytes.size));
+void Recorder::WriteAtConstruction(serialization::Method const& method) {
+  lock_.lock();
+  WriteLocked(method);
+}
 
-  auto const hexadecimal = HexadecimalEncode(bytes.get(),
-                                             /*null_terminated=*/true);
-  stream_ << hexadecimal.data.get() << "\n";
-  stream_.flush();
+void Recorder::WriteAtDestruction(serialization::Method const& method) {
+  WriteLocked(method);
+  lock_.unlock();
 }
 
 void Recorder::Activate(base::not_null<Recorder*> const journal) {
@@ -47,6 +48,14 @@ void Recorder::Deactivate() {
 
 bool Recorder::IsActivated() {
   return active_recorder_ != nullptr;
+}
+
+void Recorder::WriteLocked(serialization::Method const& method) {
+  CHECK_LT(0, method.ByteSize()) << method.DebugString();
+  auto const hexadecimal = HexadecimalEncode(SerializeAsBytes(method).get(),
+                                             /*null_terminated=*/true);
+  stream_ << hexadecimal.data.get() << "\n";
+  stream_.flush();
 }
 
 thread_local Recorder* Recorder::active_recorder_ = nullptr;

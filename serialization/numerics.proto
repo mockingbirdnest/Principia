@@ -5,6 +5,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 // We would like to use Cyrillic for the name of this message, but the protobuf
 // language only supports ASCII in identifiers.  Sigh.  Blame Kenton.
 message ChebyshevSeries {

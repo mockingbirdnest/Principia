@@ -7,6 +7,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message BarycentricRotatingDynamicFrame {
   extend DynamicFrame {
     optional BarycentricRotatingDynamicFrame extension = 6001;

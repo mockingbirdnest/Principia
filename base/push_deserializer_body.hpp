@@ -14,7 +14,7 @@ namespace base {
 namespace internal_push_deserializer {
 
 inline DelegatingArrayInputStream::DelegatingArrayInputStream(
-    std::function<Bytes()> on_empty)
+    std::function<Array<std::uint8_t>()> on_empty)
     : on_empty_(std::move(on_empty)),
       byte_count_(0),
       position_(0),
@@ -101,8 +101,15 @@ inline PushDeserializer::~PushDeserializer() {
 inline void PushDeserializer::Start(
     not_null<std::unique_ptr<google::protobuf::Message>> message,
     std::function<void(google::protobuf::Message const&)> done) {
+  owned_message_ = std::move(message);
+  Start(owned_message_.get(), std::move(done));
+}
+
+inline void PushDeserializer::Start(
+    not_null<google::protobuf::Message*> const message,
+    std::function<void(google::protobuf::Message const&)> done) {
   CHECK(thread_ == nullptr);
-  message_ = std::move(message);
+  message_ = message;
   thread_ = std::make_unique<std::thread>([this, done]() {
     // It is a well-known annoyance that, in order to set the total byte limit,
     // we have to copy code from MessageLite::ParseFromZeroCopyStream.  Blame
@@ -128,14 +135,14 @@ inline void PushDeserializer::Start(
   });
 }
 
-inline void PushDeserializer::Push(Bytes const bytes,
+inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
                                    std::function<void()> done) {
   // Slice the incoming data in chunks of size at most |chunk_size|.  Release
   // the lock after each chunk to give the deserializer a chance to run.  This
   // method should be called with |bytes| of size 0 to terminate the
   // deserialization, but it never generates a chunk of size 0 in other
   // circumstances.  The |done| callback is attached to the last chunk.
-  Bytes current = bytes;
+  Array<std::uint8_t> current = bytes;
   CHECK_LE(0, bytes.size);
 
   // Decide how much data we are going to push on the queue.  In the presence of
@@ -169,28 +176,28 @@ inline void PushDeserializer::Push(Bytes const bytes,
   } while (!is_last);
 }
 
-inline void PushDeserializer::Push(UniqueBytes bytes) {
-  Bytes const unowned_bytes = bytes.get();
+inline void PushDeserializer::Push(UniqueArray<std::uint8_t> bytes) {
+  Array<std::uint8_t> const unowned_bytes = bytes.get();
   bytes.data.release();
   Push(unowned_bytes,
        /*done=*/[b = unowned_bytes.data]() { delete[] b; });
 }
 
-inline Bytes PushDeserializer::Pull() {
-  Bytes result;
+inline Array<std::uint8_t> PushDeserializer::Pull() {
+  Array<std::uint8_t> result;
   {
     std::unique_lock<std::mutex> l(lock_);
     queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
-    // The front of |done_| is the callback for the |Bytes| object that was just
-    // processed.  Run it now.
+    // The front of |done_| is the callback for the |Array<std::uint8_t>| object
+    // that was just processed.  Run it now.
     CHECK(!done_.empty());
     auto const done = done_.front();
     if (done != nullptr) {
       done();
     }
     done_.pop();
-    // Get the next |Bytes| object to process and remove it from |queue_|.
-    // Uncompress it if needed.
+    // Get the next |Array<std::uint8_t>| object to process and remove it from
+    // |queue_|.  Uncompress it if needed.
     auto const& front = queue_.front();
     if (front.size == 0 || compressor_ == nullptr) {
       result = front;

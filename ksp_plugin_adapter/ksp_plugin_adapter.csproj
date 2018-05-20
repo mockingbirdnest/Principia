@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Debug\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_4_2</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_4_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
@@ -27,7 +27,7 @@
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Release\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_4_2</DefineConstants>
+    <DefineConstants>TRACE;KSP_VERSION_1_4_3</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
@@ -44,49 +44,38 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release KSP 1.2.2|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Release\1.2.2 Compatibility\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_2_2</DefineConstants>
-    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\KSP Assemblies\1.4.2\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\KSP Assemblies\1.4.2\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.3\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -142,6 +131,8 @@
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="culture.cs" />
     <Compile Include="differential_slider.cs" />
+    <Compile Include="disposable.cs" />
+    <Compile Include="disposable_marshaller.cs" />
     <Compile Include="flight_planner.cs" />
     <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
@@ -157,6 +148,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="reference_frame_selector.cs" />
     <Compile Include="utf8_marshaler.cs" />
+    <Compile Include="utf16_marshaler.cs" />
     <Compile Include="window_renderer.cs" />
   </ItemGroup>
   <ItemGroup>

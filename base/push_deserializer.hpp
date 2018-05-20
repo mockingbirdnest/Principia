@@ -28,7 +28,8 @@ using google::compression::Compressor;
 class DelegatingArrayInputStream
     : public google::protobuf::io::ZeroCopyInputStream {
  public:
-  explicit DelegatingArrayInputStream(std::function<Bytes()> on_empty);
+  explicit DelegatingArrayInputStream(
+      std::function<Array<std::uint8_t>()> on_empty);
 
   // The ZeroCopyInputStream API.
   bool Next(void const** data, int* size) override;
@@ -37,8 +38,8 @@ class DelegatingArrayInputStream
   std::int64_t ByteCount() const override;
 
  private:
-  Bytes bytes_;
-  std::function<Bytes()> on_empty_;
+  Array<std::uint8_t> bytes_;
+  std::function<Array<std::uint8_t>()> on_empty_;
 
   std::int64_t byte_count_;
   std::int64_t position_;
@@ -71,6 +72,8 @@ class PushDeserializer final {
   // 0).
   void Start(not_null<std::unique_ptr<google::protobuf::Message>> message,
              std::function<void(google::protobuf::Message const&)> done);
+  void Start(not_null<google::protobuf::Message*> message,
+             std::function<void(google::protobuf::Message const&)> done);
 
   // Pushes in the internal queue chunks of data that will be extracted by
   // |Pull|.  Splits |bytes| into chunks of at most |chunk_size|.  May block to
@@ -79,18 +82,21 @@ class PushDeserializer final {
   // serialization of |bytes| is complete.  The client must ensure that |bytes|
   // remains live until the call to |done|.  It may reclaim any memory
   // associated with |bytes| in |done|.
-  void Push(Bytes bytes, std::function<void()> done);
+  void Push(Array<std::uint8_t> bytes, std::function<void()> done);
 
   // Same as above but ownership is taken.
-  void Push(UniqueBytes bytes);
+  void Push(UniqueArray<std::uint8_t> bytes);
 
  private:
   // Obtains the next chunk of data from the internal queue.  Blocks if no data
   // is available.  Used as a callback for the underlying
   // |DelegatingArrayOutputStream|.
-  Bytes Pull();
+  Array<std::uint8_t> Pull();
 
-  std::unique_ptr<google::protobuf::Message> message_;
+  // |owned_message_| is null if this object doesn't own the message.
+  // |message_| is non-null after Start.
+  std::unique_ptr<google::protobuf::Message> owned_message_;
+  google::protobuf::Message* message_ = nullptr;
 
   std::unique_ptr<Compressor> const compressor_;
 
@@ -106,7 +112,7 @@ class PushDeserializer final {
   // The number of chunks passed at construction, used to size |data_|.
   int const number_of_chunks_;
 
-  UniqueBytes uncompressed_data_;
+  UniqueArray<std::uint8_t> uncompressed_data_;
 
   DelegatingArrayInputStream stream_;
   std::unique_ptr<std::thread> thread_;
@@ -115,12 +121,12 @@ class PushDeserializer final {
   std::mutex lock_;
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
-  // The |queue_| contains the |Bytes| object filled by |Push| and not yet
-  // consumed by |Pull|.  The |done_| queue contains the callbacks.  The two
-  // queues are out of step: an element is removed from |queue_| by |Pull| when
-  // it returns a chunk to the stream, but the corresponding callback is removed
-  // from |done_| (and executed) when |Pull| returns.
-  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+  // The |queue_| contains the |Array<std::uint8_t>| object filled by |Push| and
+  // not yet consumed by |Pull|.  The |done_| queue contains the callbacks.  The
+  // two queues are out of step: an element is removed from |queue_| by |Pull|
+  // when it returns a chunk to the stream, but the corresponding callback is
+  // removed from |done_| (and executed) when |Pull| returns.
+  std::queue<Array<std::uint8_t>> queue_ GUARDED_BY(lock_);
   std::queue<std::function<void()>> done_ GUARDED_BY(lock_);
 };
 

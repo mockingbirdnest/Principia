@@ -20,6 +20,8 @@
 
 #include <cstdint>
 
+#include "base/array.hpp"
+
 namespace principia {
 namespace base {
 
@@ -37,8 +39,9 @@ inline std::uint64_t FingerprintCat2011(std::uint64_t const fp1,
 
 // This should be better (collision-wise) than the default hash<std::string>,
 // without being much slower. It never returns 0 or 1.
+// TODO(egg): benchmark and remove the gratuitous strict aliasing violation.
 inline std::uint64_t Fingerprint2011(char const* bytes, std::size_t const len) {
-  // Some big prime numer.
+  // Some big prime number.
   std::uint64_t fp = 0xA5B85C5E198ED849u;
   char const* end = bytes + len;
   while (bytes + 8 <= end) {
@@ -55,6 +58,10 @@ inline std::uint64_t Fingerprint2011(char const* bytes, std::size_t const len) {
     bytes++;
   }
   return FingerprintCat2011(fp, last_bytes);
+}
+
+inline std::uint64_t Fingerprint2011(Array<std::uint8_t const> const bytes) {
+  return Fingerprint2011(reinterpret_cast<char const*>(bytes.data), bytes.size);
 }
 
 }  // namespace base

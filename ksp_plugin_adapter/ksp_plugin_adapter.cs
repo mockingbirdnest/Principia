@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String next_release_name_ = "Darboux";
-  private const int next_release_lunation_number_ = 227;
+  private const String next_release_name_ = "Dedekind";
+  private const int next_release_lunation_number_ = 228;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2018, 05, 15, 11, 48, 00, TimeSpan.Zero);
+      new DateTimeOffset(2018, 06, 13, 19, 43, 00, TimeSpan.Zero);
 
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
@@ -242,21 +242,16 @@ public partial class PrincipiaPluginAdapter
           "The Principia DLL failed to load.\n" + load_error;
       UnityEngine.Debug.LogError(bad_installation_popup_);
     }
-#if KSP_VERSION_1_2_2
-    if (Versioning.version_major != 1 ||
-        Versioning.version_minor != 2 ||
-        Versioning.Revision != 2) {
-      string expected_version = "1.2.2";
-#elif KSP_VERSION_1_3_1
+#if KSP_VERSION_1_3_1
     if (Versioning.version_major != 1 ||
         Versioning.version_minor != 3 ||
         Versioning.Revision != 1) {
       string expected_version = "1.3.1";
-#elif KSP_VERSION_1_4_2
+#elif KSP_VERSION_1_4_3
     if (!(Versioning.version_major == 1 &&
           Versioning.version_minor == 4 &&
-          (Versioning.Revision == 1 || Versioning.Revision == 2))) {
-      string expected_version = "1.4.2 and 1.4.1";
+          (Versioning.Revision >= 1 && Versioning.Revision <= 3))) {
+      string expected_version = "1.4.3, 1.4.2, and 1.4.1";
 #endif
       Log.Fatal("Unexpected KSP version " + Versioning.version_major + "." +
                 Versioning.version_minor + "." + Versioning.Revision +
@@ -500,10 +495,10 @@ public partial class PrincipiaPluginAdapter
         path;
     if (File.Exists(full_path)) {
       var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_4_2
+#if KSP_VERSION_1_4_3
       bool success = UnityEngine.ImageConversion.LoadImage(
           texture2d, File.ReadAllBytes(full_path));
-#elif KSP_VERSION_1_2_2 || KSP_VERSION_1_3_1
+#elif KSP_VERSION_1_3_1
       bool success = texture2d.LoadImage(
           File.ReadAllBytes(full_path));
 #endif
@@ -600,8 +595,9 @@ public partial class PrincipiaPluginAdapter
       String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        serialization = plugin_.SerializePlugin(ref serializer,
-                                                serialization_compression_);
+        serialization = plugin_.SerializePluginHexadecimal(
+                            ref serializer,
+                            serialization_compression_);
         if (serialization == null) {
           break;
         }
@@ -628,17 +624,17 @@ public partial class PrincipiaPluginAdapter
       String[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
-        Interface.DeserializePlugin(serialization,
-                                    serialization.Length,
-                                    ref deserializer,
-                                    ref plugin_,
-                                    serialization_compression_);
+        Interface.DeserializePluginHexadecimal(serialization,
+                                               serialization.Length,
+                                               ref deserializer,
+                                               ref plugin_,
+                                               serialization_compression_);
       }
-      Interface.DeserializePlugin("",
-                                  0,
-                                  ref deserializer,
-                                  ref plugin_,
-                                  serialization_compression_);
+      Interface.DeserializePluginHexadecimal("",
+                                             0,
+                                             ref deserializer,
+                                             ref plugin_,
+                                             serialization_compression_);
       if (serialization_compression_ == "") {
         serialization_compression_ = "gipfeli";
       }
@@ -673,7 +669,7 @@ public partial class PrincipiaPluginAdapter
       PopupDialog.SpawnPopupDialog(
           anchorMin           : default(UnityEngine.Vector2),
           anchorMax           : default(UnityEngine.Vector2),
-#if KSP_VERSION_1_3_1 || KSP_VERSION_1_4_2
+#if KSP_VERSION_1_3_1 || KSP_VERSION_1_4_3
           dialogName          : "Principia error",
 #endif
           title               : "Principia",
@@ -1280,13 +1276,15 @@ public partial class PrincipiaPluginAdapter
 
     // Advance the lagging vessels and kill those which collided with a
     // celestial.
-    IntPtr collided_vessels;
-    plugin_.CatchUpLaggingVessels(out collided_vessels);
-    for (; !collided_vessels.IteratorAtEnd();
-         collided_vessels.IteratorIncrement()) {
-      Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
-      Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
-      vessel?.Die();
+    {
+      DisposableIterator collided_vessels;
+      plugin_.CatchUpLaggingVessels(out collided_vessels);
+      for (; !collided_vessels.IteratorAtEnd();
+            collided_vessels.IteratorIncrement()) {
+        Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+        Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
+        vessel?.Die();
+      }
     }
 
     UpdatePredictions();
@@ -1436,12 +1434,13 @@ public partial class PrincipiaPluginAdapter
       var all_collided_vessels = new HashSet<Vessel>();
       foreach (var f in vessel_futures_) {
         var future = f;
-        IntPtr collided_vessels;
+        DisposableIterator collided_vessels;
         plugin_.FutureWaitForVesselToCatchUp(ref future,
                                              out collided_vessels);
         for (; !collided_vessels.IteratorAtEnd();
              collided_vessels.IteratorIncrement()) {
-          Guid vessel_guid = new Guid(collided_vessels.IteratorGetVesselGuid());
+          Guid vessel_guid =
+              new Guid(collided_vessels.IteratorGetVesselGuid());
           Vessel vessel = FlightGlobals.FindVessel(vessel_guid);
           all_collided_vessels.Add(vessel);
         }
@@ -1749,55 +1748,51 @@ public partial class PrincipiaPluginAdapter
         plugin_.HasVessel(main_vessel_guid);
     if (ready_to_draw_active_vessel_trajectory) {
       XYZ sun_world_position = (XYZ)Planetarium.fetch.Sun.position;
-      IntPtr planetarium = GLLines.NewPlanetarium(plugin_, sun_world_position);
-      try {
+      using (DisposablePlanetarium planetarium =
+                GLLines.NewPlanetarium(plugin_, sun_world_position)) {
         GLLines.Draw(() => {
-          {
-            IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPsychohistory(
-                    plugin_,
-                    чебышёв_plotting_method_,
-                    main_vessel_guid);
-            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Lime,
-                                          GLLines.Style.FADED);
+          using (DisposableIterator rp2_lines_iterator =
+                    planetarium.PlanetariumPlotPsychohistory(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid)) {
+            GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                 XKCDColors.Lime,
+                                 GLLines.Style.FADED);
           }
           RenderPredictionMarkers(main_vessel_guid, sun_world_position);
-          {
-            IntPtr rp2_lines_iterator =
-                planetarium.PlanetariumPlotPrediction(
-                    plugin_,
-                    чебышёв_plotting_method_,
-                    main_vessel_guid);
-            GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                          XKCDColors.Fuchsia,
-                                          GLLines.Style.SOLID);
+          using (DisposableIterator rp2_lines_iterator =
+                    planetarium.PlanetariumPlotPrediction(
+                        plugin_,
+                        чебышёв_plotting_method_,
+                        main_vessel_guid)) {
+            GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                 XKCDColors.Fuchsia,
+                                 GLLines.Style.SOLID);
           }
           string target_id =
               FlightGlobals.fetch.VesselTarget?.GetVessel()?.id.ToString();
           if (FlightGlobals.ActiveVessel != null &&
               !plotting_frame_selector_.get().target_override &&
               target_id != null && plugin_.HasVessel(target_id)) {
-            {
-              IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPsychohistory(
-                      plugin_,
-                      чебышёв_plotting_method_,
-                      target_id);
-              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.Goldenrod,
-                                            GLLines.Style.FADED);
+            using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotPsychohistory(
+                          plugin_,
+                          чебышёв_plotting_method_,
+                          target_id)) {
+              GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                   XKCDColors.Goldenrod,
+                                   GLLines.Style.FADED);
             }
             RenderPredictionMarkers(target_id, sun_world_position);
-            {
-              IntPtr rp2_lines_iterator =
-                  planetarium.PlanetariumPlotPrediction(
-                      plugin_,
-                      чебышёв_plotting_method_,
-                      target_id);
-              GLLines.PlotAndDeleteRP2Lines(rp2_lines_iterator,
-                                            XKCDColors.LightMauve,
-                                            GLLines.Style.SOLID);
+            using (DisposableIterator rp2_lines_iterator =
+                      planetarium.PlanetariumPlotPrediction(
+                          plugin_,
+                          чебышёв_plotting_method_,
+                          target_id)) {
+              GLLines.PlotRP2Lines(rp2_lines_iterator,
+                                   XKCDColors.LightMauve,
+                                   GLLines.Style.SOLID);
             }
           }
           if (plugin_.FlightPlanExists(main_vessel_guid)) {
@@ -1807,53 +1802,53 @@ public partial class PrincipiaPluginAdapter
                 plugin_.FlightPlanNumberOfSegments(main_vessel_guid);
             for (int i = 0; i < number_of_segments; ++i) {
               bool is_burn = i % 2 == 1;
-              var rendered_segments = plugin_.FlightPlanRenderedSegment(
-                  main_vessel_guid, sun_world_position, i);
-              if (rendered_segments.IteratorAtEnd()) {
-                Log.Info("Skipping segment " + i);
-                continue;
-              }
-              Vector3d position_at_start =
-                  (Vector3d)rendered_segments.
-                      IteratorGetDiscreteTrajectoryXYZ();
-              {
-                IntPtr rp2_lines_iterator =
-                    planetarium.PlanetariumPlotFlightPlanSegment(
-                        plugin_,
-                        чебышёв_plotting_method_,
-                        main_vessel_guid,
-                        i);
-                GLLines.PlotAndDeleteRP2Lines(
-                    rp2_lines_iterator,
-                    is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
-                    is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
-              }
-              if (is_burn) {
-                int manoeuvre_index = i / 2;
-                NavigationManoeuvreFrenetTrihedron manoeuvre =
-                    plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
-                        main_vessel_guid,
-                        manoeuvre_index);
-                double scale = (ScaledSpace.ScaledToLocalSpace(
-                                    MapView.MapCamera.transform.position) -
-                                position_at_start).magnitude * 0.015;
-                Action<XYZ, UnityEngine.Color> add_vector =
-                    (world_direction, colour) => {
-                      UnityEngine.GL.Color(colour);
-                      GLLines.AddSegment(
-                          position_at_start,
-                          position_at_start +
-                              scale * (Vector3d)world_direction);
-                    };
-                add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
-                add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
-                add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+              using (DisposableIterator rendered_segments =
+                        plugin_.FlightPlanRenderedSegment(main_vessel_guid,
+                                                          sun_world_position,
+                                                          i)) {
+                if (rendered_segments.IteratorAtEnd()) {
+                  Log.Info("Skipping segment " + i);
+                  continue;
+                }
+                Vector3d position_at_start =
+                    (Vector3d)rendered_segments.
+                        IteratorGetDiscreteTrajectoryXYZ();
+                using (DisposableIterator rp2_lines_iterator =
+                          planetarium.PlanetariumPlotFlightPlanSegment(
+                              plugin_,
+                              чебышёв_plotting_method_,
+                              main_vessel_guid,
+                              i)) {
+                  GLLines.PlotRP2Lines(
+                      rp2_lines_iterator,
+                      is_burn ? XKCDColors.Pink : XKCDColors.PeriwinkleBlue,
+                      is_burn ? GLLines.Style.SOLID : GLLines.Style.DASHED);
+                }
+                if (is_burn) {
+                  int manoeuvre_index = i / 2;
+                  NavigationManoeuvreFrenetTrihedron manoeuvre =
+                      plugin_.FlightPlanGetManoeuvreFrenetTrihedron(
+                          main_vessel_guid,
+                          manoeuvre_index);
+                  double scale = (ScaledSpace.ScaledToLocalSpace(
+                                      MapView.MapCamera.transform.position) -
+                                  position_at_start).magnitude * 0.015;
+                  Action<XYZ, UnityEngine.Color> add_vector =
+                      (world_direction, colour) => {
+                        UnityEngine.GL.Color(colour);
+                        GLLines.AddSegment(
+                            position_at_start,
+                            position_at_start +
+                                scale * (Vector3d)world_direction);
+                      };
+                  add_vector(manoeuvre.tangent, XKCDColors.NeonYellow);
+                  add_vector(manoeuvre.normal, XKCDColors.AquaBlue);
+                  add_vector(manoeuvre.binormal, XKCDColors.PurplePink);
+                }
               }
             }
           }
         });
-      } finally {
-        Interface.PlanetariumDelete(ref planetarium);
       }
       map_node_pool_.Update();
     } else {
@@ -1865,9 +1860,9 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       Vessel target = plotting_frame_selector_.get().target_override;
-      IntPtr ascending_nodes_iterator;
-      IntPtr descending_nodes_iterator;
-      IntPtr approaches_iterator;
+      DisposableIterator ascending_nodes_iterator;
+      DisposableIterator descending_nodes_iterator;
+      DisposableIterator approaches_iterator;
       plugin_.RenderedPredictionNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
@@ -1875,19 +1870,19 @@ public partial class PrincipiaPluginAdapter
       plugin_.RenderedPredictionClosestApproaches(vessel_guid,
                                                   sun_world_position,
                                                   out approaches_iterator);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.PREDICTION,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.PREDICTION,
@@ -1896,20 +1891,20 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
-        IntPtr apoapsis_iterator;
-        IntPtr periapsis_iterator;
+        DisposableIterator apoapsis_iterator;
+        DisposableIterator periapsis_iterator;
         plugin_.RenderedPredictionApsides(vessel_guid,
                                           celestial.flightGlobalsIndex,
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : celestial);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.PREDICTION,
@@ -1923,19 +1918,19 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.get().selected_celestial.referenceBody;
-        IntPtr ascending_nodes_iterator;
-        IntPtr descending_nodes_iterator;
+        DisposableIterator ascending_nodes_iterator;
+        DisposableIterator descending_nodes_iterator;
         plugin_.RenderedPredictionNodes(vessel_guid,
                                         sun_world_position,
                                         out ascending_nodes_iterator,
                                         out descending_nodes_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : primary);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             descending_nodes_iterator,
             MapObject.ObjectType.DescendingNode,
             MapNodePool.NodeSource.PREDICTION,
@@ -1949,9 +1944,9 @@ public partial class PrincipiaPluginAdapter
                                        XYZ sun_world_position) {
     if (plotting_frame_selector_.get().target_override) {
       Vessel target = plotting_frame_selector_.get().target_override;
-      IntPtr ascending_nodes_iterator;
-      IntPtr descending_nodes_iterator;
-      IntPtr approaches_iterator;
+      DisposableIterator ascending_nodes_iterator;
+      DisposableIterator descending_nodes_iterator;
+      DisposableIterator approaches_iterator;
       plugin_.FlightPlanRenderedNodes(vessel_guid,
                                       sun_world_position,
                                       out ascending_nodes_iterator,
@@ -1959,19 +1954,19 @@ public partial class PrincipiaPluginAdapter
       plugin_.FlightPlanRenderedClosestApproaches(vessel_guid,
                                                   sun_world_position,
                                                   out approaches_iterator);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           ascending_nodes_iterator,
           MapObject.ObjectType.AscendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           descending_nodes_iterator,
           MapObject.ObjectType.DescendingNode,
           MapNodePool.NodeSource.FLIGHT_PLAN,
           vessel    : target,
           celestial : plotting_frame_selector_.get().selected_celestial);
-      map_node_pool_.RenderAndDeleteMarkers(
+      map_node_pool_.RenderMarkers(
           approaches_iterator,
           MapObject.ObjectType.ApproachIntersect,
           MapNodePool.NodeSource.FLIGHT_PLAN,
@@ -1980,20 +1975,20 @@ public partial class PrincipiaPluginAdapter
     } else {
       foreach (CelestialBody celestial in
                plotting_frame_selector_.get().FixedBodies()) {
-        IntPtr apoapsis_iterator;
-        IntPtr periapsis_iterator;
+        DisposableIterator apoapsis_iterator;
+        DisposableIterator periapsis_iterator;
         plugin_.FlightPlanRenderedApsides(vessel_guid,
                                           celestial.flightGlobalsIndex,
                                           sun_world_position,
                                           out apoapsis_iterator,
                                           out periapsis_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             apoapsis_iterator,
             MapObject.ObjectType.Apoapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
             vessel    : null,
             celestial : celestial);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             periapsis_iterator,
             MapObject.ObjectType.Periapsis,
             MapNodePool.NodeSource.FLIGHT_PLAN,
@@ -2007,19 +2002,19 @@ public partial class PrincipiaPluginAdapter
                             .BODY_CENTRED_PARENT_DIRECTION) {
         var primary =
             plotting_frame_selector_.get().selected_celestial.referenceBody;
-        IntPtr ascending_nodes_iterator;
-        IntPtr descending_nodes_iterator;
+        DisposableIterator ascending_nodes_iterator;
+        DisposableIterator descending_nodes_iterator;
         plugin_.FlightPlanRenderedNodes(vessel_guid,
                                         sun_world_position,
                                         out ascending_nodes_iterator,
                                         out descending_nodes_iterator);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             ascending_nodes_iterator,
             MapObject.ObjectType.AscendingNode,
             MapNodePool.NodeSource.PREDICTION,
             vessel    : null,
             celestial : primary);
-        map_node_pool_.RenderAndDeleteMarkers(
+        map_node_pool_.RenderMarkers(
             descending_nodes_iterator,
             MapObject.ObjectType.DescendingNode,
             MapNodePool.NodeSource.PREDICTION,
@@ -2062,20 +2057,11 @@ public partial class PrincipiaPluginAdapter
         UnityEngine.GUILayout.TextArea(text : "Plugin is not started");
       }
       if (DateTimeOffset.Now > next_release_date_) {
-#if KSP_VERSION_1_2_2
-        UnityEngine.GUILayout.TextArea(
-            "Announcement: the new moon of lunation number " +
-            next_release_lunation_number_ +
-            " has come; please update KSP to version 1.3.1 and download the " +
-            "latest Principia release, " + next_release_name_ + ". Note that " +
-            "RealismOverhaul and RealSolarSystem now support KSP 1.3.1.");
-#else
         UnityEngine.GUILayout.TextArea(
             "Announcement: the new moon of lunation number " +
             next_release_lunation_number_ +
             " has come; please download the latest Principia release, " +
             next_release_name_ + ".");
-#endif
       }
       String version;
       String unused_build_date;

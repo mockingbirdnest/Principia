@@ -320,23 +320,50 @@ void JournalProtoProcessor::ProcessRequiredFixed32Field(
 void JournalProtoProcessor::ProcessRequiredFixed64Field(
     FieldDescriptor const* descriptor) {
   FieldOptions const& options = descriptor->options();
-  CHECK(options.HasExtension(journal::serialization::pointer_to))
-      << descriptor->full_name() << " is missing a (pointer_to) option";
-  std::string const& pointer_to =
-      options.GetExtension(journal::serialization::pointer_to);
+  CHECK(!options.HasExtension(journal::serialization::pointer_to) ||
+        !options.HasExtension(journal::serialization::encoding))
+      << descriptor->full_name()
+      << " cannot have both a (pointer_to) and an (encoding) option";
+  std::string pointer_to;
+  if (options.HasExtension(journal::serialization::pointer_to)) {
+    pointer_to = options.GetExtension(journal::serialization::pointer_to);
+  }
+  if (options.HasExtension(journal::serialization::encoding)) {
+    switch (options.GetExtension(journal::serialization::encoding)) {
+      case journal::serialization::UTF_8:
+        pointer_to = "char const";
+        break;
+      case journal::serialization::UTF_16:
+        pointer_to = "char16_t const";
+        break;
+    }
+  }
+
+  if (options.HasExtension(journal::serialization::disposable)) {
+    CHECK(!options.HasExtension(journal::serialization::is_consumed) ||
+          !options.HasExtension(journal::serialization::is_consumed_if))
+      << descriptor->full_name() << " must not be consumed to be disposable";
+    field_cs_type_[descriptor] =
+        options.GetExtension(journal::serialization::disposable);
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, "
+        "MarshalTypeRef = typeof(" +
+        options.GetExtension(journal::serialization::disposable) +
+        "Marshaller))";
+  } else {
+    field_cs_type_[descriptor] = "IntPtr";
+  }
   if (options.HasExtension(journal::serialization::is_subject)) {
     CHECK(options.GetExtension(journal::serialization::is_subject))
         << descriptor->full_name() << " has incorrect (is_subject) option";
-    field_cs_type_[descriptor] = "this IntPtr";
-  } else {
-    field_cs_type_[descriptor] = "IntPtr";
+    field_cs_type_[descriptor] = "this " + field_cs_type_[descriptor];
   }
   field_cxx_type_[descriptor] = pointer_to + "*";
 
   if (Contains(out_, descriptor) && !Contains(in_out_, descriptor)) {
     CHECK(!options.HasExtension(journal::serialization::is_consumed) &&
           !options.HasExtension(journal::serialization::is_consumed_if))
-        << "out parameter " + descriptor->full_name() + " cannot be consumed";
+        << "out parameter " << descriptor->full_name() << " cannot be consumed";
   }
 
   if (options.HasExtension(journal::serialization::is_consumed)) {
@@ -381,13 +408,22 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
   // Special handlings for produced C-style strings: these are seen from the C#
   // as strings, and marshalled with immediate destruction.
-  if (pointer_to == "char const" &&
+  if (options.HasExtension(journal::serialization::encoding) &&
       (options.HasExtension(journal::serialization::is_produced) ||
        options.HasExtension(journal::serialization::is_produced_if))) {
     field_cs_type_[descriptor] = "String";
-    field_cs_marshal_[descriptor] =
-        "MarshalAs(UnmanagedType.CustomMarshaler, "
-        "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+    switch (options.GetExtension(journal::serialization::encoding)) {
+      case journal::serialization::UTF_8:
+        field_cs_marshal_[descriptor] =
+            "MarshalAs(UnmanagedType.CustomMarshaler, "
+            "MarshalTypeRef = typeof(OutOwnedUTF8Marshaler))";
+        break;
+      case journal::serialization::UTF_16:
+        field_cs_marshal_[descriptor] =
+            "MarshalAs(UnmanagedType.CustomMarshaler, "
+            "MarshalTypeRef = typeof(OutOwnedUTF16Marshaler))";
+        break;
+    }
   }
 
   field_cxx_deserializer_fn_[descriptor] =
@@ -431,6 +467,39 @@ void JournalProtoProcessor::ProcessRequiredBoolField(
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
 }
 
+void JournalProtoProcessor::ProcessRequiredBytesField(
+  FieldDescriptor const* descriptor) {
+  FieldOptions const& options = descriptor->options();
+  LOG_IF(FATAL,
+    options.HasExtension(journal::serialization::is_produced) ||
+    options.HasExtension(journal::serialization::is_produced_if))
+    << descriptor->full_name()
+    << " is a bytes field and cannot be produced. Use a fixed64 field that "
+    << "has the (encoding) option instead.";
+  LOG_IF(FATAL,
+         !options.HasExtension(journal::serialization::encoding) ||
+         options.GetExtension(journal::serialization::encoding) !=
+         journal::serialization::UTF_16)
+      << descriptor->full_name()
+      << " is a bytes field and must have the (encoding) = UTF_16 option.";
+
+  field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.LPWStr)";
+  field_cs_type_[descriptor] = "String";
+  field_cxx_type_[descriptor] = "char16_t const*";
+  field_cxx_arguments_fn_[descriptor] =
+      [](std::string const& identifier) -> std::vector<std::string> {
+        return {identifier + ".c_str()"};
+      };
+  field_cxx_deserializer_fn_[descriptor] =
+      [](std::string const& expr) {
+        return "DeserializeUtf16(" + expr + ")";
+      };
+  field_cxx_serializer_fn_[descriptor] =
+      [](std::string const& expr) {
+        return "SerializeUtf16(" + expr + ")";
+      };
+}
+
 void JournalProtoProcessor::ProcessRequiredDoubleField(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "double";
@@ -463,7 +532,7 @@ void JournalProtoProcessor::ProcessSingleStringField(
              options.HasExtension(journal::serialization::is_produced_if))
       << descriptor->full_name()
       << " is a string field and cannot be produced. Use a fixed64 field that "
-      << "is a pointer to char const instead.";
+      << "has the (encoding) option instead.";
 
   // Note that it is important to use an out marshmallow for return fields,
   // hence the use of the |in_| set here.
@@ -549,6 +618,9 @@ void JournalProtoProcessor::ProcessRequiredField(
   switch (descriptor->type()) {
     case FieldDescriptor::TYPE_BOOL:
       ProcessRequiredBoolField(descriptor);
+      break;
+    case FieldDescriptor::TYPE_BYTES:
+      ProcessRequiredBytesField(descriptor);
       break;
     case FieldDescriptor::TYPE_DOUBLE:
       ProcessRequiredDoubleField(descriptor);

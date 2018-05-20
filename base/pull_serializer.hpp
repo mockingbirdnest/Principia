@@ -32,8 +32,9 @@ class DelegatingArrayOutputStream
   // that array has been filled, |on_full| is called to somehow consume the
   // data.  |on_full| also returns another array where the stream may output
   // more data.
-  DelegatingArrayOutputStream(Bytes bytes,
-                              std::function<Bytes(Bytes bytes)> on_full);
+  DelegatingArrayOutputStream(
+      Array<std::uint8_t> bytes,
+      std::function<Array<std::uint8_t>(Array<std::uint8_t> bytes)> on_full);
 
   // The ZeroCopyOutputStream API.
   bool Next(void** data, int* size) override;
@@ -41,8 +42,8 @@ class DelegatingArrayOutputStream
   std::int64_t ByteCount() const override;
 
  private:
-  Bytes bytes_;
-  std::function<Bytes(Bytes bytes)> on_full_;
+  Array<std::uint8_t> bytes_;
+  std::function<Array<std::uint8_t>(Array<std::uint8_t> bytes)> on_full_;
 
   std::int64_t byte_count_;
   std::int64_t position_;
@@ -73,25 +74,29 @@ class PullSerializer final {
   // method must be called at most once for each serializer object.
   void Start(
       not_null<std::unique_ptr<google::protobuf::Message const>> message);
+  void Start(not_null<google::protobuf::Message const*> message);
 
   // Obtain the next chunk of data from the serializer.  Blocks if no data is
-  // available.  Returns a |Bytes| object of |size| 0 at the end of the
-  // serialization.  The returned object may become invalid the next time |Pull|
-  // is called.
+  // available.  Returns a |Array<std::uint8_t>| object of |size| 0 at the end
+  // of the serialization.  The returned object may become invalid the next time
+  // |Pull| is called.
   // In the absence of compression, the data produced by |Pull| constitute a
   // stream and the boundaries between chunks are irrelevant.  In the presence
   // of compression however, the data producted by |Pull| are made of blocks and
   // the boundaries between chunks are relevant and must be preserved by the
   // clients and used when feeding data back to the deserializer.
-  Bytes Pull();
+  Array<std::uint8_t> Pull();
 
  private:
   // Enqueues the chunk of data to be returned to |Pull| and returns a free
   // chunk.  Blocks if there are no free chunks.  Used as a callback for the
   // underlying |DelegatingArrayOutputStream|.
-  Bytes Push(Bytes bytes);
+  Array<std::uint8_t> Push(Array<std::uint8_t> bytes);
 
-  std::unique_ptr<google::protobuf::Message const> message_;
+  // |owned_message_| is null if this object doesn't own the message.
+  // |message_| is non-null after Start.
+  std::unique_ptr<google::protobuf::Message const> owned_message_;
+  google::protobuf::Message const* message_ = nullptr;
 
   std::unique_ptr<Compressor> const compressor_;
 
@@ -123,11 +128,12 @@ class PullSerializer final {
   std::condition_variable queue_has_room_;
   std::condition_variable queue_has_elements_;
 
-  // The |queue_| contains the |Bytes| objects filled by |Push| and not yet
-  // consumed by |Pull|.  If a |Bytes| object has been handed over to the caller
-  // by |Pull| it stays in the queue until the next call to |Pull|, to make sure
-  // that the pointer is not reused while the caller processes it.
-  std::queue<Bytes> queue_ GUARDED_BY(lock_);
+  // The |queue_| contains the |Array<std::uint8_t>| objects filled by |Push|
+  // and not yet consumed by |Pull|.  If a |Array<std::uint8_t>| object has been
+  // handed over to the caller by |Pull| it stays in the queue until the next
+  // call to |Pull|, to make sure that the pointer is not reused while the
+  // caller processes it.
+  std::queue<Array<std::uint8_t>> queue_ GUARDED_BY(lock_);
 
   // The |free_| queue contains the start addresses of chunks that are not yet
   // ready to be returned by |Pull|.  That includes the chunk currently being

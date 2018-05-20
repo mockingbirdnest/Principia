@@ -41,8 +41,8 @@ internal static class GLLines {
     }
   }
 
-  public static IntPtr NewPlanetarium(IntPtr plugin,
-                                       XYZ sun_world_position) {
+  public static DisposablePlanetarium NewPlanetarium(IntPtr plugin,
+                                                     XYZ sun_world_position) {
     UnityEngine.Camera camera = PlanetariumCamera.Camera;
     UnityEngine.Vector3 opengl_camera_x_in_world =
         camera.cameraToWorldMatrix.MultiplyVector(
@@ -82,64 +82,54 @@ internal static class GLLines {
                field_of_view);
   }
 
-  public static void PlotAndDeleteRP2Lines(IntPtr rp2_lines_iterator,
-                                           UnityEngine.Color colour,
-                                           Style style) {
-    try {
-      UnityEngine.GL.Color(colour);
+  public static void PlotRP2Lines(DisposableIterator rp2_lines_iterator,
+                                  UnityEngine.Color colour,
+                                  Style style) {
+    UnityEngine.GL.Color(colour);
 
-      // First evaluate the total size of the lines.
-      int size = 0;
-      for (;
-            !rp2_lines_iterator.IteratorAtEnd();
-            rp2_lines_iterator.IteratorIncrement()) {
-        IntPtr rp2_line_iterator =
-            rp2_lines_iterator.IteratorGetRP2LinesIterator();
-        try {
-          size += rp2_line_iterator.IteratorSize();
-        } finally {
-          Interface.IteratorDelete(ref rp2_line_iterator);
-        }
+    // First evaluate the total size of the lines.
+    int size = 0;
+    for (;
+         !rp2_lines_iterator.IteratorAtEnd();
+         rp2_lines_iterator.IteratorIncrement()) {
+      using (DisposableIterator rp2_line_iterator =
+                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+        size += rp2_line_iterator.IteratorSize();
       }
+    }
 
-      // Reset the iterator and do the actual plotting.
-      rp2_lines_iterator.IteratorReset();
-      int index = 0;
-      for (;
-           !rp2_lines_iterator.IteratorAtEnd();
-           rp2_lines_iterator.IteratorIncrement()) {
-        IntPtr rp2_line_iterator =
-            rp2_lines_iterator.IteratorGetRP2LinesIterator();
-        try {
-          XY? previous_rp2_point = null;
-          for (;
-               !rp2_line_iterator.IteratorAtEnd();
-               rp2_line_iterator.IteratorIncrement()) {
-            XY current_rp2_point = ToScreen(
-                rp2_line_iterator.IteratorGetRP2LineXY());
-            if (previous_rp2_point.HasValue) {
-              if (style == Style.FADED) {
-                colour.a = 1 - (float)(4 * index) / (float)(5 * size);
-                UnityEngine.GL.Color(colour);
-              }
-              if (style != Style.DASHED || index % 2 == 1) {
-                UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
-                                       (float)previous_rp2_point.Value.y,
-                                       0);
-                UnityEngine.GL.Vertex3((float)current_rp2_point.x,
-                                       (float)current_rp2_point.y,
-                                       0);
-              }
+    // Reset the iterator and do the actual plotting.
+    rp2_lines_iterator.IteratorReset();
+    int index = 0;
+    for (;
+         !rp2_lines_iterator.IteratorAtEnd();
+         rp2_lines_iterator.IteratorIncrement()) {
+      using (DisposableIterator rp2_line_iterator =
+                rp2_lines_iterator.IteratorGetRP2LinesIterator()) {
+        XY? previous_rp2_point = null;
+        for (;
+             !rp2_line_iterator.IteratorAtEnd();
+             rp2_line_iterator.IteratorIncrement()) {
+          XY current_rp2_point = ToScreen(
+              rp2_line_iterator.IteratorGetRP2LineXY());
+          if (previous_rp2_point.HasValue) {
+            if (style == Style.FADED) {
+              colour.a = 1 - (float)(4 * index) / (float)(5 * size);
+              UnityEngine.GL.Color(colour);
             }
-            previous_rp2_point = current_rp2_point;
-            ++index;
+            if (style != Style.DASHED || index % 2 == 1) {
+              UnityEngine.GL.Vertex3((float)previous_rp2_point.Value.x,
+                                      (float)previous_rp2_point.Value.y,
+                                      0);
+              UnityEngine.GL.Vertex3((float)current_rp2_point.x,
+                                      (float)current_rp2_point.y,
+                                      0);
+            }
           }
-        } finally {
-          Interface.IteratorDelete(ref rp2_line_iterator);
+          previous_rp2_point = current_rp2_point;
+          ++index;
         }
       }
-    } finally {
-      Interface.IteratorDelete(ref rp2_lines_iterator);
     }
   }
 

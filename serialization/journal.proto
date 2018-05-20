@@ -4,6 +4,12 @@ import "google/protobuf/descriptor.proto";
 
 package principia.journal.serialization;
 
+// Encoding of string-like fields.
+enum Encoding {
+  UTF_8 = 1;  // Represented as "char const*" in C++ code.
+  UTF_16 = 2;  // Represented as "char16_t const*" in C++ code.
+}
+
 // These two messages must come first because the other interchange messages use
 // them and we need to generate the structs in the correct order.
 message NavigationFrameParameters {
@@ -122,7 +128,7 @@ message XY {
 }
 
 message Method {
-  extensions 5000 to 5999;  // Last used: 5152.
+  extensions 5000 to 5999;  // Last used: 5155.
 }
 
 message AdvanceTime {
@@ -146,6 +152,7 @@ message CatchUpLaggingVessels {
   }
   message Out {
     required fixed64 collided_vessels = 1 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
                                            (is_produced) = true];
   }
   optional In in = 1;
@@ -314,9 +321,24 @@ message DeleteString {
   optional Out out = 2;
 }
 
-message DeserializePlugin {
+message DeleteU16String {
   extend Method {
-    optional DeserializePlugin extension = 5050;
+    optional DeleteU16String extension = 5155;
+  }
+  message In {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const",
+                                        (is_consumed) = true];
+  }
+  message Out {
+    required fixed64 native_string = 1 [(pointer_to) = "char16_t const"];
+  }
+  optional In in = 1;
+  optional Out out = 2;
+}
+
+message DeserializePluginHexadecimal {
+  extend Method {
+    optional DeserializePluginHexadecimal extension = 5050;
   }
   message In {
     required string serialization = 1 [(size) = "serialization_size"];
@@ -636,8 +658,10 @@ message FlightPlanRenderedApsides {
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
                                       (is_produced) = true];
   }
   optional In in = 1;
@@ -655,8 +679,10 @@ message FlightPlanRenderedClosestApproaches {
     required XYZ sun_world_position = 3;
   }
   message Out {
-    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
-                                             (is_produced) = true];
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -674,8 +700,10 @@ message FlightPlanRenderedNodes {
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
     required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
   }
   optional In in = 1;
@@ -695,6 +723,7 @@ message FlightPlanRenderedSegment {
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -802,6 +831,7 @@ message FutureWaitForVesselToCatchUp {
   message Out {
     required fixed64 future = 1 [(pointer_to) = "PileUpFuture"];
     required fixed64 collided_vessels = 2 [(pointer_to) = "Iterator",
+                                           (disposable) = "DisposableIterator",
                                            (is_produced) = true];
   }
   optional In in = 1;
@@ -840,23 +870,6 @@ message GetPartActualDegreesOfFreedom {
   }
   message Return {
     required QP result = 1;
-  }
-  optional In in = 1;
-  optional Return return = 3;
-}
-
-message GetPlottingFrame {
-  extend Method {
-    optional GetPlottingFrame extension = 5061;
-  }
-  message In {
-    required fixed64 plugin = 1 [(pointer_to) = "Plugin const"];
-  }
-  message Return {
-    // This doesn't transfer ownership to the caller, but we must enter the
-    // pointer in the pointer_map in case it crosses the interface again.
-    required fixed64 result = 1 [(pointer_to) = "NavigationFrame const",
-                                 (is_produced) = true];
   }
   optional In in = 1;
   optional Return return = 3;
@@ -911,7 +924,7 @@ message HasEncounteredApocalypse {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
   }
   message Out {
-    required fixed64 details = 1 [(pointer_to) = "char const",
+    required fixed64 details = 1 [(encoding) = UTF_8,
                                   (is_produced) = true];
   }
   message Return {
@@ -1070,8 +1083,9 @@ message IteratorAtEnd {
     optional IteratorAtEnd extension = 5083;
   }
   message In {
-    required fixed64 iterator = 1
-        [(pointer_to) = "Iterator const", (is_subject) = true];
+    required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
+                                   (is_subject) = true];
   }
   message Return {
     required bool result = 1;
@@ -1101,6 +1115,7 @@ message IteratorGetDiscreteTrajectoryQP {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1116,6 +1131,7 @@ message IteratorGetDiscreteTrajectoryTime {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1131,6 +1147,7 @@ message IteratorGetDiscreteTrajectoryXYZ {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1146,10 +1163,12 @@ message IteratorGetRP2LinesIterator {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Iterator",
+                                 (disposable) = "DisposableIterator",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -1162,6 +1181,7 @@ message IteratorGetRP2LineXY {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1177,6 +1197,7 @@ message IteratorGetVesselGuid {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1192,6 +1213,7 @@ message IteratorIncrement {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   optional In in = 1;
@@ -1203,6 +1225,7 @@ message IteratorReset {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   optional In in = 1;
@@ -1214,6 +1237,7 @@ message IteratorSize {
   }
   message In {
     required fixed64 iterator = 1 [(pointer_to) = "Iterator const",
+                                   (disposable) = "DisposableIterator",
                                    (is_subject) = true];
   }
   message Return {
@@ -1362,6 +1386,7 @@ message PlanetariumCreate {
   }
   message Return {
     required fixed64 result = 1 [(pointer_to) = "Planetarium",
+                                 (disposable) = "DisposablePlanetarium",
                                  (is_produced) = true];
   }
   optional In in = 1;
@@ -1389,6 +1414,7 @@ message PlanetariumPlotFlightPlanSegment {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
@@ -1397,6 +1423,7 @@ message PlanetariumPlotFlightPlanSegment {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1409,6 +1436,7 @@ message PlanetariumPlotPrediction {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
@@ -1416,6 +1444,7 @@ message PlanetariumPlotPrediction {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1428,6 +1457,7 @@ message PlanetariumPlotPsychohistory {
   }
   message In {
     required fixed64 planetarium = 1 [(pointer_to) = "Planetarium const",
+                                      (disposable) = "DisposablePlanetarium",
                                       (is_subject) = true];
     required fixed64 plugin = 2 [(pointer_to) = "Plugin const"];
     required int32 method = 3;
@@ -1435,6 +1465,7 @@ message PlanetariumPlotPsychohistory {
   }
   message Return {
     required fixed64 rp2_lines = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
   }
   optional In in = 1;
@@ -1464,8 +1495,10 @@ message RenderedPredictionApsides {
   }
   message Out {
     required fixed64 apoapsides = 1 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
     required fixed64 periapsides = 2 [(pointer_to) = "Iterator",
+                                      (disposable) = "DisposableIterator",
                                       (is_produced) = true];
   }
   optional In in = 1;
@@ -1483,8 +1516,10 @@ message RenderedPredictionClosestApproaches {
     required XYZ sun_world_position = 3;
   }
   message Out {
-    required fixed64 closest_approaches = 1 [(pointer_to) = "Iterator",
-                                             (is_produced) = true];
+    required fixed64 closest_approaches = 1
+        [(pointer_to) = "Iterator",
+         (disposable) = "DisposableIterator",
+         (is_produced) = true];
   }
   optional In in = 1;
   optional Out out = 2;
@@ -1502,8 +1537,10 @@ message RenderedPredictionNodes {
   }
   message Out {
     required fixed64 ascending = 1 [(pointer_to) = "Iterator",
+                                    (disposable) = "DisposableIterator",
                                     (is_produced) = true];
     required fixed64 descending = 2 [(pointer_to) = "Iterator",
+                                     (disposable) = "DisposableIterator",
                                      (is_produced) = true];
   }
   optional In in = 1;
@@ -1545,9 +1582,9 @@ message SayHello {
   optional Return return = 3;
 }
 
-message SerializePlugin {
+message SerializePluginHexadecimal {
   extend Method {
-    optional SerializePlugin extension = 5054;
+    optional SerializePluginHexadecimal extension = 5054;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1562,7 +1599,7 @@ message SerializePlugin {
                                      (is_produced_if) = "result != nullptr"];
   }
   message Return {
-    required fixed64 result = 1 [(pointer_to) = "char const",
+    required fixed64 result = 1 [(encoding) = UTF_8,
                                  (is_produced_if) = "result != nullptr"];
   }
   optional In in = 1;
@@ -1856,6 +1893,10 @@ extend google.protobuf.FieldOptions {
   optional string is_consumed_if = 50004;
   optional string is_produced_if = 50005;
 
+  // For a fixed64 field that is not consumed, indicates that it should follow
+  // the Dispose pattern and gives the name of the disposable class.
+  optional string disposable = 50009;
+
   // For a fixed64 field (which is used to represent a pointer), indicates that
   // it should be the subject in C# methods.
   optional bool is_subject = 50006;
@@ -1864,6 +1905,10 @@ extend google.protobuf.FieldOptions {
   // result should not be checked against the expected result.  Should only be
   // used when debugging issues with the replay.
   optional bool omit_check = 50007;
+
+  // For a fixed64 field that is produced and denotes a string, indicates the
+  // encoding and the representation.
+  optional Encoding encoding = 50008;
 }
 
 extend google.protobuf.MessageOptions {

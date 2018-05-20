@@ -17,13 +17,47 @@ struct Array final {
   // Mostly useful for adding constness.
   template<typename OtherElement,
            typename = typename std::enable_if<
-               std::is_convertible<OtherElement, Element>::value>::type>
+               std::is_convertible<OtherElement*, Element*>::value>::type>
   Array(Array<OtherElement> const& other);
   // No allocation of memory.
   template<typename Size,
            typename =
                typename std::enable_if<std::is_integral<Size>::value>::type>
   Array(Element* data, Size size);
+
+  // Implicit conversion from strings, vectors, and the like.
+  template<
+      typename Container,
+      typename = std::enable_if_t<
+          std::is_convertible<decltype(std::declval<Container>().data()),
+                              Element*>::value &&
+          std::is_integral<decltype(std ::declval<Container>().size())>::value>>
+  constexpr Array(Container& container);
+
+  template<
+      typename Container,
+      typename = std::enable_if_t<
+          std::is_convertible<decltype(std::declval<Container const>().data()),
+                              Element*>::value &&
+          std::is_integral<
+              decltype(std ::declval<Container const>().size())>::value>>
+  constexpr Array(Container const& container);
+
+  // Construction from a string literal if |Element| is a character type or some
+  // flavour of byte.
+  template<std::size_t size_plus_1,
+           typename Character,
+           typename = std::enable_if_t<
+               size_plus_1 >= 1 &&
+               (std::is_same<Element, unsigned char const>::value ||
+                std::is_same<Element, char const>::value ||
+                std::is_same<Element, wchar_t const>::value ||
+                std::is_same<Element, char16_t const>::value ||
+                std::is_same<Element, char32_t const>::value) &&
+               (std::is_same<Element, Character>::value ||
+                (sizeof(Element) == 1 &&
+                 std::is_same<Character, char const>::value))>>
+  constexpr explicit Array(Character (&characters)[size_plus_1]);
 
   Element* data;
   std::int64_t size;  // In number of elements.
@@ -97,21 +131,30 @@ class BoundedArray final {
   std::int32_t size_;
 };
 
-
-// Specializations.
-using Bytes = Array<std::uint8_t>;
-using UniqueBytes = UniqueArray<std::uint8_t>;
-
 // Deep comparisons.
-template<typename Element>
-bool operator==(Array<Element> left, Array<Element> right);
-template<typename Element>
-bool operator==(Array<Element> left, UniqueArray<Element> const& right);
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left, Array<Element> right);
-template<typename Element>
-bool operator==(UniqueArray<Element> const& left,
-                UniqueArray<Element> const& right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
+bool operator==(Array<LeftElement> left, Array<RightElement> right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
+bool operator==(Array<LeftElement> left,
+                UniqueArray<RightElement> const& right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
+bool operator==(UniqueArray<LeftElement> const& left,
+                Array<RightElement> right);
+template<typename LeftElement,
+         typename RightElement,
+         typename = std::enable_if_t<std::is_integral<LeftElement>::value &&
+                                     std::is_integral<RightElement>::value>>
+bool operator==(UniqueArray<LeftElement> const& left,
+                UniqueArray<RightElement> const& right);
 
 }  // namespace base
 }  // namespace principia

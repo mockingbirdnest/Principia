@@ -33,13 +33,6 @@ void principia__ClearTargetVessel(Plugin* const plugin) {
   return m.Return();
 }
 
-// Returns the frame last set by |plugin->SetPlottingFrame|.  No transfer of
-// ownership.  The returned pointer is never null.
-NavigationFrame const* principia__GetPlottingFrame(Plugin const* const plugin) {
-  journal::Method<journal::GetPlottingFrame> m({plugin});
-  return m.Return(GetRenderer(plugin).GetPlottingFrame());
-}
-
 void principia__RenderedPredictionApsides(Plugin const* const plugin,
                                           char const* const vessel_guid,
                                           int const celestial_index,

@@ -6,6 +6,8 @@ import "serialization/quantities.proto";
 
 package principia.serialization;
 
+option cc_enable_arenas = true;
+
 message CelestialJacobiKeplerian {
   required int32 celestial_index = 1;
   optional int32 parent_index = 2;

@@ -30,6 +30,7 @@
 #include "base/push_deserializer.hpp"
 #include "base/version.hpp"
 #include "gipfeli/gipfeli.h"
+#include "google/protobuf/arena.h"
 #include "journal/method.hpp"
 #include "journal/profiles.hpp"
 #include "journal/recorder.hpp"
@@ -48,14 +49,14 @@ namespace interface {
 
 using astronomy::J2000;
 using astronomy::ParseTT;
-using base::Bytes;
+using base::Array;
 using base::check_not_null;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
-using base::UniqueBytes;
+using base::UniqueArray;
 using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
@@ -94,12 +95,21 @@ using quantities::si::Newton;
 using quantities::si::Radian;
 using quantities::si::Second;
 using quantities::si::Tonne;
+using ::google::protobuf::Arena;
+using ::google::protobuf::ArenaOptions;
 
 namespace {
 
 constexpr char gipfeli[] = "gipfeli";
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
+
+static not_null<Arena*> arena = []() {
+  ArenaOptions options;
+  options.initial_block_size = chunk_size;
+  options.max_block_size = 16 * chunk_size;
+  return new Arena(options);
+}();
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
     ConfigurationFixedStepParameters const& parameters) {
@@ -327,11 +337,15 @@ void principia__DeletePlugin(Plugin const** const plugin) {
 // |**native_string|.
 void principia__DeleteString(char const** const native_string) {
   journal::Method<journal::DeleteString> m({native_string}, {native_string});
-  // This is a bit convoluted, but a |std::uint8_t const*| and a |char const*|
-  // cannot be aliased.
-  auto unsigned_string = reinterpret_cast<std::uint8_t const*>(*native_string);
-  TakeOwnershipArray(&unsigned_string);
-  *native_string = reinterpret_cast<char const*>(unsigned_string);
+  TakeOwnershipArray(native_string);
+  return m.Return();
+}
+
+// Same as above, but for char16_t.
+void principia__DeleteU16String(char16_t const** const native_string) {
+  journal::Method<journal::DeleteU16String> m({native_string},
+                                              {native_string});
+  TakeOwnershipArray(native_string);
   return m.Return();
 }
 
@@ -341,17 +355,19 @@ void principia__DeleteString(char const** const native_string) {
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When
 // this last call returns, |*plugin| is not null and may be used by the caller.
-void principia__DeserializePlugin(char const* const serialization,
-                                  int const serialization_size,
-                                  PushDeserializer** const deserializer,
-                                  Plugin const** const plugin,
-                                  char const* const compressor) {
-  journal::Method<journal::DeserializePlugin> m({serialization,
-                                                 serialization_size,
-                                                 deserializer,
-                                                 plugin,
-                                                 compressor},
-                                                {deserializer, plugin});
+void principia__DeserializePluginHexadecimal(
+    char const* const serialization,
+    int const serialization_size,
+    PushDeserializer** const deserializer,
+    Plugin const** const plugin,
+    char const* const compressor) {
+  journal::Method<journal::DeserializePluginHexadecimal> m({serialization,
+                                                            serialization_size,
+                                                            deserializer,
+                                                            plugin,
+                                                            compressor},
+                                                           {deserializer,
+                                                            plugin});
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
@@ -362,9 +378,10 @@ void principia__DeserializePlugin(char const* const serialization,
     *deserializer = new PushDeserializer(chunk_size,
                                          number_of_chunks,
                                          NewCompressor(compressor));
-    auto message = make_not_null_unique<serialization::Plugin>();
+    not_null<serialization::Plugin*> const message =
+        Arena::CreateMessage<serialization::Plugin>(arena);
     (*deserializer)->Start(
-        std::move(message),
+        message,
         [plugin](google::protobuf::Message const& message) {
           *plugin = Plugin::ReadFromMessage(
               static_cast<serialization::Plugin const&>(message)).release();
@@ -372,10 +389,7 @@ void principia__DeserializePlugin(char const* const serialization,
   }
 
   // Decode the hexadecimal representation.
-  std::uint8_t const* const hexadecimal =
-      reinterpret_cast<std::uint8_t const*>(serialization);
-  int const hexadecimal_size = serialization_size;
-  auto bytes = HexadecimalDecode({hexadecimal, hexadecimal_size});
+  auto bytes = HexadecimalDecode({serialization, serialization_size});
   auto const bytes_size = bytes.size;
   (*deserializer)->Push(std::move(bytes));
 
@@ -384,6 +398,7 @@ void principia__DeserializePlugin(char const* const serialization,
   if (bytes_size == 0) {
     LOG(INFO) << "End plugin deserialization";
     TakeOwnership(deserializer);
+    arena->Reset();
   }
   return m.Return();
 }
@@ -475,12 +490,11 @@ bool principia__HasEncounteredApocalypse(
   std::string details_string;
   bool const has_encountered_apocalypse =
       CHECK_NOTNULL(plugin)->HasEncounteredApocalypse(&details_string);
-  UniqueBytes allocated_details(details_string.size() + 1);
+  UniqueArray<char> allocated_details(details_string.size() + 1);
   std::memcpy(allocated_details.data.get(),
               details_string.data(),
               details_string.size() + 1);
-  *CHECK_NOTNULL(details) =
-      reinterpret_cast<char const*>(allocated_details.data.release());
+  *CHECK_NOTNULL(details) = allocated_details.data.release();
   return m.Return(has_encountered_apocalypse);
 }
 
@@ -836,11 +850,12 @@ char const* principia__SayHello() {
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
-char const* principia__SerializePlugin(Plugin const* const plugin,
-                                       PullSerializer** const serializer,
-                                       char const* const compressor) {
-  journal::Method<journal::SerializePlugin> m({plugin, serializer},
-                                              {serializer});
+char const* principia__SerializePluginHexadecimal(
+    Plugin const* const plugin,
+    PullSerializer** const serializer,
+    char const* const compressor) {
+  journal::Method<journal::SerializePluginHexadecimal> m({plugin, serializer},
+                                                         {serializer});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
@@ -850,13 +865,14 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
     *serializer = new PullSerializer(chunk_size,
                                      number_of_chunks,
                                      NewCompressor(compressor));
-    auto message = make_not_null_unique<serialization::Plugin>();
-    plugin->WriteToMessage(message.get());
-    (*serializer)->Start(std::move(message));
+    not_null<serialization::Plugin*> const message =
+        Arena::CreateMessage<serialization::Plugin>(arena);
+    plugin->WriteToMessage(message);
+    (*serializer)->Start(message);
   }
 
   // Pull a chunk.
-  Bytes bytes;
+  Array<std::uint8_t> bytes;
   bytes = (*serializer)->Pull();
 
   // If this is the end of the serialization, delete the serializer and return a
@@ -864,12 +880,13 @@ char const* principia__SerializePlugin(Plugin const* const plugin,
   if (bytes.size == 0) {
     LOG(INFO) << "End plugin serialization";
     TakeOwnership(serializer);
+    arena->Reset();
     return m.Return(nullptr);
   }
 
   // Convert to hexadecimal and return to the client.
   auto hexadecimal = HexadecimalEncode(bytes, /*null_terminated=*/true);
-  return m.Return(reinterpret_cast<char const*>(hexadecimal.data.release()));
+  return m.Return(hexadecimal.data.release());
 }
 
 // Sets the maximum number of seconds which logs may be buffered for.
