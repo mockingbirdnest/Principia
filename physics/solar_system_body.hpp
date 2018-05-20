@@ -163,19 +163,19 @@ SolarSystem<Frame>::SolarSystem(
 }
 
 template<typename Frame>
-std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
+not_null<std::unique_ptr<Ephemeris<Frame>>> SolarSystem<Frame>::MakeEphemeris(
     Length const& fitting_tolerance,
-    typename Ephemeris<Frame>::FixedStepParameters const& parameters) {
-  return std::make_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
-                                            MakeAllDegreesOfFreedom(),
-                                            epoch_,
-                                            fitting_tolerance,
-                                            parameters);
+    typename Ephemeris<Frame>::FixedStepParameters const& parameters) const {
+  return make_not_null_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
+                                                MakeAllDegreesOfFreedom(),
+                                                epoch_,
+                                                fitting_tolerance,
+                                                parameters);
 }
 
 template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystem<Frame>::MakeAllMassiveBodies() {
+SolarSystem<Frame>::MakeAllMassiveBodies() const {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
     serialization::GravityModel::Body const* const body = pair.second;
@@ -516,7 +516,7 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
 
 template<typename Frame>
 std::vector<DegreesOfFreedom<Frame>>
-SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
+SolarSystem<Frame>::MakeAllDegreesOfFreedom() const {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   if (!cartesian_initial_state_map_.empty()) {
     for (auto const& pair : cartesian_initial_state_map_) {

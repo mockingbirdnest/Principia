@@ -1,6 +1,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
+#include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
@@ -14,6 +15,7 @@
 
 namespace principia {
 
+using base::not_null;
 using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
@@ -33,35 +35,36 @@ namespace astronomy {
 
 class TrappistDynamicsTest : public ::testing::Test {
  protected:
+  TrappistDynamicsTest()
+      : system_(SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
+                SOLUTION_DIR / "astronomy" /
+                    "trappist_initial_state_jd_2457282_805700000.proto.txt"),
+        ephemeris_(system_.MakeEphemeris(
+            /*fitting_tolerance=*/5 * Milli(Metre),
+            Ephemeris<Trappist>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                   Position<Trappist>>(),
+                /*step=*/0.07 * Day))) {}
+
+  SolarSystem<Trappist> const system_;
+  not_null<std::unique_ptr<Ephemeris<Trappist>>> ephemeris_;
 };
 
 TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
-  SolarSystem<Trappist> trappist_system(
-      SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
-      SOLUTION_DIR / "astronomy" /
-          "trappist_initial_state_jd_2457282_805700000.proto.txt");
+  Instant const a_century_later = system_.epoch() + 100 * JulianYear;
+  ephemeris_->Prolong(a_century_later);
 
-  auto const ephemeris = trappist_system.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<Trappist>::FixedStepParameters(
-          SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                             Position<Trappist>>(),
-          /*step=*/0.07 * Day));
-
-  Instant const a_century_later = trappist_system.epoch() + 100 * JulianYear;
-  ephemeris->Prolong(a_century_later);
-
-  auto const& star = trappist_system.massive_body(*ephemeris, "Trappist-1A");
-  auto const& star_trajectory = ephemeris->trajectory(star);
+  auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
+  auto const& star_trajectory = ephemeris_->trajectory(star);
 
   OFStream file(TEMP_DIR / "trappist.generated.wl");
-  auto const bodies = ephemeris->bodies();
+  auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
     if (planet != star) {
-      auto const& planet_trajectory = ephemeris->trajectory(planet);
+      auto const& planet_trajectory = ephemeris_->trajectory(planet);
       std::vector<Time> periods;
-      for (Instant t = ephemeris->t_max() - 2000 * Hour;
-           t < ephemeris->t_max();
+      for (Instant t = ephemeris_->t_max() - 2000 * Hour;
+           t < ephemeris_->t_max();
            t += 1 * Hour) {
         KeplerOrbit<Trappist> const planet_orbit(
             *star,

@@ -45,12 +45,12 @@ class SolarSystem final {
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
   // |Initialize|.
-  std::unique_ptr<Ephemeris<Frame>> MakeEphemeris(
+  not_null<std::unique_ptr<Ephemeris<Frame>>> MakeEphemeris(
       Length const& fitting_tolerance,
-      typename Ephemeris<Frame>::FixedStepParameters const& parameters);
+      typename Ephemeris<Frame>::FixedStepParameters const& parameters) const;
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-  MakeAllMassiveBodies();
+  MakeAllMassiveBodies() const;
 
   // The time origin for the initial state.
   Instant const& epoch() const;
@@ -132,7 +132,7 @@ class SolarSystem final {
   static not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
   MakeOblateBodyParameters(serialization::GravityModel::Body const& body);
 
-  std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom();
+  std::vector<DegreesOfFreedom<Frame>> MakeAllDegreesOfFreedom() const;
 
   // If a frame is specified in a message it must match the frame of this
   // instance.  Otherwise the frame of the instance is used.  This is convenient
