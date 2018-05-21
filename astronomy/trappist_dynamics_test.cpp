@@ -3,10 +3,13 @@
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/sign.hpp"
 #include "gtest/gtest.h"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
+#include "numerics/root_finders.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
@@ -19,10 +22,13 @@ using base::not_null;
 using base::OFStream;
 using geometry::Instant;
 using geometry::Position;
+using geometry::Sign;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
+using numerics::Bisect;
 using physics::Ephemeris;
 using physics::KeplerOrbit;
+using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
@@ -30,6 +36,7 @@ using quantities::si::Day;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Second;
 
 namespace astronomy {
 
@@ -57,7 +64,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
   auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
   auto const& star_trajectory = ephemeris_->trajectory(star);
 
-  OFStream file(TEMP_DIR / "trappist.generated.wl");
+  OFStream file(TEMP_DIR / "trappist_periods.generated.wl");
   auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
     if (planet != star) {
@@ -90,21 +97,55 @@ TEST_F(TrappistDynamicsTest, Transits) {
   auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
   auto const& star_trajectory = ephemeris_->trajectory(star);
 
+  OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
   auto const bodies = ephemeris_->bodies();
-  Instant const first_transit = "JD2457282.805700000"_TT;
   for (auto const& planet : bodies) {
     if (planet != star) {
       auto const& planet_trajectory = ephemeris_->trajectory(planet);
-      auto const relative_dof =
-          planet_trajectory->EvaluateDegreesOfFreedom(first_transit) -
-          star_trajectory->EvaluateDegreesOfFreedom(first_transit);
-      KeplerOrbit<Trappist> const planet_orbit(
-          *star, *planet, relative_dof, first_transit);
-      LOG(ERROR)
-          << planet->name() << " " /*<< relative_dof << " "*/
-          << (*planet_orbit.elements_at_epoch().longitude_of_periapsis +
-              *planet_orbit.elements_at_epoch().true_anomaly) /
-                 quantities::si::Degree;
+
+      std::vector<Instant> transits;
+      std::optional<Instant> last_t;
+      std::optional<Sign> last_xy_displacement_derivative_sign;
+      for (Instant t = ephemeris_->t_min();
+           t < ephemeris_->t_min() + 10 * JulianYear;
+           t += 2 * Hour) {
+        RelativeDegreesOfFreedom<Trappist> const relative_dof =
+            planet_trajectory->EvaluateDegreesOfFreedom(t) -
+            star_trajectory->EvaluateDegreesOfFreedom(t);
+
+        auto const xy_displacement_derivative =
+            [&planet_trajectory, &star_trajectory](Instant const& t) {
+              RelativeDegreesOfFreedom<Trappist> const relative_dof =
+                  planet_trajectory->EvaluateDegreesOfFreedom(t) -
+                  star_trajectory->EvaluateDegreesOfFreedom(t);
+              // TODO(phl): Why don't we have projections?
+              auto xy_displacement =
+                  relative_dof.displacement().coordinates();
+              xy_displacement.z = 0.0 * Metre;
+              auto xy_velocity = relative_dof.velocity().coordinates();
+              xy_velocity.z = 0.0 * Metre / Second;
+              return Dot(xy_displacement, xy_velocity);
+            };
+
+        Sign const xy_displacement_derivative_sign(
+            xy_displacement_derivative(t));
+        if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
+            last_t &&
+            xy_displacement_derivative_sign == Sign(1) &&
+            last_xy_displacement_derivative_sign == Sign(-1)) {
+          Instant const transit =
+              Bisect(xy_displacement_derivative, *last_t, t);
+          transits.push_back(transit);
+        }
+        last_t = t;
+        last_xy_displacement_derivative_sign =
+            xy_displacement_derivative_sign;
+      }
+
+      auto sanitized_name = planet->name();
+      sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
+      file << mathematica::Assign("transit" + sanitized_name,
+                                  transits);
     }
   }
 }
