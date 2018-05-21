@@ -48,6 +48,12 @@ class FlightPlanner : WindowRenderer {
     UnityEngine.GUI.skin = old_skin;
   }
 
+  protected override void SetToolbarButtonState(bool is_enabled) {
+    if (show_planner_toggle_ != null) {
+      show_planner_toggle_.IsEnabled = is_enabled;
+    }
+  }
+
   public void RenderButton() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;

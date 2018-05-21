@@ -88,10 +88,12 @@ public partial class PrincipiaPluginAdapter
           if (value) toolbar_button_.SetTrue(makeCall: false);
           else toolbar_button_.SetFalse(makeCall: false);
         });
-    //settings_toggle_ = new ToolbarToggle(
-    //    id: "Settings",
-    //    tooltip: "Principia Settings",
-    //    visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER));
+    settings_toggle_ = new ToolbarToggle(
+        id: "Settings",
+        tooltip: "Principia Settings",
+        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        get: () => show_settings_window_,
+        set: value => show_settings_window_ = value);
     target_celestial_toggle_ = new ToolbarToggle(
         id: "TargetCelestial",
         tooltip: "Select Target Celestial",
@@ -122,6 +124,8 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private int main_window_y_ = UnityEngine.Screen.height / 3;
   private UnityEngine.Rect main_window_rectangle_;
+  [KSPField(isPersistant = true)]
+  private bool show_settings_window_ = true;
 
 #if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
@@ -274,6 +278,7 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Rect apocalypse_window_rectangle_;
 
   public event Action render_windows;
+  public event Action<bool> set_toolbar_button_state;
 
   PrincipiaPluginAdapter() {
     // We create this directory here so we do not need to worry about cross-
@@ -766,8 +771,12 @@ public partial class PrincipiaPluginAdapter
     }
 
     // Blizzy's toolbar
-    if (KSP.UI.Screens.ApplicationLauncher.Ready && !toolbar_toggles_initialized_) {
-      InitializeToolbarToggles();
+    if (KSP.UI.Screens.ApplicationLauncher.Ready) {
+      if (!toolbar_toggles_initialized_) {
+        InitializeToolbarToggles();
+      }
+    } else {
+      return;
     }
 
     // Make sure the state of the toolbar button remains consistent with the
@@ -782,22 +791,30 @@ public partial class PrincipiaPluginAdapter
       WindowUtilities.ClearLock(this);
       return;
     } else if (ui_toggle_.Value) {
-      UnityEngine.GUI.skin = null;
-      main_window_rectangle_.xMin = main_window_x_;
-      main_window_rectangle_.yMin = main_window_y_;
-      main_window_rectangle_ = UnityEngine.GUILayout.Window(
-          id         : this.GetHashCode(),
-          screenRect : main_window_rectangle_,
-          func       : DrawMainWindow,
-          text       : "Principia",
-          options    : UnityEngine.GUILayout.MinWidth(500));
-      WindowUtilities.EnsureOnScreen(ref main_window_rectangle_);
-      main_window_x_ = (int)main_window_rectangle_.xMin;
-      main_window_y_ = (int)main_window_rectangle_.yMin;
-      main_window_rectangle_.InputLock(this);
+      if (settings_toggle_.Value) {
+        UnityEngine.GUI.skin = null;
+        main_window_rectangle_.xMin = main_window_x_;
+        main_window_rectangle_.yMin = main_window_y_;
+        main_window_rectangle_ = UnityEngine.GUILayout.Window(
+            id         : this.GetHashCode(),
+            screenRect : main_window_rectangle_,
+            func       : DrawMainWindow,
+            text       : "Principia",
+            options    : UnityEngine.GUILayout.MinWidth(500));
+        WindowUtilities.EnsureOnScreen(ref main_window_rectangle_);
+        main_window_x_ = (int)main_window_rectangle_.xMin;
+        main_window_y_ = (int)main_window_rectangle_.yMin;
+        main_window_rectangle_.InputLock(this);
+      }
 
       render_windows();
     }
+
+    target_celestial_toggle_.IsEnabled = target_vessel_toggle_.IsEnabled =
+      MapView.MapIsEnabled;
+    settings_toggle_.IsEnabled = ui_toggle_.Value;
+    set_toolbar_button_state(ui_toggle_.Value);
+
   }
 
   private void LateUpdate() {
@@ -1667,7 +1684,7 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (patched_conics_toggle_.Value || !is_manageable(vessel)) {
+    if (patched_conics_toggle_?.Value == true || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
@@ -1732,7 +1749,7 @@ public partial class PrincipiaPluginAdapter
 
   private void OnVesselNodeClick(KSP.UI.Screens.Mapview.MapNode node,
                                  Mouse.Buttons buttons) {
-    if (target_vessel_toggle_.Value) {
+    if (target_vessel_toggle_?.Value == true) {
       FlightGlobals.fetch.SetVesselTarget(node.mapObject.vessel);
       target_vessel_toggle_.Value = false;
     } else if (buttons == Mouse.Buttons.Left &&
@@ -1746,7 +1763,7 @@ public partial class PrincipiaPluginAdapter
         !UnityEngine.EventSystems.EventSystem.current
              .IsPointerOverGameObject() &&
         Mouse.Left.GetClick() && !ManeuverGizmo.HasMouseFocus &&
-        !target_vessel_toggle_.Value) {
+        !(target_vessel_toggle_?.Value == true)) {
       var ray = PlanetariumCamera.Camera.ScreenPointToRay(
           UnityEngine.Input.mousePosition);
       foreach (var celestial in FlightGlobals.Bodies) {
@@ -1755,7 +1772,7 @@ public partial class PrincipiaPluginAdapter
                            ScaledSpace.LocalToScaledSpace(celestial.position) -
                                ray.origin).magnitude;
         if (scaled_distance * ScaledSpace.ScaleFactor < celestial.Radius) {
-          if (target_celestial_toggle_.Value) {
+          if (target_celestial_toggle_?.Value == true) {
             FlightGlobals.fetch.SetVesselTarget(celestial);
             target_celestial_toggle_.Value = false;
           } else if (PlanetariumCamera.fetch.target != celestial.MapObject) {

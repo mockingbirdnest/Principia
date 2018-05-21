@@ -54,25 +54,32 @@ internal static class WindowUtilities {
 internal abstract class WindowRenderer : IDisposable {
   public interface ManagerInterface {
     event Action render_windows;
+
+    event Action<bool> set_toolbar_button_state;
   }
 
   public WindowRenderer(ManagerInterface manager) {
     manager_ = manager;
     manager_.render_windows += RenderWindow;
+    manager_.set_toolbar_button_state += SetToolbarButtonState;
   }
 
   ~WindowRenderer() {
     manager_.render_windows -= RenderWindow;
+    manager_.set_toolbar_button_state -= SetToolbarButtonState;
     WindowUtilities.ClearLock(this);
   }
 
   public void Dispose() {
     manager_.render_windows -= RenderWindow;
+    manager_.set_toolbar_button_state -= SetToolbarButtonState;
     WindowUtilities.ClearLock(this);
     GC.SuppressFinalize(this);
   }
 
   abstract protected void RenderWindow();
+
+  abstract protected void SetToolbarButtonState(bool is_enabled);
 
   private ManagerInterface manager_;
 }

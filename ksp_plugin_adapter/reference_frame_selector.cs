@@ -318,6 +318,12 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUI.skin = old_skin;
   }
 
+  protected override void SetToolbarButtonState(bool is_enabled) {
+    if (show_selector_toggle_ != null) {
+      show_selector_toggle_.IsEnabled = is_enabled;
+    }
+  }
+
   private void RenderSelector(int window_id) {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
