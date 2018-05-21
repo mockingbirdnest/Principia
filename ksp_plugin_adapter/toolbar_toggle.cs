@@ -19,7 +19,7 @@ namespace ksp_plugin_adapter {
       Tooltip = tooltip;
       Visibility = visibility;
       get_ = get ?? (() => value_);
-      set_ = set ?? (value => value_ = value);
+      set_ = set ?? (value => { });
       value_ = initialValue;
       
       if (toggles_.ContainsKey(id)) {
@@ -44,11 +44,23 @@ namespace ksp_plugin_adapter {
     public bool Value {
       get => get_();
       set {
-        set_(value);
-        SetTexture(value);
+        value_ = value;
+        set_(value_);
+        SetTexture(value_);
       }
     }
-    
+
+    public bool IsEnabled
+    {
+      get => is_enabled_;
+      set {
+        is_enabled_ = value;
+        if (toolbar_button_ != null) {
+          toolbar_button_.Enabled = is_enabled_;
+        }
+      }
+    }
+
     public void Desstroy() {
       if (toolbar_button_ != null) {
         toolbar_button_.OnClick -= OnClick;
@@ -57,6 +69,7 @@ namespace ksp_plugin_adapter {
     }
     
     private bool value_;
+    private bool is_enabled_;
     
     private readonly Func<bool> get_;
     private readonly Action<bool> set_;

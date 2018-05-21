@@ -46,7 +46,8 @@ class BurnEditor {
                                     adapter,
                                     plugin,
                                     ReferenceFrameChanged,
-                                    "Manœuvring frame");
+                                    "Manœuvring frame",
+                                    false);
     plugin_ = plugin;
     vessel_ = vessel;
     adapter_ = adapter;

@@ -34,10 +34,12 @@ class ReferenceFrameSelector : WindowRenderer {
       ManagerInterface manager,
       IntPtr plugin,
       Callback on_change,
-      string name) : base(manager) {
+      string name,
+      bool is_plotting_frame_selector = true) : base(manager) {
     plugin_ = plugin;
     on_change_ = on_change;
     name_ = name;
+    is_plotting_frame_selector_ = is_plotting_frame_selector;
     frame_type = FrameType.BODY_CENTRED_NON_ROTATING;
     expanded_ = new Dictionary<CelestialBody, bool>();
     foreach (CelestialBody celestial in FlightGlobals.Bodies) {
@@ -261,11 +263,23 @@ class ReferenceFrameSelector : WindowRenderer {
   }
 
   public void Hide() {
-    show_selector_toggle_.Value = false;
+    ShowSelector = false;
   }
 
   // Toolbar toggle
   private static ToolbarToggle show_selector_toggle_;
+
+  bool ShowSelector
+  {
+    get => is_plotting_frame_selector_ ? show_selector_toggle_.Value : show_selector_;
+    set {
+      if (is_plotting_frame_selector_) {
+        show_selector_toggle_.Value = value;
+      } else {
+        show_selector_ = value;
+      }
+    }
+  }
 
   private void InitializeToolbarToggle() {
     if (show_selector_toggle_ == null) {
@@ -281,7 +295,7 @@ class ReferenceFrameSelector : WindowRenderer {
     UnityEngine.GUI.skin = null;
     if (UnityEngine.GUILayout.Button(name_ + " selection (" + Name() +
                                      ")...")) {
-      show_selector_toggle_.Value = !show_selector_toggle_.Value;
+      ShowSelector = !ShowSelector;
     }
     UnityEngine.GUI.skin = old_skin;
   }
@@ -289,7 +303,7 @@ class ReferenceFrameSelector : WindowRenderer {
   protected override void RenderWindow() {
     var old_skin = UnityEngine.GUI.skin;
     UnityEngine.GUI.skin = null;
-    if (show_selector_toggle_.Value) {
+    if (ShowSelector) {
       window_rectangle_ = UnityEngine.GUILayout.Window(
                               id         : this.GetHashCode(),
                               screenRect : window_rectangle_,
@@ -410,9 +424,11 @@ class ReferenceFrameSelector : WindowRenderer {
   private Callback on_change_;
   // Not owned.
   private IntPtr plugin_;
+  private bool show_selector_;
   private UnityEngine.Rect window_rectangle_;
   private Dictionary<CelestialBody, bool> expanded_;
   private readonly string name_;
+  private readonly bool is_plotting_frame_selector_;
 }
 
 }  // namespace ksp_plugin_adapter
