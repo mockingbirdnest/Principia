@@ -81,7 +81,7 @@ public partial class PrincipiaPluginAdapter
     ui_toggle_ = new ToolbarToggle(
         id: "UI",
         tooltip: "Toggle Principia UI",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        visibility: new[] { GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER },
         get: () => show_main_window_,
         set: value => {
           show_main_window_ = value;
@@ -91,25 +91,25 @@ public partial class PrincipiaPluginAdapter
     settings_toggle_ = new ToolbarToggle(
         id: "Settings",
         tooltip: "Principia Settings",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        visibility: new[] { GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER },
         get: () => show_settings_window_,
         set: value => show_settings_window_ = value);
     target_celestial_toggle_ = new ToolbarToggle(
         id: "TargetCelestial",
         tooltip: "Select Target Celestial",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+        visibility: new[] { GameScenes.FLIGHT });
     target_vessel_toggle_ = new ToolbarToggle(
         id: "TargetVessel",
         tooltip: "Select Target Vessel",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+        visibility: new[] { GameScenes.FLIGHT });
     patched_conics_toggle_ = new ToolbarToggle(
         id: "PatchedConics",
         tooltip: "Toggle Patched Conics",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION));
+        visibility: new[] { GameScenes.FLIGHT, GameScenes.TRACKSTATION });
     sun_lens_flare_toggle_ = new ToolbarToggle(
         id: "SunLensFlare",
         tooltip: "Sun Lens Flare",
-        visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER),
+        visibility: new[] { GameScenes.FLIGHT, GameScenes.TRACKSTATION, GameScenes.SPACECENTER },
         get: () => Sun.Instance.sunFlare.enabled,
         set: value => Sun.Instance.sunFlare.enabled = value);
     
@@ -126,6 +126,8 @@ public partial class PrincipiaPluginAdapter
   private UnityEngine.Rect main_window_rectangle_;
   [KSPField(isPersistant = true)]
   private bool show_settings_window_ = true;
+  [KSPField(isPersistant = true)]
+  private bool show_app_launcher_button_ = true;
 
 #if SELECTABLE_PLOT_METHOD
   [KSPField(isPersistant = true)]
@@ -765,9 +767,13 @@ public partial class PrincipiaPluginAdapter
               onHoverOut      : null,
               onEnable        : null,
               onDisable       : null,
-              visibleInScenes : KSP.UI.Screens.ApplicationLauncher.AppScenes.
-                                    ALWAYS,
+              visibleInScenes : KSP.UI.Screens.ApplicationLauncher.AppScenes.NEVER,
               texture         : toolbar_button_texture);
+    }
+    if (toolbar_button_ != null) {
+      toolbar_button_.VisibleInScenes = show_app_launcher_button_
+        ? KSP.UI.Screens.ApplicationLauncher.AppScenes.ALWAYS
+        : KSP.UI.Screens.ApplicationLauncher.AppScenes.NEVER;
     }
 
     // Blizzy's toolbar
@@ -2295,6 +2301,9 @@ public partial class PrincipiaPluginAdapter
     sun_lens_flare_toggle_.Value = UnityEngine.GUILayout.Toggle(
         value : sun_lens_flare_toggle_.Value,
         text  : "Enable Sun lens flare");
+    show_app_launcher_button_ = UnityEngine.GUILayout.Toggle(
+        value : show_app_launcher_button_,
+        text  : "Show AppLauncher button");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
       using (new HorizontalLayout()) {

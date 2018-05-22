@@ -11,7 +11,7 @@ namespace ksp_plugin_adapter {
     public ToolbarToggle(
         string id,
         string tooltip,
-        GameScenesVisibility visibility,
+        GameScenes[] visibility,
         Func<bool> get = null,
         Action<bool> set = null,
         bool initialValue = false) {
@@ -31,7 +31,7 @@ namespace ksp_plugin_adapter {
       if (is_toolbar_available_) {
         toolbar_button_ = manager_.add(nameof(principia), nameof(principia) + id);
         toolbar_button_.ToolTip = tooltip;
-        toolbar_button_.Visibility = visibility;
+        toolbar_button_.Visibility = new GameScenesVisibility(visibility);
         toolbar_button_.OnClick += OnClick;
         SetTexture(Value);
       }
@@ -39,7 +39,7 @@ namespace ksp_plugin_adapter {
     
     public string Id { get; }
     public string Tooltip { get; }
-    public GameScenesVisibility Visibility { get; }
+    public GameScenes[] Visibility { get; }
     
     public bool Value {
       get => get_();

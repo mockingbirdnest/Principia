@@ -286,7 +286,7 @@ class ReferenceFrameSelector : WindowRenderer {
       show_selector_toggle_ = new ToolbarToggle(
           id: "PlottingFrame",
           tooltip: "Plotting Frame Selection",
-          visibility: new GameScenesVisibility(GameScenes.FLIGHT, GameScenes.TRACKSTATION));
+          visibility: new[] { GameScenes.FLIGHT, GameScenes.TRACKSTATION });
     }
   }
 

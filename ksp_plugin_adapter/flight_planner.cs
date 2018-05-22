@@ -71,7 +71,7 @@ class FlightPlanner : WindowRenderer {
       show_planner_toggle_ = new ToolbarToggle(
           id: "FlightPlan",
           tooltip: "Flight Plan",
-          visibility: new GameScenesVisibility(GameScenes.FLIGHT));
+          visibility: new[] { GameScenes.FLIGHT });
     }
   }
 
