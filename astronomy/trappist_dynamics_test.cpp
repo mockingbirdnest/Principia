@@ -193,7 +193,15 @@ class TrappistDynamicsTest : public ::testing::Test {
                        observed_transit - *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
-        max_error = std::max(max_error, error);
+        if (error > max_error) {
+          max_error = error;
+          LOG(ERROR) << name << ": "
+                     << (*std::prev(next_computed_transit) - "JD2450000.0"_TT) /
+                            Day
+                     << " < " << (observed_transit - "JD2450000.0"_TT) / Day
+                     << " < "
+                     << (*next_computed_transit - "JD2450000.0"_TT) / Day;
+        }
       }
     }
     return max_error;
@@ -292,7 +300,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR)<<MaxError(observations, computations);
+  LOG(ERROR) << "max error: " << MaxError(observations, computations);
 }
 
 }  // namespace astronomy
