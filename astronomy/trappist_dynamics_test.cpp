@@ -12,6 +12,7 @@
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/ephemeris.hpp"
 #include "physics/kepler_orbit.hpp"
+#include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
 #include "quantities/si.hpp"
@@ -28,6 +29,7 @@ using integrators::methods::Quinlan1999Order8A;
 using numerics::Bisect;
 using physics::Ephemeris;
 using physics::KeplerOrbit;
+using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Time;
@@ -39,6 +41,9 @@ using quantities::si::Milli;
 using quantities::si::Second;
 
 namespace astronomy {
+
+using Transits = std::vector<Instant>;
+using TransitsByPlanet = std::map<std::string, Transits>;
 
 class TrappistDynamicsTest : public ::testing::Test {
  protected:
@@ -53,11 +58,45 @@ class TrappistDynamicsTest : public ::testing::Test {
                                                    Position<Trappist>>(),
                 /*step=*/0.07 * Day))) {}
 
+  static std::string SanitizedName(MassiveBody const& body) {
+    auto sanitized_name = body.name();
+    return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
+  }
+
+  static Time MaxError(TransitsByPlanet const& observations,
+                       TransitsByPlanet const& computations) {
+    Time max_error;
+    for (auto const& pair : observations) {
+      auto const& name = pair.first;
+      auto const& observed_transits = pair.second;
+      auto const& computed_transits = computations.at(name);
+      for (auto const& observed_transit : observed_transits) {
+        auto const next_computed_transit =
+            std::lower_bound(computed_transits.begin(),
+                             computed_transits.end(),
+                             observed_transit);
+        Time error;
+        if (next_computed_transit == computed_transits.begin()) {
+          error = *next_computed_transit - observed_transit;
+        } else if (next_computed_transit == computed_transits.end()) {
+          error = observed_transit - computed_transits.back();
+        } else {
+          error =
+              std::min(*next_computed_transit - observed_transit,
+                       observed_transit - *std::prev(next_computed_transit));
+        }
+        CHECK_LE(0.0 * Second, error);
+        max_error = std::max(max_error, error);
+      }
+    }
+    return max_error;
+  }
+
   SolarSystem<Trappist> const system_;
   not_null<std::unique_ptr<Ephemeris<Trappist>>> ephemeris_;
 };
 
-TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
+TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
@@ -82,20 +121,20 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriod) {
         periods.push_back(*planet_orbit.elements_at_epoch().period);
       }
 
-      auto sanitized_name = planet->name();
-      sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
-      file << mathematica::Assign("period" + sanitized_name,
+      file << mathematica::Assign("period" + SanitizedName(*planet),
                                   periods);
     }
   }
 }
 
-TEST_F(TrappistDynamicsTest, Transits) {
+TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
   auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
   auto const& star_trajectory = ephemeris_->trajectory(star);
+
+  TransitsByPlanet transits_by_planet;
 
   OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
   auto const bodies = ephemeris_->bodies();
@@ -103,7 +142,7 @@ TEST_F(TrappistDynamicsTest, Transits) {
     if (planet != star) {
       auto const& planet_trajectory = ephemeris_->trajectory(planet);
 
-      std::vector<Instant> transits;
+      Transits transits;
       std::optional<Instant> last_t;
       std::optional<Sign> last_xy_displacement_derivative_sign;
       for (Instant t = ephemeris_->t_min();
@@ -135,16 +174,14 @@ TEST_F(TrappistDynamicsTest, Transits) {
             last_xy_displacement_derivative_sign == Sign(-1)) {
           Instant const transit =
               Bisect(xy_displacement_derivative, *last_t, t);
-          transits.push_back(transit);
+          transits_by_planet[planet->name()].push_back(transit);
         }
         last_t = t;
         last_xy_displacement_derivative_sign =
             xy_displacement_derivative_sign;
       }
 
-      auto sanitized_name = planet->name();
-      sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
-      file << mathematica::Assign("transit" + sanitized_name,
+      file << mathematica::Assign("transit" + SanitizedName(*planet),
                                   transits);
     }
   }
