@@ -49,6 +49,8 @@ namespace astronomy {
 using Transits = std::vector<Instant>;
 using TransitsByPlanet = std::map<std::string, Transits>;
 
+std::mt19937_64 engine;
+
 class Genome {
  public:
   explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
@@ -59,11 +61,23 @@ class Genome {
 
  private:
   std::vector<KeplerianElements<Trappist>> elements_;
-
-  static std::mt19937_64 engine_;
 };
 
-std::mt19937_64 Genome::engine_;
+class Population {
+public:
+  Population(Genome const& luca, int const size);
+
+  Genome const& Pick() const;
+
+  void ComputeAllFitnesses(std::function<double(Genome const&)> compute_fitness);
+
+  Population BegetChildren() const;
+
+ private:
+  std::vector<Genome> individuals_;
+  std::vector<double> fitnesses_;
+  std::vector<double> cumulative_fitnesses_;
+};
 
 Genome::Genome(std::vector<KeplerianElements<Trappist>> const& elements)
     : elements_(elements) {}
@@ -89,24 +103,73 @@ void Genome::Mutate()  {
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
     std::uniform_real_distribution<> angle_distribution(-1.0, 1.0);
-    *element.argument_of_periapsis += angle_distribution(engine_) * Degree;
-    *element.mean_anomaly += angle_distribution(engine_) * Degree;
+    *element.argument_of_periapsis += angle_distribution(engine) * Degree;
+    *element.mean_anomaly += angle_distribution(engine) * Degree;
   }
 }
 
 Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
   std::vector<KeplerianElements<Trappist>> new_elements;
+  std::uniform_int_distribution<> order_distribution(0, 1);
   std::uniform_int_distribution<> split_distribution(1,
                                                      g1.elements_.size() - 1);
-  int const split = split_distribution(engine_);
-  for (int i = 0; i < split; ++i) {
-    new_elements.push_back(g1.elements_[i]);
-  }
-  for (int i = split; i < g1.elements_.size(); ++i) {
-    new_elements.push_back(g2.elements_[i]);
+  bool const reverse = order_distribution(engine) == 1;
+  int const split = split_distribution(engine);
+  if (reverse) {
+    for (int i = 0; i < split; ++i) {
+      new_elements.push_back(g1.elements_[i]);
+    }
+    for (int i = split; i < g1.elements_.size(); ++i) {
+      new_elements.push_back(g2.elements_[i]);
+    }
+  } else {
+    for (int i = 0; i < split; ++i) {
+      new_elements.push_back(g2.elements_[i]);
+    }
+    for (int i = split; i < g1.elements_.size(); ++i) {
+      new_elements.push_back(g1.elements_[i]);
+    }
   }
   return Genome(new_elements);
+}
+
+Population::Population(Genome const& luca, int const size)
+    : individuals_(size, luca) {
+  for (auto& individual : individuals_) {
+    individual.Mutate();
+  }
+}
+
+Genome const& Population::Pick() const {
+  std::uniform_real_distribution<> fitness_distribution(
+      cumulative_fitnesses_.front(), cumulative_fitnesses_.back());
+  double const picked_fitness = fitness_distribution(engine);
+  auto const picked_it = std::lower_bound(cumulative_fitnesses_.begin(),
+                                          cumulative_fitnesses_.end(),
+                                          picked_fitness);
+  CHECK(picked_it != cumulative_fitnesses_.begin());
+  CHECK(picked_it != cumulative_fitnesses_.end());
+  return individuals_[std::distance(cumulative_fitnesses_.begin(),
+                                    picked_it) - 1];
+}
+
+void Population::ComputeAllFitnesses(
+    std::function<double(Genome const&)> compute_fitness) {
+  fitnesses_.clear();
+  cumulative_fitnesses_.clear();
+  cumulative_fitnesses_.push_back(0.0);
+  for (int i = 0; i < individuals_.size(); ++i) {
+    fitnesses_.push_back(compute_fitness(individuals_[i]));
+    if (i > 0) {
+      cumulative_fitnesses_.push_back(cumulative_fitnesses_[i - 1] +
+                                      fitnesses_.back());
+    }
+  }
+}
+
+Population Population::BegetChildren() const {
+  return Population();
 }
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
