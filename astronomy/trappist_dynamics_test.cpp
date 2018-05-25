@@ -1,4 +1,6 @@
 
+#include <random>
+
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
@@ -28,6 +30,7 @@ using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
 using numerics::Bisect;
 using physics::Ephemeris;
+using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
@@ -35,6 +38,7 @@ using physics::SolarSystem;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Day;
+using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
@@ -44,6 +48,66 @@ namespace astronomy {
 
 using Transits = std::vector<Instant>;
 using TransitsByPlanet = std::map<std::string, Transits>;
+
+class Genome {
+ public:
+  explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
+
+  void Mutate();
+
+  static Genome OnePointCrossover(Genome const& g1, Genome const& g2);
+
+ private:
+  std::vector<KeplerianElements<Trappist>> elements_;
+
+  static std::mt19937_64 engine_;
+};
+
+std::mt19937_64 Genome::engine_;
+
+Genome::Genome(std::vector<KeplerianElements<Trappist>> const& elements)
+    : elements_(elements) {}
+
+
+void Genome::Mutate()  {
+  for (auto& element : elements_) {
+    element.asymptotic_true_anomaly = std::nullopt;
+    element.turning_angle = std::nullopt;
+    element.semimajor_axis = std::nullopt;
+    element.specific_energy = std::nullopt;
+    element.characteristic_energy = std::nullopt;
+    element.mean_motion = std::nullopt;
+    element.hyperbolic_mean_motion = std::nullopt;
+    element.hyperbolic_excess_velocity = std::nullopt;
+    element.semiminor_axis = std::nullopt;
+    element.impact_parameter = std::nullopt;
+    element.semilatus_rectum = std::nullopt;
+    element.specific_angular_momentum = std::nullopt;
+    element.periapsis_distance = std::nullopt;
+    element.apoapsis_distance = std::nullopt;
+    element.longitude_of_periapsis = std::nullopt;
+    element.true_anomaly = std::nullopt;
+    element.hyperbolic_mean_anomaly = std::nullopt;
+    std::uniform_real_distribution<> angle_distribution(-1.0, 1.0);
+    *element.argument_of_periapsis += angle_distribution(engine_) * Degree;
+    *element.mean_anomaly += angle_distribution(engine_) * Degree;
+  }
+}
+
+Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
+  CHECK_EQ(g1.elements_.size(), g2.elements_.size());
+  std::vector<KeplerianElements<Trappist>> new_elements;
+  std::uniform_int_distribution<> split_distribution(1,
+                                                     g1.elements_.size() - 1);
+  int const split = split_distribution(engine_);
+  for (int i = 0; i < split; ++i) {
+    new_elements.push_back(g1.elements_[i]);
+  }
+  for (int i = split; i < g1.elements_.size(); ++i) {
+    new_elements.push_back(g2.elements_[i]);
+  }
+  return Genome(new_elements);
+}
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
 // integral number of days.  Use this function as a stopgap measure and switch
