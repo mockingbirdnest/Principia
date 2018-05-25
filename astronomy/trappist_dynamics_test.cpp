@@ -17,6 +17,8 @@
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/astronomy.hpp"
+#include "quantities/elementary_functions.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
 namespace principia {
@@ -35,6 +37,8 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::Square;
+using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Day;
@@ -169,7 +173,7 @@ void Population::ComputeAllFitnesses(
 }
 
 Population Population::BegetChildren() const {
-  return Population();
+  return *this;  //TODO(phl):Implement
 }
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
@@ -304,9 +308,9 @@ class TrappistDynamicsTest : public ::testing::Test {
     return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
   }
 
-  static Time MaxError(TransitsByPlanet const& observations,
-                       TransitsByPlanet const& computations) {
-    Time max_error;
+  static Time Error(TransitsByPlanet const& observations,
+                    TransitsByPlanet const& computations) {
+    Square<Time> sum_error²;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
       auto const& observed_transits = pair.second;
@@ -327,18 +331,10 @@ class TrappistDynamicsTest : public ::testing::Test {
                        observed_transit - *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
-        if (error > max_error) {
-          max_error = error;
-          LOG(ERROR) << name << ": "
-                     << (*std::prev(next_computed_transit) - JD(2450000.0)) /
-                            Day
-                     << " < " << (observed_transit - JD(2450000.0)) / Day
-                     << " < "
-                     << (*next_computed_transit - JD(2450000.0)) / Day;
-        }
+        sum_error² += error * error;
       }
     }
-    return max_error;
+    return Sqrt(sum_error²);
   }
 
   SolarSystem<Trappist> const system_;
@@ -434,7 +430,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << "max error: " << MaxError(observations, computations);
+  LOG(ERROR) << "max error: " << Error(observations, computations);
 }
 
 }  // namespace astronomy
