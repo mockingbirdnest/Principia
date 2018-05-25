@@ -1,0 +1,93 @@
+initial_state {
+  solar_system_frame : TRAPPIST
+  epoch : "JD2457000.000000000"
+  keplerian {
+    body {
+      name : "Trappist-1A"
+    }
+    body {
+      name                          : "Trappist-1b"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00622
+        period                      : "1.51087637 d"
+        inclination                 : "89.56 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "336.86 deg"
+        mean_anomaly                : "203.12 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1c"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00654
+        period                      : "2.42180746 d"
+        inclination                 : "89.70 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "282.45 deg"
+        mean_anomaly                : "69.86 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1d"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00837
+        period                      : "4.049959 d"
+        inclination                 : "89.89 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "-8.73 deg"
+        mean_anomaly                : "173.92 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1e"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00510
+        period                      : "6.099043 d"
+        inclination                 : "89.736 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "108.37 deg"
+        mean_anomaly                : "347.95 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1f"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.01007
+        period                      : "9.205585 d"
+        inclination                 : "89.719 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "368.81 deg"
+        mean_anomaly                : "113.61 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1g"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00208
+        period                      : "12.354473 d"
+        inclination                 : "89.721 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "191.34 deg"
+        mean_anomaly                : "265.08 deg"
+      }
+    }
+    body {
+      name                          : "Trappist-1h"
+      parent                        : "Trappist-1A"
+      elements {
+        eccentricity                : 0.00567
+        period                      : "18.767953 d"
+        inclination                 : "89.796 deg"
+        longitude_of_ascending_node : "0 deg"
+        argument_of_periapsis       : "338.92 deg"
+        mean_anomaly                : "269.72 deg"
+      }
+    }
+  }
+}

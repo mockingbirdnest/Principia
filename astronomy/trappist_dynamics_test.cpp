@@ -164,7 +164,7 @@ class TrappistDynamicsTest : public ::testing::Test {
   TrappistDynamicsTest()
       : system_(SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
                 SOLUTION_DIR / "astronomy" /
-                    "trappist_initial_state_jd_2457282_805700000.proto.txt"),
+                    "trappist_initial_state_jd_2457000_000000000.proto.txt"),
         ephemeris_(system_.MakeEphemeris(
             /*fitting_tolerance=*/5 * Milli(Metre),
             Ephemeris<Trappist>::FixedStepParameters(
