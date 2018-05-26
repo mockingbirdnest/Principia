@@ -232,10 +232,7 @@ void Population::ComputeAllFitnesses(
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
-    if (i > 0) {
-      cumulative_fitnesses_.push_back(cumulative_fitnesses_[i - 1] +
-                                      fitnesses_[i]);
-    }
+    cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitnesses_[i]);
     best_fitness = std::max(best_fitness, fitnesses_[i]);
     min_fitness = std::min(min_fitness, fitnesses_[i]);
     max_fitness = std::max(max_fitness, fitnesses_[i]);
