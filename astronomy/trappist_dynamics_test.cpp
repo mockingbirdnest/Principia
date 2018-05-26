@@ -487,9 +487,15 @@ class TrappistDynamicsTest : public ::testing::Test {
     return transits;
   }
 
+  static double ShortDays(Instant const& time) {
+    return (time - JD(2450000.0)) / Day;
+  }
+
   static Time Error(TransitsByPlanet const& observations,
-                    TransitsByPlanet const& computations) {
+                    TransitsByPlanet const& computations,
+                    bool const verbose) {
     Square<Time> sum_error²;
+    Time max_error;
     int number_of_transits = 0;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
@@ -511,6 +517,14 @@ class TrappistDynamicsTest : public ::testing::Test {
                        observed_transit - *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
+        if (error > max_error) {
+          max_error = error;
+          LOG_IF(ERROR, verbose)
+              << name << ": " 
+              << ShortDays(*std::prev(next_computed_transit)) << " "
+              << ShortDays(observed_transit) << " "
+              << ShortDays(*next_computed_transit) << " " << error;
+        }
         sum_error² += error * error;
       }
       number_of_transits += observed_transits.size();
@@ -578,7 +592,8 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << "max error: " << Error(observations, computations);
+  LOG(ERROR) << "max error: "
+             << Error(observations, computations, /*verbose=*/true);
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -621,7 +636,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
       }
     }
 
-    Time const error = Error(observations, computations);
+    Time const error = Error(observations, computations, /*verbose=*/false);
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
