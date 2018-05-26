@@ -119,7 +119,12 @@ void Genome::Mutate()  {
     element.longitude_of_periapsis = std::nullopt;
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
-    std::normal_distribution<> angle_distribution(0.0, 10.0);
+    // The standard deviation of the distribution below has a strong effect on
+    // the convergence of the algorithm: if it's too small we do not explore the
+    // genomic space efficiently and it takes forever to find decent solutions;
+    // if it's too large we explore the genomic space haphazardly and suffer
+    // from deleterious mutations.
+    std::normal_distribution<> angle_distribution(0.0, 7.0);
     *element.argument_of_periapsis += angle_distribution(engine) * Degree;
     *element.mean_anomaly += angle_distribution(engine) * Degree;
   }
@@ -590,7 +595,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
 
   Genome luca(elements);
   Population population(luca, 50);
-  for (int i = 0; i < 50; ++i) {
+  for (int i = 0; i < 200; ++i) {
     population.ComputeAllFitnesses(compute_fitness);
     population.BegetChildren();
   }
