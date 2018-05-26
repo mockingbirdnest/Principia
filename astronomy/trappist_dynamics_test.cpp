@@ -69,6 +69,7 @@ class Genome {
 
   static Genome OnePointCrossover(Genome const& g1, Genome const& g2);
   static Genome TwoPointCrossover(Genome const& g1, Genome const& g2);
+  static Genome Blend(Genome const& g1, Genome const& g2);
 
  private:
   std::vector<KeplerianElements<Trappist>> elements_;
@@ -118,7 +119,7 @@ void Genome::Mutate()  {
     element.longitude_of_periapsis = std::nullopt;
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
-    std::normal_distribution<> angle_distribution(0.0, 10.0);
+    std::lognormal_distribution<> angle_distribution(0.0, 10.0);
     *element.argument_of_periapsis += angle_distribution(engine) * Degree;
     *element.mean_anomaly += angle_distribution(engine) * Degree;
   }
@@ -184,6 +185,24 @@ Genome Genome::TwoPointCrossover(Genome const& g1, Genome const& g2) {
   return Genome(new_elements);
 }
 
+Genome Genome::Blend(Genome const& g1, Genome const& g2) {
+  CHECK_EQ(g1.elements_.size(), g2.elements_.size());
+  std::vector<KeplerianElements<Trappist>> new_elements;
+  std::uniform_real_distribution blend_distribution(0.0, 1.0);
+  double const blend = blend_distribution(engine);
+  for (int i = 0; i < g1.elements_.size(); ++i) {
+    KeplerianElements<Trappist> new_element = g1.elements_[i];
+    *new_element.argument_of_periapsis =
+        *g1.elements_[i].argument_of_periapsis * blend +
+        *g2.elements_[i].argument_of_periapsis * (1.0 - blend);
+    *new_element.argument_of_periapsis =
+        *g1.elements_[i].mean_anomaly * blend +
+        *g2.elements_[i].mean_anomaly * (1.0 - blend);
+    new_elements.push_back(new_element);
+  }
+  return Genome(new_elements);
+}
+
 Population::Population(Genome const& luca, int const size)
     : current_(size, luca),
       next_(size, luca) {
@@ -233,7 +252,7 @@ void Population::BegetChildren() {
     do
       parent2 = Pick();
     while(parent1 == parent2);
-    next_[i] = Genome::TwoPointCrossover(*parent1, *parent2);
+    next_[i] = Genome::Blend(*parent1, *parent2);
     next_[i].Mutate();
   }
   next_.swap(current_);
