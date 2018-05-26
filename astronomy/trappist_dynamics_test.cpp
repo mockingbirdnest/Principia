@@ -59,6 +59,8 @@ class Genome {
  public:
   explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
 
+  std::vector<KeplerianElements<Trappist>> const& elements() const;
+
   void Mutate();
 
   static Genome OnePointCrossover(Genome const& g1, Genome const& g2);
@@ -71,14 +73,15 @@ class Population {
 public:
   Population(Genome const& luca, int const size);
 
-  Genome const& Pick() const;
-
   void ComputeAllFitnesses(std::function<double(Genome const&)> compute_fitness);
 
-  Population BegetChildren() const;
+  void BegetChildren();
 
  private:
-  std::vector<Genome> individuals_;
+  Genome const* Pick() const;
+
+  std::vector<Genome> current_;
+  std::vector<Genome> next_;
   std::vector<double> fitnesses_;
   std::vector<double> cumulative_fitnesses_;
 };
@@ -86,6 +89,9 @@ public:
 Genome::Genome(std::vector<KeplerianElements<Trappist>> const& elements)
     : elements_(elements) {}
 
+std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
+  return elements_;
+}
 
 void Genome::Mutate()  {
   for (auto& element : elements_) {
@@ -106,7 +112,7 @@ void Genome::Mutate()  {
     element.longitude_of_periapsis = std::nullopt;
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
-    std::uniform_real_distribution<> angle_distribution(-1.0, 1.0);
+    std::normal_distribution<> angle_distribution(0.0, 10.0);
     *element.argument_of_periapsis += angle_distribution(engine) * Degree;
     *element.mean_anomaly += angle_distribution(engine) * Degree;
   }
@@ -116,8 +122,7 @@ Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
   std::vector<KeplerianElements<Trappist>> new_elements;
   std::uniform_int_distribution<> order_distribution(0, 1);
-  std::uniform_int_distribution<> split_distribution(1,
-                                                     g1.elements_.size() - 1);
+  std::uniform_int_distribution<> split_distribution(0, g1.elements_.size());
   bool const reverse = order_distribution(engine) == 1;
   int const split = split_distribution(engine);
   if (reverse) {
@@ -139,13 +144,50 @@ Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
 }
 
 Population::Population(Genome const& luca, int const size)
-    : individuals_(size, luca) {
-  for (auto& individual : individuals_) {
-    individual.Mutate();
+    : current_(size, luca),
+      next_(size, luca) {
+  for (auto& genome : current_) {
+    genome.Mutate();
   }
 }
 
-Genome const& Population::Pick() const {
+void Population::ComputeAllFitnesses(
+    std::function<double(Genome const&)> compute_fitness) {
+  static double best_fitness = 0.0;
+  double min_fitness = std::numeric_limits<double>::max();
+  double max_fitness = 0.0;
+  fitnesses_.clear();
+  cumulative_fitnesses_.clear();
+  cumulative_fitnesses_.push_back(0.0);
+  for (int i = 0; i < current_.size(); ++i) {
+    fitnesses_.push_back(compute_fitness(current_[i]));
+    if (i > 0) {
+      cumulative_fitnesses_.push_back(cumulative_fitnesses_[i - 1] +
+                                      fitnesses_.back());
+    }
+    best_fitness = std::max(best_fitness, fitnesses_.back());
+    min_fitness = std::min(min_fitness, fitnesses_.back());
+    max_fitness = std::max(max_fitness, fitnesses_.back());
+  }
+  LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
+             << " Best: " << best_fitness;
+}
+
+void Population::BegetChildren() {
+  for (int i = 0; i < next_.size(); ++i) {
+    Genome const* const parent1 = Pick();
+    Genome const* parent2;
+    // Avoid self-fecundation.
+    do
+      parent2 = Pick();
+    while(parent1 == parent2);
+    next_[i] = Genome::OnePointCrossover(*parent1, *parent2);
+    next_[i].Mutate();
+  }
+  next_.swap(current_);
+}
+
+Genome const* Population::Pick() const {
   std::uniform_real_distribution<> fitness_distribution(
       cumulative_fitnesses_.front(), cumulative_fitnesses_.back());
   double const picked_fitness = fitness_distribution(engine);
@@ -154,26 +196,11 @@ Genome const& Population::Pick() const {
                                           picked_fitness);
   CHECK(picked_it != cumulative_fitnesses_.begin());
   CHECK(picked_it != cumulative_fitnesses_.end());
-  return individuals_[std::distance(cumulative_fitnesses_.begin(),
-                                    picked_it) - 1];
-}
-
-void Population::ComputeAllFitnesses(
-    std::function<double(Genome const&)> compute_fitness) {
-  fitnesses_.clear();
-  cumulative_fitnesses_.clear();
-  cumulative_fitnesses_.push_back(0.0);
-  for (int i = 0; i < individuals_.size(); ++i) {
-    fitnesses_.push_back(compute_fitness(individuals_[i]));
-    if (i > 0) {
-      cumulative_fitnesses_.push_back(cumulative_fitnesses_[i - 1] +
-                                      fitnesses_.back());
-    }
-  }
-}
-
-Population Population::BegetChildren() const {
-  return *this;  //TODO(phl):Implement
+  int const picked_index =
+      std::distance(cumulative_fitnesses_.begin(), picked_it) - 1;
+  CHECK_LE(0, picked_index);
+  CHECK_LT(picked_index, current_.size());
+  return &current_[picked_index];
 }
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
@@ -303,14 +330,57 @@ class TrappistDynamicsTest : public ::testing::Test {
                                                    Position<Trappist>>(),
                 /*step=*/0.07 * Day))) {}
 
-  static std::string SanitizedName(MassiveBody const& body) {
-    auto sanitized_name = body.name();
-    return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
+  static Transits ComputeTransits(Ephemeris<Trappist> const& ephemeris,
+                                  not_null<MassiveBody const*> const star,
+                                  not_null<MassiveBody const*> const planet) {
+    Transits transits;
+    auto const& star_trajectory = ephemeris.trajectory(star);
+
+    std::optional<Instant> last_t;
+    std::optional<Sign> last_xy_displacement_derivative_sign;
+      auto const& planet_trajectory = ephemeris.trajectory(planet);
+    for (Instant t = ephemeris.t_min();
+          t < ephemeris.t_max();
+          t += 2 * Hour) {
+      RelativeDegreesOfFreedom<Trappist> const relative_dof =
+          planet_trajectory->EvaluateDegreesOfFreedom(t) -
+          star_trajectory->EvaluateDegreesOfFreedom(t);
+
+      auto const xy_displacement_derivative =
+          [&planet_trajectory, &star_trajectory](Instant const& t) {
+            RelativeDegreesOfFreedom<Trappist> const relative_dof =
+                planet_trajectory->EvaluateDegreesOfFreedom(t) -
+                star_trajectory->EvaluateDegreesOfFreedom(t);
+            // TODO(phl): Why don't we have projections?
+            auto xy_displacement =
+                relative_dof.displacement().coordinates();
+            xy_displacement.z = 0.0 * Metre;
+            auto xy_velocity = relative_dof.velocity().coordinates();
+            xy_velocity.z = 0.0 * Metre / Second;
+            return Dot(xy_displacement, xy_velocity);
+          };
+
+      Sign const xy_displacement_derivative_sign(
+          xy_displacement_derivative(t));
+      if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
+          last_t &&
+          xy_displacement_derivative_sign == Sign(1) &&
+          last_xy_displacement_derivative_sign == Sign(-1)) {
+        Instant const transit =
+            Bisect(xy_displacement_derivative, *last_t, t);
+        transits.push_back(transit);
+      }
+      last_t = t;
+      last_xy_displacement_derivative_sign =
+          xy_displacement_derivative_sign;
+    }
+    return transits;
   }
 
   static Time Error(TransitsByPlanet const& observations,
                     TransitsByPlanet const& computations) {
     Square<Time> sum_error²;
+    int number_of_transits = 0;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
       auto const& observed_transits = pair.second;
@@ -333,19 +403,28 @@ class TrappistDynamicsTest : public ::testing::Test {
         CHECK_LE(0.0 * Second, error);
         sum_error² += error * error;
       }
+      number_of_transits += observed_transits.size();
     }
-    return Sqrt(sum_error²);
+    return Sqrt(sum_error²) / number_of_transits;
   }
 
+  static std::string SanitizedName(MassiveBody const& body) {
+    auto sanitized_name = body.name();
+    return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
+  }
+
+  constexpr static char star_name[] = "Trappist-1A";
   SolarSystem<Trappist> const system_;
   not_null<std::unique_ptr<Ephemeris<Trappist>>> ephemeris_;
 };
+
+constexpr char TrappistDynamicsTest::star_name[];
 
 TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
-  auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
+  auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
 
   OFStream file(TEMP_DIR / "trappist_periods.generated.wl");
@@ -376,61 +455,72 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
-  auto const& star = system_.massive_body(*ephemeris_, "Trappist-1A");
-  auto const& star_trajectory = ephemeris_->trajectory(star);
-
   TransitsByPlanet computations;
-
   OFStream file(TEMP_DIR / "trappist_transits.generated.wl");
+
+  auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
     if (planet != star) {
-      auto const& planet_trajectory = ephemeris_->trajectory(planet);
-
-      std::optional<Instant> last_t;
-      std::optional<Sign> last_xy_displacement_derivative_sign;
-      for (Instant t = ephemeris_->t_min();
-           t < ephemeris_->t_min() + 10 * JulianYear;
-           t += 2 * Hour) {
-        RelativeDegreesOfFreedom<Trappist> const relative_dof =
-            planet_trajectory->EvaluateDegreesOfFreedom(t) -
-            star_trajectory->EvaluateDegreesOfFreedom(t);
-
-        auto const xy_displacement_derivative =
-            [&planet_trajectory, &star_trajectory](Instant const& t) {
-              RelativeDegreesOfFreedom<Trappist> const relative_dof =
-                  planet_trajectory->EvaluateDegreesOfFreedom(t) -
-                  star_trajectory->EvaluateDegreesOfFreedom(t);
-              // TODO(phl): Why don't we have projections?
-              auto xy_displacement =
-                  relative_dof.displacement().coordinates();
-              xy_displacement.z = 0.0 * Metre;
-              auto xy_velocity = relative_dof.velocity().coordinates();
-              xy_velocity.z = 0.0 * Metre / Second;
-              return Dot(xy_displacement, xy_velocity);
-            };
-
-        Sign const xy_displacement_derivative_sign(
-            xy_displacement_derivative(t));
-        if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
-            last_t &&
-            xy_displacement_derivative_sign == Sign(1) &&
-            last_xy_displacement_derivative_sign == Sign(-1)) {
-          Instant const transit =
-              Bisect(xy_displacement_derivative, *last_t, t);
-          computations[planet->name()].push_back(transit);
-        }
-        last_t = t;
-        last_xy_displacement_derivative_sign =
-            xy_displacement_derivative_sign;
-      }
-
+      computations[planet->name()] = ComputeTransits(*ephemeris_, star, planet);
       file << mathematica::Assign("transit" + SanitizedName(*planet),
                                   computations[planet->name()]);
     }
   }
 
   LOG(ERROR) << "max error: " << Error(observations, computations);
+}
+
+TEST_F(TrappistDynamicsTest, Optimisation) {
+  SolarSystem<Trappist> system(
+      SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "trappist_initial_state_jd_2457000_000000000.proto.txt");
+
+  auto planet_names = system.names();
+  planet_names.erase(
+      std::find(planet_names.begin(), planet_names.end(), star_name));
+  std::vector<KeplerianElements<Trappist>> elements;
+  for (auto const& planet_name : planet_names) {
+    elements.push_back(SolarSystem<Trappist>::MakeKeplerianElements(
+        system.keplerian_initial_state_message(planet_name).elements()));
+  }
+
+  auto compute_fitness = [&planet_names, &system](Genome const& genome) {
+    auto const& elements = genome.elements();
+    for (int i = 0; i < planet_names.size(); ++i) {
+      system.ReplaceElements(planet_names[i], elements[i]);
+    }
+
+    auto const ephemeris = system.MakeEphemeris(
+            /*fitting_tolerance=*/5 * Milli(Metre),
+            Ephemeris<Trappist>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                   Position<Trappist>>(),
+                /*step=*/0.07 * Day));
+    ephemeris->Prolong(system.epoch() + 1000 * Day);
+
+    TransitsByPlanet computations;
+    auto const& star = system.massive_body(*ephemeris, star_name);
+    auto const bodies = ephemeris->bodies();
+    for (auto const& planet : bodies) {
+      if (planet != star) {
+        computations[planet->name()] =
+            ComputeTransits(*ephemeris, star, planet);
+      }
+    }
+
+    Time const error = Error(observations, computations);
+    // This is the place where we cook the sausage.
+    return std::exp(40'000 * Second / error);
+  };
+
+  Genome luca(elements);
+  Population population(luca, 50);
+  for (int i = 0; i < 50; ++i) {
+    population.ComputeAllFitnesses(compute_fitness);
+    population.BegetChildren();
+  }
 }
 
 }  // namespace astronomy
