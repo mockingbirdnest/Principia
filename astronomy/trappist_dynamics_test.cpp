@@ -2,8 +2,10 @@
 #include <random>
 
 #include "astronomy/frames.hpp"
+#include "base/bundle.hpp"
 #include "base/file.hpp"
 #include "base/not_null.hpp"
+#include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
 #include "gtest/gtest.h"
@@ -23,8 +25,10 @@
 
 namespace principia {
 
+using base::Bundle;
 using base::not_null;
 using base::OFStream;
+using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
@@ -64,6 +68,7 @@ class Genome {
   void Mutate();
 
   static Genome OnePointCrossover(Genome const& g1, Genome const& g2);
+  static Genome TwoPointCrossover(Genome const& g1, Genome const& g2);
 
  private:
   std::vector<KeplerianElements<Trappist>> elements_;
@@ -73,7 +78,8 @@ class Population {
 public:
   Population(Genome const& luca, int const size);
 
-  void ComputeAllFitnesses(std::function<double(Genome const&)> compute_fitness);
+  void ComputeAllFitnesses(
+      std::function<double(Genome const&)> const& compute_fitness);
 
   void BegetChildren();
 
@@ -129,7 +135,7 @@ Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
     for (int i = 0; i < split; ++i) {
       new_elements.push_back(g1.elements_[i]);
     }
-    for (int i = split; i < g1.elements_.size(); ++i) {
+    for (int i = split; i < g2.elements_.size(); ++i) {
       new_elements.push_back(g2.elements_[i]);
     }
   } else {
@@ -138,6 +144,41 @@ Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
     }
     for (int i = split; i < g1.elements_.size(); ++i) {
       new_elements.push_back(g1.elements_[i]);
+    }
+  }
+  return Genome(new_elements);
+}
+
+Genome Genome::TwoPointCrossover(Genome const& g1, Genome const& g2) {
+  CHECK_EQ(g1.elements_.size(), g2.elements_.size());
+  std::vector<KeplerianElements<Trappist>> new_elements;
+  std::uniform_int_distribution<> order_distribution(0, 1);
+  std::uniform_int_distribution<> split_distribution(0, g1.elements_.size());
+  bool const reverse = order_distribution(engine) == 1;
+  int split1 = split_distribution(engine);
+  int split2 = split_distribution(engine);
+  if (split2 < split1) {
+    std::swap(split1, split2);
+  }
+  if (reverse) {
+    for (int i = 0; i < split1; ++i) {
+      new_elements.push_back(g1.elements_[i]);
+    }
+    for (int i = split1; i < split2; ++i) {
+      new_elements.push_back(g2.elements_[i]);
+    }
+    for (int i = split2; i < g1.elements_.size(); ++i) {
+      new_elements.push_back(g1.elements_[i]);
+    }
+  } else {
+    for (int i = 0; i < split1; ++i) {
+      new_elements.push_back(g2.elements_[i]);
+    }
+    for (int i = split1; i < split2; ++i) {
+      new_elements.push_back(g1.elements_[i]);
+    }
+    for (int i = split2; i < g2.elements_.size(); ++i) {
+      new_elements.push_back(g2.elements_[i]);
     }
   }
   return Genome(new_elements);
@@ -152,22 +193,33 @@ Population::Population(Genome const& luca, int const size)
 }
 
 void Population::ComputeAllFitnesses(
-    std::function<double(Genome const&)> compute_fitness) {
+    std::function<double(Genome const&)> const& compute_fitness) {
+  {
+    Bundle bundle(4);
+
+    fitnesses_.resize(current_.size(), 0.0);
+    for (int i = 0; i < current_.size(); ++i) {
+      bundle.Add([this, &compute_fitness, i]() {
+        fitnesses_[i] = compute_fitness(current_[i]);
+        return Status();
+      });
+    }
+    bundle.Join();
+  }
+
   static double best_fitness = 0.0;
   double min_fitness = std::numeric_limits<double>::max();
   double max_fitness = 0.0;
-  fitnesses_.clear();
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
-    fitnesses_.push_back(compute_fitness(current_[i]));
     if (i > 0) {
       cumulative_fitnesses_.push_back(cumulative_fitnesses_[i - 1] +
-                                      fitnesses_.back());
+                                      fitnesses_[i]);
     }
-    best_fitness = std::max(best_fitness, fitnesses_.back());
-    min_fitness = std::min(min_fitness, fitnesses_.back());
-    max_fitness = std::max(max_fitness, fitnesses_.back());
+    best_fitness = std::max(best_fitness, fitnesses_[i]);
+    min_fitness = std::min(min_fitness, fitnesses_[i]);
+    max_fitness = std::max(max_fitness, fitnesses_[i]);
   }
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
              << " Best: " << best_fitness;
@@ -181,7 +233,7 @@ void Population::BegetChildren() {
     do
       parent2 = Pick();
     while(parent1 == parent2);
-    next_[i] = Genome::OnePointCrossover(*parent1, *parent2);
+    next_[i] = Genome::TwoPointCrossover(*parent1, *parent2);
     next_[i].Mutate();
   }
   next_.swap(current_);
@@ -472,7 +524,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
-  SolarSystem<Trappist> system(
+  SolarSystem<Trappist> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "trappist_initial_state_jd_2457000_000000000.proto.txt");
@@ -487,21 +539,22 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   }
 
   auto compute_fitness = [&planet_names, &system](Genome const& genome) {
+    auto modified_system = system;
     auto const& elements = genome.elements();
     for (int i = 0; i < planet_names.size(); ++i) {
-      system.ReplaceElements(planet_names[i], elements[i]);
+      modified_system.ReplaceElements(planet_names[i], elements[i]);
     }
 
-    auto const ephemeris = system.MakeEphemeris(
+    auto const ephemeris = modified_system.MakeEphemeris(
             /*fitting_tolerance=*/5 * Milli(Metre),
             Ephemeris<Trappist>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                                    Position<Trappist>>(),
                 /*step=*/0.07 * Day));
-    ephemeris->Prolong(system.epoch() + 1000 * Day);
+    ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
 
     TransitsByPlanet computations;
-    auto const& star = system.massive_body(*ephemeris, star_name);
+    auto const& star = modified_system.massive_body(*ephemeris, star_name);
     auto const bodies = ephemeris->bodies();
     for (auto const& planet : bodies) {
       if (planet != star) {

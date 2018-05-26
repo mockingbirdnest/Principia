@@ -42,6 +42,9 @@ class SolarSystem final {
               serialization::InitialState const& initial_state,
               bool ignore_frame = false);
 
+  SolarSystem(SolarSystem const& other);
+  SolarSystem& operator=(const SolarSystem& other);
+
   // Constructs an ephemeris for this object using the specified parameters.
   // The bodies and initial state are constructed from the data passed to
   // |Initialize|.

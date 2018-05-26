@@ -54,6 +54,7 @@
     <ClInclude Include="frames.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="date_time_test.cpp" />

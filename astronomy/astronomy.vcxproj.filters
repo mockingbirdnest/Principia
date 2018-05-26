@@ -182,5 +182,8 @@
     <ClCompile Include="trappist_dynamics_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\base\bundle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
