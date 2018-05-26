@@ -1,4 +1,4 @@
-
+ï»¿
 #include <random>
 
 #include "astronomy/frames.hpp"
@@ -57,40 +57,57 @@ namespace astronomy {
 using Transits = std::vector<Instant>;
 using TransitsByPlanet = std::map<std::string, Transits>;
 
-std::mt19937_64 engine;
+// The random number generator used by the optimisation.
 
+// The description of the characteristics of an individual, i.e., a
+// configuration of the Trappist system.
 class Genome {
  public:
   explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
 
   std::vector<KeplerianElements<Trappist>> const& elements() const;
 
-  void Mutate();
+  void Mutate(std::mt19937_64& engine);
 
-  static Genome OnePointCrossover(Genome const& g1, Genome const& g2);
-  static Genome TwoPointCrossover(Genome const& g1, Genome const& g2);
-  static Genome Blend(Genome const& g1, Genome const& g2);
+  static Genome OnePointCrossover(Genome const& g1,
+                                  Genome const& g2,
+                                  std::mt19937_64& engine);
+  static Genome TwoPointCrossover(Genome const& g1,
+                                  Genome const& g2,
+                                  std::mt19937_64& engine);
+  static Genome Blend(Genome const& g1,
+                      Genome const& g2,
+                      std::mt19937_64& engine);
 
  private:
   std::vector<KeplerianElements<Trappist>> elements_;
 };
 
+// A set of genomes which can reproduce based on their fitness.
 class Population {
-public:
-  Population(Genome const& luca, int const size);
+ public:
+  Population(Genome const& luca,
+             int const size,
+             std::function<double(Genome const&)> compute_fitness);
 
-  void ComputeAllFitnesses(
-      std::function<double(Genome const&)> const& compute_fitness);
+  void ComputeAllFitnesses();
 
   void BegetChildren();
+
+  Genome best_genome() const;
 
  private:
   Genome const* Pick() const;
 
+  std::function<double(Genome const&)> const compute_fitness_;
+  mutable std::mt19937_64 engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
   std::vector<double> fitnesses_;
   std::vector<double> cumulative_fitnesses_;
+
+  double best_fitness_ = 0.0;
+  std::optional<Genome> best_genome_;
 };
 
 Genome::Genome(std::vector<KeplerianElements<Trappist>> const& elements)
@@ -100,7 +117,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
   return elements_;
 }
 
-void Genome::Mutate()  {
+void Genome::Mutate(std::mt19937_64& engine)  {
   for (auto& element : elements_) {
     element.asymptotic_true_anomaly = std::nullopt;
     element.turning_angle = std::nullopt;
@@ -130,7 +147,9 @@ void Genome::Mutate()  {
   }
 }
 
-Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
+Genome Genome::OnePointCrossover(Genome const& g1,
+                                 Genome const& g2,
+                                 std::mt19937_64& engine) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
   std::vector<KeplerianElements<Trappist>> new_elements;
   std::uniform_int_distribution<> order_distribution(0, 1);
@@ -155,7 +174,9 @@ Genome Genome::OnePointCrossover(Genome const& g1, Genome const& g2) {
   return Genome(new_elements);
 }
 
-Genome Genome::TwoPointCrossover(Genome const& g1, Genome const& g2) {
+Genome Genome::TwoPointCrossover(Genome const& g1,
+                                 Genome const& g2,
+                                 std::mt19937_64& engine) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
   std::vector<KeplerianElements<Trappist>> new_elements;
   std::uniform_int_distribution<> order_distribution(0, 1);
@@ -190,7 +211,9 @@ Genome Genome::TwoPointCrossover(Genome const& g1, Genome const& g2) {
   return Genome(new_elements);
 }
 
-Genome Genome::Blend(Genome const& g1, Genome const& g2) {
+Genome Genome::Blend(Genome const& g1,
+                     Genome const& g2,
+                     std::mt19937_64& engine) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
   std::vector<KeplerianElements<Trappist>> new_elements;
   std::uniform_real_distribution blend_distribution(0.0, 1.0);
@@ -208,42 +231,48 @@ Genome Genome::Blend(Genome const& g1, Genome const& g2) {
   return Genome(new_elements);
 }
 
-Population::Population(Genome const& luca, int const size)
+Population::Population(Genome const& luca,
+                       int const size,
+                       std::function<double(Genome const&)> compute_fitness)
     : current_(size, luca),
-      next_(size, luca) {
+      next_(size, luca),
+      compute_fitness_(std::move(compute_fitness)) {
   for (auto& genome : current_) {
-    genome.Mutate();
+    genome.Mutate(engine_);
   }
 }
 
-void Population::ComputeAllFitnesses(
-    std::function<double(Genome const&)> const& compute_fitness) {
+void Population::ComputeAllFitnesses() {
+  // The fitness computation is expensive, do it in parallel on all genomes.
   {
     Bundle bundle(4);
 
     fitnesses_.resize(current_.size(), 0.0);
     for (int i = 0; i < current_.size(); ++i) {
-      bundle.Add([this, &compute_fitness, i]() {
-        fitnesses_[i] = compute_fitness(current_[i]);
+      bundle.Add([this, i]() {
+        fitnesses_[i] = compute_fitness_(current_[i]);
         return Status();
       });
     }
     bundle.Join();
   }
 
-  static double best_fitness = 0.0;
   double min_fitness = std::numeric_limits<double>::max();
   double max_fitness = 0.0;
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
-    cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitnesses_[i]);
-    best_fitness = std::max(best_fitness, fitnesses_[i]);
-    min_fitness = std::min(min_fitness, fitnesses_[i]);
-    max_fitness = std::max(max_fitness, fitnesses_[i]);
+    double const fitness = fitnesses_[i];
+    cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitness);
+    min_fitness = std::min(min_fitness, fitness);
+    max_fitness = std::max(max_fitness, fitness);
+    if (fitness > best_fitness_) {
+      best_fitness_ = fitness;
+      best_genome_ = current_[i];
+    }
   }
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
-             << " Best: " << best_fitness;
+             << " Best: " << best_fitness_;
 }
 
 void Population::BegetChildren() {
@@ -258,16 +287,20 @@ void Population::BegetChildren() {
         break;
       }
     }
-    next_[i] = Genome::TwoPointCrossover(*parent1, *parent2);
-    next_[i].Mutate();
+    next_[i] = Genome::TwoPointCrossover(*parent1, *parent2, engine_);
+    next_[i].Mutate(engine_);
   }
   next_.swap(current_);
+}
+
+Genome Population::best_genome() const {
+  return *best_genome_;
 }
 
 Genome const* Population::Pick() const {
   std::uniform_real_distribution<> fitness_distribution(
       cumulative_fitnesses_.front(), cumulative_fitnesses_.back());
-  double const picked_fitness = fitness_distribution(engine);
+  double const picked_fitness = fitness_distribution(engine_);
   auto const picked_it = std::lower_bound(cumulative_fitnesses_.begin(),
                                           cumulative_fitnesses_.end(),
                                           picked_fitness);
@@ -456,7 +489,7 @@ class TrappistDynamicsTest : public ::testing::Test {
 
   static Time Error(TransitsByPlanet const& observations,
                     TransitsByPlanet const& computations) {
-    Square<Time> sum_error²;
+    Square<Time> sum_errorÂ²;
     int number_of_transits = 0;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
@@ -478,11 +511,11 @@ class TrappistDynamicsTest : public ::testing::Test {
                        observed_transit - *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
-        sum_error² += error * error;
+        sum_errorÂ² += error * error;
       }
       number_of_transits += observed_transits.size();
     }
-    return Sqrt(sum_error²) / number_of_transits;
+    return Sqrt(sum_errorÂ²) / number_of_transits;
   }
 
   static std::string SanitizedName(MassiveBody const& body) {
@@ -589,15 +622,22 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     }
 
     Time const error = Error(observations, computations);
-    // This is the place where we cook the sausage.
-    return std::exp(40'000 * Second / error);
+    // This is the place where we cook the sausage.  This function must be steep
+    // enough to efficiently separate the wheat from the chaff without leading
+    // to monoculture.
+    return std::exp(4000 * Second / error);
   };
 
   Genome luca(elements);
-  Population population(luca, 50);
+  Population population(luca, 50, std::move(compute_fitness));
   for (int i = 0; i < 200; ++i) {
-    population.ComputeAllFitnesses(compute_fitness);
+    population.ComputeAllFitnesses();
     population.BegetChildren();
+  }
+
+  for (int i = 0; i < planet_names.size(); ++i) {
+    LOG(ERROR) << planet_names[i] << ": "
+               << population.best_genome().elements()[i];
   }
 }
 
