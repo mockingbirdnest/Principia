@@ -119,7 +119,7 @@ void Genome::Mutate()  {
     element.longitude_of_periapsis = std::nullopt;
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
-    std::lognormal_distribution<> angle_distribution(0.0, 10.0);
+    std::normal_distribution<> angle_distribution(0.0, 10.0);
     *element.argument_of_periapsis += angle_distribution(engine) * Degree;
     *element.mean_anomaly += angle_distribution(engine) * Degree;
   }
@@ -245,11 +245,15 @@ void Population::BegetChildren() {
   for (int i = 0; i < next_.size(); ++i) {
     Genome const* const parent1 = Pick();
     Genome const* parent2;
-    // Avoid self-fecundation.
-    do
+    // Let's have sex like snails: if we find a good partner, fine, otherwise
+    // let's go for self-fecundation.
+    for (int j = 0; j < 100; ++j) {
       parent2 = Pick();
-    while(parent1 == parent2);
-    next_[i] = Genome::Blend(*parent1, *parent2);
+      if (parent1 != parent2) {
+        break;
+      }
+    }
+    next_[i] = Genome::TwoPointCrossover(*parent1, *parent2);
     next_[i].Mutate();
   }
   next_.swap(current_);
