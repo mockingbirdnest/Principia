@@ -268,11 +268,34 @@ void Population::ComputeAllFitnesses() {
     max_fitness = std::max(max_fitness, fitness);
     if (fitness > best_fitness_) {
       best_fitness_ = fitness;
+      LOG(ERROR) << "New best genome:";
+      char planet = 'b';
+      for (int j = 0; j < current_[i].elements().size(); ++j) {
+        LOG(ERROR) << std::string({planet++, ':'});
+        if (best_genome_) {
+          LOG(ERROR)
+              << "old l = "
+              << best_genome_->elements()[j].longitude_of_ascending_node +
+                     *best_genome_->elements()[j].argument_of_periapsis +
+                     *best_genome_->elements()[j].mean_anomaly;
+        }
+        LOG(ERROR) << "new l = "
+                   << current_[i].elements()[j].longitude_of_ascending_node +
+                          *current_[i].elements()[j].argument_of_periapsis +
+                          *current_[i].elements()[j].mean_anomaly;
+      }
       best_genome_ = current_[i];
     }
   }
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
              << " Best: " << best_fitness_;
+  auto logp = [](double fitness) { return -numerics::Cbrt(1 / fitness); };
+  LOG(ERROR) << "Min log p: " << -logp(min_fitness)
+             << " Max log p: " << -logp(max_fitness)
+             << " Best log p: " << -logp(best_fitness_);
+  LOG(ERROR) << "Min p: " << std::exp(logp(min_fitness))
+             << " Max p: " << std::exp(logp(max_fitness))
+             << " Best p: " << std::exp(logp(best_fitness_));
 }
 
 void Population::BegetChildren() {
@@ -491,12 +514,12 @@ class TrappistDynamicsTest : public ::testing::Test {
     return (time - JD(2450000.0)) / Day;
   }
 
-  static Time Error(TransitsByPlanet const& observations,
+  static double LogProbability(TransitsByPlanet const& observations,
                     TransitsByPlanet const& computations,
                     bool const verbose) {
-    Square<Time> sum_error²;
     Time max_error;
     int number_of_transits = 0;
+    double log_p = 0;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
       auto const& observed_transits = pair.second;
@@ -525,11 +548,13 @@ class TrappistDynamicsTest : public ::testing::Test {
               << ShortDays(observed_transit) << " "
               << ShortDays(*next_computed_transit) << " " << error;
         }
-        sum_error² += error * error;
+        Time const σ = 0.001 * Day;
+        double const x = error / (σ * Sqrt(2));
+        log_p -= 2 / Sqrt(π) * (x + x * x);
       }
       number_of_transits += observed_transits.size();
     }
-    return Sqrt(sum_error²) / number_of_transits;
+    return log_p;
   }
 
   static std::string SanitizedName(MassiveBody const& body) {
@@ -592,8 +617,9 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << "max error: "
-             << Error(observations, computations, /*verbose=*/true);
+  LOG(ERROR) << "min probability: "
+             << std::exp(LogProbability(
+                    observations, computations, /*verbose=*/true));
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -636,11 +662,12 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
       }
     }
 
-    Time const error = Error(observations, computations, /*verbose=*/false);
+    double const log_p =
+        LogProbability(observations, computations, /*verbose=*/false);
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
-    return std::exp(4000 * Second / error);
+    return 1 / -(log_p*log_p*log_p);
   };
 
   Genome luca(elements);
