@@ -88,7 +88,8 @@ class Population {
  public:
   Population(Genome const& luca,
              int const size,
-             std::function<double(Genome const&)> compute_fitness);
+             std::function<double(Genome const&)> compute_fitness,
+             std::function<std::string(Genome const&)> residual_trace);
 
   void ComputeAllFitnesses();
 
@@ -100,6 +101,7 @@ class Population {
   Genome const* Pick() const;
 
   std::function<double(Genome const&)> const compute_fitness_;
+  std::function<std::string(Genome const&)> const residual_trace_;
   mutable std::mt19937_64 engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
@@ -141,9 +143,11 @@ void Genome::Mutate(std::mt19937_64& engine)  {
     // genomic space efficiently and it takes forever to find decent solutions;
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
-    std::normal_distribution<> angle_distribution(0.0, 7.0);
-    *element.argument_of_periapsis += angle_distribution(engine) * Degree;
-    *element.mean_anomaly += angle_distribution(engine) * Degree;
+    std::student_t_distribution<> distribution(1);
+    *element.argument_of_periapsis += distribution(engine) * 0.1 * Degree;
+    *element.mean_anomaly += distribution(engine) * 0.1 * Degree;
+    *element.period += distribution(engine) * 1e-3 * Second;
+    *element.eccentricity += distribution(engine) * 1e-6;
   }
 }
 
@@ -233,10 +237,12 @@ Genome Genome::Blend(Genome const& g1,
 
 Population::Population(Genome const& luca,
                        int const size,
-                       std::function<double(Genome const&)> compute_fitness)
+                       std::function<double(Genome const&)> compute_fitness,
+                       std::function<std::string(Genome const&)> residual_trace)
     : current_(size, luca),
       next_(size, luca),
-      compute_fitness_(std::move(compute_fitness)) {
+      compute_fitness_(std::move(compute_fitness)),
+      residual_trace_(std::move(residual_trace)) {
   for (auto& genome : current_) {
     genome.Mutate(engine_);
   }
@@ -257,15 +263,23 @@ void Population::ComputeAllFitnesses() {
     bundle.Join();
   }
 
-  double min_fitness = std::numeric_limits<double>::max();
+  double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
+  Genome const* fittest = nullptr;
+  Genome const* least_fit = nullptr;
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
     double const fitness = fitnesses_[i];
     cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitness);
-    min_fitness = std::min(min_fitness, fitness);
-    max_fitness = std::max(max_fitness, fitness);
+    if (fitness > max_fitness) {
+      max_fitness = fitness;
+      fittest = &current_[i];
+    }
+    if (fitness < min_fitness) {
+      min_fitness = fitness;
+      least_fit = &current_[i];
+    }
     if (fitness > best_fitness_) {
       best_fitness_ = fitness;
       LOG(ERROR) << "New best genome:";
@@ -274,28 +288,46 @@ void Population::ComputeAllFitnesses() {
         LOG(ERROR) << std::string({planet++, ':'});
         if (best_genome_) {
           LOG(ERROR)
-              << "old l = "
-              << best_genome_->elements()[j].longitude_of_ascending_node +
-                     *best_genome_->elements()[j].argument_of_periapsis +
-                     *best_genome_->elements()[j].mean_anomaly;
+              << "old L = "
+              << (best_genome_->elements()[j].longitude_of_ascending_node +
+                  *best_genome_->elements()[j].argument_of_periapsis +
+                  *best_genome_->elements()[j].mean_anomaly) /
+                     Degree
+              << u8"°";
+          LOG(ERROR)
+              << u8"   ΔL = "
+              << ((current_[i].elements()[j].longitude_of_ascending_node +
+                   *current_[i].elements()[j].argument_of_periapsis +
+                   *current_[i].elements()[j].mean_anomaly) -
+                  (best_genome_->elements()[j].longitude_of_ascending_node +
+                   *best_genome_->elements()[j].argument_of_periapsis +
+                   *best_genome_->elements()[j].mean_anomaly)) /
+                     Degree
+              << u8"°";
         }
-        LOG(ERROR) << "new l = "
-                   << current_[i].elements()[j].longitude_of_ascending_node +
-                          *current_[i].elements()[j].argument_of_periapsis +
-                          *current_[i].elements()[j].mean_anomaly;
+        LOG(ERROR) << "new L = "
+                   << (current_[i].elements()[j].longitude_of_ascending_node +
+                       *current_[i].elements()[j].argument_of_periapsis +
+                       *current_[i].elements()[j].mean_anomaly) /
+                          Degree
+                   << u8"°";
+        if (best_genome_) {
+          LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
+          LOG(ERROR) << u8"   Δe = "
+                     << *current_[i].elements()[j].eccentricity -
+                            *best_genome_->elements()[j].eccentricity;
+        }
+        LOG(ERROR) << "new e = " << *current_[i].elements()[j].eccentricity;
       }
       best_genome_ = current_[i];
     }
   }
+
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
              << " Best: " << best_fitness_;
-  auto logp = [](double fitness) { return -numerics::Cbrt(1 / fitness); };
-  LOG(ERROR) << "Min log p: " << -logp(min_fitness)
-             << " Max log p: " << -logp(max_fitness)
-             << " Best log p: " << -logp(best_fitness_);
-  LOG(ERROR) << "Min p: " << std::exp(logp(min_fitness))
-             << " Max p: " << std::exp(logp(max_fitness))
-             << " Best p: " << std::exp(logp(best_fitness_));
+  LOG(ERROR) << "Least fit: " << residual_trace_(*least_fit);
+  LOG(ERROR) << "Fittest  : " << residual_trace_(*fittest);
+  LOG(ERROR) << "Best     : " << residual_trace_(*best_genome_);
 }
 
 void Population::BegetChildren() {
@@ -304,7 +336,7 @@ void Population::BegetChildren() {
     Genome const* parent2;
     // Let's have sex like snails: if we find a good partner, fine, otherwise
     // let's go for self-fecundation.
-    for (int j = 0; j < 100; ++j) {
+    for (int j = 0; j < 2; ++j) {
       parent2 = Pick();
       if (parent1 != parent2) {
         break;
@@ -516,10 +548,12 @@ class TrappistDynamicsTest : public ::testing::Test {
 
   static double LogProbability(TransitsByPlanet const& observations,
                     TransitsByPlanet const& computations,
-                    bool const verbose) {
-    Time max_error;
+                    std::vector<Time>* errors) {
     int number_of_transits = 0;
     double log_p = 0;
+    if (errors != nullptr) {
+      errors->clear();
+    }
     for (auto const& pair : observations) {
       auto const& name = pair.first;
       auto const& observed_transits = pair.second;
@@ -540,13 +574,8 @@ class TrappistDynamicsTest : public ::testing::Test {
                        observed_transit - *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
-        if (error > max_error) {
-          max_error = error;
-          LOG_IF(ERROR, verbose)
-              << name << ": " 
-              << ShortDays(*std::prev(next_computed_transit)) << " "
-              << ShortDays(observed_transit) << " "
-              << ShortDays(*next_computed_transit) << " " << error;
+        if (errors != nullptr) {
+          errors->push_back(error);
         }
         Time const σ = 0.001 * Day;
         double const x = error / (σ * Sqrt(2));
@@ -619,7 +648,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 
   LOG(ERROR) << "min probability: "
              << std::exp(LogProbability(
-                    observations, computations, /*verbose=*/true));
+                    observations, computations, nullptr));
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -637,6 +666,48 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
+  auto residual_trace = [&planet_names, &system](Genome const& genome) {
+    auto modified_system = system;
+    auto const& elements = genome.elements();
+    for (int i = 0; i < planet_names.size(); ++i) {
+      modified_system.ReplaceElements(planet_names[i], elements[i]);
+    }
+
+    auto const ephemeris = modified_system.MakeEphemeris(
+            /*fitting_tolerance=*/5 * Milli(Metre),
+            Ephemeris<Trappist>::FixedStepParameters(
+                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                                   Position<Trappist>>(),
+                /*step=*/0.07 * Day));
+    ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
+    if (!ephemeris->last_severe_integration_status().ok()) {
+      return std::string(u8"ἀποκάλυψις");
+    }
+
+    TransitsByPlanet computations;
+    auto const& star = modified_system.massive_body(*ephemeris, star_name);
+    auto const bodies = ephemeris->bodies();
+    for (auto const& planet : bodies) {
+      if (planet != star) {
+        computations[planet->name()] =
+            ComputeTransits(*ephemeris, star, planet);
+      }
+    }
+
+    std::vector<Time> δt;
+    double const log_p = LogProbability(observations, computations, &δt);
+    Time max = 0 * Second;
+    Time total = 0 * Second;
+    for (auto const residual : δt) {
+      max = std::max(max, residual);
+      total += residual;
+    }
+    return "log p = " + std::to_string(log_p) +
+           "; p = " + std::to_string(std::exp(log_p)) + u8"; max Δt = " +
+           std::to_string(max / Second) + u8" s; avg Δt = " +
+           std::to_string(total / δt.size() / Second) + " s";
+  };
+
   auto compute_fitness = [&planet_names, &system](Genome const& genome) {
     auto modified_system = system;
     auto const& elements = genome.elements();
@@ -651,6 +722,9 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                                                    Position<Trappist>>(),
                 /*step=*/0.07 * Day));
     ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
+    if (!ephemeris->last_severe_integration_status().ok()) {
+      return 0.0;
+    }
 
     TransitsByPlanet computations;
     auto const& star = modified_system.massive_body(*ephemeris, star_name);
@@ -663,15 +737,16 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     }
 
     double const log_p =
-        LogProbability(observations, computations, /*verbose=*/false);
+        LogProbability(observations, computations, nullptr);
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
-    return 1 / -(log_p*log_p*log_p);
+    return 1 / (log_p * log_p * log_p * log_p);
   };
 
   Genome luca(elements);
-  Population population(luca, 50, std::move(compute_fitness));
+  Population population(
+      luca, 50, std::move(compute_fitness), std::move(residual_trace));
   for (int i = 0; i < 200; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
