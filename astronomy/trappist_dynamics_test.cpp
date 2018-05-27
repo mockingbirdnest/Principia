@@ -67,7 +67,7 @@ class Genome {
 
   std::vector<KeplerianElements<Trappist>> const& elements() const;
 
-  void Mutate(std::mt19937_64& engine);
+  void Mutate(std::mt19937_64& engine, int generation);
 
   static Genome OnePointCrossover(Genome const& g1,
                                   Genome const& g2,
@@ -108,6 +108,7 @@ class Population {
   std::vector<double> fitnesses_;
   std::vector<double> cumulative_fitnesses_;
 
+  int generation_ = 0;
   double best_fitness_ = 0.0;
   std::optional<Genome> best_genome_;
 };
@@ -119,7 +120,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
   return elements_;
 }
 
-void Genome::Mutate(std::mt19937_64& engine)  {
+void Genome::Mutate(std::mt19937_64& engine, int generation)  {
   for (auto& element : elements_) {
     element.asymptotic_true_anomaly = std::nullopt;
     element.turning_angle = std::nullopt;
@@ -143,11 +144,27 @@ void Genome::Mutate(std::mt19937_64& engine)  {
     // genomic space efficiently and it takes forever to find decent solutions;
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
+    double multiplicator = std::exp2(-2 - generation / 15);
+    if (generation == -1) multiplicator = 1;
     std::student_t_distribution<> distribution(1);
-    *element.argument_of_periapsis += distribution(engine) * 0.1 * Degree;
-    *element.mean_anomaly += distribution(engine) * 0.1 * Degree;
-    *element.period += distribution(engine) * 1e-3 * Second;
-    *element.eccentricity += distribution(engine) * 1e-6;
+    *element.argument_of_periapsis +=
+        distribution(engine) * 10 * Degree * multiplicator;
+    *element.argument_of_periapsis =
+        std::fmod(*element.argument_of_periapsis / quantities::si::Radian,
+                  2 * π) *
+        quantities::si::Radian;
+    if (*element.argument_of_periapsis < 0 * quantities::si::Radian) {
+      *element.argument_of_periapsis += 2 * π * quantities::si::Radian;
+    }
+    *element.mean_anomaly += distribution(engine) * 10 * Degree * multiplicator;
+    *element.mean_anomaly =
+        std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
+        quantities::si::Radian;
+    if (*element.mean_anomaly < 0 * quantities::si::Radian) {
+      *element.mean_anomaly += 2 * π * quantities::si::Radian;
+    }
+    *element.period *= 1 + distribution(engine) * 1e-6 * multiplicator;
+    *element.eccentricity += distribution(engine) * 1e-3 * multiplicator;
   }
 }
 
@@ -243,8 +260,8 @@ Population::Population(Genome const& luca,
       next_(size, luca),
       compute_fitness_(std::move(compute_fitness)),
       residual_trace_(std::move(residual_trace)) {
-  for (auto& genome : current_) {
-    genome.Mutate(engine_);
+  for (int i = 0; i < current_.size(); ++i) {
+    current_[i].Mutate(engine_, -1);
   }
 }
 
@@ -262,7 +279,8 @@ void Population::ComputeAllFitnesses() {
     }
     bundle.Join();
   }
-
+  
+  LOG(ERROR) << "Generation " << generation_;
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
   Genome const* fittest = nullptr;
@@ -322,7 +340,6 @@ void Population::ComputeAllFitnesses() {
       best_genome_ = current_[i];
     }
   }
-
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
              << " Best: " << best_fitness_;
   LOG(ERROR) << "Least fit: " << residual_trace_(*least_fit);
@@ -343,9 +360,10 @@ void Population::BegetChildren() {
       }
     }
     next_[i] = Genome::TwoPointCrossover(*parent1, *parent2, engine_);
-    next_[i].Mutate(engine_);
+    next_[i].Mutate(engine_, generation_);
   }
   next_.swap(current_);
+  ++generation_;
 }
 
 Genome Population::best_genome() const {
@@ -546,11 +564,11 @@ class TrappistDynamicsTest : public ::testing::Test {
     return (time - JD(2450000.0)) / Day;
   }
 
-  static double LogProbability(TransitsByPlanet const& observations,
+  static double χ²(TransitsByPlanet const& observations,
                     TransitsByPlanet const& computations,
                     std::vector<Time>* errors) {
     int number_of_transits = 0;
-    double log_p = 0;
+    double sum_of_squared_errors = 0;
     if (errors != nullptr) {
       errors->clear();
     }
@@ -578,12 +596,11 @@ class TrappistDynamicsTest : public ::testing::Test {
           errors->push_back(error);
         }
         Time const σ = 0.001 * Day;
-        double const x = error / (σ * Sqrt(2));
-        log_p -= 2 / Sqrt(π) * (x + x * x);
+        sum_of_squared_errors += quantities::Pow<2>(error / σ);
       }
       number_of_transits += observed_transits.size();
     }
-    return log_p;
+    return sum_of_squared_errors - 1;
   }
 
   static std::string SanitizedName(MassiveBody const& body) {
@@ -647,7 +664,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   }
 
   LOG(ERROR) << "min probability: "
-             << std::exp(LogProbability(
+             << std::exp(χ²(
                     observations, computations, nullptr));
 }
 
@@ -695,15 +712,15 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     }
 
     std::vector<Time> δt;
-    double const log_p = LogProbability(observations, computations, &δt);
+    double const χ²_statistic = χ²(observations, computations, &δt);
     Time max = 0 * Second;
     Time total = 0 * Second;
     for (auto const residual : δt) {
       max = std::max(max, residual);
       total += residual;
     }
-    return "log p = " + std::to_string(log_p) +
-           "; p = " + std::to_string(std::exp(log_p)) + u8"; max Δt = " +
+    return u8"χ² = " + std::to_string(χ²_statistic) +
+           "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
            std::to_string(max / Second) + u8" s; avg Δt = " +
            std::to_string(total / δt.size() / Second) + " s";
   };
@@ -736,12 +753,10 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
       }
     }
 
-    double const log_p =
-        LogProbability(observations, computations, nullptr);
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
-    return 1 / (log_p * log_p * log_p * log_p);
+    return 1/χ²(observations, computations, nullptr);
   };
 
   Genome luca(elements);
