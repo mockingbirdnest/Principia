@@ -145,8 +145,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
     double multiplicator =
-        std::exp2(-2 - (generation % 100) / (15 * (1 + generation / 100)) -
-                  generation / 100);
+        std::exp2(-2 - (generation % 100) / 15 - 1 * (generation / 100));
     if (generation == -1) multiplicator = 1;
     std::student_t_distribution<> distribution(1);
     *element.argument_of_periapsis +=
