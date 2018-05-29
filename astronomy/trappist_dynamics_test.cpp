@@ -41,6 +41,8 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::Difference;
+using quantities::Pow;
 using quantities::Square;
 using quantities::Sqrt;
 using quantities::Time;
@@ -56,6 +58,15 @@ namespace astronomy {
 
 using Transits = std::vector<Instant>;
 using TransitsByPlanet = std::map<std::string, Transits>;
+
+template<typename Value>
+struct Measured {
+  Value estimated_value;
+  Difference<Value> standard_uncertainty;
+};
+
+using MeasuredTransits = std::vector<Measured<Instant>>;
+using MeasuredTransitsByPlanet = std::map<std::string, MeasuredTransits>;
 
 // The random number generator used by the optimisation.
 
@@ -408,7 +419,7 @@ constexpr Instant JD(double const jd) {
   return Instant{} + (jd - 2451545.0) * Day;
 }
 
-TransitsByPlanet const observations = {
+MeasuredTransitsByPlanet const observations = {
     {"Trappist-1b",
      {{JD(2457322.51531), 0.00071 * Day},
       {JD(2457325.53910), 0.00100 * Day},
@@ -589,7 +600,7 @@ TransitsByPlanet const observations = {
       {JD(2457832.55888), 0.00015 * Day},
       {JD(2457834.98120), 0.00025 * Day},
       {JD(2457837.40280), 0.00017 * Day},
-      {JD(2457839.82415), 0.00031 * Day}},
+      {JD(2457839.82415), 0.00031 * Day}}},
     {"Trappist-1d",
      {{JD(2457560.79730), 0.00230 * Day},
       {JD(2457625.59779), 0.00078 * Day},
@@ -625,7 +636,7 @@ TransitsByPlanet const observations = {
       {JD(2457836.19171), 0.00042 * Day},
       {JD(2457961.73760), 0.00130 * Day},
       {JD(2457969.83708), 0.00068 * Day},
-      {JD(2457973.88590), 0.00066 * Day}},
+      {JD(2457973.88590), 0.00066 * Day}}},
     {"Trappist-1e",
      {{JD(2457312.71300), 0.00270 * Day},
       {JD(2457367.59683), 0.00037 * Day},
@@ -765,9 +776,10 @@ class TrappistDynamicsTest : public ::testing::Test {
     return (time - JD(2450000.0)) / Day;
   }
 
-  static double χ²(TransitsByPlanet const& observations,
-                    TransitsByPlanet const& computations,
-                    std::vector<Time>* errors) {
+  static double χ²(MeasuredTransitsByPlanet const& observations,
+                   TransitsByPlanet const& computations,
+                   std::vector<Time>* errors,
+                   std::vector<double>* errors_over_uncertainties) {
     int number_of_transits = 0;
     double sum_of_squared_errors = 0;
     if (errors != nullptr) {
@@ -784,23 +796,28 @@ class TrappistDynamicsTest : public ::testing::Test {
         auto const next_computed_transit =
             std::lower_bound(computed_transits.begin(),
                              computed_transits.end(),
-                             observed_transit);
+                             observed_transit.estimated_value);
         Time error;
         if (next_computed_transit == computed_transits.begin()) {
-          error = *next_computed_transit - observed_transit;
+          error = *next_computed_transit - observed_transit.estimated_value;
         } else if (next_computed_transit == computed_transits.end()) {
-          error = observed_transit - computed_transits.back();
+          error = observed_transit.estimated_value - computed_transits.back();
         } else {
-          error =
-              std::min(*next_computed_transit - observed_transit,
-                       observed_transit - *std::prev(next_computed_transit));
+          error = std::min(
+              *next_computed_transit - observed_transit.estimated_value,
+              observed_transit.estimated_value -
+                  *std::prev(next_computed_transit));
         }
         CHECK_LE(0.0 * Second, error);
         if (errors != nullptr) {
           errors->push_back(error);
         }
-        Time const σ = 0.001 * Day;
-        sum_of_squared_errors += quantities::Pow<2>(error / σ);
+        if (errors_over_uncertainties != nullptr) {
+          errors_over_uncertainties->push_back(
+              error / observed_transit.standard_uncertainty);
+        }
+        sum_of_squared_errors +=
+            Pow<2>(error / observed_transit.standard_uncertainty);
       }
       number_of_transits += observed_transits.size();
     }
@@ -867,9 +884,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << "min probability: "
-             << std::exp(χ²(
-                    observations, computations, nullptr));
+  LOG(ERROR) << u8"χ²: " << χ²(observations, computations, nullptr, nullptr);
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -916,17 +931,26 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     }
 
     std::vector<Time> δt;
-    double const χ²_statistic = χ²(observations, computations, &δt);
+    std::vector<double> δt_over_σ;
+    double const χ²_statistic = χ²(observations, computations, &δt, &δt_over_σ);
     Time max = 0 * Second;
+    double max_over_σ = 0;
     Time total = 0 * Second;
+    double total_in_σ = 0;
     for (auto const residual : δt) {
       max = std::max(max, residual);
       total += residual;
     }
+    for (auto const residual : δt_over_σ) {
+      max_over_σ = std::max(max_over_σ, residual);
+      total_in_σ += residual;
+    }
     return u8"χ² = " + std::to_string(χ²_statistic) +
            "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
            std::to_string(max / Second) + u8" s; avg Δt = " +
-           std::to_string(total / δt.size() / Second) + " s";
+           std::to_string(total / δt.size() / Second) + u8" s; max Δt/σ = " +
+           std::to_string(max_over_σ) + u8" s; avg Δt/σ = " +
+           std::to_string(total_in_σ / δt_over_σ.size());
   };
 
   auto compute_fitness = [&planet_names, &system](Genome const& genome) {
@@ -960,7 +984,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
-    return 1/χ²(observations, computations, nullptr);
+    return 1/χ²(observations, computations, nullptr, nullptr);
   };
 
   Genome luca(elements);
