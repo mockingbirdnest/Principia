@@ -470,6 +470,9 @@ void SolarSystem<Frame>::ReplaceElements(
   if (elements.mean_motion) {
     body_elements->set_mean_motion(DebugString(*elements.mean_motion));
   }
+  if (elements.period.has_value()) {
+    body_elements->set_period(DebugString(*elements.period));
+  }
   body_elements->set_inclination(DebugString(elements.inclination));
   body_elements->set_longitude_of_ascending_node(
       DebugString(elements.longitude_of_ascending_node));
