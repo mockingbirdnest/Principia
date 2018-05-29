@@ -164,7 +164,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     if (*element.mean_anomaly < 0 * quantities::si::Radian) {
       *element.mean_anomaly += 2 * π * quantities::si::Radian;
     }
-    *element.period *= 1 + distribution(engine) * 1e-6 * multiplicator;
+    *element.period += distribution(engine) * 10 * Second * multiplicator;
     element.eccentricity =
         std::max(0.0,
                  std::min(*element.eccentricity +
@@ -341,6 +341,17 @@ void Population::ComputeAllFitnesses() {
                             *best_genome_->elements()[j].eccentricity;
         }
         LOG(ERROR) << "new e = " << *current_[i].elements()[j].eccentricity;
+        if (best_genome_) {
+          LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
+                     << " d";
+          LOG(ERROR) << u8"   ΔT = "
+                     << (*current_[i].elements()[j].period -
+                         *best_genome_->elements()[j].period) /
+                            Second
+                     << " s";
+        }
+        LOG(ERROR) << "new T = " << *current_[i].elements()[j].period / Day
+                   << " d";
       }
       best_genome_ = current_[i];
     }
