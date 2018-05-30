@@ -171,14 +171,12 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     *element.mean_anomaly =
         std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
         quantities::si::Radian;
-#if 0
     element.longitude_of_ascending_node +=
         distribution(engine) * 1 * Degree * multiplicator;
     element.longitude_of_ascending_node =
         std::fmod(element.longitude_of_ascending_node / quantities::si::Radian,
                   2 * π) *
         quantities::si::Radian;
-#endif
     if (*element.mean_anomaly < 0 * quantities::si::Radian) {
       *element.mean_anomaly += 2 * π * quantities::si::Radian;
     }
@@ -1003,7 +1001,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   Genome luca(elements);
   Population population(
       luca, 50, std::move(compute_fitness), std::move(residual_trace));
-  for (int i = 0; i < 10'000; ++i) {
+  for (int i = 0; i < 2'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
