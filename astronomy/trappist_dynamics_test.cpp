@@ -171,6 +171,12 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     *element.mean_anomaly =
         std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
         quantities::si::Radian;
+    element.longitude_of_ascending_node +=
+        distribution(engine) * 1 * Degree * multiplicator;
+    element.longitude_of_ascending_node =
+        std::fmod(element.longitude_of_ascending_node / quantities::si::Radian,
+                  2 * π) *
+        quantities::si::Radian;
     if (*element.mean_anomaly < 0 * quantities::si::Radian) {
       *element.mean_anomaly += 2 * π * quantities::si::Radian;
     }
