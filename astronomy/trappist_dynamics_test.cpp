@@ -949,7 +949,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
            "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
            std::to_string(max / Second) + u8" s; avg Δt = " +
            std::to_string(total / δt.size() / Second) + u8" s; max Δt/σ = " +
-           std::to_string(max_over_σ) + u8" s; avg Δt/σ = " +
+           std::to_string(max_over_σ) + u8"; avg Δt/σ = " +
            std::to_string(total_in_σ / δt_over_σ.size());
   };
 
