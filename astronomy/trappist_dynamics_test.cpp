@@ -157,6 +157,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     // from deleterious mutations.
     double multiplicator = std::exp2(-2 - std::min(generation, 100) / 15);
     if (generation == -1) multiplicator = 1;
+    if (generation % 30 == 29) multiplicator *= 10;
     std::student_t_distribution<> distribution(1);
     *element.argument_of_periapsis +=
         distribution(engine) * 10 * Degree * multiplicator;
