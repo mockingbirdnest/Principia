@@ -10,30 +10,30 @@ gravity_model {
   # Planets.
   body {
     name : "Trappist-1b"
-    mass : "1.017 M🜨"
+    mass : "1.0057 M🜨"
   }
   body {
     name : "Trappist-1c"
-    mass : "1.156 M🜨"
+    mass : "1.1432 M🜨"
   }
   body {
     name : "Trappist-1d"
-    mass : "0.297 M🜨"
+    mass : "0.2937 M🜨"
   }
   body {
     name : "Trappist-1e"
-    mass : "0.772 M🜨"
+    mass : "0.7634 M🜨"
   }
   body {
     name : "Trappist-1f"
-    mass : "0.934 M🜨"
+    mass : "0.9236 M🜨"
   }
   body {
     name : "Trappist-1g"
-    mass : "1.148 M🜨"
+    mass : "1.1352 M🜨"
   }
   body {
     name : "Trappist-1h"
-    mass : "0.331 M🜨"
+    mass : "0.3273 M🜨"
   }
 }
