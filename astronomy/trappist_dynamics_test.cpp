@@ -322,10 +322,12 @@ void Population::ComputeAllFitnesses() {
         if (best_genome_) {
           LOG(ERROR)
               << "old L = "
-              << (best_genome_->elements()[j].longitude_of_ascending_node +
-                  *best_genome_->elements()[j].argument_of_periapsis +
-                  *best_genome_->elements()[j].mean_anomaly) /
-                     Degree
+              << std::fmod(
+                     (best_genome_->elements()[j].longitude_of_ascending_node +
+                      *best_genome_->elements()[j].argument_of_periapsis +
+                      *best_genome_->elements()[j].mean_anomaly) /
+                         Degree,
+                     360)
               << u8"°";
           LOG(ERROR)
               << u8"   ΔL = "
@@ -338,12 +340,15 @@ void Population::ComputeAllFitnesses() {
                      Degree
               << u8"°";
         }
-        LOG(ERROR) << "new L = "
-                   << (current_[i].elements()[j].longitude_of_ascending_node +
-                       *current_[i].elements()[j].argument_of_periapsis +
-                       *current_[i].elements()[j].mean_anomaly) /
-                          Degree
-                   << u8"°";
+        LOG(ERROR)
+            << "new L = "
+            << std::fmod(
+                   (current_[i].elements()[j].longitude_of_ascending_node +
+                    *current_[i].elements()[j].argument_of_periapsis +
+                    *current_[i].elements()[j].mean_anomaly) /
+                       Degree,
+                   360)
+            << u8"°";
         if (best_genome_) {
           LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
           LOG(ERROR) << u8"   Δe = "
