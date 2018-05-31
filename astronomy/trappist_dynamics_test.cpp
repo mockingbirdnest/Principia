@@ -386,7 +386,11 @@ void Population::ComputeAllFitnesses() {
 }
 
 void Population::BegetChildren() {
-  for (int i = 0; i < next_.size(); ++i) {
+  int i = 0;
+  if (best_genome_.has_value()) {
+    next_[i++] = *best_genome_;
+  }
+  for (; i < next_.size(); ++i) {
     Genome const* const parent1 = Pick();
     Genome const* parent2;
     // Let's have sex like snails: if we find a good partner, fine, otherwise
