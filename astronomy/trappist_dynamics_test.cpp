@@ -1005,8 +1005,8 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
 
   Genome luca(elements);
   Population population(
-      luca, 100, std::move(compute_fitness), std::move(residual_trace));
-  for (int i = 0; i < 2'000; ++i) {
+      luca, 10, std::move(compute_fitness), std::move(residual_trace));
+  for (int i = 0; i < 20'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
