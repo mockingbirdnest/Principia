@@ -183,7 +183,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     if (*element.mean_anomaly < 0 * quantities::si::Radian) {
       *element.mean_anomaly += 2 * π * quantities::si::Radian;
     }
-    *element.period += distribution(engine) * 20 * Second * std::sqrt(multiplicator);
+    *element.period += distribution(engine) * 5 * Second * std::sqrt(multiplicator);
     element.eccentricity =
         std::max(0.0,
                  std::min(*element.eccentricity + distribution(engine) * 1e-3 *
