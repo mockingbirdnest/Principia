@@ -155,9 +155,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     // genomic space efficiently and it takes forever to find decent solutions;
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
-    double multiplicator = std::exp2(-2 - std::min(generation, 100) / 15);
-    if (generation == -1) multiplicator = 1;
-    if (generation % 30 == 29) multiplicator *= 10;
+    double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
     std::student_t_distribution<> distribution(1);
     *element.argument_of_periapsis +=
         distribution(engine) * 10 * Degree * multiplicator;
@@ -292,7 +290,7 @@ Population::Population(Genome const& luca,
 void Population::ComputeAllFitnesses() {
   // The fitness computation is expensive, do it in parallel on all genomes.
   {
-    Bundle bundle(4);
+    Bundle bundle(8);
 
     fitnesses_.resize(current_.size(), 0.0);
     for (int i = 0; i < current_.size(); ++i) {
@@ -1003,7 +1001,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
 
   Genome luca(elements);
   Population population(
-      luca, 50, std::move(compute_fitness), std::move(residual_trace));
+      luca, 100, std::move(compute_fitness), std::move(residual_trace));
   for (int i = 0; i < 2'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
