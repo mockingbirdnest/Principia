@@ -99,8 +99,7 @@ class Population {
  public:
   Population(Genome const& luca,
              int const size,
-             std::function<double(Genome const&)> compute_fitness,
-             std::function<std::string(Genome const&)> residual_trace);
+             std::function<double(Genome const&, std::string&)> compute_fitness);
 
   void ComputeAllFitnesses();
 
@@ -111,12 +110,12 @@ class Population {
  private:
   Genome const* Pick() const;
 
-  std::function<double(Genome const&)> const compute_fitness_;
-  std::function<std::string(Genome const&)> const residual_trace_;
+  std::function<double(Genome const&, std::string&)> const compute_fitness_;
   mutable std::mt19937_64 engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
   std::vector<double> fitnesses_;
+  std::vector<std::string> traces_;
   std::vector<double> cumulative_fitnesses_;
 
   int generation_ = 0;
@@ -276,12 +275,10 @@ Genome Genome::Blend(Genome const& g1,
 
 Population::Population(Genome const& luca,
                        int const size,
-                       std::function<double(Genome const&)> compute_fitness,
-                       std::function<std::string(Genome const&)> residual_trace)
+                       std::function<double(Genome const&, std::string&)> compute_fitness)
     : current_(size, luca),
       next_(size, luca),
-      compute_fitness_(std::move(compute_fitness)),
-      residual_trace_(std::move(residual_trace)) {
+      compute_fitness_(std::move(compute_fitness)) {
   for (int i = 0; i < current_.size(); ++i) {
     current_[i].Mutate(engine_, -1);
   }
@@ -293,9 +290,10 @@ void Population::ComputeAllFitnesses() {
     Bundle bundle(8);
 
     fitnesses_.resize(current_.size(), 0.0);
+    traces_.resize(current_.size(), "");
     for (int i = 0; i < current_.size(); ++i) {
       bundle.Add([this, i]() {
-        fitnesses_[i] = compute_fitness_(current_[i]);
+        fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
         return Status();
       });
     }
@@ -305,8 +303,8 @@ void Population::ComputeAllFitnesses() {
   LOG(ERROR) << "Generation " << generation_;
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
-  Genome const* fittest = nullptr;
-  Genome const* least_fit = nullptr;
+  std::string* fittest_info = nullptr;
+  std::string* least_fit_info = nullptr;
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
@@ -314,11 +312,11 @@ void Population::ComputeAllFitnesses() {
     cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitness);
     if (fitness > max_fitness) {
       max_fitness = fitness;
-      fittest = &current_[i];
+      fittest_info = &traces_[i];
     }
     if (fitness < min_fitness) {
       min_fitness = fitness;
-      least_fit = &current_[i];
+      least_fit_info = &traces_[i];
     }
     if (fitness > best_fitness_) {
       best_fitness_ = fitness;
@@ -380,9 +378,8 @@ void Population::ComputeAllFitnesses() {
   }
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
              << " Best: " << best_fitness_;
-  LOG(ERROR) << "Least fit: " << residual_trace_(*least_fit);
-  LOG(ERROR) << "Fittest  : " << residual_trace_(*fittest);
-  LOG(ERROR) << "Best     : " << residual_trace_(*best_genome_);
+  LOG(ERROR) << "Least fit: " << *least_fit_info;
+  LOG(ERROR) << "Fittest  : " << *fittest_info;
 }
 
 void Population::BegetChildren() {
@@ -792,7 +789,7 @@ class TrappistDynamicsTest : public ::testing::Test {
     return (time - JD(2450000.0)) / Day;
   }
 
-  static double χ²(MeasuredTransitsByPlanet const& observations,
+  static double Computeχ²(MeasuredTransitsByPlanet const& observations,
                    TransitsByPlanet const& computations,
                    std::vector<Time>* errors,
                    std::vector<double>* errors_over_uncertainties) {
@@ -900,7 +897,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << u8"χ²: " << χ²(observations, computations, nullptr, nullptr);
+  LOG(ERROR) << u8"χ²: " << Computeχ²(observations, computations, nullptr, nullptr);
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -918,7 +915,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
-  auto residual_trace = [&planet_names, &system](Genome const& genome) {
+  auto compute_fitness = [&planet_names, &system](Genome const& genome, std::string& info) {
     auto modified_system = system;
     auto const& elements = genome.elements();
     for (int i = 0; i < planet_names.size(); ++i) {
@@ -933,57 +930,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                 /*step=*/0.07 * Day));
     ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
     if (!ephemeris->last_severe_integration_status().ok()) {
-      return std::string(u8"ἀποκάλυψις");
-    }
-
-    TransitsByPlanet computations;
-    auto const& star = modified_system.massive_body(*ephemeris, star_name);
-    auto const bodies = ephemeris->bodies();
-    for (auto const& planet : bodies) {
-      if (planet != star) {
-        computations[planet->name()] =
-            ComputeTransits(*ephemeris, star, planet);
-      }
-    }
-
-    std::vector<Time> δt;
-    std::vector<double> δt_over_σ;
-    double const χ²_statistic = χ²(observations, computations, &δt, &δt_over_σ);
-    Time max = 0 * Second;
-    double max_over_σ = 0;
-    Time total = 0 * Second;
-    double total_in_σ = 0;
-    for (auto const residual : δt) {
-      max = std::max(max, residual);
-      total += residual;
-    }
-    for (auto const residual : δt_over_σ) {
-      max_over_σ = std::max(max_over_σ, residual);
-      total_in_σ += residual;
-    }
-    return u8"χ² = " + std::to_string(χ²_statistic) +
-           "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
-           std::to_string(max / Second) + u8" s; avg Δt = " +
-           std::to_string(total / δt.size() / Second) + u8" s; max Δt/σ = " +
-           std::to_string(max_over_σ) + u8"; avg Δt/σ = " +
-           std::to_string(total_in_σ / δt_over_σ.size());
-  };
-
-  auto compute_fitness = [&planet_names, &system](Genome const& genome) {
-    auto modified_system = system;
-    auto const& elements = genome.elements();
-    for (int i = 0; i < planet_names.size(); ++i) {
-      modified_system.ReplaceElements(planet_names[i], elements[i]);
-    }
-
-    auto const ephemeris = modified_system.MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
-            Ephemeris<Trappist>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Trappist>>(),
-                /*step=*/0.07 * Day));
-    ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
-    if (!ephemeris->last_severe_integration_status().ok()) {
+      info = u8"ἀποκάλυψις";
       return 0.0;
     }
 
@@ -996,16 +943,37 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
             ComputeTransits(*ephemeris, star, planet);
       }
     }
+    std::vector<Time> δt;
+    std::vector<double> δt_over_σ;
+    double const χ² = Computeχ²(observations, computations, &δt, &δt_over_σ);
+    Time max = 0 * Second;
+    double max_over_σ = 0;
+    Time total = 0 * Second;
+    double total_in_σ = 0;
+    for (auto const residual : δt) {
+      max = std::max(max, residual);
+      total += residual;
+    }
+    for (auto const residual : δt_over_σ) {
+      max_over_σ = std::max(max_over_σ, residual);
+      total_in_σ += residual;
+    }
+    info = u8"χ² = " + std::to_string(χ²) +
+           "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
+           std::to_string(max / Second) + u8" s; avg Δt = " +
+           std::to_string(total / δt.size() / Second) + u8" s; max Δt/σ = " +
+           std::to_string(max_over_σ) + u8"; avg Δt/σ = " +
+           std::to_string(total_in_σ / δt_over_σ.size());
 
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
-    return 1/χ²(observations, computations, nullptr, nullptr);
+    return 1 / χ²;
   };
 
   Genome luca(elements);
   Population population(
-      luca, 10, std::move(compute_fitness), std::move(residual_trace));
+      luca, 9, std::move(compute_fitness));
   for (int i = 0; i < 20'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
