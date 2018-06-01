@@ -989,7 +989,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   Genome luca(elements);
   Population population(
       luca, 9, std::move(compute_fitness));
-  for (int i = 0; i < 20'000; ++i) {
+  for (int i = 0; i < 200'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
