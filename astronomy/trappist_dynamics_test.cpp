@@ -120,6 +120,7 @@ class Population {
 
   int generation_ = 0;
   double best_fitness_ = 0.0;
+  std::string best_trace_;
   std::optional<Genome> best_genome_;
 };
 
@@ -291,7 +292,13 @@ void Population::ComputeAllFitnesses() {
 
     fitnesses_.resize(current_.size(), 0.0);
     traces_.resize(current_.size(), "");
-    for (int i = 0; i < current_.size(); ++i) {
+    int i = 0;
+    if (best_genome_.has_value()) {
+      // Elitism: fitnesses_[0] is already best_fitness_.
+      CHECK_EQ(fitnesses_[i], best_fitness_);
+      ++i;
+    }
+    for (; i < current_.size(); ++i) {
       bundle.Add([this, i]() {
         fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
         return Status();
@@ -299,8 +306,8 @@ void Population::ComputeAllFitnesses() {
     }
     bundle.Join();
   }
-  
-  LOG(ERROR) << "Generation " << generation_;
+  LOG(ERROR) << "------";
+  LOG(ERROR) << "Generation " << generation_ << "\n";
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
   std::string* fittest_info = nullptr;
@@ -320,10 +327,11 @@ void Population::ComputeAllFitnesses() {
     }
     if (fitness > best_fitness_) {
       best_fitness_ = fitness;
-      LOG(ERROR) << "New best genome:";
+      best_trace_ = traces_[i];
+      LOG(ERROR) << "New best genome:\n";
       char planet = 'b';
       for (int j = 0; j < current_[i].elements().size(); ++j) {
-        LOG(ERROR) << std::string({planet++, ':'});
+        LOG(ERROR) << std::string({planet++, ':'}) << "\n";
         if (best_genome_) {
           LOG(ERROR)
               << "old L = "
@@ -333,7 +341,7 @@ void Population::ComputeAllFitnesses() {
                       *best_genome_->elements()[j].mean_anomaly) /
                          Degree,
                      360)
-              << u8"°";
+              << u8"°\n";
           LOG(ERROR)
               << u8"   ΔL = "
               << ((current_[i].elements()[j].longitude_of_ascending_node +
@@ -343,7 +351,7 @@ void Population::ComputeAllFitnesses() {
                    *best_genome_->elements()[j].argument_of_periapsis +
                    *best_genome_->elements()[j].mean_anomaly)) /
                      Degree
-              << u8"°";
+              << u8"°\n";
         }
         LOG(ERROR)
             << "new L = "
@@ -353,39 +361,46 @@ void Population::ComputeAllFitnesses() {
                     *current_[i].elements()[j].mean_anomaly) /
                        Degree,
                    360)
-            << u8"°";
+            << u8"°\n";
         if (best_genome_) {
-          LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
+          LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity
+                     << "\n";
           LOG(ERROR) << u8"   Δe = "
                      << *current_[i].elements()[j].eccentricity -
-                            *best_genome_->elements()[j].eccentricity;
+                            *best_genome_->elements()[j].eccentricity
+                     << "\n";
         }
-        LOG(ERROR) << "new e = " << *current_[i].elements()[j].eccentricity;
+        LOG(ERROR) << "new e = " << *current_[i].elements()[j].eccentricity
+                   << "\n";
         if (best_genome_) {
           LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
-                     << " d";
+                     << " d\n";
           LOG(ERROR) << u8"   ΔT = "
                      << (*current_[i].elements()[j].period -
                          *best_genome_->elements()[j].period) /
                             Second
-                     << " s";
+                     << " s\n";
         }
         LOG(ERROR) << "new T = " << *current_[i].elements()[j].period / Day
-                   << " d";
+                   << " d\n";
       }
       best_genome_ = current_[i];
     }
   }
   LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
-             << " Best: " << best_fitness_;
-  LOG(ERROR) << "Least fit: " << *least_fit_info;
-  LOG(ERROR) << "Fittest  : " << *fittest_info;
+             << " Best: " << best_fitness_ << "\n";
+  LOG(ERROR) << "Least fit: " << *least_fit_info << "\n";
+  LOG(ERROR) << "Fittest  : " << *fittest_info << "\n";
 }
 
 void Population::BegetChildren() {
   int i = 0;
   if (best_genome_.has_value()) {
-    next_[i++] = *best_genome_;
+    // Elitism.
+    next_[i] = *best_genome_;
+    fitnesses_[i] = best_fitness_;
+    traces_[i] = best_trace_;
+    ++i;
   }
   for (; i < next_.size(); ++i) {
     Genome const* const parent1 = Pick();
