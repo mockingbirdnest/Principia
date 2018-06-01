@@ -170,10 +170,10 @@ SolarSystem<Frame>::SolarSystem(SolarSystem const& other)
 
 template<typename Frame>
 SolarSystem<Frame>& SolarSystem<Frame>::operator=(const SolarSystem& other) {
-  if(&other == this){
-      return *this;
+  if (&other == this) {
+    return *this;
   }
-  SolarSystem copy(other);
+  SolarSystem copy(other);  // NOLINT(build/include_what_you_use)
   gravity_model_.Swap(copy.gravity_model_);
   initial_state_.Swap(copy.initial_state_);
   epoch_ = copy.epoch_;
