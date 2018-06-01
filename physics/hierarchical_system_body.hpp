@@ -77,6 +77,9 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
     bool const has_mean_motions =
         left->jacobi_osculating_elements.mean_motion &&
         right->jacobi_osculating_elements.mean_motion;
+    bool const has_periods =
+        left->jacobi_osculating_elements.period &&
+        right->jacobi_osculating_elements.period;
     if (has_semimajor_axes) {
       return left->jacobi_osculating_elements.semimajor_axis <
              right->jacobi_osculating_elements.semimajor_axis;
@@ -84,6 +87,10 @@ HierarchicalSystem<Frame>::ToBarycentric(System& system) {
     if (has_mean_motions) {
       return left->jacobi_osculating_elements.mean_motion >
              right->jacobi_osculating_elements.mean_motion;
+    }
+    if (has_periods) {
+      return left->jacobi_osculating_elements.period <
+             right->jacobi_osculating_elements.period;
     }
     LOG(FATAL) << "improperly initialized elements";
     base::noreturn();

@@ -50,8 +50,10 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
 using quantities::Length;
+using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::Speed;
+using quantities::Time;
 using quantities::si::Radian;
 using quantities::si::Second;
 
@@ -161,19 +163,40 @@ SolarSystem<Frame>::SolarSystem(
 }
 
 template<typename Frame>
-std::unique_ptr<Ephemeris<Frame>> SolarSystem<Frame>::MakeEphemeris(
+SolarSystem<Frame>::SolarSystem(SolarSystem const& other)
+    : SolarSystem(other.gravity_model_,
+                  other.initial_state_,
+                  /*ignore_frame=*/true) {}
+
+template<typename Frame>
+SolarSystem<Frame>& SolarSystem<Frame>::operator=(const SolarSystem& other) {
+  if(&other == this){
+      return *this;
+  }
+  SolarSystem copy(other);
+  gravity_model_.Swap(copy.gravity_model_);
+  initial_state_.Swap(copy.initial_state_);
+  epoch_ = copy.epoch_;
+  names_.swap(copy.names_);
+  gravity_model_map_.swap(copy.gravity_model_map_);
+  cartesian_initial_state_map_.swap(copy.cartesian_initial_state_map_);
+  keplerian_initial_state_map_.swap(copy.keplerian_initial_state_map_);
+}
+
+template<typename Frame>
+not_null<std::unique_ptr<Ephemeris<Frame>>> SolarSystem<Frame>::MakeEphemeris(
     Length const& fitting_tolerance,
-    typename Ephemeris<Frame>::FixedStepParameters const& parameters) {
-  return std::make_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
-                                            MakeAllDegreesOfFreedom(),
-                                            epoch_,
-                                            fitting_tolerance,
-                                            parameters);
+    typename Ephemeris<Frame>::FixedStepParameters const& parameters) const {
+  return make_not_null_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
+                                                MakeAllDegreesOfFreedom(),
+                                                epoch_,
+                                                fitting_tolerance,
+                                                parameters);
 }
 
 template<typename Frame>
 std::vector<not_null<std::unique_ptr<MassiveBody const>>>
-SolarSystem<Frame>::MakeAllMassiveBodies() {
+SolarSystem<Frame>::MakeAllMassiveBodies() const {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& pair : gravity_model_map_) {
     serialization::GravityModel::Body const* const body = pair.second;
@@ -286,13 +309,20 @@ KeplerianElements<Frame> SolarSystem<Frame>::MakeKeplerianElements(
     serialization::InitialState::Keplerian::Body::Elements const& elements) {
   KeplerianElements<Frame> result;
   result.eccentricity = elements.eccentricity();
-  CHECK_NE(elements.has_semimajor_axis(), elements.has_mean_motion());
-  if (elements.has_semimajor_axis()) {
-    result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
-  }
-  if (elements.has_mean_motion()) {
-    result.mean_motion =
-        ParseQuantity<AngularFrequency>(elements.mean_motion());
+  switch (elements.category2_case()) {
+    case serialization::InitialState::Keplerian::Body::Elements::kSemimajorAxis:
+      result.semimajor_axis = ParseQuantity<Length>(elements.semimajor_axis());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::kMeanMotion:
+      result.mean_motion =
+          ParseQuantity<AngularFrequency>(elements.mean_motion());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::kPeriod:
+      result.period = ParseQuantity<Time>(elements.period());
+      break;
+    case serialization::InitialState::Keplerian::Body::Elements::
+         CATEGORY2_NOT_SET:
+      LOG(FATAL) << elements.DebugString();
   }
   result.inclination = ParseQuantity<Angle>(elements.inclination());
   result.longitude_of_ascending_node =
@@ -427,6 +457,11 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
   body->clear_reference_radius();
 }
 
+#define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \
+  if (elements.##field) {                                       \
+    body_elements->set_##field(DebugString(*elements.##field)); \
+  }
+
 template<typename Frame>
 void SolarSystem<Frame>::ReplaceElements(
     std::string const& name,
@@ -434,24 +469,22 @@ void SolarSystem<Frame>::ReplaceElements(
   auto* const body_elements =
       FindOrDie(keplerian_initial_state_map_, name)->mutable_elements();
   body_elements->set_eccentricity(*elements.eccentricity);
-  if (elements.semimajor_axis) {
-    body_elements->set_semimajor_axis(DebugString(*elements.semimajor_axis));
-  }
-  if (elements.mean_motion) {
-    body_elements->set_mean_motion(DebugString(*elements.mean_motion));
-  }
+  PRINCIPIA_SET_FIELD_FROM_OPTIONAL(semimajor_axis);
+  PRINCIPIA_SET_FIELD_FROM_OPTIONAL(mean_motion);
+  PRINCIPIA_SET_FIELD_FROM_OPTIONAL(period);
   body_elements->set_inclination(DebugString(elements.inclination));
   body_elements->set_longitude_of_ascending_node(
       DebugString(elements.longitude_of_ascending_node));
-  body_elements->set_argument_of_periapsis(
-      DebugString(*elements.argument_of_periapsis));
-  body_elements->set_mean_anomaly(DebugString(*elements.mean_anomaly));
+  PRINCIPIA_SET_FIELD_FROM_OPTIONAL(argument_of_periapsis);
+  PRINCIPIA_SET_FIELD_FROM_OPTIONAL(mean_anomaly);
 }
+
+#undef PRINCIPIA_SET_FIELD_FROM_OPTIONAL
 
 template<typename Frame>
 void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK(body.has_name());
-  CHECK(body.has_gravitational_parameter()) << body.name();
+  CHECK(body.has_gravitational_parameter() || body.has_mass()) << body.name();
   CHECK_EQ(body.has_reference_instant(), body.has_mean_radius()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
            body.has_axis_right_ascension()) << body.name();
@@ -468,9 +501,19 @@ template<typename Frame>
 not_null<std::unique_ptr<MassiveBody::Parameters>>
 SolarSystem<Frame>::MakeMassiveBodyParameters(
     serialization::GravityModel::Body const& body) {
-  return make_not_null_unique<MassiveBody::Parameters>(
-      body.name(),
-      ParseQuantity<GravitationalParameter>(body.gravitational_parameter()));
+  switch (body.massive_case()) {
+    case serialization::GravityModel::Body::kGravitationalParameter:
+      return make_not_null_unique<MassiveBody::Parameters>(
+          body.name(),
+          ParseQuantity<GravitationalParameter>(
+              body.gravitational_parameter()));
+    case serialization::GravityModel::Body::kMass:
+      return make_not_null_unique<MassiveBody::Parameters>(
+          body.name(), ParseQuantity<Mass>(body.mass()));
+    case serialization::GravityModel::Body::MASSIVE_NOT_SET:
+      LOG(FATAL) << body.name();
+  }
+  LOG(FATAL) << body.name();
 }
 
 template<typename Frame>
@@ -497,7 +540,7 @@ SolarSystem<Frame>::MakeOblateBodyParameters(
 
 template<typename Frame>
 std::vector<DegreesOfFreedom<Frame>>
-SolarSystem<Frame>::MakeAllDegreesOfFreedom() {
+SolarSystem<Frame>::MakeAllDegreesOfFreedom() const {
   std::vector<DegreesOfFreedom<Frame>> degrees_of_freedom;
   if (!cartesian_initial_state_map_.empty()) {
     for (auto const& pair : cartesian_initial_state_map_) {

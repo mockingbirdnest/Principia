@@ -97,7 +97,8 @@ static_assert(j2000_tai - J2000 == 32.184 * Second, "");
     (_MSC_FULL_VER == 191326215 || \
      _MSC_FULL_VER == 191426316 || \
      _MSC_FULL_VER == 191426412 || \
-     _MSC_FULL_VER == 191426428)
+     _MSC_FULL_VER == 191426428 || \
+     _MSC_FULL_VER == 191426429)
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT - 3 * Day, "");
 #else
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
