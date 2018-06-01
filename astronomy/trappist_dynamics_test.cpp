@@ -155,7 +155,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     // genomic space efficiently and it takes forever to find decent solutions;
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
-    double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
+    double multiplicator = std::exp2(-2 - std::min(generation, 2400) / 120);
     std::student_t_distribution<> distribution(1);
     *element.argument_of_periapsis +=
         distribution(engine) * 10 * Degree * multiplicator;
@@ -181,11 +181,11 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     if (*element.mean_anomaly < 0 * quantities::si::Radian) {
       *element.mean_anomaly += 2 * π * quantities::si::Radian;
     }
-    *element.period += distribution(engine) * 5 * Second * std::sqrt(multiplicator);
+    *element.period += distribution(engine) * 5 * Second * Sqrt(multiplicator);
     element.eccentricity =
         std::max(0.0,
                  std::min(*element.eccentricity + distribution(engine) * 1e-3 *
-                                                      std::sqrt(multiplicator),
+                                                      Sqrt(multiplicator),
                           0.2));
   }
 }
