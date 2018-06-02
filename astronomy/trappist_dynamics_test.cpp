@@ -138,7 +138,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 
 void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - std::min(generation, 200) / 20);
+  double multiplicator = std::exp2(-2 - generation / 20);
   if (generation == -1) {
     multiplicator = 1;
   }
@@ -1105,7 +1105,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         std::string unused_info;
         return 1 / compute_fitness(genome, unused_info);
       });
-  for (int i = 0; i < 200'000; ++i) {
+  for (int i = 0; i < 1000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
