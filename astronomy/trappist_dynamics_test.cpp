@@ -196,46 +196,95 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
   if (generation < 1000) {
     return;
   }
-  Bundle bundle(8);
-  double χ²₁;
-  bundle.Add([this, &χ², &χ²₁]() {
-    χ²₁ = χ²(*this);
-    return Status::OK;
-  });
-  std::vector<Angle> M₂s;
-  M₂s.resize(elements_.size());
-  std::vector<Angle> M₃s;
-  M₃s.resize(elements_.size());
-  std::vector<double> χ²₂s;
-  χ²₂s.resize(elements_.size());
-  std::vector<double> χ²₃s;
-  χ²₃s.resize(elements_.size());
-  for (int i = 0; i < elements_.size(); ++i) {
-    Genome perturbed_genome = *this;
-    auto& perturbed_element = perturbed_genome.elements_[i];
-    mutate_mean_anomaly(perturbed_element);
-    M₂s[i] = *perturbed_element.mean_anomaly;
-    bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
-      χ²₂s[i] = χ²(perturbed_genome);
+  {
+    Bundle bundle(8);
+    double χ²₁;
+    bundle.Add([this, &χ², &χ²₁]() {
+      χ²₁ = χ²(*this);
       return Status::OK;
     });
-    mutate_mean_anomaly(perturbed_element);
-    M₃s[i] = *perturbed_element.mean_anomaly;
-    bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
-      χ²₃s[i] = χ²(perturbed_genome);
-      return Status::OK;
-    });
+    std::vector<Angle> M₂s;
+    M₂s.resize(elements_.size());
+    std::vector<Angle> M₃s;
+    M₃s.resize(elements_.size());
+    std::vector<double> χ²₂s;
+    χ²₂s.resize(elements_.size());
+    std::vector<double> χ²₃s;
+    χ²₃s.resize(elements_.size());
+    for (int i = 0; i < elements_.size(); ++i) {
+      Genome perturbed_genome = *this;
+      auto& perturbed_element = perturbed_genome.elements_[i];
+      mutate_mean_anomaly(perturbed_element);
+      M₂s[i] = *perturbed_element.mean_anomaly;
+      bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
+        χ²₂s[i] = χ²(perturbed_genome);
+        return Status::OK;
+      });
+      mutate_mean_anomaly(perturbed_element);
+      M₃s[i] = *perturbed_element.mean_anomaly;
+      bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
+        χ²₃s[i] = χ²(perturbed_genome);
+        return Status::OK;
+      });
+    }
+    bundle.Join();
+    for (int i = 0; i < elements_.size(); ++i) {
+      double const χ²₂ = χ²₂s[i];
+      double const χ²₃ = χ²₃s[i];
+      Angle const M₁ = *elements_[i].mean_anomaly;
+      Angle const M₂ = M₂s[i];
+      Angle const M₃ = M₃s[i];
+      Derivative<double, Angle> b₁ = (χ²₂ - χ²₁) / (M₂ - M₁);
+      Derivative<double, Angle, 2> b₂ =
+          ((χ²₃ - χ²₁) / (M₃ - M₁) - b₁) / (M₃ - M₂);
+      elements_[i].mean_anomaly = (M₁ + M₂) / 2 - b₁ / (2 * b₂);
+    }
   }
-  bundle.Join();
-  for (int i = 0; i < elements_.size(); ++i) {
-    double const χ²₂ = χ²₂s[i];
-    double const χ²₃ = χ²₃s[i];
-    Angle const M₁ = *elements_[i].mean_anomaly;
-    Angle const M₂ = M₂s[i];
-    Angle const M₃ = M₃s[i];
-    Derivative<double, Angle> b₁ = (χ²₂ - χ²₁) / (M₂ - M₁);
-    Derivative<double, Angle, 2> b₂ = ((χ²₃ - χ²₁) / (M₃ - M₁) - b₁) / (M₃ - M₂);
-    elements_[i].mean_anomaly = (M₁ + M₂) / 2 - b₁ / (2 * b₂);
+  {
+    Bundle bundle(8);
+    double χ²₁;
+    bundle.Add([this, &χ², &χ²₁]() {
+      χ²₁ = χ²(*this);
+      return Status::OK;
+    });
+    std::vector<Time> T₂s;
+    T₂s.resize(elements_.size());
+    std::vector<Time> T₃s;
+    T₃s.resize(elements_.size());
+    std::vector<double> χ²₂s;
+    χ²₂s.resize(elements_.size());
+    std::vector<double> χ²₃s;
+    χ²₃s.resize(elements_.size());
+    for (int i = 0; i < elements_.size(); ++i) {
+      Genome perturbed_genome = *this;
+      auto& perturbed_element = perturbed_genome.elements_[i];
+      *perturbed_element.period +=
+          distribution(engine) * 5 * Second * Sqrt(multiplicator);
+      T₂s[i] = *perturbed_element.period;
+      bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
+        χ²₂s[i] = χ²(perturbed_genome);
+        return Status::OK;
+      });
+      *perturbed_element.period +=
+          distribution(engine) * 5 * Second * Sqrt(multiplicator);
+      T₃s[i] = *perturbed_element.period;
+      bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
+        χ²₃s[i] = χ²(perturbed_genome);
+        return Status::OK;
+      });
+    }
+    bundle.Join();
+    for (int i = 0; i < elements_.size(); ++i) {
+      double const χ²₂ = χ²₂s[i];
+      double const χ²₃ = χ²₃s[i];
+      Time const T₁ = *elements_[i].period;
+      Time const T₂ = T₂s[i];
+      Time const T₃ = T₃s[i];
+      Derivative<double, Time> b₁ = (χ²₂ - χ²₁) / (T₂ - T₁);
+      Derivative<double, Time, 2> b₂ =
+          ((χ²₃ - χ²₁) / (T₃ - T₁) - b₁) / (T₃ - T₂);
+      elements_[i].period = (T₁ + T₂) / 2 - b₁ / (2 * b₂);
+    }
   }
 }
 
