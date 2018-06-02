@@ -143,9 +143,9 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
     multiplicator = 1;
   }
   auto mutate_mean_anomaly =
-      [&distribution, &engine, multiplicator](KeplerianElements<Trappist>& element) {
+      [&distribution, &engine, multiplicator](KeplerianElements<Trappist>& element, Angle const size) {
         *element.mean_anomaly +=
-            distribution(engine) * 10 * Degree * multiplicator;
+            distribution(engine) * size;
         *element.mean_anomaly =
             std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
             quantities::si::Radian;
@@ -191,7 +191,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
                  std::min(*element.eccentricity + distribution(engine) * 1e-3 *
                                                       Sqrt(multiplicator),
                           0.2));
-    mutate_mean_anomaly(element);
+    mutate_mean_anomaly(element, 10 * Degree * multiplicator);
   }
   {
     Bundle bundle(8);
@@ -211,13 +211,13 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
     for (int i = 0; i < elements_.size(); ++i) {
       Genome perturbed_genome = *this;
       auto& perturbed_element = perturbed_genome.elements_[i];
-      mutate_mean_anomaly(perturbed_element);
+      mutate_mean_anomaly(perturbed_element, 0.01 * Degree);
       M₂s[i] = *perturbed_element.mean_anomaly;
       bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
         χ²₂s[i] = χ²(perturbed_genome);
         return Status::OK;
       });
-      mutate_mean_anomaly(perturbed_element);
+      mutate_mean_anomaly(perturbed_element, 0.01 * Degree);
       M₃s[i] = *perturbed_element.mean_anomaly;
       bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
         χ²₃s[i] = χ²(perturbed_genome);
@@ -259,14 +259,14 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
       Genome perturbed_genome = *this;
       auto& perturbed_element = perturbed_genome.elements_[i];
       *perturbed_element.period +=
-          distribution(engine) * 5 * Second * Sqrt(multiplicator);
+          distribution(engine) * 0.1 * Second * Sqrt(multiplicator);
       T₂s[i] = *perturbed_element.period;
       bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
         χ²₂s[i] = χ²(perturbed_genome);
         return Status::OK;
       });
       *perturbed_element.period +=
-          distribution(engine) * 5 * Second * Sqrt(multiplicator);
+          distribution(engine) * 0.1 * Second * Sqrt(multiplicator);
       T₃s[i] = *perturbed_element.period;
       bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
         χ²₃s[i] = χ²(perturbed_genome);
