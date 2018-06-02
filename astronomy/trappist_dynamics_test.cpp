@@ -138,7 +138,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 
 void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
+  double multiplicator = std::exp2(-2 - std::min(generation, 200) / 20);
   if (generation == -1) {
     multiplicator = 1;
   }
@@ -193,9 +193,6 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
                           0.2));
     mutate_mean_anomaly(element);
   }
-  if (generation < 1000) {
-    return;
-  }
   {
     Bundle bundle(8);
     double χ²₁;
@@ -237,7 +234,10 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
       Derivative<double, Angle> b₁ = (χ²₂ - χ²₁) / (M₂ - M₁);
       Derivative<double, Angle, 2> b₂ =
           ((χ²₃ - χ²₁) / (M₃ - M₁) - b₁) / (M₃ - M₂);
-      elements_[i].mean_anomaly = (M₁ + M₂) / 2 - b₁ / (2 * b₂);
+      elements_[i].mean_anomaly =
+          std::fmod(((M₁ + M₂) / 2 - b₁ / (2 * b₂)) / quantities::si::Radian,
+                    2 * π) *
+          quantities::si::Radian;
     }
   }
   {
@@ -283,7 +283,10 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
       Derivative<double, Time> b₁ = (χ²₂ - χ²₁) / (T₂ - T₁);
       Derivative<double, Time, 2> b₂ =
           ((χ²₃ - χ²₁) / (T₃ - T₁) - b₁) / (T₃ - T₂);
-      elements_[i].period = (T₁ + T₂) / 2 - b₁ / (2 * b₂);
+      Time const new_period = (T₁ + T₂) / 2 - b₁ / (2 * b₂);
+      if (new_period > 0 * Second) {
+        elements_[i].period = new_period;
+      }
     }
   }
 }
