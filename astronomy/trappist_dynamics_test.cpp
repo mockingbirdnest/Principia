@@ -206,7 +206,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
   std::vector<double> χ²₂s;
   χ²₂s.resize(elements_.size());
   std::vector<double> χ²₃s;
-  χ²₂s.resize(elements_.size());
+  χ²₃s.resize(elements_.size());
   for (int i = 0; i < elements_.size(); ++i) {
     Genome perturbed_genome = *this;
     auto& perturbed_element = perturbed_genome.elements_[i];
