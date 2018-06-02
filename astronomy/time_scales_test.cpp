@@ -92,7 +92,8 @@ static_assert(j2000_tai == j2000_tai_from_tt, "");
 static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 
 // Check that week dates that go to the previous year work.
-// TODO(phl): Build an MFP and submit a bug.
+// TODO(phl): The Arlésienne lives at
+// https://developercommunity.visualstudio.com/content/problem/223715/incorrect-evaluation-of-constexpr-expression.html
 #if PRINCIPIA_COMPILER_MSVC && \
     (_MSC_FULL_VER == 191326215 || \
      _MSC_FULL_VER == 191426316 || \
