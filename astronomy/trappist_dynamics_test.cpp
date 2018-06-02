@@ -138,7 +138,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 
 void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - generation / 20);
+  double multiplicator = std::exp2(-2 - std::min(generation, 300) / 20);
   if (generation == -1) {
     multiplicator = 1;
   }
