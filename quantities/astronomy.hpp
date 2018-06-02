@@ -18,6 +18,7 @@ constexpr Mass   SolarMass     = 1.98855e30 * si::Kilogram;
 constexpr Mass   JupiterMass   = 1.8986e27 * si::Kilogram;
 constexpr Mass   EarthMass     = 5.9742e24 * si::Kilogram;
 constexpr Time   JulianYear    = 365.25 * si::Day;
+constexpr Length SolarRadius   = 6.957e8 * si::Metre;
 constexpr Length Parsec        = 648000 / π * si::AstronomicalUnit;
 constexpr Length LightYear     = constants::SpeedOfLight * JulianYear;
 constexpr Length LunarDistance = 384400000 * si::Metre;
