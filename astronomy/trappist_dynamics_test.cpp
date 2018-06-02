@@ -187,11 +187,21 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
     }
     *element.period += distribution(engine) * 5 * Second * Sqrt(multiplicator);
     element.eccentricity =
-        std::max(0.0,
-                 std::min(*element.eccentricity + distribution(engine) * 1e-3 *
-                                                      Sqrt(multiplicator),
-                          0.2));
+        *element.eccentricity +
+        distribution(engine) * 1e-3 * Sqrt(multiplicator);
+    for (;;) {
+      if (*element.eccentricity < 0) {
+        *element.eccentricity = - *element.eccentricity;
+      } else if (*element.eccentricity > 0.2) {
+        *element.eccentricity = 0.2 - *element.eccentricity;
+      } else {
+        break;
+      }
+    }
     mutate_mean_anomaly(element, 10 * Degree * multiplicator);
+  }
+  if (generation < 200) {
+    return;
   }
   {
     Bundle bundle(8);
