@@ -138,7 +138,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 
 void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - std::min(generation, 2400) / 120);
+  double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
   if (generation == -1) {
     multiplicator = 1;
   }
@@ -192,6 +192,9 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
                                                       Sqrt(multiplicator),
                           0.2));
     mutate_mean_anomaly(element);
+  }
+  if (generation < 1000) {
+    return;
   }
   Bundle bundle(8);
   double χ²₁;
