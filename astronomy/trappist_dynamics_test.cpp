@@ -41,6 +41,8 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::Angle;
+using quantities::Derivative;
 using quantities::Difference;
 using quantities::Pow;
 using quantities::Square;
@@ -78,7 +80,8 @@ class Genome {
 
   std::vector<KeplerianElements<Trappist>> const& elements() const;
 
-  void Mutate(std::mt19937_64& engine, int generation);
+  void Mutate(std::mt19937_64& engine, int generation,
+              std::function<double(Genome const&)> χ²);
 
   static Genome OnePointCrossover(Genome const& g1,
                                   Genome const& g2,
@@ -99,7 +102,8 @@ class Population {
  public:
   Population(Genome const& luca,
              int const size,
-             std::function<double(Genome const&, std::string&)> compute_fitness);
+             std::function<double(Genome const&, std::string&)> compute_fitness,
+             std::function<double(Genome const&)> χ²);
 
   void ComputeAllFitnesses();
 
@@ -111,6 +115,7 @@ class Population {
   Genome const* Pick() const;
 
   std::function<double(Genome const&, std::string&)> const compute_fitness_;
+  std::function<double(Genome const&)> χ²_;
   mutable std::mt19937_64 engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
@@ -131,7 +136,23 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
   return elements_;
 }
 
-void Genome::Mutate(std::mt19937_64& engine, int generation)  {
+void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
+  std::student_t_distribution<> distribution(1);
+  double multiplicator = std::exp2(-2 - std::min(generation, 2400) / 120);
+  if (generation == -1) {
+    multiplicator = 1;
+  }
+  auto mutate_mean_anomaly =
+      [&distribution, &engine, multiplicator](KeplerianElements<Trappist>& element) {
+        *element.mean_anomaly +=
+            distribution(engine) * 10 * Degree * multiplicator;
+        *element.mean_anomaly =
+            std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
+            quantities::si::Radian;
+        if (*element.mean_anomaly < 0 * quantities::si::Radian) {
+          *element.mean_anomaly += 2 * π * quantities::si::Radian;
+        }
+      };
   for (auto& element : elements_) {
     element.asymptotic_true_anomaly = std::nullopt;
     element.turning_angle = std::nullopt;
@@ -155,8 +176,6 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     // genomic space efficiently and it takes forever to find decent solutions;
     // if it's too large we explore the genomic space haphazardly and suffer
     // from deleterious mutations.
-    double multiplicator = std::exp2(-2 - std::min(generation, 2400) / 120);
-    std::student_t_distribution<> distribution(1);
     *element.argument_of_periapsis +=
         distribution(engine) * 10 * Degree * multiplicator;
     *element.argument_of_periapsis =
@@ -166,27 +185,54 @@ void Genome::Mutate(std::mt19937_64& engine, int generation)  {
     if (*element.argument_of_periapsis < 0 * quantities::si::Radian) {
       *element.argument_of_periapsis += 2 * π * quantities::si::Radian;
     }
-    *element.mean_anomaly += distribution(engine) * 10 * Degree * multiplicator;
-    *element.mean_anomaly =
-        std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
-        quantities::si::Radian;
-#if 0
-    element.longitude_of_ascending_node +=
-        distribution(engine) * 1 * Degree * multiplicator;
-    element.longitude_of_ascending_node =
-        std::fmod(element.longitude_of_ascending_node / quantities::si::Radian,
-                  2 * π) *
-        quantities::si::Radian;
-#endif
-    if (*element.mean_anomaly < 0 * quantities::si::Radian) {
-      *element.mean_anomaly += 2 * π * quantities::si::Radian;
-    }
     *element.period += distribution(engine) * 5 * Second * Sqrt(multiplicator);
     element.eccentricity =
         std::max(0.0,
                  std::min(*element.eccentricity + distribution(engine) * 1e-3 *
                                                       Sqrt(multiplicator),
                           0.2));
+    mutate_mean_anomaly(element);
+  }
+  Bundle bundle(8);
+  double χ²₁;
+  bundle.Add([this, &χ², &χ²₁]() {
+    χ²₁ = χ²(*this);
+    return Status::OK;
+  });
+  std::vector<Angle> M₂s;
+  M₂s.resize(elements_.size());
+  std::vector<Angle> M₃s;
+  M₃s.resize(elements_.size());
+  std::vector<double> χ²₂s;
+  χ²₂s.resize(elements_.size());
+  std::vector<double> χ²₃s;
+  χ²₂s.resize(elements_.size());
+  for (int i = 0; i < elements_.size(); ++i) {
+    Genome perturbed_genome = *this;
+    auto& perturbed_element = perturbed_genome.elements_[i];
+    mutate_mean_anomaly(perturbed_element);
+    M₂s[i] = *perturbed_element.mean_anomaly;
+    bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
+      χ²₂s[i] = χ²(perturbed_genome);
+      return Status::OK;
+    });
+    mutate_mean_anomaly(perturbed_element);
+    M₃s[i] = *perturbed_element.mean_anomaly;
+    bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
+      χ²₃s[i] = χ²(perturbed_genome);
+      return Status::OK;
+    });
+  }
+  bundle.Join();
+  for (int i = 0; i < elements_.size(); ++i) {
+    double const χ²₂ = χ²₂s[i];
+    double const χ²₃ = χ²₃s[i];
+    Angle const M₁ = *elements_[i].mean_anomaly;
+    Angle const M₂ = M₂s[i];
+    Angle const M₃ = M₃s[i];
+    Derivative<double, Angle> b₁ = (χ²₂ - χ²₁) / (M₂ - M₁);
+    Derivative<double, Angle, 2> b₂ = ((χ²₃ - χ²₁) / (M₃ - M₁) - b₁) / (M₃ - M₂);
+    elements_[i].mean_anomaly = (M₁ + M₂) / 2 - b₁ / (2 * b₂);
   }
 }
 
@@ -276,12 +322,14 @@ Genome Genome::Blend(Genome const& g1,
 
 Population::Population(Genome const& luca,
                        int const size,
-                       std::function<double(Genome const&, std::string&)> compute_fitness)
+                       std::function<double(Genome const&, std::string&)> compute_fitness,
+                       std::function<double(Genome const&)> χ²)
     : current_(size, luca),
       next_(size, luca),
-      compute_fitness_(std::move(compute_fitness)) {
+      compute_fitness_(std::move(compute_fitness)),
+      χ²_(χ²) {
   for (int i = 0; i < current_.size(); ++i) {
-    current_[i].Mutate(engine_, -1);
+    current_[i].Mutate(engine_, -1, χ²_);
   }
 }
 
@@ -414,7 +462,7 @@ void Population::BegetChildren() {
       }
     }
     next_[i] = Genome::TwoPointCrossover(*parent1, *parent2, engine_);
-    next_[i].Mutate(engine_, generation_);
+    next_[i].Mutate(engine_, generation_, χ²_);
   }
   next_.swap(current_);
   ++generation_;
@@ -988,7 +1036,10 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
 
   Genome luca(elements);
   Population population(
-      luca, 9, std::move(compute_fitness));
+      luca, 9, compute_fitness, [&compute_fitness](Genome const& genome) {
+        std::string unused_info;
+        return 1 / compute_fitness(genome, unused_info);
+      });
   for (int i = 0; i < 200'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
