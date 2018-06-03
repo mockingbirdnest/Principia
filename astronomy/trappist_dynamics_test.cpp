@@ -532,6 +532,9 @@ void Population::ComputeAllFitnesses() {
              << " Best: " << best_fitness_ << "\n";
   LOG(ERROR) << "Least fit: " << *least_fit_info << "\n";
   LOG(ERROR) << "Fittest  : " << *fittest_info << "\n";
+  if (!elitism_) {
+    LOG(ERROR) << "Best     : " << best_trace_ << "\n";
+  }
 }
 
 void Population::BegetChildren() {
