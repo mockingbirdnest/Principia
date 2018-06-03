@@ -107,6 +107,11 @@ class Population {
              std::function<double(Genome const&, std::string&)> compute_fitness,
              std::function<double(Genome const&)> χ²,
              std::mt19937_64& engine);
+  Population(std::vector<Genome> const& individuals,
+             bool const elitism,
+             std::function<double(Genome const&, std::string&)> compute_fitness,
+             std::function<double(Genome const&)> χ²,
+             std::mt19937_64& engine);
 
   void ComputeAllFitnesses();
 
@@ -120,7 +125,7 @@ class Population {
   std::function<double(Genome const&, std::string&)> const compute_fitness_;
   std::function<double(Genome const&)> χ²_;
   bool const elitism_;
-  mutable std::mt19937_64& engine_;
+  std::mt19937_64& engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
   std::vector<double> fitnesses_;
@@ -406,6 +411,21 @@ Population::Population(Genome const& luca,
   }
 }
 
+Population::Population(
+    std::vector<Genome> const& individuals,
+    bool const elitism,
+    std::function<double(Genome const&, std::string&)> compute_fitness,
+    std::function<double(Genome const&)> χ²,
+    std::mt19937_64& engine)
+    : current_(individuals),
+      next_(individuals),
+      compute_fitness_(std::move(compute_fitness)),
+      χ²_(χ²),
+      elitism_(elitism),
+      engine_(engine) {
+  generation_ = 300;
+}
+
 void Population::ComputeAllFitnesses() {
   // The fitness computation is expensive, do it in parallel on all genomes.
   {
@@ -414,7 +434,7 @@ void Population::ComputeAllFitnesses() {
     fitnesses_.resize(current_.size(), 0.0);
     traces_.resize(current_.size(), "");
     int i = 0;
-    if (best_genome_.has_value()) {
+    if (elitism_ && best_genome_.has_value()) {
       // Elitism: fitnesses_[0] is already best_fitness_.
       CHECK_EQ(fitnesses_[i], best_fitness_);
       ++i;
@@ -516,7 +536,7 @@ void Population::ComputeAllFitnesses() {
 
 void Population::BegetChildren() {
   int i = 0;
-  if (best_genome_.has_value()) {
+  if (elitism_ && best_genome_.has_value()) {
     // Elitism.
     next_[i] = *best_genome_;
     fitnesses_[i] = best_fitness_;
@@ -990,7 +1010,7 @@ class TrappistDynamicsTest : public ::testing::Test {
             Pow<2>(error / observed_transit.standard_uncertainty);
       }
     }
-    info = u8"max Δt = " + std::to_string(max_Δt / Second) + "s (" +
+    info = u8"max Δt = " + std::to_string(max_Δt / Second) + " s (" +
            transit_with_max_Δt + u8") avg Δt = " +
            std::to_string(total_Δt / number_of_observations / Second) + u8" s";
     return sum_of_squared_errors;
@@ -1116,9 +1136,32 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
 
   std::mt19937_64 engine;
 
-  Population population(luca,
-                        9,
-                        /*elitism=*/true,
+  std::vector<Genome> great_old_ones;
+
+  for (int i = 0; i < 7; ++i) {
+    Population population(luca,
+                          9,
+                          /*elitism=*/true,
+                          compute_fitness,
+                          [&compute_fitness](Genome const& genome) {
+                            std::string unused_info;
+                            return 1 / compute_fitness(genome, unused_info);
+                          },
+                          engine);
+    for (int i = 0; i < 300; ++i) {
+      population.ComputeAllFitnesses();
+      population.BegetChildren();
+    }
+    LOG(ERROR) << "Great Old One " << i;
+    for (int i = 0; i < planet_names.size(); ++i) {
+      LOG(ERROR) << planet_names[i] << ": "
+                 << population.best_genome().elements()[i];
+      // Add 7 copies of the Great Old One.
+      great_old_ones.push_back(population.best_genome());
+    }
+  }
+  Population population(great_old_ones,
+                        /*elitism=*/false,
                         compute_fitness,
                         [&compute_fitness](Genome const& genome) {
                           std::string unused_info;
@@ -1129,7 +1172,6 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
-
   for (int i = 0; i < planet_names.size(); ++i) {
     LOG(ERROR) << planet_names[i] << ": "
                << population.best_genome().elements()[i];
