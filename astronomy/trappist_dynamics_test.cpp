@@ -41,6 +41,7 @@ using physics::KeplerOrbit;
 using physics::MassiveBody;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::Abs;
 using quantities::Angle;
 using quantities::Derivative;
 using quantities::Difference;
@@ -102,8 +103,10 @@ class Population {
  public:
   Population(Genome const& luca,
              int const size,
+             bool const elitism,
              std::function<double(Genome const&, std::string&)> compute_fitness,
-             std::function<double(Genome const&)> χ²);
+             std::function<double(Genome const&)> χ²,
+             std::mt19937_64& engine);
 
   void ComputeAllFitnesses();
 
@@ -116,7 +119,8 @@ class Population {
 
   std::function<double(Genome const&, std::string&)> const compute_fitness_;
   std::function<double(Genome const&)> χ²_;
-  mutable std::mt19937_64 engine_;
+  bool const elitism_;
+  mutable std::mt19937_64& engine_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
   std::vector<double> fitnesses_;
@@ -200,7 +204,7 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
     }
     mutate_mean_anomaly(element, 10 * Degree * multiplicator);
   }
-  if (generation < 200) {
+  if (true || generation < 200) {
     return;
   }
   {
@@ -387,12 +391,16 @@ Genome Genome::Blend(Genome const& g1,
 
 Population::Population(Genome const& luca,
                        int const size,
+                       bool const elitism,
                        std::function<double(Genome const&, std::string&)> compute_fitness,
-                       std::function<double(Genome const&)> χ²)
+                       std::function<double(Genome const&)> χ²,
+                       std::mt19937_64& engine)
     : current_(size, luca),
       next_(size, luca),
       compute_fitness_(std::move(compute_fitness)),
-      χ²_(χ²) {
+      χ²_(χ²),
+      elitism_(elitism),
+      engine_(engine) {
   for (int i = 0; i < current_.size(); ++i) {
     current_[i].Mutate(engine_, -1, χ²_);
   }
@@ -559,6 +567,15 @@ Genome const* Population::Pick() const {
 constexpr Instant JD(double const jd) {
   return Instant{} + (jd - 2451545.0) * Day;
 }
+
+std::map<std::string, Time> nominal_periods = {
+    {"Trappist-1b", 1.51087637 * Day},
+    {"Trappist-1c", 2.42180746 * Day},
+    {"Trappist-1d", 4.049959 * Day},
+    {"Trappist-1e", 6.099043 * Day},
+    {"Trappist-1f", 9.205585 * Day},
+    {"Trappist-1g", 12.354473 * Day},
+    {"Trappist-1h", 18.767953 * Day}};
 
 MeasuredTransitsByPlanet const observations = {
     {"Trappist-1b",
@@ -917,15 +934,14 @@ class TrappistDynamicsTest : public ::testing::Test {
     return (time - JD(2450000.0)) / Day;
   }
 
-  static double Computeχ²(MeasuredTransitsByPlanet const& observations,
-                   TransitsByPlanet const& computations,
-                   std::vector<Time>* errors,
-                   std::vector<double>* errors_over_uncertainties) {
-    int number_of_transits = 0;
+  static double Transitsχ²(MeasuredTransitsByPlanet const& observations,
+                           TransitsByPlanet const& computations,
+                           std::string& info) {
     double sum_of_squared_errors = 0;
-    if (errors != nullptr) {
-      errors->clear();
-    }
+    Time max_Δt;
+    Time total_Δt;
+    std::string transit_with_max_Δt;
+    int number_of_observations = 0;
     for (auto const& pair : observations) {
       auto const& name = pair.first;
       auto const& observed_transits = pair.second;
@@ -933,36 +949,51 @@ class TrappistDynamicsTest : public ::testing::Test {
       if (computed_transits.empty()) {
         return std::numeric_limits<double>::infinity();
       }
+      Instant const& initial_observed_transit =
+          observed_transits.front().estimated_value;
+      auto initial_computed_transit =
+          std::lower_bound(computed_transits.begin(),
+                           computed_transits.end(),
+                           initial_observed_transit);
+      if (initial_computed_transit == computed_transits.end()) {
+        --initial_computed_transit;
+      } else if (initial_computed_transit != computed_transits.begin() &&
+                 *initial_computed_transit - initial_observed_transit >
+                     initial_observed_transit - initial_computed_transit[-1]) {
+        --initial_computed_transit;
+      }
+      int const relevant_computed_transits_size =
+          computed_transits.end() - initial_computed_transit;
       for (auto const& observed_transit : observed_transits) {
-        auto const next_computed_transit =
-            std::lower_bound(computed_transits.begin(),
-                             computed_transits.end(),
-                             observed_transit.estimated_value);
-        Time error;
-        if (next_computed_transit == computed_transits.begin()) {
-          error = *next_computed_transit - observed_transit.estimated_value;
-        } else if (next_computed_transit == computed_transits.end()) {
-          error = observed_transit.estimated_value - computed_transits.back();
-        } else {
-          error = std::min(
-              *next_computed_transit - observed_transit.estimated_value,
-              observed_transit.estimated_value -
-                  *std::prev(next_computed_transit));
+        int const transit_epoch = std::round(
+            (observed_transit.estimated_value - initial_observed_transit) /
+            nominal_periods.at(name));
+        if (transit_epoch >= relevant_computed_transits_size) {
+          // No computed transit corresponds to the observed transit.  Either
+          // the planet has escaped, or its period is so low that it does not
+          // transit enough over the simulation interval.  In any case,
+          // something is very wrong.
+          return std::numeric_limits<double>::infinity();
         }
-        CHECK_LE(0.0 * Second, error);
-        if (errors != nullptr) {
-          errors->push_back(error);
+        auto const computed_transit = initial_computed_transit[transit_epoch];
+        Time const error =
+            Abs(computed_transit - observed_transit.estimated_value);
+        if (error > max_Δt) {
+          max_Δt = error;
+          transit_with_max_Δt =
+              name + "[" +
+              std::to_string(ShortDays(observed_transit.estimated_value)) + "]";
         }
-        if (errors_over_uncertainties != nullptr) {
-          errors_over_uncertainties->push_back(
-              error / observed_transit.standard_uncertainty);
-        }
+        total_Δt += error;
+        ++number_of_observations;
         sum_of_squared_errors +=
             Pow<2>(error / observed_transit.standard_uncertainty);
       }
-      number_of_transits += observed_transits.size();
     }
-    return sum_of_squared_errors - 1;
+    info = u8"max Δt = " + std::to_string(max_Δt / Second) + "s (" +
+           transit_with_max_Δt + u8") avg Δt = " +
+           std::to_string(total_Δt / number_of_observations / Second) + u8" s";
+    return sum_of_squared_errors;
   }
 
   static std::string SanitizedName(MassiveBody const& body) {
@@ -1025,7 +1056,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  LOG(ERROR) << u8"χ²: " << Computeχ²(observations, computations, nullptr, nullptr);
+  //LOG(ERROR) << u8"χ²: " << Computeχ²(observations, computations, nullptr, nullptr);
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -1071,27 +1102,9 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
             ComputeTransits(*ephemeris, star, planet);
       }
     }
-    std::vector<Time> δt;
-    std::vector<double> δt_over_σ;
-    double const χ² = Computeχ²(observations, computations, &δt, &δt_over_σ);
-    Time max = 0 * Second;
-    double max_over_σ = 0;
-    Time total = 0 * Second;
-    double total_in_σ = 0;
-    for (auto const residual : δt) {
-      max = std::max(max, residual);
-      total += residual;
-    }
-    for (auto const residual : δt_over_σ) {
-      max_over_σ = std::max(max_over_σ, residual);
-      total_in_σ += residual;
-    }
-    info = u8"χ² = " + std::to_string(χ²) +
-           "; n = " + std::to_string(δt.size()) + u8"; max Δt = " +
-           std::to_string(max / Second) + u8" s; avg Δt = " +
-           std::to_string(total / δt.size() / Second) + u8" s; max Δt/σ = " +
-           std::to_string(max_over_σ) + u8"; avg Δt/σ = " +
-           std::to_string(total_in_σ / δt_over_σ.size());
+    std::string χ²_info;
+    double const χ² = Transitsχ²(observations, computations, χ²_info);
+    info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
 
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
@@ -1100,11 +1113,18 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   };
 
   Genome luca(elements);
-  Population population(
-      luca, 9, compute_fitness, [&compute_fitness](Genome const& genome) {
-        std::string unused_info;
-        return 1 / compute_fitness(genome, unused_info);
-      });
+
+  std::mt19937_64 engine;
+
+  Population population(luca,
+                        9,
+                        /*elitism=*/true,
+                        compute_fitness,
+                        [&compute_fitness](Genome const& genome) {
+                          std::string unused_info;
+                          return 1 / compute_fitness(genome, unused_info);
+                        },
+                        engine);
   for (int i = 0; i < 1000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
