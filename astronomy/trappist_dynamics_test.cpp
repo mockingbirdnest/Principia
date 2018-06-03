@@ -118,6 +118,7 @@ class Population {
   void BegetChildren();
 
   Genome best_genome() const;
+  std::string best_genome_trace() const;
 
  private:
   Genome const* Pick() const;
@@ -147,7 +148,7 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 
 void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - std::min(generation, 1000) / 50);
+  double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
   if (generation == -1) {
     multiplicator = 1;
   }
@@ -566,6 +567,10 @@ void Population::BegetChildren() {
 
 Genome Population::best_genome() const {
   return *best_genome_;
+}
+
+std::string Population::best_genome_trace() const {
+  return best_trace_;
 }
 
 Genome const* Population::Pick() const {
@@ -1151,11 +1156,12 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                             return 1 / compute_fitness(genome, unused_info);
                           },
                           engine);
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 20'000; ++i) {
       population.ComputeAllFitnesses();
       population.BegetChildren();
     }
     LOG(ERROR) << "Great Old One " << i;
+    LOG(ERROR) << "Great Old One trace: " << population.best_genome_trace();
     for (int i = 0; i < planet_names.size(); ++i) {
       LOG(ERROR) << planet_names[i] << ": "
                  << population.best_genome().elements()[i];
@@ -1171,7 +1177,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                           return 1 / compute_fitness(genome, unused_info);
                         },
                         engine);
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < 20'000; ++i) {
     population.ComputeAllFitnesses();
     population.BegetChildren();
   }
