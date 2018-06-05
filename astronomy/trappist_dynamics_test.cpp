@@ -109,6 +109,7 @@ class Population {
   void BegetChildren();
 
   Genome best_genome() const;
+  double best_genome_fitness() const;
   std::string best_genome_trace() const;
 
  private:
@@ -345,6 +346,10 @@ void Population::BegetChildren() {
 
 Genome Population::best_genome() const {
   return *best_genome_;
+}
+
+double Population::best_genome_fitness() const {
+  return best_fitness_;
 }
 
 std::string Population::best_genome_trace() const {
@@ -961,11 +966,12 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   };
 
 
-  std::vector<Genome> great_old_ones;
+  std::optional<Genome> great_old_one;
+  double great_old_one_fitness = 0.0;
   {
     std::mt19937_64 engine;
     // First, let's do 5 rounds of evolution with a population of 9 individuals
-    // based on |luca|.  These are the Great Old Ones.
+    // based on |luca|.  The best of all of them is the Great Old One.
     Genome luca(elements);
     for (int i = 0; i < 5; ++i) {
       Population population(luca,
@@ -977,12 +983,15 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         population.ComputeAllFitnesses();
         population.BegetChildren();
       }
-      LOG(ERROR) << "Great Old One " << i;
-      LOG(ERROR) << "Great Old One trace: " << population.best_genome_trace();
-      great_old_ones.push_back(population.best_genome());
+      LOG(ERROR) << "Great Old One #" << i;
+      LOG(ERROR) << population.best_genome_trace();
       for (int i = 0; i < planet_names.size(); ++i) {
         LOG(ERROR) << planet_names[i] << ": "
                    << population.best_genome().elements()[i];
+      }
+      if (population.best_genome_fitness() > great_old_one_fitness) {
+        great_old_one = population.best_genome();
+        great_old_one_fitness = population.best_genome_fitness();
       }
     }
   }
