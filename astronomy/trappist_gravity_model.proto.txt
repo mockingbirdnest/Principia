@@ -1,0 +1,39 @@
+gravity_model {
+  solar_system_frame : TRAPPIST
+
+  # Star.
+  body {
+    name : "Trappist-1A"
+    mass : "0.0890 M☉"
+  }
+
+  # Planets.
+  body {
+    name : "Trappist-1b"
+    mass : "1.0057 M🜨"
+  }
+  body {
+    name : "Trappist-1c"
+    mass : "1.1432 M🜨"
+  }
+  body {
+    name : "Trappist-1d"
+    mass : "0.2937 M🜨"
+  }
+  body {
+    name : "Trappist-1e"
+    mass : "0.7634 M🜨"
+  }
+  body {
+    name : "Trappist-1f"
+    mass : "0.9236 M🜨"
+  }
+  body {
+    name : "Trappist-1g"
+    mass : "1.1352 M🜨"
+  }
+  body {
+    name : "Trappist-1h"
+    mass : "0.3273 M🜨"
+  }
+}

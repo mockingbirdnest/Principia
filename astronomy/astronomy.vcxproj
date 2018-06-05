@@ -35,6 +35,10 @@
     <Text Include="test_gravity_model_two_bodies.proto.txt" />
     <Text Include="test_initial_state_two_bodies_circular.proto.txt" />
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
+    <Text Include="trappist_gravity_model.proto.txt" />
+    <Text Include="trappist_initial_state_jd_2457000_000000000.proto.txt" />
+    <Text Include="trappist_initial_state_jd_2457010_000000000.proto.txt" />
+    <Text Include="trappist_initial_state_jd_2457282_805700000.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />
@@ -51,6 +55,7 @@
     <ClInclude Include="frames.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\base\bundle.cpp" />
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="date_time_test.cpp" />
@@ -61,6 +66,7 @@
     <ClCompile Include="time_scales_test.cpp" />
     <ClCompile Include="lunar_eclipse_test.cpp" />
     <ClCompile Include="mercury_perihelion_test.cpp" />
+    <ClCompile Include="trappist_dynamics_test.cpp" />
     <ClCompile Include="молния_orbit_test.cpp" />
   </ItemGroup>
 </Project>
