@@ -43,9 +43,12 @@ using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Abs;
 using quantities::Angle;
+using quantities::ArcTan;
+using quantities::Cos;
 using quantities::Derivative;
 using quantities::Difference;
 using quantities::Pow;
+using quantities::Sin;
 using quantities::Square;
 using quantities::Sqrt;
 using quantities::Time;
@@ -55,133 +58,25 @@ using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Radian;
 using quantities::si::Second;
 
 namespace astronomy {
 
-struct PlanetParameters {
-  constexpr static int count = 4;
-  Time period;
-  double x{};
-  double y{};
-  Time time_to_first_transit;
-};
-
-using SystemParameters = std::array<PlanetParameters, 7>;
-
-using Population = std::vector<SystemParameters>;
-
-using Calculator =
-    std::function<double(SystemParameters const&, std::string& info)>;
-
-PlanetParameters operator+(PlanetParameters const& left,
-                           PlanetParameters const& right) {
-  PlanetParameters result = left;
-  result.period += right.period;
-  result.x += right.x;
-  result.y += right.y;
-  result.time_to_first_transit += right.time_to_first_transit;
-  return result;
-}
-
-PlanetParameters operator-(PlanetParameters const& left,
-                           PlanetParameters const& right) {
-  PlanetParameters result = left;
-  result.period -= right.period;
-  result.x -= right.x;
-  result.y -= right.y;
-  result.time_to_first_transit -= right.time_to_first_transit;
-  return result;
-}
-
-PlanetParameters operator*(double const left, PlanetParameters const& right) {
-  PlanetParameters result = right;
-  result.period *= left;
-  result.x *= left;
-  result.y *= left;
-  result.time_to_first_transit *= left;
-  return result;
-}
-
-SystemParameters operator+(SystemParameters const& left,
-                           SystemParameters const& right) {
-  SystemParameters result = left;
-  for (int i = 0; i < result.size(); ++i) {
-    result[i] = result[i] + right[i];
-  }
-  return result;
-}
-
-SystemParameters operator-(SystemParameters const& left,
-                           SystemParameters const& right) {
-  SystemParameters result = left;
-  for (int i = 0; i < result.size(); ++i) {
-    result[i] = result[i] - right[i];
-  }
-  return result;
-}
-
-SystemParameters operator*(double const left, SystemParameters const& right) {
-  SystemParameters result = right;
-  for (int i = 0; i < result.size(); ++i) {
-    result[i] = left * result[i];
-  }
-  return result;
-}
-
-KeplerianElements<Trappist> MakeKeplerianElements(
-    KeplerianElements<Trappist> const& blueprint,
-    PlanetParameters const& parameters) {
-  KeplerianElements<Trappist> elements = blueprint;
-  elements.asymptotic_true_anomaly = std::nullopt;
-  elements.turning_angle = std::nullopt;
-  elements.semimajor_axis = std::nullopt;
-  elements.specific_energy = std::nullopt;
-  elements.characteristic_energy = std::nullopt;
-  elements.mean_motion = std::nullopt;
-  elements.hyperbolic_mean_motion = std::nullopt;
-  elements.hyperbolic_excess_velocity = std::nullopt;
-  elements.semiminor_axis = std::nullopt;
-  elements.impact_parameter = std::nullopt;
-  elements.semilatus_rectum = std::nullopt;
-  elements.specific_angular_momentum = std::nullopt;
-  elements.periapsis_distance = std::nullopt;
-  elements.apoapsis_distance = std::nullopt;
-  elements.longitude_of_periapsis = std::nullopt;
-  elements.true_anomaly = std::nullopt;
-  elements.hyperbolic_mean_anomaly = std::nullopt;
-  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
-  *elements.period = parameters.period;
-  *elements.mean_anomaly =
-      π / 2 * Radian - *elements.argument_of_periapsis -
-      (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
-  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
-  return elements;
-}
-
-PlanetParameters MakePlanetParameters(
-    KeplerianElements<Trappist> const& elements) {
-  PlanetParameters result;
-  result.period = *elements.period;
-  result.x = *elements.eccentricity * Cos(*elements.argument_of_periapsis);
-  result.y = *elements.eccentricity * Sin(*elements.argument_of_periapsis);
-  result.time_to_first_transit =
-      *elements.period / (2 * π * Radian) *
-      (π / 2 * Radian - *elements.argument_of_periapsis -
-       *elements.mean_anomaly);
-  return result;
-}
+// -------------------------------- Genetics -----------------------------------
 
 // The description of the characteristics of an individual, i.e., a
-// configuration of the Trappist system.
+// configuration of the Trappist system.  This is merely a wrapper on the
+// elements of each planet.
 class Genome {
  public:
+   //TODO(phl):Genome?
   explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
 
   std::vector<KeplerianElements<Trappist>> const& elements() const;
 
-  void Mutate(std::mt19937_64& engine, int generation,
-              std::function<double(Genome const&)> χ²);
+  // Mutate this individual depending on its generation.
+  void Mutate(std::mt19937_64& engine, int generation);
 
   // We tried other forms of crossover (one-point crossover, linear blending)
   // but then didn't produce good results.
@@ -200,12 +95,10 @@ class Population {
              int const size,
              bool const elitism,
              std::function<double(Genome const&, std::string&)> compute_fitness,
-             std::function<double(Genome const&)> χ²,
              std::mt19937_64& engine);
   Population(std::vector<Genome> const& individuals,
              bool const elitism,
              std::function<double(Genome const&, std::string&)> compute_fitness,
-             std::function<double(Genome const&)> χ²,
              std::mt19937_64& engine);
 
   void ComputeAllFitnesses();
@@ -219,7 +112,6 @@ class Population {
   Genome const* Pick() const;
 
   std::function<double(Genome const&, std::string&)> const compute_fitness_;
-  std::function<double(Genome const&)> χ²_;
   bool const elitism_;
   std::mt19937_64& engine_;
   std::vector<Genome> current_;
@@ -241,7 +133,8 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
   return elements_;
 }
 
-void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<double(Genome const&)> χ²)  {
+void Genome::Mutate(std::mt19937_64& engine,
+                    int const generation) {
   std::student_t_distribution<> distribution(1);
   double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
   if (generation == -1) {
@@ -305,132 +198,6 @@ void Genome::Mutate(std::mt19937_64& engine, int generation, std::function<doubl
     }
     mutate_mean_anomaly(element, 10 * Degree * multiplicator);
   }
-  if (true || generation < 200) {
-    return;
-  }
-  {
-    Bundle bundle(8);
-    double χ²₁;
-    bundle.Add([this, &χ², &χ²₁]() {
-      χ²₁ = χ²(*this);
-      return Status::OK;
-    });
-    std::vector<Angle> M₂s;
-    M₂s.resize(elements_.size());
-    std::vector<Angle> M₃s;
-    M₃s.resize(elements_.size());
-    std::vector<double> χ²₂s;
-    χ²₂s.resize(elements_.size());
-    std::vector<double> χ²₃s;
-    χ²₃s.resize(elements_.size());
-    for (int i = 0; i < elements_.size(); ++i) {
-      Genome perturbed_genome = *this;
-      auto& perturbed_element = perturbed_genome.elements_[i];
-      mutate_mean_anomaly(perturbed_element, 0.01 * Degree);
-      M₂s[i] = *perturbed_element.mean_anomaly;
-      bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
-        χ²₂s[i] = χ²(perturbed_genome);
-        return Status::OK;
-      });
-      mutate_mean_anomaly(perturbed_element, 0.01 * Degree);
-      M₃s[i] = *perturbed_element.mean_anomaly;
-      bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
-        χ²₃s[i] = χ²(perturbed_genome);
-        return Status::OK;
-      });
-    }
-    bundle.Join();
-    for (int i = 0; i < elements_.size(); ++i) {
-      double const χ²₂ = χ²₂s[i];
-      double const χ²₃ = χ²₃s[i];
-      Angle const M₁ = *elements_[i].mean_anomaly;
-      Angle const M₂ = M₂s[i];
-      Angle const M₃ = M₃s[i];
-      Derivative<double, Angle> b₁ = (χ²₂ - χ²₁) / (M₂ - M₁);
-      Derivative<double, Angle, 2> b₂ =
-          ((χ²₃ - χ²₁) / (M₃ - M₁) - b₁) / (M₃ - M₂);
-      elements_[i].mean_anomaly =
-          std::fmod(((M₁ + M₂) / 2 - b₁ / (2 * b₂)) / quantities::si::Radian,
-                    2 * π) *
-          quantities::si::Radian;
-    }
-  }
-  {
-    Bundle bundle(8);
-    double χ²₁;
-    bundle.Add([this, &χ², &χ²₁]() {
-      χ²₁ = χ²(*this);
-      return Status::OK;
-    });
-    std::vector<Time> T₂s;
-    T₂s.resize(elements_.size());
-    std::vector<Time> T₃s;
-    T₃s.resize(elements_.size());
-    std::vector<double> χ²₂s;
-    χ²₂s.resize(elements_.size());
-    std::vector<double> χ²₃s;
-    χ²₃s.resize(elements_.size());
-    for (int i = 0; i < elements_.size(); ++i) {
-      Genome perturbed_genome = *this;
-      auto& perturbed_element = perturbed_genome.elements_[i];
-      *perturbed_element.period +=
-          distribution(engine) * 0.1 * Second * Sqrt(multiplicator);
-      T₂s[i] = *perturbed_element.period;
-      bundle.Add([perturbed_genome, i, &χ², &χ²₂s]() {
-        χ²₂s[i] = χ²(perturbed_genome);
-        return Status::OK;
-      });
-      *perturbed_element.period +=
-          distribution(engine) * 0.1 * Second * Sqrt(multiplicator);
-      T₃s[i] = *perturbed_element.period;
-      bundle.Add([perturbed_genome, i, &χ², &χ²₃s]() {
-        χ²₃s[i] = χ²(perturbed_genome);
-        return Status::OK;
-      });
-    }
-    bundle.Join();
-    for (int i = 0; i < elements_.size(); ++i) {
-      double const χ²₂ = χ²₂s[i];
-      double const χ²₃ = χ²₃s[i];
-      Time const T₁ = *elements_[i].period;
-      Time const T₂ = T₂s[i];
-      Time const T₃ = T₃s[i];
-      Derivative<double, Time> b₁ = (χ²₂ - χ²₁) / (T₂ - T₁);
-      Derivative<double, Time, 2> b₂ =
-          ((χ²₃ - χ²₁) / (T₃ - T₁) - b₁) / (T₃ - T₂);
-      Time const new_period = (T₁ + T₂) / 2 - b₁ / (2 * b₂);
-      if (new_period > 0 * Second) {
-        elements_[i].period = new_period;
-      }
-    }
-  }
-}
-
-Genome Genome::OnePointCrossover(Genome const& g1,
-                                 Genome const& g2,
-                                 std::mt19937_64& engine) {
-  CHECK_EQ(g1.elements_.size(), g2.elements_.size());
-  std::vector<KeplerianElements<Trappist>> new_elements;
-  std::uniform_int_distribution<> order_distribution(0, 1);
-  std::uniform_int_distribution<> split_distribution(0, g1.elements_.size());
-  bool const reverse = order_distribution(engine) == 1;
-  int const split = split_distribution(engine);
-  if (reverse) {
-    for (int i = 0; i < split; ++i) {
-      new_elements.push_back(g1.elements_[i]);
-    }
-    for (int i = split; i < g2.elements_.size(); ++i) {
-      new_elements.push_back(g2.elements_[i]);
-    }
-  } else {
-    for (int i = 0; i < split; ++i) {
-      new_elements.push_back(g2.elements_[i]);
-    }
-    for (int i = split; i < g1.elements_.size(); ++i) {
-      new_elements.push_back(g1.elements_[i]);
-    }
-  }
-  return Genome(new_elements);
 }
 
 Genome Genome::TwoPointCrossover(Genome const& g1,
@@ -470,40 +237,19 @@ Genome Genome::TwoPointCrossover(Genome const& g1,
   return Genome(new_elements);
 }
 
-Genome Genome::Blend(Genome const& g1,
-                     Genome const& g2,
-                     std::mt19937_64& engine) {
-  CHECK_EQ(g1.elements_.size(), g2.elements_.size());
-  std::vector<KeplerianElements<Trappist>> new_elements;
-  std::uniform_real_distribution blend_distribution(0.0, 1.0);
-  double const blend = blend_distribution(engine);
-  for (int i = 0; i < g1.elements_.size(); ++i) {
-    KeplerianElements<Trappist> new_element = g1.elements_[i];
-    *new_element.argument_of_periapsis =
-        *g1.elements_[i].argument_of_periapsis * blend +
-        *g2.elements_[i].argument_of_periapsis * (1.0 - blend);
-    *new_element.argument_of_periapsis =
-        *g1.elements_[i].mean_anomaly * blend +
-        *g2.elements_[i].mean_anomaly * (1.0 - blend);
-    new_elements.push_back(new_element);
-  }
-  return Genome(new_elements);
-}
-
-Population::Population(Genome const& luca,
-                       int const size,
-                       bool const elitism,
-                       std::function<double(Genome const&, std::string&)> compute_fitness,
-                       std::function<double(Genome const&)> χ²,
-                       std::mt19937_64& engine)
+Population::Population(
+    Genome const& luca,
+    int const size,
+    bool const elitism,
+    std::function<double(Genome const&, std::string&)> compute_fitness,
+    std::mt19937_64& engine)
     : current_(size, luca),
       next_(size, luca),
       compute_fitness_(std::move(compute_fitness)),
-      χ²_(χ²),
       elitism_(elitism),
       engine_(engine) {
   for (int i = 0; i < current_.size(); ++i) {
-    current_[i].Mutate(engine_, -1, χ²_);
+    current_[i].Mutate(engine_, /*generation=*/-1);
   }
 }
 
@@ -511,12 +257,10 @@ Population::Population(
     std::vector<Genome> const& individuals,
     bool const elitism,
     std::function<double(Genome const&, std::string&)> compute_fitness,
-    std::function<double(Genome const&)> χ²,
     std::mt19937_64& engine)
     : current_(individuals),
       next_(individuals),
       compute_fitness_(std::move(compute_fitness)),
-      χ²_(χ²),
       elitism_(elitism),
       engine_(engine) {
   generation_ = 1000;
@@ -654,7 +398,7 @@ void Population::BegetChildren() {
       }
     }
     next_[i] = Genome::TwoPointCrossover(*parent1, *parent2, engine_);
-    next_[i].Mutate(engine_, generation_, χ²_);
+    next_[i].Mutate(engine_, generation_);
   }
   next_.swap(current_);
   ++generation_;
@@ -682,6 +426,119 @@ Genome const* Population::Pick() const {
   CHECK_LE(0, picked_index);
   CHECK_LT(picked_index, current_.size());
   return &current_[picked_index];
+}
+
+struct PlanetParameters {
+  constexpr static int count = 4;
+  Time period;
+  double x{};
+  double y{};
+  Time time_to_first_transit;
+};
+
+using SystemParameters = std::array<PlanetParameters, 7>;
+
+//using Population = std::vector<SystemParameters>;
+
+using Calculator =
+    std::function<double(SystemParameters const&, std::string& info)>;
+
+PlanetParameters operator+(PlanetParameters const& left,
+                           PlanetParameters const& right) {
+  PlanetParameters result = left;
+  result.period += right.period;
+  result.x += right.x;
+  result.y += right.y;
+  result.time_to_first_transit += right.time_to_first_transit;
+  return result;
+}
+
+PlanetParameters operator-(PlanetParameters const& left,
+                           PlanetParameters const& right) {
+  PlanetParameters result = left;
+  result.period -= right.period;
+  result.x -= right.x;
+  result.y -= right.y;
+  result.time_to_first_transit -= right.time_to_first_transit;
+  return result;
+}
+
+PlanetParameters operator*(double const left, PlanetParameters const& right) {
+  PlanetParameters result = right;
+  result.period *= left;
+  result.x *= left;
+  result.y *= left;
+  result.time_to_first_transit *= left;
+  return result;
+}
+
+SystemParameters operator+(SystemParameters const& left,
+                           SystemParameters const& right) {
+  SystemParameters result = left;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = result[i] + right[i];
+  }
+  return result;
+}
+
+SystemParameters operator-(SystemParameters const& left,
+                           SystemParameters const& right) {
+  SystemParameters result = left;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = result[i] - right[i];
+  }
+  return result;
+}
+
+SystemParameters operator*(double const left, SystemParameters const& right) {
+  SystemParameters result = right;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = left * result[i];
+  }
+  return result;
+}
+
+KeplerianElements<Trappist> MakeKeplerianElements(
+    KeplerianElements<Trappist> const& blueprint,
+    PlanetParameters const& parameters) {
+  KeplerianElements<Trappist> elements = blueprint;
+  elements.asymptotic_true_anomaly = std::nullopt;
+  elements.turning_angle = std::nullopt;
+  elements.semimajor_axis = std::nullopt;
+  elements.specific_energy = std::nullopt;
+  elements.characteristic_energy = std::nullopt;
+  elements.mean_motion = std::nullopt;
+  elements.hyperbolic_mean_motion = std::nullopt;
+  elements.hyperbolic_excess_velocity = std::nullopt;
+  elements.semiminor_axis = std::nullopt;
+  elements.impact_parameter = std::nullopt;
+  elements.semilatus_rectum = std::nullopt;
+  elements.specific_angular_momentum = std::nullopt;
+  elements.periapsis_distance = std::nullopt;
+  elements.apoapsis_distance = std::nullopt;
+  elements.longitude_of_periapsis = std::nullopt;
+  elements.true_anomaly = std::nullopt;
+  elements.hyperbolic_mean_anomaly = std::nullopt;
+  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
+  *elements.period = parameters.period;
+  *elements.mean_anomaly =
+      π / 2 * Radian - *elements.argument_of_periapsis -
+      (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
+  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
+  return elements;
+}
+
+PlanetParameters MakePlanetParameters(
+    KeplerianElements<Trappist> const& elements) {
+  PlanetParameters result;
+  result.period = *elements.period;
+  result.x = *elements.eccentricity * Cos(*elements.argument_of_periapsis);
+  result.y = *elements.eccentricity * Sin(*elements.argument_of_periapsis);
+  result.time_to_first_transit =
+      *elements.period / (2 * π * Radian) *
+      (π / 2 * Radian - *elements.argument_of_periapsis -
+       *elements.mean_anomaly);
+  return result;
 }
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
@@ -1262,10 +1119,6 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                           9,
                           /*elitism=*/true,
                           compute_fitness,
-                          [&compute_fitness](Genome const& genome) {
-                            std::string unused_info;
-                            return 1 / compute_fitness(genome, unused_info);
-                          },
                           engine);
     for (int i = 0; i < 20'000; ++i) {
       population.ComputeAllFitnesses();
@@ -1283,10 +1136,6 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
   Population population(great_old_ones,
                         /*elitism=*/false,
                         compute_fitness,
-                        [&compute_fitness](Genome const& genome) {
-                          std::string unused_info;
-                          return 1 / compute_fitness(genome, unused_info);
-                        },
                         engine);
   for (int i = 0; i < 20'000; ++i) {
     population.ComputeAllFitnesses();
