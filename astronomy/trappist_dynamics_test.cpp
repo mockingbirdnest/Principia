@@ -91,18 +91,21 @@ class Genome {
 // A set of genomes which can reproduce based on their fitness.
 class Population {
  public:
+  // Constructs an initial population made of |size| mutated copies of |luca|.
+  // If |elitism| is true, the best individual is preserved unchanged in the
+  // next generation.
   Population(Genome const& luca,
              int const size,
              bool const elitism,
              std::function<double(Genome const&, std::string&)> compute_fitness,
              std::mt19937_64& engine);
-  Population(std::vector<Genome> const& individuals,
-             bool const elitism,
-             std::function<double(Genome const&, std::string&)> compute_fitness,
-             std::mt19937_64& engine);
 
+  // Compute all the fitnesses for the current population, as well as the
+  // cumulative fitnesses used for reproduction.  This is the expensive step.
   void ComputeAllFitnesses();
 
+  // Produce the next generation by crossover and mutation depending on the
+  // fitness of each individual.
   void BegetChildren();
 
   Genome best_genome() const;
@@ -110,6 +113,8 @@ class Population {
 
  private:
   Genome const* Pick() const;
+
+  void TraceNewBestGenome(Genome const& genome) const;
 
   std::function<double(Genome const&, std::string&)> const compute_fitness_;
   bool const elitism_;
@@ -253,19 +258,6 @@ Population::Population(
   }
 }
 
-Population::Population(
-    std::vector<Genome> const& individuals,
-    bool const elitism,
-    std::function<double(Genome const&, std::string&)> compute_fitness,
-    std::mt19937_64& engine)
-    : current_(individuals),
-      next_(individuals),
-      compute_fitness_(std::move(compute_fitness)),
-      elitism_(elitism),
-      engine_(engine) {
-  generation_ = 1000;
-}
-
 void Population::ComputeAllFitnesses() {
   // The fitness computation is expensive, do it in parallel on all genomes.
   {
@@ -287,17 +279,21 @@ void Population::ComputeAllFitnesses() {
     }
     bundle.Join();
   }
-  LOG(ERROR) << "------";
-  LOG(ERROR) << "Generation " << generation_ << "\n";
+
+  LOG(ERROR) << "------ Generation " << generation_ << "\n";
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
   std::string* fittest_info = nullptr;
   std::string* least_fit_info = nullptr;
+
+  // Compute the cumulative fitness: we'll use it to pick who is allowed to
+  // reproduce.
   cumulative_fitnesses_.clear();
   cumulative_fitnesses_.push_back(0.0);
   for (int i = 0; i < current_.size(); ++i) {
     double const fitness = fitnesses_[i];
     cumulative_fitnesses_.push_back(cumulative_fitnesses_[i] + fitness);
+
     if (fitness > max_fitness) {
       max_fitness = fitness;
       fittest_info = &traces_[i];
@@ -309,67 +305,10 @@ void Population::ComputeAllFitnesses() {
     if (fitness > best_fitness_) {
       best_fitness_ = fitness;
       best_trace_ = traces_[i];
-      LOG(ERROR) << "New best genome:\n";
-      char planet = 'b';
-      for (int j = 0; j < current_[i].elements().size(); ++j) {
-        LOG(ERROR) << std::string({planet++, ':'}) << "\n";
-        if (best_genome_) {
-          LOG(ERROR)
-              << "old L = "
-              << std::fmod(
-                     (best_genome_->elements()[j].longitude_of_ascending_node +
-                      *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly) /
-                         Degree,
-                     360)
-              << u8"°\n";
-          LOG(ERROR)
-              << u8"   ΔL = "
-              << ((current_[i].elements()[j].longitude_of_ascending_node +
-                   *current_[i].elements()[j].argument_of_periapsis +
-                   *current_[i].elements()[j].mean_anomaly) -
-                  (best_genome_->elements()[j].longitude_of_ascending_node +
-                   *best_genome_->elements()[j].argument_of_periapsis +
-                   *best_genome_->elements()[j].mean_anomaly)) /
-                     Degree
-              << u8"°\n";
-        }
-        LOG(ERROR)
-            << "new L = "
-            << std::fmod(
-                   (current_[i].elements()[j].longitude_of_ascending_node +
-                    *current_[i].elements()[j].argument_of_periapsis +
-                    *current_[i].elements()[j].mean_anomaly) /
-                       Degree,
-                   360)
-            << u8"°\n";
-        if (best_genome_) {
-          LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity
-                     << "\n";
-          LOG(ERROR) << u8"   Δe = "
-                     << *current_[i].elements()[j].eccentricity -
-                            *best_genome_->elements()[j].eccentricity
-                     << "\n";
-        }
-        LOG(ERROR) << "new e = " << *current_[i].elements()[j].eccentricity
-                   << "\n";
-        if (best_genome_) {
-          LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
-                     << " d\n";
-          LOG(ERROR) << u8"   ΔT = "
-                     << (*current_[i].elements()[j].period -
-                         *best_genome_->elements()[j].period) /
-                            Second
-                     << " s\n";
-        }
-        LOG(ERROR) << "new T = " << *current_[i].elements()[j].period / Day
-                   << " d\n";
-      }
+      TraceNewBestGenome(current_[i]);
       best_genome_ = current_[i];
     }
   }
-  LOG(ERROR) << "Min: " << min_fitness << " Max: " << max_fitness
-             << " Best: " << best_fitness_ << "\n";
   LOG(ERROR) << "Least fit: " << *least_fit_info << "\n";
   LOG(ERROR) << "Fittest  : " << *fittest_info << "\n";
   if (!elitism_) {
@@ -380,7 +319,7 @@ void Population::ComputeAllFitnesses() {
 void Population::BegetChildren() {
   int i = 0;
   if (elitism_ && best_genome_.has_value()) {
-    // Elitism.
+    // Elitism: always retain the best genome at index 0.
     next_[i] = *best_genome_;
     fitnesses_[i] = best_fitness_;
     traces_[i] = best_trace_;
@@ -426,6 +365,62 @@ Genome const* Population::Pick() const {
   CHECK_LE(0, picked_index);
   CHECK_LT(picked_index, current_.size());
   return &current_[picked_index];
+}
+
+void Population::TraceNewBestGenome(Genome const& genome) const {
+  LOG(ERROR) << "New best genome:\n";
+  char planet = 'b';
+  for (int j = 0; j < genome.elements().size(); ++j) {
+    LOG(ERROR) << std::string({planet++, ':'}) << "\n";
+    if (best_genome_) {
+      LOG(ERROR)
+          << "old L = "
+          << std::fmod(
+                 (best_genome_->elements()[j].longitude_of_ascending_node +
+                  *best_genome_->elements()[j].argument_of_periapsis +
+                  *best_genome_->elements()[j].mean_anomaly) /
+                     Degree,
+                 360)
+          << u8"°\n";
+      LOG(ERROR) << u8"   ΔL = "
+                 << ((genome.elements()[j].longitude_of_ascending_node +
+                      *genome.elements()[j].argument_of_periapsis +
+                      *genome.elements()[j].mean_anomaly) -
+                     (best_genome_->elements()[j].longitude_of_ascending_node +
+                      *best_genome_->elements()[j].argument_of_periapsis +
+                      *best_genome_->elements()[j].mean_anomaly)) /
+                        Degree
+                 << u8"°\n";
+    }
+    LOG(ERROR) << "new L = "
+               << std::fmod(
+                      (genome.elements()[j].longitude_of_ascending_node +
+                       *genome.elements()[j].argument_of_periapsis +
+                       *genome.elements()[j].mean_anomaly) /
+                          Degree,
+                      360)
+               << u8"°\n";
+    if (best_genome_) {
+      LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity
+                 << "\n";
+      LOG(ERROR) << u8"   Δe = "
+                 << *genome.elements()[j].eccentricity -
+                        *best_genome_->elements()[j].eccentricity
+                 << "\n";
+    }
+    LOG(ERROR) << "new e = " << *genome.elements()[j].eccentricity << "\n";
+    if (best_genome_) {
+      LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
+                 << " d\n";
+      LOG(ERROR) << u8"   ΔT = "
+                 << (*genome.elements()[j].period -
+                     *best_genome_->elements()[j].period) /
+                        Second
+                 << " s\n";
+    }
+    LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day
+               << " d\n";
+  }
 }
 
 struct PlanetParameters {
@@ -575,295 +570,155 @@ std::map<std::string, Time> nominal_periods = {
 
 MeasuredTransitsByPlanet const observations = {
     {"Trappist-1b",
-     {{JD(2457322.51531), 0.00071 * Day},
-      {JD(2457325.53910), 0.00100 * Day},
-      {JD(2457328.55860), 0.00130 * Day},
-      {JD(2457331.58160), 0.00100 * Day},
-      {JD(2457334.60480), 0.00017 * Day},
-      {JD(2457337.62644), 0.00092 * Day},
-      {JD(2457340.64820), 0.00140 * Day},
-      {JD(2457345.18028), 0.00080 * Day},
-      {JD(2457361.79945), 0.00028 * Day},
-      {JD(2457364.82173), 0.00077 * Day},
-      {JD(2457440.36492), 0.00020 * Day},
-      {JD(2457452.45228), 0.00014 * Day},
-      {JD(2457463.02847), 0.00019 * Day},
-      {JD(2457509.86460), 0.00210 * Day},
-      {JD(2457512.88731), 0.00029 * Day},
-      {JD(2457568.78880), 0.00100 * Day},
-      {JD(2457586.91824), 0.00064 * Day},
-      {JD(2457589.93922), 0.00092 * Day},
-      {JD(2457599.00640), 0.00021 * Day},
-      {JD(2457602.02805), 0.00071 * Day},
-      {JD(2457612.60595), 0.00085 * Day},
-      {JD(2457615.62710), 0.00160 * Day},
-      {JD(2457624.69094), 0.00066 * Day},
-      {JD(2457645.84400), 0.00110 * Day},
-      {JD(2457651.88743), 0.00022 * Day},
-      {JD(2457653.39809), 0.00026 * Day},
-      {JD(2457654.90908), 0.00084 * Day},
-      {JD(2457656.41900), 0.00029 * Day},
-      {JD(2457657.93129), 0.00020 * Day},
-      {JD(2457659.44144), 0.00017 * Day},
-      {JD(2457660.95205), 0.00035 * Day},
-      {JD(2457662.46358), 0.00020 * Day},
-      {JD(2457663.97492), 0.00070 * Day},
-      {JD(2457665.48509), 0.00017 * Day},
-      {JD(2457666.99567), 0.00025 * Day},
-      {JD(2457668.50668), 0.00030 * Day},
-      {JD(2457670.01766), 0.00034 * Day},
-      {JD(2457671.52876), 0.00033 * Day},
-      {JD(2457721.38747), 0.00035 * Day},
-      {JD(2457739.51770), 0.00059 * Day},
-      {JD(2457741.02787), 0.00055 * Day},
-      {JD(2457742.53918), 0.00058 * Day},
-      {JD(2457744.05089), 0.00061 * Day},
-      {JD(2457745.56164), 0.00072 * Day},
-      {JD(2457747.07208), 0.00085 * Day},
-      {JD(2457748.58446), 0.00087 * Day},
-      {JD(2457750.09387), 0.00089 * Day},
-      {JD(2457751.60535), 0.00082 * Day},
-      {JD(2457753.11623), 0.00075 * Day},
-      {JD(2457754.62804), 0.00077 * Day},
-      {JD(2457756.13856), 0.00060 * Day},
-      {JD(2457757.64840), 0.00089 * Day},
-      {JD(2457759.15953), 0.00073 * Day},
-      {JD(2457760.67112), 0.00082 * Day},
-      {JD(2457762.18120), 0.00073 * Day},
-      {JD(2457763.69221), 0.00071 * Day},
-      {JD(2457765.20298), 0.00077 * Day},
-      {JD(2457766.71479), 0.00055 * Day},
-      {JD(2457768.22514), 0.00103 * Day},
-      {JD(2457769.73704), 0.00064 * Day},
-      {JD(2457771.24778), 0.00091 * Day},
-      {JD(2457772.75738), 0.00075 * Day},
-      {JD(2457774.26841), 0.00080 * Day},
-      {JD(2457775.77995), 0.00058 * Day},
-      {JD(2457777.28899), 0.00099 * Day},
-      {JD(2457778.80118), 0.00062 * Day},
-      {JD(2457780.31297), 0.00068 * Day},
-      {JD(2457781.82231), 0.00145 * Day},
-      {JD(2457783.33410), 0.00071 * Day},
-      {JD(2457784.84372), 0.00068 * Day},
-      {JD(2457792.39979), 0.00110 * Day},
-      {JD(2457793.90955), 0.00064 * Day},
-      {JD(2457795.41987), 0.00058 * Day},
-      {JD(2457796.93134), 0.00065 * Day},
-      {JD(2457798.44211), 0.00061 * Day},
-      {JD(2457799.95320), 0.00083 * Day},
-      {JD(2457801.46314), 0.00127 * Day},
-      {JD(2457802.97557), 0.00016 * Day},
-      {JD(2457804.48638), 0.00053 * Day},
-      {JD(2457805.99697), 0.00016 * Day},
-      {JD(2457807.50731), 0.00017 * Day},
-      {JD(2457809.01822), 0.00017 * Day},
-      {JD(2457810.52781), 0.00110 * Day},
-      {JD(2457812.04038), 0.00020 * Day},
-      {JD(2457813.55121), 0.00014 * Day},
-      {JD(2457815.06275), 0.00017 * Day},
-      {JD(2457816.57335), 0.00011 * Day},
-      {JD(2457818.08382), 0.00015 * Day},
-      {JD(2457819.59478), 0.00017 * Day},
-      {JD(2457821.10550), 0.00020 * Day},
-      {JD(2457824.12730), 0.00018 * Day},
-      {JD(2457825.63813), 0.00018 * Day},
-      {JD(2457827.14995), 0.00012 * Day},
-      {JD(2457828.66042), 0.00024 * Day},
-      {JD(2457830.17087), 0.00021 * Day},
-      {JD(2457833.19257), 0.00018 * Day},
-      {JD(2457834.70398), 0.00016 * Day},
-      {JD(2457836.21440), 0.00017 * Day},
-      {JD(2457837.72526), 0.00014 * Day},
-      {JD(2457839.23669), 0.00017 * Day},
-      {JD(2457917.80060), 0.00110 * Day},
-      {JD(2457923.84629), 0.00045 * Day},
-      {JD(2457935.93288), 0.00023 * Day},
-      {JD(2457952.55450), 0.00110 * Day},
-      {JD(2457955.57554), 0.00069 * Day},
-      {JD(2457967.66254), 0.00050 * Day},
+     {{JD(2457322.51531), 0.00071 * Day}, {JD(2457325.53910), 0.00100 * Day},
+      {JD(2457328.55860), 0.00130 * Day}, {JD(2457331.58160), 0.00100 * Day},
+      {JD(2457334.60480), 0.00017 * Day}, {JD(2457337.62644), 0.00092 * Day},
+      {JD(2457340.64820), 0.00140 * Day}, {JD(2457345.18028), 0.00080 * Day},
+      {JD(2457361.79945), 0.00028 * Day}, {JD(2457364.82173), 0.00077 * Day},
+      {JD(2457440.36492), 0.00020 * Day}, {JD(2457452.45228), 0.00014 * Day},
+      {JD(2457463.02847), 0.00019 * Day}, {JD(2457509.86460), 0.00210 * Day},
+      {JD(2457512.88731), 0.00029 * Day}, {JD(2457568.78880), 0.00100 * Day},
+      {JD(2457586.91824), 0.00064 * Day}, {JD(2457589.93922), 0.00092 * Day},
+      {JD(2457599.00640), 0.00021 * Day}, {JD(2457602.02805), 0.00071 * Day},
+      {JD(2457612.60595), 0.00085 * Day}, {JD(2457615.62710), 0.00160 * Day},
+      {JD(2457624.69094), 0.00066 * Day}, {JD(2457645.84400), 0.00110 * Day},
+      {JD(2457651.88743), 0.00022 * Day}, {JD(2457653.39809), 0.00026 * Day},
+      {JD(2457654.90908), 0.00084 * Day}, {JD(2457656.41900), 0.00029 * Day},
+      {JD(2457657.93129), 0.00020 * Day}, {JD(2457659.44144), 0.00017 * Day},
+      {JD(2457660.95205), 0.00035 * Day}, {JD(2457662.46358), 0.00020 * Day},
+      {JD(2457663.97492), 0.00070 * Day}, {JD(2457665.48509), 0.00017 * Day},
+      {JD(2457666.99567), 0.00025 * Day}, {JD(2457668.50668), 0.00030 * Day},
+      {JD(2457670.01766), 0.00034 * Day}, {JD(2457671.52876), 0.00033 * Day},
+      {JD(2457721.38747), 0.00035 * Day}, {JD(2457739.51770), 0.00059 * Day},
+      {JD(2457741.02787), 0.00055 * Day}, {JD(2457742.53918), 0.00058 * Day},
+      {JD(2457744.05089), 0.00061 * Day}, {JD(2457745.56164), 0.00072 * Day},
+      {JD(2457747.07208), 0.00085 * Day}, {JD(2457748.58446), 0.00087 * Day},
+      {JD(2457750.09387), 0.00089 * Day}, {JD(2457751.60535), 0.00082 * Day},
+      {JD(2457753.11623), 0.00075 * Day}, {JD(2457754.62804), 0.00077 * Day},
+      {JD(2457756.13856), 0.00060 * Day}, {JD(2457757.64840), 0.00089 * Day},
+      {JD(2457759.15953), 0.00073 * Day}, {JD(2457760.67112), 0.00082 * Day},
+      {JD(2457762.18120), 0.00073 * Day}, {JD(2457763.69221), 0.00071 * Day},
+      {JD(2457765.20298), 0.00077 * Day}, {JD(2457766.71479), 0.00055 * Day},
+      {JD(2457768.22514), 0.00103 * Day}, {JD(2457769.73704), 0.00064 * Day},
+      {JD(2457771.24778), 0.00091 * Day}, {JD(2457772.75738), 0.00075 * Day},
+      {JD(2457774.26841), 0.00080 * Day}, {JD(2457775.77995), 0.00058 * Day},
+      {JD(2457777.28899), 0.00099 * Day}, {JD(2457778.80118), 0.00062 * Day},
+      {JD(2457780.31297), 0.00068 * Day}, {JD(2457781.82231), 0.00145 * Day},
+      {JD(2457783.33410), 0.00071 * Day}, {JD(2457784.84372), 0.00068 * Day},
+      {JD(2457792.39979), 0.00110 * Day}, {JD(2457793.90955), 0.00064 * Day},
+      {JD(2457795.41987), 0.00058 * Day}, {JD(2457796.93134), 0.00065 * Day},
+      {JD(2457798.44211), 0.00061 * Day}, {JD(2457799.95320), 0.00083 * Day},
+      {JD(2457801.46314), 0.00127 * Day}, {JD(2457802.97557), 0.00016 * Day},
+      {JD(2457804.48638), 0.00053 * Day}, {JD(2457805.99697), 0.00016 * Day},
+      {JD(2457807.50731), 0.00017 * Day}, {JD(2457809.01822), 0.00017 * Day},
+      {JD(2457810.52781), 0.00110 * Day}, {JD(2457812.04038), 0.00020 * Day},
+      {JD(2457813.55121), 0.00014 * Day}, {JD(2457815.06275), 0.00017 * Day},
+      {JD(2457816.57335), 0.00011 * Day}, {JD(2457818.08382), 0.00015 * Day},
+      {JD(2457819.59478), 0.00017 * Day}, {JD(2457821.10550), 0.00020 * Day},
+      {JD(2457824.12730), 0.00018 * Day}, {JD(2457825.63813), 0.00018 * Day},
+      {JD(2457827.14995), 0.00012 * Day}, {JD(2457828.66042), 0.00024 * Day},
+      {JD(2457830.17087), 0.00021 * Day}, {JD(2457833.19257), 0.00018 * Day},
+      {JD(2457834.70398), 0.00016 * Day}, {JD(2457836.21440), 0.00017 * Day},
+      {JD(2457837.72526), 0.00014 * Day}, {JD(2457839.23669), 0.00017 * Day},
+      {JD(2457917.80060), 0.00110 * Day}, {JD(2457923.84629), 0.00045 * Day},
+      {JD(2457935.93288), 0.00023 * Day}, {JD(2457952.55450), 0.00110 * Day},
+      {JD(2457955.57554), 0.00069 * Day}, {JD(2457967.66254), 0.00050 * Day},
       {JD(2457973.70596), 0.00040 * Day}}},
     {"Trappist-1c",
-     {{JD(2457282.80570), 0.00140 * Day},
-      {JD(2457333.66400), 0.00090 * Day},
-      {JD(2457362.72605), 0.00038 * Day},
-      {JD(2457367.57051), 0.00033 * Day},
-      {JD(2457384.52320), 0.00130 * Day},
-      {JD(2457452.33470), 0.00015 * Day},
-      {JD(2457454.75672), 0.00066 * Day},
-      {JD(2457512.88094), 0.00009 * Day},
-      {JD(2457546.78587), 0.00075 * Day},
-      {JD(2457551.62888), 0.00066 * Day},
-      {JD(2457580.69137), 0.00031 * Day},
-      {JD(2457585.53577), 0.00250 * Day},
-      {JD(2457587.95622), 0.00054 * Day},
-      {JD(2457600.06684), 0.00036 * Day},
-      {JD(2457604.90975), 0.00063 * Day},
-      {JD(2457609.75461), 0.00072 * Day},
-      {JD(2457614.59710), 0.00130 * Day},
-      {JD(2457626.70610), 0.00110 * Day},
-      {JD(2457631.55024), 0.00056 * Day},
-      {JD(2457638.81518), 0.00048 * Day},
-      {JD(2457650.92395), 0.00023 * Day},
-      {JD(2457653.34553), 0.00024 * Day},
-      {JD(2457655.76785), 0.00043 * Day},
-      {JD(2457658.18963), 0.00024 * Day},
-      {JD(2457660.61168), 0.00051 * Day},
-      {JD(2457663.03292), 0.00028 * Day},
-      {JD(2457665.45519), 0.00025 * Day},
-      {JD(2457667.87729), 0.00031 * Day},
-      {JD(2457670.29869), 0.00035 * Day},
-      {JD(2457672.71944), 0.00081 * Day},
-      {JD(2457711.46778), 0.00064 * Day},
-      {JD(2457723.57663), 0.00050 * Day},
-      {JD(2457740.53361), 0.00088 * Day},
-      {JD(2457742.95276), 0.00115 * Day},
-      {JD(2457745.37429), 0.00063 * Day},
-      {JD(2457747.79699), 0.00056 * Day},
-      {JD(2457750.21773), 0.00096 * Day},
-      {JD(2457752.64166), 0.00093 * Day},
-      {JD(2457755.05877), 0.00165 * Day},
-      {JD(2457757.48313), 0.00066 * Day},
-      {JD(2457759.90281), 0.00058 * Day},
-      {JD(2457762.32806), 0.00081 * Day},
-      {JD(2457764.74831), 0.00072 * Day},
-      {JD(2457767.16994), 0.00125 * Day},
-      {JD(2457769.59209), 0.00081 * Day},
-      {JD(2457772.01483), 0.00100 * Day},
-      {JD(2457774.43458), 0.00081 * Day},
-      {JD(2457776.85815), 0.00102 * Day},
-      {JD(2457779.27911), 0.00089 * Day},
-      {JD(2457781.70095), 0.00072 * Day},
-      {JD(2457784.12338), 0.00054 * Day},
-      {JD(2457791.38801), 0.00064 * Day},
-      {JD(2457793.81141), 0.00079 * Day},
-      {JD(2457796.23153), 0.00052 * Day},
-      {JD(2457798.65366), 0.00082 * Day},
-      {JD(2457801.07631), 0.00084 * Day},
-      {JD(2457803.49747), 0.00020 * Day},
-      {JD(2457805.91882), 0.00017 * Day},
-      {JD(2457808.34123), 0.00023 * Day},
-      {JD(2457810.76273), 0.00019 * Day},
-      {JD(2457813.18456), 0.00024 * Day},
-      {JD(2457815.60583), 0.00017 * Day},
-      {JD(2457818.02821), 0.00020 * Day},
-      {JD(2457820.45019), 0.00022 * Day},
-      {JD(2457822.87188), 0.00021 * Day},
-      {JD(2457825.29388), 0.00022 * Day},
-      {JD(2457827.71513), 0.00022 * Day},
-      {JD(2457830.13713), 0.00026 * Day},
-      {JD(2457832.55888), 0.00015 * Day},
-      {JD(2457834.98120), 0.00025 * Day},
-      {JD(2457837.40280), 0.00017 * Day},
-      {JD(2457839.82415), 0.00031 * Day}}},
+     {{JD(2457282.80570), 0.00140 * Day}, {JD(2457333.66400), 0.00090 * Day},
+      {JD(2457362.72605), 0.00038 * Day}, {JD(2457367.57051), 0.00033 * Day},
+      {JD(2457384.52320), 0.00130 * Day}, {JD(2457452.33470), 0.00015 * Day},
+      {JD(2457454.75672), 0.00066 * Day}, {JD(2457512.88094), 0.00009 * Day},
+      {JD(2457546.78587), 0.00075 * Day}, {JD(2457551.62888), 0.00066 * Day},
+      {JD(2457580.69137), 0.00031 * Day}, {JD(2457585.53577), 0.00250 * Day},
+      {JD(2457587.95622), 0.00054 * Day}, {JD(2457600.06684), 0.00036 * Day},
+      {JD(2457604.90975), 0.00063 * Day}, {JD(2457609.75461), 0.00072 * Day},
+      {JD(2457614.59710), 0.00130 * Day}, {JD(2457626.70610), 0.00110 * Day},
+      {JD(2457631.55024), 0.00056 * Day}, {JD(2457638.81518), 0.00048 * Day},
+      {JD(2457650.92395), 0.00023 * Day}, {JD(2457653.34553), 0.00024 * Day},
+      {JD(2457655.76785), 0.00043 * Day}, {JD(2457658.18963), 0.00024 * Day},
+      {JD(2457660.61168), 0.00051 * Day}, {JD(2457663.03292), 0.00028 * Day},
+      {JD(2457665.45519), 0.00025 * Day}, {JD(2457667.87729), 0.00031 * Day},
+      {JD(2457670.29869), 0.00035 * Day}, {JD(2457672.71944), 0.00081 * Day},
+      {JD(2457711.46778), 0.00064 * Day}, {JD(2457723.57663), 0.00050 * Day},
+      {JD(2457740.53361), 0.00088 * Day}, {JD(2457742.95276), 0.00115 * Day},
+      {JD(2457745.37429), 0.00063 * Day}, {JD(2457747.79699), 0.00056 * Day},
+      {JD(2457750.21773), 0.00096 * Day}, {JD(2457752.64166), 0.00093 * Day},
+      {JD(2457755.05877), 0.00165 * Day}, {JD(2457757.48313), 0.00066 * Day},
+      {JD(2457759.90281), 0.00058 * Day}, {JD(2457762.32806), 0.00081 * Day},
+      {JD(2457764.74831), 0.00072 * Day}, {JD(2457767.16994), 0.00125 * Day},
+      {JD(2457769.59209), 0.00081 * Day}, {JD(2457772.01483), 0.00100 * Day},
+      {JD(2457774.43458), 0.00081 * Day}, {JD(2457776.85815), 0.00102 * Day},
+      {JD(2457779.27911), 0.00089 * Day}, {JD(2457781.70095), 0.00072 * Day},
+      {JD(2457784.12338), 0.00054 * Day}, {JD(2457791.38801), 0.00064 * Day},
+      {JD(2457793.81141), 0.00079 * Day}, {JD(2457796.23153), 0.00052 * Day},
+      {JD(2457798.65366), 0.00082 * Day}, {JD(2457801.07631), 0.00084 * Day},
+      {JD(2457803.49747), 0.00020 * Day}, {JD(2457805.91882), 0.00017 * Day},
+      {JD(2457808.34123), 0.00023 * Day}, {JD(2457810.76273), 0.00019 * Day},
+      {JD(2457813.18456), 0.00024 * Day}, {JD(2457815.60583), 0.00017 * Day},
+      {JD(2457818.02821), 0.00020 * Day}, {JD(2457820.45019), 0.00022 * Day},
+      {JD(2457822.87188), 0.00021 * Day}, {JD(2457825.29388), 0.00022 * Day},
+      {JD(2457827.71513), 0.00022 * Day}, {JD(2457830.13713), 0.00026 * Day},
+      {JD(2457832.55888), 0.00015 * Day}, {JD(2457834.98120), 0.00025 * Day},
+      {JD(2457837.40280), 0.00017 * Day}, {JD(2457839.82415), 0.00031 * Day}}},
     {"Trappist-1d",
-     {{JD(2457560.79730), 0.00230 * Day},
-      {JD(2457625.59779), 0.00078 * Day},
-      {JD(2457641.79360), 0.00290 * Day},
-      {JD(2457645.84360), 0.00210 * Day},
-      {JD(2457653.94261), 0.00051 * Day},
-      {JD(2457657.99220), 0.00063 * Day},
-      {JD(2457662.04284), 0.00051 * Day},
-      {JD(2457666.09140), 0.00160 * Day},
-      {JD(2457670.14198), 0.00066 * Day},
-      {JD(2457726.83975), 0.00029 * Day},
-      {JD(2457738.99169), 0.00160 * Day},
-      {JD(2457743.03953), 0.00180 * Day},
-      {JD(2457747.08985), 0.00145 * Day},
-      {JD(2457751.14022), 0.00195 * Day},
-      {JD(2457755.18894), 0.00155 * Day},
-      {JD(2457759.24638), 0.00225 * Day},
-      {JD(2457763.28895), 0.00150 * Day},
-      {JD(2457767.33866), 0.00190 * Day},
-      {JD(2457771.39077), 0.00260 * Day},
-      {JD(2457775.44026), 0.00125 * Day},
-      {JD(2457779.48843), 0.00190 * Day},
-      {JD(2457783.54023), 0.00240 * Day},
-      {JD(2457791.64083), 0.00135 * Day},
-      {JD(2457803.79083), 0.00049 * Day},
-      {JD(2457807.84032), 0.00030 * Day},
-      {JD(2457811.89116), 0.00050 * Day},
-      {JD(2457815.94064), 0.00030 * Day},
-      {JD(2457819.99050), 0.00050 * Day},
-      {JD(2457824.04185), 0.00067 * Day},
-      {JD(2457828.09082), 0.00043 * Day},
-      {JD(2457832.14036), 0.00037 * Day},
-      {JD(2457836.19171), 0.00042 * Day},
-      {JD(2457961.73760), 0.00130 * Day},
-      {JD(2457969.83708), 0.00068 * Day},
+     {{JD(2457560.79730), 0.00230 * Day}, {JD(2457625.59779), 0.00078 * Day},
+      {JD(2457641.79360), 0.00290 * Day}, {JD(2457645.84360), 0.00210 * Day},
+      {JD(2457653.94261), 0.00051 * Day}, {JD(2457657.99220), 0.00063 * Day},
+      {JD(2457662.04284), 0.00051 * Day}, {JD(2457666.09140), 0.00160 * Day},
+      {JD(2457670.14198), 0.00066 * Day}, {JD(2457726.83975), 0.00029 * Day},
+      {JD(2457738.99169), 0.00160 * Day}, {JD(2457743.03953), 0.00180 * Day},
+      {JD(2457747.08985), 0.00145 * Day}, {JD(2457751.14022), 0.00195 * Day},
+      {JD(2457755.18894), 0.00155 * Day}, {JD(2457759.24638), 0.00225 * Day},
+      {JD(2457763.28895), 0.00150 * Day}, {JD(2457767.33866), 0.00190 * Day},
+      {JD(2457771.39077), 0.00260 * Day}, {JD(2457775.44026), 0.00125 * Day},
+      {JD(2457779.48843), 0.00190 * Day}, {JD(2457783.54023), 0.00240 * Day},
+      {JD(2457791.64083), 0.00135 * Day}, {JD(2457803.79083), 0.00049 * Day},
+      {JD(2457807.84032), 0.00030 * Day}, {JD(2457811.89116), 0.00050 * Day},
+      {JD(2457815.94064), 0.00030 * Day}, {JD(2457819.99050), 0.00050 * Day},
+      {JD(2457824.04185), 0.00067 * Day}, {JD(2457828.09082), 0.00043 * Day},
+      {JD(2457832.14036), 0.00037 * Day}, {JD(2457836.19171), 0.00042 * Day},
+      {JD(2457961.73760), 0.00130 * Day}, {JD(2457969.83708), 0.00068 * Day},
       {JD(2457973.88590), 0.00066 * Day}}},
     {"Trappist-1e",
-     {{JD(2457312.71300), 0.00270 * Day},
-      {JD(2457367.59683), 0.00037 * Day},
-      {JD(2457611.57620), 0.00310 * Day},
-      {JD(2457623.77950), 0.00100 * Day},
-      {JD(2457654.27862), 0.00049 * Day},
-      {JD(2457660.38016), 0.00078 * Day},
-      {JD(2457666.48030), 0.00180 * Day},
-      {JD(2457672.57930), 0.00260 * Day},
-      {JD(2457721.37514), 0.00099 * Day},
-      {JD(2457733.57300), 0.00140 * Day},
-      {JD(2457739.67085), 0.00135 * Day},
-      {JD(2457745.77160), 0.00120 * Day},
-      {JD(2457751.87007), 0.00034 * Day},
-      {JD(2457757.96712), 0.00160 * Day},
-      {JD(2457764.06700), 0.00240 * Day},
-      {JD(2457770.17109), 0.00215 * Day},
-      {JD(2457776.26378), 0.00160 * Day},
-      {JD(2457782.36226), 0.00175 * Day},
-      {JD(2457794.56159), 0.00160 * Day},
-      {JD(2457800.66354), 0.00170 * Day},
-      {JD(2457806.75758), 0.00041 * Day},
-      {JD(2457812.85701), 0.00034 * Day},
-      {JD(2457818.95510), 0.00030 * Day},
-      {JD(2457825.05308), 0.00035 * Day},
-      {JD(2457831.15206), 0.00027 * Day},
-      {JD(2457837.24980), 0.00025 * Day},
-      {JD(2457934.83095), 0.00050 * Day},
-      {JD(2457940.92995), 0.00086 * Day}}},
+     {{JD(2457312.71300), 0.00270 * Day}, {JD(2457367.59683), 0.00037 * Day},
+      {JD(2457611.57620), 0.00310 * Day}, {JD(2457623.77950), 0.00100 * Day},
+      {JD(2457654.27862), 0.00049 * Day}, {JD(2457660.38016), 0.00078 * Day},
+      {JD(2457666.48030), 0.00180 * Day}, {JD(2457672.57930), 0.00260 * Day},
+      {JD(2457721.37514), 0.00099 * Day}, {JD(2457733.57300), 0.00140 * Day},
+      {JD(2457739.67085), 0.00135 * Day}, {JD(2457745.77160), 0.00120 * Day},
+      {JD(2457751.87007), 0.00034 * Day}, {JD(2457757.96712), 0.00160 * Day},
+      {JD(2457764.06700), 0.00240 * Day}, {JD(2457770.17109), 0.00215 * Day},
+      {JD(2457776.26378), 0.00160 * Day}, {JD(2457782.36226), 0.00175 * Day},
+      {JD(2457794.56159), 0.00160 * Day}, {JD(2457800.66354), 0.00170 * Day},
+      {JD(2457806.75758), 0.00041 * Day}, {JD(2457812.85701), 0.00034 * Day},
+      {JD(2457818.95510), 0.00030 * Day}, {JD(2457825.05308), 0.00035 * Day},
+      {JD(2457831.15206), 0.00027 * Day}, {JD(2457837.24980), 0.00025 * Day},
+      {JD(2457934.83095), 0.00050 * Day}, {JD(2457940.92995), 0.00086 * Day}}},
     {"Trappist-1f",
-     {{JD(2457321.52520), 0.00200 * Day},
-      {JD(2457367.57629), 0.00044 * Day},
-      {JD(2457634.57809), 0.00061 * Day},
-      {JD(2457652.98579), 0.00032 * Day},
-      {JD(2457662.18747), 0.00040 * Day},
-      {JD(2457671.39279), 0.00072 * Day},
-      {JD(2457717.41541), 0.00091 * Day},
-      {JD(2457726.61960), 0.00026 * Day},
-      {JD(2457745.03116), 0.00135 * Day},
-      {JD(2457754.23380), 0.00155 * Day},
-      {JD(2457763.44338), 0.00024 * Day},
-      {JD(2457772.64752), 0.00160 * Day},
-      {JD(2457781.85142), 0.00180 * Day},
-      {JD(2457800.27307), 0.00140 * Day},
-      {JD(2457809.47554), 0.00027 * Day},
-      {JD(2457818.68271), 0.00032 * Day},
-      {JD(2457827.88669), 0.00030 * Day},
-      {JD(2457837.10322), 0.00032 * Day},
+     {{JD(2457321.52520), 0.00200 * Day}, {JD(2457367.57629), 0.00044 * Day},
+      {JD(2457634.57809), 0.00061 * Day}, {JD(2457652.98579), 0.00032 * Day},
+      {JD(2457662.18747), 0.00040 * Day}, {JD(2457671.39279), 0.00072 * Day},
+      {JD(2457717.41541), 0.00091 * Day}, {JD(2457726.61960), 0.00026 * Day},
+      {JD(2457745.03116), 0.00135 * Day}, {JD(2457754.23380), 0.00155 * Day},
+      {JD(2457763.44338), 0.00024 * Day}, {JD(2457772.64752), 0.00160 * Day},
+      {JD(2457781.85142), 0.00180 * Day}, {JD(2457800.27307), 0.00140 * Day},
+      {JD(2457809.47554), 0.00027 * Day}, {JD(2457818.68271), 0.00032 * Day},
+      {JD(2457827.88669), 0.00030 * Day}, {JD(2457837.10322), 0.00032 * Day},
       {JD(2457956.80549), 0.00054 * Day}}},
     {"Trappist-1g",
-     {{JD(2457294.78600), 0.00390 * Day},
-      {JD(2457356.53410), 0.00200 * Day},
-      {JD(2457615.92400), 0.00170 * Day},
-      {JD(2457640.63730), 0.00100 * Day},
-      {JD(2457652.99481), 0.00030 * Day},
-      {JD(2457665.35151), 0.00028 * Day},
-      {JD(2457739.48441), 0.00115 * Day},
-      {JD(2457751.83993), 0.00017 * Day},
-      {JD(2457764.19098), 0.00155 * Day},
-      {JD(2457776.54900), 0.00110 * Day},
-      {JD(2457801.25000), 0.00093 * Day},
-      {JD(2457813.60684), 0.00023 * Day},
-      {JD(2457825.96112), 0.00020 * Day},
-      {JD(2457838.30655), 0.00028 * Day},
-      {JD(2457924.77090), 0.00140 * Day},
-      {JD(2457961.82621), 0.00068 * Day}}},
+     {{JD(2457294.78600), 0.00390 * Day}, {JD(2457356.53410), 0.00200 * Day},
+      {JD(2457615.92400), 0.00170 * Day}, {JD(2457640.63730), 0.00100 * Day},
+      {JD(2457652.99481), 0.00030 * Day}, {JD(2457665.35151), 0.00028 * Day},
+      {JD(2457739.48441), 0.00115 * Day}, {JD(2457751.83993), 0.00017 * Day},
+      {JD(2457764.19098), 0.00155 * Day}, {JD(2457776.54900), 0.00110 * Day},
+      {JD(2457801.25000), 0.00093 * Day}, {JD(2457813.60684), 0.00023 * Day},
+      {JD(2457825.96112), 0.00020 * Day}, {JD(2457838.30655), 0.00028 * Day},
+      {JD(2457924.77090), 0.00140 * Day}, {JD(2457961.82621), 0.00068 * Day}}},
     {"Trappist-1h",
-     {{JD(2457662.55467), 0.00054 * Day},
-      {JD(2457756.38740), 0.00130 * Day},
-      {JD(2457775.15390), 0.00160 * Day},
-      {JD(2457793.92300), 0.00250 * Day},
-      {JD(2457812.69870), 0.00450 * Day},
-      {JD(2457831.46625), 0.00047 * Day},
+     {{JD(2457662.55467), 0.00054 * Day}, {JD(2457756.38740), 0.00130 * Day},
+      {JD(2457775.15390), 0.00160 * Day}, {JD(2457793.92300), 0.00250 * Day},
+      {JD(2457812.69870), 0.00450 * Day}, {JD(2457831.46625), 0.00047 * Day},
       {JD(2457962.86271), 0.00083 * Day}}}};
 
 class TrappistDynamicsTest : public ::testing::Test {
@@ -871,7 +726,7 @@ class TrappistDynamicsTest : public ::testing::Test {
   TrappistDynamicsTest()
       : system_(SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
                 SOLUTION_DIR / "astronomy" /
-                    "trappist_initial_state_jd_2457010_000000000.proto.txt"),
+                    "trappist_initial_state_jd_2457000_000000000.proto.txt"),
         ephemeris_(system_.MakeEphemeris(
             /*fitting_tolerance=*/5 * Milli(Metre),
             Ephemeris<Trappist>::FixedStepParameters(
@@ -924,10 +779,6 @@ class TrappistDynamicsTest : public ::testing::Test {
           xy_displacement_derivative_sign;
     }
     return transits;
-  }
-
-  static double ShortDays(Instant const& time) {
-    return (time - JD(2450000.0)) / Day;
   }
 
   static double Transitsχ²(MeasuredTransitsByPlanet const& observations,
@@ -1052,7 +903,8 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
     }
   }
 
-  //LOG(ERROR) << u8"χ²: " << Computeχ²(observations, computations, nullptr, nullptr);
+  std::string unused;
+  LOG(ERROR) << u8"χ²: " << Transitsχ²(observations, computations, unused);
 }
 
 TEST_F(TrappistDynamicsTest, Optimisation) {
@@ -1108,42 +960,31 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     return 1 / χ²;
   };
 
-  Genome luca(elements);
-
-  std::mt19937_64 engine;
 
   std::vector<Genome> great_old_ones;
-
-  for (int i = 0; i < 7; ++i) {
-    Population population(luca,
-                          9,
-                          /*elitism=*/true,
-                          compute_fitness,
-                          engine);
-    for (int i = 0; i < 20'000; ++i) {
-      population.ComputeAllFitnesses();
-      population.BegetChildren();
-    }
-    LOG(ERROR) << "Great Old One " << i;
-    LOG(ERROR) << "Great Old One trace: " << population.best_genome_trace();
-    for (int i = 0; i < planet_names.size(); ++i) {
-      LOG(ERROR) << planet_names[i] << ": "
-                 << population.best_genome().elements()[i];
-      // Add 7 copies of the Great Old One.
+  {
+    std::mt19937_64 engine;
+    // First, let's do 5 rounds of evolution with a population of 9 individuals
+    // based on |luca|.  These are the Great Old Ones.
+    Genome luca(elements);
+    for (int i = 0; i < 5; ++i) {
+      Population population(luca,
+                            9,
+                            /*elitism=*/true,
+                            compute_fitness,
+                            engine);
+      for (int i = 0; i < 18'000; ++i) {
+        population.ComputeAllFitnesses();
+        population.BegetChildren();
+      }
+      LOG(ERROR) << "Great Old One " << i;
+      LOG(ERROR) << "Great Old One trace: " << population.best_genome_trace();
       great_old_ones.push_back(population.best_genome());
+      for (int i = 0; i < planet_names.size(); ++i) {
+        LOG(ERROR) << planet_names[i] << ": "
+                   << population.best_genome().elements()[i];
+      }
     }
-  }
-  Population population(great_old_ones,
-                        /*elitism=*/false,
-                        compute_fitness,
-                        engine);
-  for (int i = 0; i < 20'000; ++i) {
-    population.ComputeAllFitnesses();
-    population.BegetChildren();
-  }
-  for (int i = 0; i < planet_names.size(); ++i) {
-    LOG(ERROR) << planet_names[i] << ": "
-               << population.best_genome().elements()[i];
   }
 }
 
