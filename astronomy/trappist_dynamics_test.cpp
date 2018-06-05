@@ -59,19 +59,118 @@ using quantities::si::Second;
 
 namespace astronomy {
 
-using Transits = std::vector<Instant>;
-using TransitsByPlanet = std::map<std::string, Transits>;
-
-template<typename Value>
-struct Measured {
-  Value estimated_value;
-  Difference<Value> standard_uncertainty;
+struct PlanetParameters {
+  constexpr static int count = 4;
+  Time period;
+  double x{};
+  double y{};
+  Time time_to_first_transit;
 };
 
-using MeasuredTransits = std::vector<Measured<Instant>>;
-using MeasuredTransitsByPlanet = std::map<std::string, MeasuredTransits>;
+using SystemParameters = std::array<PlanetParameters, 7>;
 
-// The random number generator used by the optimisation.
+using Population = std::vector<SystemParameters>;
+
+using Calculator =
+    std::function<double(SystemParameters const&, std::string& info)>;
+
+PlanetParameters operator+(PlanetParameters const& left,
+                           PlanetParameters const& right) {
+  PlanetParameters result = left;
+  result.period += right.period;
+  result.x += right.x;
+  result.y += right.y;
+  result.time_to_first_transit += right.time_to_first_transit;
+  return result;
+}
+
+PlanetParameters operator-(PlanetParameters const& left,
+                           PlanetParameters const& right) {
+  PlanetParameters result = left;
+  result.period -= right.period;
+  result.x -= right.x;
+  result.y -= right.y;
+  result.time_to_first_transit -= right.time_to_first_transit;
+  return result;
+}
+
+PlanetParameters operator*(double const left, PlanetParameters const& right) {
+  PlanetParameters result = right;
+  result.period *= left;
+  result.x *= left;
+  result.y *= left;
+  result.time_to_first_transit *= left;
+  return result;
+}
+
+SystemParameters operator+(SystemParameters const& left,
+                           SystemParameters const& right) {
+  SystemParameters result = left;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = result[i] + right[i];
+  }
+  return result;
+}
+
+SystemParameters operator-(SystemParameters const& left,
+                           SystemParameters const& right) {
+  SystemParameters result = left;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = result[i] - right[i];
+  }
+  return result;
+}
+
+SystemParameters operator*(double const left, SystemParameters const& right) {
+  SystemParameters result = right;
+  for (int i = 0; i < result.size(); ++i) {
+    result[i] = left * result[i];
+  }
+  return result;
+}
+
+KeplerianElements<Trappist> MakeKeplerianElements(
+    KeplerianElements<Trappist> const& blueprint,
+    PlanetParameters const& parameters) {
+  KeplerianElements<Trappist> elements = blueprint;
+  elements.asymptotic_true_anomaly = std::nullopt;
+  elements.turning_angle = std::nullopt;
+  elements.semimajor_axis = std::nullopt;
+  elements.specific_energy = std::nullopt;
+  elements.characteristic_energy = std::nullopt;
+  elements.mean_motion = std::nullopt;
+  elements.hyperbolic_mean_motion = std::nullopt;
+  elements.hyperbolic_excess_velocity = std::nullopt;
+  elements.semiminor_axis = std::nullopt;
+  elements.impact_parameter = std::nullopt;
+  elements.semilatus_rectum = std::nullopt;
+  elements.specific_angular_momentum = std::nullopt;
+  elements.periapsis_distance = std::nullopt;
+  elements.apoapsis_distance = std::nullopt;
+  elements.longitude_of_periapsis = std::nullopt;
+  elements.true_anomaly = std::nullopt;
+  elements.hyperbolic_mean_anomaly = std::nullopt;
+  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
+  *elements.period = parameters.period;
+  *elements.mean_anomaly =
+      π / 2 * Radian - *elements.argument_of_periapsis -
+      (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
+  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
+  return elements;
+}
+
+PlanetParameters MakePlanetParameters(
+    KeplerianElements<Trappist> const& elements) {
+  PlanetParameters result;
+  result.period = *elements.period;
+  result.x = *elements.eccentricity * Cos(*elements.argument_of_periapsis);
+  result.y = *elements.eccentricity * Sin(*elements.argument_of_periapsis);
+  result.time_to_first_transit =
+      *elements.period / (2 * π * Radian) *
+      (π / 2 * Radian - *elements.argument_of_periapsis -
+       *elements.mean_anomaly);
+  return result;
+}
 
 // The description of the characteristics of an individual, i.e., a
 // configuration of the Trappist system.
@@ -84,15 +183,11 @@ class Genome {
   void Mutate(std::mt19937_64& engine, int generation,
               std::function<double(Genome const&)> χ²);
 
-  static Genome OnePointCrossover(Genome const& g1,
-                                  Genome const& g2,
-                                  std::mt19937_64& engine);
+  // We tried other forms of crossover (one-point crossover, linear blending)
+  // but then didn't produce good results.
   static Genome TwoPointCrossover(Genome const& g1,
                                   Genome const& g2,
                                   std::mt19937_64& engine);
-  static Genome Blend(Genome const& g1,
-                      Genome const& g2,
-                      std::mt19937_64& engine);
 
  private:
   std::vector<KeplerianElements<Trappist>> elements_;
@@ -595,6 +690,22 @@ Genome const* Population::Pick() const {
 constexpr Instant JD(double const jd) {
   return Instant{} + (jd - 2451545.0) * Day;
 }
+
+double ShortDays(Instant const& time) {
+    return (time - JD(2450000.0)) / Day;
+}
+
+using Transits = std::vector<Instant>;
+using TransitsByPlanet = std::map<std::string, Transits>;
+
+template<typename Value>
+struct Measured {
+  Value estimated_value;
+  Difference<Value> standard_uncertainty;
+};
+
+using MeasuredTransits = std::vector<Measured<Instant>>;
+using MeasuredTransitsByPlanet = std::map<std::string, MeasuredTransits>;
 
 std::map<std::string, Time> nominal_periods = {
     {"Trappist-1b", 1.51087637 * Day},
