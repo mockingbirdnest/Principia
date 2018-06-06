@@ -1000,6 +1000,7 @@ class TrappistDynamicsTest : public ::testing::Test {
 
 constexpr char TrappistDynamicsTest::star_name[];
 
+#if !defined(_DEBUG)
 TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
@@ -1051,6 +1052,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   std::string unused;
   LOG(ERROR) << u8"χ²: " << Transitsχ²(observations, computations, unused);
 }
+#endif
 
 TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
   SolarSystem<Trappist> const system(
