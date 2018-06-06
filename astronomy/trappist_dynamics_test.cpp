@@ -1,5 +1,10 @@
 ﻿
+#include <limits>
+#include <map>
 #include <random>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "astronomy/frames.hpp"
 #include "base/bundle.hpp"
@@ -70,9 +75,9 @@ namespace genetics {
 // elements of each planet.
 class Genome {
  public:
-  explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
+  explicit Genome(std::vector<KeplerianElements<Sky>> const& elements);
 
-  std::vector<KeplerianElements<Trappist>> const& elements() const;
+  std::vector<KeplerianElements<Sky>> const& elements() const;
 
   // Mutate this individual depending on its generation.
   void Mutate(std::mt19937_64& engine, int generation);
@@ -84,7 +89,7 @@ class Genome {
                                   std::mt19937_64& engine);
 
  private:
-  std::vector<KeplerianElements<Trappist>> elements_;
+  std::vector<KeplerianElements<Sky>> elements_;
 };
 
 // A set of genomes which can reproduce based on their fitness.
@@ -133,10 +138,10 @@ class Population {
   std::optional<Genome> best_genome_;
 };
 
-Genome::Genome(std::vector<KeplerianElements<Trappist>> const& elements)
+Genome::Genome(std::vector<KeplerianElements<Sky>> const& elements)
     : elements_(elements) {}
 
-std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
+std::vector<KeplerianElements<Sky>> const& Genome::elements() const {
   return elements_;
 }
 
@@ -203,7 +208,7 @@ Genome Genome::TwoPointCrossover(Genome const& g1,
                                  Genome const& g2,
                                  std::mt19937_64& engine) {
   CHECK_EQ(g1.elements_.size(), g2.elements_.size());
-  std::vector<KeplerianElements<Trappist>> new_elements;
+  std::vector<KeplerianElements<Sky>> new_elements;
   std::uniform_int_distribution<> order_distribution(0, 1);
   std::uniform_int_distribution<> split_distribution(0, g1.elements_.size());
   bool const reverse = order_distribution(engine) == 1;
@@ -487,10 +492,10 @@ SystemParameters operator*(double const left, SystemParameters const& right) {
   return result;
 }
 
-KeplerianElements<Trappist> MakeKeplerianElements(
-    KeplerianElements<Trappist> const& blueprint,
+KeplerianElements<Sky> MakeKeplerianElements(
+    KeplerianElements<Sky> const& blueprint,
     PlanetParameters const& parameters) {
-  KeplerianElements<Trappist> elements = blueprint;
+  KeplerianElements<Sky> elements = blueprint;
   elements.asymptotic_true_anomaly = std::nullopt;
   elements.turning_angle = std::nullopt;
   elements.semimajor_axis = std::nullopt;
@@ -518,7 +523,7 @@ KeplerianElements<Trappist> MakeKeplerianElements(
 }
 
 PlanetParameters MakePlanetParameters(
-    KeplerianElements<Trappist> const& elements) {
+    KeplerianElements<Sky> const& elements) {
   PlanetParameters result;
   result.period = *elements.period;
   result.x = *elements.eccentricity * Cos(*elements.argument_of_periapsis);
@@ -653,7 +658,7 @@ SystemParameters Run(Population& population,
 // integral number of days.  Use this function as a stopgap measure and switch
 // to literals once MSFT have fixed their bugs.
 constexpr Instant JD(double const jd) {
-  return Instant{} + (jd - 2451545.0) * Day;
+  return Instant() + (jd - 2451545.0) * Day;
 }
 
 double ShortDays(Instant const& time) {
@@ -842,12 +847,12 @@ class TrappistDynamicsTest : public ::testing::Test {
                     "trappist_initial_state_jd_2457000_000000000.proto.txt"),
         ephemeris_(system_.MakeEphemeris(
             /*fitting_tolerance=*/5 * Milli(Metre),
-            Ephemeris<Trappist>::FixedStepParameters(
+            Ephemeris<Sky>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Trappist>>(),
+                                                   Position<Sky>>(),
                 /*step=*/0.07 * Day))) {}
 
-  static Transits ComputeTransits(Ephemeris<Trappist> const& ephemeris,
+  static Transits ComputeTransits(Ephemeris<Sky> const& ephemeris,
                                   not_null<MassiveBody const*> const star,
                                   not_null<MassiveBody const*> const planet) {
     Transits transits;
@@ -859,13 +864,13 @@ class TrappistDynamicsTest : public ::testing::Test {
     for (Instant t = ephemeris.t_min();
           t < ephemeris.t_max();
           t += 2 * Hour) {
-      RelativeDegreesOfFreedom<Trappist> const relative_dof =
+      RelativeDegreesOfFreedom<Sky> const relative_dof =
           planet_trajectory->EvaluateDegreesOfFreedom(t) -
           star_trajectory->EvaluateDegreesOfFreedom(t);
 
       auto const xy_displacement_derivative =
           [&planet_trajectory, &star_trajectory](Instant const& t) {
-            RelativeDegreesOfFreedom<Trappist> const relative_dof =
+            RelativeDegreesOfFreedom<Sky> const relative_dof =
                 planet_trajectory->EvaluateDegreesOfFreedom(t) -
                 star_trajectory->EvaluateDegreesOfFreedom(t);
             // TODO(phl): Why don't we have projections?
@@ -956,13 +961,13 @@ class TrappistDynamicsTest : public ::testing::Test {
     return sum_of_squared_errors;
   }
 
-  static double ProlongAndComputeTransitsχ²(SolarSystem<Trappist>& system,
+  static double ProlongAndComputeTransitsχ²(SolarSystem<Sky>& system,
                                             std::string& info) {
     auto const ephemeris = system.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<Trappist>::FixedStepParameters(
+        Ephemeris<Sky>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<Trappist>>(),
+                                               Position<Sky>>(),
             /*step=*/0.07 * Day));
     ephemeris->Prolong(system.epoch() + 1000 * Day);
 
@@ -994,8 +999,8 @@ class TrappistDynamicsTest : public ::testing::Test {
   }
 
   constexpr static char star_name[] = "Trappist-1A";
-  SolarSystem<Trappist> const system_;
-  not_null<std::unique_ptr<Ephemeris<Trappist>>> ephemeris_;
+  SolarSystem<Sky> const system_;
+  not_null<std::unique_ptr<Ephemeris<Sky>>> ephemeris_;
 };
 
 constexpr char TrappistDynamicsTest::star_name[];
@@ -1017,7 +1022,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
       for (Instant t = ephemeris_->t_max() - 2000 * Hour;
            t < ephemeris_->t_max();
            t += 1 * Hour) {
-        KeplerOrbit<Trappist> const planet_orbit(
+        KeplerOrbit<Sky> const planet_orbit(
             *star,
             *planet,
             planet_trajectory->EvaluateDegreesOfFreedom(t) -
@@ -1055,7 +1060,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 #endif
 
 TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
-  SolarSystem<Trappist> const system(
+  SolarSystem<Sky> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "trappist_initial_state_jd_2457010_000000000.proto.txt");
@@ -1063,9 +1068,9 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
   auto planet_names = system.names();
   planet_names.erase(
       std::find(planet_names.begin(), planet_names.end(), star_name));
-  std::vector<KeplerianElements<Trappist>> elements;
+  std::vector<KeplerianElements<Sky>> elements;
   for (auto const& planet_name : planet_names) {
-    elements.push_back(SolarSystem<Trappist>::MakeKeplerianElements(
+    elements.push_back(SolarSystem<Sky>::MakeKeplerianElements(
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
@@ -1077,7 +1082,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
         for (int i = 0; i < planet_names.size(); ++i) {
           modified_system.ReplaceElements(planet_names[i], elements[i]);
         }
-        double const χ²= ProlongAndComputeTransitsχ²(modified_system, info);
+        double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
 
         // This is the place where we cook the sausage.  This function must be
         // steep enough to efficiently separate the wheat from the chaff without
@@ -1096,7 +1101,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
               MakeKeplerianElements(elements[i],
                                     system_parameters[i]));
         }
-        double const χ²= ProlongAndComputeTransitsχ²(modified_system, info);
+        double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
         return -χ² / 2.0;
       };
 

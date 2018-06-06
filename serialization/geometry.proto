@@ -159,7 +159,7 @@ message Frame {
   enum SolarSystemTag {
     ICRF_J2000_ECLIPTIC = 1;
     ICRF_J2000_EQUATOR = 2;
-    TRAPPIST = 3;
+    SKY = 3;
   }
 
   // The frame tags used in tests.
