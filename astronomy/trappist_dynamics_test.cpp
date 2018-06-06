@@ -63,7 +63,7 @@ using quantities::si::Second;
 
 namespace astronomy {
 
-// -------------------------------- Genetics -----------------------------------
+namespace genetics {
 
 // The description of the characteristics of an individual, i.e., a
 // configuration of the Trappist system.  This is merely a wrapper on the
@@ -90,14 +90,15 @@ class Genome {
 // A set of genomes which can reproduce based on their fitness.
 class Population {
  public:
+  using ComputeFitness = std::function<double(Genome const&, std::string&)>;
+
   // Constructs an initial population made of |size| mutated copies of |luca|.
   // If |elitism| is true, the best individual is preserved unchanged in the
   // next generation.
   Population(Genome const& luca,
              int size,
              bool elitism,
-             std::function<double(Genome const&, std::string&)> compute_log_pdf,
-             std::function<double(double)> compute_fitness,
+             ComputeFitness compute_fitness,
              std::mt19937_64& engine);
 
   // Compute all the fitnesses for the current population, as well as the
@@ -117,8 +118,7 @@ class Population {
 
   void TraceNewBestGenome(Genome const& genome) const;
 
-  std::function<double(Genome const&, std::string&)> const compute_log_pdf_;
-  std::function<double(double)> const compute_fitness_;
+  ComputeFitness const compute_fitness_;
   bool const elitism_;
   std::mt19937_64& engine_;
   std::vector<Genome> current_;
@@ -236,16 +236,13 @@ Genome Genome::TwoPointCrossover(Genome const& g1,
   return Genome(new_elements);
 }
 
-Population::Population(
-    Genome const& luca,
-    int size,
-    bool elitism,
-    std::function<double(Genome const&, std::string&)> compute_log_pdf,
-    std::function<double(double)> compute_fitness,
-    std::mt19937_64& engine)
+Population::Population(Genome const& luca,
+                       int const size,
+                       bool const elitism,
+                       ComputeFitness compute_fitness,
+                       std::mt19937_64& engine)
     : current_(size, luca),
       next_(size, luca),
-      compute_log_pdf_(std::move(compute_log_pdf)),
       compute_fitness_(std::move(compute_fitness)),
       elitism_(elitism),
       engine_(engine) {
@@ -269,15 +266,14 @@ void Population::ComputeAllFitnesses() {
     }
     for (; i < current_.size(); ++i) {
       bundle.Add([this, i]() {
-        fitnesses_[i] =
-            compute_fitness_(compute_log_pdf_(current_[i], traces_[i]));
+        fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
         return Status();
       });
     }
     bundle.Join();
   }
 
-  LOG(ERROR) << "------ Generation " << generation_ << "\n";
+  LOG(ERROR) << "------ Generation " << generation_;
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
   std::string* fittest_info = nullptr;
@@ -306,10 +302,10 @@ void Population::ComputeAllFitnesses() {
       best_genome_ = current_[i];
     }
   }
-  LOG(ERROR) << "Least fit: " << *least_fit_info << "\n";
-  LOG(ERROR) << "Fittest  : " << *fittest_info << "\n";
+  LOG(ERROR) << "Least fit: " << *least_fit_info;
+  LOG(ERROR) << "Fittest  : " << *fittest_info;
   if (!elitism_) {
-    LOG(ERROR) << "Best     : " << best_trace_ << "\n";
+    LOG(ERROR) << "Best     : " << best_trace_;
   }
 }
 
@@ -369,10 +365,10 @@ Genome const* Population::Pick() const {
 }
 
 void Population::TraceNewBestGenome(Genome const& genome) const {
-  LOG(ERROR) << "New best genome:\n";
+  LOG(ERROR) << "New best genome:";
   char planet = 'b';
   for (int j = 0; j < genome.elements().size(); ++j) {
-    LOG(ERROR) << std::string({planet++, ':'}) << "\n";
+    LOG(ERROR) << std::string({planet++, ':'});
     if (best_genome_) {
       LOG(ERROR)
           << "old L = "
@@ -415,6 +411,13 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
     LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day << " d";
   }
 }
+}  // namespace genetics
+
+// DEMCMC stands for Differential Evolution - Markov Chain Monte-Carlo.
+// See for instance "A Markov Chain Monte Carlo version of the genetic algorithm
+// Differential Evolution: easy Bayesian computing for real parameter spaces",
+// Braak, 2006.
+namespace demcmc {
 
 struct PlanetParameters {
   constexpr static int count = 4;
@@ -425,11 +428,9 @@ struct PlanetParameters {
 };
 
 using SystemParameters = std::array<PlanetParameters, 7>;
-
-//using Population = std::vector<SystemParameters>;
-
-using Calculator =
-    std::function<double(SystemParameters const&, std::string& info)>;
+using Population = std::vector<SystemParameters>;
+using ComputeLogPdf =
+    std::function<double(SystemParameters const&, std::string&)>;
 
 PlanetParameters operator+(PlanetParameters const& left,
                            PlanetParameters const& right) {
@@ -528,6 +529,125 @@ PlanetParameters MakePlanetParameters(
        *elements.mean_anomaly);
   return result;
 }
+
+std::vector<double> EvaluatePopulation(
+    Population const& population,
+    ComputeLogPdf const& compute_log_pdf,
+    std::vector<std::string>& info) {
+  std::vector<double> log_pdf(population.size());
+  info.resize(population.size());
+  Bundle bundle(8);
+  for (int i = 0; i < population.size(); ++i) {
+    auto const& parameters = population[i];
+    bundle.Add([&compute_log_pdf, i, &log_pdf, &parameters, &info]() {
+      log_pdf[i] = compute_log_pdf(parameters, info[i]);
+      return Status::OK;
+    });
+  }
+  bundle.Join();
+  return log_pdf;
+}
+
+Population GenerateTrialStates(Population const& population,
+                               double const γ,
+                               double const ε,
+                               std::mt19937_64& engine) {
+  Population trial(population.size());
+  std::uniform_int_distribution<> j_distribution(0, population.size() - 2);
+  std::uniform_int_distribution<> k_distribution(0, population.size() - 3);
+  std::normal_distribution<> perturbation_distribution;
+  for (int i = 0; i < population.size(); ++i) {
+    // Choose head (k) and tail (j) for perturbation vector.
+    int j = j_distribution(engine);
+    if (j >= i) {
+      ++j;
+    }
+    int k = k_distribution(engine);
+    if (k >= i) {
+      ++k;
+    }
+    if (k >= j) {
+      ++k;
+    }
+
+    // Choose scale factor.
+    double const scale = (1.0 + ε * perturbation_distribution(engine)) * γ;
+
+    trial[i] = population[i] + scale * (population[k] - population[j]);
+  }
+  return trial;
+}
+
+SystemParameters Run(Population& population,
+                     int const number_of_generations,
+                     int const number_of_generations_between_kicks,
+                     int const number_of_burn_in_generations,
+                     double const ε,
+                     ComputeLogPdf const& compute_log_pdf) {
+  CHECK_LE(1, number_of_generations);
+  CHECK_LT(std::tuple_size<SystemParameters>::value * PlanetParameters::count,
+           population.size());
+  std::mt19937_64 engine;
+  std::uniform_real_distribution<> distribution(0.0, 1.0);
+
+  static double best_log_pdf = -std::numeric_limits<double>::infinity();
+  std::string best_info;
+  SystemParameters best_system_parameters;
+
+  std::vector<std::string> infos;
+  auto log_pdf = EvaluatePopulation(population, compute_log_pdf, infos);
+
+  // Loop over generations.
+  for (int generation = 0; generation < number_of_generations; ++generation) {
+    int accepted = 0;
+
+    // Every 10th generation try full-size steps.
+    double const
+        γ = generation < number_of_burn_in_generations
+                ? 0.01
+                : generation % number_of_generations_between_kicks == 0
+                      ? 1.0
+                      : 2.38 /
+                            Sqrt(2 * std::tuple_size<SystemParameters>::value *
+                                 PlanetParameters::count);
+
+    // Evaluate model for each set of trial parameters.
+    auto const trial = GenerateTrialStates(population, γ, ε, engine);
+    std::vector<std::string> trial_infos;
+    auto const log_pdf_trial =
+        EvaluatePopulation(trial, compute_log_pdf, trial_infos);
+
+    // For each member of population.
+    for (int i = 0; i < population.size(); ++i) {
+      double const log_pdf_ratio = log_pdf_trial[i] - log_pdf[i];
+      if (log_pdf_ratio > 0.0 ||
+          log_pdf_ratio > std::log(distribution(engine))) {
+        population[i] = trial[i];
+        log_pdf[i] = log_pdf_trial[i];
+        infos[i] = trial_infos[i];
+        ++accepted;
+      }
+    }
+
+    // Traces.
+    int const max_index =
+        std::max_element(log_pdf.begin(), log_pdf.end()) - log_pdf.begin();
+    if (best_log_pdf < log_pdf[max_index]) {
+      best_system_parameters = population[max_index];
+      best_log_pdf = log_pdf[max_index];
+      best_info = infos[max_index];
+    }
+    LOG(ERROR) << "Generation " << generation << "; Acceptance: " << accepted
+               << " / " << population.size();
+    LOG(ERROR) << "Max  : " << infos[max_index];
+    if (best_info != infos[max_index]) {
+      LOG(ERROR) << "Best : " << best_info;
+    }
+  }
+  return best_system_parameters;
+}
+
+}  // namespace demcmc
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
 // integral number of days.  Use this function as a stopgap measure and switch
@@ -777,7 +897,7 @@ class TrappistDynamicsTest : public ::testing::Test {
   static double Transitsχ²(MeasuredTransitsByPlanet const& observations,
                            TransitsByPlanet const& computations,
                            std::string& info) {
-    double sum_of_squared_errors = 0;
+    double sum_of_squared_errors = 0.0;
     Time max_Δt;
     Time total_Δt;
     std::string transit_with_max_Δt;
@@ -832,8 +952,40 @@ class TrappistDynamicsTest : public ::testing::Test {
     }
     info = u8"max Δt = " + std::to_string(max_Δt / Second) + " s (" +
            transit_with_max_Δt + u8") avg Δt = " +
-           std::to_string(total_Δt / number_of_observations / Second) + u8" s";
+           std::to_string(total_Δt / number_of_observations / Second) + " s";
     return sum_of_squared_errors;
+  }
+
+  static double ProlongAndComputeTransitsχ²(SolarSystem<Trappist>& system,
+                                            std::string& info) {
+    auto const ephemeris = system.MakeEphemeris(
+        /*fitting_tolerance=*/5 * Milli(Metre),
+        Ephemeris<Trappist>::FixedStepParameters(
+            SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
+                                               Position<Trappist>>(),
+            /*step=*/0.07 * Day));
+    ephemeris->Prolong(system.epoch() + 1000 * Day);
+
+    // For some combinations we get an apocalyse.  In this case the dispersion
+    // is infinite.
+    if (!ephemeris->last_severe_integration_status().ok()) {
+      info = u8"ἀποκάλυψις";
+      return std::numeric_limits<double>::infinity();
+    }
+
+    TransitsByPlanet computations;
+    auto const& star = system.massive_body(*ephemeris, star_name);
+    auto const bodies = ephemeris->bodies();
+    for (auto const& planet : bodies) {
+      if (planet != star) {
+        computations[planet->name()] =
+            ComputeTransits(*ephemeris, star, planet);
+      }
+    }
+    std::string χ²_info;
+    double const χ² = Transitsχ²(observations, computations, χ²_info);
+    info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
+    return χ²;
   }
 
   static std::string SanitizedName(MassiveBody const& body) {
@@ -900,7 +1052,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   LOG(ERROR) << u8"χ²: " << Transitsχ²(observations, computations, unused);
 }
 
-TEST_F(TrappistDynamicsTest, Optimisation) {
+TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
   SolarSystem<Trappist> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -915,65 +1067,50 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
-  auto compute_χ² = [&planet_names, &system](Genome const& genome,
-                                             std::string& info) {
-    auto modified_system = system;
-    auto const& elements = genome.elements();
-    for (int i = 0; i < planet_names.size(); ++i) {
-      modified_system.ReplaceElements(planet_names[i], elements[i]);
-    }
+  auto compute_fitness =
+      [&planet_names, &system](genetics::Genome const& genome,
+                               std::string& info) {
+        auto modified_system = system;
+        auto const& elements = genome.elements();
+        for (int i = 0; i < planet_names.size(); ++i) {
+          modified_system.ReplaceElements(planet_names[i], elements[i]);
+        }
+        double const χ²= ProlongAndComputeTransitsχ²(modified_system, info);
 
-    auto const ephemeris = modified_system.MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
-            Ephemeris<Trappist>::FixedStepParameters(
-                SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                                   Position<Trappist>>(),
-                /*step=*/0.07 * Day));
-    ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
+        // This is the place where we cook the sausage.  This function must be
+        // steep enough to efficiently separate the wheat from the chaff without
+        // leading to monoculture.
+        return 1 / χ²;
+      };
 
-    // For some combinations we get an apocalyse.  In this case the dispersion
-    // is infinite.
-    if (!ephemeris->last_severe_integration_status().ok()) {
-      info = u8"ἀποκάλυψις";
-      return std::numeric_limits<double>::infinity();
-    }
+  auto compute_log_pdf =
+      [&elements, &planet_names, &system](
+          demcmc::SystemParameters const& system_parameters,
+          std::string& info) {
+        auto modified_system = system;
+        for (int i = 0; i < planet_names.size(); ++i) {
+          modified_system.ReplaceElements(
+              planet_names[i],
+              MakeKeplerianElements(elements[i],
+                                    system_parameters[i]));
+        }
+        double const χ²= ProlongAndComputeTransitsχ²(modified_system, info);
+        return -χ² / 2.0;
+      };
 
-    TransitsByPlanet computations;
-    auto const& star = modified_system.massive_body(*ephemeris, star_name);
-    auto const bodies = ephemeris->bodies();
-    for (auto const& planet : bodies) {
-      if (planet != star) {
-        computations[planet->name()] =
-            ComputeTransits(*ephemeris, star, planet);
-      }
-    }
-    std::string χ²_info;
-    double const χ² = Transitsχ²(observations, computations, χ²_info);
-    info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
-    return χ²;
-  };
-
-  auto compute_fitness = [](double const χ²) {
-    // This is the place where we cook the sausage.  This function must be steep
-    // enough to efficiently separate the wheat from the chaff without leading
-    // to monoculture.
-    return 1 / χ²;
-  };
-
-  std::optional<Genome> great_old_one;
+  std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
   {
-    std::mt19937_64 engine;
     // First, let's do 5 rounds of evolution with a population of 9 individuals
     // based on |luca|.  The best of all of them is the Great Old One.
-    Genome luca(elements);
+    std::mt19937_64 engine;
+    genetics::Genome luca(elements);
     for (int i = 0; i < 5; ++i) {
-      Population population(luca,
-                            9,
-                            /*elitism=*/true,
-                            compute_χ²,
-                            compute_fitness,
-                            engine);
+      genetics::Population population(luca,
+                                      9,
+                                      /*elitism=*/true,
+                                      compute_fitness,
+                                      engine);
       for (int i = 0; i < 20'000; ++i) {
         population.ComputeAllFitnesses();
         population.BegetChildren();
@@ -988,6 +1125,43 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         great_old_one = population.best_genome();
         great_old_one_fitness = population.best_genome_fitness();
       }
+    }
+  }
+  {
+    // Next, let's build a population of 50 minor variants of the Great Old One,
+    // the Outer Gods.  Use DEMCMC to improve them.  The best of them is the
+    // Blind Idiot God.
+    std::mt19937_64 engine;
+    demcmc::Population outer_gods;
+    for (int i = 0; i < 50; ++i) {
+      outer_gods.emplace_back();
+      demcmc::SystemParameters& outer_god = outer_gods.back();
+      std::normal_distribution<> angle_distribution(0.0, 0.1);
+      std::normal_distribution<> period_distribution(0.0, 1.0);
+      std::normal_distribution<> eccentricity_distribution(0.0, 1e-4);
+      for (int j = 0; j < outer_god.size(); ++j) {
+        auto perturbed_elements = great_old_one->elements()[j];
+        *perturbed_elements.period += period_distribution(engine) * Second;
+        *perturbed_elements.argument_of_periapsis +=
+            angle_distribution(engine) * Degree;
+        *perturbed_elements.mean_anomaly += angle_distribution(engine) * Degree;
+        *perturbed_elements.eccentricity += eccentricity_distribution(engine);
+        outer_god[j] = demcmc::MakePlanetParameters(perturbed_elements);
+      }
+    }
+
+    auto const the_blind_idiot_god =
+        demcmc::Run(outer_gods,
+                    /*number_of_generations=*/10'000,
+                    /*number_of_generations_between_kicks=*/30,
+                    /*number_of_burn_in_generations=*/10,
+                    /*ε=*/0.05,
+                    compute_log_pdf);
+    LOG(ERROR) << "The Blind Idiot God";
+    for (int i = 0; i < the_blind_idiot_god.size(); ++i) {
+      LOG(ERROR) << planet_names[i];
+      LOG(ERROR) << MakeKeplerianElements(great_old_one->elements()[i],
+                                          the_blind_idiot_god[i]);
     }
   }
 }
