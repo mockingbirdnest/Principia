@@ -941,6 +941,9 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                                                    Position<Trappist>>(),
                 /*step=*/0.07 * Day));
     ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
+
+    // For some combinations we get an apocalyse.  In this case the fitness is
+    // zero.
     if (!ephemeris->last_severe_integration_status().ok()) {
       info = u8"ἀποκάλυψις";
       return 0.0;
@@ -979,7 +982,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                             /*elitism=*/true,
                             compute_fitness,
                             engine);
-      for (int i = 0; i < 18'000; ++i) {
+      for (int i = 0; i < 20'000; ++i) {
         population.ComputeAllFitnesses();
         population.BegetChildren();
       }
