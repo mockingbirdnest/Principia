@@ -70,7 +70,6 @@ namespace astronomy {
 // elements of each planet.
 class Genome {
  public:
-   //TODO(phl):Genome?
   explicit Genome(std::vector<KeplerianElements<Trappist>> const& elements);
 
   std::vector<KeplerianElements<Trappist>> const& elements() const;
@@ -95,9 +94,10 @@ class Population {
   // If |elitism| is true, the best individual is preserved unchanged in the
   // next generation.
   Population(Genome const& luca,
-             int const size,
-             bool const elitism,
-             std::function<double(Genome const&, std::string&)> compute_fitness,
+             int size,
+             bool elitism,
+             std::function<double(Genome const&, std::string&)> compute_log_pdf,
+             std::function<double(double)> compute_fitness,
              std::mt19937_64& engine);
 
   // Compute all the fitnesses for the current population, as well as the
@@ -117,7 +117,8 @@ class Population {
 
   void TraceNewBestGenome(Genome const& genome) const;
 
-  std::function<double(Genome const&, std::string&)> const compute_fitness_;
+  std::function<double(Genome const&, std::string&)> const compute_log_pdf_;
+  std::function<double(double)> const compute_fitness_;
   bool const elitism_;
   std::mt19937_64& engine_;
   std::vector<Genome> current_;
@@ -142,21 +143,23 @@ std::vector<KeplerianElements<Trappist>> const& Genome::elements() const {
 void Genome::Mutate(std::mt19937_64& engine,
                     int const generation) {
   std::student_t_distribution<> distribution(1);
-  double multiplicator = std::exp2(-2 - std::min(generation, 800) / 120);
-  if (generation == -1) {
-    multiplicator = 1;
-  }
-  auto mutate_mean_anomaly =
-      [&distribution, &engine, multiplicator](KeplerianElements<Trappist>& element, Angle const size) {
-        *element.mean_anomaly +=
-            distribution(engine) * size;
-        *element.mean_anomaly =
-            std::fmod(*element.mean_anomaly / quantities::si::Radian, 2 * π) *
-            quantities::si::Radian;
-        if (*element.mean_anomaly < 0 * quantities::si::Radian) {
-          *element.mean_anomaly += 2 * π * quantities::si::Radian;
-        }
-      };
+
+  // The standard deviation of the distribution has a strong effect on the
+  // convergence of the algorithm: if it's too small we do not explore the
+  // genomic space efficiently and it takes forever to find decent solutions; if
+  // it's too large we explore the genomic space haphazardly and suffer from
+  // deleterious mutations.  The |multiplicator| is used to decay the deviation
+  // over time.
+  double const multiplicator =
+      generation == -1 ? 1 : std::exp2(-2 - std::min(generation, 800) / 120);
+
+  auto reduce_mod_2π = [](Angle& angle) {
+    angle = std::fmod(angle / Radian, 2 * π) * Radian;
+    if (angle < 0 * Radian) {
+      angle += 2 * π * Radian;
+    }
+  };
+
   for (auto& element : elements_) {
     element.asymptotic_true_anomaly = std::nullopt;
     element.turning_angle = std::nullopt;
@@ -175,20 +178,9 @@ void Genome::Mutate(std::mt19937_64& engine,
     element.longitude_of_periapsis = std::nullopt;
     element.true_anomaly = std::nullopt;
     element.hyperbolic_mean_anomaly = std::nullopt;
-    // The standard deviation of the distribution below has a strong effect on
-    // the convergence of the algorithm: if it's too small we do not explore the
-    // genomic space efficiently and it takes forever to find decent solutions;
-    // if it's too large we explore the genomic space haphazardly and suffer
-    // from deleterious mutations.
     *element.argument_of_periapsis +=
         distribution(engine) * 10 * Degree * multiplicator;
-    *element.argument_of_periapsis =
-        std::fmod(*element.argument_of_periapsis / quantities::si::Radian,
-                  2 * π) *
-        quantities::si::Radian;
-    if (*element.argument_of_periapsis < 0 * quantities::si::Radian) {
-      *element.argument_of_periapsis += 2 * π * quantities::si::Radian;
-    }
+    reduce_mod_2π(*element.argument_of_periapsis);
     *element.period += distribution(engine) * 5 * Second * Sqrt(multiplicator);
     element.eccentricity =
         *element.eccentricity +
@@ -202,7 +194,8 @@ void Genome::Mutate(std::mt19937_64& engine,
         break;
       }
     }
-    mutate_mean_anomaly(element, 10 * Degree * multiplicator);
+    *element.mean_anomaly += distribution(engine) * 10 * Degree * multiplicator;
+    reduce_mod_2π(*element.mean_anomaly);
   }
 }
 
@@ -245,12 +238,14 @@ Genome Genome::TwoPointCrossover(Genome const& g1,
 
 Population::Population(
     Genome const& luca,
-    int const size,
-    bool const elitism,
-    std::function<double(Genome const&, std::string&)> compute_fitness,
+    int size,
+    bool elitism,
+    std::function<double(Genome const&, std::string&)> compute_log_pdf,
+    std::function<double(double)> compute_fitness,
     std::mt19937_64& engine)
     : current_(size, luca),
       next_(size, luca),
+      compute_log_pdf_(std::move(compute_log_pdf)),
       compute_fitness_(std::move(compute_fitness)),
       elitism_(elitism),
       engine_(engine) {
@@ -274,7 +269,8 @@ void Population::ComputeAllFitnesses() {
     }
     for (; i < current_.size(); ++i) {
       bundle.Add([this, i]() {
-        fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
+        fitnesses_[i] =
+            compute_fitness_(compute_log_pdf_(current_[i], traces_[i]));
         return Status();
       });
     }
@@ -383,48 +379,40 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
           << std::fmod(
                  (best_genome_->elements()[j].longitude_of_ascending_node +
                   *best_genome_->elements()[j].argument_of_periapsis +
-                  *best_genome_->elements()[j].mean_anomaly) /
-                     Degree,
+                  *best_genome_->elements()[j].mean_anomaly) / Degree,
                  360)
-          << u8"°\n";
+          << u8"°";
       LOG(ERROR) << u8"   ΔL = "
                  << ((genome.elements()[j].longitude_of_ascending_node +
                       *genome.elements()[j].argument_of_periapsis +
                       *genome.elements()[j].mean_anomaly) -
                      (best_genome_->elements()[j].longitude_of_ascending_node +
                       *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly)) /
-                        Degree
-                 << u8"°\n";
+                      *best_genome_->elements()[j].mean_anomaly)) / Degree
+                 << u8"°";
     }
     LOG(ERROR) << "new L = "
-               << std::fmod(
-                      (genome.elements()[j].longitude_of_ascending_node +
-                       *genome.elements()[j].argument_of_periapsis +
-                       *genome.elements()[j].mean_anomaly) /
-                          Degree,
-                      360)
-               << u8"°\n";
+               << std::fmod((genome.elements()[j].longitude_of_ascending_node +
+                             *genome.elements()[j].argument_of_periapsis +
+                             *genome.elements()[j].mean_anomaly) / Degree,
+                            360)
+               << u8"°";
     if (best_genome_) {
-      LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity
-                 << "\n";
+      LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
       LOG(ERROR) << u8"   Δe = "
                  << *genome.elements()[j].eccentricity -
-                        *best_genome_->elements()[j].eccentricity
-                 << "\n";
+                        *best_genome_->elements()[j].eccentricity;
     }
-    LOG(ERROR) << "new e = " << *genome.elements()[j].eccentricity << "\n";
+    LOG(ERROR) << "new e = " << *genome.elements()[j].eccentricity;
     if (best_genome_) {
       LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
-                 << " d\n";
+                 << " d";
       LOG(ERROR) << u8"   ΔT = "
                  << (*genome.elements()[j].period -
-                     *best_genome_->elements()[j].period) /
-                        Second
-                 << " s\n";
+                     *best_genome_->elements()[j].period) / Second
+                 << " s";
     }
-    LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day
-               << " d\n";
+    LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day << " d";
   }
 }
 
@@ -927,7 +915,8 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
-  auto compute_fitness = [&planet_names, &system](Genome const& genome, std::string& info) {
+  auto compute_χ² = [&planet_names, &system](Genome const& genome,
+                                             std::string& info) {
     auto modified_system = system;
     auto const& elements = genome.elements();
     for (int i = 0; i < planet_names.size(); ++i) {
@@ -942,11 +931,11 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
                 /*step=*/0.07 * Day));
     ephemeris->Prolong(modified_system.epoch() + 1000 * Day);
 
-    // For some combinations we get an apocalyse.  In this case the fitness is
-    // zero.
+    // For some combinations we get an apocalyse.  In this case the dispersion
+    // is infinite.
     if (!ephemeris->last_severe_integration_status().ok()) {
       info = u8"ἀποκάλυψις";
-      return 0.0;
+      return std::numeric_limits<double>::infinity();
     }
 
     TransitsByPlanet computations;
@@ -961,13 +950,15 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
     std::string χ²_info;
     double const χ² = Transitsχ²(observations, computations, χ²_info);
     info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
+    return χ²;
+  };
 
+  auto compute_fitness = [](double const χ²) {
     // This is the place where we cook the sausage.  This function must be steep
     // enough to efficiently separate the wheat from the chaff without leading
     // to monoculture.
     return 1 / χ²;
   };
-
 
   std::optional<Genome> great_old_one;
   double great_old_one_fitness = 0.0;
@@ -980,6 +971,7 @@ TEST_F(TrappistDynamicsTest, Optimisation) {
       Population population(luca,
                             9,
                             /*elitism=*/true,
+                            compute_χ²,
                             compute_fitness,
                             engine);
       for (int i = 0; i < 20'000; ++i) {
