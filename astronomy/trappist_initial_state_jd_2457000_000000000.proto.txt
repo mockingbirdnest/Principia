@@ -1,13 +1,14 @@
+# Data from  "The nature of the TRAPPIST-1 exoplanets", Grimm et al., 2018.
 initial_state {
-  solar_system_frame : TRAPPIST
+  solar_system_frame : SKY
   epoch : "JD2457000.000000000"
   keplerian {
     body {
-      name : "Trappist-1A"
+      name : "Trappist-1"
     }
     body {
       name                          : "Trappist-1b"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00622
         period                      : "1.51087637 d"
@@ -19,7 +20,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1c"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00654
         period                      : "2.42180746 d"
@@ -31,7 +32,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1d"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00837
         period                      : "4.049959 d"
@@ -43,7 +44,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1e"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00510
         period                      : "6.099043 d"
@@ -55,7 +56,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1f"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.01007
         period                      : "9.205585 d"
@@ -67,7 +68,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1g"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00208
         period                      : "12.354473 d"
@@ -79,7 +80,7 @@ initial_state {
     }
     body {
       name                          : "Trappist-1h"
-      parent                        : "Trappist-1A"
+      parent                        : "Trappist-1"
       elements {
         eccentricity                : 0.00567
         period                      : "18.767953 d"

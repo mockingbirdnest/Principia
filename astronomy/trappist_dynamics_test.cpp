@@ -1,4 +1,5 @@
 ﻿
+#include <algorithm>
 #include <limits>
 #include <map>
 #include <random>
@@ -149,12 +150,12 @@ void Genome::Mutate(std::mt19937_64& engine,
                     int const generation) {
   std::student_t_distribution<> distribution(1);
 
-  // The standard deviation of the distribution has a strong effect on the
-  // convergence of the algorithm: if it's too small we do not explore the
-  // genomic space efficiently and it takes forever to find decent solutions; if
-  // it's too large we explore the genomic space haphazardly and suffer from
-  // deleterious mutations.  The |multiplicator| is used to decay the deviation
-  // over time.
+  // The scale of the perturbation has a strong effect on the convergence of the
+  // algorithm: if it's too small we do not explore the genomic space
+  // efficiently and it takes forever to find decent solutions; if it's too
+  // large we explore the genomic space haphazardly and suffer from deleterious
+  // mutations.  The |multiplicator| is used to decay the perturbation over
+  // time.
   double const multiplicator =
       generation == -1 ? 1 : std::exp2(-2 - std::min(generation, 800) / 120);
 
@@ -166,41 +167,37 @@ void Genome::Mutate(std::mt19937_64& engine,
   };
 
   for (auto& element : elements_) {
-    element.asymptotic_true_anomaly = std::nullopt;
-    element.turning_angle = std::nullopt;
-    element.semimajor_axis = std::nullopt;
-    element.specific_energy = std::nullopt;
-    element.characteristic_energy = std::nullopt;
-    element.mean_motion = std::nullopt;
-    element.hyperbolic_mean_motion = std::nullopt;
-    element.hyperbolic_excess_velocity = std::nullopt;
-    element.semiminor_axis = std::nullopt;
-    element.impact_parameter = std::nullopt;
-    element.semilatus_rectum = std::nullopt;
-    element.specific_angular_momentum = std::nullopt;
-    element.periapsis_distance = std::nullopt;
-    element.apoapsis_distance = std::nullopt;
-    element.longitude_of_periapsis = std::nullopt;
-    element.true_anomaly = std::nullopt;
-    element.hyperbolic_mean_anomaly = std::nullopt;
-    *element.argument_of_periapsis +=
+    KeplerianElements<Sky> mutated_element;
+    // The elements that are preserved.
+    mutated_element.inclination = element.inclination;
+    mutated_element.longitude_of_ascending_node =
+        element.longitude_of_ascending_node;
+    // The elements that are mutated.
+    mutated_element.argument_of_periapsis =
+        *element.argument_of_periapsis +
         distribution(engine) * 10 * Degree * multiplicator;
-    reduce_mod_2π(*element.argument_of_periapsis);
-    *element.period += distribution(engine) * 5 * Second * Sqrt(multiplicator);
-    element.eccentricity =
+    reduce_mod_2π(*mutated_element.argument_of_periapsis);
+    mutated_element.period =
+        *element.period +
+        distribution(engine) * 5 * Second * Sqrt(multiplicator);
+    mutated_element.eccentricity =
         *element.eccentricity +
         distribution(engine) * 1e-3 * Sqrt(multiplicator);
     for (;;) {
-      if (*element.eccentricity < 0) {
-        *element.eccentricity = - *element.eccentricity;
-      } else if (*element.eccentricity > 0.2) {
-        *element.eccentricity = 0.2 - *element.eccentricity;
+      if (*mutated_element.eccentricity < 0.0) {
+        *mutated_element.eccentricity = -*mutated_element.eccentricity;
+      } else if (*mutated_element.eccentricity > 0.2) {
+        *mutated_element.eccentricity = 0.2 - *mutated_element.eccentricity;
       } else {
         break;
       }
     }
-    *element.mean_anomaly += distribution(engine) * 10 * Degree * multiplicator;
-    reduce_mod_2π(*element.mean_anomaly);
+    mutated_element.mean_anomaly =
+        *element.mean_anomaly +
+        distribution(engine) * 10 * Degree * multiplicator;
+    reduce_mod_2π(*mutated_element.mean_anomaly);
+
+    element = mutated_element;
   }
 }
 
@@ -418,11 +415,11 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
 }
 }  // namespace genetics
 
-// DEMCMC stands for Differential Evolution - Markov Chain Monte-Carlo.
+// DEMCMC stands for Differential Evolution - Марков Chain Monte-Carlo.
 // See for instance "A Markov Chain Monte Carlo version of the genetic algorithm
 // Differential Evolution: easy Bayesian computing for real parameter spaces",
 // Braak, 2006.
-namespace demcmc {
+namespace deмcmc {
 
 struct PlanetParameters {
   constexpr static int count = 4;
@@ -495,30 +492,17 @@ SystemParameters operator*(double const left, SystemParameters const& right) {
 KeplerianElements<Sky> MakeKeplerianElements(
     KeplerianElements<Sky> const& blueprint,
     PlanetParameters const& parameters) {
-  KeplerianElements<Sky> elements = blueprint;
-  elements.asymptotic_true_anomaly = std::nullopt;
-  elements.turning_angle = std::nullopt;
-  elements.semimajor_axis = std::nullopt;
-  elements.specific_energy = std::nullopt;
-  elements.characteristic_energy = std::nullopt;
-  elements.mean_motion = std::nullopt;
-  elements.hyperbolic_mean_motion = std::nullopt;
-  elements.hyperbolic_excess_velocity = std::nullopt;
-  elements.semiminor_axis = std::nullopt;
-  elements.impact_parameter = std::nullopt;
-  elements.semilatus_rectum = std::nullopt;
-  elements.specific_angular_momentum = std::nullopt;
-  elements.periapsis_distance = std::nullopt;
-  elements.apoapsis_distance = std::nullopt;
-  elements.longitude_of_periapsis = std::nullopt;
-  elements.true_anomaly = std::nullopt;
-  elements.hyperbolic_mean_anomaly = std::nullopt;
-  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
+  KeplerianElements<Sky> elements;
+  // The elements that are copied from the blueprint.
+  elements.inclination = blueprint.inclination;
+  elements.longitude_of_ascending_node = blueprint.longitude_of_ascending_node;
+  // The elements that are computed from the parameters.
+  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
   *elements.period = parameters.period;
+  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
   *elements.mean_anomaly =
       π / 2 * Radian - *elements.argument_of_periapsis -
       (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
-  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
   return elements;
 }
 
@@ -652,7 +636,7 @@ SystemParameters Run(Population& population,
   return best_system_parameters;
 }
 
-}  // namespace demcmc
+}  // namespace deмcmc
 
 // TODO(phl): Literals are broken in 15.8.0 Preview 1.0 and are off by an
 // integral number of days.  Use this function as a stopgap measure and switch
@@ -998,7 +982,7 @@ class TrappistDynamicsTest : public ::testing::Test {
     return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
   }
 
-  constexpr static char star_name[] = "Trappist-1A";
+  constexpr static char star_name[] = "Trappist-1";
   SolarSystem<Sky> const system_;
   not_null<std::unique_ptr<Ephemeris<Sky>>> ephemeris_;
 };
@@ -1063,7 +1047,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
   SolarSystem<Sky> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "trappist_initial_state_jd_2457010_000000000.proto.txt");
+          "trappist_initial_state_jd_2457000_000000000.proto.txt");
 
   auto planet_names = system.names();
   planet_names.erase(
@@ -1092,7 +1076,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
 
   auto compute_log_pdf =
       [&elements, &planet_names, &system](
-          demcmc::SystemParameters const& system_parameters,
+          deмcmc::SystemParameters const& system_parameters,
           std::string& info) {
         auto modified_system = system;
         for (int i = 0; i < planet_names.size(); ++i) {
@@ -1139,10 +1123,10 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
     // the Outer Gods.  Use DEMCMC to improve them.  The best of them is the
     // Blind Idiot God.
     std::mt19937_64 engine;
-    demcmc::Population outer_gods;
+    deмcmc::Population outer_gods;
     for (int i = 0; i < 50; ++i) {
       outer_gods.emplace_back();
-      demcmc::SystemParameters& outer_god = outer_gods.back();
+      deмcmc::SystemParameters& outer_god = outer_gods.back();
       std::normal_distribution<> angle_distribution(0.0, 0.1);
       std::normal_distribution<> period_distribution(0.0, 1.0);
       std::normal_distribution<> eccentricity_distribution(0.0, 1e-4);
@@ -1153,12 +1137,12 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
             angle_distribution(engine) * Degree;
         *perturbed_elements.mean_anomaly += angle_distribution(engine) * Degree;
         *perturbed_elements.eccentricity += eccentricity_distribution(engine);
-        outer_god[j] = demcmc::MakePlanetParameters(perturbed_elements);
+        outer_god[j] = deмcmc::MakePlanetParameters(perturbed_elements);
       }
     }
 
     auto const the_blind_idiot_god =
-        demcmc::Run(outer_gods,
+        deмcmc::Run(outer_gods,
                     /*number_of_generations=*/10'000,
                     /*number_of_generations_between_kicks=*/30,
                     /*number_of_burn_in_generations=*/10,

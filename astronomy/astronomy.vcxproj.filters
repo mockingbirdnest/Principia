@@ -103,9 +103,6 @@
     <Text Include="trappist_initial_state_jd_2457000_000000000.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="trappist_initial_state_jd_2457010_000000000.proto.txt">
-      <Filter>Resource Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">
