@@ -1,4 +1,9 @@
 # Data from  "The nature of the TRAPPIST-1 exoplanets", Grimm et al., 2018.
+# The longitude of the ascending node are not known, but their distribution is
+# described in "Planet-planet occultations in TRAPPIST-1 and other exoplanet
+# systems", Luger et al., 2017, figure 7.  We take it from a normal distribution
+# of mean 0 deg and standard deviation 0.05 deg, as that appears to be the mode
+# in the figure.
 initial_state {
   solar_system_frame : SKY
   epoch : "JD2457000.000000000"
@@ -13,7 +18,7 @@ initial_state {
         eccentricity                : 0.00622
         period                      : "1.51087637 d"
         inclination                 : "89.56 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "0.0185188 deg"
         argument_of_periapsis       : "336.86 deg"
         mean_anomaly                : "203.12 deg"
       }
@@ -25,7 +30,7 @@ initial_state {
         eccentricity                : 0.00654
         period                      : "2.42180746 d"
         inclination                 : "89.70 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "-0.014898 deg"
         argument_of_periapsis       : "282.45 deg"
         mean_anomaly                : "69.86 deg"
       }
@@ -37,7 +42,7 @@ initial_state {
         eccentricity                : 0.00837
         period                      : "4.049959 d"
         inclination                 : "89.89 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "-0.0383142 deg"
         argument_of_periapsis       : "-8.73 deg"
         mean_anomaly                : "173.92 deg"
       }
@@ -49,7 +54,7 @@ initial_state {
         eccentricity                : 0.00510
         period                      : "6.099043 d"
         inclination                 : "89.736 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "-0.0572232 deg"
         argument_of_periapsis       : "108.37 deg"
         mean_anomaly                : "347.95 deg"
       }
@@ -61,7 +66,7 @@ initial_state {
         eccentricity                : 0.01007
         period                      : "9.205585 d"
         inclination                 : "89.719 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "-0.0032286 deg"
         argument_of_periapsis       : "368.81 deg"
         mean_anomaly                : "113.61 deg"
       }
@@ -73,7 +78,7 @@ initial_state {
         eccentricity                : 0.00208
         period                      : "12.354473 d"
         inclination                 : "89.721 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "-0.00473575 deg"
         argument_of_periapsis       : "191.34 deg"
         mean_anomaly                : "265.08 deg"
       }
@@ -85,7 +90,7 @@ initial_state {
         eccentricity                : 0.00567
         period                      : "18.767953 d"
         inclination                 : "89.796 deg"
-        longitude_of_ascending_node : "0 deg"
+        longitude_of_ascending_node : "0.0394288 deg"
         argument_of_periapsis       : "338.92 deg"
         mean_anomaly                : "269.72 deg"
       }
