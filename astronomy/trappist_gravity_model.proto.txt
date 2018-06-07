@@ -1,0 +1,41 @@
+gravity_model {
+  solar_system_frame : SKY
+
+  # Star.  Data from "Early 2017 observations of TRAPPIST-1 with Spitzer",
+  # Delrez et al., 2018.
+  body {
+    name : "Trappist-1"
+    mass : "0.0890 M☉"
+  }
+
+  # Planets.  Data from "The nature of the TRAPPIST-1 exoplanets", Grimm et al.,
+  # 2018.
+  body {
+    name : "Trappist-1b"
+    mass : "1.017 M🜨"
+  }
+  body {
+    name : "Trappist-1c"
+    mass : "1.156 M🜨"
+  }
+  body {
+    name : "Trappist-1d"
+    mass : "0.297 M🜨"
+  }
+  body {
+    name : "Trappist-1e"
+    mass : "0.772 M🜨"
+  }
+  body {
+    name : "Trappist-1f"
+    mass : "0.934 M🜨"
+  }
+  body {
+    name : "Trappist-1g"
+    mass : "1.148 M🜨"
+  }
+  body {
+    name : "Trappist-1h"
+    mass : "0.331 M🜨"
+  }
+}

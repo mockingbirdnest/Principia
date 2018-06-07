@@ -97,6 +97,12 @@
     <Text Include="sol_numerics_blueprint.proto.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="trappist_gravity_model.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="trappist_initial_state_jd_2457000_000000000.proto.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="frames.hpp">
@@ -168,6 +174,12 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="trappist_dynamics_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\base\bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
