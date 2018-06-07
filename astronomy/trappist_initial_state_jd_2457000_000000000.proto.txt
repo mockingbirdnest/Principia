@@ -1,4 +1,6 @@
-# Data from  "The nature of the TRAPPIST-1 exoplanets", Grimm et al., 2018.
+# Most of the data are from  "The nature of the TRAPPIST-1 exoplanets", Grimm et
+# al., 2018.  The inclinations and periods are from "Early 2017 observations of
+# TRAPPIST-1 with Spitzer", Delrez et al., 2018.
 # The longitudes of the ascending nodes are not known, but their distribution is
 # described in "Planet-planet occultations in TRAPPIST-1 and other exoplanet
 # systems", Luger et al., 2017, figure 7.  We take it from a normal distribution
