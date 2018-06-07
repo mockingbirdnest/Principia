@@ -1,5 +1,5 @@
 # Data from  "The nature of the TRAPPIST-1 exoplanets", Grimm et al., 2018.
-# The longitude of the ascending node are not known, but their distribution is
+# The longitudes of the ascending nodes are not known, but their distribution is
 # described in "Planet-planet occultations in TRAPPIST-1 and other exoplanet
 # systems", Luger et al., 2017, figure 7.  We take it from a normal distribution
 # of mean 0 deg and standard deviation 0.05 deg, as that appears to be the mode
