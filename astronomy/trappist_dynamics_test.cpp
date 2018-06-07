@@ -421,6 +421,8 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
 // Braak, 2006.
 namespace deмcmc {
 
+// These parameters follow "The Laplace resonance in the Kepler-60 planetary
+// system", Goździewski et al., 2016.
 struct PlanetParameters {
   constexpr static int count = 4;
   Time period;
