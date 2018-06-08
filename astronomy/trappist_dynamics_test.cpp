@@ -499,10 +499,10 @@ KeplerianElements<Sky> MakeKeplerianElements(
   elements.inclination = blueprint.inclination;
   elements.longitude_of_ascending_node = blueprint.longitude_of_ascending_node;
   // The elements that are computed from the parameters.
-  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
-  *elements.period = parameters.period;
-  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
-  *elements.mean_anomaly =
+  elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
+  elements.period = parameters.period;
+  elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
+  elements.mean_anomaly =
       π / 2 * Radian - *elements.argument_of_periapsis -
       (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
   return elements;
@@ -1091,6 +1091,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
         return -χ² / 2.0;
       };
 
+#if 0
   std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
   {
@@ -1098,7 +1099,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
     // based on |luca|.  The best of all of them is the Great Old One.
     std::mt19937_64 engine;
     genetics::Genome luca(elements);
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10; ++i) {
       genetics::Population population(luca,
                                       9,
                                       /*elitism=*/true,
@@ -1120,7 +1121,54 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
       }
     }
   }
+#endif
   {
+    std::vector<KeplerianElements<Sky>> original_elements = elements;
+    original_elements.resize(7);
+    original_elements[0].eccentricity = +6.79625267932291652e-03;
+    original_elements[0].period = +1.30532487263283881e+05 * Second;
+    original_elements[0].argument_of_periapsis =
+        +5.27733744556792139e+00 * Radian;
+    original_elements[0].mean_anomaly = +5.91131404245186154e+00 * Radian;
+
+    original_elements[1].eccentricity = +3.34301144199554076e-02;
+    original_elements[1].period = +2.09240568188101053e+05 * Second;
+    original_elements[1].argument_of_periapsis =
+        +5.06674661852635566e+00 * Radian;
+    original_elements[1].mean_anomaly = +4.22993537813846388e+00 * Radian;
+
+    original_elements[2].eccentricity = +2.00649103126773858e-02;
+    original_elements[2].period = +3.49822713004561258e+05 * Second;
+    original_elements[2].argument_of_periapsis =
+        +2.99583104427863134e+00 * Radian;
+    original_elements[2].mean_anomaly = +1.52318265231501071e+00 * Radian;
+
+    original_elements[3].eccentricity = +8.60272894492724471e-05;
+    original_elements[3].period = +5.27132035445154761e+05 * Second;
+    original_elements[3].argument_of_periapsis =
+        +1.88368604630550673e+00 * Radian;
+    original_elements[3].mean_anomaly = +4.23501859919130919e+00 * Radian;
+
+    original_elements[4].eccentricity = +2.98568079622449148e-02;
+    original_elements[4].period = +7.95715186013747239e+05 * Second;
+    original_elements[4].argument_of_periapsis =
+        +2.39519070372566611e+00 * Radian;
+    original_elements[4].mean_anomaly = +6.03882836379674348e+00 * Radian;
+
+    original_elements[5].eccentricity = +8.89174186864963886e-04;
+    original_elements[5].period = +1.06730176949346741e+06 * Second;
+    original_elements[5].argument_of_periapsis =
+        +3.81849896057992133e+00 * Radian;
+    original_elements[5].mean_anomaly = +5.04115613000941831e+00 * Radian;
+
+    original_elements[6].eccentricity = +2.80713634966325218e-02;
+    original_elements[6].period = +1.62159081833732734e+06 * Second;
+    original_elements[6].argument_of_periapsis =
+        +4.84851218150378482e+00 * Radian;
+    original_elements[6].mean_anomaly = +1.02175765334409197e+00 * Radian;
+
+    genetics::Genome great_old_one(original_elements);
+
     // Next, let's build a population of 50 minor variants of the Great Old One,
     // the Outer Gods.  Use DEMCMC to improve them.  The best of them is the
     // Blind Idiot God.
@@ -1133,7 +1181,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
       std::normal_distribution<> period_distribution(0.0, 1.0);
       std::normal_distribution<> eccentricity_distribution(0.0, 1e-4);
       for (int j = 0; j < outer_god.size(); ++j) {
-        auto perturbed_elements = great_old_one->elements()[j];
+        auto perturbed_elements = great_old_one./*->*/elements()[j];
         *perturbed_elements.period += period_distribution(engine) * Second;
         *perturbed_elements.argument_of_periapsis +=
             angle_distribution(engine) * Degree;
@@ -1153,7 +1201,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
     LOG(ERROR) << "The Blind Idiot God";
     for (int i = 0; i < the_blind_idiot_god.size(); ++i) {
       LOG(ERROR) << planet_names[i];
-      LOG(ERROR) << MakeKeplerianElements(great_old_one->elements()[i],
+      LOG(ERROR) << MakeKeplerianElements(great_old_one./*->*/elements()[i],
                                           the_blind_idiot_god[i]);
     }
   }
