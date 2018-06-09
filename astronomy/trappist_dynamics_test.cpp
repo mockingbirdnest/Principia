@@ -1098,7 +1098,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
     // based on |luca|.  The best of all of them is the Great Old One.
     std::mt19937_64 engine;
     genetics::Genome luca(elements);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 5; ++i) {
       genetics::Population population(luca,
                                       9,
                                       /*elitism=*/true,
