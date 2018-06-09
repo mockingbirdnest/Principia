@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include <map>
+#include <string>
 
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
