@@ -1,9 +1,6 @@
-# This is the result of running the optimisation in
-# TrappistDynamicsTest.DISABLED_Optimisation.  It has a χ² of 480.230613, an
-# average Δt of 62.066711 s and a maximum Δt of 1049.015659 s  for the
-# Trappist-1g transit at JD2457294.786000.
-# The inclinations are from "Early 2017 observations of TRAPPIST-1 with
-# Spitzer", Delrez et al., 2018.
+# Most of the data are from  "The nature of the TRAPPIST-1 exoplanets", Grimm et
+# al., 2018.  The inclinations and periods are from "Early 2017 observations of
+# TRAPPIST-1 with Spitzer", Delrez et al., 2018.
 # The longitudes of the ascending nodes are not known, but their distribution is
 # described in "Planet-planet occultations in TRAPPIST-1 and other exoplanet
 # systems", Luger et al., 2017, figure 7.  We take them from a normal
@@ -20,84 +17,84 @@ initial_state {
       name                          : "Trappist-1b"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0048307690127704187
-        period                      : "1.5107823909314596 d"
+        eccentricity                : 0.00622
+        period                      : "1.51087637 d"
         inclination                 : "89.56 deg"
         longitude_of_ascending_node : "0.0185188 deg"
-        argument_of_periapsis       : "130.41241510505034 deg"
-        mean_anomaly                : "152.30493209125844 deg"
+        argument_of_periapsis       : "336.86 deg"
+        mean_anomaly                : "203.12 deg"
       }
     }
     body {
       name                          : "Trappist-1c"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0102229527025948924
-        period                      : "2.4219593569964477 d"
+        eccentricity                : 0.00654
+        period                      : "2.42180746 d"
         inclination                 : "89.70 deg"
         longitude_of_ascending_node : "-0.014898 deg"
-        argument_of_periapsis       : "276.99039448302317 deg"
-        mean_anomaly                : "255.23943275805347 deg"
+        argument_of_periapsis       : "282.45 deg"
+        mean_anomaly                : "69.86 deg"
       }
     }
     body {
       name                          : "Trappist-1d"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0102900864761148025
-        period                      : "4.0489609181850399 d"
+        eccentricity                : 0.00837
+        period                      : "4.049959 d"
         inclination                 : "89.89 deg"
         longitude_of_ascending_node : "-0.0383142 deg"
-        argument_of_periapsis       : "205.80731354984560 deg"
-        mean_anomaly                : "69.157578880037901 deg"
+        argument_of_periapsis       : "-8.73 deg"
+        mean_anomaly                : "173.92 deg"
       }
     }
     body {
       name                          : "Trappist-1e"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0084343419282954714
-        period                      : "6.0996489748067244 d"
+        eccentricity                : 0.00510
+        period                      : "6.099043 d"
         inclination                 : "89.736 deg"
         longitude_of_ascending_node : "-0.0572232 deg"
-        argument_of_periapsis       : "287.53933493035172 deg"
-        mean_anomaly                : "66.088957899187049 deg"
+        argument_of_periapsis       : "108.37 deg"
+        mean_anomaly                : "347.95 deg"
       }
     }
     body {
       name                          : "Trappist-1f"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0135674982095662922
-        period                      : "9.2091402318231013 d"
+        eccentricity                : 0.01007
+        period                      : "9.205585 d"
         inclination                 : "89.719 deg"
         longitude_of_ascending_node : "-0.0032286 deg"
-        argument_of_periapsis       : "226.37116080030252 deg"
-        mean_anomaly                : "251.91419913031600 deg"
+        argument_of_periapsis       : "368.81 deg"
+        mean_anomaly                : "113.61 deg"
       }
     }
     body {
       name                          : "Trappist-1g"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0032059439740412714
-        period                      : "12.352112961537744 d"
+        eccentricity                : 0.00208
+        period                      : "12.354473 d"
         inclination                 : "89.721 deg"
         longitude_of_ascending_node : "-0.00473575 deg"
-        argument_of_periapsis       : "287.33533541133737 deg"
-        mean_anomaly                : "212.47470770242744 deg"
+        argument_of_periapsis       : "191.34 deg"
+        mean_anomaly                : "265.08 deg"
       }
     }
     body {
       name                          : "Trappist-1h"
       parent                        : "Trappist-1"
       elements {
-        eccentricity                : 0.0106435213309643423
-        period                      : "18.770611104612445 d"
+        eccentricity                : 0.00567
+        period                      : "18.767953 d"
         inclination                 : "89.796 deg"
         longitude_of_ascending_node : "0.0394288 deg"
-        argument_of_periapsis       : "276.14855700275168 deg"
-        mean_anomaly                : "64.557492014163081 deg"
+        argument_of_periapsis       : "338.92 deg"
+        mean_anomaly                : "269.72 deg"
       }
     }
   }
