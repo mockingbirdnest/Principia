@@ -19,6 +19,7 @@ namespace principia {
 using astronomy::ICRFJ2000Equator;
 using base::FindOrDie;
 using physics::SolarSystem;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
 using quantities::GravitationalParameter;
@@ -27,6 +28,7 @@ using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
+using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
@@ -85,6 +87,8 @@ void GenerateKopernicusForSlippist1(
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
+    serialization::InitialState::Keplerian::Body::Elements const& elements =
+        solar_system.keplerian_initial_state_message(name).elements();
     bool const is_star =
         !solar_system.keplerian_initial_state_message(name).has_parent();
     bool const is_kerbin =
@@ -114,6 +118,12 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "      %description = "
                    << FindOrDie(body_description_map, name) << "\n";
     if (!is_star) {
+      kopernicus_cfg
+          << "      %initialRotation = "
+          << DebugString((ParseQuantity<Angle>(elements.argument_of_periapsis()) +
+                          ParseQuantity<Angle>(elements.mean_anomaly())) /
+                         Degree)
+          << "\n";
       kopernicus_cfg << "      %tidallyLocked = false\n";
     }
     kopernicus_cfg << "    }\n";
