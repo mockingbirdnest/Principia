@@ -37,13 +37,12 @@ using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Second;
 
+namespace tools {
+
 namespace {
 constexpr char cfg[] = "cfg";
 constexpr char proto_txt[] = "proto.txt";
 }  // namespace
-
-namespace tools {
-namespace internal_generate_configuration {
 
 std::string NormalizeLength(std::string const& s) {
   // If the string contains an R, it's expressed using astronomical radii.
@@ -248,6 +247,5 @@ void GenerateConfiguration(std::string const& game_epoch,
   numerics_blueprint_cfg << "}\n";
 }
 
-}  // namespace internal_generate_configuration
 }  // namespace tools
 }  // namespace principia
