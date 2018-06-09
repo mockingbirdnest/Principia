@@ -276,10 +276,22 @@ SolarSystem<Frame>::gravity_model_message(std::string const& name) const {
 }
 
 template<typename Frame>
+bool SolarSystem<Frame>::has_cartesian_initial_state_message(
+    std::string const& name) const {
+  return Contains(cartesian_initial_state_map_, name);
+}
+
+template<typename Frame>
 serialization::InitialState::Cartesian::Body const&
 SolarSystem<Frame>::cartesian_initial_state_message(
     std::string const& name) const {
   return *FindOrDie(cartesian_initial_state_map_, name);
+}
+
+template<typename Frame>
+bool SolarSystem<Frame>::has_keplerian_initial_state_message(
+    std::string const& name) const {
+  return Contains(keplerian_initial_state_map_, name);
 }
 
 template<typename Frame>
