@@ -26,6 +26,7 @@ using astronomy::J2000;
 using astronomy::JulianDate;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::DebugString;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
@@ -44,7 +45,7 @@ constexpr char proto_txt[] = "proto.txt";
 namespace tools {
 namespace internal_generate_configuration {
 
-std::string NormaliseLength(std::string const& s) {
+std::string NormalizeLength(std::string const& s) {
   // If the string contains an R, it's expressed using astronomical radii.
   // Convert to kilometers.
   if (s.find('R') == std::string::npos) {
@@ -53,8 +54,7 @@ std::string NormaliseLength(std::string const& s) {
     Length const length = ParseQuantity<Length>(s);
     std::ostringstream stream;
     stream << std::scientific
-           << std::setprecision(
-                  std::numeric_limits<double>::max_digits10)
+           << std::setprecision(6)  // Accuracy of the conventional values.
            << length / Kilo(Metre) << " km";
     return stream.str();
   }
@@ -92,8 +92,7 @@ void GenerateConfiguration(std::string const& game_epoch,
           GravitationalConstant * mass;
       gravity_model_cfg << "    gravitational_parameter = "
                         << std::scientific
-                        << std::setprecision(
-                               std::numeric_limits<double>::max_digits10)
+                        << std::setprecision(7)  // Acuracy of G.
                         << gravitational_parameter /
                                (Pow<3>(Kilo(Metre)) / Pow<2>(Second))
                         << " km^3/s^2\n";
@@ -104,7 +103,7 @@ void GenerateConfiguration(std::string const& game_epoch,
     }
     if (body.has_mean_radius()) {
       gravity_model_cfg << "    mean_radius             = "
-                        << NormaliseLength(body.mean_radius()) << "\n";
+                        << NormalizeLength(body.mean_radius()) << "\n";
     }
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
@@ -131,7 +130,7 @@ void GenerateConfiguration(std::string const& game_epoch,
     }
     if (body.has_reference_radius()) {
       gravity_model_cfg << "    reference_radius        = "
-                        << NormaliseLength(body.reference_radius()) << "\n";
+                        << NormalizeLength(body.reference_radius()) << "\n";
     }
     gravity_model_cfg << "  }\n";
   }

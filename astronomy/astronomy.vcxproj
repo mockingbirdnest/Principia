@@ -40,7 +40,7 @@
     <Text Include="test_initial_state_two_bodies_elliptical.proto.txt" />
     <Text Include="trappist_gravity_model.proto.txt" />
     <Text Include="trappist_initial_state_jd_2457000_000000000.proto.txt" />
-    <Text Include="trappist_preoptimisation_initial_state_jd_2457000_000000000.proto.txt" />
+    <Text Include="trappist_preoptimization_initial_state_jd_2457000_000000000.proto.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="date_time.hpp" />

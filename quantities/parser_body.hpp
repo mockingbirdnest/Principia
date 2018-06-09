@@ -115,9 +115,9 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == "km") {
     return Unit(si::Kilo(si::Metre));
   } else if (s == u8"R🜨") {
-    return Unit(astronomy::EarthRadius);
+    return Unit(astronomy::EarthEquatorialRadius);
   } else if (s == u8"R☉") {
-    return Unit(astronomy::SolarRadius);
+    return Unit(astronomy::SolarEquatorialRadius);
   } else if (s == "au") {
     return Unit(si::AstronomicalUnit);
   // Units of mass.
