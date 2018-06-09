@@ -7,6 +7,7 @@
 #include "glog/logging.h"
 #include "quantities/parser.hpp"
 #include "tools/generate_configuration.hpp"
+#include "tools/generate_kopernicus.hpp"
 #include "tools/generate_profiles.hpp"
 
 int main(int argc, char const* argv[]) {
@@ -50,6 +51,22 @@ int main(int argc, char const* argv[]) {
                                             numerics_blueprint_stem,
                                             needs);
     return 0;
+  } else if (command == "generate_kopernicus") {
+    if (argc != 4) {
+      // tools.exe generate_kopernicus \
+      //     trappist_gravity_model \
+      //     trappist_initial_state_jd_2457000_000000000
+      std::cerr << "Usage: " << argv[0] << " " << argv[1] << " "
+                << "gravity_model_stem "
+                << "initial_state_stem\n";
+      return 5;
+    }
+    std::string const gravity_model_stem = argv[2];
+    std::string const initial_state_stem = argv[3];
+    principia::tools::GenerateKopernicusForSlippist1(gravity_model_stem,
+                                                     initial_state_stem);
+    return 0;
+
   } else if (command == "generate_profiles") {
     if (argc != 2) {
       // tools.exe generate_profiles

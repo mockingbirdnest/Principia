@@ -9,12 +9,14 @@
   <ItemGroup>
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="generate_configuration.cpp" />
+    <ClCompile Include="generate_kopernicus.cpp" />
     <ClCompile Include="generate_profiles.cpp" />
     <ClCompile Include="journal_proto_processor.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="generate_configuration.hpp" />
+    <ClInclude Include="generate_kopernicus.hpp" />
     <ClInclude Include="generate_profiles.hpp" />
     <ClInclude Include="journal_proto_processor.hpp" />
   </ItemGroup>
