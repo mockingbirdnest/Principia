@@ -11,31 +11,52 @@ gravity_model {
   # Planets.  Data from "The nature of the TRAPPIST-1 exoplanets", Grimm et al.,
   # 2018.
   body {
-    name : "Trappist-1b"
-    mass : "1.017 M🜨"
+    name        : "Trappist-1b"
+    mass        : "1.017 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "1.121 R🜨"
+    angular_frequency       : "238.277037187806 deg / d"
   }
   body {
-    name : "Trappist-1c"
-    mass : "1.156 M🜨"
+    name        : "Trappist-1c"
+    mass        : "1.156 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "1.095 R🜨"
+    angular_frequency       : "148.647858966326 deg / d"
   }
   body {
-    name : "Trappist-1d"
-    mass : "0.297 M🜨"
+    name        : "Trappist-1d"
+    mass        : "0.297 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "0.784 R🜨"
+    angular_frequency       : "88.8950742763116 deg / d"
   }
   body {
-    name : "Trappist-1e"
-    mass : "0.772 M🜨"
+    name        : "Trappist-1e"
+    mass        : "0.772 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "0.910 R🜨"
+    angular_frequency       : "59.0187818530656 deg / d"
   }
   body {
-    name : "Trappist-1f"
-    mass : "0.934 M🜨"
+    name        : "Trappist-1f"
+    mass        : "0.934 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "1.046 R🜨"
+    angular_frequency       : "39.1012613409510 deg / d"
   }
   body {
-    name : "Trappist-1g"
-    mass : "1.148 M🜨"
+    name        : "Trappist-1g"
+    mass        : "1.148 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "1.148 R🜨"
+    angular_frequency       : "29.1425060266989 deg / d"
   }
   body {
-    name : "Trappist-1h"
-    mass : "0.331 M🜨"
+    name        : "Trappist-1h"
+    mass        : "0.331 M🜨"
+    reference_instant       : "JD2450000.000000000"
+    mean_radius : "0.773 R🜨"
+    angular_frequency       : "19.1837412411643 deg / d"
   }
 }
