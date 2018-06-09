@@ -94,8 +94,10 @@ class SolarSystem final {
   // The configuration protocol buffers for the body named |name|.
   serialization::GravityModel::Body const& gravity_model_message(
       std::string const& name) const;
+  bool has_cartesian_initial_state_message(std::string const& name) const;
   serialization::InitialState::Cartesian::Body const&
   cartesian_initial_state_message(std::string const& name) const;
+  bool has_keplerian_initial_state_message(std::string const& name) const;
   serialization::InitialState::Keplerian::Body const&
   keplerian_initial_state_message(std::string const& name) const;
 

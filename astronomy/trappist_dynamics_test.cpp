@@ -1045,11 +1045,11 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 }
 #endif
 
-TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
+TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   SolarSystem<Sky> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "trappist_preoptimisation_initial_state_jd_2457000_000000000"
+          "trappist_preoptimization_initial_state_jd_2457000_000000000"
           ".proto.txt");
 
   auto planet_names = system.names();

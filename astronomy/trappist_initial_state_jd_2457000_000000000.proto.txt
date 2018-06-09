@@ -1,5 +1,5 @@
-# This is the result of running the optimisation in
-# TrappistDynamicsTest.DISABLED_Optimisation.  It has a χ² of 480.230613, an
+# This is the result of running the optimization in
+# TrappistDynamicsTest.DISABLED_Optimization.  It has a χ² of 480.230613, an
 # average Δt of 62.066711 s and a maximum Δt of 1049.015659 s  for the
 # Trappist-1g transit at JD2457294.786000.
 # The inclinations are from "Early 2017 observations of TRAPPIST-1 with
