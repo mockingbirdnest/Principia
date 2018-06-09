@@ -36,6 +36,7 @@ namespace {
 
 constexpr char cfg[] = "cfg";
 constexpr char proto_txt[] = "proto.txt";
+constexpr char kerbin[] = "Kerbin";
 
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
@@ -60,7 +61,7 @@ std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1b", "Beta"},
     {"Trappist-1c", "Charlie"},
     {"Trappist-1d", "Delta"},
-    {"Trappist-1e", "Echo"},
+    {"Trappist-1e", "Kerbin"},
     {"Trappist-1f", "Foxtrot"},
     {"Trappist-1g", "Golf"},
     {"Trappist-1h", "Hotel"}};
@@ -80,38 +81,42 @@ void GenerateKopernicusForSlippist1(
   std::ofstream kopernicus_cfg(
       (directory / (gravity_model_stem + "_slippist1")).replace_extension(cfg));
   CHECK(kopernicus_cfg.good());
-  kopernicus_cfg << "@Kopernicus:FOR[Principia]:AFTER[aSLIPPIST-1] {\n";
+  kopernicus_cfg << "@Kopernicus:AFTER[aSLIPPIST-1] {\n";
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     bool const is_star =
         !solar_system.keplerian_initial_state_message(name).has_parent();
-    kopernicus_cfg << "@Body[" << FindOrDie(body_name_map, name) << "] {\n";
-    if (is_star) {
-      kopernicus_cfg << "  @cbNameLater = " << name << "\n";
+    bool const is_kerbin =
+        FindOrDie(body_name_map, name) == kerbin;
+    kopernicus_cfg << "  @Body[" << FindOrDie(body_name_map, name) << "] {\n";
+    if (is_star || is_kerbin) {
+      kopernicus_cfg << "    %cbNameLater = " << name << "\n";
+      kopernicus_cfg << "    !displayName = delete\n";
     } else {
-      kopernicus_cfg << "  @name = " << name << "\n";
+      kopernicus_cfg << "    @name = " << name << "\n";
     }
-    kopernicus_cfg << "  @Properties {\n";
+    kopernicus_cfg << "    @Properties {\n";
     if (is_star) {
-      kopernicus_cfg << "    !mass = delete\n";
+      kopernicus_cfg << "      !mass = delete\n";
     } else {
-      kopernicus_cfg << "    !geeASL = delete\n";
+      kopernicus_cfg << "      !geeASL = delete\n";
     }
-    kopernicus_cfg << "    %gravParameter = "
+    kopernicus_cfg << "      %gravParameter = "
                    << DebugString(GravitationalConstant *
                                   ParseQuantity<Mass>(body.mass()) /
                                   SIUnit<GravitationalParameter>())
                    << "\n";
-    kopernicus_cfg << "    %radius = "
+    kopernicus_cfg << "      %radius = "
                    << DebugString(ParseQuantity<Length>(body.mean_radius()) /
                                   Metre)
                    << "\n";
-    kopernicus_cfg << "    %description = "
+    kopernicus_cfg << "      %description = "
                    << FindOrDie(body_description_map, name) << "\n";
     if (!is_star) {
-      kopernicus_cfg << "    %tidallyLocked = false\n";
+      kopernicus_cfg << "      %tidallyLocked = false\n";
     }
+    kopernicus_cfg << "    }\n";
     kopernicus_cfg << "  }\n";
   }
   kopernicus_cfg << "}\n";

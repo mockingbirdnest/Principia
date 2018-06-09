@@ -42,7 +42,6 @@ namespace tools {
 namespace {
 constexpr char cfg[] = "cfg";
 constexpr char proto_txt[] = "proto.txt";
-constexpr char sun[] = "Sun";
 }  // namespace
 
 std::string NormalizeLength(std::string const& s) {
@@ -79,12 +78,8 @@ void GenerateConfiguration(std::string const& game_epoch,
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
-    bool const is_star =
-        solar_system.has_keplerian_initial_state_message(name) &&
-        !solar_system.keplerian_initial_state_message(name).has_parent();
     gravity_model_cfg << "  body {\n";
-    gravity_model_cfg << "    name                    = "
-                      << (is_star ? sun : name) << "\n";
+    gravity_model_cfg << "    name                    = " << name << "\n";
     if (body.has_gravitational_parameter()) {
       gravity_model_cfg << "    gravitational_parameter = "
                         << body.gravitational_parameter() << "\n";
@@ -167,12 +162,8 @@ void GenerateConfiguration(std::string const& game_epoch,
     for (int i = 0; i < barycentric_system.bodies.size(); ++i) {
       auto const& body = barycentric_system.bodies[i];
       auto const& dof = barycentric_system.degrees_of_freedom[i];
-      bool const is_star =
-          !solar_system.keplerian_initial_state_message(body->name())
-               .has_parent();
       initial_state_cfg << "  body {\n";
-      initial_state_cfg << "    name = " << (is_star ? sun : body->name())
-                        << "\n";
+      initial_state_cfg << "    name = " << body->name() << "\n";
       initial_state_cfg << "    x    = " << displacement(dof).x << "\n";
       initial_state_cfg << "    y    = " << displacement(dof).y << "\n";
       initial_state_cfg << "    z    = " << displacement(dof).z << "\n";
