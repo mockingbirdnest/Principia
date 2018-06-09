@@ -54,7 +54,7 @@ std::string NormalizeLength(std::string const& s) {
     Length const length = ParseQuantity<Length>(s);
     std::ostringstream stream;
     stream << std::scientific
-           << std::setprecision(6)  // Accuracy of the conventional values.
+           << std::setprecision(std::numeric_limits<double>::max_digits10)
            << length / Kilo(Metre) << " km";
     return stream.str();
   }
@@ -92,7 +92,8 @@ void GenerateConfiguration(std::string const& game_epoch,
           GravitationalConstant * mass;
       gravity_model_cfg << "    gravitational_parameter = "
                         << std::scientific
-                        << std::setprecision(7)  // Acuracy of G.
+                        << std::setprecision(
+                               std::numeric_limits<double>::max_digits10)
                         << gravitational_parameter /
                                (Pow<3>(Kilo(Metre)) / Pow<2>(Second))
                         << " km^3/s^2\n";
