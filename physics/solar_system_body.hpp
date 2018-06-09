@@ -470,7 +470,7 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
 }
 
 #define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \
-  if (elements.##field) {                                       \
+  if (elements.field) {                                       \
     body_elements->set_##field(DebugString(*elements.field)); \
   }
 
