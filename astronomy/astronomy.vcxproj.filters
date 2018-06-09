@@ -53,6 +53,9 @@
     <None Include="trappist_numerics_blueprint.cfg">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="trappist_gravity_model_slippist1.cfg">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="sol_initial_state_jd_2433282_500000000.proto.txt">

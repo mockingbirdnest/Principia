@@ -11,6 +11,7 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 
@@ -18,10 +19,15 @@ using astronomy::ICRFJ2000Equator;
 using base::FindOrDie;
 using physics::SolarSystem;
 using quantities::AngularFrequency;
+using quantities::DebugString;
+using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
 using quantities::ParseQuantity;
+using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
+using quantities::si::Metre;
+using quantities::si::Radian;
 
 namespace tools {
 
@@ -34,13 +40,20 @@ std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
      "Earth; also known as 2MUCD 12171 and 2MASS J23062928-0502285."},
-    {"Trappist-1b", ""},
-    {"Trappist-1c", ""},
-    {"Trappist-1d", ""},
-    {"Trappist-1e", ""},
-    {"Trappist-1f", ""},
-    {"Trappist-1g", ""},
-    {"Trappist-1h", ""}};
+    {"Trappist-1b",
+     "Requires envelope of volatiles in the form of a thick atmosphere.  Above "
+     "the runaway greenhouse limit."},
+    {"Trappist-1c", "Likely has a rocky interior."},
+    {"Trappist-1d",
+     "Requires envelope of volatiles in the form of a thick atmosphere, oceans "
+     "or ice."},
+    {"Trappist-1e", "Likely has a rocky interior."},
+    {"Trappist-1f",
+     "Requires envelope of volatiles in the form of oceans or ice."},
+    {"Trappist-1g",
+     "Requires envelope of volatiles in the form of oceans or ice."},
+    {"Trappist-1h",
+     "Requires envelope of volatiles in the form of oceans or ice."}};
 std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1", "Sun"},
     {"Trappist-1b", "Beta"},
@@ -74,7 +87,9 @@ void GenerateKopernicusForSlippist1(
         !solar_system.keplerian_initial_state_message(name).has_parent();
     kopernicus_cfg << "@Body[" << FindOrDie(body_name_map, name) << "] {\n";
     if (is_star) {
-      kopernicus_cfg << "  @cbNameLater =" << name << "\n";
+      kopernicus_cfg << "  @cbNameLater = " << name << "\n";
+    } else {
+      kopernicus_cfg << "  @name = " << name << "\n";
     }
     kopernicus_cfg << "  @Properties {\n";
     if (is_star) {
@@ -83,19 +98,17 @@ void GenerateKopernicusForSlippist1(
       kopernicus_cfg << "    !geeASL = delete\n";
     }
     kopernicus_cfg << "    %gravParameter = "
-                   << GravitationalConstant * ParseQuantity<Mass>(body.mass())
+                   << DebugString(GravitationalConstant *
+                                  ParseQuantity<Mass>(body.mass()) /
+                                  SIUnit<GravitationalParameter>())
                    << "\n";
-    kopernicus_cfg << "    %radius = " << body.mean_radius() << "\n";
+    kopernicus_cfg << "    %radius = "
+                   << DebugString(ParseQuantity<Length>(body.mean_radius()) /
+                                  Metre)
+                   << "\n";
     kopernicus_cfg << "    %description = "
                    << FindOrDie(body_description_map, name) << "\n";
-    kopernicus_cfg << "    %rotationPeriod = "
-                   << 2 * π /
-                          ParseQuantity<AngularFrequency>(
-                              body.angular_frequency())
-                   << "\n";
     if (!is_star) {
-      kopernicus_cfg << "    %initialRotation = " << body.reference_angle()
-                     << "\n";
       kopernicus_cfg << "    %tidallyLocked = false\n";
     }
     kopernicus_cfg << "  }\n";
