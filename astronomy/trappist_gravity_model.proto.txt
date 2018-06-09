@@ -1,62 +1,111 @@
 gravity_model {
   solar_system_frame : SKY
 
-  # Star.  Data from "Early 2017 observations of TRAPPIST-1 with Spitzer",
+  # Star.
+  # Mass and radius from "Early 2017 observations of TRAPPIST-1 with Spitzer",
   # Delrez et al., 2018.
+  # Angular frequency from "Frequent flaring in the TRAPPIST-1 system — unsuited
+  # for life?", Vida et al., 2017.
   body {
-    name : "Trappist-1"
-    mass : "0.0890 M☉"
+    name                 : "Trappist-1"
+    mass                 : "0.0890 M☉"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "0.1210 R☉"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "109.256 deg / d"
   }
 
-  # Planets.  Data from "The nature of the TRAPPIST-1 exoplanets", Grimm et al.,
-  # 2018.
+  # Planets.
+  # Masses and radii from "The nature of the TRAPPIST-1 exoplanets", Grimm et
+  # al., 2018.
+  # Angular frequencies from a linear fit of the transits over 100 years,
+  # assuming tidal locking.
+  # J2 from a log-normal distribution with median 0.001 (rougthly the J2 of
+  # Earth) and σ = 1.
   body {
-    name        : "Trappist-1b"
-    mass        : "1.017 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "1.121 R🜨"
-    angular_frequency       : "238.277037187806 deg / d"
+    name                 : "Trappist-1b"
+    mass                 : "1.017 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "1.121 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "238.277037187806 deg / d"
+    j2                   : 0.000625831
+    reference_radius     : "1.121 R🜨"
   }
   body {
-    name        : "Trappist-1c"
-    mass        : "1.156 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "1.095 R🜨"
-    angular_frequency       : "148.647858966326 deg / d"
+    name                 : "Trappist-1c"
+    mass                 : "1.156 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "1.095 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "148.647858966326 deg / d"
+    j2                   : 0.000937274
+    reference_radius     : "1.095 R🜨"
   }
   body {
-    name        : "Trappist-1d"
-    mass        : "0.297 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "0.784 R🜨"
-    angular_frequency       : "88.8950742763116 deg / d"
+    name                 : "Trappist-1d"
+    mass                 : "0.297 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "0.784 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "88.8950742763116 deg / d"
+    j2                   : 0.00189136
+    reference_radius     : "0.784 R🜨"
   }
   body {
     name        : "Trappist-1e"
-    mass        : "0.772 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "0.910 R🜨"
-    angular_frequency       : "59.0187818530656 deg / d"
+    mass                     : "0.772 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "0.910 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "59.0187818530656 deg / d"
+    j2                   : 0.000475803
+    reference_radius     : "0.910 R🜨"
   }
   body {
-    name        : "Trappist-1f"
-    mass        : "0.934 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "1.046 R🜨"
-    angular_frequency       : "39.1012613409510 deg / d"
+    name                 : "Trappist-1f"
+    mass                 : "0.934 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "1.046 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "39.1012613409510 deg / d"
+    j2                   : 0.00264731
+    reference_radius     : "1.046 R🜨"
   }
   body {
-    name        : "Trappist-1g"
-    mass        : "1.148 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "1.148 R🜨"
-    angular_frequency       : "29.1425060266989 deg / d"
+    name                 : "Trappist-1g"
+    mass                 : "1.148 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "1.148 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "29.1425060266989 deg / d"
+    j2                   : 0.0000873713
+    reference_radius     : "1.148 R🜨"
   }
   body {
-    name        : "Trappist-1h"
-    mass        : "0.331 M🜨"
-    reference_instant       : "JD2450000.000000000"
-    mean_radius : "0.773 R🜨"
-    angular_frequency       : "19.1837412411643 deg / d"
+    name                 : "Trappist-1h"
+    mass                 : "0.331 M🜨"
+    reference_instant    : "JD2450000.000000000"
+    mean_radius          : "0.773 R🜨"
+    axis_right_ascension : "90 deg"
+    axis_declination     : "0 deg"
+    reference_angle      : "0 deg"
+    angular_frequency    : "19.1837412411643 deg / d"
+    j2                   : 0.00166162
+    reference_radius     : "0.773 R🜨"
   }
 }

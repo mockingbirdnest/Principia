@@ -114,15 +114,19 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Metre);
   } else if (s == "km") {
     return Unit(si::Kilo(si::Metre));
+  } else if (s == u8"R🜨") {
+    return Unit(astronomy::EarthRadius);
+  } else if (s == u8"R☉") {
+    return Unit(astronomy::SolarRadius);
   } else if (s == "au") {
     return Unit(si::AstronomicalUnit);
   // Units of mass.
   } else if (s == "kg") {
     return Unit(si::Kilogram);
-  } else if (s == u8"M☉") {
-    return Unit(astronomy::SolarMass);
   } else if (s == u8"M🜨") {
     return Unit(astronomy::EarthMass);
+  } else if (s == u8"M☉") {
+    return Unit(astronomy::SolarMass);
   // Units of time.
   } else if (s == "ms") {
     return Unit(si::Milli(si::Second));
