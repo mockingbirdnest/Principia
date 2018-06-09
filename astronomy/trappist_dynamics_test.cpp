@@ -499,10 +499,10 @@ KeplerianElements<Sky> MakeKeplerianElements(
   elements.inclination = blueprint.inclination;
   elements.longitude_of_ascending_node = blueprint.longitude_of_ascending_node;
   // The elements that are computed from the parameters.
-  *elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
-  *elements.period = parameters.period;
-  *elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
-  *elements.mean_anomaly =
+  elements.eccentricity = Sqrt(Pow<2>(parameters.x) + Pow<2>(parameters.y));
+  elements.period = parameters.period;
+  elements.argument_of_periapsis = ArcTan(parameters.y, parameters.x);
+  elements.mean_anomaly =
       π / 2 * Radian - *elements.argument_of_periapsis -
       (2 * π * Radian) * parameters.time_to_first_transit / *elements.period;
   return elements;
@@ -1049,7 +1049,8 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimisation) {
   SolarSystem<Sky> const system(
       SOLUTION_DIR / "astronomy" / "trappist_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
-          "trappist_initial_state_jd_2457000_000000000.proto.txt");
+          "trappist_preoptimisation_initial_state_jd_2457000_000000000"
+          ".proto.txt");
 
   auto planet_names = system.names();
   planet_names.erase(
