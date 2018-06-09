@@ -12,7 +12,10 @@
 #include "glog/logging.h"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/constants.hpp"
+#include "quantities/named_quantities.hpp"
 #include "quantities/parser.hpp"
+#include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/astronomy.pb.h"
 
@@ -23,6 +26,14 @@ using astronomy::J2000;
 using astronomy::JulianDate;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
+using quantities::GravitationalParameter;
+using quantities::Length;
+using quantities::Mass;
+using quantities::ParseQuantity;
+using quantities::Pow;
+using quantities::constants::GravitationalConstant;
+using quantities::si::Kilo;
+using quantities::si::Metre;
 using quantities::si::Second;
 
 namespace {
@@ -32,6 +43,22 @@ constexpr char proto_txt[] = "proto.txt";
 
 namespace tools {
 namespace internal_generate_configuration {
+
+std::string NormaliseLength(std::string const& s) {
+  // If the string contains an R, it's expressed using astronomical radii.
+  // Convert to kilometers.
+  if (s.find('R') == std::string::npos) {
+    return s;
+  } else {
+    Length const length = ParseQuantity<Length>(s);
+    std::ostringstream stream;
+    stream << std::scientific
+           << std::setprecision(
+                  std::numeric_limits<double>::max_digits10)
+           << length / Kilo(Metre) << " km";
+    return stream.str();
+  }
+}
 
 void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& gravity_model_stem,
@@ -55,15 +82,29 @@ void GenerateConfiguration(std::string const& game_epoch,
     gravity_model_cfg << "  body {\n";
     gravity_model_cfg << "    name                    = "
                       << name << "\n";
-    gravity_model_cfg << "    gravitational_parameter = "
-                      << body.gravitational_parameter() << "\n";
+    if (body.has_gravitational_parameter()) {
+      gravity_model_cfg << "    gravitational_parameter = "
+                        << body.gravitational_parameter() << "\n";
+    } else {
+      // If the mass was provided, convert to a gravitational parameter.
+      Mass const mass = ParseQuantity<Mass>(body.mass());
+      GravitationalParameter const gravitational_parameter =
+          GravitationalConstant * mass;
+      gravity_model_cfg << "    gravitational_parameter = "
+                        << std::scientific
+                        << std::setprecision(
+                               std::numeric_limits<double>::max_digits10)
+                        << gravitational_parameter /
+                               (Pow<3>(Kilo(Metre)) / Pow<2>(Second))
+                        << " km^3/s^2\n";
+    }
     if (body.has_reference_instant()) {
       gravity_model_cfg << "    reference_instant       = "
                         << body.reference_instant() << "\n";
     }
     if (body.has_mean_radius()) {
       gravity_model_cfg << "    mean_radius             = "
-                        << body.mean_radius() << "\n";
+                        << NormaliseLength(body.mean_radius()) << "\n";
     }
     if (body.has_axis_right_ascension()) {
       gravity_model_cfg << "    axis_right_ascension    = "
@@ -90,7 +131,7 @@ void GenerateConfiguration(std::string const& game_epoch,
     }
     if (body.has_reference_radius()) {
       gravity_model_cfg << "    reference_radius        = "
-                        << body.reference_radius() << "\n";
+                        << NormaliseLength(body.reference_radius()) << "\n";
     }
     gravity_model_cfg << "  }\n";
   }
