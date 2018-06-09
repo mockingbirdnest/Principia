@@ -40,6 +40,14 @@ constexpr char cfg[] = "cfg";
 constexpr char proto_txt[] = "proto.txt";
 constexpr char kerbin[] = "Kerbin";
 
+std::map<std::string, Angle> const body_angle = {
+    {"Trappist-1b", 25 * Degree},
+    {"Trappist-1c", 0 * Degree},
+    {"Trappist-1d", 180 * Degree},
+    {"Trappist-1e", 65 * Degree},
+    {"Trappist-1f", 90 * Degree},
+    {"Trappist-1g", 45 * Degree},
+    {"Trappist-1h", 0 * Degree}};
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
@@ -60,8 +68,8 @@ std::map<std::string, std::string> const body_description_map = {
      "Requires envelope of volatiles in the form of oceans or ice."}};
 std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1", "Sun"},
-    {"Trappist-1b", "Beta"},
-    {"Trappist-1c", "Charlie"},
+    {"Trappist-1b", "Charlie"},  // Not a typo, swap b and c.
+    {"Trappist-1c", "Beta"},
     {"Trappist-1d", "Delta"},
     {"Trappist-1e", "Kerbin"},
     {"Trappist-1f", "Foxtrot"},
@@ -96,7 +104,6 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "  @Body[" << FindOrDie(body_name_map, name) << "] {\n";
     if (is_star || is_kerbin) {
       kopernicus_cfg << "    %cbNameLater = " << name << "\n";
-      kopernicus_cfg << "    !displayName = delete\n";
     } else {
       kopernicus_cfg << "    @name = " << name << "\n";
     }
@@ -105,6 +112,9 @@ void GenerateKopernicusForSlippist1(
       kopernicus_cfg << "      !mass = delete\n";
     } else {
       kopernicus_cfg << "      !geeASL = delete\n";
+    }
+    if (is_star || is_kerbin) {
+      kopernicus_cfg << "      @displayName = " << name << "\n";
     }
     kopernicus_cfg << "      %gravParameter = "
                    << DebugString(GravitationalConstant *
@@ -118,15 +128,29 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "      %description = "
                    << FindOrDie(body_description_map, name) << "\n";
     if (!is_star) {
-      kopernicus_cfg
-          << "      %initialRotation = "
-          << DebugString((ParseQuantity<Angle>(elements.argument_of_periapsis()) +
-                          ParseQuantity<Angle>(elements.mean_anomaly())) /
-                         Degree)
-          << "\n";
       kopernicus_cfg << "      %tidallyLocked = false\n";
     }
     kopernicus_cfg << "    }\n";
+    kopernicus_cfg << "  }\n";
+  }
+  kopernicus_cfg << "}\n";
+
+  kopernicus_cfg << "@principia_gravity_model:FOR[Principia] {\n";
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    serialization::InitialState::Keplerian::Body::Elements const& elements =
+        solar_system.keplerian_initial_state_message(name).elements();
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    kopernicus_cfg << "  @body[" << name << "] {\n";
+    if (!is_star) {
+      kopernicus_cfg << "      @reference_angle = "
+                     << ParseQuantity<Angle>(elements.argument_of_periapsis()) +
+                            ParseQuantity<Angle>(elements.mean_anomaly()) +
+                            FindOrDie(body_angle, name)
+                     << "\n";
+    }
     kopernicus_cfg << "  }\n";
   }
   kopernicus_cfg << "}\n";
