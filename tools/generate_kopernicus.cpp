@@ -43,8 +43,8 @@ constexpr char proto_txt[] = "proto.txt";
 constexpr char kerbin[] = "Kerbin";
 
 std::map<std::string, Angle> const body_angle = {
-    {"Trappist-1b", 0 * Degree},
-    {"Trappist-1c", -45 * Degree},
+    {"Trappist-1b", -155 * Degree},
+    {"Trappist-1c", 135 * Degree},
     {"Trappist-1d", 180 * Degree},
     {"Trappist-1e", 65 * Degree},
     {"Trappist-1f", 90 * Degree},
