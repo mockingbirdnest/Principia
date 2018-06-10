@@ -7,6 +7,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
@@ -16,8 +17,9 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::Sky;
 using base::FindOrDie;
+using physics::KeplerOrbit;
 using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularFrequency;
@@ -41,8 +43,8 @@ constexpr char proto_txt[] = "proto.txt";
 constexpr char kerbin[] = "Kerbin";
 
 std::map<std::string, Angle> const body_angle = {
-    {"Trappist-1b", 25 * Degree},
-    {"Trappist-1c", 0 * Degree},
+    {"Trappist-1b", 0 * Degree},
+    {"Trappist-1c", -45 * Degree},
     {"Trappist-1d", 180 * Degree},
     {"Trappist-1e", 65 * Degree},
     {"Trappist-1f", 90 * Degree},
@@ -68,8 +70,8 @@ std::map<std::string, std::string> const body_description_map = {
      "Requires envelope of volatiles in the form of oceans or ice."}};
 std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1", "Sun"},
-    {"Trappist-1b", "Charlie"},  // Not a typo, swap b and c.
-    {"Trappist-1c", "Beta"},
+    {"Trappist-1b", "Beta"},
+    {"Trappist-1c", "Charlie"},
     {"Trappist-1d", "Delta"},
     {"Trappist-1e", "Kerbin"},
     {"Trappist-1f", "Foxtrot"},
@@ -83,7 +85,7 @@ void GenerateKopernicusForSlippist1(
     std::string const& initial_state_stem) {
   std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<Sky> solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt),
       /*ignore_frame=*/true);
@@ -91,6 +93,19 @@ void GenerateKopernicusForSlippist1(
   std::ofstream kopernicus_cfg(
       (directory / (gravity_model_stem + "_slippist1")).replace_extension(cfg));
   CHECK(kopernicus_cfg.good());
+
+  // Find the star.  This is needed to construct Kepler orbits below.
+  std::optional<serialization::GravityModel::Body> star;
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (is_star) {
+      star = body;
+    }
+  }
+
   kopernicus_cfg << "@Kopernicus:AFTER[aSLIPPIST-1] {\n";
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
@@ -131,6 +146,39 @@ void GenerateKopernicusForSlippist1(
       kopernicus_cfg << "      %tidallyLocked = false\n";
     }
     kopernicus_cfg << "    }\n";
+    if (!is_star) {
+      CHECK(star.has_value());
+      auto const keplerian_elements =
+          solar_system.MakeKeplerianElements(elements);
+      KeplerOrbit<Sky> const kepler_orbit(*solar_system.MakeMassiveBody(*star),
+                                          *solar_system.MakeMassiveBody(body),
+                                          keplerian_elements,
+                                          solar_system.epoch());
+      kopernicus_cfg << "    @Orbit {\n";
+      kopernicus_cfg << "      %semiMajorAxis = "
+                     << DebugString(
+                            *kepler_orbit.elements_at_epoch().semimajor_axis /
+                            Metre)
+                     << "\n";
+      kopernicus_cfg << "      %eccentricity = "
+                     << DebugString(elements.eccentricity()) << "\n";
+      kopernicus_cfg << "      %longitudeOfAscendingNode = "
+                     << DebugString(
+                            ParseQuantity<Angle>(
+                                elements.longitude_of_ascending_node()) /
+                            Degree)
+                     << "\n";
+      kopernicus_cfg << "      %argumentOfPeriapsis = "
+                     << DebugString(ParseQuantity<Angle>(
+                                        elements.argument_of_periapsis()) /
+                                    Degree)
+                     << "\n";
+      kopernicus_cfg << "      %meanAnomalyAtEpoch = "
+                     << DebugString(ParseQuantity<Angle>(
+                                        elements.mean_anomaly()) / Radian)
+                     << "\n";
+      kopernicus_cfg << "    }\n";
+    }
     kopernicus_cfg << "  }\n";
   }
   kopernicus_cfg << "}\n";
