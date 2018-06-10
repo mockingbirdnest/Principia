@@ -7,14 +7,13 @@
 #include <mutex>
 #include <optional>
 #include <shared_mutex>
+#include <thread>
 #include <vector>
 
 #include "base/macros.hpp"
 #include "base/monostable.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
-
-#if !PRINCIPIA_COMPILER_CLANG
 
 namespace principia {
 namespace base {
@@ -94,5 +93,3 @@ class Bundle final {
 
 }  // namespace base
 }  // namespace principia
-
-#endif

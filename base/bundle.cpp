@@ -7,8 +7,6 @@
 #include "base/map_util.hpp"
 #include "base/status.hpp"
 
-#if !PRINCIPIA_COMPILER_CLANG
-
 namespace principia {
 namespace base {
 
@@ -127,5 +125,3 @@ bool Bundle::DeadlineExceeded() {
 
 }  // namespace base
 }  // namespace principia
-
-#endif
