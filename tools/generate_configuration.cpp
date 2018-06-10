@@ -79,8 +79,7 @@ void GenerateConfiguration(std::string const& game_epoch,
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     gravity_model_cfg << "  body {\n";
-    gravity_model_cfg << "    name                    = "
-                      << name << "\n";
+    gravity_model_cfg << "    name                    = " << name << "\n";
     if (body.has_gravitational_parameter()) {
       gravity_model_cfg << "    gravitational_parameter = "
                         << body.gravitational_parameter() << "\n";

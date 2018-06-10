@@ -7,6 +7,7 @@
 
 #include "astronomy/frames.hpp"
 #include "base/map_util.hpp"
+#include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
@@ -16,9 +17,11 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::Sky;
 using base::FindOrDie;
+using physics::KeplerOrbit;
 using physics::SolarSystem;
+using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
 using quantities::GravitationalParameter;
@@ -27,6 +30,7 @@ using quantities::Mass;
 using quantities::ParseQuantity;
 using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
+using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 
@@ -36,7 +40,16 @@ namespace {
 
 constexpr char cfg[] = "cfg";
 constexpr char proto_txt[] = "proto.txt";
+constexpr char kerbin[] = "Kerbin";
 
+std::map<std::string, Angle> const body_angle = {
+    {"Trappist-1b", -155 * Degree},
+    {"Trappist-1c", 135 * Degree},
+    {"Trappist-1d", 180 * Degree},
+    {"Trappist-1e", 65 * Degree},
+    {"Trappist-1f", 90 * Degree},
+    {"Trappist-1g", 45 * Degree},
+    {"Trappist-1h", 0 * Degree}};
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
@@ -60,7 +73,7 @@ std::map<std::string, std::string> const body_name_map = {
     {"Trappist-1b", "Beta"},
     {"Trappist-1c", "Charlie"},
     {"Trappist-1d", "Delta"},
-    {"Trappist-1e", "Echo"},
+    {"Trappist-1e", "Kerbin"},
     {"Trappist-1f", "Foxtrot"},
     {"Trappist-1g", "Golf"},
     {"Trappist-1h", "Hotel"}};
@@ -72,7 +85,7 @@ void GenerateKopernicusForSlippist1(
     std::string const& initial_state_stem) {
   std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<Sky> solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt),
       /*ignore_frame=*/true);
@@ -80,37 +93,111 @@ void GenerateKopernicusForSlippist1(
   std::ofstream kopernicus_cfg(
       (directory / (gravity_model_stem + "_slippist1")).replace_extension(cfg));
   CHECK(kopernicus_cfg.good());
-  kopernicus_cfg << "@Kopernicus:FOR[Principia]:AFTER[aSLIPPIST-1] {\n";
+
+  // Find the star.  This is needed to construct Kepler orbits below.
+  std::optional<serialization::GravityModel::Body> star;
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     bool const is_star =
         !solar_system.keplerian_initial_state_message(name).has_parent();
-    kopernicus_cfg << "@Body[" << FindOrDie(body_name_map, name) << "] {\n";
     if (is_star) {
-      kopernicus_cfg << "  @cbNameLater = " << name << "\n";
-    } else {
-      kopernicus_cfg << "  @name = " << name << "\n";
+      star = body;
     }
-    kopernicus_cfg << "  @Properties {\n";
+  }
+
+  kopernicus_cfg << "@Kopernicus:AFTER[aSLIPPIST-1] {\n";
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    serialization::InitialState::Keplerian::Body::Elements const& elements =
+        solar_system.keplerian_initial_state_message(name).elements();
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    bool const is_kerbin =
+        FindOrDie(body_name_map, name) == kerbin;
+    kopernicus_cfg << "  @Body[" << FindOrDie(body_name_map, name) << "] {\n";
+    if (is_star || is_kerbin) {
+      kopernicus_cfg << "    %cbNameLater = " << name << "\n";
+    } else {
+      kopernicus_cfg << "    @name = " << name << "\n";
+    }
+    kopernicus_cfg << "    @Properties {\n";
     if (is_star) {
-      kopernicus_cfg << "    !mass = delete\n";
+      kopernicus_cfg << "      !mass = delete\n";
     } else {
-      kopernicus_cfg << "    !geeASL = delete\n";
+      kopernicus_cfg << "      !geeASL = delete\n";
     }
-    kopernicus_cfg << "    %gravParameter = "
+    if (is_star || is_kerbin) {
+      kopernicus_cfg << "      @displayName = " << name << "\n";
+    }
+    kopernicus_cfg << "      %gravParameter = "
                    << DebugString(GravitationalConstant *
                                   ParseQuantity<Mass>(body.mass()) /
                                   SIUnit<GravitationalParameter>())
                    << "\n";
-    kopernicus_cfg << "    %radius = "
+    kopernicus_cfg << "      %radius = "
                    << DebugString(ParseQuantity<Length>(body.mean_radius()) /
                                   Metre)
                    << "\n";
-    kopernicus_cfg << "    %description = "
+    kopernicus_cfg << "      %description = "
                    << FindOrDie(body_description_map, name) << "\n";
     if (!is_star) {
-      kopernicus_cfg << "    %tidallyLocked = false\n";
+      kopernicus_cfg << "      %tidallyLocked = false\n";
+    }
+    kopernicus_cfg << "    }\n";
+    if (!is_star) {
+      CHECK(star.has_value());
+      auto const keplerian_elements =
+          solar_system.MakeKeplerianElements(elements);
+      KeplerOrbit<Sky> const kepler_orbit(*solar_system.MakeMassiveBody(*star),
+                                          *solar_system.MakeMassiveBody(body),
+                                          keplerian_elements,
+                                          solar_system.epoch());
+      kopernicus_cfg << "    @Orbit {\n";
+      kopernicus_cfg << "      %semiMajorAxis = "
+                     << DebugString(
+                            *kepler_orbit.elements_at_epoch().semimajor_axis /
+                            Metre)
+                     << "\n";
+      kopernicus_cfg << "      %eccentricity = "
+                     << DebugString(elements.eccentricity()) << "\n";
+      kopernicus_cfg << "      %longitudeOfAscendingNode = "
+                     << DebugString(
+                            ParseQuantity<Angle>(
+                                elements.longitude_of_ascending_node()) /
+                            Degree)
+                     << "\n";
+      kopernicus_cfg << "      %argumentOfPeriapsis = "
+                     << DebugString(ParseQuantity<Angle>(
+                                        elements.argument_of_periapsis()) /
+                                    Degree)
+                     << "\n";
+      kopernicus_cfg << "      %meanAnomalyAtEpoch = "
+                     << DebugString(ParseQuantity<Angle>(
+                                        elements.mean_anomaly()) / Radian)
+                     << "\n";
+      kopernicus_cfg << "    }\n";
+    }
+    kopernicus_cfg << "  }\n";
+  }
+  kopernicus_cfg << "}\n";
+
+  kopernicus_cfg << "@principia_gravity_model:FOR[Principia] {\n";
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    serialization::InitialState::Keplerian::Body::Elements const& elements =
+        solar_system.keplerian_initial_state_message(name).elements();
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    kopernicus_cfg << "  @body[" << name << "] {\n";
+    if (!is_star) {
+      kopernicus_cfg << "      @reference_angle = "
+                     << ParseQuantity<Angle>(elements.argument_of_periapsis()) +
+                            ParseQuantity<Angle>(elements.mean_anomaly()) +
+                            FindOrDie(body_angle, name)
+                     << "\n";
     }
     kopernicus_cfg << "  }\n";
   }

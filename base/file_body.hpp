@@ -21,9 +21,9 @@ inline OFStream::OFStream(std::filesystem::path const& path) {
   std::filesystem::path directory = path;
   directory.remove_filename();
   if (!std::filesystem::exists(directory)) {
-    // VS 2017 15.7 Preview 5 has a bug where it returns false if the path ends
+    // VS 2017 15.8 Preview 2 has a bug where it returns false if the path ends
     // with a \.
-#if _MSC_FULL_VER <= 191426412
+#if _MSC_FULL_VER <= 191426429
     auto d = directory.native();
     d = d.substr(0, d.size() - 1);
     directory = d;

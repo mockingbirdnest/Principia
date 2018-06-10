@@ -1,5 +1,7 @@
 gravity_model {
   solar_system_frame : SKY
+  # Right ascensions from a normal distribution with μ=-90, σ=0.05.
+  # Declinations from a normal distribution with μ=0, σ=0.05.
 
   # Star.
   # Mass and radius from "Early 2017 observations of TRAPPIST-1 with Spitzer",
@@ -11,8 +13,8 @@ gravity_model {
     mass                 : "0.0890 M☉"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "0.1210 R☉"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9408 deg"
+    axis_declination     : "0.0497342 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "109.256 deg / d"
   }
@@ -29,8 +31,8 @@ gravity_model {
     mass                 : "1.017 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "1.121 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9077 deg"
+    axis_declination     : "0.0561637 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "238.277037187806 deg / d"
     j2                   : 0.000625831
@@ -41,8 +43,8 @@ gravity_model {
     mass                 : "1.156 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "1.095 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9829 deg"
+    axis_declination     : "0.0787536 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "148.647858966326 deg / d"
     j2                   : 0.000937274
@@ -53,20 +55,20 @@ gravity_model {
     mass                 : "0.297 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "0.784 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-90.0387 deg"
+    axis_declination     : "0.0106394 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "88.8950742763116 deg / d"
     j2                   : 0.00189136
     reference_radius     : "0.784 R🜨"
   }
   body {
-    name        : "Trappist-1e"
-    mass                     : "0.772 M🜨"
+    name                 : "Trappist-1e"
+    mass                 : "0.772 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "0.910 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9999 deg"
+    axis_declination     : "-0.0949119 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "59.0187818530656 deg / d"
     j2                   : 0.000475803
@@ -77,8 +79,8 @@ gravity_model {
     mass                 : "0.934 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "1.046 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9582 deg"
+    axis_declination     : "0.0404001 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "39.1012613409510 deg / d"
     j2                   : 0.00264731
@@ -89,8 +91,8 @@ gravity_model {
     mass                 : "1.148 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "1.148 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.9896 deg"
+    axis_declination     : "0.0367975 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "29.1425060266989 deg / d"
     j2                   : 0.0000873713
@@ -101,8 +103,8 @@ gravity_model {
     mass                 : "0.331 M🜨"
     reference_instant    : "JD2450000.000000000"
     mean_radius          : "0.773 R🜨"
-    axis_right_ascension : "90 deg"
-    axis_declination     : "0 deg"
+    axis_right_ascension : "-89.8993 deg"
+    axis_declination     : "0.0130609 deg"
     reference_angle      : "0 deg"
     angular_frequency    : "19.1837412411643 deg / d"
     j2                   : 0.00166162
