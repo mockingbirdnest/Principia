@@ -8,7 +8,7 @@
 #include "gmock/gmock.h"
 #include "testing_utilities/matchers.hpp"
 
-#if !PRINCIPIA_COMPILER_CLANG
+#if !OS_MACOSX
 
 namespace principia {
 
