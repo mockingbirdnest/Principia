@@ -30,6 +30,17 @@ FORCE_INLINE(inline) Q Abs(Q const& quantity) {
 }
 
 template<typename Q>
+Q Mod(Q const& argument, Q const& modulus) {
+  double const result =
+      std::fmod(argument / SIUnit<Q>(), modulus / SIUnit<Q>());
+  if (result > 0.0) {
+    return result * SIUnit<Q>();
+  } else {
+    return result * SIUnit<Q>() + modulus;
+  }
+}
+
+template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x) {
 #if PRINCIPIA_USE_SSE3_INTRINSICS
   auto const x_128d = _mm_set_sd(x / SIUnit<Q>());

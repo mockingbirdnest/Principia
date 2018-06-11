@@ -18,6 +18,10 @@ Product<Q1, Q2> FusedMultiplyAdd(Q1 const& x,
 template<typename Q>
 Q Abs(Q const& x);
 
+// Returns a value between zero and |modulus|.
+template<typename Q>
+Q Mod(Q const& argument, Q const& modulus);
+
 // Equivalent to |std::sqrt(x)|.
 template<typename Q>
 SquareRoot<Q> Sqrt(Q const& x);
@@ -66,6 +70,7 @@ using internal_elementary_functions::Cbrt;
 using internal_elementary_functions::Cos;
 using internal_elementary_functions::Cosh;
 using internal_elementary_functions::FusedMultiplyAdd;
+using internal_elementary_functions::Mod;
 using internal_elementary_functions::Pow;
 using internal_elementary_functions::Sin;
 using internal_elementary_functions::Sinh;

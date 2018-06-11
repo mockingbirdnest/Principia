@@ -1,5 +1,6 @@
 ﻿
 #include <algorithm>
+#include <iomanip>
 #include <limits>
 #include <map>
 #include <random>
@@ -55,6 +56,7 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Derivative;
 using quantities::Difference;
+using quantities::Mod;
 using quantities::Pow;
 using quantities::Sin;
 using quantities::Square;
@@ -161,13 +163,6 @@ void Genome::Mutate(std::mt19937_64& engine,
   double const multiplicator =
       generation == -1 ? 1 : std::exp2(-2 - std::min(generation, 800) / 120);
 
-  auto reduce_mod_2π = [](Angle& angle) {
-    angle = std::fmod(angle / Radian, 2 * π) * Radian;
-    if (angle < 0 * Radian) {
-      angle += 2 * π * Radian;
-    }
-  };
-
   for (auto& element : elements_) {
     KeplerianElements<Sky> mutated_element;
     // The elements that are preserved.
@@ -178,7 +173,8 @@ void Genome::Mutate(std::mt19937_64& engine,
     mutated_element.argument_of_periapsis =
         *element.argument_of_periapsis +
         distribution(engine) * 10 * Degree * multiplicator;
-    reduce_mod_2π(*mutated_element.argument_of_periapsis);
+    mutated_element.argument_of_periapsis =
+        Mod(*mutated_element.argument_of_periapsis, 2 * π * Radian);
     mutated_element.period =
         *element.period +
         distribution(engine) * 5 * Second * Sqrt(multiplicator);
@@ -197,7 +193,8 @@ void Genome::Mutate(std::mt19937_64& engine,
     mutated_element.mean_anomaly =
         *element.mean_anomaly +
         distribution(engine) * 10 * Degree * multiplicator;
-    reduce_mod_2π(*mutated_element.mean_anomaly);
+    mutated_element.mean_anomaly =
+        Mod(*mutated_element.mean_anomaly, 2 * π * Radian);
 
     element = mutated_element;
   }
@@ -376,12 +373,12 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
     if (best_genome_) {
       LOG(ERROR)
           << "old L = "
-          << std::fmod(
-                 (best_genome_->elements()[j].longitude_of_ascending_node +
+          << Mod((best_genome_->elements()[j].longitude_of_ascending_node +
                   *best_genome_->elements()[j].argument_of_periapsis +
-                  *best_genome_->elements()[j].mean_anomaly) / Degree,
-                 360)
+                  *best_genome_->elements()[j].mean_anomaly),
+                 2 * π * Radian) / Degree
           << u8"°";
+
       LOG(ERROR) << u8"   ΔL = "
                  << ((genome.elements()[j].longitude_of_ascending_node +
                       *genome.elements()[j].argument_of_periapsis +
@@ -392,10 +389,10 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                  << u8"°";
     }
     LOG(ERROR) << "new L = "
-               << std::fmod((genome.elements()[j].longitude_of_ascending_node +
-                             *genome.elements()[j].argument_of_periapsis +
-                             *genome.elements()[j].mean_anomaly) / Degree,
-                            360)
+               << Mod((genome.elements()[j].longitude_of_ascending_node +
+                       *genome.elements()[j].argument_of_periapsis +
+                       *genome.elements()[j].mean_anomaly),
+                      2 * π * Radian) / Degree
                << u8"°";
     if (best_genome_) {
       LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
@@ -1159,8 +1156,27 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
     LOG(ERROR) << "The Blind Idiot God";
     for (int i = 0; i < the_blind_idiot_god.size(); ++i) {
       LOG(ERROR) << planet_names[i];
-      LOG(ERROR) << MakeKeplerianElements(great_old_one->elements()[i],
-                                          the_blind_idiot_god[i]);
+      auto const elements = MakeKeplerianElements(great_old_one->elements()[i],
+                                                  the_blind_idiot_god[i]);
+      LOG(ERROR) << std::setprecision(
+                        std::numeric_limits<double>::max_digits10)
+                 << "        eccentricity                : "
+                 << *elements.eccentricity;
+      LOG(ERROR) << std::setprecision(
+                        std::numeric_limits<double>::max_digits10)
+                 << "        period                      : \""
+                 << *elements.period / Day << " d\"";
+      LOG(ERROR) << std::setprecision(
+                        std::numeric_limits<double>::max_digits10)
+                 << "        argument_of_periapsis       : \""
+                 << Mod(*elements.argument_of_periapsis, 2 * π * Radian) /
+                        Degree
+                 << " deg\"";
+      LOG(ERROR) << std::setprecision(
+                        std::numeric_limits<double>::max_digits10)
+                 << "        mean_anomaly                : \""
+                 << Mod(*elements.mean_anomaly, 2 * π * Radian) / Degree
+                 << " deg\"";
     }
   }
 }
