@@ -1,5 +1,6 @@
 ﻿
 #include <algorithm>
+#include <iomanip>
 #include <limits>
 #include <map>
 #include <random>
