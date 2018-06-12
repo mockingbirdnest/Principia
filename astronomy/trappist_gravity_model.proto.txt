@@ -11,7 +11,7 @@ gravity_model {
   body {
     name                 : "Trappist-1"
     mass                 : "0.0890 M☉"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.1210 R☉"
     axis_right_ascension : "-89.9408 deg"
     axis_declination     : "0.0497342 deg"
@@ -29,84 +29,84 @@ gravity_model {
   body {
     name                 : "Trappist-1b"
     mass                 : "1.017 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.121 R🜨"
     axis_right_ascension : "-89.9077 deg"
     axis_declination     : "0.0561637 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "238.277037187806 deg / d"
+    angular_frequency    : "238.280381526399 deg / d"
     j2                   : 0.000625831
     reference_radius     : "1.121 R🜨"
   }
   body {
     name                 : "Trappist-1c"
     mass                 : "1.156 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.095 R🜨"
     axis_right_ascension : "-89.9829 deg"
     axis_declination     : "0.0787536 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "148.647858966326 deg / d"
+    angular_frequency    : "148.649662442390 deg / d"
     j2                   : 0.000937274
     reference_radius     : "1.095 R🜨"
   }
   body {
     name                 : "Trappist-1d"
     mass                 : "0.297 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.784 R🜨"
     axis_right_ascension : "-90.0387 deg"
     axis_declination     : "0.0106394 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "88.8950742763116 deg / d"
+    angular_frequency    : "88.8958290050067 deg / d"
     j2                   : 0.00189136
     reference_radius     : "0.784 R🜨"
   }
   body {
     name                 : "Trappist-1e"
     mass                 : "0.772 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.910 R🜨"
     axis_right_ascension : "-89.9999 deg"
     axis_declination     : "-0.0949119 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "59.0187818530656 deg / d"
+    angular_frequency    : "59.0190202231139 deg / d"
     j2                   : 0.000475803
     reference_radius     : "0.910 R🜨"
   }
   body {
     name                 : "Trappist-1f"
     mass                 : "0.934 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.046 R🜨"
     axis_right_ascension : "-89.9582 deg"
     axis_declination     : "0.0404001 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "39.1012613409510 deg / d"
+    angular_frequency    : "39.1011616849564 deg / d"
     j2                   : 0.00264731
     reference_radius     : "1.046 R🜨"
   }
   body {
     name                 : "Trappist-1g"
     mass                 : "1.148 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.148 R🜨"
     axis_right_ascension : "-89.9896 deg"
     axis_declination     : "0.0367975 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "29.1425060266989 deg / d"
+    angular_frequency    : "29.1422346007618 deg / d"
     j2                   : 0.0000873713
     reference_radius     : "1.148 R🜨"
   }
   body {
     name                 : "Trappist-1h"
     mass                 : "0.331 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.773 R🜨"
     axis_right_ascension : "-89.8993 deg"
     axis_declination     : "0.0130609 deg"
     reference_angle      : "0 deg"
-    angular_frequency    : "19.1837412411643 deg / d"
+    angular_frequency    : "19.1833342568893 deg / d"
     j2                   : 0.00166162
     reference_radius     : "0.773 R🜨"
   }
