@@ -11,6 +11,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/numbers.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -27,6 +28,7 @@ using quantities::DebugString;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Mass;
+using quantities::Mod;
 using quantities::ParseQuantity;
 using quantities::SIUnit;
 using quantities::constants::GravitationalConstant;
@@ -43,13 +45,13 @@ constexpr char proto_txt[] = "proto.txt";
 constexpr char kerbin[] = "Kerbin";
 
 std::map<std::string, Angle> const body_angle = {
-    {"Trappist-1b", -155 * Degree},
-    {"Trappist-1c", 135 * Degree},
-    {"Trappist-1d", 180 * Degree},
-    {"Trappist-1e", 65 * Degree},
-    {"Trappist-1f", 90 * Degree},
-    {"Trappist-1g", 45 * Degree},
-    {"Trappist-1h", 0 * Degree}};
+    {"Trappist-1b", -90 * Degree},
+    {"Trappist-1c", -90 * Degree},
+    {"Trappist-1d", 0 * Degree},
+    {"Trappist-1e", -90 * Degree},
+    {"Trappist-1f", 200 * Degree},
+    {"Trappist-1g", -80 * Degree},
+    {"Trappist-1h", 180 * Degree}};
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
@@ -194,9 +196,11 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "  @body[" << name << "] {\n";
     if (!is_star) {
       kopernicus_cfg << "      @reference_angle = "
-                     << ParseQuantity<Angle>(elements.argument_of_periapsis()) +
-                            ParseQuantity<Angle>(elements.mean_anomaly()) +
-                            FindOrDie(body_angle, name)
+                     << Mod(FindOrDie(body_angle, name) +
+                                ParseQuantity<Angle>(
+                                    elements.argument_of_periapsis()) +
+                                ParseQuantity<Angle>(elements.mean_anomaly()),
+                            2 * π * Radian)
                      << "\n";
     }
     kopernicus_cfg << "  }\n";

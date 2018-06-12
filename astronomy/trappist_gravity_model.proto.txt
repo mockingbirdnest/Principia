@@ -11,7 +11,7 @@ gravity_model {
   body {
     name                 : "Trappist-1"
     mass                 : "0.0890 M☉"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.1210 R☉"
     axis_right_ascension : "-89.9408 deg"
     axis_declination     : "0.0497342 deg"
@@ -29,7 +29,7 @@ gravity_model {
   body {
     name                 : "Trappist-1b"
     mass                 : "1.017 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.121 R🜨"
     axis_right_ascension : "-89.9077 deg"
     axis_declination     : "0.0561637 deg"
@@ -41,7 +41,7 @@ gravity_model {
   body {
     name                 : "Trappist-1c"
     mass                 : "1.156 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.095 R🜨"
     axis_right_ascension : "-89.9829 deg"
     axis_declination     : "0.0787536 deg"
@@ -53,7 +53,7 @@ gravity_model {
   body {
     name                 : "Trappist-1d"
     mass                 : "0.297 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.784 R🜨"
     axis_right_ascension : "-90.0387 deg"
     axis_declination     : "0.0106394 deg"
@@ -65,7 +65,7 @@ gravity_model {
   body {
     name                 : "Trappist-1e"
     mass                 : "0.772 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.910 R🜨"
     axis_right_ascension : "-89.9999 deg"
     axis_declination     : "-0.0949119 deg"
@@ -77,7 +77,7 @@ gravity_model {
   body {
     name                 : "Trappist-1f"
     mass                 : "0.934 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.046 R🜨"
     axis_right_ascension : "-89.9582 deg"
     axis_declination     : "0.0404001 deg"
@@ -89,7 +89,7 @@ gravity_model {
   body {
     name                 : "Trappist-1g"
     mass                 : "1.148 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.148 R🜨"
     axis_right_ascension : "-89.9896 deg"
     axis_declination     : "0.0367975 deg"
@@ -101,7 +101,7 @@ gravity_model {
   body {
     name                 : "Trappist-1h"
     mass                 : "0.331 M🜨"
-    reference_instant    : "JD2450000.000000000"
+    reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.773 R🜨"
     axis_right_ascension : "-89.8993 deg"
     axis_declination     : "0.0130609 deg"
