@@ -1,7 +1,7 @@
 # This is the result of running the optimization in
 # TrappistDynamicsTest.DISABLED_Optimization and of adding randomized elements.
 # It has a χ² of 477.881, an average Δt of 64.113307 s and a maximum Δt of
-# 960.918733 s  for the Trappist-1g transit at JD2457294.786000.
+# 960.918733 s for the Trappist-1g transit at JD2457294.786000.
 # The inclinations are from "Early 2017 observations of TRAPPIST-1 with
 # Spitzer", Delrez et al., 2018.
 # The longitudes of the ascending nodes are not known, but their distribution is
