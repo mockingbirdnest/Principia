@@ -13,6 +13,7 @@
 #include "base/file.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
+#include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/sign.hpp"
 #include "gtest/gtest.h"
@@ -38,6 +39,7 @@ using base::Bundle;
 using base::not_null;
 using base::OFStream;
 using base::Status;
+using geometry::AngleBetween;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Sign;
@@ -983,11 +985,13 @@ class TrappistDynamicsTest : public ::testing::Test {
     return sanitized_name.erase(sanitized_name.find_first_of("-"), 1);
   }
 
+  constexpr static char home_name[] = "Trappist-1e";
   constexpr static char star_name[] = "Trappist-1";
   SolarSystem<Sky> const system_;
   not_null<std::unique_ptr<Ephemeris<Sky>>> ephemeris_;
 };
 
+constexpr char TrappistDynamicsTest::home_name[];
 constexpr char TrappistDynamicsTest::star_name[];
 
 #if !defined(_DEBUG)
@@ -1044,6 +1048,38 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   CHECK_LT(χ², 480.0);
   CHECK_GT(χ², 470.0);
   LOG(ERROR) << u8"χ²: " << χ² << " " << info;
+}
+
+TEST_F(TrappistDynamicsTest, MathematicaViews) {
+  Instant const a_century_later = system_.epoch() + 100 * JulianYear;
+  ephemeris_->Prolong(a_century_later);
+
+  TransitsByPlanet computations;
+  OFStream file(TEMP_DIR / "trappist_views.generated.wl");
+
+  auto const& star = system_.massive_body(*ephemeris_, star_name);
+  auto const& star_trajectory = ephemeris_->trajectory(star);
+  auto const& home = system_.massive_body(*ephemeris_, home_name);
+  auto const& home_trajectory = ephemeris_->trajectory(home);
+
+  auto const bodies = ephemeris_->bodies();
+  for (auto const& planet : bodies) {
+    if (planet != star && planet != home) {
+      auto const& planet_trajectory = ephemeris_->trajectory(planet);
+      std::vector<double> views;
+      for (Instant t = ephemeris_->t_min();
+           t < ephemeris_->t_min() + 80000 * Hour;
+           t += 1 * Hour) {
+        Angle const view =
+            AngleBetween(star_trajectory->EvaluatePosition(t) -
+                             home_trajectory->EvaluatePosition(t),
+                         planet_trajectory->EvaluatePosition(t) -
+                             home_trajectory->EvaluatePosition(t));
+        views.push_back(view / Degree);
+      }
+      file << mathematica::Assign("view" + SanitizedName(*planet), views);
+    }
+  }
 }
 #endif
 
