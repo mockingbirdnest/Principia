@@ -39,8 +39,10 @@ using base::Bundle;
 using base::not_null;
 using base::OFStream;
 using base::Status;
-using geometry::AngleBetween;
+using geometry::Displacement;
+using geometry::InnerProduct;
 using geometry::Instant;
+using geometry::OrientedAngleBetween;
 using geometry::Position;
 using geometry::Sign;
 using integrators::SymmetricLinearMultistepIntegrator;
@@ -70,6 +72,7 @@ using quantities::si::Degree;
 using quantities::si::Hour;
 using quantities::si::Metre;
 using quantities::si::Milli;
+using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 
@@ -1050,34 +1053,80 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
   LOG(ERROR) << u8"χ²: " << χ² << " " << info;
 }
 
-TEST_F(TrappistDynamicsTest, MathematicaViews) {
+TEST_F(TrappistDynamicsTest, MathematicaAlignments) {
   Instant const a_century_later = system_.epoch() + 100 * JulianYear;
   ephemeris_->Prolong(a_century_later);
 
-  TransitsByPlanet computations;
-  OFStream file(TEMP_DIR / "trappist_views.generated.wl");
+  OFStream file(TEMP_DIR / "trappist_alignments.generated.wl");
 
   auto const& star = system_.massive_body(*ephemeris_, star_name);
   auto const& star_trajectory = ephemeris_->trajectory(star);
-  auto const& home = system_.massive_body(*ephemeris_, home_name);
+  auto const& home = system_.rotating_body(*ephemeris_, home_name);
   auto const& home_trajectory = ephemeris_->trajectory(home);
 
   auto const bodies = ephemeris_->bodies();
   for (auto const& planet : bodies) {
-    if (planet != star && planet != home) {
+    if (planet != star && planet != &*home) {
       auto const& planet_trajectory = ephemeris_->trajectory(planet);
       std::vector<double> views;
       for (Instant t = ephemeris_->t_min();
-           t < ephemeris_->t_min() + 80000 * Hour;
-           t += 1 * Hour) {
+           t < ephemeris_->t_min() + 1000 * Hour;
+           t += 10 * Minute) {
         Angle const view =
-            AngleBetween(star_trajectory->EvaluatePosition(t) -
-                             home_trajectory->EvaluatePosition(t),
-                         planet_trajectory->EvaluatePosition(t) -
-                             home_trajectory->EvaluatePosition(t));
+            OrientedAngleBetween(star_trajectory->EvaluatePosition(t) -
+                                     home_trajectory->EvaluatePosition(t),
+                                 planet_trajectory->EvaluatePosition(t) -
+                                     home_trajectory->EvaluatePosition(t),
+                                 home->angular_velocity());
         views.push_back(view / Degree);
       }
-      file << mathematica::Assign("view" + SanitizedName(*planet), views);
+      file << mathematica::Assign("alignment" + SanitizedName(*planet), views);
+    }
+  }
+}
+
+TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
+  Instant const a_century_later = system_.epoch() + 100 * JulianYear;
+  ephemeris_->Prolong(a_century_later);
+
+  auto const& star = system_.massive_body(*ephemeris_, star_name);
+  auto const& star_trajectory = ephemeris_->trajectory(star);
+  auto const& home = system_.rotating_body(*ephemeris_, home_name);
+  auto const& home_trajectory = ephemeris_->trajectory(home);
+  auto const& planet_b = system_.massive_body(*ephemeris_, "Trappist-1b");
+  auto const& planet_b_trajectory = ephemeris_->trajectory(planet_b);
+  auto const& planet_d = system_.massive_body(*ephemeris_, "Trappist-1d");
+  auto const& planet_d_trajectory = ephemeris_->trajectory(planet_d);
+
+  Angle min_angle = 1 * Radian;
+
+  for (Instant t = ephemeris_->t_min();
+        t < ephemeris_->t_min() + 200000 * Hour;
+        t += 10 * Minute) {
+    Displacement<Sky> const home_star =
+        star_trajectory->EvaluatePosition(t) -
+        home_trajectory->EvaluatePosition(t);
+    Displacement<Sky> const home_planet_b =
+        planet_b_trajectory->EvaluatePosition(t) -
+        home_trajectory->EvaluatePosition(t);
+    Displacement<Sky> const planet_b_star =
+        star_trajectory->EvaluatePosition(t) -
+        planet_b_trajectory->EvaluatePosition(t);
+    Displacement<Sky> const home_planet_d =
+        planet_d_trajectory->EvaluatePosition(t) -
+        home_trajectory->EvaluatePosition(t);
+    Displacement<Sky> const planet_d_star =
+        star_trajectory->EvaluatePosition(t) -
+        planet_d_trajectory->EvaluatePosition(t);
+    Angle const star_b = AngleBetween(home_star, home_planet_b);
+    Angle const star_d = AngleBetween(home_star, home_planet_d);
+    Angle const angle = Sqrt(star_b * star_b + star_d * star_d);
+    bool in_front =
+        InnerProduct(home_star, planet_b_star) > 0.0 * Metre * Metre &&
+        InnerProduct(home_star, planet_d_star) > 0.0 * Metre * Metre;
+    if (in_front && angle < min_angle) {
+      LOG(ERROR) << "Time: " << t << ", Angle: " << angle / Degree << u8"°";
+      min_angle = angle;
     }
   }
 }
