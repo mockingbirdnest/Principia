@@ -134,6 +134,12 @@
     <ClInclude Include="named_quantities_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="symmetric_bilinear_form.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symmetric_bilinear_form_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="sign_test.cpp">
