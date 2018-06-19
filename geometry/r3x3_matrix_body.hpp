@@ -192,6 +192,15 @@ R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left,
                     left.row_z_ / right);
 }
 
+template<typename LScalar, typename RScalar>
+R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
+    R3Element<LScalar> const& left,
+    R3Element<RScalar> const& right) {
+  return R3x3Matrix(left.x * right,
+                    left.y * right,
+                    left.z * right);
+}
+
 template<typename Scalar>
 bool operator==(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right) {
