@@ -228,22 +228,43 @@ void GenerateKopernicusForSlippist1(
   for (std::string const& name : solar_system.names()) {
     bool const is_star =
         !solar_system.keplerian_initial_state_message(name).has_parent();
-    if (is_star) {
-      continue;
+    if (!is_star) {
+      kopernicus_cfg << "@Scatterer_atmosphere:HAS[@Atmo["
+                     << body_name_map.at(name) << "]]:AFTER[aSLIPPIST-1] {\n";
+      kopernicus_cfg << "  @Atmo[" << body_name_map.at(name) << "] {\n";
+      kopernicus_cfg << "    @name = " << name << "\n";
+      kopernicus_cfg << "    @configPoints {\n";
+      kopernicus_cfg << "      @Item,* {\n";
+      kopernicus_cfg << "        @altitude *= 2\n";
+      kopernicus_cfg << "      }\n";
+      kopernicus_cfg << "    }\n";
+      kopernicus_cfg << "  }\n";
+      kopernicus_cfg << "}\n";
+      kopernicus_cfg << "@Scatterer_ocean:HAS[@Ocean[" << body_name_map.at(name)
+                     << "]]:AFTER[aSLIPPIST-1] {\n";
+      kopernicus_cfg << "  @Ocean[" << body_name_map.at(name) << "] {\n";
+      kopernicus_cfg << "    @name = " << name << "\n";
+      kopernicus_cfg << "  }\n";
+      kopernicus_cfg << "}\n";
     }
-    bool const is_kerbin = FindOrDie(body_name_map, name) == kerbin;
+  }
+  kopernicus_cfg << "@Scatterer_planetsList:AFTER[aSLIPPIST-1] {\n";
+  kopernicus_cfg << "  @scattererCelestialBodies {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    bool const is_kerbin = body_name_map.at(name) == kerbin;
     std::string const slippist_name =
         is_kerbin ? "Echo" : body_name_map.at(name);
-    kopernicus_cfg << "@Scatterer_atmosphere,* {\n";
-    kopernicus_cfg << "  @Atmo[" << slippist_name << "] {\n";
-    kopernicus_cfg << "    @configPoints {\n";
-    kopernicus_cfg << "      @Item,* {\n";
-    kopernicus_cfg << "        @altitude *= 2\n";
-    kopernicus_cfg << "      }\n";
-    kopernicus_cfg << "    }\n";
-    kopernicus_cfg << "  }\n";
-    kopernicus_cfg << "}\n";
+    if (!is_star) {
+      kopernicus_cfg << "    @Item[" << slippist_name << "] {\n";
+      kopernicus_cfg << "      @celestialBodyName = " << name << "\n";
+      kopernicus_cfg << "      @transformName = " << name << "\n";
+      kopernicus_cfg << "    }\n";
+    }
   }
+  kopernicus_cfg << "  }\n";
+  kopernicus_cfg << "}\n";
 }
 
 }  // namespace tools
