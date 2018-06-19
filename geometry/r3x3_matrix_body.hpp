@@ -14,16 +14,19 @@ namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
 
-inline R3x3Matrix::R3x3Matrix(R3Element<double> const& row_x,
-                              R3Element<double> const& row_y,
-                              R3Element<double> const& row_z)
+template<typename Scalar>
+R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
+                               R3Element<Scalar> const& row_y,
+                               R3Element<Scalar> const& row_z)
     : row_x_(row_x), row_y_(row_y), row_z_(row_z) {}
 
-inline double R3x3Matrix::Trace() const {
+template<typename Scalar>
+Scalar R3x3Matrix<Scalar>::Trace() const {
   return row_x_.x + row_y_.y + row_z_.z;
 }
 
-FORCE_INLINE(inline) double R3x3Matrix::operator()(
+template<typename Scalar>
+FORCE_INLINE(inline) Scalar R3x3Matrix<Scalar>::operator()(
     int const r, int const c) const {
   switch (r) {
     case 0:
@@ -39,145 +42,169 @@ FORCE_INLINE(inline) double R3x3Matrix::operator()(
   }
 }
 
-inline R3x3Matrix R3x3Matrix::Transpose() const {
+template<typename Scalar>
+R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Transpose() const {
   return R3x3Matrix({row_x_.x, row_y_.x, row_z_.x},
                     {row_x_.y, row_y_.y, row_z_.y},
                     {row_x_.z, row_y_.z, row_z_.z});
 }
 
-inline R3x3Matrix& R3x3Matrix::operator+=(
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator+=(
     R3x3Matrix const& right) {
   return *this = *this + right;
 }
 
-inline R3x3Matrix& R3x3Matrix::operator-=(
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator-=(
     R3x3Matrix const& right) {
   return *this = *this - right;
 }
 
-inline R3x3Matrix& R3x3Matrix::operator*=(
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(
     R3x3Matrix const& right) {
   return *this = *this * right;
 }
 
-inline R3x3Matrix& R3x3Matrix::operator*=(double const right) {
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator*=(double const right) {
   return *this = *this * right;
 }
 
-inline R3x3Matrix& R3x3Matrix::operator/=(double const right) {
+template<typename Scalar>
+R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
   return *this = *this / right;
 }
 
-inline R3x3Matrix R3x3Matrix::Identity() {
+template<typename Scalar>
+R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Identity() {
   return R3x3Matrix({1, 0, 0},
                     {0, 1, 0},
                     {0, 0, 1});
 }
 
-inline void R3x3Matrix::WriteToMessage(
+template<typename Scalar>
+void R3x3Matrix<Scalar>::WriteToMessage(
     not_null<serialization::R3x3Matrix*> const message) const {
   row_x_.WriteToMessage(message->mutable_row_x());
   row_y_.WriteToMessage(message->mutable_row_y());
   row_z_.WriteToMessage(message->mutable_row_z());
 }
 
-inline R3x3Matrix R3x3Matrix::ReadFromMessage(
+template<typename Scalar>
+R3x3Matrix<Scalar> R3x3Matrix<Scalar>::ReadFromMessage(
     serialization::R3x3Matrix const& message) {
   return R3x3Matrix(R3Element<double>::ReadFromMessage(message.row_x()),
                     R3Element<double>::ReadFromMessage(message.row_y()),
                     R3Element<double>::ReadFromMessage(message.row_z()));
 }
 
-inline R3x3Matrix operator+(R3x3Matrix const& right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& right) {
   return R3x3Matrix(+right.row_x_, +right.row_y_, +right.row_z_);
 }
 
-inline R3x3Matrix operator-(R3x3Matrix const& right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& right) {
   return R3x3Matrix(-right.row_x_, -right.row_y_, -right.row_z_);
 }
 
-inline R3x3Matrix operator+(R3x3Matrix const& left,
-                            R3x3Matrix const& right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& left,
+                             R3x3Matrix<Scalar> const& right) {
   return R3x3Matrix(left.row_x_ + right.row_x_,
                     left.row_y_ + right.row_y_,
                     left.row_z_ + right.row_z_);
 }
 
-inline R3x3Matrix operator-(R3x3Matrix const& left,
-                            R3x3Matrix const& right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& left,
+                             R3x3Matrix<Scalar> const& right) {
   return R3x3Matrix(left.row_x_ - right.row_x_,
                     left.row_y_ - right.row_y_,
                     left.row_z_ - right.row_z_);
 }
 
-inline R3x3Matrix operator*(R3x3Matrix const& left,
-                            R3x3Matrix const& right) {
+template<typename LScalar, typename RScalar>
+R3x3Matrix<Product<LScalar, RScalar>> operator*(
+    R3x3Matrix<LScalar> const& left,
+    R3x3Matrix<RScalar> const& right) {
   R3x3Matrix const t_right = right.Transpose();
-  return R3x3Matrix({Dot(left.row_x_, t_right.row_x_),
-                     Dot(left.row_x_, t_right.row_y_),
-                     Dot(left.row_x_, t_right.row_z_)},
-                    {Dot(left.row_y_, t_right.row_x_),
-                     Dot(left.row_y_, t_right.row_y_),
-                     Dot(left.row_y_, t_right.row_z_)},
-                    {Dot(left.row_z_, t_right.row_x_),
-                     Dot(left.row_z_, t_right.row_y_),
-                     Dot(left.row_z_, t_right.row_z_)});
+  return R3x3Matrix<Product<LScalar, RScalar>>(
+             {Dot(left.row_x_, t_right.row_x_),
+              Dot(left.row_x_, t_right.row_y_),
+              Dot(left.row_x_, t_right.row_z_)},
+             {Dot(left.row_y_, t_right.row_x_),
+              Dot(left.row_y_, t_right.row_y_),
+              Dot(left.row_y_, t_right.row_z_)},
+             {Dot(left.row_z_, t_right.row_x_),
+              Dot(left.row_z_, t_right.row_y_),
+              Dot(left.row_z_, t_right.row_z_)});
 }
+
+template<typename LScalar, typename RScalar>
+R3Element<Product<LScalar, RScalar>> operator*(
+    R3x3Matrix<LScalar> const& left,
+    R3Element<RScalar> const& right) {
+  return R3Element<Product<LScalar, RScalar>>({Dot(left.row_x_, right),
+                                               Dot(left.row_y_, right),
+                                               Dot(left.row_z_, right)});
+}
+
+template<typename LScalar, typename RScalar>
+R3Element<Product<LScalar, RScalar>> operator*(
+    R3Element<LScalar> const& left,
+    R3x3Matrix<RScalar> const& right) {
+  R3x3Matrix const t_right = right.Transpose();
+  return R3Element<Product<LScalar, RScalar>>({Dot(left, t_right.row_x_),
+                                               Dot(left, t_right.row_y_),
+                                               Dot(left, t_right.row_z_)});
+}
+
 
 template<typename Scalar>
-R3Element<Scalar> operator*(R3x3Matrix const& left,
-                            R3Element<Scalar> const& right) {
-  return R3Element<Scalar>({Dot(left.row_x_, right),
-                            Dot(left.row_y_, right),
-                            Dot(left.row_z_, right)});
-}
-
-template<typename Scalar>
-R3Element<Scalar> operator*(R3Element<Scalar> const& left,
-                            R3x3Matrix const& right) {
-  R3x3Matrix const t_right = right.Transpose();
-  return R3Element<Scalar>({Dot(left, t_right.row_x_),
-                            Dot(left, t_right.row_y_),
-                            Dot(left, t_right.row_z_)});
-}
-
-
-inline R3x3Matrix operator*(double const left,
-                            R3x3Matrix const& right) {
+R3x3Matrix<Scalar> operator*(double const left,
+                             R3x3Matrix<Scalar> const& right) {
   return R3x3Matrix(left * right.row_x_,
                     left * right.row_y_,
                     left * right.row_z_);
 }
 
-inline R3x3Matrix operator*(R3x3Matrix const& left,
-                            double const right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator*(R3x3Matrix<Scalar> const& left,
+                             double const right) {
   return R3x3Matrix(left.row_x_ * right,
                     left.row_y_ * right,
                     left.row_z_ * right);
 }
 
-inline R3x3Matrix operator/(R3x3Matrix const& left,
-                            double const right) {
+template<typename Scalar>
+R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left,
+                             double const right) {
   return R3x3Matrix(left.row_x_ / right,
                     left.row_y_ / right,
                     left.row_z_ / right);
 }
 
-inline bool operator==(R3x3Matrix const& left,
-                       R3x3Matrix const& right) {
+template<typename Scalar>
+bool operator==(R3x3Matrix<Scalar> const& left,
+                R3x3Matrix<Scalar> const& right) {
   return left.row_x_ == right.row_x_ &&
          left.row_y_ == right.row_y_ &&
          left.row_z_ == right.row_z_;
 }
 
-inline bool operator!=(R3x3Matrix const& left,
-                       R3x3Matrix const& right) {
+template<typename Scalar>
+bool operator!=(R3x3Matrix<Scalar> const& left,
+                R3x3Matrix<Scalar> const& right) {
   return left.row_x_ != right.row_x_ ||
          left.row_y_ != right.row_y_ ||
          left.row_z_ != right.row_z_;
 }
 
-inline std::string DebugString(R3x3Matrix const& r3x3_matrix) {
+template<typename Scalar>
+std::string DebugString(R3x3Matrix<Scalar> const& r3x3_matrix) {
   std::string result = "{";
   result += DebugString(r3x3_matrix.row_x_);
   result += ", ";
@@ -188,8 +215,9 @@ inline std::string DebugString(R3x3Matrix const& r3x3_matrix) {
   return result;
 }
 
-inline std::ostream& operator<<(std::ostream& out,
-                                R3x3Matrix const& r3x3_matrix) {
+template<typename Scalar>
+std::ostream& operator<<(std::ostream& out,
+                         R3x3Matrix<Scalar> const& r3x3_matrix) {
   out << DebugString(r3x3_matrix);
   return out;
 }
