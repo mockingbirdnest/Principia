@@ -54,9 +54,10 @@ class RotationTest : public testing::Test {
         e3_(Vector<double, World>(R3Element<double>({0, 0, 1}))),
         rotation_a_(Rot(120 * Degree, Bivector<double, World>({1, 1, 1}))),
         rotation_b_(Rot(90 * Degree, Bivector<double, World>({1, 0, 0}))),
-        rotation_c_(Rot(ToQuaternion(R3x3Matrix({{0.5, 0.5 * sqrt(3), 0},
-                                                 {-0.5 * sqrt(3), 0.5, 0},
-                                                 {0, 0, 1}})))) {}
+        rotation_c_(Rot(ToQuaternion(
+                            R3x3Matrix<double>({{0.5, 0.5 * sqrt(3), 0},
+                                                {-0.5 * sqrt(3), 0.5, 0},
+                                                {0, 0, 1}})))) {}
 
   Vector<quantities::Length, World> vector_;
   Bivector<quantities::Length, World> bivector_;
