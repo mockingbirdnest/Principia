@@ -116,6 +116,7 @@ std::ostream& operator<<(std::ostream& out,
 }  // namespace internal_symmetric_bilinear_form
 
 using internal_symmetric_bilinear_form::SymmetricBilinearForm;
+using internal_symmetric_bilinear_form::SymmetricProduct;
 
 }  // namespace geometry
 }  // namespace principia

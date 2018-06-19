@@ -142,6 +142,7 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_r3x3_matrix
 
+using internal_r3x3_matrix::KroneckerProduct;
 using internal_r3x3_matrix::R3x3Matrix;
 
 }  // namespace geometry

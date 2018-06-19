@@ -144,12 +144,18 @@ template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right) {
+  return SymmetricBilinearForm(
+      0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
+             KroneckerProduct(right.coordinates(), left.coordinates())));
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right) {
+  return SymmetricBilinearForm(
+      0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
+             KroneckerProduct(right.coordinates(), left.coordinates())));
 }
 
 template<typename Scalar, typename Frame>
