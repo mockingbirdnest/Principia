@@ -47,11 +47,11 @@ constexpr char kerbin[] = "Kerbin";
 std::map<std::string, Angle> const body_angle = {
     {"Trappist-1b", -90 * Degree},
     {"Trappist-1c", -90 * Degree},
-    {"Trappist-1d", 0 * Degree},
+    {"Trappist-1d", -90 * Degree},
     {"Trappist-1e", -90 * Degree},
-    {"Trappist-1f", 200 * Degree},
-    {"Trappist-1g", -80 * Degree},
-    {"Trappist-1h", 180 * Degree}};
+    {"Trappist-1f", 180 * Degree},
+    {"Trappist-1g", -90 * Degree},
+    {"Trappist-1h", -90 * Degree}};
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
@@ -119,9 +119,9 @@ void GenerateKopernicusForSlippist1(
     bool const is_kerbin =
         FindOrDie(body_name_map, name) == kerbin;
     kopernicus_cfg << "  @Body[" << FindOrDie(body_name_map, name) << "] {\n";
-    if (is_star || is_kerbin) {
+    if (is_kerbin) {
       kopernicus_cfg << "    %cbNameLater = " << name << "\n";
-    } else {
+    } else if (!is_star) {
       kopernicus_cfg << "    @name = " << name << "\n";
     }
     kopernicus_cfg << "    @Properties {\n";
@@ -130,9 +130,7 @@ void GenerateKopernicusForSlippist1(
     } else {
       kopernicus_cfg << "      !geeASL = delete\n";
     }
-    if (is_star || is_kerbin) {
-      kopernicus_cfg << "      @displayName = " << name << "\n";
-    }
+    kopernicus_cfg << "      @displayName = " << name << "\n";
     kopernicus_cfg << "      %gravParameter = "
                    << DebugString(GravitationalConstant *
                                   ParseQuantity<Mass>(body.mass()) /
@@ -148,6 +146,18 @@ void GenerateKopernicusForSlippist1(
       kopernicus_cfg << "      %tidallyLocked = false\n";
     }
     kopernicus_cfg << "    }\n";
+    if (is_star) {
+      kopernicus_cfg << "    @ScaledVersion {\n";
+      kopernicus_cfg << "      @Light {\n";
+      for (char const* const curve :
+           {"ScaledIntensityCurve", "IntensityCurve", "IVAIntensityCurve"}) {
+        kopernicus_cfg << "        @" << curve << " {\n";
+        kopernicus_cfg << "          @key,*[0, ] *= 10\n";
+        kopernicus_cfg << "        }\n";
+      }
+      kopernicus_cfg << "      }\n";
+      kopernicus_cfg << "    }\n";
+    }
     if (!is_star) {
       CHECK(star.has_value());
       auto const keplerian_elements =
@@ -180,6 +190,15 @@ void GenerateKopernicusForSlippist1(
                                         elements.mean_anomaly()) / Radian)
                      << "\n";
       kopernicus_cfg << "    }\n";
+      kopernicus_cfg << "    @Atmosphere {\n";
+      kopernicus_cfg << "      @altitude *= 2\n";
+      for (char const* const curve :
+           {"temperatureCurve", "temperatureSunMultCurve", "pressureCurve"}) {
+        kopernicus_cfg << "      @" << curve << " {\n";
+        kopernicus_cfg << "        @key,*[0, ] *= 2\n";
+        kopernicus_cfg << "      }\n";
+      }
+      kopernicus_cfg << "    }\n";
     }
     kopernicus_cfg << "  }\n";
   }
@@ -206,6 +225,25 @@ void GenerateKopernicusForSlippist1(
     kopernicus_cfg << "  }\n";
   }
   kopernicus_cfg << "}\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (is_star) {
+      continue;
+    }
+    bool const is_kerbin = FindOrDie(body_name_map, name) == kerbin;
+    std::string const slippist_name =
+        is_kerbin ? "Echo" : body_name_map.at(name);
+    kopernicus_cfg << "@Scatterer_atmosphere,* {\n";
+    kopernicus_cfg << "  @Atmo[" << slippist_name << "] {\n";
+    kopernicus_cfg << "    @configPoints {\n";
+    kopernicus_cfg << "      @Item,* {\n";
+    kopernicus_cfg << "        @altitude *= 2\n";
+    kopernicus_cfg << "      }\n";
+    kopernicus_cfg << "    }\n";
+    kopernicus_cfg << "  }\n";
+    kopernicus_cfg << "}\n";
+  }
 }
 
 }  // namespace tools

@@ -79,7 +79,8 @@ void GenerateConfiguration(std::string const& game_epoch,
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     gravity_model_cfg << "  body {\n";
-    gravity_model_cfg << "    name                    = " << name << "\n";
+    gravity_model_cfg << "    name                    = "
+                      << (name == "Trappist-1" ? "Sun" : name) << "\n";
     if (body.has_gravitational_parameter()) {
       gravity_model_cfg << "    gravitational_parameter = "
                         << body.gravitational_parameter() << "\n";
@@ -163,7 +164,9 @@ void GenerateConfiguration(std::string const& game_epoch,
       auto const& body = barycentric_system.bodies[i];
       auto const& dof = barycentric_system.degrees_of_freedom[i];
       initial_state_cfg << "  body {\n";
-      initial_state_cfg << "    name = " << body->name() << "\n";
+      initial_state_cfg << "    name = "
+                        << (body->name() == "Trappist-1" ? "Sun" : body->name())
+                        << "\n";
       initial_state_cfg << "    x    = " << displacement(dof).x << "\n";
       initial_state_cfg << "    y    = " << displacement(dof).y << "\n";
       initial_state_cfg << "    z    = " << displacement(dof).z << "\n";
