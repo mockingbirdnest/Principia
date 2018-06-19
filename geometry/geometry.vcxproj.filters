@@ -190,5 +190,8 @@
     <ClCompile Include="rp2_point_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="symmetric_bilinear_form_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

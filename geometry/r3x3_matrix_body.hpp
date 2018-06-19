@@ -9,10 +9,13 @@
 #include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
+
+using quantities::SIUnit;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
@@ -79,9 +82,11 @@ R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
 
 template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Identity() {
-  return R3x3Matrix({1, 0, 0},
-                    {0, 1, 0},
-                    {0, 0, 1});
+  constexpr Scalar one = SIUnit<Scalar>();
+  constexpr Scalar zero;
+  return R3x3Matrix({one, zero, zero},
+                    {zero, one, zero},
+                    {zero, zero, one});
 }
 
 template<typename Scalar>

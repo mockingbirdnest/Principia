@@ -67,5 +67,6 @@
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="rp2_point_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
+    <ClCompile Include="symmetric_bilinear_form_test.cpp" />
   </ItemGroup>
 </Project>
