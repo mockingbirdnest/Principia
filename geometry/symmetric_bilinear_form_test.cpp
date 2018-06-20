@@ -3,6 +3,8 @@
 
 #include "geometry/frame.hpp"
 #include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
+#include "geometry/r3x3_matrix.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "quantities/quantities.hpp"
@@ -23,23 +25,71 @@ class SymmetricBilinearFormTest : public ::testing::Test {
   using World =
       Frame<serialization::Frame::TestTag, serialization::Frame::TEST, true>;
 
-  SymmetricBilinearFormTest()
-      : v1_(Vector<Length, World>({1 * Metre, 2 * Metre, -4 * Metre})),
-        v2_(Vector<Length, World>({2 * Metre, -3 * Metre, 5 * Metre})) {}
+  SymmetricBilinearFormTest() {}
 
-  Vector<Length, World> v1_;
-  Vector<Length, World> v2_;
+  SymmetricBilinearForm<Length, World> MakeSymmetricBilinearForm(
+      R3x3Matrix<double> const& untyped_matrix) {
+    CHECK_EQ(untyped_matrix(0, 1), untyped_matrix(1, 0));
+    CHECK_EQ(untyped_matrix(0, 2), untyped_matrix(2, 0));
+    CHECK_EQ(untyped_matrix(1, 2), untyped_matrix(2, 1));
+    R3x3Matrix<Length> const typed_matrix(
+        R3Element<double>(
+            untyped_matrix(0, 0), untyped_matrix(0, 1), untyped_matrix(0, 2)) *
+            Metre,
+        R3Element<double>(
+            untyped_matrix(1, 0), untyped_matrix(1, 1), untyped_matrix(1, 2)) *
+            Metre,
+        R3Element<double>(
+            untyped_matrix(2, 0), untyped_matrix(2, 1), untyped_matrix(2, 2)) *
+            Metre);
+    return SymmetricBilinearForm<Length, World>(typed_matrix);
+  }
 };
 
 TEST_F(SymmetricBilinearFormTest, UnaryOperators) {
-  auto const f1 =
-      SymmetricProduct<Length, Length, World>(v1_, v2_) +
-      SymmetricBilinearForm<Square<Length>, World>::InnerProductForm();
-  auto const f2 =
-      SymmetricProduct<Length, Length, World>(-v1_, v2_) -
-      SymmetricBilinearForm<Square<Length>, World>::InnerProductForm();
-  EXPECT_THAT(f1, Eq(+f1));
-  EXPECT_THAT(f2, Eq(-f1));
+  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                               {2, -3,  5},
+                                                               {4,  5,  0}));
+  EXPECT_THAT(+f1,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}))));
+  EXPECT_THAT(-f1,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({-1, -2, -4},
+                                                              {-2,  3, -5},
+                                                              {-4, -5,  0}))));
+}
+
+TEST_F(SymmetricBilinearFormTest, BinaryOperators) {
+  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                               {2, -3,  5},
+                                                               {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
+                                                               {2, 4, 0},
+                                                               {3, 0, 5}));
+  EXPECT_THAT(f1 + f2,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({2, 4, 7},
+                                                              {4, 1, 5},
+                                                              {7, 5, 5}))));
+  EXPECT_THAT(f1 - f2,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({0,  0,  1},
+                                                              {0, -7,  5},
+                                                              {1,  5,  -5}))));
+  EXPECT_THAT((-2) * f1,
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({-2,  -4,  -8},
+                                        {-4,   6, -10},
+                                        {-8, -10,   0}))));
+  EXPECT_THAT(f1 * 3,
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({ 3,  6, 12},
+                                        { 6, -9, 15},
+                                        {12, 15,  0}))));
+  EXPECT_THAT(f1 / 2,
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({0.5,    1,   2},
+                                        {  1, -1.5, 2.5},
+                                        {  2,  2.5,   0}))));
 }
 
 }  // namespace internal_symmetric_bilinear_form

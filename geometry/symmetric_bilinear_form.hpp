@@ -113,6 +113,8 @@ class SymmetricBilinearForm {
   friend std::ostream& operator<<(
       std::ostream& out,
       SymmetricBilinearForm<Scalar, Frame> const& form);
+
+  friend class SymmetricBilinearFormTest;
 };
 
 template<typename Scalar, typename Frame>
