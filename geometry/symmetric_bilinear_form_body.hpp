@@ -64,48 +64,48 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator+(
     SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm(right.matrix_);
+  return SymmetricBilinearForm<Scalar, Frame>(right.matrix_);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator-(
     SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm(-right.matrix_);
+  return SymmetricBilinearForm<Scalar, Frame>(-right.matrix_);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator+(
     SymmetricBilinearForm<Scalar, Frame> const& left,
     SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm(left.matrix_ + right.matrix_);
+  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ + right.matrix_);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator-(
     SymmetricBilinearForm<Scalar, Frame> const& left,
     SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm(left.matrix_ - right.matrix_);
+  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ - right.matrix_);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator*(
     double const left,
     SymmetricBilinearForm<Scalar, Frame> const& right) {
-  return SymmetricBilinearForm(left * right.matrix_);
+  return SymmetricBilinearForm<Scalar, Frame>(left * right.matrix_);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator*(
     SymmetricBilinearForm<Scalar, Frame> const& left,
     double const right) {
-  return SymmetricBilinearForm(left.matrix_ * right);
+  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ * right);
 }
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator/(
     SymmetricBilinearForm<Scalar, Frame> const& left,
     double const right) {
-  return SymmetricBilinearForm(left.matrix_ / right);
+  return SymmetricBilinearForm<Scalar, Frame>(left.matrix_ / right);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
@@ -144,7 +144,7 @@ template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm(
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(
       0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
              KroneckerProduct(right.coordinates(), left.coordinates())));
 }
@@ -153,7 +153,7 @@ template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Bivector<LScalar, Frame> const& left,
     Bivector<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm(
+  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(
       0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
              KroneckerProduct(right.coordinates(), left.coordinates())));
 }

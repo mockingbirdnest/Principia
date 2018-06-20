@@ -38,6 +38,81 @@ class SymmetricBilinearForm {
   // All the operations on this class must ensure that this matrix remains
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
+
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator+(
+      SymmetricBilinearForm<Scalar, Frame> const& right);
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator-(
+      SymmetricBilinearForm<Scalar, Frame> const& right);
+
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator+(
+      SymmetricBilinearForm<Scalar, Frame> const& left,
+      SymmetricBilinearForm<Scalar, Frame> const& right);
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator-(
+      SymmetricBilinearForm<Scalar, Frame> const& left,
+      SymmetricBilinearForm<Scalar, Frame> const& right);
+
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator*(
+      double left,
+      SymmetricBilinearForm<Scalar, Frame> const& right);
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator*(
+      SymmetricBilinearForm<Scalar, Frame> const& left,
+      double right);
+  template<typename Scalar, typename Frame>
+  friend SymmetricBilinearForm<Scalar, Frame> operator/(
+      SymmetricBilinearForm<Scalar, Frame> const& left,
+      double right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend Vector<Product<LScalar, RScalar>, Frame> operator*(
+      SymmetricBilinearForm<LScalar, Frame> const& left,
+      Vector<RScalar, Frame> const& right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend Bivector<Product<LScalar, RScalar>, Frame> operator*(
+      SymmetricBilinearForm<LScalar, Frame> const& left,
+      Bivector<RScalar, Frame> const& right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend Vector<Product<LScalar, RScalar>, Frame> operator*(
+      Vector<LScalar, Frame> const& left,
+      SymmetricBilinearForm<RScalar, Frame> const& right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend Bivector<Product<LScalar, RScalar>, Frame> operator*(
+      Bivector<LScalar, Frame> const& left,
+      SymmetricBilinearForm<RScalar, Frame> const& right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>
+  SymmetricProduct(Vector<LScalar, Frame> const& left,
+                   Vector<RScalar, Frame> const& right);
+
+  template<typename LScalar, typename RScalar, typename Frame>
+  friend SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>
+  SymmetricProduct(Bivector<LScalar, Frame> const& left,
+                   Bivector<RScalar, Frame> const& right);
+
+  template<typename Scalar, typename Frame>
+  friend bool operator==(SymmetricBilinearForm<Scalar, Frame> const& left,
+                         SymmetricBilinearForm<Scalar, Frame> const& right);
+  template<typename Scalar, typename Frame>
+  friend bool operator!=(SymmetricBilinearForm<Scalar, Frame> const& left,
+                         SymmetricBilinearForm<Scalar, Frame> const& right);
+
+  template<typename Scalar, typename Frame>
+  friend std::string DebugString(
+      SymmetricBilinearForm<Scalar, Frame> const& form);
+
+  template<typename Scalar, typename Frame>
+  friend std::ostream& operator<<(
+      std::ostream& out,
+      SymmetricBilinearForm<Scalar, Frame> const& form);
 };
 
 template<typename Scalar, typename Frame>
