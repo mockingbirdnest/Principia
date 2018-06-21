@@ -36,7 +36,8 @@ template<typename LScalar, typename RScalar>
 Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, Frame>::operator()(
     Vector<LScalar, Frame> const& left,
-    Vector<RScalar, Frame> const& right) {
+    Vector<RScalar, Frame> const& right) const {
+  return InnerProduct(left, *this * right);
 }
 
 template<typename Scalar, typename Frame>
@@ -44,7 +45,8 @@ template<typename LScalar, typename RScalar>
 Product<Scalar, Product<LScalar, RScalar>>
 SymmetricBilinearForm<Scalar, Frame>::operator()(
     Bivector<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right) {
+    Bivector<RScalar, Frame> const& right) const {
+  return InnerProduct(left, *this * right);
 }
 
 template<typename Scalar, typename Frame>

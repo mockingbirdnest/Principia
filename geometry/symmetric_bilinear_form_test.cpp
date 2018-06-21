@@ -47,6 +47,17 @@ class SymmetricBilinearFormTest : public ::testing::Test {
   }
 };
 
+TEST_F(SymmetricBilinearFormTest, Equality) {
+  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                               {2, -3,  5},
+                                                               {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
+                                                               {2, 4, 0},
+                                                               {3, 0, 5}));
+  EXPECT_TRUE(f1 == f1);
+  EXPECT_TRUE(f1 != f2);
+}
+
 TEST_F(SymmetricBilinearFormTest, UnaryOperators) {
   auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
                                                               {2, -3,  5},
@@ -171,6 +182,18 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
                      R3x3Matrix<double>({   2,     6,  -3.5},
                                         {   6,    18, -10.5},
                                         {-3.5, -10.5,   5}))));
+}
+
+TEST_F(SymmetricBilinearFormTest, Apply) {
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}));
+  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<Length, World> v2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  Bivector<Length, World> b1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  EXPECT_THAT(f(v1, v2), Eq(-161 * Pow<3>(Metre)));
+  EXPECT_THAT(f(b1, b2), Eq(-161 * Pow<3>(Metre)));
 }
 
 }  // namespace internal_symmetric_bilinear_form

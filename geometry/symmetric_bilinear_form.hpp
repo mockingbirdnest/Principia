@@ -22,12 +22,12 @@ class SymmetricBilinearForm {
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Vector<LScalar, Frame> const& left,
-      Vector<RScalar, Frame> const& right);
+      Vector<RScalar, Frame> const& right) const;
 
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Bivector<LScalar, Frame> const& left,
-      Bivector<RScalar, Frame> const& right);
+      Bivector<RScalar, Frame> const& right) const;
 
   static SymmetricBilinearForm InnerProductForm();
 
