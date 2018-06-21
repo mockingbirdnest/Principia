@@ -92,6 +92,41 @@ TEST_F(SymmetricBilinearFormTest, BinaryOperators) {
                                         {  2,  2.5,   0}))));
 }
 
+TEST_F(SymmetricBilinearFormTest, Assignment) {
+  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                               {2, -3,  5},
+                                                               {4,  5,  0}));
+  auto const f2 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1, 2, 3},
+                                                               {2, 4, 0},
+                                                               {3, 0, 5}));
+  auto a = f1;
+  auto b = f1;
+  auto c = f1;
+  auto d = f1;
+  a += f2;
+  b -= f2;
+  c *= 3;
+  d /= 2;
+  EXPECT_THAT(a,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({2, 4, 7},
+                                                              {4, 1, 5},
+                                                              {7, 5, 5}))));
+  EXPECT_THAT(b,
+              Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({0,  0,  1},
+                                                              {0, -7,  5},
+                                                              {1,  5,  -5}))));
+  EXPECT_THAT(c,
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({ 3,  6, 12},
+                                        { 6, -9, 15},
+                                        {12, 15,  0}))));
+  EXPECT_THAT(d,
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({0.5,    1,   2},
+                                        {  1, -1.5, 2.5},
+                                        {  2,  2.5,   0}))));
+}
+
 }  // namespace internal_symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia
