@@ -16,6 +16,7 @@ namespace geometry {
 namespace internal_symmetric_bilinear_form {
 
 using quantities::Length;
+using quantities::Pow;
 using quantities::Square;
 using quantities::si::Metre;
 using ::testing::Eq;
@@ -47,14 +48,14 @@ class SymmetricBilinearFormTest : public ::testing::Test {
 };
 
 TEST_F(SymmetricBilinearFormTest, UnaryOperators) {
-  auto const f1 = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
-                                                               {2, -3,  5},
-                                                               {4,  5,  0}));
-  EXPECT_THAT(+f1,
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}));
+  EXPECT_THAT(+f,
               Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
                                                               {2, -3,  5},
                                                               {4,  5,  0}))));
-  EXPECT_THAT(-f1,
+  EXPECT_THAT(-f,
               Eq(MakeSymmetricBilinearForm(R3x3Matrix<double>({-1, -2, -4},
                                                               {-2,  3, -5},
                                                               {-4, -5,  0}))));
@@ -125,6 +126,34 @@ TEST_F(SymmetricBilinearFormTest, Assignment) {
                      R3x3Matrix<double>({0.5,    1,   2},
                                         {  1, -1.5, 2.5},
                                         {  2,  2.5,   0}))));
+}
+
+TEST_F(SymmetricBilinearFormTest, LinearMap) {
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}));
+  Vector<Length, World> v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Bivector<Length, World> b({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  EXPECT_THAT(
+      f * v,
+      Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
+                                        -12.0 * Pow<2>(Metre),
+                                        19.0 * Pow<2>(Metre)})));
+  EXPECT_THAT(
+      v * f,
+      Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
+                                        -12.0 * Pow<2>(Metre),
+                                        19.0 * Pow<2>(Metre)})));
+  EXPECT_THAT(
+      f * b,
+      Eq(Bivector<Square<Length>, World>({-6.0 * Pow<2>(Metre),
+                                          -39.0 * Pow<2>(Metre),
+                                          38.0 * Pow<2>(Metre)})));
+  EXPECT_THAT(
+      b * f,
+      Eq(Bivector<Square<Length>, World>({-6.0 * Pow<2>(Metre),
+                                          -39.0 * Pow<2>(Metre),
+                                          38.0 * Pow<2>(Metre)})));
 }
 
 }  // namespace internal_symmetric_bilinear_form
