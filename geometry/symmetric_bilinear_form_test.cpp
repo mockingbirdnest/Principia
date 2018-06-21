@@ -156,6 +156,23 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
                                           38.0 * Pow<2>(Metre)})));
 }
 
+TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
+  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<double, World> v2({2.0, 6.0, -5.0});
+  Bivector<double, World> b1({1.0, 3.0, -1.0});
+  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  EXPECT_THAT(SymmetricProduct(v1, v2),
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({   2,     6,  -3.5},
+                                        {   6,    18, -10.5},
+                                        {-3.5, -10.5,   5}))));
+  EXPECT_THAT(SymmetricProduct(b1, b2),
+              Eq(MakeSymmetricBilinearForm(
+                     R3x3Matrix<double>({   2,     6,  -3.5},
+                                        {   6,    18, -10.5},
+                                        {-3.5, -10.5,   5}))));
+}
+
 }  // namespace internal_symmetric_bilinear_form
 }  // namespace geometry
 }  // namespace principia
