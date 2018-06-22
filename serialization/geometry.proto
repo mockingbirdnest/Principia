@@ -68,6 +68,11 @@ message Sign {
   required bool negative = 1;
 }
 
+message SymmetricBilinearForm {
+  required Frame frame = 1;
+  required R3x3Matrix matrix = 2;
+}
+
 // Linear maps follow.
 
 message LinearMap {

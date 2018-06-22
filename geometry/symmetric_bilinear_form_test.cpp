@@ -10,6 +10,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/matchers.hpp"
 
 namespace principia {
 namespace geometry {
@@ -19,6 +20,7 @@ using quantities::Length;
 using quantities::Pow;
 using quantities::Square;
 using quantities::si::Metre;
+using testing_utilities::EqualsProto;
 using ::testing::Eq;
 
 class SymmetricBilinearFormTest : public ::testing::Test {
@@ -201,6 +203,21 @@ TEST_F(SymmetricBilinearFormTest, Apply) {
   Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(f(v1, v2), Eq(-161 * Pow<3>(Metre)));
   EXPECT_THAT(f(b1, b2), Eq(-161 * Pow<3>(Metre)));
+}
+
+TEST_F(SymmetricBilinearFormTest, Serialization) {
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}));
+  serialization::SymmetricBilinearForm message1;
+  f.WriteToMessage(&message1);
+  EXPECT_TRUE(message1.has_frame());
+  EXPECT_TRUE(message1.has_matrix());
+  auto const g = SymmetricBilinearForm<Length, World>::ReadFromMessage(message1);
+  EXPECT_EQ(f, g);
+  serialization::SymmetricBilinearForm message2;
+  g.WriteToMessage(&message2);
+  EXPECT_THAT(message2, EqualsProto(message1));
 }
 
 }  // namespace internal_symmetric_bilinear_form
