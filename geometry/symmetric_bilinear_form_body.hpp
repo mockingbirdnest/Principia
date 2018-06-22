@@ -3,6 +3,8 @@
 
 #include "geometry/symmetric_bilinear_form.hpp"
 
+#include <string>
+
 namespace principia {
 namespace geometry {
 namespace internal_symmetric_bilinear_form {
@@ -57,11 +59,19 @@ SymmetricBilinearForm<Scalar, Frame>::InnerProductForm() {
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar> const& matrix) : matrix_(matrix) {} //CHECK
+    R3x3Matrix<Scalar> const& matrix) : matrix_(matrix) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
-    R3x3Matrix<Scalar>&& matrix) : matrix_(std::move(matrix)) {} //CHECK
+    R3x3Matrix<Scalar>&& matrix) : matrix_(std::move(matrix)) {
+  DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
+  DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
+  DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator+(

@@ -30,9 +30,6 @@ class SymmetricBilinearFormTest : public ::testing::Test {
 
   SymmetricBilinearForm<Length, World> MakeSymmetricBilinearForm(
       R3x3Matrix<double> const& untyped_matrix) {
-    CHECK_EQ(untyped_matrix(0, 1), untyped_matrix(1, 0));
-    CHECK_EQ(untyped_matrix(0, 2), untyped_matrix(2, 0));
-    CHECK_EQ(untyped_matrix(1, 2), untyped_matrix(2, 1));
     R3x3Matrix<Length> const typed_matrix(
         R3Element<double>(
             untyped_matrix(0, 0), untyped_matrix(0, 1), untyped_matrix(0, 2)) *

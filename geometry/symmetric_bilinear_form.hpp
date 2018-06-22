@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/named_quantities.hpp"
