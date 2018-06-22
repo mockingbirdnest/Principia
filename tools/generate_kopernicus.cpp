@@ -265,6 +265,46 @@ void GenerateKopernicusForSlippist1(
   }
   kopernicus_cfg << "  }\n";
   kopernicus_cfg << "}\n";
+  kopernicus_cfg << "@EVE_CLOUDS:AFTER[aSLIPPIST-1] {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (!is_star) {
+      kopernicus_cfg << "  @OBJECT:HAS[#body[" << body_name_map.at(name)
+                     << "]] {\n";
+      kopernicus_cfg << "    @body = " << name << "\n";
+      kopernicus_cfg << "    @altitude *= 2\n";
+      kopernicus_cfg << "  }\n";
+    }
+  }
+  kopernicus_cfg << "}\n";
+  kopernicus_cfg << "@EVE_SHADOWS:AFTER[aSLIPPIST-1] {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (!is_star) {
+      kopernicus_cfg << "  @OBJECT:HAS[#body[" << body_name_map.at(name)
+                     << "]] {\n";
+      kopernicus_cfg << "    @body = " << name << "\n";
+      kopernicus_cfg << "    !caster,* = delete\n";
+      auto const elements = SolarSystem<Sky>::MakeKeplerianElements(
+          solar_system.keplerian_initial_state_message(name).elements());
+      for (std::string const& caster_name : solar_system.names()) {
+        bool const caster_is_star =
+            !solar_system.keplerian_initial_state_message(caster_name)
+                 .has_parent();
+        if (!caster_is_star) {
+          auto const caster_elements = SolarSystem<Sky>::MakeKeplerianElements(
+              solar_system.keplerian_initial_state_message(caster_name).elements());
+          if (caster_elements.period < elements.period) {
+            kopernicus_cfg << "    caster = " << caster_name << "\n";
+          }
+        }
+      }
+      kopernicus_cfg << "  }\n";
+    }
+  }
+  kopernicus_cfg << "}\n";
 }
 
 }  // namespace tools
