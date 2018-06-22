@@ -31,8 +31,6 @@ class SymmetricBilinearForm {
       Bivector<LScalar, Frame> const& left,
       Bivector<RScalar, Frame> const& right) const;
 
-  static SymmetricBilinearForm InnerProductForm();
-
  private:
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar>&& matrix);
@@ -40,6 +38,9 @@ class SymmetricBilinearForm {
   // All the operations on this class must ensure that this matrix remains
   // symmetric.
   R3x3Matrix<Scalar> matrix_;
+
+  template<typename Frame>
+  friend SymmetricBilinearForm<double, Frame> const& InnerProductForm();
 
   template<typename Scalar, typename Frame>
   friend SymmetricBilinearForm<Scalar, Frame> operator+(
@@ -118,6 +119,9 @@ class SymmetricBilinearForm {
 
   friend class SymmetricBilinearFormTest;
 };
+
+template<typename Frame>
+SymmetricBilinearForm<double, Frame> const& InnerProductForm();
 
 template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame> operator+(

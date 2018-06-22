@@ -181,6 +181,16 @@ TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
                                         {-3.5, -10.5,   5}))));
 }
 
+TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
+  Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
+  Vector<double, World> v2({2.0, 6.0, -5.0});
+  Bivector<double, World> b1({1.0, 3.0, -1.0});
+  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
+  auto const a = InnerProductForm<World>()(v1, v2);
+  EXPECT_THAT(InnerProductForm<World>()(v1, v2), Eq(25 * Metre));
+  EXPECT_THAT(InnerProductForm<World>()(b1, b2), Eq(25 * Metre));
+}
+
 TEST_F(SymmetricBilinearFormTest, Apply) {
   auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
                                                               {2, -3,  5},

@@ -52,12 +52,6 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 }
 
 template<typename Scalar, typename Frame>
-SymmetricBilinearForm<Scalar, Frame>
-SymmetricBilinearForm<Scalar, Frame>::InnerProductForm() {
-  return SymmetricBilinearForm(R3x3Matrix<Scalar>::Identity());
-}
-
-template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
     R3x3Matrix<Scalar> const& matrix) : matrix_(matrix) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
@@ -71,6 +65,13 @@ SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));
   DCHECK_EQ(matrix_(0, 2), matrix_(2, 0));
   DCHECK_EQ(matrix_(1, 2), matrix_(2, 1));
+}
+
+template<typename Frame>
+SymmetricBilinearForm<double, Frame> const& InnerProductForm() {
+  static auto const identity =
+      SymmetricBilinearForm<double, Frame>(R3x3Matrix<double>::Identity());
+  return identity;
 }
 
 template<typename Scalar, typename Frame>

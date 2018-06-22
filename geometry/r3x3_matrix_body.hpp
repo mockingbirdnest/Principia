@@ -81,12 +81,10 @@ R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
 }
 
 template<typename Scalar>
-R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Identity() {
-  constexpr Scalar one = SIUnit<Scalar>();
-  constexpr Scalar zero;
-  return R3x3Matrix({one, zero, zero},
-                    {zero, one, zero},
-                    {zero, zero, one});
+R3x3Matrix<double> R3x3Matrix<Scalar>::Identity() {
+  return R3x3Matrix<double>({1, 0, 0},
+                            {0, 1, 0},
+                            {0, 0, 1});
 }
 
 template<typename Scalar>

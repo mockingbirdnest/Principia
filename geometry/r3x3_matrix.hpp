@@ -39,7 +39,7 @@ class R3x3Matrix final {
   R3x3Matrix& operator*=(double right);
   R3x3Matrix& operator/=(double right);
 
-  static R3x3Matrix Identity();
+  static R3x3Matrix<double> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
