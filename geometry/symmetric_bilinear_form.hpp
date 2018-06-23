@@ -1,4 +1,4 @@
-
+﻿
 #pragma once
 
 #include <string>
@@ -120,6 +120,8 @@ class SymmetricBilinearForm {
   friend class SymmetricBilinearFormTest;
 };
 
+// |InnerProductForm()| is the symmetric bilinear form such that for all v and
+// w, |InnerProductForm()(v, w) == InnerProduct(v, w)|.
 template<typename Frame>
 SymmetricBilinearForm<double, Frame> const& InnerProductForm();
 
@@ -172,6 +174,7 @@ Bivector<Product<LScalar, RScalar>, Frame> operator*(
     Bivector<LScalar, Frame> const& left,
     SymmetricBilinearForm<RScalar, Frame> const& right);
 
+// |SymmetricProduct(v, w)| is v ⊙ w ≔ (v ⊗ w + w ⊗ v) / 2.
 template<typename LScalar, typename RScalar, typename Frame>
 SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Vector<LScalar, Frame> const& left,

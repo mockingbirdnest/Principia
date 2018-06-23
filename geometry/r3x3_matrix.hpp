@@ -39,6 +39,7 @@ class R3x3Matrix final {
   R3x3Matrix& operator*=(double right);
   R3x3Matrix& operator/=(double right);
 
+  template<typename = std::is_arithmetic<Scalar>::value>
   static R3x3Matrix<double> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
