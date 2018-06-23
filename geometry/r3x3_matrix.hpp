@@ -4,6 +4,7 @@
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "geometry/r3_element.hpp"
@@ -39,7 +40,7 @@ class R3x3Matrix final {
   R3x3Matrix& operator*=(double right);
   R3x3Matrix& operator/=(double right);
 
-  template<typename = std::is_arithmetic<Scalar>::value>
+  template<typename = std::enable_if_t<std::is_arithmetic<Scalar>::value>>
   static R3x3Matrix<double> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
