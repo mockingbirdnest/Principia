@@ -40,8 +40,9 @@ class R3x3Matrix final {
   R3x3Matrix& operator*=(double right);
   R3x3Matrix& operator/=(double right);
 
-  template<typename = std::enable_if_t<std::is_arithmetic<Scalar>::value>>
-  static R3x3Matrix<double> Identity();
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_same<S, double>::value>>
+  static R3x3Matrix<S> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
