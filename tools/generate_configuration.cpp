@@ -75,12 +75,29 @@ void GenerateConfiguration(std::string const& game_epoch,
       (directory / gravity_model_stem).replace_extension(cfg));
   CHECK(gravity_model_cfg.good());
   gravity_model_cfg << "principia_gravity_model:NEEDS[" << needs << "] {\n";
+
+  // Find the star.  This is needed to construct Kepler orbits below.
+  std::optional<serialization::GravityModel::Body> star;
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    if (solar_system.has_keplerian_initial_state_message(name)) {
+      bool const is_star =
+          !solar_system.keplerian_initial_state_message(name).has_parent();
+      if (is_star) {
+        star = body;
+      }
+    }
+  }
+
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     gravity_model_cfg << "  body {\n";
     gravity_model_cfg << "    name                    = "
-                      << (name == "Trappist-1" ? "Sun" : name) << "\n";
+                      << (star.has_value() && name == star->name() ? "Sun"
+                                                                   : name)
+                      << "\n";
     if (body.has_gravitational_parameter()) {
       gravity_model_cfg << "    gravitational_parameter = "
                         << body.gravitational_parameter() << "\n";

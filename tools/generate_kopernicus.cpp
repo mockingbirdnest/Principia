@@ -157,8 +157,7 @@ void GenerateKopernicusForSlippist1(
       }
       kopernicus_cfg << "      }\n";
       kopernicus_cfg << "    }\n";
-    }
-    if (!is_star) {
+    } else {
       CHECK(star.has_value());
       auto const keplerian_elements =
           solar_system.MakeKeplerianElements(elements);
