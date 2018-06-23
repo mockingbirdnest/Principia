@@ -213,7 +213,8 @@ TEST_F(SymmetricBilinearFormTest, Serialization) {
   f.WriteToMessage(&message1);
   EXPECT_TRUE(message1.has_frame());
   EXPECT_TRUE(message1.has_matrix());
-  auto const g = SymmetricBilinearForm<Length, World>::ReadFromMessage(message1);
+  auto const g =
+      SymmetricBilinearForm<Length, World>::ReadFromMessage(message1);
   EXPECT_EQ(f, g);
   serialization::SymmetricBilinearForm message2;
   g.WriteToMessage(&message2);
