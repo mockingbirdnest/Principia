@@ -47,6 +47,8 @@
     <ClInclude Include="sign.hpp" />
     <ClInclude Include="sphere.hpp" />
     <ClInclude Include="sphere_body.hpp" />
+    <ClInclude Include="symmetric_bilinear_form.hpp" />
+    <ClInclude Include="symmetric_bilinear_form_body.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="barycentre_calculator_test.cpp" />
@@ -65,5 +67,6 @@
     <ClCompile Include="rotation_test.cpp" />
     <ClCompile Include="rp2_point_test.cpp" />
     <ClCompile Include="sign_test.cpp" />
+    <ClCompile Include="symmetric_bilinear_form_test.cpp" />
   </ItemGroup>
 </Project>

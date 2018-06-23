@@ -9,10 +9,13 @@
 #include "base/macros.hpp"
 #include "glog/logging.h"
 #include "quantities/elementary_functions.hpp"
+#include "quantities/quantities.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
+
+using quantities::SIUnit;
 
 template<typename Scalar>
 R3x3Matrix<Scalar>::R3x3Matrix(R3Element<Scalar> const& row_x,
@@ -78,10 +81,11 @@ R3x3Matrix<Scalar>& R3x3Matrix<Scalar>::operator/=(double const right) {
 }
 
 template<typename Scalar>
-R3x3Matrix<Scalar> R3x3Matrix<Scalar>::Identity() {
-  return R3x3Matrix({1, 0, 0},
-                    {0, 1, 0},
-                    {0, 0, 1});
+template<typename S, typename>
+R3x3Matrix<S> R3x3Matrix<Scalar>::Identity() {
+  return R3x3Matrix<S>({1, 0, 0},
+                       {0, 1, 0},
+                       {0, 0, 1});
 }
 
 template<typename Scalar>
@@ -102,28 +106,28 @@ R3x3Matrix<Scalar> R3x3Matrix<Scalar>::ReadFromMessage(
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix(+right.row_x_, +right.row_y_, +right.row_z_);
+  return R3x3Matrix<Scalar>(+right.row_x_, +right.row_y_, +right.row_z_);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix(-right.row_x_, -right.row_y_, -right.row_z_);
+  return R3x3Matrix<Scalar>(-right.row_x_, -right.row_y_, -right.row_z_);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix(left.row_x_ + right.row_x_,
-                    left.row_y_ + right.row_y_,
-                    left.row_z_ + right.row_z_);
+  return R3x3Matrix<Scalar>(left.row_x_ + right.row_x_,
+                            left.row_y_ + right.row_y_,
+                            left.row_z_ + right.row_z_);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix(left.row_x_ - right.row_x_,
-                    left.row_y_ - right.row_y_,
-                    left.row_z_ - right.row_z_);
+  return R3x3Matrix<Scalar>(left.row_x_ - right.row_x_,
+                            left.row_y_ - right.row_y_,
+                            left.row_z_ - right.row_z_);
 }
 
 template<typename LScalar, typename RScalar>
@@ -156,7 +160,7 @@ template<typename LScalar, typename RScalar>
 R3Element<Product<LScalar, RScalar>> operator*(
     R3Element<LScalar> const& left,
     R3x3Matrix<RScalar> const& right) {
-  R3x3Matrix const t_right = right.Transpose();
+  R3x3Matrix<RScalar> const t_right = right.Transpose();
   return R3Element<Product<LScalar, RScalar>>({Dot(left, t_right.row_x_),
                                                Dot(left, t_right.row_y_),
                                                Dot(left, t_right.row_z_)});
@@ -166,25 +170,34 @@ R3Element<Product<LScalar, RScalar>> operator*(
 template<typename Scalar>
 R3x3Matrix<Scalar> operator*(double const left,
                              R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix(left * right.row_x_,
-                    left * right.row_y_,
-                    left * right.row_z_);
+  return R3x3Matrix<Scalar>(left * right.row_x_,
+                            left * right.row_y_,
+                            left * right.row_z_);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator*(R3x3Matrix<Scalar> const& left,
                              double const right) {
-  return R3x3Matrix(left.row_x_ * right,
-                    left.row_y_ * right,
-                    left.row_z_ * right);
+  return R3x3Matrix<Scalar>(left.row_x_ * right,
+                            left.row_y_ * right,
+                            left.row_z_ * right);
 }
 
 template<typename Scalar>
 R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left,
                              double const right) {
-  return R3x3Matrix(left.row_x_ / right,
-                    left.row_y_ / right,
-                    left.row_z_ / right);
+  return R3x3Matrix<Scalar>(left.row_x_ / right,
+                            left.row_y_ / right,
+                            left.row_z_ / right);
+}
+
+template<typename LScalar, typename RScalar>
+R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
+    R3Element<LScalar> const& left,
+    R3Element<RScalar> const& right) {
+  return R3x3Matrix<Product<LScalar, RScalar>>(left.x * right,
+                                               left.y * right,
+                                               left.z * right);
 }
 
 template<typename Scalar>

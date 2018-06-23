@@ -4,6 +4,7 @@
 // We use ostream for logging purposes.
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include "geometry/r3_element.hpp"
@@ -39,7 +40,9 @@ class R3x3Matrix final {
   R3x3Matrix& operator*=(double right);
   R3x3Matrix& operator/=(double right);
 
-  static R3x3Matrix Identity();
+  template<typename S = Scalar,
+           typename = std::enable_if_t<std::is_same<S, double>::value>>
+  static R3x3Matrix<S> Identity();
 
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
@@ -121,6 +124,11 @@ R3x3Matrix<Scalar> operator*(R3x3Matrix<Scalar> const& left, double right);
 template<typename Scalar>
 R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left, double right);
 
+template<typename LScalar, typename RScalar>
+R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(
+    R3Element<LScalar> const& left,
+    R3Element<RScalar> const& right);
+
 template<typename Scalar>
 bool operator==(R3x3Matrix<Scalar> const& left,
                 R3x3Matrix<Scalar> const& right);
@@ -137,6 +145,7 @@ std::ostream& operator<<(std::ostream& out,
 
 }  // namespace internal_r3x3_matrix
 
+using internal_r3x3_matrix::KroneckerProduct;
 using internal_r3x3_matrix::R3x3Matrix;
 
 }  // namespace geometry

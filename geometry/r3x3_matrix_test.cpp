@@ -115,6 +115,15 @@ TEST_F(R3x3MatrixTest, Assignment) {
                                     {-0.25, 0.5, 0.25})));
 }
 
+TEST_F(R3x3MatrixTest, KroneckerProduct) {
+  R3Element<double> v1{1, 2, 4};
+  R3Element<double> v2{2, 3, 5};
+  EXPECT_THAT(KroneckerProduct(v1, v2),
+              Eq(R3x3Matrix<double>({2,  3,  5},
+                                    {4,  6, 10},
+                                    {8, 12, 20})));
+}
+
 TEST_F(R3x3MatrixTest, Serialization) {
   serialization::R3x3Matrix message;
   m1_.WriteToMessage(&message);
