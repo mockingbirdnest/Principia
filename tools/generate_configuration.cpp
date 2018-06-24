@@ -182,7 +182,9 @@ void GenerateConfiguration(std::string const& game_epoch,
       auto const& dof = barycentric_system.degrees_of_freedom[i];
       initial_state_cfg << "  body {\n";
       initial_state_cfg << "    name = "
-                        << (body->name() == "Trappist-1" ? "Sun" : body->name())
+                        << (star.has_value() && body->name() == star->name()
+                                ? "Sun"
+                                : body->name())
                         << "\n";
       initial_state_cfg << "    x    = " << displacement(dof).x << "\n";
       initial_state_cfg << "    y    = " << displacement(dof).y << "\n";
