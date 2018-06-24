@@ -294,7 +294,8 @@ void GenerateKopernicusForSlippist1(
                  .has_parent();
         if (!caster_is_star) {
           auto const caster_elements = SolarSystem<Sky>::MakeKeplerianElements(
-              solar_system.keplerian_initial_state_message(caster_name).elements());
+              solar_system.keplerian_initial_state_message(caster_name)
+                  .elements());
           if (caster_elements.period < elements.period) {
             kopernicus_cfg << "    caster = " << caster_name << "\n";
           }
