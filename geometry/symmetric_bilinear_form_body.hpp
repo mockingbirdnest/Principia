@@ -52,6 +52,22 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 }
 
 template<typename Scalar, typename Frame>
+void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
+    not_null<serialization::SymmetricBilinearForm*> message) const {
+  Frame::WriteToMessage(message->mutable_frame());
+  matrix_.WriteToMessage(message->mutable_matrix());
+}
+
+template<typename Scalar, typename Frame>
+SymmetricBilinearForm<Scalar, Frame>
+SymmetricBilinearForm<Scalar, Frame>::ReadFromMessage(
+    serialization::SymmetricBilinearForm const& message) {
+  Frame::ReadFromMessage(message.frame());
+  return SymmetricBilinearForm(
+      R3x3Matrix<Scalar>::ReadFromMessage(message.matrix()));
+}
+
+template<typename Scalar, typename Frame>
 SymmetricBilinearForm<Scalar, Frame>::SymmetricBilinearForm(
     R3x3Matrix<Scalar> const& matrix) : matrix_(matrix) {
   DCHECK_EQ(matrix_(0, 1), matrix_(1, 0));

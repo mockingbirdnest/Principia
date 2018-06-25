@@ -99,9 +99,9 @@ void R3x3Matrix<Scalar>::WriteToMessage(
 template<typename Scalar>
 R3x3Matrix<Scalar> R3x3Matrix<Scalar>::ReadFromMessage(
     serialization::R3x3Matrix const& message) {
-  return R3x3Matrix(R3Element<double>::ReadFromMessage(message.row_x()),
-                    R3Element<double>::ReadFromMessage(message.row_y()),
-                    R3Element<double>::ReadFromMessage(message.row_z()));
+  return R3x3Matrix(R3Element<Scalar>::ReadFromMessage(message.row_x()),
+                    R3Element<Scalar>::ReadFromMessage(message.row_y()),
+                    R3Element<Scalar>::ReadFromMessage(message.row_z()));
 }
 
 template<typename Scalar>

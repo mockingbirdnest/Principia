@@ -3,14 +3,17 @@
 
 #include <string>
 
+#include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3x3_matrix.hpp"
 #include "quantities/named_quantities.hpp"
+#include "serialization/geometry.pb.h"
 
 namespace principia {
 namespace geometry {
 namespace internal_symmetric_bilinear_form {
 
+using base::not_null;
 using quantities::Product;
 
 template<typename Scalar, typename Frame>
@@ -30,6 +33,11 @@ class SymmetricBilinearForm {
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Bivector<LScalar, Frame> const& left,
       Bivector<RScalar, Frame> const& right) const;
+
+  void WriteToMessage(
+      not_null<serialization::SymmetricBilinearForm*> message) const;
+  static SymmetricBilinearForm ReadFromMessage(
+      serialization::SymmetricBilinearForm const& message);
 
  private:
   explicit SymmetricBilinearForm(R3x3Matrix<Scalar> const& matrix);
