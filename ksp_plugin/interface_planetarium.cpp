@@ -116,7 +116,7 @@ Planetarium* principia__PlanetariumCreate(
   constexpr Length const olympus_mons_peak = 21'230 * Metre;
   constexpr Length const mars_mean_radius = 3389.50 * Kilo(Metre);
   Planetarium::Parameters parameters(
-      /*sphere_radius_multiplier=*/1.0 + olympus_mons_peak / mars_mean_radius,
+      /*sphere_radius_multiplier=*/1.0 + 0 * olympus_mons_peak / mars_mean_radius,
       /*angular_resolution=*/0.4 * ArcMinute,
       field_of_view * Radian);
   Perspective<Navigation, Camera> perspective(
