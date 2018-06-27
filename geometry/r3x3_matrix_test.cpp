@@ -5,11 +5,15 @@
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_r3x3_matrix {
 
+using quantities::Length;
+using quantities::si::Metre;
 using testing::Eq;
 
 class R3x3MatrixTest : public testing::Test {
@@ -76,10 +80,10 @@ TEST_F(R3x3MatrixTest, BinaryOperators) {
 }
 
 TEST_F(R3x3MatrixTest, ScalarMultiplicationDivision) {
-  EXPECT_THAT(3 * m1_,
-              Eq(R3x3Matrix<double>({-27, 18, 18},
-                                    {21, -15, -12},
-                                    {-3, 6, 3})));
+  EXPECT_THAT((3 * Metre) * m1_,
+              Eq(R3x3Matrix<Length>({-27 * Metre, 18 * Metre, 18 * Metre},
+                                    {21 * Metre, -15 * Metre, -12 * Metre},
+                                    {-3 * Metre, 6 * Metre, 3 * Metre})));
   EXPECT_THAT(m2_ * 5,
               Eq(R3x3Matrix<double>({5, 10, 10}, {-5, -5, 10}, {15, 20, 5})));
   EXPECT_THAT(m1_ / 4,
