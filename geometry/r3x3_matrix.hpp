@@ -17,7 +17,9 @@ namespace geometry {
 namespace internal_r3x3_matrix {
 
 using base::not_null;
+using quantities::is_quantity;
 using quantities::Product;
+using quantities::Quotient;
 
 // An |R3x3Matrix| is an element of the associative algebra of 3-by-3 matrices
 // over |Scalar|.  |Scalar| should be a vector space over ℝ, represented by
@@ -74,12 +76,15 @@ class R3x3Matrix final {
   friend R3Element<Product<LS, RS>> operator*(R3Element<LS> const& left,
                                               R3x3Matrix<RS> const& right);
 
-  template<typename S>
-  friend R3x3Matrix<S> operator*(double left, R3x3Matrix<S> const& right);
-  template<typename S>
-  friend R3x3Matrix<S> operator*(R3x3Matrix<S> const& left, double right);
-  template<typename S>
-  friend R3x3Matrix<S> operator/(R3x3Matrix<S> const& left, double right);
+  template<typename LS, typename RS, typename>
+  friend R3x3Matrix<Product<LS, RS>> operator*(LS const& left,
+                                               R3x3Matrix<RS> const& right);
+  template<typename LS, typename RS, typename>
+  friend R3x3Matrix<Product<LS, RS>> operator*(R3x3Matrix<LS> const& left,
+                                               RS const& right);
+  template<typename LS, typename RS, typename>
+  friend R3x3Matrix<Quotient<LS, RS>> operator/(R3x3Matrix<LS> const& left,
+                                                RS const& right);
 
   template<typename S>
   friend bool operator==(R3x3Matrix<S> const& left,
@@ -103,6 +108,7 @@ R3x3Matrix<Scalar> operator+(R3x3Matrix<Scalar> const& left,
 template<typename Scalar>
 R3x3Matrix<Scalar> operator-(R3x3Matrix<Scalar> const& left,
                              R3x3Matrix<Scalar> const& right);
+
 template<typename LScalar, typename RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
@@ -117,12 +123,21 @@ R3Element<Product<LScalar, RScalar>> operator*(
     R3Element<LScalar> const& left,
     R3x3Matrix<RScalar> const& right);
 
-template<typename Scalar>
-R3x3Matrix<Scalar> operator*(double left, R3x3Matrix<Scalar> const& right);
-template<typename Scalar>
-R3x3Matrix<Scalar> operator*(R3x3Matrix<Scalar> const& left, double right);
-template<typename Scalar>
-R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left, double right);
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+R3x3Matrix<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    R3x3Matrix<RScalar> const& right);
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+R3x3Matrix<Product<LScalar, RScalar>> operator*(
+    R3x3Matrix<LScalar> const& left,
+    RScalar const& right);
+template<typename LScalar, typename RScalar,
+         typename = std::enable_if_t<is_quantity<LScalar>::value>>
+R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
+    R3x3Matrix<LScalar> const& left,
+    RScalar const& right);
 
 template<typename LScalar, typename RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> KroneckerProduct(

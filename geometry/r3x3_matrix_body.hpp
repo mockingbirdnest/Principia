@@ -167,28 +167,31 @@ R3Element<Product<LScalar, RScalar>> operator*(
 }
 
 
-template<typename Scalar>
-R3x3Matrix<Scalar> operator*(double const left,
-                             R3x3Matrix<Scalar> const& right) {
-  return R3x3Matrix<Scalar>(left * right.row_x_,
-                            left * right.row_y_,
-                            left * right.row_z_);
+template<typename LScalar, typename RScalar, typename>
+R3x3Matrix<Product<LScalar, RScalar>> operator*(
+    LScalar const& left,
+    R3x3Matrix<RScalar> const& right) {
+  return R3x3Matrix<Product<LScalar, RScalar>>(left * right.row_x_,
+                                               left * right.row_y_,
+                                               left * right.row_z_);
 }
 
-template<typename Scalar>
-R3x3Matrix<Scalar> operator*(R3x3Matrix<Scalar> const& left,
-                             double const right) {
-  return R3x3Matrix<Scalar>(left.row_x_ * right,
-                            left.row_y_ * right,
-                            left.row_z_ * right);
+template<typename LScalar, typename RScalar, typename>
+R3x3Matrix<Product<LScalar, RScalar>> operator*(
+    R3x3Matrix<LScalar> const& left,
+    RScalar const& right) {
+  return R3x3Matrix<Product<LScalar, RScalar>>(left.row_x_ * right,
+                                               left.row_y_ * right,
+                                               left.row_z_ * right);
 }
 
-template<typename Scalar>
-R3x3Matrix<Scalar> operator/(R3x3Matrix<Scalar> const& left,
-                             double const right) {
-  return R3x3Matrix<Scalar>(left.row_x_ / right,
-                            left.row_y_ / right,
-                            left.row_z_ / right);
+template<typename LScalar, typename RScalar, typename>
+R3x3Matrix<Quotient<LScalar, RScalar>> operator/(
+    R3x3Matrix<LScalar> const& left,
+    RScalar const& right) {
+  return R3x3Matrix<Quotient<LScalar, RScalar>>(left.row_x_ / right,
+                                                left.row_y_ / right,
+                                                left.row_z_ / right);
 }
 
 template<typename LScalar, typename RScalar>
