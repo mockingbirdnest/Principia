@@ -92,18 +92,7 @@ static_assert(j2000_tai == j2000_tai_from_tt, "");
 static_assert(j2000_tai - J2000 == 32.184 * Second, "");
 
 // Check that week dates that go to the previous year work.
-// TODO(phl): The Arlésienne lives at
-// https://developercommunity.visualstudio.com/content/problem/223715/incorrect-evaluation-of-constexpr-expression.html  // NOLINT
-#if PRINCIPIA_COMPILER_MSVC && \
-    (_MSC_FULL_VER == 191326215 || \
-     _MSC_FULL_VER == 191426316 || \
-     _MSC_FULL_VER == 191426412 || \
-     _MSC_FULL_VER == 191426428 || \
-     _MSC_FULL_VER == 191426429)
-static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT - 3 * Day, "");
-#else
 static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
-#endif
 
 constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
 constexpr Instant mjd51544_utc_from_ut1 =

@@ -98,6 +98,9 @@
         -Xclang --system-header-prefix=gtest/
         -Xclang --system-header-prefix=gmock/
       </AdditionalOptions>
+      <PreprocessorDefinitions Condition="!$(PrincipiaCompilerClangLLVM)">
+        _ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)
+      </PreprocessorDefinitions>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
     </ClCompile>
