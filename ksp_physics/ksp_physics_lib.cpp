@@ -25,7 +25,7 @@ void LogPhysicsDLLBaseAddress() {
   MODULEINFO module_info;
   memset(&module_info, 0, sizeof(module_info));
   CHECK(GetModuleInformation(GetCurrentProcess(),
-                             GetModuleHandle(TEXT("principia_physics")),
+                             GetModuleHandle(TEXT("physics")),
                              &module_info,
                              sizeof(module_info)));
   LOG(INFO) << "Base address is " << module_info.lpBaseOfDll;
