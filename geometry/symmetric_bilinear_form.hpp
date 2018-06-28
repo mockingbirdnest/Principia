@@ -24,15 +24,12 @@ class SymmetricBilinearForm {
   SymmetricBilinearForm& operator*=(double right);
   SymmetricBilinearForm& operator/=(double right);
 
+  // A SymmetricBilinearForm does *not* apply to bivectors.  See Anticommutator
+  // below.
   template<typename LScalar, typename RScalar>
   Product<Scalar, Product<LScalar, RScalar>> operator()(
       Vector<LScalar, Frame> const& left,
       Vector<RScalar, Frame> const& right) const;
-
-  template<typename LScalar, typename RScalar>
-  Product<Scalar, Product<LScalar, RScalar>> operator()(
-      Bivector<LScalar, Frame> const& left,
-      Bivector<RScalar, Frame> const& right) const;
 
   void WriteToMessage(
       not_null<serialization::SymmetricBilinearForm*> message) const;
@@ -85,18 +82,8 @@ class SymmetricBilinearForm {
       Vector<RScalar, Frame> const& right);
 
   template<typename LScalar, typename RScalar, typename Frame>
-  friend Bivector<Product<LScalar, RScalar>, Frame> operator*(
-      SymmetricBilinearForm<LScalar, Frame> const& left,
-      Bivector<RScalar, Frame> const& right);
-
-  template<typename LScalar, typename RScalar, typename Frame>
   friend Vector<Product<LScalar, RScalar>, Frame> operator*(
       Vector<LScalar, Frame> const& left,
-      SymmetricBilinearForm<RScalar, Frame> const& right);
-
-  template<typename LScalar, typename RScalar, typename Frame>
-  friend Bivector<Product<LScalar, RScalar>, Frame> operator*(
-      Bivector<LScalar, Frame> const& left,
       SymmetricBilinearForm<RScalar, Frame> const& right);
 
   template<typename LScalar, typename RScalar, typename Frame>
@@ -105,9 +92,9 @@ class SymmetricBilinearForm {
                    Vector<RScalar, Frame> const& right);
 
   template<typename LScalar, typename RScalar, typename Frame>
-  friend SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>
-  SymmetricProduct(Bivector<LScalar, Frame> const& left,
-                   Bivector<RScalar, Frame> const& right);
+  friend Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
+      SymmetricBilinearForm<LScalar, Frame> const& form,
+      Bivector<RScalar, Frame> const& bivector);
 
   template<typename Scalar, typename Frame>
   friend bool operator==(SymmetricBilinearForm<Scalar, Frame> const& left,
@@ -168,18 +155,8 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<RScalar, Frame> const& right);
 
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<Product<LScalar, RScalar>, Frame> operator*(
-    SymmetricBilinearForm<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right);
-
-template<typename LScalar, typename RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
-    SymmetricBilinearForm<RScalar, Frame> const& right);
-
-template<typename LScalar, typename RScalar, typename Frame>
-Bivector<Product<LScalar, RScalar>, Frame> operator*(
-    Bivector<LScalar, Frame> const& left,
     SymmetricBilinearForm<RScalar, Frame> const& right);
 
 // |SymmetricProduct(v, w)| is v ⊙ w ≔ (v ⊗ w + w ⊗ v) / 2.
@@ -188,10 +165,13 @@ SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
     Vector<LScalar, Frame> const& left,
     Vector<RScalar, Frame> const& right);
 
+// Symmetric bilinear forms act on bivectors through this function.
+// |Anticommutator(F, B)| is (tr(F)𝟙 - F)B in ℝ³ representation .  In matrix
+// representation it is FB + BF = {F, B}.
 template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
-    Bivector<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right);
+Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
+    SymmetricBilinearForm<LScalar, Frame> const& form,
+    Bivector<RScalar, Frame> const& bivector);
 
 template<typename Scalar, typename Frame>
 bool operator==(SymmetricBilinearForm<Scalar, Frame> const& left,

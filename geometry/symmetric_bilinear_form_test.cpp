@@ -143,7 +143,6 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
                                                               {2, -3,  5},
                                                               {4,  5,  0}));
   Vector<Length, World> v({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
-  Bivector<Length, World> b({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(
       f * v,
       Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
@@ -154,43 +153,35 @@ TEST_F(SymmetricBilinearFormTest, LinearMap) {
       Eq(Vector<Square<Length>, World>({3.0 * Pow<2>(Metre),
                                         -12.0 * Pow<2>(Metre),
                                         19.0 * Pow<2>(Metre)})));
-  EXPECT_THAT(
-      f * b,
-      Eq(Bivector<Square<Length>, World>({-6.0 * Pow<2>(Metre),
-                                          -39.0 * Pow<2>(Metre),
-                                          38.0 * Pow<2>(Metre)})));
-  EXPECT_THAT(
-      b * f,
-      Eq(Bivector<Square<Length>, World>({-6.0 * Pow<2>(Metre),
-                                          -39.0 * Pow<2>(Metre),
-                                          38.0 * Pow<2>(Metre)})));
 }
 
 TEST_F(SymmetricBilinearFormTest, SymmetricProduct) {
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> v2({2.0, 6.0, -5.0});
-  Bivector<double, World> b1({1.0, 3.0, -1.0});
-  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(SymmetricProduct(v1, v2),
-              Eq(MakeSymmetricBilinearForm(
-                     R3x3Matrix<double>({   2,     6,  -3.5},
-                                        {   6,    18, -10.5},
-                                        {-3.5, -10.5,   5}))));
-  EXPECT_THAT(SymmetricProduct(b1, b2),
               Eq(MakeSymmetricBilinearForm(
                      R3x3Matrix<double>({   2,     6,  -3.5},
                                         {   6,    18, -10.5},
                                         {-3.5, -10.5,   5}))));
 }
 
+TEST_F(SymmetricBilinearFormTest, Anticommutator) {
+  auto const f = MakeSymmetricBilinearForm(R3x3Matrix<double>({1,  2,  4},
+                                                              {2, -3,  5},
+                                                              {4,  5,  0}));
+  Bivector<Length, World> const b({1.0 * Metre, 3.0 * Metre, -5.0 * Metre});
+  EXPECT_THAT(
+      Anticommutator(f, b),
+      Eq(Bivector<Square<Length>, World>({11 * Pow<2>(Metre),
+                                          26 * Pow<2>(Metre),
+                                          -9 * Pow<2>(Metre)})));
+}
+
 TEST_F(SymmetricBilinearFormTest, InnerProductForm) {
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<double, World> v2({2.0, 6.0, -5.0});
-  Bivector<double, World> b1({1.0, 3.0, -1.0});
-  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   auto const a = InnerProductForm<World>()(v1, v2);
   EXPECT_THAT(InnerProductForm<World>()(v1, v2), Eq(25 * Metre));
-  EXPECT_THAT(InnerProductForm<World>()(b1, b2), Eq(25 * Metre));
 }
 
 TEST_F(SymmetricBilinearFormTest, Apply) {
@@ -199,10 +190,7 @@ TEST_F(SymmetricBilinearFormTest, Apply) {
                                                               {4,  5,  0}));
   Vector<Length, World> v1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
   Vector<Length, World> v2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
-  Bivector<Length, World> b1({1.0 * Metre, 3.0 * Metre, -1.0 * Metre});
-  Bivector<Length, World> b2({2.0 * Metre, 6.0 * Metre, -5.0 * Metre});
   EXPECT_THAT(f(v1, v2), Eq(-161 * Pow<3>(Metre)));
-  EXPECT_THAT(f(b1, b2), Eq(-161 * Pow<3>(Metre)));
 }
 
 TEST_F(SymmetricBilinearFormTest, Serialization) {

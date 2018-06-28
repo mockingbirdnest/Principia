@@ -43,15 +43,6 @@ SymmetricBilinearForm<Scalar, Frame>::operator()(
 }
 
 template<typename Scalar, typename Frame>
-template<typename LScalar, typename RScalar>
-Product<Scalar, Product<LScalar, RScalar>>
-SymmetricBilinearForm<Scalar, Frame>::operator()(
-    Bivector<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right) const {
-  return InnerProduct(left, *this * right);
-}
-
-template<typename Scalar, typename Frame>
 void SymmetricBilinearForm<Scalar, Frame>::WriteToMessage(
     not_null<serialization::SymmetricBilinearForm*> message) const {
   Frame::WriteToMessage(message->mutable_frame());
@@ -146,27 +137,11 @@ Vector<Product<LScalar, RScalar>, Frame> operator*(
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-Bivector<Product<LScalar, RScalar>, Frame> operator*(
-    SymmetricBilinearForm<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right) {
-  return Bivector<Product<LScalar, RScalar>, Frame>(left.matrix_ *
-                                                    right.coordinates());
-}
-
-template<typename LScalar, typename RScalar, typename Frame>
 Vector<Product<LScalar, RScalar>, Frame> operator*(
     Vector<LScalar, Frame> const& left,
     SymmetricBilinearForm<RScalar, Frame> const& right) {
   return Vector<Product<LScalar, RScalar>, Frame>(left.coordinates() *
                                                   right.matrix_);
-}
-
-template<typename LScalar, typename RScalar, typename Frame>
-Bivector<Product<LScalar, RScalar>, Frame> operator*(
-    Bivector<LScalar, Frame> const& left,
-    SymmetricBilinearForm<RScalar, Frame> const& right) {
-  return Bivector<Product<LScalar, RScalar>, Frame>(left.coordinates() *
-                                                    right.matrix_);
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
@@ -179,12 +154,12 @@ SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
 }
 
 template<typename LScalar, typename RScalar, typename Frame>
-SymmetricBilinearForm<Product<LScalar, RScalar>, Frame> SymmetricProduct(
-    Bivector<LScalar, Frame> const& left,
-    Bivector<RScalar, Frame> const& right) {
-  return SymmetricBilinearForm<Product<LScalar, RScalar>, Frame>(
-      0.5 * (KroneckerProduct(left.coordinates(), right.coordinates()) +
-             KroneckerProduct(right.coordinates(), left.coordinates())));
+Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
+    SymmetricBilinearForm<LScalar, Frame> const& form,
+    Bivector<RScalar, Frame> const& bivector) {
+  return Bivector<Product<LScalar, RScalar>, Frame>(
+      form.matrix_.Trace() * bivector.coordinates() -
+      form.matrix_ * bivector.coordinates());
 }
 
 template<typename Scalar, typename Frame>
