@@ -23,7 +23,7 @@ inline OFStream::OFStream(std::filesystem::path const& path) {
   if (!std::filesystem::exists(directory)) {
     // VS 2017 15.8 Preview 2 has a bug where it returns false if the path ends
     // with a \.
-#if _MSC_FULL_VER <= 191426429
+#if _MSC_FULL_VER <= 191526608
     auto d = directory.native();
     d = d.substr(0, d.size() - 1);
     directory = d;
