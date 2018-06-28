@@ -158,7 +158,10 @@ Instance::Solve(Instant const& t_final) {
                  integration_direction * time_to_end;
         if (at_end) {
           // The chosen step size will overshoot.  Clip it to just reach the
-          // end, and terminate if the step is accepted.
+          // end, and terminate if the step is accepted.  Note that while this
+          // step size is a good approximation, there is no guarantee that it
+          // won't over/undershoot, so we still need to special case the very
+          // last stage below.
           h = time_to_end;
           final_state = current_state;
         }
@@ -166,7 +169,10 @@ Instance::Solve(Instant const& t_final) {
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages_; ++i) {
-        Instant const t_stage = t.value + (t.error + c[i] * h);
+        Instant const t_stage =
+            (parameters.last_step_is_exact && at_end && c[i] == 1.0)
+                ? t_final
+                : t.value + (t.error + c[i] * h);
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
