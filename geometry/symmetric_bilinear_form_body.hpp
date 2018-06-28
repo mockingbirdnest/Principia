@@ -157,10 +157,9 @@ template<typename LScalar, typename RScalar, typename Frame>
 Bivector<Product<LScalar, RScalar>, Frame> Anticommutator(
     SymmetricBilinearForm<LScalar, Frame> const& form,
     Bivector<RScalar, Frame> const& bivector) {
-  R3x3Matrix<LScalar> const multiplier = R3x3Matrix<double>::Identity() *
-    form.matrix_.Trace() - form.matrix_;
-  return Bivector<Product<LScalar, RScalar>, Frame>(multiplier *
-                                                    bivector.coordinates());
+  return Bivector<Product<LScalar, RScalar>, Frame>(
+      form.matrix_.Trace() * bivector.coordinates() -
+      form.matrix_ * bivector.coordinates());
 }
 
 template<typename Scalar, typename Frame>
