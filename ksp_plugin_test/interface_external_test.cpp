@@ -67,7 +67,10 @@ class InterfaceExternalTest : public ::testing::Test {
 TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   plugin_.CreateFlightPlan(
       vessel_guid, plugin_.CurrentTime() + 24 * Hour, 1 * Tonne);
-  vessel_->flight_plan().Append(ksp_plugin::Burn{
+  // This variable is necessary in VS 2017 15.8 preview 3 because putting the
+  // list initialization directly in the call below causes the frame to be
+  // destroyed after the call.
+  auto burn = ksp_plugin::Burn{
       180 * Kilo(Newton),
       4.56 * Kilo(Newton) * Second / Kilogram,
       plugin_.NewBodyCentredNonRotatingNavigationFrame(
@@ -75,7 +78,8 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
       plugin_.CurrentTime() + 30 * Second,
       Velocity<Frenet<Navigation>>(
           {1000 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second}),
-      /*is_inertially_fixed=*/false});
+      /*is_inertially_fixed=*/false};
+  vessel_->flight_plan().Append(std::move(burn));
   QP result;
   auto const to_world =
       plugin_.renderer().BarycentricToWorld(plugin_.PlanetariumRotation());
