@@ -22,6 +22,10 @@ gravity_model {
   # Planets.
   # Masses and radii from "The nature of the TRAPPIST-1 exoplanets", Grimm et
   # al., 2018.
+  # For planets b and c, the radius used is the radius of the core from table 4;
+  # We model envelope of volatiles as liquid water and ice on d through h, so
+  # the transit radius from table 2 is used there instead.  All masses are from
+  # table 2.
   # Angular frequencies from a linear fit of the transits over 100 years,
   # assuming tidal locking.
   # J2 from a log-normal distribution with median 0.001 (rougthly the J2 of
@@ -30,7 +34,7 @@ gravity_model {
     name                 : "Trappist-1b"
     mass                 : "1.017 M🜨"
     reference_instant    : "JD2457000.000000000"
-    mean_radius          : "1.121 R🜨"
+    mean_radius          : "1.01 R🜨"
     axis_right_ascension : "-89.9077 deg"
     axis_declination     : "0.0561637 deg"
     reference_angle      : "0 deg"
@@ -42,7 +46,7 @@ gravity_model {
     name                 : "Trappist-1c"
     mass                 : "1.156 M🜨"
     reference_instant    : "JD2457000.000000000"
-    mean_radius          : "1.095 R🜨"
+    mean_radius          : "1.06 R🜨"
     axis_right_ascension : "-89.9829 deg"
     axis_declination     : "0.0787536 deg"
     reference_angle      : "0 deg"
