@@ -19,7 +19,9 @@ using quantities::si::Nano;
 using testing_utilities::AbsoluteError;
 using testing_utilities::AlmostEquals;
 using testing_utilities::IsNear;
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Gt;
 using ::testing::Lt;
 
 class TimeScalesTest : public testing::Test {};
@@ -364,6 +366,21 @@ TEST_F(TimeScalesTest, LunarEclipses) {
 TEST_F(TimeScalesTest, JulianDate) {
   EXPECT_THAT("JD2451545"_TT, Eq(j2000_week));
   EXPECT_THAT("JD2455201.00000"_TT, Eq("2010-01-04T12:00:00.000"_TT));
+
+  // In VS 2017 15.8 Preview 3 this computation is sometimes off by one day.
+  // We should not go through dates to compute Julian dates anyway.
+  double const jd = 2457662.55467;
+  Instant const date = Instant() + (jd - 2451545.0) * Day;
+#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 191526608
+  EXPECT_THAT("JD2457662.55467"_TT,
+              AllOf(Lt(date - 1 * Day + 1.0 * Second),
+                    Gt(date - 1 * Day - 1.0 * Second)))
+      << date - "JD2457662.55467"_TT;
+#else
+  EXPECT_THAT("JD2457662.55467"_TT,
+              AllOf(Lt(date + 1.0 * Second), Gt(date - 1.0 * Second)))
+      << date - "JD2457662.55467"_TT;
+#endif
 }
 
 TEST_F(TimeScalesTest, ModifiedJulianDate) {
