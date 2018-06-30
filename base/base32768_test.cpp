@@ -75,6 +75,8 @@ class Base32768Test : public testing::Test {
 
 using Base32768DeathTest = Base32768Test;
 
+// No tests because of a bug in 15.8 preview 3.
+#if !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 191526608)
 TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
   // First 15 bytes of the MD5 of the empty string.
   Array<std::uint8_t const> const binary("\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04"
@@ -276,6 +278,7 @@ TEST_F(Base32768Test, Random) {
     EXPECT_THAT(binary2.get(), EqualsBytes(binary1.get())) << "test: " << test;
   }
 }
+#endif
 
 }  // namespace base
 }  // namespace principia
