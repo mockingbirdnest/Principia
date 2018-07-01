@@ -1229,6 +1229,10 @@ public partial class PrincipiaPluginAdapter
               // where disappearing kerbals collide with themselves.
               continue;
             }
+            if (part1.State == PartStates.DEAD ||
+                part2?.State == PartStates.DEAD) {
+              continue;
+            }
             if (vessel2 != null) {
               if (is_manageable(vessel2)) {
                 plugin_.ReportPartCollision(
