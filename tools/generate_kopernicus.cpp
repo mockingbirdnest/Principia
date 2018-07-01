@@ -47,11 +47,11 @@ constexpr char kerbin[] = "Kerbin";
 std::map<std::string, Angle> const body_angle = {
     {"Trappist-1b", -90 * Degree},
     {"Trappist-1c", -90 * Degree},
-    {"Trappist-1d", 0 * Degree},
+    {"Trappist-1d", -90 * Degree},
     {"Trappist-1e", -90 * Degree},
-    {"Trappist-1f", 200 * Degree},
-    {"Trappist-1g", -80 * Degree},
-    {"Trappist-1h", 180 * Degree}};
+    {"Trappist-1f", 180 * Degree},
+    {"Trappist-1g", -90 * Degree},
+    {"Trappist-1h", -90 * Degree}};
 std::map<std::string, std::string> const body_description_map = {
     {"Trappist-1",
      "An ultra-cool red dwarf star of spectral type M8 V, 40 light-years from "
@@ -119,9 +119,9 @@ void GenerateKopernicusForSlippist1(
     bool const is_kerbin =
         FindOrDie(body_name_map, name) == kerbin;
     kopernicus_cfg << "  @Body[" << FindOrDie(body_name_map, name) << "] {\n";
-    if (is_star || is_kerbin) {
+    if (is_kerbin) {
       kopernicus_cfg << "    %cbNameLater = " << name << "\n";
-    } else {
+    } else if (!is_star) {
       kopernicus_cfg << "    @name = " << name << "\n";
     }
     kopernicus_cfg << "    @Properties {\n";
@@ -130,9 +130,7 @@ void GenerateKopernicusForSlippist1(
     } else {
       kopernicus_cfg << "      !geeASL = delete\n";
     }
-    if (is_star || is_kerbin) {
-      kopernicus_cfg << "      @displayName = " << name << "\n";
-    }
+    kopernicus_cfg << "      @displayName = " << name << "\n";
     kopernicus_cfg << "      %gravParameter = "
                    << DebugString(GravitationalConstant *
                                   ParseQuantity<Mass>(body.mass()) /
@@ -148,7 +146,18 @@ void GenerateKopernicusForSlippist1(
       kopernicus_cfg << "      %tidallyLocked = false\n";
     }
     kopernicus_cfg << "    }\n";
-    if (!is_star) {
+    if (is_star) {
+      kopernicus_cfg << "    @ScaledVersion {\n";
+      kopernicus_cfg << "      @Light {\n";
+      for (char const* const curve :
+           {"ScaledIntensityCurve", "IntensityCurve", "IVAIntensityCurve"}) {
+        kopernicus_cfg << "        @" << curve << " {\n";
+        kopernicus_cfg << "          @key,*[0, ] *= 10\n";
+        kopernicus_cfg << "        }\n";
+      }
+      kopernicus_cfg << "      }\n";
+      kopernicus_cfg << "    }\n";
+    } else {
       CHECK(star.has_value());
       auto const keplerian_elements =
           solar_system.MakeKeplerianElements(elements);
@@ -180,6 +189,15 @@ void GenerateKopernicusForSlippist1(
                                         elements.mean_anomaly()) / Radian)
                      << "\n";
       kopernicus_cfg << "    }\n";
+      kopernicus_cfg << "    @Atmosphere {\n";
+      kopernicus_cfg << "      @altitude *= 2\n";
+      for (char const* const curve :
+           {"temperatureCurve", "temperatureSunMultCurve", "pressureCurve"}) {
+        kopernicus_cfg << "      @" << curve << " {\n";
+        kopernicus_cfg << "        @key,*[0, ] *= 2\n";
+        kopernicus_cfg << "      }\n";
+      }
+      kopernicus_cfg << "    }\n";
     }
     kopernicus_cfg << "  }\n";
   }
@@ -204,6 +222,87 @@ void GenerateKopernicusForSlippist1(
                      << "\n";
     }
     kopernicus_cfg << "  }\n";
+  }
+  kopernicus_cfg << "}\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (!is_star) {
+      kopernicus_cfg << "@Scatterer_atmosphere:HAS[@Atmo["
+                     << body_name_map.at(name) << "]]:AFTER[aSLIPPIST-1] {\n";
+      kopernicus_cfg << "  @Atmo[" << body_name_map.at(name) << "] {\n";
+      kopernicus_cfg << "    @name = " << name << "\n";
+      kopernicus_cfg << "    @configPoints {\n";
+      kopernicus_cfg << "      @Item,* {\n";
+      kopernicus_cfg << "        @altitude *= 2\n";
+      kopernicus_cfg << "      }\n";
+      kopernicus_cfg << "    }\n";
+      kopernicus_cfg << "  }\n";
+      kopernicus_cfg << "}\n";
+      kopernicus_cfg << "@Scatterer_ocean:HAS[@Ocean[" << body_name_map.at(name)
+                     << "]]:AFTER[aSLIPPIST-1] {\n";
+      kopernicus_cfg << "  @Ocean[" << body_name_map.at(name) << "] {\n";
+      kopernicus_cfg << "    @name = " << name << "\n";
+      kopernicus_cfg << "  }\n";
+      kopernicus_cfg << "}\n";
+    }
+  }
+  kopernicus_cfg << "@Scatterer_planetsList:AFTER[aSLIPPIST-1] {\n";
+  kopernicus_cfg << "  @scattererCelestialBodies {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    bool const is_kerbin = body_name_map.at(name) == kerbin;
+    std::string const slippist_name =
+        is_kerbin ? "Echo" : body_name_map.at(name);
+    if (!is_star) {
+      kopernicus_cfg << "    @Item[" << slippist_name << "] {\n";
+      kopernicus_cfg << "      @celestialBodyName = " << name << "\n";
+      kopernicus_cfg << "      @transformName = " << name << "\n";
+      kopernicus_cfg << "    }\n";
+    }
+  }
+  kopernicus_cfg << "  }\n";
+  kopernicus_cfg << "}\n";
+  kopernicus_cfg << "@EVE_CLOUDS:AFTER[aSLIPPIST-1] {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (!is_star) {
+      kopernicus_cfg << "  @OBJECT:HAS[#body[" << body_name_map.at(name)
+                     << "]] {\n";
+      kopernicus_cfg << "    @body = " << name << "\n";
+      kopernicus_cfg << "    @altitude *= 2\n";
+      kopernicus_cfg << "  }\n";
+    }
+  }
+  kopernicus_cfg << "}\n";
+  kopernicus_cfg << "@EVE_SHADOWS:AFTER[aSLIPPIST-1] {\n";
+  for (std::string const& name : solar_system.names()) {
+    bool const is_star =
+        !solar_system.keplerian_initial_state_message(name).has_parent();
+    if (!is_star) {
+      kopernicus_cfg << "  @OBJECT:HAS[#body[" << body_name_map.at(name)
+                     << "]] {\n";
+      kopernicus_cfg << "    @body = " << name << "\n";
+      kopernicus_cfg << "    !caster,* = delete\n";
+      auto const elements = SolarSystem<Sky>::MakeKeplerianElements(
+          solar_system.keplerian_initial_state_message(name).elements());
+      for (std::string const& caster_name : solar_system.names()) {
+        bool const caster_is_star =
+            !solar_system.keplerian_initial_state_message(caster_name)
+                 .has_parent();
+        if (!caster_is_star) {
+          auto const caster_elements = SolarSystem<Sky>::MakeKeplerianElements(
+              solar_system.keplerian_initial_state_message(caster_name)
+                  .elements());
+          if (caster_elements.period < elements.period) {
+            kopernicus_cfg << "    caster = " << caster_name << "\n";
+          }
+        }
+      }
+      kopernicus_cfg << "  }\n";
+    }
   }
   kopernicus_cfg << "}\n";
 }

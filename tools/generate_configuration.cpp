@@ -75,11 +75,29 @@ void GenerateConfiguration(std::string const& game_epoch,
       (directory / gravity_model_stem).replace_extension(cfg));
   CHECK(gravity_model_cfg.good());
   gravity_model_cfg << "principia_gravity_model:NEEDS[" << needs << "] {\n";
+
+  // Find the star.  This is needed to construct Kepler orbits below.
+  std::optional<serialization::GravityModel::Body> star;
+  for (std::string const& name : solar_system.names()) {
+    serialization::GravityModel::Body const& body =
+        solar_system.gravity_model_message(name);
+    if (solar_system.has_keplerian_initial_state_message(name)) {
+      bool const is_star =
+          !solar_system.keplerian_initial_state_message(name).has_parent();
+      if (is_star) {
+        star = body;
+      }
+    }
+  }
+
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
     gravity_model_cfg << "  body {\n";
-    gravity_model_cfg << "    name                    = " << name << "\n";
+    gravity_model_cfg << "    name                    = "
+                      << (star.has_value() && name == star->name() ? "Sun"
+                                                                   : name)
+                      << "\n";
     if (body.has_gravitational_parameter()) {
       gravity_model_cfg << "    gravitational_parameter = "
                         << body.gravitational_parameter() << "\n";
@@ -163,7 +181,11 @@ void GenerateConfiguration(std::string const& game_epoch,
       auto const& body = barycentric_system.bodies[i];
       auto const& dof = barycentric_system.degrees_of_freedom[i];
       initial_state_cfg << "  body {\n";
-      initial_state_cfg << "    name = " << body->name() << "\n";
+      initial_state_cfg << "    name = "
+                        << (star.has_value() && body->name() == star->name()
+                                ? "Sun"
+                                : body->name())
+                        << "\n";
       initial_state_cfg << "    x    = " << displacement(dof).x << "\n";
       initial_state_cfg << "    y    = " << displacement(dof).y << "\n";
       initial_state_cfg << "    z    = " << displacement(dof).z << "\n";
