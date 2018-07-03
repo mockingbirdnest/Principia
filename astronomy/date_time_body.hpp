@@ -366,7 +366,7 @@ constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
       time_(time),
       jd_(jd) {
   CONSTEXPR_CHECK(!time_.is_leap_second() ||
-        date_.day() == month_length(date_.year(), date_.month()));
+                  date_.day() == month_length(date_.year(), date_.month()));
 }
 
 // Parsing utilities.
