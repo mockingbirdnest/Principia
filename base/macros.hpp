@@ -221,6 +221,9 @@ inline void noreturn() { std::exit(0); }
   ((condition) ? (expression)                                                \
                : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
                   (expression)))
+// Needed to circumvent lint warnings in constexpr function where CHECK_LT and
+// friends cannot be used.
+#define CONSTEXPR_CHECK(condition) CHECK(condition)
 
 // Clang for some reason doesn't like FP arithmetic that yields infinities in
 // constexpr code (MSVC and GCC are fine with that).

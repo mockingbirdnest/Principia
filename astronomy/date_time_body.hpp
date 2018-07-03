@@ -75,7 +75,7 @@ constexpr int days_in_400_years = days_in_100_years * 4 + 1;
 // Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
 // the Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
-  CHECK(d > 0);
+  CONSTEXPR_CHECK(d > 0);
 
   // NOTE(egg): in order to extend this to the whole proleptic Gregorian
   // calendar (including d ≤ 0), we would need to use |mod| and a division
@@ -102,7 +102,7 @@ constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
 // Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
 // the ordinal in the current Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
-  CHECK(d > 0);
+  CONSTEXPR_CHECK(d > 0);
   int const modulo_400_years = (d - 1) % days_in_400_years;
   int const modulo_100_years = modulo_400_years % days_in_100_years;
   int const modulo_4_years = modulo_100_years % days_in_4_years;
@@ -114,7 +114,7 @@ constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
 // proleptic Gregorian calendar.
 // |gregorian_days_from_0000_01_01_to_year| is a left inverse of this function.
 constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
-  CHECK(year > 0);
+  CONSTEXPR_CHECK(year > 0);
   return 1 + (year) * 365 +
              (year - 1) / 4 -
              (year - 1) / 100 +
@@ -126,9 +126,9 @@ constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
 constexpr std::int64_t digit_range(std::int64_t const digits,
                                    int const begin,
                                    int const end) {
-  CHECK(digits >= 0);
-  CHECK(begin >= 0);
-  CHECK(begin <= end);
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(begin >= 0);
+  CONSTEXPR_CHECK(begin <= end);
   if (begin == end) {
     return 0;
   } else if (begin == 0) {
@@ -140,20 +140,20 @@ constexpr std::int64_t digit_range(std::int64_t const digits,
 
 // Returns x * 10 ** count.
 constexpr std::int64_t shift_left(std::int64_t const x, int const count) {
-  CHECK(count >= 0);
+  CONSTEXPR_CHECK(count >= 0);
   return count == 0 ? x : shift_left(x * 10, count - 1);
 }
 
 // Returns x / 10 ** count.
 constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
-  CHECK(count >= 0);
+  CONSTEXPR_CHECK(count >= 0);
   return count == 0 ? x : shift_right(x / 10, count - 1);
 }
 
 // Returns |date| advanced by the specified number of |days|. The result must be
 // in the same year.
 constexpr Date add_days_within_year(Date const& date, int const days) {
-  CHECK(days >= 0);
+  CONSTEXPR_CHECK(days >= 0);
   if (days == 0) {
     return date;
   } else {
@@ -162,7 +162,7 @@ constexpr Date add_days_within_year(Date const& date, int const days) {
     if (in_same_month) {
       return Date::Calendar(date.year(), date.month(), date.day() + days);
     } else {
-      CHECK(date.month() <= 11);
+      CONSTEXPR_CHECK(date.month() <= 11);
       return add_days_within_year(
           Date::Calendar(date.year(), date.month() + 1, 1),
           days - month_length(date.year(), date.month()) + date.day() - 1);
@@ -182,48 +182,48 @@ constexpr Date arbitrary_ordinal(int const year, int const day) {
 // Implementation of class |Date|.
 
 constexpr Date Date::YYYYMMDD(std::int64_t const digits) {
-  CHECK(digits >= 0);
-  CHECK(digits <= 9999'99'99);
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'99'99);
   return Date::Calendar(digit_range(digits, 4, 8),
                         digit_range(digits, 2, 4),
                         digit_range(digits, 0, 2));
 }
 
 constexpr Date Date::YYYYDDD(std::int64_t const digits) {
-  CHECK(digits >= 0);
-  CHECK(digits <= 9999'999);
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'999);
   return Date::Ordinal(digit_range(digits, 3, 7), digit_range(digits, 0, 3));
 }
 
 constexpr Date Date::YYYYwwD(std::int64_t const digits) {
-  CHECK(digits >= 0);
-  CHECK(digits <= 9999'99'9);
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'99'9);
   return Date::Week(digit_range(digits, 3, 7),
                     digit_range(digits, 1, 3),
                     digit_range(digits, 0, 1));
 }
 
 constexpr Date Date::Calendar(int const year, int const month, int const day) {
-  CHECK(year >= 1583);
-  CHECK(year <= 9999);
-  CHECK(month >= 1);
-  CHECK(month <= 12);
-  CHECK(day >= 1);
-  CHECK(day <= month_length(year, month));
+  CONSTEXPR_CHECK(year >= 1583);
+  CONSTEXPR_CHECK(year <= 9999);
+  CONSTEXPR_CHECK(month >= 1);
+  CONSTEXPR_CHECK(month <= 12);
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(day <= month_length(year, month));
   return Date(year, month, day);
 }
 
 constexpr Date Date::Ordinal(int const year, int const day) {
-  CHECK(day >= 1);
-  CHECK(gregorian_year_length(year));
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(gregorian_year_length(year));
   return add_days_within_year(Date::Calendar(year, 1, 1), day - 1);
 }
 
 constexpr Date Date::Week(int const year, int const week, int const day) {
-  CHECK(week >= 1);
-  CHECK(week <= number_of_weeks_in_year(year));
-  CHECK(day >= 1);
-  CHECK(day <= 7);
+  CONSTEXPR_CHECK(week >= 1);
+  CONSTEXPR_CHECK(week <= number_of_weeks_in_year(year));
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(day <= 7);
   return arbitrary_ordinal(year,
                            (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year));
 }
@@ -279,8 +279,8 @@ constexpr Date::Date(int const year,
 // Implementation of class Time.
 
 constexpr Time Time::hhmmss_ms(int const hhmmss, int ms) {
-  CHECK(hhmmss >= 0);
-  CHECK(hhmmss <= 99'99'99);
+  CONSTEXPR_CHECK(hhmmss >= 0);
+  CONSTEXPR_CHECK(hhmmss <= 99'99'99);
   return Time(digit_range(hhmmss, 4, 6),
               digit_range(hhmmss, 2, 4),
               digit_range(hhmmss, 0, 2),
@@ -330,7 +330,7 @@ constexpr Time::Time(int const hour,
                         : second + 1
                   : second),
       millisecond_(millisecond % 1000) {
-  CHECK(
+  CONSTEXPR_CHECK(
       (hour_ == 24 && minute_ == 0 && second_ == 0 && millisecond_ == 0) ||
       ((millisecond_ >= 0 && millisecond_ <= 999) &&
        ((hour_ == 23 && minute_ == 59 && second_ == 60) ||
@@ -365,7 +365,7 @@ constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
     : date_(date),
       time_(time),
       jd_(jd) {
-  CHECK(!time_.is_leap_second() ||
+  CONSTEXPR_CHECK(!time_.is_leap_second() ||
         date_.day() == month_length(date_.year(), date_.month()));
 }
 
