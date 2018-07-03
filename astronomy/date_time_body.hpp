@@ -407,7 +407,8 @@ constexpr bool CStringIterator::at_end() const {
 }
 
 constexpr CStringIterator CStringIterator::next() const {
-  return CHECKING(!at_end(), CStringIterator(str_, end_, it_ + 1));
+  CHECK(!at_end());
+  return CStringIterator(str_, end_, it_ + 1);
 }
 
 constexpr int CStringIterator::index() const {
@@ -415,7 +416,8 @@ constexpr int CStringIterator::index() const {
 }
 
 constexpr char const& CStringIterator::operator*() const {
-  return CHECKING(!at_end(), *it_);
+  CHECK(!at_end());
+  return *it_;
 }
 
 constexpr CStringIterator::CStringIterator(char const* str,
@@ -540,93 +542,110 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                                            int const second_hyphen_index,
                                            bool const has_w,
                                            int const w_index) {
-  return str.at_end()
-             ? DateParser{digits,
-                          digit_count,
-                          hyphens,
-                          first_hyphen_index,
-                          second_hyphen_index,
-                          has_w,
-                          w_index}
-             : *str == '-'
-                   ? CHECKING(
-                         hyphens < 2,
-                         hyphens == 0
-                             ? ReadToEnd(str.next(),
-                                         digits,
-                                         digit_count,
-                                         hyphens + 1,
-                                         /*first_hyphen_index=*/str.index(),
-                                         second_hyphen_index,
-                                         has_w,
-                                         w_index)
-                             : ReadToEnd(str.next(),
-                                         digits,
-                                         digit_count,
-                                         hyphens + 1,
-                                         first_hyphen_index,
-                                         /*second_hyphen_index=*/str.index(),
-                                         has_w,
-                                         w_index))
-                   : *str == 'W' ? CHECKING(!has_w,
-                                            ReadToEnd(str.next(),
-                                                      digits,
-                                                      digit_count,
-                                                      hyphens,
-                                                      first_hyphen_index,
-                                                      second_hyphen_index,
-                                                      /*has_w=*/true,
-                                                      /*w_index=*/str.index()))
-                                 : CHECKING(*str >= '0' && *str <= '9',
-                                            ReadToEnd(str.next(),
-                                                      digits * 10 + *str - '0',
-                                                      digit_count + 1,
-                                                      hyphens,
-                                                      first_hyphen_index,
-                                                      second_hyphen_index,
-                                                      has_w,
-                                                      w_index));
+  if (str.at_end()) {
+    return DateParser{digits,
+                      digit_count,
+                      hyphens,
+                      first_hyphen_index,
+                      second_hyphen_index,
+                      has_w,
+                      w_index};
+  } else {
+    switch (*str) {
+      case '-':
+        CHECK(hyphens < 2);
+        if (hyphens == 0) {
+          return ReadToEnd(str.next(),
+                           digits,
+                           digit_count,
+                           hyphens + 1,
+                           /*first_hyphen_index=*/str.index(),
+                           second_hyphen_index,
+                           has_w,
+                           w_index);
+        } else {
+          return ReadToEnd(str.next(),
+                           digits,
+                           digit_count,
+                           hyphens + 1,
+                           first_hyphen_index,
+                           /*second_hyphen_index=*/str.index(),
+                           has_w,
+                           w_index);
+        }
+      case 'W':
+        CHECK(!has_w);
+        return ReadToEnd(str.next(),
+                         digits,
+                         digit_count,
+                         hyphens,
+                         first_hyphen_index,
+                         second_hyphen_index,
+                         /*has_w=*/true,
+                         /*w_index=*/str.index());
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        return ReadToEnd(str.next(),
+                         digits * 10 + *str - '0',
+                         digit_count + 1,
+                         hyphens,
+                         first_hyphen_index,
+                         second_hyphen_index,
+                         has_w,
+                         w_index);
+      default:
+        CHECK(false);
+        return DateParser{0, 0, 0, 0, 0, false, 0};
+    }
+  }
 }
 
 constexpr Date DateParser::ISOToDate() const {
-  return digit_count_ == 8
-             ? CHECKING(hyphens_ == 0 ||
-                            (hyphens_ == 2 && first_hyphen_index_ == 4 &&
-                             second_hyphen_index_ == 7),
-                        Date::YYYYMMDD(digits_))
-             : CHECKING(
-                   digit_count_ == 7,
-                   has_w_
-                       ? CHECKING(
-                             (hyphens_ == 0 && w_index_ == 4) ||
-                                 (hyphens_ == 2 && first_hyphen_index_ == 4 &&
-                                  w_index_ == 5 && second_hyphen_index_ == 8),
-                             Date::YYYYwwD(digits_))
-                       : CHECKING(hyphens_ == 0 || (hyphens_ == 1 &&
-                                                    first_hyphen_index_ == 4),
-                                  Date::YYYYDDD(digits_)));
+  if (digit_count_ == 8) {
+    CHECK(hyphens_ == 0 ||
+          (hyphens_ == 2 &&
+           first_hyphen_index_ == 4 &&
+           second_hyphen_index_ == 7));
+    return Date::YYYYMMDD(digits_);
+  } else {
+    CHECK(digit_count_ == 7);
+    if (has_w_) {
+      CHECK((hyphens_ == 0 && w_index_ == 4) ||
+            (hyphens_ == 2 &&
+             first_hyphen_index_ == 4 &&
+             w_index_ == 5 &&
+             second_hyphen_index_ == 8));
+      return Date::YYYYwwD(digits_);
+    } else {
+      CHECK(hyphens_ == 0 ||
+            (hyphens_ == 1 &&
+             first_hyphen_index_ == 4));
+      return Date::YYYYDDD(digits_);
+    }
+  }
 }
 
 constexpr Date DateParser::JDToDate(char const ffd) const {
-  return CHECKING(hyphens_ == 0 &&
-                  !has_w_ &&
-                  ffd >= '0' && ffd <= '9',
-                  ffd >= '5'
-                      ? arbitrary_ordinal(
-                            mjd0_yyyy,
-                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
-                                (digits_ - mjd0_jd0_offset))
-                      : arbitrary_ordinal(
-                            mjd0_yyyy,
-                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
-                                (digits_ - mjd0_jd0_offset - 1)));
+  CHECK(hyphens_ == 0);
+  CHECK(!has_w_);
+  CHECK(ffd >= '0');
+  CHECK(ffd <= '9');
+  if (ffd >= '5') {
+    return arbitrary_ordinal(mjd0_yyyy,
+                             Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
+                                 (digits_ - mjd0_jd0_offset));
+  } else {
+    return arbitrary_ordinal(mjd0_yyyy,
+                             Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
+                                 (digits_ - mjd0_jd0_offset - 1));
+  }
 }
 
 constexpr Date DateParser::MJDToDate() const {
-  return CHECKING(hyphens_ == 0 && !has_w_,
-                  arbitrary_ordinal(
-                      mjd0_yyyy,
-                      Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + digits_));
+  CHECK(hyphens_ == 0);
+  CHECK(!has_w_);
+  return arbitrary_ordinal(mjd0_yyyy,
+                           Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + digits_);
 }
 
 // Time parsing.
