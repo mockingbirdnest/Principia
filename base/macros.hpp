@@ -221,6 +221,10 @@ inline void noreturn() { std::exit(0); }
   ((condition) ? (expression)                                                \
                : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
                   (expression)))
+#define CONSTEXPR_CHECK(condition)                                   \
+  if (!(condition)) {                                          \
+    ([] { LOG(FATAL) << "Check failed: " #condition " "; })(); \
+  }
 
 // Clang for some reason doesn't like FP arithmetic that yields infinities in
 // constexpr code (MSVC and GCC are fine with that).
