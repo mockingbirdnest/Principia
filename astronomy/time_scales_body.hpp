@@ -108,26 +108,31 @@ constexpr std::array<int, (2018 - 1972) * 2 + 1> leap_seconds = {{
 // Returns +1 if a positive leap second was inserted at the end of the given
 // |month| of the given |year|, 0 otherwise.
 constexpr int LeapSecond(int const year, int const month) {
-  return month == 6
-             ? CHECKING((year - 1972) * 2 < leap_seconds.size(),
-                        leap_seconds[(year - 1972) * 2])
-             : CHECKING(month == 12,
-                        CHECKING((year - 1972) * 2 + 1 < leap_seconds.size(),
-                                 leap_seconds[(year - 1972) * 2 + 1]));
+  if (month == 6) {
+    CONSTEXPR_CHECK((year - 1972) * 2 < leap_seconds.size());
+    return leap_seconds[(year - 1972) * 2];
+  } else {
+    CONSTEXPR_CHECK(month == 12);
+    CONSTEXPR_CHECK((year - 1972) * 2 + 1 < leap_seconds.size());
+    return leap_seconds[(year - 1972) * 2 + 1];
+  }
 }
 
 // Returns UTC - TAI on the given UTC day (similar to Bulletin C).
 constexpr quantities::Time ModernUTCMinusTAI(Date const& utc_date) {
-  return utc_date.month() == 1 && utc_date.day() == 1
-             ? utc_date.year() == 1972
-                   ? -10 * Second
-                   : -LeapSecond(utc_date.year() - 1, 6) * Second +
-                         -LeapSecond(utc_date.year() - 1, 12) * Second +
-                         ModernUTCMinusTAI(
-                             Date::Calendar(utc_date.year() - 1, 1, 1))
-             : (utc_date.month() > 6 ? -LeapSecond(utc_date.year(), 6) * Second
-                                     : 0 * Second) +
-                   ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
+  if (utc_date.month() == 1 && utc_date.day() == 1) {
+    if (utc_date.year() == 1972) {
+      return -10 * Second;
+    } else {
+      return -LeapSecond(utc_date.year() - 1, 6) * Second +
+             -LeapSecond(utc_date.year() - 1, 12) * Second +
+             ModernUTCMinusTAI(Date::Calendar(utc_date.year() - 1, 1, 1));
+    }
+  } else {
+    return (utc_date.month() > 6 ? -LeapSecond(utc_date.year(), 6) * Second
+                                 : 0 * Second) +
+           ModernUTCMinusTAI(Date::Calendar(utc_date.year(), 1, 1));
+  }
 }
 
 constexpr bool IsValidModernUTC(DateTime const& date_time) {
@@ -177,7 +182,8 @@ constexpr quantities::Time TAIMinusStretchyUTC(DateTime const& utc) {
 constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
                                              Date const& next_day,
                                              double const& milliseconds) {
-  return utc.time().is_leap_second() && utc.date().next_day() == next_day &&
+  return utc.time().is_leap_second() &&
+         utc.date().next_day() == next_day &&
          utc.time().millisecond() < milliseconds;
 }
 
@@ -187,11 +193,11 @@ constexpr bool IsValidPositiveStretchyUTCLeap(DateTime const& utc,
 constexpr bool IsValidStretchyUTCIfOnDayOfNegativeLeap(DateTime const& utc,
                                                        Date const& next_day,
                                                        int const milliseconds) {
-  return CHECKING(milliseconds > 0,
-                  utc.date().next_day() != next_day ||
-                      utc.time().hour() < 23 ||
-                      utc.time().minute() < 59 ||
-                      utc.time().millisecond() < 1000 - milliseconds);
+  CONSTEXPR_CHECK(milliseconds > 0);
+  return utc.date().next_day() != next_day ||
+         utc.time().hour() < 23 ||
+         utc.time().minute() < 59 ||
+         utc.time().millisecond() < 1000 - milliseconds;
 }
 
 // A list of leaps is found at
@@ -279,23 +285,29 @@ constexpr ExperimentalEOPC02Entry const* LookupUT1(
     quantities::Time const& ut1,
     ExperimentalEOPC02Entry const* begin,
     std::ptrdiff_t const size) {
-  return CHECKING(size > 0,
-                  size == 1
-                      ? CHECKING(begin->ut1_mjd <= mjd(ut1), begin)
-                      : (begin + size / 2)->ut1_mjd <= mjd(ut1)
-                            ? LookupUT1(ut1, begin + size / 2, size - size / 2)
-                            : LookupUT1(ut1, begin, size / 2));
+  CONSTEXPR_CHECK(size > 0);
+  if (size == 1) {
+    CONSTEXPR_CHECK(begin->ut1_mjd <= mjd(ut1));
+    return begin;
+  } else if ((begin + size / 2)->ut1_mjd <= mjd(ut1)) {
+    return LookupUT1(ut1, begin + size / 2, size - size / 2);
+  } else {
+    return LookupUT1(ut1, begin, size / 2);
+  }
 }
 
 constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
                                        EOPC04Entry const* begin,
                                        std::ptrdiff_t const size) {
-  return CHECKING(size > 0,
-                  size == 1
-                      ? CHECKING(begin->ut1() <= ut1, begin)
-                      : (begin + size / 2)->ut1() <= ut1
-                            ? LookupUT1(ut1, begin + size / 2, size - size / 2)
-                            : LookupUT1(ut1, begin, size / 2));
+  CONSTEXPR_CHECK(size > 0);
+  if (size == 1) {
+    CONSTEXPR_CHECK(begin->ut1() <= ut1);
+    return begin;
+  } else if ((begin + size / 2)->ut1() <= ut1) {
+    return LookupUT1(ut1, begin + size / 2, size - size / 2);
+  } else {
+    return LookupUT1(ut1, begin, size / 2);
+  }
 }
 
 constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
@@ -343,48 +355,51 @@ constexpr Instant ExperimentalEOPC02ToEOPC04(ExperimentalEOPC02Entry const& low,
 }
 
 constexpr Instant FromUT1(quantities::Time const ut1) {
-  return ut1 < eop_c04.front().ut1()
-             ? ((LookupInExperimentalEOPC02(ut1) + 1)->ut1_mjd >
-                        mjd(eop_c04.front().ut1())
-                    ? ExperimentalEOPC02ToEOPC04(
-                          *LookupInExperimentalEOPC02(ut1),
-                          eop_c04.front(),
-                          ut1)
-                    : InterpolatedExperimentalEOPC02(
-                          LookupInExperimentalEOPC02(ut1), ut1))
-             : InterpolatedEOPC04(LookupInEOPC04(ut1), ut1);
+  if (ut1 < eop_c04.front().ut1()) {
+    if ((LookupInExperimentalEOPC02(ut1) + 1)->ut1_mjd >
+        mjd(eop_c04.front().ut1())) {
+      return ExperimentalEOPC02ToEOPC04(*LookupInExperimentalEOPC02(ut1),
+                                        eop_c04.front(),
+                                        ut1);
+    } else {
+      return InterpolatedExperimentalEOPC02(LookupInExperimentalEOPC02(ut1),
+                                            ut1);
+    }
+  } else {
+    return InterpolatedEOPC04(LookupInEOPC04(ut1), ut1);
+  }
 }
 
 // Conversions from |DateTime| to |Instant|.
 
 constexpr Instant DateTimeAsTT(DateTime const& tt) {
-  return CHECKING(!tt.time().is_leap_second(), FromTT(TimeScale(tt)));
+  CONSTEXPR_CHECK(!tt.time().is_leap_second());
+  return FromTT(TimeScale(tt));
 }
 
 constexpr Instant DateTimeAsTAI(DateTime const& tai) {
-  return CHECKING(!tai.time().is_leap_second(), FromTAI(TimeScale(tai)));
+  CONSTEXPR_CHECK(!tai.time().is_leap_second());
+  return FromTAI(TimeScale(tai));
 }
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
-  return CHECKING(
-      !utc.jd(),
-      utc.time().is_end_of_day()
-      ? DateTimeAsUTC(utc.normalized_end_of_day())
-      : utc.date().year() < 1972
-            ? CHECKING(
-                  IsValidStretchyUTC(utc),
-                  FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc)))
-            : CHECKING(IsValidModernUTC(utc),
-                      FromTAI(TimeScale(utc) -
-                              ModernUTCMinusTAI(utc.date()))));
+  CONSTEXPR_CHECK(!utc.jd());
+  if (utc.time().is_end_of_day()) {
+    return DateTimeAsUTC(utc.normalized_end_of_day());
+  } else if (utc.date().year() < 1972) {
+    CONSTEXPR_CHECK(IsValidStretchyUTC(utc));
+    return FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc));
+  } else {
+    CONSTEXPR_CHECK(IsValidModernUTC(utc));
+    return FromTAI(TimeScale(utc) - ModernUTCMinusTAI(utc.date()));
+  }
 }
 
 constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
-  return CHECKING(
-      !ut1.time().is_leap_second() &&
-          mjd(TimeScale(ut1)) >= experimental_eop_c02.front().ut1_mjd &&
-          TimeScale(ut1) < eop_c04.back().ut1(),
-      FromUT1(TimeScale(ut1)));
+  CONSTEXPR_CHECK(!ut1.time().is_leap_second());
+  CONSTEXPR_CHECK(mjd(TimeScale(ut1)) >= experimental_eop_c02.front().ut1_mjd);
+  CONSTEXPR_CHECK(TimeScale(ut1) < eop_c04.back().ut1());
+  return FromUT1(TimeScale(ut1));
 }
 
 // |Instant| date literals.
