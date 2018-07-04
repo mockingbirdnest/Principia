@@ -326,10 +326,11 @@ constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
   // TODO(egg): figure out whether using the divided difference of the
   // |p->ut1_minus_tai()|s leads to less catastrophic cancellation than using
   // the divided difference of the |DateTimeAsUTC(p->utc())|s.
-  return FromTAI(ut1 - (low->ut1_minus_tai() +
-                        (ut1 - low->ut1()) * ((low + 1)->ut1_minus_tai() -
-                                              low->ut1_minus_tai()) /
-                            ((low + 1)->ut1() - low->ut1())));
+  return FromTAI(ut1 -
+                 (low->ut1_minus_tai() +
+                  (ut1 - low->ut1()) *
+                      ((low + 1)->ut1_minus_tai() - low->ut1_minus_tai()) /
+                      ((low + 1)->ut1() - low->ut1())));
 }
 
 // Linear interpolation on the UT1 range given by the range of MJDs
