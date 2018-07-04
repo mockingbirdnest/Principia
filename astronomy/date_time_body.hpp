@@ -371,13 +371,29 @@ constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
 
 // Parsing utilities.
 
-constexpr bool contains(char const* str, std::size_t size, char const c) {
+constexpr bool contains(char const* const str,
+                        std::size_t const size,
+                        char const c) {
   return size > 0 && (str[0] == c || contains(str + 1, size - 1, c));
 }
 
-constexpr int index_of(char const* str, std::size_t size, char const c) {
+constexpr int index_of(char const* const str,
+                       std::size_t const size,
+                       char const c) {
   CONSTEXPR_CHECK(size > 0);
   return str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1);
+}
+
+constexpr bool starts_with(char const* const str,
+                           std::size_t const size,
+                           char const* const prefix_str,
+                           std::size_t const prefix_size) {
+  CONSTEXPR_CHECK(size > 0);
+  CONSTEXPR_CHECK(prefix_size > 0);
+  return str[0] == prefix_str[0] &&
+         (prefix_size == 1 ||
+          (size > 1 &&
+           starts_with(str + 1, size - 1, prefix_str + 1, prefix_size - 1)));
 }
 
 class CStringIterator final {
@@ -898,14 +914,13 @@ constexpr Time TimeParser::JDFractionToTime(std::int64_t const digits,
   //   digit_range(106'666'588'800, 3, 7) = 6588
   //   (6588 + 5) / 10 = 659
   // Note that this results in rounding to the nearest millisecond.
-  return CHECKING(
-      digit_count <= 14,
-      Time(digit_range(24 * digits, digit_count, digit_count + 2),
-           digit_range(60 * digit_range(24 * digits, 0, digit_count),
-                       digit_count, digit_count + 2),
-           digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
-                       digit_count, digit_count + 2),
-           JDRoundedMilliseconds(digits, digit_count)));
+  CONSTEXPR_CHECK(digit_count <= 14);
+  return Time(digit_range(24 * digits, digit_count, digit_count + 2),
+              digit_range(60 * digit_range(24 * digits, 0, digit_count),
+                          digit_count, digit_count + 2),
+              digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
+                          digit_count, digit_count + 2),
+              JDRoundedMilliseconds(digits, digit_count));
 }
 
 constexpr int TimeParser::JDRoundedMilliseconds(std::int64_t const digits,
@@ -986,38 +1001,41 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
   // Given correctness of the date and time parts of the string, this check
   // ensures that either both are in basic format or both are in extended
   // format.
-  return CHECKING(
-      contains(str, size, '-') == contains(str, size, ':'),
-      size >= 2 && str[0] == 'J' && str[1] == 'D'
-          ? contains(str, size - 1, '.')
-                ? DateTime(DateParser::ParseJD(
-                               str + 2,
-                               str[index_of(str + 2, size - 2, '.') + 3],
-                               index_of(str + 2, size - 2, '.')),
-                           TimeParser::ParseJD(
-                               str + index_of(str, size, '.') + 1,
-                               size - (index_of(str, size, '.') + 1)),
-                           /*jd=*/true)
-                : DateTime(DateParser::ParseJD(str + 2, '0', size - 2),
-                           TimeParser::ParseJD("0", 1),
-                           /*jd=*/true)
-          : size >= 3 && str[0] == 'M' && str[1] == 'J' && str[2] == 'D'
-                ? contains(str, size - 1, '.')
-                      ? DateTime(DateParser::ParseMJD(
-                                     str + 3,
-                                     index_of(str + 3, size - 3, '.')),
-                                 TimeParser::ParseMJD(
-                                     str + index_of(str, size, '.') + 1,
-                                     size - (index_of(str, size, '.') + 1)),
-                                 /*jd=*/true)
-                      : DateTime(DateParser::ParseMJD(str + 3, size - 3),
-                                 TimeParser::ParseMJD("0", 1),
-                                 /*jd=*/true)
-                : DateTime(DateParser::ParseISO(str, index_of(str, size, 'T')),
-                           TimeParser::ParseISO(
-                               str + index_of(str, size, 'T') + 1,
-                               size - (index_of(str, size, 'T') + 1)),
-                           /*jd=*/false));
+  CONSTEXPR_CHECK(contains(str, size, '-') == contains(str, size, ':'));
+  if (starts_with(str, size, "JD", 2)) {
+    if (contains(str, size - 1, '.')) {
+      const int index_of_period = index_of(str, size, '.');
+      return DateTime(DateParser::ParseJD(str + 2,
+                                          str[index_of_period + 1],
+                                          index_of_period - 2),
+                      TimeParser::ParseJD(str + index_of_period + 1,
+                                          size - (index_of_period + 1)),
+                      /*jd=*/true);
+    } else {
+      return DateTime(DateParser::ParseJD(str + 2, '0', size - 2),
+                      TimeParser::ParseJD("0", 1),
+                      /*jd=*/true);
+    }
+  } else if (starts_with(str, size, "MJD", 3)) {
+    if (contains(str, size - 1, '.')) {
+      const int index_of_period = index_of(str, size, '.');
+      return DateTime(
+          DateParser::ParseMJD(str + 3, index_of_period - 3),
+          TimeParser::ParseMJD(str + index_of_period + 1,
+                               size - (index_of_period + 1)),
+          /*jd=*/true);
+    } else {
+      return DateTime(DateParser::ParseMJD(str + 3, size - 3),
+                      TimeParser::ParseMJD("0", 1),
+                      /*jd=*/true);
+    }
+  } else {
+    const int index_of_T = index_of(str, size, 'T');
+    return DateTime(DateParser::ParseISO(str, index_of_T),
+                    TimeParser::ParseISO(str + index_of_T + 1,
+                                         size - (index_of_T + 1)),
+                    /*jd=*/false);
+  }
 }
 
 }  // namespace internal_date_time
