@@ -376,8 +376,8 @@ constexpr bool contains(char const* str, std::size_t size, char const c) {
 }
 
 constexpr int index_of(char const* str, std::size_t size, char const c) {
-  return CHECKING(size > 0,
-                  str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1));
+  CONSTEXPR_CHECK(size > 0);
+  return str[0] == c ? 0 : (index_of(str + 1, size - 1, c) + 1);
 }
 
 class CStringIterator final {
@@ -407,7 +407,7 @@ constexpr bool CStringIterator::at_end() const {
 }
 
 constexpr CStringIterator CStringIterator::next() const {
-  CHECK(!at_end());
+  CONSTEXPR_CHECK(!at_end());
   return CStringIterator(str_, end_, it_ + 1);
 }
 
@@ -416,7 +416,7 @@ constexpr int CStringIterator::index() const {
 }
 
 constexpr char const& CStringIterator::operator*() const {
-  CHECK(!at_end());
+  CONSTEXPR_CHECK(!at_end());
   return *it_;
 }
 
@@ -553,7 +553,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
   } else {
     switch (*str) {
       case '-':
-        CHECK(hyphens < 2);
+        CONSTEXPR_CHECK(hyphens < 2);
         if (hyphens == 0) {
           return ReadToEnd(str.next(),
                            digits,
@@ -574,7 +574,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                            w_index);
         }
       case 'W':
-        CHECK(!has_w);
+        CONSTEXPR_CHECK(!has_w);
         return ReadToEnd(str.next(),
                          digits,
                          digit_count,
@@ -594,7 +594,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
                          has_w,
                          w_index);
       default:
-        CHECK(false);
+        CONSTEXPR_CHECK(false);
         return DateParser{0, 0, 0, 0, 0, false, 0};
     }
   }
@@ -602,22 +602,22 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
 
 constexpr Date DateParser::ISOToDate() const {
   if (digit_count_ == 8) {
-    CHECK(hyphens_ == 0 ||
-          (hyphens_ == 2 &&
-           first_hyphen_index_ == 4 &&
-           second_hyphen_index_ == 7));
+    CONSTEXPR_CHECK(hyphens_ == 0 ||
+                    (hyphens_ == 2 &&
+                     first_hyphen_index_ == 4 &&
+                     second_hyphen_index_ == 7));
     return Date::YYYYMMDD(digits_);
   } else {
-    CHECK(digit_count_ == 7);
+    CONSTEXPR_CHECK(digit_count_ == 7);
     if (has_w_) {
-      CHECK((hyphens_ == 0 && w_index_ == 4) ||
-            (hyphens_ == 2 &&
-             first_hyphen_index_ == 4 &&
-             w_index_ == 5 &&
-             second_hyphen_index_ == 8));
+      CONSTEXPR_CHECK((hyphens_ == 0 && w_index_ == 4) ||
+                      (hyphens_ == 2 &&
+                       first_hyphen_index_ == 4 &&
+                       w_index_ == 5 &&
+                       second_hyphen_index_ == 8));
       return Date::YYYYwwD(digits_);
     } else {
-      CHECK(hyphens_ == 0 ||
+      CONSTEXPR_CHECK(hyphens_ == 0 ||
             (hyphens_ == 1 &&
              first_hyphen_index_ == 4));
       return Date::YYYYDDD(digits_);
@@ -626,10 +626,10 @@ constexpr Date DateParser::ISOToDate() const {
 }
 
 constexpr Date DateParser::JDToDate(char const ffd) const {
-  CHECK(hyphens_ == 0);
-  CHECK(!has_w_);
-  CHECK(ffd >= '0');
-  CHECK(ffd <= '9');
+  CONSTEXPR_CHECK(hyphens_ == 0);
+  CONSTEXPR_CHECK(!has_w_);
+  CONSTEXPR_CHECK(ffd >= '0');
+  CONSTEXPR_CHECK(ffd <= '9');
   if (ffd >= '5') {
     return arbitrary_ordinal(mjd0_yyyy,
                              Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
@@ -642,8 +642,8 @@ constexpr Date DateParser::JDToDate(char const ffd) const {
 }
 
 constexpr Date DateParser::MJDToDate() const {
-  CHECK(hyphens_ == 0);
-  CHECK(!has_w_);
+  CONSTEXPR_CHECK(hyphens_ == 0);
+  CONSTEXPR_CHECK(!has_w_);
   return arbitrary_ordinal(mjd0_yyyy,
                            Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + digits_);
 }
@@ -764,69 +764,82 @@ constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
                                            int const second_colon_index,
                                            bool const has_decimal_mark,
                                            int const decimal_mark_index) {
-  return str.at_end()
-             ? TimeParser(digits,
-                          digit_count,
-                          colons,
-                          first_colon_index,
-                          second_colon_index,
-                          has_decimal_mark,
-                          decimal_mark_index)
-             : *str == ':'
-                   ? CHECKING(
-                         colons < 2,
-                         colons == 0
-                             ? ReadToEnd(str.next(),
-                                         digits,
-                                         digit_count,
-                                         colons + 1,
-                                         /*first_colon_index=*/str.index(),
-                                         second_colon_index,
-                                         has_decimal_mark,
-                                         decimal_mark_index)
-                             : ReadToEnd(str.next(),
-                                         digits,
-                                         digit_count,
-                                         colons + 1,
-                                         first_colon_index,
-                                         /*second_colon_index=*/str.index(),
-                                         has_decimal_mark,
-                                         decimal_mark_index))
-                   : *str == ',' || *str == '.'
-                         ? CHECKING(
-                               !has_decimal_mark,
-                               ReadToEnd(str.next(),
-                                         digits,
-                                         digit_count,
-                                         colons,
-                                         first_colon_index,
-                                         second_colon_index,
-                                         /*has_decimal_mark=*/true,
-                                         /*decimal_mark_index=*/str.index()))
-                         : CHECKING(*str >= '0' && *str <= '9',
-                                    ReadToEnd(str.next(),
-                                              digits * 10 + *str - '0',
-                                              digit_count + 1,
-                                              colons,
-                                              first_colon_index,
-                                              second_colon_index,
-                                              has_decimal_mark,
-                                              decimal_mark_index));
+  if (str.at_end()) {
+    return TimeParser(digits,
+                      digit_count,
+                      colons,
+                      first_colon_index,
+                      second_colon_index,
+                      has_decimal_mark,
+                      decimal_mark_index);
+  } else {
+    switch (*str) {
+      case ':':
+        CONSTEXPR_CHECK(colons < 2);
+        if (colons == 0) {
+          return ReadToEnd(str.next(),
+                           digits,
+                           digit_count,
+                           colons + 1,
+                           /*first_colon_index=*/str.index(),
+                           second_colon_index,
+                           has_decimal_mark,
+                           decimal_mark_index);
+        } else {
+          return ReadToEnd(str.next(),
+                           digits,
+                           digit_count,
+                           colons + 1,
+                           first_colon_index,
+                           /*second_colon_index=*/str.index(),
+                           has_decimal_mark,
+                           decimal_mark_index);
+        }
+      case ',':
+      case '.':
+        CONSTEXPR_CHECK(!has_decimal_mark);
+        return ReadToEnd(str.next(),
+                         digits,
+                         digit_count,
+                         colons,
+                         first_colon_index,
+                         second_colon_index,
+                         /*has_decimal_mark=*/true,
+                         /*decimal_mark_index=*/str.index());
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        return ReadToEnd(str.next(),
+                         digits * 10 + *str - '0',
+                         digit_count + 1,
+                         colons,
+                         first_colon_index,
+                         second_colon_index,
+                         has_decimal_mark,
+                         decimal_mark_index);
+      default:
+        CONSTEXPR_CHECK(false);
+        return TimeParser{0, 0, 0, 0, 0, false, 0};
+    }
+  }
 }
 
 constexpr Time TimeParser::ISOToTime() const {
-  return CHECKING(
-      digit_count_ >= 6 &&
-          (colons_ == 0 || (colons_ == 2 && first_colon_index_ == 2 &&
-                            second_colon_index_ == 5)) &&
-          ((digit_count_ == 6 && !has_decimal_mark_) ||
-           (has_decimal_mark_ &&
-            ((colons_ == 0 && decimal_mark_index_ == 6) ||
-             (colons_ != 0 && decimal_mark_index_ == 8)))) &&
-          digit_count_ <= 15,
-      Time::hhmmss_ms(digit_range(digits_, digit_count_ - 6, digit_count_),
-                      shift_left(digit_range(digits_, 0, digit_count_ - 6),
-                                 3 - (digit_count_ - 6))));
+  // Length of the hhmmss part before the decimal mark (after stripping colons).
+  constexpr int hhmmss = 6;
+  CONSTEXPR_CHECK(digit_count_ >= hhmmss);
+  CONSTEXPR_CHECK(digit_count_ <= 15);
+  CONSTEXPR_CHECK(colons_ == 0 ||
+                  (colons_ == 2 &&
+                   first_colon_index_ == 2 &&
+                   second_colon_index_ == 5));
+  CONSTEXPR_CHECK(
+      (digit_count_ == hhmmss && !has_decimal_mark_) ||
+      (has_decimal_mark_ && ((colons_ == 0 && decimal_mark_index_ == 6) ||
+                             (colons_ != 0 && decimal_mark_index_ == 8))));
+  return Time::hhmmss_ms(
+      digit_range(digits_, digit_count_ - hhmmss, digit_count_),
+      shift_left(digit_range(digits_, 0, digit_count_ - hhmmss),
+                 3 - (digit_count_ - hhmmss)));
 }
 
 constexpr Time TimeParser::JDToTime() const {
@@ -842,26 +855,29 @@ constexpr Time TimeParser::JDToTime() const {
   //   shift_left(2 + 5, 4) = 70'000
   //   digit_range(25'000, 0, 4) = 5'000
   //   calls JDFractionToTime(75'000, 5)
-  return CHECKING(
-      colons_ == 0 && !has_decimal_mark_,
-      digit_range(digits_, digit_count_ - 1, digit_count_) >= 5
-          ? JDFractionToTime(
-                shift_left(
-                    digit_range(digits_, digit_count_ - 1, digit_count_) - 5,
-                    digit_count_ - 1) +
-                digit_range(digits_, 0, digit_count_ - 1),
-                digit_count_)
-          : JDFractionToTime(
-                shift_left(
-                    digit_range(digits_, digit_count_ - 1, digit_count_) + 5,
-                    digit_count_ - 1) +
-                digit_range(digits_, 0, digit_count_ - 1),
-                digit_count_));
+  CONSTEXPR_CHECK(colons_ == 0);
+  CONSTEXPR_CHECK(!has_decimal_mark_);
+
+  // Days start at a fraction 0.5 of a JD.
+  const int leading_digit =
+      digit_range(digits_, digit_count_ - 1, digit_count_);
+  if (leading_digit >= 5) {
+    return JDFractionToTime(
+               shift_left(leading_digit - 5, digit_count_ - 1) +
+                   digit_range(digits_, 0, digit_count_ - 1),
+               digit_count_);
+  } else {
+    return JDFractionToTime(
+               shift_left(leading_digit + 5, digit_count_ - 1) +
+                   digit_range(digits_, 0, digit_count_ - 1),
+               digit_count_);
+  }
 }
 
 constexpr Time TimeParser::MJDToTime() const {
-  return CHECKING(colons_ == 0 && !has_decimal_mark_,
-                  JDFractionToTime(digits_, digit_count_));
+  CONSTEXPR_CHECK(colons_ == 0);
+  CONSTEXPR_CHECK(!has_decimal_mark_);
+  return JDFractionToTime(digits_, digit_count_);
 }
 
 constexpr Time TimeParser::JDFractionToTime(std::int64_t const digits,
