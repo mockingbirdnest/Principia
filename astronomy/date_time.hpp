@@ -31,8 +31,6 @@ class Date final {
 
   constexpr int ordinal() const;
 
-  constexpr int mjd() const;
-
   constexpr Date next_day() const;
 
  private:
@@ -76,8 +74,6 @@ class DateTime final {
 
   constexpr Date const& date() const;
   constexpr Time const& time() const;
-  // Returns true iff the object was constructed from a JD or MJD string.
-  constexpr bool jd() const;
 
   // If |time()| is 24:00:00, returns an equivalent DateTime where midnight is
   // expressed as 00:00:00 on the next day; otherwise, returns |*this|.
@@ -86,11 +82,10 @@ class DateTime final {
  private:
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.
-  constexpr DateTime(Date date, Time time, bool jd);
+  constexpr DateTime(Date date, Time time);
 
   Date const date_;
   Time const time_;
-  bool const jd_;
 
   friend constexpr DateTime operator""_DateTime(char const* str,
                                                 std::size_t size);
