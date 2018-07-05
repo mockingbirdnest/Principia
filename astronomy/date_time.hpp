@@ -96,6 +96,18 @@ class DateTime final {
                                                 std::size_t size);
 };
 
+class JulianDate final {
+ public:
+ private:
+  constexpr JulianDate(int day, int fraction, int scale);
+
+  int const day_;
+  int const fraction_;
+  int const scale_;
+
+  friend class JulianDateParser;
+};
+
 constexpr bool operator==(Date const& left, Date const& right);
 constexpr bool operator!=(Date const& left, Date const& right);
 constexpr bool operator<(Date const& left, Date const& right);
@@ -120,6 +132,9 @@ constexpr bool operator!=(DateTime const& left, DateTime const& right);
 // The fractional part ffff must have at most 14 digits.  The final result is
 // rounded to the nearest millisecond.
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
+
+constexpr bool IsJulian(char const* str, std::size_t size);
+constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 
 }  // namespace internal_date_time
 

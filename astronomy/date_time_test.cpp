@@ -40,32 +40,32 @@ TEST_F(CalendarDeathTest, InvalidDateTime) {
 
 TEST_F(CalendarTest, JulianDate) {
   static_assert("2010-01-04T00:00:00.123"_DateTime ==
-                "JD2455200.50000142361"_DateTime, "Dates differ");
+                "JD2455200.50000142361"_Julian, "Dates differ");
   static_assert("2010-01-04T00:00:00.000"_DateTime ==
-                "JD2455200.50000"_DateTime, "Dates differ");
+                "JD2455200.50000"_Julian, "Dates differ");
   static_assert("2010-01-04T12:00:00.000"_DateTime ==
-                "JD2455201.00000"_DateTime, "Dates differ");
+                "JD2455201.00000"_Julian, "Dates differ");
   static_assert("2010-01-04T18:00:00.000"_DateTime ==
-                "JD2455201.25000"_DateTime, "Dates differ");
+                "JD2455201.25000"_Julian, "Dates differ");
   static_assert("2010-01-04T02:57:46.659"_DateTime ==
-                "JD2455200.6234567"_DateTime, "Dates differ");
+                "JD2455200.6234567"_Julian, "Dates differ");
   static_assert("2000-01-01T00:00:00"_DateTime ==
-                "JD2451544.5"_DateTime, "Dates differ");
+                "JD2451544.5"_Julian, "Dates differ");
   static_assert("2000-01-01T12:00:00"_DateTime ==
                 "JD2451545"_DateTime, "Dates differ");
 }
 
 TEST_F(CalendarTest, ModifiedJulianDate) {
   static_assert("2010-01-04T00:00:00.123"_DateTime ==
-                "MJD55200.00000142361"_DateTime, "Dates differ");
+                "MJD55200.00000142361"_Julian, "Dates differ");
   static_assert("2010-01-04T00:00:00.000"_DateTime ==
-                "MJD55200.00000"_DateTime, "Dates differ");
+                "MJD55200.00000"_Julian, "Dates differ");
   static_assert("2010-01-04T12:00:00.000"_DateTime ==
-                "MJD55200.50000"_DateTime, "Dates differ");
+                "MJD55200.50000"_Julian, "Dates differ");
   static_assert("2010-01-04T18:00:00.000"_DateTime ==
-                "MJD55200.75000"_DateTime, "Dates differ");
+                "MJD55200.75000"_Julian, "Dates differ");
   static_assert("2010-01-04T02:57:46.659"_DateTime ==
-                "MJD55200.1234567"_DateTime, "Dates differ");
+                "MJD55200.1234567"_Julian, "Dates differ");
 }
 
 }  // namespace internal_date_time
