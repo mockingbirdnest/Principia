@@ -98,14 +98,23 @@ class DateTime final {
 
 class JulianDate final {
  public:
+  static constexpr JulianDate JD(std::int64_t digits,
+                                 std::int64_t digit_count,
+                                 std::int64_t fractional_digit_count);
+  static constexpr JulianDate MJD(std::int64_t digits,
+                                  std::int64_t digit_count,
+                                  std::int64_t fractional_digit_count);
+
  private:
-  constexpr JulianDate(int day, int fraction, int scale);
+  constexpr JulianDate(std::int64_t day,
+                       std::int64_t fraction_numerator,
+                       std::int64_t fraction_denominator);
 
-  int const day_;
-  int const fraction_;
-  int const scale_;
-
-  friend class JulianDateParser;
+  // These numbers are relative to J2000.  |fraction_denominator| is a positive
+  // power of 10.
+  std::int64_t const day_;
+  std::int64_t const fraction_numerator_;
+  std::int64_t const fraction_denominator_;
 };
 
 constexpr bool operator==(Date const& left, Date const& right);
@@ -123,16 +132,9 @@ constexpr Time operator""_Time(char const* str, std::size_t size);
 constexpr bool operator==(DateTime const& left, DateTime const& right);
 constexpr bool operator!=(DateTime const& left, DateTime const& right);
 
-// In addition to ISO 8601, this operator also supports julian dates and
-// modified julian dates according to the following formats:
-//   JDiiii.ffff
-//   JDiiii
-//   MJDiiii.ffff
-//   MJDiiii
-// The fractional part ffff must have at most 14 digits.  The final result is
-// rounded to the nearest millisecond.
 constexpr DateTime operator""_DateTime(char const* str, std::size_t size);
 
+// Returns true if the string can be interpreted as a Julian date.
 constexpr bool IsJulian(char const* str, std::size_t size);
 constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 

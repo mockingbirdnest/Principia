@@ -21,6 +21,7 @@ using base::mod;
 constexpr int mjd0_yyyy = 1858;
 constexpr int mjd0_yyyymmdd = 1858'11'17;
 constexpr int mjd0_jd0_offset = 2'400'000;  // 2'400'000.5, actually.
+constexpr int j2000_jd0_offset = 2'451'545;
 
 constexpr std::array<int, 12> non_leap_year_month_lengths{
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
@@ -368,6 +369,47 @@ constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
   CONSTEXPR_CHECK(!time_.is_leap_second() ||
                   date_.day() == month_length(date_.year(), date_.month()));
 }
+
+// Implementation of class JulianDate.
+
+constexpr JulianDate JulianDate::JD(std::int64_t const digits,
+                                    std::int64_t const digit_count,
+                                    std::int64_t const fractional_digit_count) {
+  auto const day =
+      digit_range(digits, digit_count - fractional_digit_count, digit_count);
+  auto const fraction_numerator =
+      digit_range(digits, 0, fractional_digit_count);
+  auto const fraction_denominator = shift_left(1, fractional_digit_count);
+  return JulianDate(day - j2000_jd0_offset,
+                    fraction_numerator,
+                    fraction_denominator);
+}
+
+constexpr JulianDate JulianDate::MJD(std::int64_t const digits,
+                                     std::int64_t const digit_count,
+                                     std::int64_t const fractional_digit_count) {
+  auto const day =
+      digit_range(digits, digit_count - fractional_digit_count, digit_count);
+  auto const fraction_numerator =
+      digit_range(digits, 0, fractional_digit_count);
+  auto const fraction_denominator = shift_left(1, fractional_digit_count);
+  if (fraction_numerator >= 5 * fraction_denominator) {
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset + 1,
+                      fraction_numerator - 5 * fraction_denominator,
+                      fraction_denominator);
+  } else {
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
+                      fraction_numerator + 5 * fraction_denominator,
+                      fraction_denominator);
+  }
+}
+
+constexpr JulianDate::JulianDate(std::int64_t day,
+                                 std::int64_t fraction_numerator,
+                                 std::int64_t fraction_denominator)
+    : day_(day),
+      fraction_numerator_(fraction_numerator),
+      fraction_denominator_(fraction_denominator) {}
 
 // Parsing utilities.
 
@@ -1034,18 +1076,15 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
 }
 
 constexpr JulianDate JulianDateParser::ToJD() const {
-  return JulianDate(
-      digit_range(digits_, digit_count_ - decimal_mark_index_, digit_count_),
-      digit_range(digits_, 0, digit_count_ - decimal_mark_index_),
-      digit_count_ - decimal_mark_index_);
+  return JulianDate::JD(digits_,
+                        digit_count_,
+                        digit_count_ - decimal_mark_index_);
 }
 
 constexpr JulianDate JulianDateParser::ToMJD() const {
-  //TODO(phl): Nopenopenope.
-  return JulianDate(
-      digit_range(digits_, digit_count_ - decimal_mark_index_, digit_count_),
-      digit_range(digits_, 0, digit_count_ - decimal_mark_index_),
-      digit_count_ - decimal_mark_index_);
+  return JulianDate::MJD(digits_,
+                         digit_count_,
+                         digit_count_ - decimal_mark_index_);
 }
 
 // Operators.
