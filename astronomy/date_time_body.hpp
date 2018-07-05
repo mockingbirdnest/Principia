@@ -75,39 +75,50 @@ constexpr int days_in_400_years = days_in_100_years * 4 + 1;
 // Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
 // the Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_year(int const d) {
+  CONSTEXPR_CHECK(d > 0);
+
   // NOTE(egg): in order to extend this to the whole proleptic Gregorian
   // calendar (including d ≤ 0), we would need to use |mod| and a division
   // consistent with it.  However, in astronomy the proleptic Julian calendar is
   // used before 1582, and that is not allowed by ISO 8601, so for now let us
   // ignore the problem and assume that there are no dates before 1583-01-01.
-  return CHECKING(
-      d > 0,
-      ((d - 1) / days_in_400_years) * 400 +
-      (((d - 1) % days_in_400_years) / days_in_100_years) * 100 +
-      ((((d - 1) % days_in_400_years) % days_in_100_years) / days_in_4_years) *
-          4 +
-      ((((d - 1) % days_in_400_years) % days_in_100_years) % days_in_4_years) /
-          days_in_1_year);
+  int const modulo_400_years = (d - 1) % days_in_400_years;
+  int const modulo_100_years = modulo_400_years % days_in_100_years;
+  int const modulo_4_years = modulo_100_years % days_in_4_years;
+
+  int const multiples_of_400_years =
+      ((d - 1) / days_in_400_years) * 400;
+  int const multiples_of_100_years =
+      (modulo_400_years / days_in_100_years) * 100;
+  int const multiples_of_4_years =
+      (modulo_100_years / days_in_4_years) * 4;
+  int const multiples_of_1_year =
+      modulo_4_years / days_in_1_year;
+
+  return multiples_of_400_years + multiples_of_100_years +
+         multiples_of_4_years + multiples_of_1_year;
 }
 
 // Given the number of days |d| since 0000-01-01 (proleptic Gregorian), returns
 // the ordinal in the current Gregorian year.
 constexpr int gregorian_days_from_0000_01_01_to_ordinal(int const d) {
-  return CHECKING(
-      d > 0,
-      (((((d - 1) % days_in_400_years) % days_in_100_years) % days_in_4_years) %
-       days_in_1_year) + 1);
+  CONSTEXPR_CHECK(d > 0);
+  int const modulo_400_years = (d - 1) % days_in_400_years;
+  int const modulo_100_years = modulo_400_years % days_in_100_years;
+  int const modulo_4_years = modulo_100_years % days_in_4_years;
+  int const modulo_1_year = modulo_4_years % days_in_1_year;
+  return modulo_1_year + 1;
 }
 
 // The number of days since 0000-01-01 on the first day of |year|, in the
 // proleptic Gregorian calendar.
 // |gregorian_days_from_0000_01_01_to_year| is a left inverse of this function.
 constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
-  return CHECKING(year > 0,
-                  1 + (year) * 365 +
-                      (year - 1) / 4 -
-                      (year - 1) / 100 +
-                      (year - 1) / 400);
+  CONSTEXPR_CHECK(year > 0);
+  return 1 + (year) * 365 +
+             (year - 1) / 4 -
+             (year - 1) / 100 +
+             (year - 1) / 400;
 }
 
 // Returns the number formed by taking |end - begin| increasingly significant
@@ -115,42 +126,48 @@ constexpr int gregorian_days_from_0000_01_01_at_start_of_year(int const year) {
 constexpr std::int64_t digit_range(std::int64_t const digits,
                                    int const begin,
                                    int const end) {
-  return CHECKING(
-      digits >= 0 && begin >= 0 && begin <= end,
-      (begin == end)
-          ? 0
-          : ((begin == 0)
-                 ? digit_range(digits / 10, 0, end - 1) * 10 + digits % 10
-                 : digit_range(digits / 10, begin - 1, end - 1)));
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(begin >= 0);
+  CONSTEXPR_CHECK(begin <= end);
+  if (begin == end) {
+    return 0;
+  } else if (begin == 0) {
+    return digit_range(digits / 10, 0, end - 1) * 10 + digits % 10;
+  } else {
+    return digit_range(digits / 10, begin - 1, end - 1);
+  }
 }
 
 // Returns x * 10 ** count.
 constexpr std::int64_t shift_left(std::int64_t const x, int const count) {
-  return CHECKING(count >= 0, count == 0 ? x : shift_left(x * 10, count - 1));
+  CONSTEXPR_CHECK(count >= 0);
+  return count == 0 ? x : shift_left(x * 10, count - 1);
 }
 
 // Returns x / 10 ** count.
 constexpr std::int64_t shift_right(std::int64_t const x, int const count) {
-  return CHECKING(count >= 0, count == 0 ? x : shift_right(x / 10, count - 1));
+  CONSTEXPR_CHECK(count >= 0);
+  return count == 0 ? x : shift_right(x / 10, count - 1);
 }
 
 // Returns |date| advanced by the specified number of |days|. The result must be
 // in the same year.
 constexpr Date add_days_within_year(Date const& date, int const days) {
-  return CHECKING(
-      days >= 0,
-      days == 0
-          ? date
-          : (date.day() + days > month_length(date.year(), date.month())
-                 ? CHECKING(
-                       date.month() <= 11,
-                       add_days_within_year(
-                           Date::Calendar(date.year(), date.month() + 1, 1),
-                           days - month_length(date.year(), date.month()) +
-                               date.day() - 1))
-                 : Date::Calendar(date.year(),
-                                  date.month(),
-                                  date.day() + days)));
+  CONSTEXPR_CHECK(days >= 0);
+  if (days == 0) {
+    return date;
+  } else {
+    bool const in_same_month =
+        date.day() + days <= month_length(date.year(), date.month());
+    if (in_same_month) {
+      return Date::Calendar(date.year(), date.month(), date.day() + days);
+    } else {
+      CONSTEXPR_CHECK(date.month() <= 11);
+      return add_days_within_year(
+          Date::Calendar(date.year(), date.month() + 1, 1),
+          days - month_length(date.year(), date.month()) + date.day() - 1);
+    }
+  }
 }
 
 // The |day|th day of some |year|.  The resulting date need not be in |year|.
@@ -165,43 +182,50 @@ constexpr Date arbitrary_ordinal(int const year, int const day) {
 // Implementation of class |Date|.
 
 constexpr Date Date::YYYYMMDD(std::int64_t const digits) {
-  return CHECKING(digits >= 0 && digits <= 9999'99'99,
-                  Date::Calendar(digit_range(digits, 4, 8),
-                                 digit_range(digits, 2, 4),
-                                 digit_range(digits, 0, 2)));
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'99'99);
+  return Date::Calendar(digit_range(digits, 4, 8),
+                        digit_range(digits, 2, 4),
+                        digit_range(digits, 0, 2));
 }
 
 constexpr Date Date::YYYYDDD(std::int64_t const digits) {
-  return CHECKING(
-      digits >= 0 && digits <= 9999'999,
-      Date::Ordinal(digit_range(digits, 3, 7), digit_range(digits, 0, 3)));
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'999);
+  return Date::Ordinal(digit_range(digits, 3, 7), digit_range(digits, 0, 3));
 }
 
 constexpr Date Date::YYYYwwD(std::int64_t const digits) {
-  return CHECKING(digits >= 0 && digits <= 9999'99'9,
-                  Date::Week(digit_range(digits, 3, 7),
-                             digit_range(digits, 1, 3),
-                             digit_range(digits, 0, 1)));
+  CONSTEXPR_CHECK(digits >= 0);
+  CONSTEXPR_CHECK(digits <= 9999'99'9);
+  return Date::Week(digit_range(digits, 3, 7),
+                    digit_range(digits, 1, 3),
+                    digit_range(digits, 0, 1));
 }
 
 constexpr Date Date::Calendar(int const year, int const month, int const day) {
-  return CHECKING(year >= 1583 && year <= 9999 && month >= 1 && month <= 12 &&
-                  day >= 1 && day <= month_length(year, month),
-                  Date(year, month, day));
+  CONSTEXPR_CHECK(year >= 1583);
+  CONSTEXPR_CHECK(year <= 9999);
+  CONSTEXPR_CHECK(month >= 1);
+  CONSTEXPR_CHECK(month <= 12);
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(day <= month_length(year, month));
+  return Date(year, month, day);
 }
 
 constexpr Date Date::Ordinal(int const year, int const day) {
-  return CHECKING(
-      day >= 1 && day <= gregorian_year_length(year),
-      add_days_within_year(Date::Calendar(year, 1, 1), day - 1));
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(gregorian_year_length(year));
+  return add_days_within_year(Date::Calendar(year, 1, 1), day - 1);
 }
 
 constexpr Date Date::Week(int const year, int const week, int const day) {
-  return CHECKING(
-      week >= 1 && week <= number_of_weeks_in_year(year) &&
-      day >= 1 && day <= 7,
-      arbitrary_ordinal(year,
-                        (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year)));
+  CONSTEXPR_CHECK(week >= 1);
+  CONSTEXPR_CHECK(week <= number_of_weeks_in_year(year));
+  CONSTEXPR_CHECK(day >= 1);
+  CONSTEXPR_CHECK(day <= 7);
+  return arbitrary_ordinal(year,
+                           (week - 1) * 7 + day - 1 + ordinal_of_w_01_1(year));
 }
 
 constexpr int Date::year() const {
@@ -217,11 +241,14 @@ constexpr int Date::day() const {
 }
 
 constexpr int Date::ordinal() const {
-  return day_ > 1 ? (day_ - 1) + Date(year_, month_, 1).ordinal()
-                  : month_ > 1
-                        ? month_length(year_, month_ - 1) +
-                              Date(year_, month_ - 1, 1).ordinal()
-                        : 1;
+  if (day_ > 1) {
+    return (day_ - 1) + Date(year_, month_, 1).ordinal();
+  } else if (month_ > 1) {
+    return month_length(year_, month_ - 1) +
+           Date(year_, month_ - 1, 1).ordinal();
+  } else {
+    return 1;
+  }
 }
 
 constexpr int Date::mjd() const {
@@ -231,9 +258,15 @@ constexpr int Date::mjd() const {
 }
 
 constexpr Date Date::next_day() const {
-  return day_ == month_length(year_, month_)
-             ? month_ == 12 ? Date(year_ + 1, 1, 1) : Date(year_, month_ + 1, 1)
-             : Date(year_, month_, day_ + 1);
+  if (day_ == month_length(year_, month_)) {
+    if (month_ == 12) {
+      return Date(year_ + 1, 1, 1);
+    } else {
+      return Date(year_, month_ + 1, 1);
+    }
+  } else {
+    return Date(year_, month_, day_ + 1);
+  }
 }
 
 constexpr Date::Date(int const year,
@@ -246,11 +279,12 @@ constexpr Date::Date(int const year,
 // Implementation of class Time.
 
 constexpr Time Time::hhmmss_ms(int const hhmmss, int ms) {
-  return CHECKING(hhmmss >= 0 && hhmmss <= 99'99'99,
-                  Time(digit_range(hhmmss, 4, 6),
-                       digit_range(hhmmss, 2, 4),
-                       digit_range(hhmmss, 0, 2),
-                       ms).checked());
+  CONSTEXPR_CHECK(hhmmss >= 0);
+  CONSTEXPR_CHECK(hhmmss <= 99'99'99);
+  return Time(digit_range(hhmmss, 4, 6),
+              digit_range(hhmmss, 2, 4),
+              digit_range(hhmmss, 0, 2),
+              ms);
 }
 
 constexpr int Time::hour() const {
@@ -295,16 +329,14 @@ constexpr Time::Time(int const hour,
                         ? 0
                         : second + 1
                   : second),
-      millisecond_(millisecond % 1000) {}
-
-constexpr Time const& Time::checked() const {
-  return CHECKING(
+      millisecond_(millisecond % 1000) {
+  CONSTEXPR_CHECK(
       (hour_ == 24 && minute_ == 0 && second_ == 0 && millisecond_ == 0) ||
-          ((millisecond_ >= 0 && millisecond_ <= 999) &&
-           ((hour_ == 23 && minute_ == 59 && second_ == 60) ||
-            (hour_ >= 0 && hour_ <= 23 && minute_ >= 0 && minute_ <= 59 &&
-             second_ >= 0 && second_ <= 59))),
-      *this);
+      ((millisecond_ >= 0 && millisecond_ <= 999) &&
+       ((hour_ == 23 && minute_ == 59 && second_ == 60) ||
+        (hour_ >= 0 && hour_ <= 23 &&
+         minute_ >= 0 && minute_ <= 59 &&
+         second_ >= 0 && second_ <= 59))));
 }
 
 // Implementation of class DateTime.
@@ -332,12 +364,9 @@ constexpr DateTime DateTime::normalized_end_of_day() const {
 constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
     : date_(date),
       time_(time),
-      jd_(jd) {}
-
-constexpr DateTime const& DateTime::checked() const {
-  return CHECKING(!time_.is_leap_second() ||
-                      date_.day() == month_length(date_.year(), date_.month()),
-                  *this);
+      jd_(jd) {
+  CONSTEXPR_CHECK(!time_.is_leap_second() ||
+                  date_.day() == month_length(date_.year(), date_.month()));
 }
 
 // Parsing utilities.
@@ -841,7 +870,7 @@ constexpr Time TimeParser::JDFractionToTime(std::int64_t const digits,
                        digit_count, digit_count + 2),
            digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
                        digit_count, digit_count + 2),
-           JDRoundedMilliseconds(digits, digit_count)).checked());
+           JDRoundedMilliseconds(digits, digit_count)));
 }
 
 constexpr int TimeParser::JDRoundedMilliseconds(std::int64_t const digits,
@@ -953,8 +982,7 @@ constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
                            TimeParser::ParseISO(
                                str + index_of(str, size, 'T') + 1,
                                size - (index_of(str, size, 'T') + 1)),
-                           /*jd=*/false)
-                      .checked());
+                           /*jd=*/false));
 }
 
 }  // namespace internal_date_time

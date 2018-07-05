@@ -57,12 +57,10 @@ class Time final {
   constexpr bool is_end_of_day() const;
 
  private:
-  constexpr Time(int hour, int minute, int second, int millisecond);
-
   // Checks that this represents a valid time of day as per ISO 8601, thus
   // that the components are in the normal range, or that the object represents
   // a time in a leap second, or that it represents the end of the day.
-  constexpr Time const& checked() const;
+  constexpr Time(int hour, int minute, int second, int millisecond);
 
   int const hour_;
   int const minute_;
@@ -86,11 +84,9 @@ class DateTime final {
   constexpr DateTime normalized_end_of_day() const;
 
  private:
-  constexpr DateTime(Date date, Time time, bool jd);
-
   // Checks that |time| does not represent a leap second unless |date| is the
   // last day of the month.
-  constexpr DateTime const& checked() const;
+  constexpr DateTime(Date date, Time time, bool jd);
 
   Date const date_;
   Time const time_;
