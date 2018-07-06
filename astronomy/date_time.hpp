@@ -31,6 +31,8 @@ class Date final {
 
   constexpr int ordinal() const;
 
+  constexpr int mjd() const;
+
   constexpr Date next_day() const;
 
  private:

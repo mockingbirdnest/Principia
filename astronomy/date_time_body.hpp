@@ -18,6 +18,8 @@ using base::mod;
 
 // Arithmetico-calendrical utility functions.
 
+constexpr int mjd0_yyyy = 1858;
+constexpr int mjd0_yyyymmdd = 1858'11'17;
 constexpr int mjd0_jd0_offset = 2'400'000;  // 2'400'000.5, actually.
 constexpr int j2000_jd0_offset = 2'451'545;
 
@@ -248,6 +250,12 @@ constexpr int Date::ordinal() const {
   } else {
     return 1;
   }
+}
+
+constexpr int Date::mjd() const {
+  return gregorian_days_from_0000_01_01_at_start_of_year(year_) + ordinal() -
+         (gregorian_days_from_0000_01_01_at_start_of_year(mjd0_yyyy) +
+          Date::YYYYMMDD(mjd0_yyyymmdd).ordinal());
 }
 
 constexpr Date Date::next_day() const {
