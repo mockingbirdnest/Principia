@@ -39,8 +39,8 @@ TEST_F(CalendarDeathTest, InvalidDateTime) {
 }
 
 TEST_F(CalendarDeathTest, InvalidJulianDate) {
-  EXPECT_DEATH("JD12.3.4"_Julian, "aoeu");
-  EXPECT_DEATH("MJD1234S.6"_Julian, "aoeu");
+  EXPECT_DEATH("JD12.3.4"_Julian, "!has_decimal_mark");
+  EXPECT_DEATH("MJD1234S.6"_Julian, "false");
 }
 
 //TEST_F(CalendarTest, JulianDate) {

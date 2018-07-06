@@ -878,6 +878,15 @@ constexpr JulianDate JulianDateParser::ParseMJD(char const* const str,
   return ReadToEnd(str, size).ToMJD();
 }
 
+constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
+                                             int const digit_count,
+                                             bool const has_decimal_mark,
+                                             int const decimal_mark_index)
+    : digits_(digits),
+      digit_count_(digit_count),
+      has_decimal_mark_(has_decimal_mark),
+      decimal_mark_index_(decimal_mark_index) {}
+
 constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
                                                        std::size_t const size) {
   return ReadToEnd(CStringIterator(str, size),
@@ -1013,10 +1022,10 @@ constexpr bool IsJulian(char const* const str, std::size_t const size) {
 constexpr JulianDate operator""_Julian(char const* const str,
                                        std::size_t const size) {
   if (starts_with(str, size, "JD", 2)) {
-    return JulianDateParser::ParseJD(str, size);
+    return JulianDateParser::ParseJD(str + 2, size - 2);
   } else {
     CONSTEXPR_CHECK(starts_with(str, size, "MJD", 3));
-    return JulianDateParser::ParseMJD(str, size);
+    return JulianDateParser::ParseMJD(str + 3, size - 3);
   }
 }
 

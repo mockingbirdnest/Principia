@@ -139,6 +139,7 @@ constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 
 using internal_date_time::Date;
 using internal_date_time::DateTime;
+using internal_date_time::IsJulian;
 using internal_date_time::operator""_Date;
 using internal_date_time::operator""_DateTime;
 using internal_date_time::operator""_Time;

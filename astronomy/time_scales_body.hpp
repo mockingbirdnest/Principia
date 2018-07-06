@@ -19,6 +19,7 @@ namespace internal_time_scales {
 
 using astronomy::date_time::Date;
 using astronomy::date_time::DateTime;
+using astronomy::date_time::IsJulian;
 using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
 using quantities::si::Day;
@@ -55,7 +56,7 @@ constexpr Instant FromTAI(quantities::Time const& tai) {
 
 // Utilities for modern UTC (since 1972).
 
-constexpr std::array<int, (2018 - 1972) * 2 + 1> leap_seconds = {{
+constexpr std::array<int, (2019 - 1972) * 2> leap_seconds = {{
     +1, +1,  // 1972
     +0, +1,  // 1973
     +0, +1,  // 1974
@@ -102,7 +103,7 @@ constexpr std::array<int, (2018 - 1972) * 2 + 1> leap_seconds = {{
     +1, +0,  // 2015
     +0, +1,  // 2016
     +0, +0,  // 2017
-    +0,      // 2018
+    +0, +0,  // 2018
 }};
 
 // Returns +1 if a positive leap second was inserted at the end of the given
@@ -384,7 +385,6 @@ constexpr Instant DateTimeAsTAI(DateTime const& tai) {
 }
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
-  CONSTEXPR_CHECK(!utc.jd());
   if (utc.time().is_end_of_day()) {
     return DateTimeAsUTC(utc.normalized_end_of_day());
   } else if (utc.date().year() < 1972) {
@@ -459,7 +459,11 @@ constexpr Instant operator""_TAI(char const* str, std::size_t size) {
 }
 
 constexpr Instant operator""_TT(char const* str, std::size_t size) {
-  return DateTimeAsTT(operator""_DateTime(str, size));
+  if (IsJulian(str, size)) {
+    return Instant();/////
+  } else {
+    return DateTimeAsTT(operator""_DateTime(str, size));
+  }
 }
 
 constexpr Instant operator""_UTC(char const* str, std::size_t size) {
