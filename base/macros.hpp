@@ -199,29 +199,7 @@ inline void noreturn() { std::exit(0); }
 
 #define NAMED(expression) #expression << ": " << (expression)
 
-// A macro to allow glog checking within C++11 constexpr code.  If |condition|
-// is true, evaluates to |expression|.  Otherwise, results in a CHECK failure at
-// runtime and a compilation error due to a call to non-constexpr code at
-// compile time.
-// NOTE(egg): in the failure case, the |LOG(FATAL)| is wrapped in a lambda.  The
-// reason is that |LOG(FATAL)| constructs a |google::LogMessageFatal|, and
-// |google::LogMessage::Fail()| is called in its destructor.  As a temporary,
-// the |google::LogMessageFatal| is destroyed as the last step in evaluating the
-// enclosing full-expression.  If we simply used the comma operator, the entire
-// ternary |((condition) ? (expression) : (CHECK(condition), (expression)))|
-// would be part of the enclosing full-expression, so that |expression| would
-// get evaluated before the |CHECK| failure, possibly triggering all sorts of
-// terrible UB or other checks (|DateDeathTest| provides a couple of examples).
-// With the lambda, the full-expression forms the expression statement
-// |LOG(FATAL) << "Check failed: " #condition " ";|, so that failure occurs
-// before we return from the lambda's function call operator, and |expression|
-// is never evaluated.  We do not use |CHECK| because that would require
-// capture, but this should produce the same output.
-#define CHECKING(condition, expression)                                      \
-  ((condition) ? (expression)                                                \
-               : (([] { LOG(FATAL) << "Check failed: " #condition " "; })(), \
-                  (expression)))
-// Needed to circumvent lint warnings in constexpr function where CHECK_LT and
+// Needed to circumvent lint warnings in constexpr functions where CHECK_LT and
 // friends cannot be used.
 #define CONSTEXPR_CHECK(condition) CHECK(condition)
 
