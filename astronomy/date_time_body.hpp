@@ -360,7 +360,7 @@ constexpr JulianDate JulianDate::JD(std::int64_t const digits,
                                     std::int64_t const digit_count,
                                     std::int64_t const fractional_digit_count) {
   auto const day =
-      digit_range(digits, digit_count - fractional_digit_count, digit_count);
+      digit_range(digits, fractional_digit_count, digit_count);
   auto const fraction_numerator =
       digit_range(digits, 0, fractional_digit_count);
   auto const fraction_denominator = shift_left(1, fractional_digit_count);
@@ -373,19 +373,37 @@ constexpr JulianDate JulianDate::MJD(std::int64_t const digits,
                                      std::int64_t const digit_count,
                                      std::int64_t const fractional_digit_count) {
   auto const day =
-      digit_range(digits, digit_count - fractional_digit_count, digit_count);
+      digit_range(digits, fractional_digit_count, digit_count);
   auto const fraction_numerator =
       digit_range(digits, 0, fractional_digit_count);
   auto const fraction_denominator = shift_left(1, fractional_digit_count);
-  if (fraction_numerator >= 5 * fraction_denominator) {
+  if (fraction_denominator == 1) {
+    // The only power of 10 that's not a power of 2.
+    CONSTEXPR_CHECK(fraction_numerator == 0);
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
+                      5,
+                      10);
+  } else if (fraction_numerator >= fraction_denominator / 2) {
     return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset + 1,
-                      fraction_numerator - 5 * fraction_denominator,
+                      fraction_numerator - fraction_denominator / 2,
                       fraction_denominator);
   } else {
     return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
-                      fraction_numerator + 5 * fraction_denominator,
+                      fraction_numerator + fraction_denominator / 2,
                       fraction_denominator);
   }
+}
+
+constexpr std::int64_t JulianDate::day() const {
+  return day_;
+}
+
+constexpr std::int64_t JulianDate::fraction_numerator() const {
+  return fraction_numerator_;
+}
+
+constexpr std::int64_t JulianDate::fraction_denominator() const {
+  return fraction_denominator_;
 }
 
 constexpr JulianDate::JulianDate(std::int64_t day,
@@ -393,7 +411,10 @@ constexpr JulianDate::JulianDate(std::int64_t day,
                                  std::int64_t fraction_denominator)
     : day_(day),
       fraction_numerator_(fraction_numerator),
-      fraction_denominator_(fraction_denominator) {}
+      fraction_denominator_(fraction_denominator) {
+  CONSTEXPR_CHECK(fraction_numerator >= 0);
+  CONSTEXPR_CHECK(fraction_numerator < fraction_denominator);
+}
 
 // Parsing utilities.
 
@@ -918,6 +939,8 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
                          /*decimal_mark_index=*/str.index());
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
+        CONSTEXPR_CHECK(digits <=
+                        std::numeric_limits<std::int64_t>::max() / 10 - 9);
         return ReadToEnd(str.next(),
                          digits * 10 + *str - '0',
                          digit_count + 1,
@@ -931,15 +954,17 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
 }
 
 constexpr JulianDate JulianDateParser::ToJD() const {
-  return JulianDate::JD(digits_,
-                        digit_count_,
-                        digit_count_ - decimal_mark_index_);
+  return JulianDate::JD(
+      digits_,
+      digit_count_,
+      decimal_mark_index_ < 0 ? 0 : digit_count_ - decimal_mark_index_);
 }
 
 constexpr JulianDate JulianDateParser::ToMJD() const {
-  return JulianDate::MJD(digits_,
-                         digit_count_,
-                         digit_count_ - decimal_mark_index_);
+  return JulianDate::MJD(
+      digits_,
+      digit_count_,
+      decimal_mark_index_ < 0 ? 0 : digit_count_ - decimal_mark_index_);
 }
 
 // Operators.

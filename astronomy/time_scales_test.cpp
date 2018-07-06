@@ -24,7 +24,22 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 
-class TimeScalesTest : public testing::Test {};
+constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
+
+constexpr Instant j2000_from_tt = "2000-01-01T12:00:00"_TT;
+constexpr Instant j2000_from_tai = "2000-01-01T11:59:27,816"_TAI;
+constexpr Instant j2000_from_utc = "2000-01-01T11:58:55,816"_UTC;
+constexpr Instant j2000_tai = "2000-01-01T12:00:00"_TAI;
+constexpr Instant j2000_tai_from_tt = "2000-01-01T12:00:32,184"_TT;
+
+class TimeScalesTest : public testing::Test {
+ protected:
+  static constexpr bool OneMicrosecondApart(Instant const& t1,
+                                            Instant const& t2) {
+    return t1 - t2 <= 1 * Micro(Second) &&
+           t1 - t2 >= - 1 * Micro(Second);
+  }
+};
 
 using TimeScalesDeathTest = TimeScalesTest;
 
@@ -53,9 +68,9 @@ TEST_F(TimeScalesDeathTest, WarWasBeginning) {
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
-  EXPECT_DEATH("2018-12-31T23:59:60"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2018-12-31T24:00:00"_UTC, "leap_seconds.size");
-  EXPECT_DEATH("2019-01-01T00:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2019-06-30T23:59:60"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2019-06-30T24:00:00"_UTC, "leap_seconds.size");
+  EXPECT_DEATH("2019-07-01T00:00:00"_UTC, "leap_seconds.size");
 }
 
 TEST_F(TimeScalesDeathTest, StretchyLeaps) {
@@ -76,37 +91,34 @@ TEST_F(TimeScalesDeathTest, ModernLeaps) {
 
 #endif
 
-namespace {
+TEST_F(TimeScalesTest, ConstexprJ2000) {
+  static_assert(j2000_week == J2000, "");
+  static_assert(j2000_from_tt == J2000, "");
+  static_assert(j2000_from_tai == J2000, "");
+  static_assert(j2000_from_utc == J2000, "");
+  static_assert(j2000_tai == j2000_tai_from_tt, "");
+  static_assert(j2000_tai - J2000 == 32.184 * Second, "");
+}
 
-constexpr Instant j2000_week = "1999-W52-6T12:00:00"_TT;
+TEST_F(TimeScalesTest, ConstexprWeeks) {
+  // Check that week dates that go to the previous year work.
+  static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
+}
 
-constexpr Instant j2000_from_tt = "2000-01-01T12:00:00"_TT;
-constexpr Instant j2000_from_tai = "2000-01-01T11:59:27,816"_TAI;
-constexpr Instant j2000_from_utc = "2000-01-01T11:58:55,816"_UTC;
-constexpr Instant j2000_tai = "2000-01-01T12:00:00"_TAI;
-constexpr Instant j2000_tai_from_tt = "2000-01-01T12:00:32,184"_TT;
+TEST_F(TimeScalesTest, ConstexprMJD2000) {
+  constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
+  constexpr Instant mjd51544_utc_from_ut1 =
+      "2000-01-01T00:00:00,355"_UT1 + 473.0 * Micro(Second);
 
-static_assert(j2000_week == J2000, "");
-static_assert(j2000_from_tt == J2000, "");
-static_assert(j2000_from_tai == J2000, "");
-static_assert(j2000_from_utc == J2000, "");
-static_assert(j2000_tai == j2000_tai_from_tt, "");
-static_assert(j2000_tai - J2000 == 32.184 * Second, "");
-
-// Check that week dates that go to the previous year work.
-static_assert("1914-W01-1T00:00:00"_TT == "19131229T000000"_TT, "");
-
-constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
-constexpr Instant mjd51544_utc_from_ut1 =
-    "2000-01-01T00:00:00,355"_UT1 + 473.0 * Micro(Second);
-
-static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second), "");
-static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second), "");
-
-}  // namespace
+  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second), "");
+  static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second), "");
+}
 
 TEST_F(TimeScalesTest, ReferenceDates) {
-  EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq(ModifiedJulianDate(0)));
+  LOG(ERROR)<<"MJD0"_Julian.day();
+  LOG(ERROR)<<"MJD0"_Julian.fraction_numerator();
+  LOG(ERROR)<<"MJD0"_Julian.fraction_denominator();
+  EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq("MJD0"_TT));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));
   EXPECT_THAT(j2000_from_tai, Eq(J2000));
@@ -116,16 +128,14 @@ TEST_F(TimeScalesTest, ReferenceDates) {
 
   // Besselian epochs.
   constexpr Instant B1900 = "1899-12-31T00:00:00"_TT + 0.8135 * Day;
-  Instant const JD2415020_3135 = JulianDate(2415020.3135);
-  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 29));
+  Instant const JD2415020_3135 = "JD2415020.3135"_TT;
+  EXPECT_THAT(B1900, AlmostEquals(JD2415020_3135, 1));
   EXPECT_THAT(testing_utilities::AbsoluteError(JD2415020_3135, B1900),
-              IsNear(14 * Micro(Second)));
+              IsNear(0.5 * Micro(Second)));
 
   constexpr Instant B1950 = "1949-12-31T00:00:00"_TT + 0.9235 * Day;
-  Instant const JD2433282_4235 = JulianDate(2433282.4235);
-  EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 12));
-  EXPECT_THAT(testing_utilities::AbsoluteError(JD2433282_4235, B1950),
-              IsNear(3 * Micro(Second)));
+  Instant const JD2433282_4235 = "JD2433282.4235"_TT;
+  EXPECT_THAT(B1950, AlmostEquals(JD2433282_4235, 0));
 }
 
 TEST_F(TimeScalesTest, LeapSecond) {
@@ -364,34 +374,53 @@ TEST_F(TimeScalesTest, LunarEclipses) {
 }
 
 TEST_F(TimeScalesTest, JulianDate) {
+  static_assert("2010-01-04T00:00:00.108"_TT ==
+                "JD2455200.50000125"_TT, "Dates differ");
+  static_assert("2010-01-04T00:00:00.000"_TT ==
+                "JD2455200.50000"_TT, "Dates differ");
+  static_assert("2010-01-04T12:00:00.000"_TT ==
+                "JD2455201.00000"_TT, "Dates differ");
+  static_assert("2010-01-04T18:00:00.000"_TT ==
+                "JD2455201.25000"_TT, "Dates differ");
+  static_assert(OneMicrosecondApart("2010-01-04T02:57:46.659"_TT,
+                                    "JD2455200.623456701388"_TT),
+                "Dates differ");
+  static_assert("2000-01-01T00:00:00"_TT ==
+                "JD2451544.5"_TT, "Dates differ");
+  static_assert("2000-01-01T12:00:00"_TT ==
+                "JD2451545"_TT, "Dates differ");
+
   EXPECT_THAT("JD2451545"_TT, Eq(j2000_week));
   EXPECT_THAT("JD2455201.00000"_TT, Eq("2010-01-04T12:00:00.000"_TT));
 
-  // In VS 2017 15.8 Preview 3 this computation is sometimes off by one day.
-  // We should not go through dates to compute Julian dates anyway.
   double const jd = 2457662.55467;
   Instant const date = Instant() + (jd - 2451545.0) * Day;
-#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 191526608
-  EXPECT_THAT("JD2457662.55467"_TT,
-              AllOf(Lt(date - 1 * Day + 1.0 * Second),
-                    Gt(date - 1 * Day - 1.0 * Second)))
-      << date - "JD2457662.55467"_TT;
-#else
   EXPECT_THAT("JD2457662.55467"_TT,
               AllOf(Lt(date + 1.0 * Second), Gt(date - 1.0 * Second)))
       << date - "JD2457662.55467"_TT;
-#endif
 }
 
 TEST_F(TimeScalesTest, ModifiedJulianDate) {
+  static_assert("2010-01-04T00:00:00.123"_TT == "MJD55200.0000014236111"_TT,
+                "Dates differ");
+  static_assert("2010-01-04T00:00:00.000"_TT == "MJD55200.00000"_TT,
+                "Dates differ");
+  static_assert("2010-01-04T12:00:00.000"_TT == "MJD55200.50000"_TT,
+                "Dates differ");
+  static_assert("2010-01-04T18:00:00.000"_TT == "MJD55200.75000"_TT,
+                "Dates differ");
+  static_assert(OneMicrosecondApart("2010-01-04T02:57:46.659"_TT,
+                                    "MJD55200.123456701388"_TT),
+                "Dates differ");
+
   EXPECT_THAT("MJD0.0"_TT, Eq("1858-11-17T00:00:00"_TT));
   EXPECT_THAT("MJD55200.0000"_TT, Eq("2010-01-04T00:00:00.000"_TT));
-  EXPECT_THAT("MJD55200.00000142361"_TT, Eq("2010-01-04T00:00:00.123"_TT));
+  EXPECT_THAT("MJD55200.0000014236111"_TT, Eq("2010-01-04T00:00:00.123"_TT));
 }
 
 TEST_F(TimeScalesDeathTest, JulianDateUTC) {
-  EXPECT_DEATH("JD2451545"_UTC, "utc.jd");
-  EXPECT_DEATH("MJD55200.123"_UTC, "utc.jd");
+  EXPECT_DEATH("JD2451545"_UTC, "size > 0");
+  EXPECT_DEATH("MJD55200.123"_UTC, "size > 0");
 }
 
 }  // namespace internal_time_scales

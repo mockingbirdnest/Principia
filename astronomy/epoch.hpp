@@ -34,23 +34,11 @@ constexpr Instant J2000;
 CONSTEXPR_INFINITY Instant InfinitePast = J2000 - Infinity<Time>();
 CONSTEXPR_INFINITY Instant InfiniteFuture = J2000 + Infinity<Time>();
 
-// The Julian Date JD |days|. J2000.0 is JD 2451545.0. |days| is the number of
-// days since -4712-01-01T12:00:00,000 (Terrestrial Time, Julian calendar).
-constexpr Instant JulianDate(double days);
-
-// The Modified Julian Date MJD |days|. MJD is defined as JD - 2400000.5 days,
-// so |ModifiedJulianDate(0)| is "1858-11-17T00:00:00"_TT.
-constexpr Instant ModifiedJulianDate(double days);
-
 }  // namespace internal_epoch
 
 using internal_epoch::InfiniteFuture;
 using internal_epoch::InfinitePast;
 using internal_epoch::J2000;
-using internal_epoch::JulianDate;
-using internal_epoch::ModifiedJulianDate;
 
 }  // namespace astronomy
 }  // namespace principia
-
-#include "astronomy/epoch_body.hpp"

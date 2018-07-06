@@ -102,6 +102,10 @@ class JulianDate final {
                                   std::int64_t digit_count,
                                   std::int64_t fractional_digit_count);
 
+  constexpr std::int64_t day() const;
+  constexpr std::int64_t fraction_numerator() const;
+  constexpr std::int64_t fraction_denominator() const;
+
  private:
   constexpr JulianDate(std::int64_t day,
                        std::int64_t fraction_numerator,
@@ -140,8 +144,10 @@ constexpr JulianDate operator""_Julian(char const* str, std::size_t size);
 using internal_date_time::Date;
 using internal_date_time::DateTime;
 using internal_date_time::IsJulian;
+using internal_date_time::JulianDate;
 using internal_date_time::operator""_Date;
 using internal_date_time::operator""_DateTime;
+using internal_date_time::operator""_Julian;
 using internal_date_time::operator""_Time;
 using internal_date_time::Time;
 

@@ -20,8 +20,10 @@ namespace internal_time_scales {
 using astronomy::date_time::Date;
 using astronomy::date_time::DateTime;
 using astronomy::date_time::IsJulian;
+using astronomy::date_time::JulianDate;
 using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
+using astronomy::date_time::operator""_Julian;
 using quantities::si::Day;
 using quantities::si::Second;
 
@@ -372,7 +374,7 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
   }
 }
 
-// Conversions from |DateTime| to |Instant|.
+// Conversions from |DateTime| and |JulianDate| to |Instant|.
 
 constexpr Instant DateTimeAsTT(DateTime const& tt) {
   CONSTEXPR_CHECK(!tt.time().is_leap_second());
@@ -401,6 +403,12 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
   CONSTEXPR_CHECK(mjd(TimeScale(ut1)) >= experimental_eop_c02.front().ut1_mjd);
   CONSTEXPR_CHECK(TimeScale(ut1) < eop_c04.back().ut1());
   return FromUT1(TimeScale(ut1));
+}
+
+constexpr Instant JulianDateAsTT(JulianDate const& jd) {
+  return Instant() +
+         (jd.day() + (static_cast<double>(jd.fraction_numerator()) /
+                      static_cast<double>(jd.fraction_denominator()))) * Day;
 }
 
 // |Instant| date literals.
@@ -460,7 +468,7 @@ constexpr Instant operator""_TAI(char const* str, std::size_t size) {
 
 constexpr Instant operator""_TT(char const* str, std::size_t size) {
   if (IsJulian(str, size)) {
-    return Instant();/////
+    return JulianDateAsTT(operator""_Julian(str, size));
   } else {
     return DateTimeAsTT(operator""_DateTime(str, size));
   }
