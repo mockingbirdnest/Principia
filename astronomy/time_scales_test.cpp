@@ -103,7 +103,7 @@ TEST_F(TimeScalesTest, ConstexprWeeks) {
 TEST_F(TimeScalesTest, ConstexprMJD2000) {
   constexpr Instant mjd51544_utc = "2000-01-01T00:00:00"_UTC;
   constexpr Instant mjd51544_utc_from_ut1 =
-      "2000-01-01T00:00:00,355"_UT1 + 473.0 * Micro(Second);
+      "2000-01-01T00:00:00,355"_UT1 + 388.0 * Micro(Second);
 
   static_assert(mjd51544_utc - mjd51544_utc_from_ut1 < 1 * Nano(Second), "");
   static_assert(mjd51544_utc - mjd51544_utc_from_ut1 > -1 * Nano(Second), "");
