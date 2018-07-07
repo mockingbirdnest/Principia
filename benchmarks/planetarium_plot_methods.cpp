@@ -114,7 +114,8 @@ class Satellites {
     // Two-line elements for GOES-8:
     // 1 23051U 94022A   00004.06628221 -.00000243  00000-0  00000-0 0  9630
     // 2 23051   0.4232  97.7420 0004776 192.8349 121.5613  1.00264613 28364
-    constexpr Instant goes_8_epoch = "JD2451548.56628221"_UT1;
+    // TODO(phl): Should be UT1.
+    constexpr Instant goes_8_epoch = "JD2451548.56628221"_TT;
     KeplerianElements<Barycentric> goes_8_elements;
     goes_8_elements.inclination = 0.4232 * Degree;
     goes_8_elements.longitude_of_ascending_node = 97.7420 * Degree;

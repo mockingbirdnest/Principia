@@ -19,8 +19,11 @@ namespace internal_time_scales {
 
 using astronomy::date_time::Date;
 using astronomy::date_time::DateTime;
+using astronomy::date_time::IsJulian;
+using astronomy::date_time::JulianDate;
 using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
+using astronomy::date_time::operator""_Julian;
 using quantities::si::Day;
 using quantities::si::Second;
 
@@ -37,8 +40,8 @@ constexpr quantities::Time TimeScale(DateTime const& date_time) {
           60 * (date_time.time().minute() +
                 60 * (date_time.time().hour() - 12 +
                       24 * static_cast<std::int64_t>(
-                               date_time.date().mjd() -
-                               "2000-01-01"_Date.mjd())))) * Second;
+                          date_time.date().mjd() -
+                          "2000-01-01"_Date.mjd())))) * Second;
 }
 
 constexpr double mjd(quantities::Time const& from_j2000) {
@@ -371,7 +374,7 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
   }
 }
 
-// Conversions from |DateTime| to |Instant|.
+// Conversions from |DateTime| and |JulianDate| to |Instant|.
 
 constexpr Instant DateTimeAsTT(DateTime const& tt) {
   CONSTEXPR_CHECK(!tt.time().is_leap_second());
@@ -384,7 +387,6 @@ constexpr Instant DateTimeAsTAI(DateTime const& tai) {
 }
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
-  CONSTEXPR_CHECK(!utc.jd());
   if (utc.time().is_end_of_day()) {
     return DateTimeAsUTC(utc.normalized_end_of_day());
   } else if (utc.date().year() < 1972) {
@@ -403,63 +405,24 @@ constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
   return FromUT1(TimeScale(ut1));
 }
 
+constexpr Instant JulianDateAsTT(JulianDate const& jd) {
+  return Instant() +
+         (jd.day() + (static_cast<double>(jd.fraction_numerator()) /
+                      static_cast<double>(jd.fraction_denominator()))) * Day;
+}
+
 // |Instant| date literals.
 
-#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
-template<typename C, C... str>
-constexpr std::array<C, sizeof...(str)> unpack_as_array() {
-  return std::array<C, sizeof...(str)>{{str...}};
-}
-
-template<typename T>
-constexpr T const& as_const_ref(T const& t) {
-  return t;
-}
-
-template<typename C, std::size_t size>
-constexpr C const* c_str(std::array<C, size> const& array) {
-  // In C++17 this could be |data()|.  For the moment this does the job.
-  return &as_const_ref(array)[0];
-}
-
-// NOTE(egg): In the following three functions, the |constexpr| intermediate
-// variable forces failures to occur at compile time and not as glog |CHECK|
-// failures at evaluation.
-
-template<typename C, C... str>
-constexpr Instant operator""_TAI() {
-  constexpr auto result = DateTimeAsTAI(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_TT() {
-  constexpr auto result = DateTimeAsTT(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_UTC() {
-  constexpr auto result = DateTimeAsUTC(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_UT1() {
-  constexpr auto result = DateTimeAsUT1(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-#else
 constexpr Instant operator""_TAI(char const* str, std::size_t size) {
   return DateTimeAsTAI(operator""_DateTime(str, size));
 }
 
 constexpr Instant operator""_TT(char const* str, std::size_t size) {
-  return DateTimeAsTT(operator""_DateTime(str, size));
+  if (IsJulian(str, size)) {
+    return JulianDateAsTT(operator""_Julian(str, size));
+  } else {
+    return DateTimeAsTT(operator""_DateTime(str, size));
+  }
 }
 
 constexpr Instant operator""_UTC(char const* str, std::size_t size) {
@@ -469,7 +432,6 @@ constexpr Instant operator""_UTC(char const* str, std::size_t size) {
 constexpr Instant operator""_UT1(char const* str, std::size_t size) {
   return DateTimeAsUT1(operator""_DateTime(str, size));
 }
-#endif
 
 inline Instant ParseTAI(std::string const& s) {
   return operator""_TAI(s.c_str(), s.size());
