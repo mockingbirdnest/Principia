@@ -4,6 +4,7 @@
 #include "astronomy/date_time.hpp"
 
 #include <array>
+#include <limits>
 
 #include "base/macros.hpp"
 #include "base/mod.hpp"
@@ -369,9 +370,10 @@ constexpr JulianDate JulianDate::JD(std::int64_t const digits,
                     fraction_denominator);
 }
 
-constexpr JulianDate JulianDate::MJD(std::int64_t const digits,
-                                     std::int64_t const digit_count,
-                                     std::int64_t const fractional_digit_count) {
+constexpr JulianDate JulianDate::MJD(
+    std::int64_t const digits,
+    std::int64_t const digit_count,
+    std::int64_t const fractional_digit_count) {
   auto const day =
       digit_range(digits, fractional_digit_count, digit_count);
   auto const fraction_numerator =
@@ -854,7 +856,8 @@ class JulianDateParser final {
   // Fails unless |str| is a valid time representation of the form [ddd] or
   // [ddd.fff].
 
-  //TODO(phl):comments
+  // Returns a |JulianDate| object corresponding to the given string interpreted
+  // a Julian Date or a Modified Julian Date, respectively.
   static constexpr JulianDate ParseJD(char const* str, std::size_t size);
   static constexpr JulianDate ParseMJD(char const* str, std::size_t size);
 
@@ -865,7 +868,8 @@ class JulianDateParser final {
                              int decimal_mark_index);
 
   // Returns a |JulianDateParser| describing the given string. Fails if the
-  // string ...
+  // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
+  // to fit in a std::int64_t.
   static constexpr JulianDateParser ReadToEnd(char const* str,
                                               std::size_t size);
   static constexpr JulianDateParser ReadToEnd(CStringIterator str,

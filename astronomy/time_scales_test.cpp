@@ -115,9 +115,6 @@ TEST_F(TimeScalesTest, ConstexprMJD2000) {
 }
 
 TEST_F(TimeScalesTest, ReferenceDates) {
-  LOG(ERROR)<<"MJD0"_Julian.day();
-  LOG(ERROR)<<"MJD0"_Julian.fraction_numerator();
-  LOG(ERROR)<<"MJD0"_Julian.fraction_denominator();
   EXPECT_THAT("1858-11-17T00:00:00"_TT, Eq("MJD0"_TT));
   EXPECT_THAT(j2000_week, Eq(J2000));
   EXPECT_THAT(j2000_from_tt, Eq(J2000));
