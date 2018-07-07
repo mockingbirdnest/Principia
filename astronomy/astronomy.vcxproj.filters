@@ -144,9 +144,6 @@
     <ClInclude Include="date_time.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="epoch_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="stabilize_ksp.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

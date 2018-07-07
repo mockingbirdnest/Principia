@@ -4,6 +4,7 @@
 #include "astronomy/date_time.hpp"
 
 #include <array>
+#include <limits>
 
 #include "base/macros.hpp"
 #include "base/mod.hpp"
@@ -21,6 +22,7 @@ using base::mod;
 constexpr int mjd0_yyyy = 1858;
 constexpr int mjd0_yyyymmdd = 1858'11'17;
 constexpr int mjd0_jd0_offset = 2'400'000;  // 2'400'000.5, actually.
+constexpr int j2000_jd0_offset = 2'451'545;
 
 constexpr std::array<int, 12> non_leap_year_month_lengths{
     {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}};
@@ -311,25 +313,14 @@ constexpr bool Time::is_end_of_day() const {
   return hour_ == 24;
 }
 
-// Note that millisecond == 1000 can happen for JD and MJD because of rounding.
 constexpr Time::Time(int const hour,
                      int const minute,
                      int const second,
                      int const millisecond)
-    : hour_(millisecond == 1000 && second == 59 && minute == 59
-                ? hour + 1
-                : hour),
-      minute_(millisecond == 1000 && second == 59
-                  ? minute == 59
-                        ? 0
-                        : minute + 1
-                  : minute),
-      second_(millisecond == 1000
-                  ? second == 59
-                        ? 0
-                        : second + 1
-                  : second),
-      millisecond_(millisecond % 1000) {
+    : hour_(hour),
+      minute_(minute),
+      second_(second),
+      millisecond_(millisecond) {
   CONSTEXPR_CHECK(
       (hour_ == 24 && minute_ == 0 && second_ == 0 && millisecond_ == 0) ||
       ((millisecond_ >= 0 && millisecond_ <= 999) &&
@@ -342,7 +333,7 @@ constexpr Time::Time(int const hour,
 // Implementation of class DateTime.
 
 constexpr DateTime DateTime::BeginningOfDay(Date const & date) {
-  return DateTime(date, Time::hhmmss_ms(00'00'00, 0), /*jd=*/false);
+  return DateTime(date, Time::hhmmss_ms(00'00'00, 0));
 }
 
 constexpr Date const& DateTime::date() const {
@@ -353,20 +344,78 @@ constexpr Time const& DateTime::time() const {
   return time_;
 }
 
-constexpr bool DateTime::jd() const {
-  return jd_;
-}
-
 constexpr DateTime DateTime::normalized_end_of_day() const {
   return time_.is_end_of_day() ? BeginningOfDay(date_.next_day()) : *this;
 }
 
-constexpr DateTime::DateTime(Date const date, Time const time, bool const jd)
+constexpr DateTime::DateTime(Date const date, Time const time)
     : date_(date),
-      time_(time),
-      jd_(jd) {
+      time_(time) {
   CONSTEXPR_CHECK(!time_.is_leap_second() ||
                   date_.day() == month_length(date_.year(), date_.month()));
+}
+
+// Implementation of class JulianDate.
+
+constexpr JulianDate JulianDate::JD(std::int64_t const digits,
+                                    std::int64_t const digit_count,
+                                    std::int64_t const fractional_digit_count) {
+  auto const day =
+      digit_range(digits, fractional_digit_count, digit_count);
+  auto const fraction_numerator =
+      digit_range(digits, 0, fractional_digit_count);
+  auto const fraction_denominator = shift_left(1, fractional_digit_count);
+  return JulianDate(day - j2000_jd0_offset,
+                    fraction_numerator,
+                    fraction_denominator);
+}
+
+constexpr JulianDate JulianDate::MJD(
+    std::int64_t const digits,
+    std::int64_t const digit_count,
+    std::int64_t const fractional_digit_count) {
+  auto const day =
+      digit_range(digits, fractional_digit_count, digit_count);
+  auto const fraction_numerator =
+      digit_range(digits, 0, fractional_digit_count);
+  auto const fraction_denominator = shift_left(1, fractional_digit_count);
+  if (fraction_denominator == 1) {
+    // The only power of 10 that's not a power of 2.
+    CONSTEXPR_CHECK(fraction_numerator == 0);
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
+                      5,
+                      10);
+  } else if (fraction_numerator >= fraction_denominator / 2) {
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset + 1,
+                      fraction_numerator - fraction_denominator / 2,
+                      fraction_denominator);
+  } else {
+    return JulianDate(day - j2000_jd0_offset + mjd0_jd0_offset,
+                      fraction_numerator + fraction_denominator / 2,
+                      fraction_denominator);
+  }
+}
+
+constexpr std::int64_t JulianDate::day() const {
+  return day_;
+}
+
+constexpr std::int64_t JulianDate::fraction_numerator() const {
+  return fraction_numerator_;
+}
+
+constexpr std::int64_t JulianDate::fraction_denominator() const {
+  return fraction_denominator_;
+}
+
+constexpr JulianDate::JulianDate(std::int64_t day,
+                                 std::int64_t fraction_numerator,
+                                 std::int64_t fraction_denominator)
+    : day_(day),
+      fraction_numerator_(fraction_numerator),
+      fraction_denominator_(fraction_denominator) {
+  CONSTEXPR_CHECK(fraction_numerator >= 0);
+  CONSTEXPR_CHECK(fraction_numerator < fraction_denominator);
 }
 
 // Parsing utilities.
@@ -413,10 +462,9 @@ class CStringIterator final {
   char const* const it_;
 };
 
-constexpr CStringIterator::CStringIterator(char const* str, std::size_t size)
-    : str_(str),
-      end_(str + size),
-      it_(str) {}
+constexpr CStringIterator::CStringIterator(char const* const str,
+                                           std::size_t const size)
+    : str_(str), end_(str + size), it_(str) {}
 
 constexpr bool CStringIterator::at_end() const {
   return it_ == end_;
@@ -436,9 +484,9 @@ constexpr char const& CStringIterator::operator*() const {
   return *it_;
 }
 
-constexpr CStringIterator::CStringIterator(char const* str,
-                                           char const* end,
-                                           char const* it)
+constexpr CStringIterator::CStringIterator(char const* const str,
+                                           char const* const end,
+                                           char const* const it)
     : str_(str),
       end_(end),
       it_(it) {}
@@ -452,16 +500,7 @@ class DateParser final {
   // Returns a |Date| corresponding to the representation |str|.
   // Fails unless |str| is a date representation of one of the following forms:
   // [YYYY-MM-DD], [YYYYMMDD], [YYYY-Www-D], [YYYYWwwD], [YYYY-DDD], [YYYYDDD].
-  static constexpr Date ParseISO(char const* str, std::size_t size);
-
-  // |integer| is the integer part of the date, |ffd| the first fractional
-  // digit.
-  static constexpr Date ParseJD(char const* integer,
-                                char ffd,
-                                std::size_t size);
-
-  // The input must be the integer part of the date.
-  static constexpr Date ParseMJD(char const* str, std::size_t size);
+  static constexpr Date Parse(char const* str, std::size_t size);
 
  private:
   constexpr DateParser(std::int64_t digits,
@@ -477,7 +516,8 @@ class DateParser final {
   //   - any number of decimal digits;
   //   - at most two hyphens;
   //   - at most one 'W'.
-  static constexpr DateParser ReadToEnd(char const* str, std::size_t size);
+  static constexpr DateParser ReadToEnd(char const* str,
+                                        std::size_t size);
   static constexpr DateParser ReadToEnd(CStringIterator str,
                                         std::int64_t digits,
                                         int digit_count,
@@ -489,9 +529,7 @@ class DateParser final {
 
   // Returns a |Date| corresponding to the string that |*this| describes.
   // Fails if the format is invalid or the string represents an invalid date.
-  constexpr Date ISOToDate() const;
-  constexpr Date JDToDate(char ffd) const;
-  constexpr Date MJDToDate() const;
+  constexpr Date ToDate() const;
 
   // The number formed by all digits in the string.
   std::int64_t const digits_;
@@ -509,19 +547,9 @@ class DateParser final {
   int const w_index_;
 };
 
-constexpr Date DateParser::ParseISO(char const* const str,
-                                    std::size_t const size) {
-  return ReadToEnd(str, size).ISOToDate();
-}
-
-constexpr Date DateParser::ParseJD(char const* const integer,
-                                   char const ffd,
-                                   std::size_t size) {
-  return ReadToEnd(integer, size).JDToDate(ffd);
-}
-
-constexpr Date DateParser::ParseMJD(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).MJDToDate();
+constexpr Date DateParser::Parse(char const* const str,
+                                 std::size_t const size) {
+  return ReadToEnd(str, size).ToDate();
 }
 
 constexpr DateParser::DateParser(std::int64_t const digits,
@@ -539,7 +567,8 @@ constexpr DateParser::DateParser(std::int64_t const digits,
       has_w_(has_w),
       w_index_(w_index) {}
 
-constexpr DateParser DateParser::ReadToEnd(char const* str, std::size_t size) {
+constexpr DateParser DateParser::ReadToEnd(char const* const str,
+                                           std::size_t const size) {
   return ReadToEnd(CStringIterator(str, size),
                    /*digits=*/0,
                    /*digit_count=*/0,
@@ -616,7 +645,7 @@ constexpr DateParser DateParser::ReadToEnd(CStringIterator const str,
   }
 }
 
-constexpr Date DateParser::ISOToDate() const {
+constexpr Date DateParser::ToDate() const {
   if (digit_count_ == 8) {
     CONSTEXPR_CHECK(hyphens_ == 0 ||
                     (hyphens_ == 2 &&
@@ -641,29 +670,6 @@ constexpr Date DateParser::ISOToDate() const {
   }
 }
 
-constexpr Date DateParser::JDToDate(char const ffd) const {
-  CONSTEXPR_CHECK(hyphens_ == 0);
-  CONSTEXPR_CHECK(!has_w_);
-  CONSTEXPR_CHECK(ffd >= '0');
-  CONSTEXPR_CHECK(ffd <= '9');
-  if (ffd >= '5') {
-    return arbitrary_ordinal(mjd0_yyyy,
-                             Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
-                                 (digits_ - mjd0_jd0_offset));
-  } else {
-    return arbitrary_ordinal(mjd0_yyyy,
-                             Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() +
-                                 (digits_ - mjd0_jd0_offset - 1));
-  }
-}
-
-constexpr Date DateParser::MJDToDate() const {
-  CONSTEXPR_CHECK(hyphens_ == 0);
-  CONSTEXPR_CHECK(!has_w_);
-  return arbitrary_ordinal(mjd0_yyyy,
-                           Date::YYYYMMDD(mjd0_yyyymmdd).ordinal() + digits_);
-}
-
 // Time parsing.
 
 // A |TimeParser| contains information about a string necessary to interpret it
@@ -674,13 +680,7 @@ class TimeParser final {
   // Fails unless |str| is a valid time representation of one of the following
   // forms: [hh:mm:ss], [hhmmss], [hh:mm:ss.ss̲], [hh:mm:ss,ss̲], [hhmmss.ss̲],
   // [hhmmss,ss̲], with at most three digits after the decimal mark.
-  static constexpr Time ParseISO(char const* str, std::size_t size);
-
-  // The input must be the fractional part of the date, without the period.
-  static constexpr Time ParseJD(char const* str, std::size_t size);
-
-  // The input must be the fractional part of the date, without the period.
-  static constexpr Time ParseMJD(char const* str, std::size_t size);
+  static constexpr Time Parse(char const* str, std::size_t size);
 
  private:
   constexpr TimeParser(std::int64_t digits,
@@ -697,7 +697,8 @@ class TimeParser final {
   //   - any number of decimal digits;
   //   - at most two colons;
   //   - at most one decimal mark ('.' or ',').
-  static constexpr TimeParser ReadToEnd(char const* str, std::size_t size);
+  static constexpr TimeParser ReadToEnd(char const* str,
+                                        std::size_t size);
   static constexpr TimeParser ReadToEnd(CStringIterator str,
                                         std::int64_t digits,
                                         int digit_count,
@@ -709,14 +710,7 @@ class TimeParser final {
 
   // Returns a |Time| corresponding to the string that |*this| describes.
   // Fails if the format is invalid or the string represents an invalid time.
-  constexpr Time ISOToTime() const;
-  constexpr Time JDToTime() const;
-  constexpr Time MJDToTime() const;
-
-  static constexpr Time JDFractionToTime(std::int64_t digits,
-                                         int digit_count);
-  static constexpr int JDRoundedMilliseconds(std::int64_t digits,
-                                             int digit_count);
+  constexpr Time ToTime() const;
 
   // The number formed by all digits in the string.
   std::int64_t const digits_;
@@ -734,16 +728,9 @@ class TimeParser final {
   int const decimal_mark_index_;
 };
 
-constexpr Time TimeParser::ParseISO(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).ISOToTime();
-}
-
-constexpr Time TimeParser::ParseJD(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).JDToTime();
-}
-
-constexpr Time TimeParser::ParseMJD(char const* str, std::size_t size) {
-  return ReadToEnd(str, size).MJDToTime();
+constexpr Time TimeParser::Parse(char const* const str,
+                                 std::size_t const size) {
+  return ReadToEnd(str, size).ToTime();
 }
 
 constexpr TimeParser::TimeParser(std::int64_t const digits,
@@ -761,7 +748,8 @@ constexpr TimeParser::TimeParser(std::int64_t const digits,
       has_decimal_mark_(has_decimal_mark),
       decimal_mark_index_(decimal_mark_index) {}
 
-constexpr TimeParser TimeParser::ReadToEnd(char const* str, std::size_t size) {
+constexpr TimeParser TimeParser::ReadToEnd(char const* const str,
+                                           std::size_t const size) {
   return ReadToEnd(CStringIterator(str, size),
                    /*digits=*/0,
                    /*digit_count*/ 0,
@@ -839,7 +827,7 @@ constexpr TimeParser TimeParser::ReadToEnd(CStringIterator const str,
   }
 }
 
-constexpr Time TimeParser::ISOToTime() const {
+constexpr Time TimeParser::ToTime() const {
   // Length of the hhmmss part before the decimal mark (after stripping colons).
   constexpr int hhmmss = 6;
   CONSTEXPR_CHECK(digit_count_ >= hhmmss);
@@ -858,82 +846,129 @@ constexpr Time TimeParser::ISOToTime() const {
                  3 - (digit_count_ - hhmmss)));
 }
 
-constexpr Time TimeParser::JDToTime() const {
-  // Computation example: JD2455200.6234567
-  //   digits_ = 6'234'567, digit_count_ = 7
-  //   digit_range(6'234'567, 6, 7) = 6
-  //   shift_left(6 - 1, 6) = 1'000'000
-  //   digit_range(6'234'567, 0, 6) = 234'567
-  //   calls JDFractionToTime(1'234'567, 7)
-  // Computation example: JD2455201.25000
-  //   digits_ = 25'000, digit_count = 5
-  //   digit_range(25'000, 4, 5) = 2
-  //   shift_left(2 + 5, 4) = 70'000
-  //   digit_range(25'000, 0, 4) = 5'000
-  //   calls JDFractionToTime(75'000, 5)
-  CONSTEXPR_CHECK(colons_ == 0);
-  CONSTEXPR_CHECK(!has_decimal_mark_);
+// Julian date parsing.
 
-  // Days start at a fraction 0.5 of a JD.
-  const int leading_digit =
-      digit_range(digits_, digit_count_ - 1, digit_count_);
-  if (leading_digit >= 5) {
-    return JDFractionToTime(
-               shift_left(leading_digit - 5, digit_count_ - 1) +
-                   digit_range(digits_, 0, digit_count_ - 1),
-               digit_count_);
+// A |JulianDateParser| contains information about a string necessary to
+// interpret it as a Julian date.
+class JulianDateParser final {
+ public:
+  // Returns a |JulianDate| corresponding to the representation |str|.
+  // Fails unless |str| is a valid time representation of the form [ddd] or
+  // [ddd.fff].
+
+  // Returns a |JulianDate| object corresponding to the given string interpreted
+  // a Julian Date or a Modified Julian Date, respectively.
+  static constexpr JulianDate ParseJD(char const* str, std::size_t size);
+  static constexpr JulianDate ParseMJD(char const* str, std::size_t size);
+
+ private:
+  constexpr JulianDateParser(std::int64_t digits,
+                             int digit_count,
+                             bool has_decimal_mark,
+                             int decimal_mark_index);
+
+  // Returns a |JulianDateParser| describing the given string. Fails if the
+  // string is not of the form [ddd] or [ddd.fff] or if it has too many digits
+  // to fit in a std::int64_t.
+  static constexpr JulianDateParser ReadToEnd(char const* str,
+                                              std::size_t size);
+  static constexpr JulianDateParser ReadToEnd(CStringIterator str,
+                                              std::int64_t digits,
+                                              int digit_count,
+                                              bool has_decimal_mark,
+                                              int decimal_mark_index);
+
+  // Returns a |JulianDate| corresponding to the string that |*this| describes.
+  // Fails if the format is invalid.
+  constexpr JulianDate ToJD() const;
+  constexpr JulianDate ToMJD() const;
+
+  // The number formed by all digits in the string.
+  std::int64_t const digits_;
+  // The number of digits.
+  int const digit_count_;
+  // Whether the string contains a decimal mark.
+  bool const has_decimal_mark_;
+  // The index of the decimal mark.
+  int const decimal_mark_index_;
+};
+
+constexpr JulianDate JulianDateParser::ParseJD(char const* const str,
+                                               std::size_t const size) {
+  return ReadToEnd(str, size).ToJD();
+}
+
+constexpr JulianDate JulianDateParser::ParseMJD(char const* const str,
+                                                std::size_t const size) {
+  return ReadToEnd(str, size).ToMJD();
+}
+
+constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
+                                             int const digit_count,
+                                             bool const has_decimal_mark,
+                                             int const decimal_mark_index)
+    : digits_(digits),
+      digit_count_(digit_count),
+      has_decimal_mark_(has_decimal_mark),
+      decimal_mark_index_(decimal_mark_index) {}
+
+constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
+                                                       std::size_t const size) {
+  return ReadToEnd(CStringIterator(str, size),
+                   /*digits=*/0,
+                   /*digit_count*/ 0,
+                   /*has_decimal_mark=*/false,
+                   /*decimal_mark_index=*/-1);
+}
+
+constexpr JulianDateParser JulianDateParser::ReadToEnd(
+    CStringIterator const str,
+    std::int64_t const digits,
+    int const digit_count,
+    bool const has_decimal_mark,
+    int const decimal_mark_index) {
+  if (str.at_end()) {
+    return JulianDateParser(digits,
+                            digit_count,
+                            has_decimal_mark,
+                            decimal_mark_index);
   } else {
-    return JDFractionToTime(
-               shift_left(leading_digit + 5, digit_count_ - 1) +
-                   digit_range(digits_, 0, digit_count_ - 1),
-               digit_count_);
+    switch (*str) {
+      case '.':
+        CONSTEXPR_CHECK(!has_decimal_mark);
+        return ReadToEnd(str.next(),
+                         digits,
+                         digit_count,
+                         /*has_decimal_mark=*/true,
+                         /*decimal_mark_index=*/str.index());
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+        CONSTEXPR_CHECK(digits <=
+                        std::numeric_limits<std::int64_t>::max() / 10 - 9);
+        return ReadToEnd(str.next(),
+                         digits * 10 + *str - '0',
+                         digit_count + 1,
+                         has_decimal_mark,
+                         decimal_mark_index);
+      default:
+        CONSTEXPR_CHECK(false);
+        return JulianDateParser{0, 0, false, 0};
+    }
   }
 }
 
-constexpr Time TimeParser::MJDToTime() const {
-  CONSTEXPR_CHECK(colons_ == 0);
-  CONSTEXPR_CHECK(!has_decimal_mark_);
-  return JDFractionToTime(digits_, digit_count_);
+constexpr JulianDate JulianDateParser::ToJD() const {
+  return JulianDate::JD(
+      digits_,
+      digit_count_,
+      decimal_mark_index_ < 0 ? 0 : digit_count_ - decimal_mark_index_);
 }
 
-constexpr Time TimeParser::JDFractionToTime(std::int64_t const digits,
-                                            int const digit_count) {
-  // Computation example: MJD55200.1234567
-  //   digits = 1'234'567, digit_count = 7
-  //   24 * digits = 29'629'608
-  //   digit_range(29'629'608, 7, 9) = 2
-  //   digit_range(29'629'608, 0, 7) = 9'629'608
-  //   60 * 9'629'608 = 577'776'480
-  //   digit_range(577'776'480, 7, 9) = 57
-  //   digit_range(577'776'480, 0, 7) = 7'776'480
-  //   60 * 24 * digits = 1'777'776'480
-  //   digit_range(1'777'776'480, 0, 7) = 7'776'480
-  //   60 * 7'776'480 = 466'588'800
-  //   digit_range(466'588'800, 7, 9) = 46
-  //   60 * 60 * 24 * digits = 106'666'588'800
-  //   digit_range(106'666'588'800, 3, 7) = 6588
-  //   (6588 + 5) / 10 = 659
-  // Note that this results in rounding to the nearest millisecond.
-  CONSTEXPR_CHECK(digit_count <= 14);
-  return Time(digit_range(24 * digits, digit_count, digit_count + 2),
-              digit_range(60 * digit_range(24 * digits, 0, digit_count),
-                          digit_count, digit_count + 2),
-              digit_range(60 * digit_range(60 * 24 * digits, 0, digit_count),
-                          digit_count, digit_count + 2),
-              JDRoundedMilliseconds(digits, digit_count));
-}
-
-constexpr int TimeParser::JDRoundedMilliseconds(std::int64_t const digits,
-                                                int const digit_count) {
-  // Because 86'400 is a multiple of 100, fractions with less than 2 digits
-  // after the period don't contribute to the milliseconds.  No rounding is
-  // necessary if there are less than 5 digits after the period.
-  return digit_count <= 2
-             ? 0
-             : digit_count <= 5
-                   ? digit_range(60 * 60 * 24 * digits, 0, 3)
-                   : (digit_range(60 * 60 * 24 * digits,
-                                  digit_count - 4, digit_count) + 5) / 10;
+constexpr JulianDate JulianDateParser::ToMJD() const {
+  return JulianDate::MJD(
+      digits_,
+      digit_count_,
+      decimal_mark_index_ < 0 ? 0 : digit_count_ - decimal_mark_index_);
 }
 
 // Operators.
@@ -967,8 +1002,8 @@ constexpr bool operator>=(Date const& left, Date const& right) {
   return !(left < right);
 }
 
-constexpr Date operator""_Date(char const* str, std::size_t size) {
-  return DateParser::ParseISO(str, size);
+constexpr Date operator""_Date(char const* const str, std::size_t const size) {
+  return DateParser::Parse(str, size);
 }
 
 constexpr bool operator==(Time const& left, Time const& right) {
@@ -982,8 +1017,8 @@ constexpr bool operator!=(Time const& left, Time const& right) {
   return !(left == right);
 }
 
-constexpr Time operator""_Time(char const* str, std::size_t size) {
-  return TimeParser::ParseISO(str, size);
+constexpr Time operator""_Time(char const* const str, std::size_t const size) {
+  return TimeParser::Parse(str, size);
 }
 
 constexpr bool operator==(DateTime const& left, DateTime const& right) {
@@ -997,44 +1032,29 @@ constexpr bool operator!=(DateTime const& left, DateTime const& right) {
   return !(left == right);
 }
 
-constexpr DateTime operator""_DateTime(char const* str, std::size_t size) {
+constexpr DateTime operator""_DateTime(char const* const str,
+                                       std::size_t const size) {
   // Given correctness of the date and time parts of the string, this check
   // ensures that either both are in basic format or both are in extended
   // format.
   CONSTEXPR_CHECK(contains(str, size, '-') == contains(str, size, ':'));
+  const int index_of_T = index_of(str, size, 'T');
+  return DateTime(DateParser::Parse(str, index_of_T),
+                  TimeParser::Parse(str + index_of_T + 1,
+                                    size - (index_of_T + 1)));
+}
+
+constexpr bool IsJulian(char const* const str, std::size_t const size) {
+  return starts_with(str, size, "JD", 2) || starts_with(str, size, "MJD", 3);
+}
+
+constexpr JulianDate operator""_Julian(char const* const str,
+                                       std::size_t const size) {
   if (starts_with(str, size, "JD", 2)) {
-    if (contains(str, size - 1, '.')) {
-      const int index_of_period = index_of(str, size, '.');
-      return DateTime(DateParser::ParseJD(str + 2,
-                                          str[index_of_period + 1],
-                                          index_of_period - 2),
-                      TimeParser::ParseJD(str + index_of_period + 1,
-                                          size - (index_of_period + 1)),
-                      /*jd=*/true);
-    } else {
-      return DateTime(DateParser::ParseJD(str + 2, '0', size - 2),
-                      TimeParser::ParseJD("0", 1),
-                      /*jd=*/true);
-    }
-  } else if (starts_with(str, size, "MJD", 3)) {
-    if (contains(str, size - 1, '.')) {
-      const int index_of_period = index_of(str, size, '.');
-      return DateTime(
-          DateParser::ParseMJD(str + 3, index_of_period - 3),
-          TimeParser::ParseMJD(str + index_of_period + 1,
-                               size - (index_of_period + 1)),
-          /*jd=*/true);
-    } else {
-      return DateTime(DateParser::ParseMJD(str + 3, size - 3),
-                      TimeParser::ParseMJD("0", 1),
-                      /*jd=*/true);
-    }
+    return JulianDateParser::ParseJD(str + 2, size - 2);
   } else {
-    const int index_of_T = index_of(str, size, 'T');
-    return DateTime(DateParser::ParseISO(str, index_of_T),
-                    TimeParser::ParseISO(str + index_of_T + 1,
-                                         size - (index_of_T + 1)),
-                    /*jd=*/false);
+    CONSTEXPR_CHECK(starts_with(str, size, "MJD", 3));
+    return JulianDateParser::ParseMJD(str + 3, size - 3);
   }
 }
 

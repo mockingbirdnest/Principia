@@ -23,7 +23,6 @@ namespace principia {
 
 using astronomy::ICRFJ2000Equator;
 using astronomy::J2000;
-using astronomy::JulianDate;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::DebugString;

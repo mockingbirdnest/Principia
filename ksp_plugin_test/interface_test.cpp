@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "astronomy/epoch.hpp"
+#include "astronomy/time_scales.hpp"
 #include "base/not_null.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
@@ -33,7 +33,7 @@
 namespace principia {
 namespace interface {
 
-using astronomy::ModifiedJulianDate;
+using astronomy::operator""_TT;
 using base::check_not_null;
 using base::make_not_null_unique;
 using base::ParseFromBytes;
@@ -529,7 +529,7 @@ TEST_F(InterfaceTest, NavballOrientation) {
 }
 
 TEST_F(InterfaceTest, CurrentTime) {
-  Instant const mjd0 = ModifiedJulianDate(0);
+  Instant const mjd0 = "MJD0"_TT;
   EXPECT_CALL(*plugin_, CurrentTime()).WillOnce(Return(mjd0));
   double const current_time = principia__CurrentTime(plugin_.get());
   EXPECT_THAT(t0_ + current_time * Second, Eq(mjd0));

@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "astronomy/epoch.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/frame.hpp"
 #include "gmock/gmock.h"
 #include "quantities/quantities.hpp"
@@ -16,8 +16,7 @@ namespace principia {
 namespace geometry {
 
 using astronomy::J2000;
-using astronomy::JulianDate;
-using astronomy::ModifiedJulianDate;
+using astronomy::operator""_TT;
 using quantities::Time;
 using quantities::Volume;
 using quantities::si::Day;
@@ -32,7 +31,7 @@ class PointTest : public testing::Test {
   using World = Frame<serialization::Frame::TestTag,
                       serialization::Frame::TEST, true>;
 
-  Instant const mjd0 = ModifiedJulianDate(0);
+  Instant const mjd0 = "MJD0"_TT;
 };
 
 using PointDeathTest = PointTest;
@@ -45,9 +44,9 @@ TEST_F(PointTest, Comparisons) {
 }
 
 TEST_F(PointTest, PlusMinus) {
-  EXPECT_THAT(ModifiedJulianDate(0) - JulianDate(0), Eq(2400000.5 * Day));
-  EXPECT_THAT(JulianDate(2451545.0), Eq(J2000));
-  EXPECT_THAT(ModifiedJulianDate(0) - 2400000.5 * Day, Eq(JulianDate(0)));
+  EXPECT_THAT("MJD0"_TT- "JD0"_TT, Eq(2400000.5 * Day));
+  EXPECT_THAT("JD2451545.0"_TT, Eq(J2000));
+  EXPECT_THAT("MJD0"_TT - 2400000.5 * Day, Eq("JD0"_TT));
 }
 
 TEST_F(PointTest, AssignmentOperators) {
