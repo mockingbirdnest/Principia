@@ -413,55 +413,6 @@ constexpr Instant JulianDateAsTT(JulianDate const& jd) {
 
 // |Instant| date literals.
 
-#if (PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && WE_LIKE_N3599
-template<typename C, C... str>
-constexpr std::array<C, sizeof...(str)> unpack_as_array() {
-  return std::array<C, sizeof...(str)>{{str...}};
-}
-
-template<typename T>
-constexpr T const& as_const_ref(T const& t) {
-  return t;
-}
-
-template<typename C, std::size_t size>
-constexpr C const* c_str(std::array<C, size> const& array) {
-  // In C++17 this could be |data()|.  For the moment this does the job.
-  return &as_const_ref(array)[0];
-}
-
-// NOTE(egg): In the following three functions, the |constexpr| intermediate
-// variable forces failures to occur at compile time and not as glog |CHECK|
-// failures at evaluation.
-
-template<typename C, C... str>
-constexpr Instant operator""_TAI() {
-  constexpr auto result = DateTimeAsTAI(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_TT() {
-  constexpr auto result = DateTimeAsTT(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_UTC() {
-  constexpr auto result = DateTimeAsUTC(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-
-template<typename C, C... str>
-constexpr Instant operator""_UT1() {
-  constexpr auto result = DateTimeAsUT1(
-      operator""_DateTime(c_str(unpack_as_array<C, str...>()), sizeof...(str)));
-  return result;
-}
-#else
 constexpr Instant operator""_TAI(char const* str, std::size_t size) {
   return DateTimeAsTAI(operator""_DateTime(str, size));
 }
@@ -481,7 +432,6 @@ constexpr Instant operator""_UTC(char const* str, std::size_t size) {
 constexpr Instant operator""_UT1(char const* str, std::size_t size) {
   return DateTimeAsUT1(operator""_DateTime(str, size));
 }
-#endif
 
 inline Instant ParseTAI(std::string const& s) {
   return operator""_TAI(s.c_str(), s.size());

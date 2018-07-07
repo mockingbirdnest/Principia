@@ -46,9 +46,6 @@ using TimeScalesDeathTest = TimeScalesTest;
 // The checks are giant boolean expressions which are entirely repeated in the
 // error message; we try to match the relevant part.
 
-#if !((PRINCIPIA_COMPILER_CLANG || PRINCIPIA_COMPILER_CLANG_CL) && \
-      WE_LIKE_N3599)
-
 TEST_F(TimeScalesDeathTest, LeaplessScales) {
   EXPECT_DEATH("2015-06-30T23:59:60"_TT, "!tt.time...is_leap_second..");
   EXPECT_DEATH("2015-06-30T23:59:60"_TAI, "!tai.time...is_leap_second..");
@@ -88,8 +85,6 @@ TEST_F(TimeScalesDeathTest, StretchyLeaps) {
 TEST_F(TimeScalesDeathTest, ModernLeaps) {
   EXPECT_DEATH("2015-12-31T23:59:60"_UTC, "IsValidModernUTC");
 }
-
-#endif
 
 TEST_F(TimeScalesTest, ConstexprJ2000) {
   static_assert(j2000_week == J2000, "");
