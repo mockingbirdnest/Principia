@@ -34,14 +34,21 @@ using quantities::si::Second;
 // to which it is interpreted.
 // On a time scale with leap seconds, this is not injective: a positive leap
 // second and the following second map to the same interval.
-constexpr quantities::Time TimeScale(DateTime const& date_time) {
+constexpr quantities::Time TimeSince20000101T120000Z(
+    DateTime const& date_time) {
   return (date_time.time().millisecond() / 1e3) * Second +
          (date_time.time().second() +
           60 * (date_time.time().minute() +
                 60 * (date_time.time().hour() - 12 +
                       24 * static_cast<std::int64_t>(
-                          date_time.date().mjd() -
-                          "2000-01-01"_Date.mjd())))) * Second;
+                               date_time.date().mjd() -
+                               "2000-01-01"_Date.mjd())))) *
+             Second;
+}
+
+constexpr quantities::Time TimeSinceJ2000(JulianDate const& jd) {
+  return (jd.day() + (static_cast<double>(jd.fraction_numerator()) /
+                      static_cast<double>(jd.fraction_denominator()))) * Day;
 }
 
 constexpr double mjd(quantities::Time const& from_j2000) {
@@ -150,12 +157,16 @@ constexpr bool IsValidModernUTC(DateTime const& date_time) {
 // https://hpiers.obspm.fr/iers/bul/bulc/UTC-TAI.history.
 constexpr quantities::Time RateTAIMinusStretchyUTC(DateTime const& utc) {
   return utc.date() < "1962-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 37'300) * 0.001'296 * Second
+             ? (mjd(TimeSince20000101T120000Z(utc)) - 37'300) *
+               0.001'296 * Second
        : utc.date() < "1964-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 37'665) * 0.001'123'2 * Second
+             ? (mjd(TimeSince20000101T120000Z(utc)) - 37'665) *
+               0.001'123'2 * Second
        : utc.date() < "1966-01-01"_Date
-             ? (mjd(TimeScale(utc)) - 38'761) * 0.001'296 * Second
-             : (mjd(TimeScale(utc)) - 39'126) * 0.002'592 * Second;
+             ? (mjd(TimeSince20000101T120000Z(utc)) - 38'761) *
+               0.001'296 * Second
+             : (mjd(TimeSince20000101T120000Z(utc)) - 39'126) *
+               0.002'592 * Second;
 }
 
 // The constant term.
@@ -264,7 +275,7 @@ constexpr DateTime EOPC04Entry::utc() const {
 }
 
 constexpr quantities::Time EOPC04Entry::ut1() const {
-  return TimeScale(utc()) + ut1_minus_utc;
+  return TimeSince20000101T120000Z(utc()) + ut1_minus_utc;
 }
 
 constexpr quantities::Time EOPC04Entry::ut1_minus_tai() const {
@@ -378,12 +389,12 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
 
 constexpr Instant DateTimeAsTT(DateTime const& tt) {
   CONSTEXPR_CHECK(!tt.time().is_leap_second());
-  return FromTT(TimeScale(tt));
+  return FromTT(TimeSince20000101T120000Z(tt));
 }
 
 constexpr Instant DateTimeAsTAI(DateTime const& tai) {
   CONSTEXPR_CHECK(!tai.time().is_leap_second());
-  return FromTAI(TimeScale(tai));
+  return FromTAI(TimeSince20000101T120000Z(tai));
 }
 
 constexpr Instant DateTimeAsUTC(DateTime const& utc) {
@@ -391,35 +402,35 @@ constexpr Instant DateTimeAsUTC(DateTime const& utc) {
     return DateTimeAsUTC(utc.normalized_end_of_day());
   } else if (utc.date().year() < 1972) {
     CONSTEXPR_CHECK(IsValidStretchyUTC(utc));
-    return FromTAI(TimeScale(utc) + TAIMinusStretchyUTC(utc));
+    return FromTAI(TimeSince20000101T120000Z(utc) + TAIMinusStretchyUTC(utc));
   } else {
     CONSTEXPR_CHECK(IsValidModernUTC(utc));
-    return FromTAI(TimeScale(utc) - ModernUTCMinusTAI(utc.date()));
+    return FromTAI(TimeSince20000101T120000Z(utc) -
+                   ModernUTCMinusTAI(utc.date()));
   }
 }
 
 constexpr Instant DateTimeAsUT1(DateTime const& ut1) {
   CONSTEXPR_CHECK(!ut1.time().is_leap_second());
-  CONSTEXPR_CHECK(mjd(TimeScale(ut1)) >= experimental_eop_c02.front().ut1_mjd);
-  CONSTEXPR_CHECK(TimeScale(ut1) < eop_c04.back().ut1());
-  return FromUT1(TimeScale(ut1));
-}
-
-constexpr Instant JulianDateAsTT(JulianDate const& jd) {
-  return Instant() +
-         (jd.day() + (static_cast<double>(jd.fraction_numerator()) /
-                      static_cast<double>(jd.fraction_denominator()))) * Day;
+  CONSTEXPR_CHECK(mjd(TimeSince20000101T120000Z(ut1)) >=
+                  experimental_eop_c02.front().ut1_mjd);
+  CONSTEXPR_CHECK(TimeSince20000101T120000Z(ut1) < eop_c04.back().ut1());
+  return FromUT1(TimeSince20000101T120000Z(ut1));
 }
 
 // |Instant| date literals.
 
 constexpr Instant operator""_TAI(char const* str, std::size_t size) {
-  return DateTimeAsTAI(operator""_DateTime(str, size));
+  if (IsJulian(str, size)) {
+    return FromTAI(TimeSinceJ2000(operator""_Julian(str, size)));
+  } else {
+    return DateTimeAsTAI(operator""_DateTime(str, size));
+  }
 }
 
 constexpr Instant operator""_TT(char const* str, std::size_t size) {
   if (IsJulian(str, size)) {
-    return JulianDateAsTT(operator""_Julian(str, size));
+    return FromTT(TimeSinceJ2000(operator""_Julian(str, size)));
   } else {
     return DateTimeAsTT(operator""_DateTime(str, size));
   }
@@ -430,7 +441,11 @@ constexpr Instant operator""_UTC(char const* str, std::size_t size) {
 }
 
 constexpr Instant operator""_UT1(char const* str, std::size_t size) {
-  return DateTimeAsUT1(operator""_DateTime(str, size));
+  if (IsJulian(str, size)) {
+    return FromUT1(TimeSinceJ2000(operator""_Julian(str, size)));
+  } else {
+    return DateTimeAsUT1(operator""_DateTime(str, size));
+  }
 }
 
 inline Instant ParseTAI(std::string const& s) {
