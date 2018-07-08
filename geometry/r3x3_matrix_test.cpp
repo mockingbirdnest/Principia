@@ -93,11 +93,11 @@ TEST_F(R3x3MatrixTest, ScalarMultiplicationDivision) {
 }
 
 TEST_F(R3x3MatrixTest, Assignment) {
-  R3x3Matrix a = m1_;
-  R3x3Matrix b = m1_;
-  R3x3Matrix c = m1_;
-  R3x3Matrix d = m1_;
-  R3x3Matrix e = m1_;
+  R3x3Matrix<double> a = m1_;
+  R3x3Matrix<double> b = m1_;
+  R3x3Matrix<double> c = m1_;
+  R3x3Matrix<double> d = m1_;
+  R3x3Matrix<double> e = m1_;
   a += m2_;
   b -= m2_;
   c *= m2_;

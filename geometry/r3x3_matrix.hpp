@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "base/macros.hpp"
 #include "geometry/r3_element.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
@@ -49,11 +50,15 @@ class R3x3Matrix final {
   void WriteToMessage(not_null<serialization::R3x3Matrix*> message) const;
   static R3x3Matrix ReadFromMessage(serialization::R3x3Matrix const& message);
 
+  // Clang on MacOS don't like all these friends.
+#if !OS_MACOSX
  private:
+#endif
   R3Element<Scalar> row_x_;
   R3Element<Scalar> row_y_;
   R3Element<Scalar> row_z_;
 
+#if !OS_MACOSX
   template<typename S>
   friend R3x3Matrix<S> operator+(R3x3Matrix<S> const& right);
   template<typename S>
@@ -95,6 +100,7 @@ class R3x3Matrix final {
 
   template<typename S>
   friend std::string DebugString(R3x3Matrix<S> const& r3x3_matrix);
+#endif
 };
 
 template<typename Scalar>

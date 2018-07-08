@@ -134,7 +134,7 @@ template<typename LScalar, typename RScalar>
 R3x3Matrix<Product<LScalar, RScalar>> operator*(
     R3x3Matrix<LScalar> const& left,
     R3x3Matrix<RScalar> const& right) {
-  R3x3Matrix const t_right = right.Transpose();
+  R3x3Matrix<RScalar> const t_right = right.Transpose();
   return R3x3Matrix<Product<LScalar, RScalar>>(
              {Dot(left.row_x_, t_right.row_x_),
               Dot(left.row_x_, t_right.row_y_),
