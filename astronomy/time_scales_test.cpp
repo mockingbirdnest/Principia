@@ -55,13 +55,14 @@ TEST_F(TimeScalesDeathTest, LeaplessScales) {
 TEST_F(TimeScalesDeathTest, BeforeRange) {
   EXPECT_DEATH("1960-12-31T23:59:59,999"_UTC, "IsValidStretchyUTC");
   EXPECT_DEATH("1830-04-10T23:59:59,999"_UT1,
-               "mjd.TimeScale.ut1.. >= experimental_eop_c02.front...ut1_mjd");
+               "mjd.TimeSince20000101T120000Z.ut1.. >= "
+               "experimental_eop_c02.front...ut1_mjd");
 }
 
 TEST_F(TimeScalesDeathTest, WarWasBeginning) {
   EXPECT_DEATH("2101-01-01T00:00:00"_UTC, "leap_seconds.size");
   EXPECT_DEATH("2101-01-01T00:00:00"_UT1,
-               "TimeScale.ut1. < eop_c04.back...ut1..");
+               "TimeSince20000101T120000Z.ut1. < eop_c04.back...ut1..");
 }
 
 TEST_F(TimeScalesDeathTest, FirstUnknownUTC) {
