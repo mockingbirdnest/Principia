@@ -95,9 +95,9 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Multivector<double, FromFrame, rank_y> y_to_frame,
     Multivector<double, FromFrame, rank_z> z_to_frame)
     : Rotation<FromFrame, ToFrame>(
-          ToQuaternion(R3x3Matrix(x_to_frame.coordinates(),
-                                  y_to_frame.coordinates(),
-                                  z_to_frame.coordinates()))) {
+          ToQuaternion(R3x3Matrix<double>(x_to_frame.coordinates(),
+                                          y_to_frame.coordinates(),
+                                          z_to_frame.coordinates()))) {
   static_assert((rank_x + rank_y + rank_z) % 2 == 0, "chiral basis");
   static_assert(rank_x < 3 && rank_y < 3 && rank_z < 3, "bad dimension");
 }
@@ -110,9 +110,10 @@ Rotation<FromFrame, ToFrame>::Rotation(
     Multivector<double, ToFrame, rank_y> y_from_frame,
     Multivector<double, ToFrame, rank_z> z_from_frame)
     : Rotation<FromFrame, ToFrame>(
-          ToQuaternion(R3x3Matrix(x_from_frame.coordinates(),
-                                  y_from_frame.coordinates(),
-                                  z_from_frame.coordinates()).Transpose())) {
+          ToQuaternion(R3x3Matrix<double>(x_from_frame.coordinates(),
+                                          y_from_frame.coordinates(),
+                                          z_from_frame.coordinates()).
+                           Transpose())) {
   static_assert((rank_x + rank_y + rank_z) % 2 == 0, "chiral basis");
   static_assert(rank_x < 3 && rank_y < 3 && rank_z < 3, "bad dimension");
 }
