@@ -177,7 +177,7 @@ TEST_F(RotationTest, ToQuaternion1) {
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix m = {w1, w2, w3};
+  R3x3Matrix<double> m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
@@ -192,7 +192,7 @@ TEST_F(RotationTest, ToQuaternion2) {
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix m = {w1, w2, w3};
+  R3x3Matrix<double> m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
@@ -207,7 +207,7 @@ TEST_F(RotationTest, ToQuaternion3) {
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix m = {w1, w2, w3};
+  R3x3Matrix<double> m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
@@ -222,7 +222,7 @@ TEST_F(RotationTest, ToQuaternion4) {
   R3Element<double> const w1 = Normalize(v1);
   R3Element<double> const w2 = Normalize(v2);
   R3Element<double> const w3 = Normalize(v3);
-  R3x3Matrix m = {w1, w2, w3};
+  R3x3Matrix<double> m = {w1, w2, w3};
   Rot rotation(ToQuaternion(m.Transpose()));
   EXPECT_THAT(rotation(e1_).coordinates(), AlmostEquals(w1, 6));
   EXPECT_THAT(rotation(e2_).coordinates(), AlmostEquals(w2, 5));
