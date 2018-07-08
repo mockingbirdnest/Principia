@@ -41,9 +41,8 @@ constexpr quantities::Time TimeSince20000101T120000Z(
           60 * (date_time.time().minute() +
                 60 * (date_time.time().hour() - 12 +
                       24 * static_cast<std::int64_t>(
-                               date_time.date().mjd() -
-                               "2000-01-01"_Date.mjd())))) *
-             Second;
+                          date_time.date().mjd() -
+                          "2000-01-01"_Date.mjd())))) * Second;
 }
 
 constexpr quantities::Time TimeSinceJ2000(JulianDate const& jd) {
