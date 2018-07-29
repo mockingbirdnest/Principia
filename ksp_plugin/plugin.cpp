@@ -597,18 +597,21 @@ void Plugin::FreeVesselsAndPartsAndCollectPileUps(Time const& Δt) {
 void Plugin::SetPartApparentDegreesOfFreedom(
     PartId const part_id,
     DegreesOfFreedom<World> const& degrees_of_freedom,
-    DegreesOfFreedom<World> const& main_body_degrees_of_freedom) {
+    Index const reference_body_index,
+    DegreesOfFreedom<World> const& reference_body_degrees_of_freedom) {
   // Define |ApparentBubble| as the reference frame with the axes of
-  // |Barycentric| centred on the current main body.
+  // |Barycentric| centred on the given reference body.
+  auto const reference_body =
+      FindOrDie(celestials_, reference_body_index)->body();
   RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
       RigidTransformation<World, ApparentBubble>{
-          main_body_degrees_of_freedom.position(),
+          reference_body_degrees_of_freedom.position(),
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
               renderer_->WorldToBarycentric(PlanetariumRotation())},
       renderer_->BarycentricToWorld(PlanetariumRotation())(
           -angular_velocity_of_world_),
-      main_body_degrees_of_freedom.velocity()};
+      reference_body_degrees_of_freedom.velocity()};
 
   not_null<Vessel*> vessel = FindOrDie(part_id_to_vessel_, part_id);
   CHECK(is_loaded(vessel));
@@ -1176,6 +1179,30 @@ Rotation<Barycentric, AliceSun> const& Plugin::PlanetariumRotation() const {
   return *cached_planetarium_rotation_;
 }
 
+Rotation<Barycentric, AliceSun> Plugin::PlanetariumRotation(
+    RotatingBody<Barycentric> const& reference_body) const {
+  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
+  // axis is the origin of body rotation (the intersection between the
+  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
+  // axis of |Barycentric| if they coincide).
+  // This can be expressed using Euler angles, see figures 1 and 2 of
+  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
+  struct PlanetariumFrame;
+
+  CHECK_NOTNULL(main_body_);
+  Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
+      π / 2 * Radian + reference_body.right_ascension_of_pole(),
+      π / 2 * Radian - reference_body.declination_of_pole(),
+      0 * Radian,
+      EulerAngles::ZXZ,
+      DefinesFrame<PlanetariumFrame>{});
+  return Rotation<PlanetariumFrame, AliceSun>(
+             planetarium_rotation_,
+             Bivector<double, PlanetariumFrame>({0, 0, 1}),
+             DefinesFrame<AliceSun>{}) *
+         to_planetarium;
+}
+
 Renderer& Plugin::renderer() {
   return *renderer_;
 }
@@ -1414,27 +1441,7 @@ void Plugin::InitializeIndices(
 }
 
 void Plugin::UpdatePlanetariumRotation() {
-  // The z axis of |PlanetariumFrame| is the pole of |main_body_|, and its x
-  // axis is the origin of body rotation (the intersection between the
-  // |Barycentric| xy plane and the plane of |main_body_|'s equator, or the y
-  // axis of |Barycentric| if they coincide).
-  // This can be expressed using Euler angles, see figures 1 and 2 of
-  // http://astropedia.astrogeology.usgs.gov/download/Docs/WGCCRE/WGCCRE2009reprint.pdf.
-  struct PlanetariumFrame;
-
-  CHECK_NOTNULL(main_body_);
-  Rotation<Barycentric, PlanetariumFrame> const to_planetarium(
-      π / 2 * Radian + main_body_->right_ascension_of_pole(),
-      π / 2 * Radian - main_body_->declination_of_pole(),
-      0 * Radian,
-      EulerAngles::ZXZ,
-      DefinesFrame<PlanetariumFrame>{});
-  cached_planetarium_rotation_ =
-      Rotation<PlanetariumFrame, AliceSun>(
-          planetarium_rotation_,
-          Bivector<double, PlanetariumFrame>({0, 0, 1}),
-          DefinesFrame<AliceSun>{}) *
-      to_planetarium;
+  cached_planetarium_rotation_ = PlanetariumRotation(*main_body_);
 }
 
 Velocity<World> Plugin::VesselVelocity(

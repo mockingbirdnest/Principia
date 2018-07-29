@@ -915,14 +915,20 @@ void principia__SetPartApparentDegreesOfFreedom(
     Plugin* const plugin,
     PartId const part_id,
     QP const degrees_of_freedom,
-    QP const main_body_degrees_of_freedom) {
+    int const reference_body_index,
+    QP const reference_body_degrees_of_freedom) {
   journal::Method<journal::SetPartApparentDegreesOfFreedom> m(
-      {plugin, part_id, degrees_of_freedom, main_body_degrees_of_freedom});
+      {plugin,
+       part_id,
+       degrees_of_freedom,
+       reference_body_index,
+       reference_body_degrees_of_freedom});
   CHECK_NOTNULL(plugin);
   plugin->SetPartApparentDegreesOfFreedom(
       part_id,
       FromQP<DegreesOfFreedom<World>>(degrees_of_freedom),
-      FromQP<DegreesOfFreedom<World>>(main_body_degrees_of_freedom));
+      reference_body_index,
+      FromQP<DegreesOfFreedom<World>>(reference_body_degrees_of_freedom));
   return m.Return();
 }
 

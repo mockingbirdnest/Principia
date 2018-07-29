@@ -1265,6 +1265,8 @@ public partial class PrincipiaPluginAdapter
             // TODO(egg): use the centre of mass.
             new QP{q = (XYZ)(Vector3d)part.rb.position,
                    p = (XYZ)(Vector3d)part.rb.velocity},
+            (FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody()).
+                flightGlobalsIndex,
             main_body_degrees_of_freedom);
       }
     }

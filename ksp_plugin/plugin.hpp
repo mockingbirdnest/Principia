@@ -237,7 +237,8 @@ class Plugin {
   virtual void SetPartApparentDegreesOfFreedom(
       PartId part_id,
       DegreesOfFreedom<World> const& degrees_of_freedom,
-      DegreesOfFreedom<World> const& main_body_degrees_of_freedom);
+      Index reference_body_index,
+      DegreesOfFreedom<World> const& reference_body_degrees_of_freedom);
 
   // Returns the degrees of freedom of the given part in |World|, assuming that
   // the origin of |World| is fixed at the centre of mass of the
@@ -415,6 +416,11 @@ class Plugin {
   // this change of basis is all that's required to convert relative velocities
   // or displacements between simultaneous events.
   virtual Rotation<Barycentric, AliceSun> const& PlanetariumRotation() const;
+
+  // Same as above, but the rotation is relavite to the given |reference_body|,
+  // not to the current main body.
+  virtual Rotation<Barycentric, AliceSun> PlanetariumRotation(
+      RotatingBody<Barycentric> const& reference_body) const;
 
   virtual Renderer& renderer();
   virtual Renderer const& renderer() const;

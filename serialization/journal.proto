@@ -1646,7 +1646,8 @@ message SetPartApparentDegreesOfFreedom {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
     required fixed32 part_id = 2;
     required QP degrees_of_freedom = 3;
-    required QP main_body_degrees_of_freedom = 4;
+    required int32 reference_body_index = 5;
+    required QP reference_body_degrees_of_freedom = 4;
   }
   optional In in = 1;
 }
