@@ -603,13 +603,14 @@ void Plugin::SetPartApparentDegreesOfFreedom(
   // |Barycentric| centred on the given reference body.
   auto const reference_body =
       FindOrDie(celestials_, reference_body_index)->body();
+  auto const reference_rotation = PlanetariumRotation(*reference_body);
   RigidMotion<World, ApparentBubble> world_to_apparent_bubble{
       RigidTransformation<World, ApparentBubble>{
           reference_body_degrees_of_freedom.position(),
           ApparentBubble::origin,
           OrthogonalMap<Barycentric, ApparentBubble>::Identity() *
-              renderer_->WorldToBarycentric(PlanetariumRotation())},
-      renderer_->BarycentricToWorld(PlanetariumRotation())(
+              renderer_->WorldToBarycentric(reference_rotation)},
+      renderer_->BarycentricToWorld(reference_rotation)(
           -angular_velocity_of_world_),
       reference_body_degrees_of_freedom.velocity()};
 
