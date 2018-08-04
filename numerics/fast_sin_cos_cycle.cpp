@@ -44,9 +44,18 @@ void FastSinCosCycle(double x, double& sin, double& cos) {
 #error "Argument reduction not implemented for non-SSE3 processors"
 #endif
 
+  double sign = 1.0;
+  if (x_fractional > 0.25) {
+    x_fractional -= 0.5;
+    sign = -1.0;
+  } else if (x_fractional < -0.25) {
+    x_fractional += 0.5;
+    sign = -1.0;
+  }
+
   double const x_fractional² = x_fractional * x_fractional;
-  sin = sin_polynomial.Evaluate(x_fractional²) * x_fractional;
-  cos = 1.0 + cos_polynomial.Evaluate(x_fractional²) * x_fractional²;
+  sin = sin_polynomial.Evaluate(x_fractional²) * (sign * x_fractional);
+  cos = sign + cos_polynomial.Evaluate(x_fractional²) * (sign * x_fractional²);
 }
 
 }  // namespace numerics
