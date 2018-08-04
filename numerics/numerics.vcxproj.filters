@@ -80,6 +80,9 @@
     <ClInclude Include="cbrt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fast_sin_cos_cycle.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -114,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="cbrt_test.cpp">
       <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fast_sin_cos_cycle.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
