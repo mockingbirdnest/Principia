@@ -36,6 +36,7 @@
     <ClCompile Include="cbrt_test.cpp" />
     <ClCompile Include="double_precision_test.cpp" />
     <ClCompile Include="fast_sin_cos_cycle.cpp" />
+    <ClCompile Include="fast_sin_cos_cycle_test.cpp" />
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
