@@ -1,7 +1,7 @@
-
+﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=FastSinCos  // NOLINT(whitespace/line_length)
 
-#include "numerics/fast_sin_cos_cycle.hpp"
+#include "numerics/fast_sin_cos_2π.hpp"
 
 #include <random>
 #include <vector>
@@ -11,7 +11,7 @@
 namespace principia {
 namespace numerics {
 
-void BM_FastSinCosCycle(benchmark::State& state) {
+void BM_FastSinCos2π(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> const distribution(-1.0, 1.0);
   std::vector<double> input;
@@ -23,14 +23,14 @@ void BM_FastSinCosCycle(benchmark::State& state) {
     double sin;
     double cos;
     for (double const x : input) {
-      FastSinCosCycle(x, sin, cos);
+      FastSinCos2π(x, sin, cos);
     }
     benchmark::DoNotOptimize(sin);
     benchmark::DoNotOptimize(cos);
   }
 }
 
-BENCHMARK(BM_FastSinCosCycle);
+BENCHMARK(BM_FastSinCos2π);
 
 }  // namespace numerics
 }  // namespace principia

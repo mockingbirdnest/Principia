@@ -80,7 +80,7 @@
     <ClInclude Include="cbrt.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fast_sin_cos_cycle.hpp">
+    <ClInclude Include="fast_sin_cos_2π.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -118,10 +118,10 @@
     <ClCompile Include="cbrt_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="fast_sin_cos_cycle.cpp">
+    <ClCompile Include="fast_sin_cos_2π.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fast_sin_cos_cycle_test.cpp">
+    <ClCompile Include="fast_sin_cos_2π_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

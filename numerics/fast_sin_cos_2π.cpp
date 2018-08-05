@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "numerics/fast_sin_cos_cycle.hpp"
+#include "numerics/fast_sin_cos_2π.hpp"
 
 #include <pmmintrin.h>
 
@@ -36,34 +36,37 @@ P3 cos_polynomial(P3::Coefficients{-19.7391820689166533085010275514,
 
 }  // namespace
 
-void FastSinCosCycle(double x, double& sin, double& cos) {
+void FastSinCos2π(double cycles, double& sin, double& cos) {
   // Argument reduction.  Since the unit of x is the cycle, we just drop the
   // integer part.
-  double x_fractional;
+  double cycles_fractional;
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const x_128d = _mm_load1_pd(&x);
+  __m128d const cycles_128d = _mm_load1_pd(&cycles);
   // Note that _mm_cvtpd has lower latency than _mm_cvtsd.
-  __m128i const x_128i = _mm_cvtpd_epi32(x_128d);
-  __m128d const x_integer_128d = _mm_cvtepi32_pd(x_128i);
-  __m128d const x_fractional_128d = _mm_sub_pd(x_128d, x_integer_128d);
-  x_fractional = _mm_cvtsd_f64(x_fractional_128d);
+  __m128i const cycles_128i = _mm_cvtpd_epi32(cycles_128d);
+  __m128d const cycles_integer_128d = _mm_cvtepi32_pd(cycles_128i);
+  __m128d const cycles_fractional_128d = _mm_sub_pd(cycles_128d,
+                                                    cycles_integer_128d);
+  cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
 #else
-  double const x_integer = std::nearbyint(x);
-  x_fractional = x - x_integer;
+  double const cycles_integer = std::nearbyint(cycles);
+  cycles_fractional = cycles - cycles_integer;
 #endif
 
   double sign = 1.0;
-  if (x_fractional > 0.25) {
-    x_fractional -= 0.5;
+  if (cycles_fractional > 0.25) {
+    cycles_fractional -= 0.5;
     sign = -1.0;
-  } else if (x_fractional < -0.25) {
-    x_fractional += 0.5;
+  } else if (cycles_fractional < -0.25) {
+    cycles_fractional += 0.5;
     sign = -1.0;
   }
 
-  double const x_fractional² = x_fractional * x_fractional;
-  sin = sin_polynomial.Evaluate(x_fractional²) * (sign * x_fractional);
-  cos = sign + cos_polynomial.Evaluate(x_fractional²) * (sign * x_fractional²);
+  double const cycles_fractional² = cycles_fractional * cycles_fractional;
+  sin = sin_polynomial.Evaluate(cycles_fractional²) *
+        (sign * cycles_fractional);
+  cos = sign + cos_polynomial.Evaluate(cycles_fractional²) *
+               (sign * cycles_fractional²);
 }
 
 }  // namespace numerics
