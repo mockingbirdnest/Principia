@@ -1,4 +1,4 @@
-
+ï»¿
 #pragma once
 
 #include "numerics/fast_sin_cos_cycle.hpp"
@@ -54,9 +54,9 @@ void FastSinCosCycle(double x, double& sin, double& cos) {
     sign = -1.0;
   }
 
-  double const x_fractional² = x_fractional * x_fractional;
-  sin = sin_polynomial.Evaluate(x_fractional²) * (sign * x_fractional);
-  cos = sign + cos_polynomial.Evaluate(x_fractional²) * (sign * x_fractional²);
+  double const x_fractionalÂ² = x_fractional * x_fractional;
+  sin = sin_polynomial.Evaluate(x_fractionalÂ²) * (sign * x_fractional);
+  cos = sign + cos_polynomial.Evaluate(x_fractionalÂ²) * (sign * x_fractionalÂ²);
 }
 
 }  // namespace numerics

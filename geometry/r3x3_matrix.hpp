@@ -52,6 +52,7 @@ class R3x3Matrix final {
 
   // Clang on MacOS don't like all these friends.
 #if !OS_MACOSX
+
  private:
 #endif
   R3Element<Scalar> row_x_;
