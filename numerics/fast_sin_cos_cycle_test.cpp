@@ -82,33 +82,31 @@ TEST_F(FastSinCosCycleTest, Random1) {
   EXPECT_THAT(max_cos_error_x, IsNear(1.0 - 1.0 / 15.0));
 }
 
-// Same as above, but in the range [-1e6, 1e6] to test argument reduction.
+// Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.
 TEST_F(FastSinCosCycleTest, Random1000) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(-1.0e6, 1.0e6);
+  std::uniform_int_distribution<> const integer_distribution(-1e6, 1e6);
+  std::uniform_real_distribution<> const fractional_distribution(0.0, 1.0);
   double max_sin_error = 0.0;
   double max_cos_error = 0.0;
   double max_sin_error_x = 0.0;
   double max_cos_error_x = 0.0;
   for (int i = 0; i < iterations_; ++i) {
-    double const x = distribution(random);
+    double const integer = integer_distribution(random);
+    double const fractional = fractional_distribution(random);
+    double const x = integer + fractional;
+    double const x_reduced = x - integer;
     double sin;
     double cos;
     FastSinCosCycle(x, sin, cos);
-    double const sin_error = std::abs(std::sin(2 * π * x) - sin);
-    if (sin_error > max_sin_error) {
-      max_sin_error = sin_error;
-      max_sin_error_x = x;
-    }
-    double const cos_error = std::abs(std::cos(2 * π * x) - cos);
-    if (cos_error > max_cos_error) {
-      max_cos_error = cos_error;
-      max_cos_error_x = x;
-    }
+    double sin_reduced;
+    double cos_reduced;
+    FastSinCosCycle(x_reduced, sin_reduced, cos_reduced);
+
+    // Smart expectations are too slow, so let's be dumb.
+    EXPECT_TRUE(sin_reduced == sin);
+    EXPECT_TRUE(cos_reduced == cos);
   }
-  // Slightly larger errors here because of argument reduction.
-  EXPECT_LT(max_sin_error, 5.90e-7);
-  EXPECT_LT(max_cos_error, 5.35e-8);
 }
 
 // Check that the functions are reasonably monotonic.

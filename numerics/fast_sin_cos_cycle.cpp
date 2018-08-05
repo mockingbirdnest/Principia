@@ -18,6 +18,13 @@ using P3 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
                                      /*degree=*/3,
                                      /*Evaluator=*/EstrinEvaluator>;
+
+// 3rd-degree polynomials that minimize the absolute error on sin and cos over
+// the interval [0, 1/4].  The minimization algorithm is run on
+// Sin(2 π √x)/√x and (Cos(2 π √x) - 1)/x to ensure that the functions have
+// the right behavior near 0 and the proper parity.  Because of extra
+// oscillations, the lower bounds of the minimization intervals are 1/23 and
+// 1/15 respectively.  This is where the maximum error is found.
 P3 sin_polynomial(P3::Coefficients{6.28316404405113818577981340506,
                                    -41.3371423477858688509416864345,
                                    81.3407682603799599938651480917,
