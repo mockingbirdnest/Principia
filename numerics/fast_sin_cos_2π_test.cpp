@@ -117,7 +117,6 @@ TEST_F(FastSinCos2πTest, Monotonicity) {
   double max_cos_error = 0.0;
   double max_sin_error_x = 0.0;
   double max_cos_error_x = 0.0;
-  bool found_anomaly = false;
   for (int i = 0; i < iterations_; ++i) {
     double const x = distribution(random);
     double const next_x = std::nexttoward(x, 1.0);
@@ -126,22 +125,19 @@ TEST_F(FastSinCos2πTest, Monotonicity) {
     FastSinCos2π(x, sin_2π_x, cos_2π_x);
     double sin_2π_next_x;
     double cos_2π_next_x;
-    FastSinCos2π(x, sin_2π_next_x, cos_2π_next_x);
+    FastSinCos2π(next_x, sin_2π_next_x, cos_2π_next_x);
 
     if (sin_2π_next_x < sin_2π_x) {
-      found_anomaly = true;
       max_sin_error = std::max(max_sin_error, sin_2π_x - sin_2π_next_x);
       max_sin_error_x = x;
     }
     if (cos_2π_next_x > cos_2π_x) {
-      found_anomaly = true;
       max_cos_error = std::max(max_cos_error, cos_2π_next_x - cos_2π_x);
       max_cos_error_x = x;
     }
   }
-  EXPECT_FALSE(found_anomaly)
-      << "sin error: " << max_sin_error << " at " << max_sin_error_x
-      << ", cos error: " << max_cos_error << " at " << max_cos_error_x;
+  EXPECT_LT(max_sin_error, 4e-16);
+  EXPECT_LT(max_cos_error, 4e-16);
 }
 
 }  // namespace numerics
