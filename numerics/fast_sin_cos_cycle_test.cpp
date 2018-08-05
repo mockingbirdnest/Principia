@@ -21,7 +21,11 @@ namespace numerics {
 
 class FastSinCosCycleTest : public ::testing::Test {
  protected:
+#if defined(_DEBUG)
+  static constexpr int iterations_ = 1e7;
+#else
   static constexpr int iterations_ = 1e8;
+#endif
 };
 
 // Check that we obtain the right result for special angles.

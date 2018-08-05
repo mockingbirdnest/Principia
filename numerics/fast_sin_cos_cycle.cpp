@@ -41,7 +41,8 @@ void FastSinCosCycle(double x, double& sin, double& cos) {
   __m128d const x_fractional_128d = _mm_sub_pd(x_128d, x_integer_128d);
   x_fractional = _mm_cvtsd_f64(x_fractional_128d);
 #else
-#error "Argument reduction not implemented for non-SSE3 processors"
+  double const x_integer = std::nearbyint(x);
+  x_fractional = x - x_integer;
 #endif
 
   double sign = 1.0;
