@@ -37,15 +37,14 @@ P3 cos_polynomial(P3::Coefficients{-19.7391820689166533085010275514,
 }  // namespace
 
 void FastSinCos2π(double cycles, double& sin, double& cos) {
-  // Argument reduction.  Since the unit of x is the cycle, we just drop the
+  // Argument reduction.  Since the argument is in cycles, we just drop the
   // integer part.
   double cycles_fractional;
 #if PRINCIPIA_USE_SSE3_INTRINSICS
   __m128d const cycles_128d = _mm_load1_pd(&cycles);
-  // Note that _mm_cvtpd has lower latency than _mm_cvtsd.
-  __m128i const cycles_128i = _mm_cvtpd_epi32(cycles_128d);
-  __m128d const cycles_integer_128d = _mm_cvtepi32_pd(cycles_128i);
-  __m128d const cycles_fractional_128d = _mm_sub_pd(cycles_128d,
+  __int64 const cycles_64 = _mm_cvtsd_si64(cycles_128d);
+  __m128d const cycles_integer_128d = _mm_cvtsi64_sd(cycles_128d, cycles_64);
+  __m128d const cycles_fractional_128d = _mm_sub_sd(cycles_128d,
                                                     cycles_integer_128d);
   cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
 #else
