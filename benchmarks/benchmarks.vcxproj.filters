@@ -59,6 +59,12 @@
     <ClCompile Include="base32768.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
