@@ -42,8 +42,8 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   std::int64_t quadrant;  // 0..3
 #if PRINCIPIA_USE_SSE3_INTRINSICS
   __m128d const cycles_128d = _mm_set_sd(cycles);
-  __m128d const two_cycles_128d = _mm_add_sd(cycles_128d, cycles_128d);
-  __m128d const four_cycles_128d = _mm_add_sd(two_cycles_128d, two_cycles_128d);
+  __m128d const four = _mm_set_sd(4.0);
+  __m128d const four_cycles_128d = _mm_mul_sd(four, cycles_128d);
   __int64 const four_cycles_64 = _mm_cvtsd_si64(four_cycles_128d);
   quadrant = four_cycles_64 & 0b11;
   __m128d const four_cycles_integer_128d =
