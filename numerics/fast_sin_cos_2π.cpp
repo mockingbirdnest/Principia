@@ -17,7 +17,7 @@ namespace {
 using P2 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
                                      /*degree=*/2,
-                                     /*Evaluator=*/EstrinEvaluator>;
+                                     /*Evaluator=*/HornerEvaluator>;
 
 // 2nd-degree polynomials that minimize the absolute error on sin and cos over
 // the interval [0, 1/8].  The minimization algorithm is run on
@@ -64,7 +64,6 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   double const c =
       1.0 + cos_polynomial.Evaluate(cycles_fractional²) * cycles_fractional²;
 
-  //LOG(ERROR)<<quadrant<<" "<<cycles_fractional;
   switch (quadrant) {
     case 0:
       sin = s;
