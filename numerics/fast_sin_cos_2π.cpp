@@ -37,10 +37,11 @@ P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
 void FastSinCos2π(double cycles, double& sin, double& cos) {
   // Argument reduction.  Since the argument is in cycles, we just drop the
   // integer part.
+  //TODO(phl):comment.
   double cycles_fractional;
   std::int64_t quadrant;  // 0..3
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const cycles_128d = _mm_load1_pd(&cycles);
+  __m128d const cycles_128d = _mm_set_sd(cycles);
   __m128d const two_cycles_128d = _mm_add_sd(cycles_128d, cycles_128d);
   __m128d const four_cycles_128d = _mm_add_sd(two_cycles_128d, two_cycles_128d);
   __int64 const four_cycles_64 = _mm_cvtsd_si64(four_cycles_128d);
@@ -49,7 +50,7 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
       _mm_cvtsi64_sd(four_cycles_128d, four_cycles_64);
   __m128d const four_cycles_fractional_128d =
       _mm_sub_sd(four_cycles_128d, four_cycles_integer_128d);
-  __m128d const one_fourth = _mm_set1_pd(0.25);
+  __m128d const one_fourth = _mm_set_sd(0.25);
   __m128d const cycles_fractional_128d =
       _mm_mul_sd(one_fourth, four_cycles_fractional_128d);
   cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
@@ -57,6 +58,7 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   double const cycles_integer = std::nearbyint(cycles);
   cycles_fractional = cycles - cycles_integer;
 #endif
+  //TODO(phl):debug.
 
   double const cycles_fractional² = cycles_fractional * cycles_fractional;
   double const s =
