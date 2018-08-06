@@ -14,25 +14,23 @@ namespace numerics {
 
 namespace {
 
-using P3 = PolynomialInMonomialBasis</*Value=*/double,
+using P2 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
-                                     /*degree=*/3,
+                                     /*degree=*/2,
                                      /*Evaluator=*/EstrinEvaluator>;
 
-// 3rd-degree polynomials that minimize the absolute error on sin and cos over
-// the interval [0, 1/4].  The minimization algorithm is run on
+// 2nd-degree polynomials that minimize the absolute error on sin and cos over
+// the interval [0, 1/8].  The minimization algorithm is run on
 // Sin(2 π √x)/√x and (Cos(2 π √x) - 1)/x to ensure that the functions have
 // the right behavior near 0 and the proper parity.  Because of extra
-// oscillations, the lower bounds of the minimization intervals are 1/23 and
-// 1/15 respectively.  This is where the maximum error is found.
-P3 sin_polynomial(P3::Coefficients{6.28316404405113818577981340506,
-                                   -41.3371423477858688509416864345,
-                                   81.3407682603799599938651480917,
-                                   -70.9934281315300026308830925659});
-P3 cos_polynomial(P3::Coefficients{-19.7391820689166533085010275514,
-                                   64.9352211775039525420259682190,
-                                   -85.2540004035261113433497714557,
-                                   56.3405940928237075549636782571});
+// oscillations, the lower bounds of the minimization intervals are 1/36 and
+// 1/24 respectively.  This is where the maximum error is found.
+P2 sin_polynomial(P2::Coefficients{6.28315387593158874093559349802,
+                                   -41.3255673715186216778612605095,
+                                   79.5314110676979262924240784281});
+P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
+                                   64.9232282990046449731568966307,
+                                   -83.6659064641344641438100039739});
 
 }  // namespace
 
