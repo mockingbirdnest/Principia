@@ -40,32 +40,51 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   // Argument reduction.  Since the argument is in cycles, we just drop the
   // integer part.
   double cycles_fractional;
+  std::int64_t quadrant;  // 0..3
 #if PRINCIPIA_USE_SSE3_INTRINSICS
   __m128d const cycles_128d = _mm_load1_pd(&cycles);
-  __int64 const cycles_64 = _mm_cvtsd_si64(cycles_128d);
-  __m128d const cycles_integer_128d = _mm_cvtsi64_sd(cycles_128d, cycles_64);
-  __m128d const cycles_fractional_128d = _mm_sub_sd(cycles_128d,
-                                                    cycles_integer_128d);
+  __m128d const two_cycles_128d = _mm_add_sd(cycles_128d, cycles_128d);
+  __m128d const four_cycles_128d = _mm_add_sd(two_cycles_128d, two_cycles_128d);
+  __int64 const four_cycles_64 = _mm_cvtsd_si64(four_cycles_128d);
+  quadrant = four_cycles_64 & 0b11;
+  __m128d const four_cycles_integer_128d =
+      _mm_cvtsi64_sd(four_cycles_128d, four_cycles_64);
+  __m128d const four_cycles_fractional_128d =
+      _mm_sub_sd(four_cycles_128d, four_cycles_integer_128d);
+  __m128d const one_fourth = _mm_set1_pd(0.25);
+  __m128d const cycles_fractional_128d =
+      _mm_mul_sd(one_fourth, four_cycles_fractional_128d);
   cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
 #else
   double const cycles_integer = std::nearbyint(cycles);
   cycles_fractional = cycles - cycles_integer;
 #endif
 
-  double sign = 1.0;
-  if (cycles_fractional > 0.25) {
-    cycles_fractional -= 0.5;
-    sign = -1.0;
-  } else if (cycles_fractional < -0.25) {
-    cycles_fractional += 0.5;
-    sign = -1.0;
-  }
-
   double const cycles_fractional² = cycles_fractional * cycles_fractional;
-  sin = sin_polynomial.Evaluate(cycles_fractional²) *
-        (sign * cycles_fractional);
-  cos = sign + cos_polynomial.Evaluate(cycles_fractional²) *
-               (sign * cycles_fractional²);
+  double const s =
+      sin_polynomial.Evaluate(cycles_fractional²) * cycles_fractional;
+  double const c =
+      1.0 + cos_polynomial.Evaluate(cycles_fractional²) * cycles_fractional²;
+
+  //LOG(ERROR)<<quadrant<<" "<<cycles_fractional;
+  switch (quadrant) {
+    case 0:
+      sin = s;
+      cos = c;
+      break;
+    case 1:
+      sin = c;
+      cos = -s;
+      break;
+    case 2:
+      sin = -s;
+      cos = -c;
+      break;
+    case 3:
+      sin = -c;
+      cos = s;
+      break;
+  }
 }
 
 }  // namespace numerics

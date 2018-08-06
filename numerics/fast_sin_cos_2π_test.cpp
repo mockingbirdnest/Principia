@@ -37,14 +37,14 @@ TEST_F(FastSinCos2πTest, SpecialValues) {
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(1.0, 0));
   FastSinCos2π(0.25, sin, cos);
-  EXPECT_THAT(sin, IsNear(1.0, 1.00001));
-  EXPECT_THAT(cos, VanishesBefore(1.0, 0, 3e8));
+  EXPECT_THAT(sin, AlmostEquals(1.0, 0));
+  EXPECT_THAT(cos, AlmostEquals(0.0, 0));
   FastSinCos2π(0.5, sin, cos);
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(-1.0, 0));
   FastSinCos2π(0.75, sin, cos);
-  EXPECT_THAT(sin, IsNear(-1.0));
-  EXPECT_THAT(cos, VanishesBefore(1.0, 0, 3e8));
+  EXPECT_THAT(sin, AlmostEquals(-1.0, 0));
+  EXPECT_THAT(cos, AlmostEquals(0.0, 0));
   FastSinCos2π(1.0, sin, cos);
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(1.0, 0));
