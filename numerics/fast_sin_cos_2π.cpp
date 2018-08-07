@@ -32,19 +32,24 @@ P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
                                    64.9232282990046449731568966307,
                                    -83.6659064641344641438100039739});
 
-// Convenient overloads of the intrinsic functions.
-// TODO(phl): Move to a central place?
+struct Decomposition {
+  std::int64_t integer_part;
+  double fractional_part;
+};
 
-__m128d _mm_mul_sd(double const left, double const right) {
-  return _mm_mul_sd(_mm_set_sd(left), _mm_set_sd(right));
-}
-
-double _mm_mul_sd(double const left, __m128d const right) {
-  return _mm_cvtsd_f64(_mm_mul_sd(_mm_set_sd(left), right));
-}
-
-__m128d _mm_sub_sd(__m128d const left, std::int64_t const right) {
-  return _mm_sub_sd(left, _mm_cvtsi64_sd(left, right));
+Decomposition Decompose(double const x) {
+  Decomposition decomposition;
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const x_128d = _mm_set_sd(x);
+  decomposition.integer_part = _mm_cvtsd_si64(x_128d);
+  decomposition.fractional_part = _mm_cvtsd_f64(
+      _mm_sub_sd(x_128d,
+                 _mm_cvtsi64_sd(__m128d{}, decomposition.integer_part)));
+#else
+  decomposition.integer_part = std::nearbyint(x);
+  decomposition.fractional_part = x - decomposition.integer_part;
+#endif
+  return decomposition;
 }
 
 }  // namespace
@@ -54,20 +59,9 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   // from 0 to 3, with 0 indicating the principal quadrant and the others
   // numbered in the trigonometric direction.  These quantities are computed by
   // extracting the integer and fractional parts of 4 * cycles.
-  double cycles_reduced;
-  std::int64_t four_cycles_integer;
-#if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const four_cycles = _mm_mul_sd(4.0, cycles);
-  four_cycles_integer = _mm_cvtsd_si64(four_cycles);
-  __m128d const four_cycles_fractional = _mm_sub_sd(four_cycles,
-                                                    four_cycles_integer);
-  cycles_reduced = _mm_mul_sd(0.25, four_cycles_fractional);
-#else
-  double const four_cycles = 4.0 * cycles;
-  four_cycles_integer = std::nearbyint(four_cycles);
-  cycles_reduced = 0.25 * (four_cycles - four_cycles_integer);
-#endif
-  std::int64_t const quadrant = four_cycles_integer & 0b11;
+  Decomposition const decomposition = Decompose(4.0 * cycles);
+  double const cycles_reduced = 0.25 * decomposition.fractional_part;
+  std::int64_t const quadrant = decomposition.integer_part & 0b11;
 
   double const cycles_reduced² = cycles_reduced * cycles_reduced;
   double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
