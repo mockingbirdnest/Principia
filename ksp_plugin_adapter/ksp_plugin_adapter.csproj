@@ -18,7 +18,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Debug\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_4_4</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;KSP_VERSION_1_4_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
@@ -27,7 +27,7 @@
     <DebugType>full</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Release\GameData\Principia\</OutputPath>
-    <DefineConstants>TRACE;KSP_VERSION_1_4_4</DefineConstants>
+    <DefineConstants>TRACE;KSP_VERSION_1_4_5</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DebugSymbols>true</DebugSymbols>
@@ -46,36 +46,36 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release' Or '$(Configuration)' == 'Debug'">
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\KSP Assemblies\1.4.4\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.PhysicsModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.PhysicsModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.PhysicsModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule" Condition="'$(OS)' == 'Unix'">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.TextRenderingModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\KSP Assemblies\1.4.4\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\KSP Assemblies\1.4.5\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
