@@ -32,39 +32,47 @@ P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
                                    64.9232282990046449731568966307,
                                    -83.6659064641344641438100039739});
 
+// Convenient overloads of the intrinsic functions.
+// TODO(phl): Move to a central place?
+
+__m128d _mm_mul_sd(double const left, double const right) {
+  return _mm_mul_sd(_mm_set_sd(left), _mm_set_sd(right));
+}
+
+double _mm_mul_sd(double const left, __m128d const right) {
+  return _mm_cvtsd_f64(_mm_mul_sd(_mm_set_sd(left), right));
+}
+
+__m128d _mm_sub_sd(__m128d const left, std::int64_t const right) {
+  return _mm_sub_sd(left, _mm_cvtsi64_sd(left, right));
+}
+
 }  // namespace
 
 void FastSinCos2π(double cycles, double& sin, double& cos) {
-  // Argument reduction.  Since the argument is in cycles, we just drop the
-  // integer part.
-  //TODO(phl):comment.
-  double cycles_fractional;
-  std::int64_t quadrant;  // 0..3
+  // Argument reduction.  cycles_reduced is in [-1/8, 1/8] and quadrant goes
+  // from 0 to 3, with 0 indicating the principal quadrant and the others
+  // numbered in the trigonometric direction.  These quantities are computed by
+  // extracting the integer and fractional parts of 4 * cycles.
+  double cycles_reduced;
+  std::int64_t four_cycles_integer;
 #if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const cycles_128d = _mm_set_sd(cycles);
-  __m128d const four = _mm_set_sd(4.0);
-  __m128d const four_cycles_128d = _mm_mul_sd(four, cycles_128d);
-  __int64 const four_cycles_64 = _mm_cvtsd_si64(four_cycles_128d);
-  quadrant = four_cycles_64 & 0b11;
-  __m128d const four_cycles_integer_128d =
-      _mm_cvtsi64_sd(four_cycles_128d, four_cycles_64);
-  __m128d const four_cycles_fractional_128d =
-      _mm_sub_sd(four_cycles_128d, four_cycles_integer_128d);
-  __m128d const one_fourth = _mm_set_sd(0.25);
-  __m128d const cycles_fractional_128d =
-      _mm_mul_sd(one_fourth, four_cycles_fractional_128d);
-  cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
+  __m128d const four_cycles = _mm_mul_sd(4.0, cycles);
+  four_cycles_integer = _mm_cvtsd_si64(four_cycles);
+  __m128d const four_cycles_fractional = _mm_sub_sd(four_cycles,
+                                                    four_cycles_integer);
+  cycles_reduced = _mm_mul_sd(0.25, four_cycles_fractional);
 #else
-  double const cycles_integer = std::nearbyint(cycles);
-  cycles_fractional = cycles - cycles_integer;
+  double const four_cycles = 4.0 * cycles;
+  four_cycles_integer = std::nearbyint(four_cycles);
+  cycles_reduced = 0.25 * (four_cycles - four_cycles_integer);
 #endif
-  //TODO(phl):debug.
+  std::int64_t const quadrant = four_cycles_integer & 0b11;
 
-  double const cycles_fractional² = cycles_fractional * cycles_fractional;
-  double const s =
-      sin_polynomial.Evaluate(cycles_fractional²) * cycles_fractional;
-  double const c =
-      1.0 + cos_polynomial.Evaluate(cycles_fractional²) * cycles_fractional²;
+  double const cycles_reduced² = cycles_reduced * cycles_reduced;
+  double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
+  double const c = 1.0 +
+                   cos_polynomial.Evaluate(cycles_reduced²) * cycles_reduced²;
 
   switch (quadrant) {
     case 0:
