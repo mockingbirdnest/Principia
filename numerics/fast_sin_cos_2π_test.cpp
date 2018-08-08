@@ -37,14 +37,14 @@ TEST_F(FastSinCos2πTest, SpecialValues) {
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(1.0, 0));
   FastSinCos2π(0.25, sin, cos);
-  EXPECT_THAT(sin, IsNear(1.0, 1.00001));
-  EXPECT_THAT(cos, VanishesBefore(1.0, 0, 3e8));
+  EXPECT_THAT(sin, AlmostEquals(1.0, 0));
+  EXPECT_THAT(cos, AlmostEquals(0.0, 0));
   FastSinCos2π(0.5, sin, cos);
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(-1.0, 0));
   FastSinCos2π(0.75, sin, cos);
-  EXPECT_THAT(sin, IsNear(-1.0));
-  EXPECT_THAT(cos, VanishesBefore(1.0, 0, 3e8));
+  EXPECT_THAT(sin, AlmostEquals(-1.0, 0));
+  EXPECT_THAT(cos, AlmostEquals(0.0, 0));
   FastSinCos2π(1.0, sin, cos);
   EXPECT_THAT(sin, AlmostEquals(0.0, 0));
   EXPECT_THAT(cos, AlmostEquals(1.0, 0));
@@ -76,10 +76,12 @@ TEST_F(FastSinCos2πTest, Random1) {
     }
   }
   // These numbers come from the Mathematica minimax computation.
-  EXPECT_LT(max_sin_error, 5.90e-7);
-  EXPECT_LT(max_cos_error, 5.28e-8);
-  EXPECT_THAT(max_sin_error_x, IsNear(-1.0 + 1.0 / 23.0));
-  EXPECT_THAT(max_cos_error_x, IsNear(1.0 - 1.0 / 15.0));
+  EXPECT_LT(max_sin_error, 5.61e-7);
+  EXPECT_LT(max_cos_error, 5.61e-7);
+  EXPECT_THAT(std::fmod(std::fabs(max_sin_error_x), 1.0 / 8.0),
+              IsNear(1.0 / 8.0 - 1.0 / 36.0));
+  EXPECT_THAT(std::fmod(std::fabs(max_cos_error_x), 1.0 / 8.0),
+              IsNear(1.0 / 8.0 - 1.0 / 36.0));
 }
 
 // Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.

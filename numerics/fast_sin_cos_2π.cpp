@@ -14,58 +14,78 @@ namespace numerics {
 
 namespace {
 
-using P3 = PolynomialInMonomialBasis</*Value=*/double,
+using P2 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
-                                     /*degree=*/3,
-                                     /*Evaluator=*/EstrinEvaluator>;
+                                     /*degree=*/2,
+                                     /*Evaluator=*/HornerEvaluator>;
 
-// 3rd-degree polynomials that minimize the absolute error on sin and cos over
-// the interval [0, 1/4].  The minimization algorithm is run on
+// 2nd-degree polynomials that minimize the absolute error on sin and cos over
+// the interval [0, 1/8].  The minimization algorithm is run on
 // Sin(2 π √x)/√x and (Cos(2 π √x) - 1)/x to ensure that the functions have
 // the right behavior near 0 and the proper parity.  Because of extra
-// oscillations, the lower bounds of the minimization intervals are 1/23 and
-// 1/15 respectively.  This is where the maximum error is found.
-P3 sin_polynomial(P3::Coefficients{6.28316404405113818577981340506,
-                                   -41.3371423477858688509416864345,
-                                   81.3407682603799599938651480917,
-                                   -70.9934281315300026308830925659});
-P3 cos_polynomial(P3::Coefficients{-19.7391820689166533085010275514,
-                                   64.9352211775039525420259682190,
-                                   -85.2540004035261113433497714557,
-                                   56.3405940928237075549636782571});
+// oscillations, the lower bounds of the minimization intervals are 1/36 and
+// 1/24 respectively.  This is where the maximum error is found.
+P2 sin_polynomial(P2::Coefficients{6.28315387593158874093559349802,
+                                   -41.3255673715186216778612605095,
+                                   79.5314110676979262924240784281});
+P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
+                                   64.9232282990046449731568966307,
+                                   -83.6659064641344641438100039739});
+
+struct Decomposition {
+  std::int64_t integer_part;
+  double fractional_part;
+};
+
+Decomposition Decompose(double const x) {
+  Decomposition decomposition;
+#if PRINCIPIA_USE_SSE3_INTRINSICS
+  __m128d const x_128d = _mm_set_sd(x);
+  decomposition.integer_part = _mm_cvtsd_si64(x_128d);
+  decomposition.fractional_part = _mm_cvtsd_f64(
+      _mm_sub_sd(x_128d,
+                 _mm_cvtsi64_sd(__m128d{}, decomposition.integer_part)));
+#else
+  decomposition.integer_part = std::nearbyint(x);
+  decomposition.fractional_part = x - decomposition.integer_part;
+#endif
+  return decomposition;
+}
 
 }  // namespace
 
 void FastSinCos2π(double cycles, double& sin, double& cos) {
-  // Argument reduction.  Since the argument is in cycles, we just drop the
-  // integer part.
-  double cycles_fractional;
-#if PRINCIPIA_USE_SSE3_INTRINSICS
-  __m128d const cycles_128d = _mm_load1_pd(&cycles);
-  __int64 const cycles_64 = _mm_cvtsd_si64(cycles_128d);
-  __m128d const cycles_integer_128d = _mm_cvtsi64_sd(cycles_128d, cycles_64);
-  __m128d const cycles_fractional_128d = _mm_sub_sd(cycles_128d,
-                                                    cycles_integer_128d);
-  cycles_fractional = _mm_cvtsd_f64(cycles_fractional_128d);
-#else
-  double const cycles_integer = std::nearbyint(cycles);
-  cycles_fractional = cycles - cycles_integer;
-#endif
+  // Argument reduction.  cycles_reduced is in [-1/8, 1/8] and quadrant goes
+  // from 0 to 3, with 0 indicating the principal quadrant and the others
+  // numbered in the trigonometric direction.  These quantities are computed by
+  // extracting the integer and fractional parts of 4 * cycles.
+  Decomposition const decomposition = Decompose(4.0 * cycles);
+  double const cycles_reduced = 0.25 * decomposition.fractional_part;
+  std::int64_t const quadrant = decomposition.integer_part & 0b11;
 
-  double sign = 1.0;
-  if (cycles_fractional > 0.25) {
-    cycles_fractional -= 0.5;
-    sign = -1.0;
-  } else if (cycles_fractional < -0.25) {
-    cycles_fractional += 0.5;
-    sign = -1.0;
+  double const cycles_reduced² = cycles_reduced * cycles_reduced;
+  double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
+  double const c = 1.0 +
+                   cos_polynomial.Evaluate(cycles_reduced²) * cycles_reduced²;
+
+  switch (quadrant) {
+    case 0:
+      sin = s;
+      cos = c;
+      break;
+    case 1:
+      sin = c;
+      cos = -s;
+      break;
+    case 2:
+      sin = -s;
+      cos = -c;
+      break;
+    case 3:
+      sin = -c;
+      cos = s;
+      break;
   }
-
-  double const cycles_fractional² = cycles_fractional * cycles_fractional;
-  sin = sin_polynomial.Evaluate(cycles_fractional²) *
-        (sign * cycles_fractional);
-  cos = sign + cos_polynomial.Evaluate(cycles_fractional²) *
-               (sign * cycles_fractional²);
 }
 
 }  // namespace numerics
