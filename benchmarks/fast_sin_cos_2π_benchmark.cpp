@@ -25,6 +25,17 @@ double MixTrigonometricLines(double cos_2πx, double sin_2πx) {
   __m128d const mixed_bits = _mm_xor_pd(cos_mantissa_bits, sin_all_bits);
   return _mm_cvtsd_f64(mixed_bits);
 }
+static const __m128d mantissa_bits_and_4_bits_of_exponent =
+    _mm_castsi128_pd(_mm_cvtsi64_si128(0x00FF'FFFF'FFFF'FFFF));
+// Same as above, but when iterated, the result is quickly confined to the
+// principal quadrant.
+double PoorlyMixTrigonometricLines(double cos_2πx, double sin_2πx) {
+  __m128d const cos_mantissa_bits =
+      _mm_and_pd(_mm_set_sd(cos_2πx), mantissa_bits_and_4_bits_of_exponent);
+  __m128d const sin_all_bits = _mm_set_sd(sin_2πx);
+  __m128d const mixed_bits = _mm_xor_pd(cos_mantissa_bits, sin_all_bits);
+  return _mm_cvtsd_f64(mixed_bits);
+}
 
 }  // namespace
 
@@ -34,6 +45,16 @@ void BM_FastSinCos2πLatency(benchmark::State& state) {
     double cos = 0.0;
     for (int i = 0; i < 1e3; ++i) {
       FastSinCos2π(MixTrigonometricLines(cos, sin), sin, cos);
+    }
+  }
+}
+
+void BM_FastSinCos2πWellPredictedLatency(benchmark::State& state) {
+  while (state.KeepRunning()) {
+    double sin = π;
+    double cos = 0.0;
+    for (int i = 0; i < 1e3; ++i) {
+      FastSinCos2π(PoorlyMixTrigonometricLines(cos, sin), sin, cos);
     }
   }
 }
@@ -58,6 +79,7 @@ void BM_FastSinCos2πThroughput(benchmark::State& state) {
 }
 
 BENCHMARK(BM_FastSinCos2πLatency);
+BENCHMARK(BM_FastSinCos2πWellPredictedLatency);
 BENCHMARK(BM_FastSinCos2πThroughput);
 
 }  // namespace numerics
