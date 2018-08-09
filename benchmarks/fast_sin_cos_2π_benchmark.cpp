@@ -11,7 +11,24 @@
 namespace principia {
 namespace numerics {
 
-void BM_FastSinCos2π(benchmark::State& state) {
+void BM_FastSinCos2πLatency(benchmark::State& state) {
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> const distribution(-1.0, 1.0);
+  std::vector<double> input;
+  for (int i = 0; i < 1e3; ++i) {
+    input.push_back(distribution(random));
+  }
+
+  while (state.KeepRunning()) {
+    double sin = 0.0;
+    double cos = 0.0;
+    for (double const x : input) {
+      FastSinCos2π(x + sin + cos, sin, cos);
+    }
+  }
+}
+
+void BM_FastSinCos2πThroughput(benchmark::State& state) {
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> const distribution(-1.0, 1.0);
   std::vector<double> input;
@@ -30,7 +47,8 @@ void BM_FastSinCos2π(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_FastSinCos2π);
+BENCHMARK(BM_FastSinCos2πLatency);
+BENCHMARK(BM_FastSinCos2πThroughput);
 
 }  // namespace numerics
 }  // namespace principia
