@@ -17,7 +17,7 @@ namespace {
 using P2 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
                                      /*degree=*/2,
-                                     /*Evaluator=*/HornerEvaluator>;
+                                     /*Evaluator=*/EstrinEvaluator>;
 
 // 2nd-degree polynomials that minimize the absolute error on sin and cos over
 // the interval [0, 1/8].  The minimization algorithm is run on
