@@ -19,6 +19,11 @@ using P2 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*degree=*/2,
                                      /*Evaluator=*/EstrinEvaluator>;
 
+using P3 = PolynomialInMonomialBasis</*Value=*/double,
+                                     /*Argument=*/double,
+                                     /*degree=*/3,
+                                     /*Evaluator=*/EstrinEvaluator>;
+
 // 2nd-degree polynomials that minimize the absolute error on sin and cos over
 // the interval [0, 1/8].  The minimization algorithm is run on
 // Sin(2 π √x)/√x and (Cos(2 π √x) - 1)/x to ensure that the functions have
@@ -28,7 +33,8 @@ using P2 = PolynomialInMonomialBasis</*Value=*/double,
 P2 sin_polynomial(P2::Coefficients{6.28315387593158874093559349802,
                                    -41.3255673715186216778612605095,
                                    79.5314110676979262924240784281});
-P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
+P3 cos_polynomial(P3::Coefficients{1.0,
+                                   -19.7391672615468690589481752820,
                                    64.9232282990046449731568966307,
                                    -83.6659064641344641438100039739});
 
@@ -65,8 +71,7 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
 
   double const cycles_reduced² = cycles_reduced * cycles_reduced;
   double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
-  double const c = 1.0 +
-                   cos_polynomial.Evaluate(cycles_reduced²) * cycles_reduced²;
+  double const c = cos_polynomial.Evaluate(cycles_reduced²);
 
   switch (quadrant) {
     case 0:
