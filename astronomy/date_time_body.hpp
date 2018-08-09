@@ -864,7 +864,6 @@ class JulianDateParser final {
  private:
   constexpr JulianDateParser(std::int64_t digits,
                              int digit_count,
-                             bool has_decimal_mark,
                              int decimal_mark_index);
 
   // Returns a |JulianDateParser| describing the given string. Fails if the
@@ -887,8 +886,6 @@ class JulianDateParser final {
   std::int64_t const digits_;
   // The number of digits.
   int const digit_count_;
-  // Whether the string contains a decimal mark.
-  bool const has_decimal_mark_;
   // The index of the decimal mark.
   int const decimal_mark_index_;
 };
@@ -905,11 +902,9 @@ constexpr JulianDate JulianDateParser::ParseMJD(char const* const str,
 
 constexpr JulianDateParser::JulianDateParser(std::int64_t const digits,
                                              int const digit_count,
-                                             bool const has_decimal_mark,
                                              int const decimal_mark_index)
     : digits_(digits),
       digit_count_(digit_count),
-      has_decimal_mark_(has_decimal_mark),
       decimal_mark_index_(decimal_mark_index) {}
 
 constexpr JulianDateParser JulianDateParser::ReadToEnd(char const* const str,
@@ -930,7 +925,6 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
   if (str.at_end()) {
     return JulianDateParser(digits,
                             digit_count,
-                            has_decimal_mark,
                             decimal_mark_index);
   } else {
     switch (*str) {
@@ -952,7 +946,7 @@ constexpr JulianDateParser JulianDateParser::ReadToEnd(
                          decimal_mark_index);
       default:
         CONSTEXPR_CHECK(false);
-        return JulianDateParser{0, 0, false, 0};
+        return JulianDateParser{0, 0, 0};
     }
   }
 }
