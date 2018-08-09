@@ -6,7 +6,7 @@
 #include <intrin.h>
 #include <pmmintrin.h>
 //#include <Intel/IACA 2.1/iacaMarks.h>
-#define VOLATILE
+#define VOLATILE //volatile
 #define IACA_VC64_START
 #define IACA_VC64_END
 
@@ -75,9 +75,14 @@ void FastSinCos2π(double cycles, double& sin, double& cos) {
   Decomposition const decomposition = Decompose(4.0 * vcycles);
   double const cycles_reduced = decomposition.fractional_part;
   double const cycles_reduced² = cycles_reduced * cycles_reduced;
+  double const cycles_reduced³ = cycles_reduced² * cycles_reduced;
   std::int64_t const quadrant = decomposition.integer_part & 0b11;
 
-  double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
+  double const s =
+      (6.28315387593158874093559349802 / 4) * cycles_reduced +
+      ((-41.3255673715186216778612605095 / (4 * 16)) +
+       (79.5314110676979262924240784281 / (4 * 16 * 16)) * cycles_reduced²) *
+          cycles_reduced³;
   double const c = cos_polynomial.Evaluate(cycles_reduced²);
 
   VOLATILE double const vs = s;
