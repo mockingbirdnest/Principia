@@ -3,12 +3,7 @@
 
 #include "numerics/fast_sin_cos_2π.hpp"
 
-#include <intrin.h>
 #include <pmmintrin.h>
-//#include <Intel/IACA 2.1/iacaMarks.h>
-#define VOLATILE //volatile
-#define IACA_VC64_START
-#define IACA_VC64_END
 
 #include "base/macros.hpp"
 #include "numerics/polynomial.hpp"
@@ -35,13 +30,23 @@ using P3 = PolynomialInMonomialBasis</*Value=*/double,
 // the right behavior near 0 and the proper parity.  Because of extra
 // oscillations, the lower bounds of the minimization intervals are 1/36 and
 // 1/24 respectively.  This is where the maximum error is found.
-P2 sin_polynomial(P2::Coefficients{6.28315387593158874093559349802 / 4,
-                                   -41.3255673715186216778612605095 / (4 * 16),
-                                   79.5314110676979262924240784281 / (4 * 16 * 16)});
-P3 cos_polynomial(P3::Coefficients{1.0,
-                                   -19.7391672615468690589481752820 / 16,
-                                   64.9232282990046449731568966307 / (16 * 16),
-                                   -83.6659064641344641438100039739 / (16 * 16 * 16)});
+// The coefficients are scaled to accept arguments scaled to [0, 1/2].
+
+// The sine polynomial uses a custom Estrin-like evaluation, so the individual
+// coefficients are named.
+// The polynomial for Sin(2 π x/4) is s₁ x + s₃ x³ + s₅ x⁵.
+double const s₁ = 6.28315387593158874093559349802 / 4;
+double const s₃ = -41.3255673715186216778612605095 / (4 * 16);
+double const s₅ = 79.5314110676979262924240784281 / (4 * 16 * 16);
+
+// The cosine polynomial for 16 x² ⟼ (Cos(2 π x) - 1)/(16 x²) is turned into a
+// polynomial for 16 x² ⟼ Cos(2 π x) by multiplying by the argument and adding
+// 1, i.e., prepending 1 to the list of coefficients.
+P3 cos_polynomial(P3::Coefficients{
+    1.0,
+    -19.7391672615468690589481752820 / 16,
+    64.9232282990046449731568966307 / (16 * 16),
+    -83.6659064641344641438100039739 / (16 * 16 * 16)});
 
 struct Decomposition {
   std::int64_t integer_part;
@@ -65,34 +70,29 @@ Decomposition Decompose(double const x) {
 
 }  // namespace
 
-void FastSinCos2π(double cycles, double& sin, double& cos) {
-  VOLATILE double vcycles = cycles;
-  IACA_VC64_START
-  // Argument reduction.  cycles_reduced is in [-1/8, 1/8] and quadrant goes
+void FastSinCos2π(double const cycles, double& sin, double& cos) {
+  // Argument reduction.  cycles_reduced is in [-1/2, 1/2] and quadrant goes
   // from 0 to 3, with 0 indicating the principal quadrant and the others
   // numbered in the trigonometric direction.  These quantities are computed by
   // extracting the integer and fractional parts of 4 * cycles.
-  Decomposition const decomposition = Decompose(4.0 * vcycles);
+  Decomposition const decomposition = Decompose(4.0 * cycles);
+  // TODO(egg): cycles_reduced is no longer an appropriate name.
+  // This now counts a fraction of a right angle/quarter cycle/quadrant.
   double const cycles_reduced = decomposition.fractional_part;
   double const cycles_reduced² = cycles_reduced * cycles_reduced;
   double const cycles_reduced³ = cycles_reduced² * cycles_reduced;
   std::int64_t const quadrant = decomposition.integer_part & 0b11;
 
   double const s =
-      (6.28315387593158874093559349802 / 4) * cycles_reduced +
-      ((-41.3255673715186216778612605095 / (4 * 16)) +
-       (79.5314110676979262924240784281 / (4 * 16 * 16)) * cycles_reduced²) *
-          cycles_reduced³;
+      s₁ * cycles_reduced + (s₃ + s₅ * cycles_reduced²) * cycles_reduced³;
+  // TODO(egg): Considering the above, I'm not sure this is more readable than
+  // just spelling out the Estrin evaluation.
   double const c = cos_polynomial.Evaluate(cycles_reduced²);
 
-  VOLATILE double const vs = s;
-  VOLATILE double const vc = c;
-
-  IACA_VC64_END
   switch (quadrant) {
     case 0:
-      sin = vs;
-      cos = vc;
+      sin = s;
+      cos = c;
       break;
     case 1:
       sin = c;
