@@ -14,11 +14,6 @@ namespace numerics {
 
 namespace {
 
-using P2 = PolynomialInMonomialBasis</*Value=*/double,
-                                     /*Argument=*/double,
-                                     /*degree=*/2,
-                                     /*Evaluator=*/EstrinEvaluator>;
-
 using P3 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
                                      /*degree=*/3,
@@ -30,7 +25,7 @@ using P3 = PolynomialInMonomialBasis</*Value=*/double,
 // the right behavior near 0 and the proper parity.  Because of extra
 // oscillations, the lower bounds of the minimization intervals are 1/36 and
 // 1/24 respectively.  This is where the maximum error is found.
-// The coefficients are scaled to accept arguments scaled to [0, 1/2].
+// The coefficients are scaled to accept arguments expressed in right angles.
 
 // The sine polynomial uses a custom evaluation, so the individual coefficients
 // are named.  The polynomial for Sin(2 π y/4) is s₁ y + s₃ y³ + s₅ y⁵.
@@ -87,8 +82,6 @@ void FastSinCos2π(double const cycles, double& sin, double& cos) {
   // argument, i.e., y * (s₁ + s₃ * y² + s₅ * (y² * y²)), avoids having a
   // multiplication by y at the end.
   double const s = s₁ * y + (s₃ + s₅ * y²) * y³;
-  // TODO(egg): Considering the above, I'm not sure this is more readable than
-  // just spelling out the Estrin evaluation.
   double const c = cos_polynomial.Evaluate(y²);
 
   switch (quadrant) {
