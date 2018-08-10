@@ -54,7 +54,7 @@ TEST_F(FastSinCos2πTest, SpecialValues) {
 // at the expected location.
 TEST_F(FastSinCos2πTest, Random1) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
   double max_sin_error = 0.0;
   double max_cos_error = 0.0;
   double max_sin_error_x = 0.0;
@@ -87,8 +87,8 @@ TEST_F(FastSinCos2πTest, Random1) {
 // Arguments in the range [-1e6, 1e6 + 1] to test argument reduction.
 TEST_F(FastSinCos2πTest, Random1000) {
   std::mt19937_64 random(42);
-  std::uniform_int_distribution<> const integer_distribution(-1e6, 1e6);
-  std::uniform_real_distribution<> const fractional_distribution(0.0, 1.0);
+  std::uniform_int_distribution<> integer_distribution(-1e6, 1e6);
+  std::uniform_real_distribution<> fractional_distribution(0.0, 1.0);
   double max_sin_error = 0.0;
   double max_cos_error = 0.0;
   double max_sin_error_x = 0.0;
@@ -114,7 +114,7 @@ TEST_F(FastSinCos2πTest, Random1000) {
 // Check that the functions are reasonably monotonic.
 TEST_F(FastSinCos2πTest, Monotonicity) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(0.0, 0.25);
+  std::uniform_real_distribution<> distribution(0.0, 0.25);
   double max_sin_error = 0.0;
   double max_cos_error = 0.0;
   double max_sin_error_x = 0.0;
