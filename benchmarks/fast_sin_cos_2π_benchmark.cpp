@@ -17,11 +17,12 @@ namespace {
 // The result is (cos_2πx bitand cos_mask) bitxor sin_2πx.
 // The latency is between 1 and 2 cycles: at worst this is an and and an xor, at
 // best the xor can only be computed given both trigonometric lines.
-double MixTrigonometricLines(double cos_2πx, double sin_2πx, __m128d const cos_mask) {
-  __m128d const cos_mantissa_bits =
-      _mm_and_pd(_mm_set_sd(cos_2πx), cos_mask);
+double MixTrigonometricLines(double cos_2πx,
+                             double sin_2πx,
+                             __m128d const cos_mask) {
+  __m128d const cos_bits = _mm_and_pd(_mm_set_sd(cos_2πx), cos_mask);
   __m128d const sin_all_bits = _mm_set_sd(sin_2πx);
-  __m128d const mixed_bits = _mm_xor_pd(cos_mantissa_bits, sin_all_bits);
+  __m128d const mixed_bits = _mm_xor_pd(cos_bits, sin_all_bits);
   return _mm_cvtsd_f64(mixed_bits);
 }
 
