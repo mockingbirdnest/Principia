@@ -16,10 +16,10 @@ public partial class PrincipiaPluginAdapter
     : ScenarioModule,
       WindowRenderer.ManagerInterface {
 
-  private const String next_release_name_ = "Desargues";
-  private const int next_release_lunation_number_ = 230;
+  private const String next_release_name_ = "Descartes";
+  private const int next_release_lunation_number_ = 231;
   private DateTimeOffset next_release_date_ =
-      new DateTimeOffset(2018, 08, 11, 09, 58, 00, TimeSpan.Zero);
+      new DateTimeOffset(2018, 09, 09, 09, 18, 01, TimeSpan.Zero);
 
   // From https://forum.kerbalspaceprogram.com/index.php?/topic/84273--/,
   // edited 2017-03-09.  Where the name of the layer is not CamelCase, the
