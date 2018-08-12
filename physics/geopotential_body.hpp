@@ -35,13 +35,13 @@ Geopotential<Frame>::Order2ZonalAcceleration(
     Exponentiation<Length, -2> const& one_over_r²,
     Exponentiation<Length, -3> const& one_over_r³) {
   Length const r_axis_projection = InnerProduct(axis, r);
-  auto const j2_over_r_fifth = body_->j2_over_μ() * one_over_r³ * one_over_r²;
+  auto const j2_over_r⁵ = body_->j2_over_μ() * one_over_r³ * one_over_r²;
   Vector<Quotient<Acceleration,
                   GravitationalParameter>, Frame> const axis_effect =
-      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
+      (-3 * j2_over_r⁵ * r_axis_projection) * axis;
   Vector<Quotient<Acceleration,
                   GravitationalParameter>, Frame> const radial_effect =
-      (j2_over_r_fifth *
+      (j2_over_r⁵ *
            (-1.5 +
             7.5 * r_axis_projection * r_axis_projection * one_over_r²)) * r;
   return axis_effect + radial_effect;
