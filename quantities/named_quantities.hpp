@@ -82,6 +82,8 @@ using GravitationalParameter = Quotient<Exponentiation<Length, 3>,
                                         Exponentiation<Time, 2>>;
 using Order2ZonalCoefficient = Quotient<Exponentiation<Length, 5>,
                                         Exponentiation<Time, 2>>;
+using Order3ZonalCoefficient = Quotient<Exponentiation<Length, 7>,
+                                        Exponentiation<Time, 2>>;
 
 // Astrodynamics
 using SpecificImpulse         = Quotient<Momentum, Mass>;
