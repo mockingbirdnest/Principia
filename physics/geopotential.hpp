@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
@@ -21,6 +21,7 @@ using quantities::Length;
 using quantities::Quotient;
 using quantities::Square;
 
+// Representation of the geopotential model of an oblate body.
 template<typename Frame>
 class Geopotential {
  public:
@@ -29,17 +30,30 @@ class Geopotential {
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   SphericalHarmonicsAcceleration(Instant const& t,
                                  Displacement<Frame> const& r,
-                                 Square<Length> const& r�,
-                                 Exponentiation<Length, -3> const& one_over_r�);
+                                 Square<Length> const& r²,
+                                 Exponentiation<Length, -3> const& one_over_r³);
 
  private:
   using UnitVector = Vector<double, Frame>;
 
+  // If j is a unit vector along the axis of rotation, and r a vector from the
+  // center of |body_| to some point in space, the acceleration computed here
+  // is:
+  //
+  //   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
+  //
+  // Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
+  // additional acceleration exerted by the oblateness of |body| on a point at
+  // position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
+  // because the planets are oblate, not prolate.  Note that this follows IERS
+  // Technical Note 36 and it differs from
+  // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
+  // be negative.
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Order2ZonalAcceleration(UnitVector const& axis,
                           Displacement<Frame> const& r,
-                          Exponentiation<Length, -2> const& one_over_r�,
-                          Exponentiation<Length, -3> const& one_over_r�);
+                          Exponentiation<Length, -2> const& one_over_r²,
+                          Exponentiation<Length, -3> const& one_over_r³);
 
   not_null<OblateBody<Frame> const*> const body_;
 };
