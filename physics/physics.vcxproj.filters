@@ -168,7 +168,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="geopotential_body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -231,6 +231,9 @@
     </ClCompile>
     <ClCompile Include="..\numerics\cbrt.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geopotential_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

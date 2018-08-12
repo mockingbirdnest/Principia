@@ -15,28 +15,33 @@ using geometry::Displacement;
 using geometry::Instant;
 using geometry::Vector;
 using quantities::Acceleration;
+using quantities::Exponentiation;
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::Quotient;
+using quantities::Square;
 
 template<typename Frame>
 class Geopotential {
  public:
-  explicit Geopotential(not_null<OblateBody<Frame>* const> body);
+  explicit Geopotential(not_null<OblateBody<Frame> const*> body);
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   SphericalHarmonicsAcceleration(Instant const& t,
-                                 Displacement<Frame> const& r);
+                                 Displacement<Frame> const& r,
+                                 Square<Length> const& r²,
+                                 Exponentiation<Length, -3> const& one_over_r³);
 
  private:
   using UnitVector = Vector<double, Frame>;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order2ZonalAcceleration(UnitVector const& i,
-                          UnitVector const& j,
-                          UnitVector const& k,
-                          Displacement<Frame> const& r);
+  Order2ZonalAcceleration(UnitVector const& axis,
+                          Displacement<Frame> const& r,
+                          Exponentiation<Length, -2> const& one_over_r²,
+                          Exponentiation<Length, -3> const& one_over_r³);
 
-  not_null<OblateBody<Frame>* const> const body_;
+  not_null<OblateBody<Frame> const*> const body_;
 };
 
 }  // namespace internal_geopotential
