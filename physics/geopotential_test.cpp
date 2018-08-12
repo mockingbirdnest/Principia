@@ -1,4 +1,5 @@
-﻿#include "physics/geopotential.hpp"
+﻿
+#include "physics/geopotential.hpp"
 
 #include "gtest/gtest.h"
 #include "geometry/frame.hpp"
