@@ -30,6 +30,8 @@
     <ClInclude Include="discrete_trajectory_body.hpp" />
     <ClInclude Include="dynamic_frame.hpp" />
     <ClInclude Include="dynamic_frame_body.hpp" />
+    <ClInclude Include="geopotential.hpp" />
+    <ClInclude Include="geopotential_body.hpp" />
     <ClInclude Include="hierarchical_system.hpp" />
     <ClInclude Include="hierarchical_system_body.hpp" />
     <ClInclude Include="jacobi_coordinates.hpp" />
