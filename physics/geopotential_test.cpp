@@ -90,7 +90,7 @@ TEST_F(GeopotentialTest, J2) {
                 VanishesBefore(1 * Pow<-2>(Metre), 0));
   }
 
-  // The acceleration at random point nudges the overall force away from the
+  // The acceleration at a random point nudges the overall force away from the
   // centre and towards the equatorial plane.
   {
     auto const acceleration = SphericalHarmonicsAcceleration(
