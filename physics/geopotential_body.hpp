@@ -21,10 +21,16 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
     Instant const& t,
     Displacement<Frame> const& r,
     Square<Length> const& r²,
-    Exponentiation<Length, -3> const& one_over_r³) {
+    Exponentiation<Length, -3> const& one_over_r³) const {
   Exponentiation<Length, -2> const one_over_r² = 1 / r²;
   Vector<double, Frame> const& axis = body_->polar_axis();
-  return Order2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
+      Order2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
+  if (body_->has_j3()) {
+    acceleration +=
+        Order3ZonalAcceleration(axis, r, r², one_over_r², one_over_r³);
+  }
+  return acceleration;
 }
 
 template<typename Frame>
@@ -33,7 +39,7 @@ Geopotential<Frame>::Order2ZonalAcceleration(
     UnitVector const& axis,
     Displacement<Frame> const& r,
     Exponentiation<Length, -2> const& one_over_r²,
-    Exponentiation<Length, -3> const& one_over_r³) {
+    Exponentiation<Length, -3> const& one_over_r³) const {
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r⁵ = body_->j2_over_μ() * one_over_r³ * one_over_r²;
   Vector<Quotient<Acceleration,
@@ -54,7 +60,7 @@ Geopotential<Frame>::Order3ZonalAcceleration(
     Displacement<Frame> const& r,
     Square<Length> const& r²,
     Exponentiation<Length, -2> const& one_over_r²,
-    Exponentiation<Length, -3> const& one_over_r³) {
+    Exponentiation<Length, -3> const& one_over_r³) const {
   // TODO(phl): Factor the projections across accelerations?
   Length const r_axis_projection = InnerProduct(axis, r);
   Square<Length> const r_axis_projection²=

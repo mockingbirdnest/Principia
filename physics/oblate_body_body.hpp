@@ -47,7 +47,7 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           double const j3,
                                           Length const& reference_radius)
     : j2_over_μ_(j2 * reference_radius * reference_radius),
-      j3_over_μ_(j3 * reference_radius * reference_radius) {
+      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   CHECK_NE(0.0, j3) << "Oblate body cannot have zero j3";
 }
@@ -92,7 +92,7 @@ Order3ZonalCoefficient const & OblateBody<Frame>::j3() const {
 template<typename Frame>
 Quotient<Order3ZonalCoefficient, GravitationalParameter> const&
     OblateBody<Frame>::j3_over_μ() const {
-  return *parameters_.j3_over_μ;
+  return *parameters_.j3_over_μ_;
 }
 
 template<typename Frame>

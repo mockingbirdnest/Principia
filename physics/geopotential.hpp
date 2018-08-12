@@ -28,10 +28,11 @@ class Geopotential {
   explicit Geopotential(not_null<OblateBody<Frame> const*> body);
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  SphericalHarmonicsAcceleration(Instant const& t,
-                                 Displacement<Frame> const& r,
-                                 Square<Length> const& r²,
-                                 Exponentiation<Length, -3> const& one_over_r³);
+  SphericalHarmonicsAcceleration(
+      Instant const& t,
+      Displacement<Frame> const& r,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
   using UnitVector = Vector<double, Frame>;
@@ -53,7 +54,7 @@ class Geopotential {
   Order2ZonalAcceleration(UnitVector const& axis,
                           Displacement<Frame> const& r,
                           Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³);
+                          Exponentiation<Length, -3> const& one_over_r³) const;
 
   //TODO(phl):comment
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -61,7 +62,7 @@ class Geopotential {
                           Displacement<Frame> const& r,
                           Square<Length> const& r²,
                           Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³);
+                          Exponentiation<Length, -3> const& one_over_r³) const;
 
   not_null<OblateBody<Frame> const*> const body_;
 };
