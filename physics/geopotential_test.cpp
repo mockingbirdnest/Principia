@@ -1,4 +1,4 @@
-#include "physics/geopotential.hpp"
+ï»¿#include "physics/geopotential.hpp"
 
 #include "gtest/gtest.h"
 #include "geometry/frame.hpp"
@@ -41,9 +41,9 @@ class GeopotentialTest : public ::testing::Test {
   Vector<Quotient<Acceleration, GravitationalParameter>, World>
   SphericalHarmonicsAcceleration(Instant const& t,
                                  Displacement<World> const& r) {
-    auto const r² = r.Norm²();
-    auto const one_over_r³ = 1.0 / (r² * r.Norm());
-    return geopotential_.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
+    auto const rÂ² = r.NormÂ²();
+    auto const one_over_rÂ³ = 1.0 / (rÂ² * r.Norm());
+    return geopotential_.SphericalHarmonicsAcceleration(t, r, rÂ², one_over_rÂ³);
   }
 
   // The axis of rotation is along the z axis for ease of testing.
