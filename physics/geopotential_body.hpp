@@ -47,6 +47,28 @@ Geopotential<Frame>::Order2ZonalAcceleration(
   return axis_effect + radial_effect;
 }
 
+template<typename Frame>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::Order3ZonalAcceleration(
+    UnitVector const& axis,
+    Displacement<Frame> const& r,
+    Square<Length> const& r²,
+    Exponentiation<Length, -2> const& one_over_r²,
+    Exponentiation<Length, -3> const& one_over_r³) {
+  // TODO(phl): Factor the projections across accelerations?
+  Length const r_axis_projection = InnerProduct(axis, r);
+  Square<Length> const r_axis_projection²=
+      r_axis_projection * r_axis_projection;
+  auto const j3_over_r⁷ =
+      body_->j3_over_μ() * one_over_r³ * one_over_r²* one_over_r²;
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      axis_effect = 1.5 * j3_over_r⁷ * (5 * r_axis_projection² - r²) * axis;
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      radial_effect = j3_over_r⁷ * r_axis_projection *
+                      (7.5 - 17.5 * r_axis_projection² * one_over_r²) * r;
+  return axis_effect + radial_effect;
+}
+
 }  // namespace internal_geopotential
 }  // namespace physics
 }  // namespace principia
