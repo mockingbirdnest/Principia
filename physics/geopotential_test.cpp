@@ -6,6 +6,9 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
+#include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -21,6 +24,10 @@ using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
+using testing_utilities::AlmostEquals;
+using testing_utilities::Componentwise;
+using testing_utilities::VanishesBefore;
+using ::testing::An;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
@@ -29,9 +36,10 @@ class GeopotentialTest : public ::testing::Test {
 
   GeopotentialTest() : geopotential_(&body_) {}
 
+  // The axis of rotation is along the z axis for ease of testing.
   AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
-  Angle const right_ascension_of_pole_ = 37 * Degree;
-  Angle const declination_of_pole_ = 123 * Degree;
+  Angle const right_ascension_of_pole_ = 0 * Degree;
+  Angle const declination_of_pole_ = 90 * Degree;
 
   OblateBody<World> const body_ =
       OblateBody<World>(17 * SIUnit<GravitationalParameter>(),
@@ -49,11 +57,32 @@ class GeopotentialTest : public ::testing::Test {
 };
 
 TEST_F(GeopotentialTest, J2) {
-  auto const acceleration1 = geopotential_.SphericalHarmonicsAcceleration(
-      Instant(),
-      Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}),
-      100 * Pow<2>(Metre),
-      1.0e-3 * Pow<-3>(Metre));
+  // The acceleration at a point located on the axis is along the axis.
+  {
+    auto const acceleration = geopotential_.SphericalHarmonicsAcceleration(
+        Instant(),
+        Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}),
+        100 * Pow<2>(Metre),
+        1.0e-3 * Pow<-3>(Metre));
+    EXPECT_THAT(acceleration,
+                Componentwise(VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              An<Exponentiation<Length, -2>>()));
+  }
+
+  // The acceleration at a point located in the equatorial plane is directed to
+  // the centre.
+  {
+    auto const acceleration = geopotential_.SphericalHarmonicsAcceleration(
+        Instant(),
+        Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}),
+        2500 * Pow<2>(Metre),
+        8.0e-6 * Pow<-3>(Metre));
+    EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
+                AlmostEquals(0.75, 1));
+    EXPECT_THAT(acceleration.coordinates().z,
+                VanishesBefore(1 * Pow<-2>(Metre), 0));
+  }
 }
 
 }  // namespace internal_geopotential
