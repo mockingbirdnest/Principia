@@ -117,7 +117,7 @@ TEST_F(GeopotentialTest, J3) {
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters(
                             163 * SIUnit<Order2ZonalCoefficient>(),
-                            51 * SIUnit<Order3ZonalCoefficient>()));
+                            -51 * SIUnit<Order3ZonalCoefficient>()));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis.
@@ -132,8 +132,8 @@ TEST_F(GeopotentialTest, J3) {
                               An<Exponentiation<Length, -2>>()));
   }
 
-  // The acceleration at a point located in the equatorial plane is directed to
-  // the centre.
+  // The acceleration at a point located in the equatorial plane points towards
+  // the north, as it does on Earth (I think).
   {
     auto const acceleration = SphericalHarmonicsAcceleration(
         geopotential,
@@ -142,7 +142,8 @@ TEST_F(GeopotentialTest, J3) {
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
                 AlmostEquals(0.75, 1));
     EXPECT_THAT(acceleration.coordinates().z,
-                VanishesBefore(1 * Pow<-2>(Metre), 0));
+                Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
+    EXPECT_THAT(acceleration.coordinates().z, Gt(0 * Pow<-2>(Metre)));
   }
 }
 
