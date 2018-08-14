@@ -63,7 +63,7 @@ Geopotential<Frame>::Order3ZonalAcceleration(
     Exponentiation<Length, -3> const& one_over_r³) const {
   // TODO(phl): Factor the projections across accelerations?
   Length const r_axis_projection = InnerProduct(axis, r);
-  Square<Length> const r_axis_projection²=
+  Square<Length> const r_axis_projection² =
       r_axis_projection * r_axis_projection;
   auto const j3_over_r⁷ =
       body_->j3_over_μ() * one_over_r³ * one_over_r²* one_over_r²;

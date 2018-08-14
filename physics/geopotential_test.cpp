@@ -63,7 +63,6 @@ class GeopotentialTest : public ::testing::Test {
 
   MassiveBody::Parameters const massive_body_parameters_;
   RotatingBody<World>::Parameters rotating_body_parameters_;
-
 };
 
 TEST_F(GeopotentialTest, J2) {
