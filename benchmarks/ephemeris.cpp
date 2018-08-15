@@ -36,9 +36,7 @@
 
 namespace principia {
 
-using astronomy::Ecliptic;
 using astronomy::ICRS;
-using astronomy::equatorial_to_ecliptic;
 using base::make_not_null_unique;
 using base::not_null;
 using base::ThreadPool;
@@ -69,7 +67,10 @@ using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::bipm::NauticalMile;
+using quantities::si::ArcMinute;
+using quantities::si::ArcSecond;
 using quantities::si::AstronomicalUnit;
+using quantities::si::Degree;
 using quantities::si::Hertz;
 using quantities::si::Kilo;
 using quantities::si::Metre;
