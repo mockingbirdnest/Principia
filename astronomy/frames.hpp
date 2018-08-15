@@ -26,6 +26,7 @@ using quantities::si::Degree;
 // The x axis is close to the dynamical equinox at J2000.
 // The z axis is perpendicular to the xy plane and points to the northern side
 // of the xy plane.
+// To be honest:
 using ICRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::ICRS,
                    /*frame_is_inertial=*/true>;
