@@ -31,7 +31,7 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Ecliptic;
+using astronomy::ICRS;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Multivector;
@@ -141,23 +141,22 @@ void BM_EvaluateR3ElementDouble(benchmark::State& state) {
 void BM_EvaluateVectorDouble(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
-  std::vector<Multivector<double, ICRFJ2000Ecliptic, 1>> coefficients;
+  std::vector<Multivector<double, ICRS, 1>> coefficients;
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back(
-        Multivector<double, ICRFJ2000Ecliptic, 1>(
-            {static_cast<double>(random()),
-             static_cast<double>(random()),
-             static_cast<double>(random())}));
+        Multivector<double, ICRS, 1>({static_cast<double>(random()),
+                                      static_cast<double>(random()),
+                                      static_cast<double>(random())}));
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<Multivector<double, ICRFJ2000Ecliptic, 1>> const series(
+  ЧебышёвSeries<Multivector<double, ICRS, 1>> const series(
       coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;
-  Multivector<double, ICRFJ2000Ecliptic, 1> result{};
+  Multivector<double, ICRS, 1> result{};
 
   while (state.KeepRunning()) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
@@ -176,23 +175,21 @@ void BM_EvaluateVectorDouble(benchmark::State& state) {
 void BM_EvaluateDisplacement(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
-  std::vector<Displacement<ICRFJ2000Ecliptic>> coefficients;
+  std::vector<Displacement<ICRS>> coefficients;
   for (int i = 0; i <= degree; ++i) {
     coefficients.push_back(
-        Displacement<ICRFJ2000Ecliptic>(
-            {static_cast<double>(random()) * Metre,
-             static_cast<double>(random()) * Metre,
-             static_cast<double>(random()) * Metre}));
+        Displacement<ICRS>({static_cast<double>(random()) * Metre,
+                            static_cast<double>(random()) * Metre,
+                            static_cast<double>(random()) * Metre}));
   }
   Instant const t0;
   Instant const t_min = t0 + static_cast<double>(random()) * Second;
   Instant const t_max = t_min + static_cast<double>(random()) * Second;
-  ЧебышёвSeries<Displacement<ICRFJ2000Ecliptic>> const series(
-    coefficients, t_min, t_max);
+  ЧебышёвSeries<Displacement<ICRS>> const series(coefficients, t_min, t_max);
 
   Instant t = t_min;
   Time const Δt = (t_max - t_min) * 1e-9;
-  Displacement<ICRFJ2000Ecliptic> result{};
+  Displacement<ICRS> result{};
 
   while (state.KeepRunning()) {
     for (int i = 0; i < evaluations_per_iteration; ++i) {
