@@ -88,9 +88,9 @@ using ITRS = Frame<serialization::Frame::SolarSystemTag,
 // Intermediate Reference Systems, i.e., the angle between the Terrestrial and
 // Celestial Intermediate Origins, is the Earth Rotation Angle (ERA); the Earth
 // Rotation Angle is an affine function of UT1 defined by equation 5.14 of the
-// IERS conventions (2010).  Note the rate is faster than 2π radians per UT1
-// day, as UT1 is notionally mean solar days, whereas revolutions of the ERA are
-// stellar days.
+// IERS conventions (2010).  Note that the rate is faster than 2π radians per
+// UT1 day, as UT1 is notionally mean solar days, whereas revolutions of the ERA
+// are stellar days.
 
 // The glossary of the Nomenclature for Fundamental Astronomy notes for both
 // that "since the acronym for this system is close to another acronym (namely
