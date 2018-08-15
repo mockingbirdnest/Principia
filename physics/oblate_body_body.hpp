@@ -136,7 +136,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       typename RotatingBody<Frame>::Parameters const&
           rotating_body_parameters) {
   std::unique_ptr<Parameters> parameters;
-  if (message.has_j2()) {
+  if (message.has_j3()) {
     parameters = std::make_unique<Parameters>(
         Order2ZonalCoefficient::ReadFromMessage(message.j2()),
         Order3ZonalCoefficient::ReadFromMessage(message.j3()));
