@@ -27,6 +27,15 @@ using quantities::si::Degree;
 // The z axis is perpendicular to the xy plane and points to the northern side
 // of the xy plane.
 // To be honest:
+// - There are several realizations of the ICRS, namely ICRF (ICRF1) and its
+//   extensions, ICRF2, and the optical Hipparcos Celestial Reference Frame
+//   (HCRF); these realizations have different errors, but are consistent. ICRF3
+//   is in preparation, as well as an optical realization based on Gaia data.
+// - The terms Barycentric Celestial Reference System (BCRS) and ICRS are often
+//   used interchangeably; the relativistic framework, including the metric
+//   tensor, is defined for the BCRS (IAU 2000 resolution B1.3); the orientation
+//   of the BCRS is given by the ICRS axes unless otherwise stated (IAU 2006
+//   resolution B2 recommendation 2).
 using ICRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::ICRS,
                    /*frame_is_inertial=*/true>;
