@@ -120,14 +120,12 @@ class EphemerisTest
       Position<ICRFJ2000Equator>& centre_of_mass,
       Time& period) {
     // Make the bodies non-oblate so that the system can be computed explicitly.
-    serialization::GravityModel::Body earth_gravity_model =
+    solar_system_.RemoveOblateness("Earth");
+    solar_system_.RemoveOblateness("Moon");
+    serialization::GravityModel::Body const earth_gravity_model =
         solar_system_.gravity_model_message("Earth");
-    earth_gravity_model.clear_j2();
-    earth_gravity_model.clear_reference_radius();
-    serialization::GravityModel::Body moon_gravity_model =
+    serialization::GravityModel::Body const moon_gravity_model =
         solar_system_.gravity_model_message("Moon");
-    moon_gravity_model.clear_j2();
-    moon_gravity_model.clear_reference_radius();
 
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
