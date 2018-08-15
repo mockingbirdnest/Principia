@@ -11,7 +11,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_fake_plugin {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using physics::KeplerianElements;
 using physics::SolarSystem;
 
@@ -19,7 +19,7 @@ class FakePlugin : public Plugin {
  public:
   // Creates a test plugin with the bodies of the given |solar_system|.  The
   // system must be the Sol system.
-  explicit FakePlugin(SolarSystem<ICRFJ2000Equator> const& solar_system);
+  explicit FakePlugin(SolarSystem<ICRS> const& solar_system);
 
   // Adds an unloaded vessel with a single part with the given osculating
   // elements around the Earth at |CurrentTime()|.

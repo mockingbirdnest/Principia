@@ -30,9 +30,9 @@ PHYSICS_DLL_TEMPLATE_CLASS
 // For the plugin tests.
 // TODO(egg): ifdef this out for the actual plugin.
 PHYSICS_DLL_TEMPLATE_CLASS
-    internal_rotating_body::RotatingBody<astronomy::ICRFJ2000Equator>;
+    internal_rotating_body::RotatingBody<astronomy::ICRS>;
 PHYSICS_DLL_TEMPLATE_CLASS
-    internal_oblate_body::OblateBody<astronomy::ICRFJ2000Equator>;
+    internal_oblate_body::OblateBody<astronomy::ICRS>;
 #endif  // OS_WIN
 
 }  // namespace physics

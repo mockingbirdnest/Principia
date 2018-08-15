@@ -1,5 +1,5 @@
 initial_state {
-  solar_system_frame : ICRF_J2000_EQUATOR
+  solar_system_frame : ICRS
   # The time of the initial state, as a TDB Julian date.
   # This is 1957-Oct-04 19:28:34.0000 TDB.
   epoch : "JD2436116.311504629"

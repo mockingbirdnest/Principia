@@ -16,7 +16,7 @@ namespace principia {
 namespace physics {
 namespace internal_solar_system {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using base::Fingerprint2011;
 using integrators::SymplecticRungeKuttaNyströmIntegrator;
 using integrators::methods::McLachlanAtela1992Order4Optimal;
@@ -34,7 +34,7 @@ using ::testing::ElementsAreArray;
 class SolarSystemTest : public ::testing::Test {};
 
 TEST_F(SolarSystemTest, RealSolarSystem) {
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
@@ -80,9 +80,9 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
 
   auto const ephemeris = solar_system.MakeEphemeris(
       /*fitting_tolerance=*/1 * Metre,
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+      Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
-                                                Position<ICRFJ2000Equator>>(),
+                                                Position<ICRS>>(),
           /*step=*/1 * Second));
   auto const earth = solar_system.massive_body(*ephemeris, "Earth");
   EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6e-9);
@@ -156,7 +156,7 @@ TEST_F(SolarSystemTest, KSPSystem) {
 }
 
 TEST_F(SolarSystemTest, Clear) {
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<ICRS> solar_system(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");

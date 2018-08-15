@@ -269,7 +269,7 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::SolarSystemTag,
                   serialization::Frame::ICRF_J2000_ECLIPTIC>();
   TestRotatingBody<serialization::Frame::SolarSystemTag,
-                  serialization::Frame::ICRF_J2000_EQUATOR>();
+                  serialization::Frame::ICRS>();
 
   TestRotatingBody<serialization::Frame::TestTag,
                   serialization::Frame::TEST>();

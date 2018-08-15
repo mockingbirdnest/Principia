@@ -32,15 +32,16 @@ using ICRFJ2000Ecliptic =
     Frame<serialization::Frame::SolarSystemTag,
           serialization::Frame::ICRF_J2000_ECLIPTIC, true>;
 
-// The xy plane is the plane of the Earth's mean equator at J2000.0.
-// The x axis is out along the ascending node of the instantaneous plane of the
-// Earth's orbit and the Earth's mean equator at J2000.0.
-// The z axis is along the Earth's mean north pole at J2000.0.
-// The basis is right-handed and orthonormal.
-// Note that |ICRFJ2000Equator| and |ICRFJ2000Ecliptic| share their x axis.
-using ICRFJ2000Equator =
-    Frame<serialization::Frame::SolarSystemTag,
-          serialization::Frame::ICRF_J2000_EQUATOR, true>;
+// The International Celestial Reference System.
+// The origin is the barycentre of the solar system.  The axes are fixed with
+// respect to the quasars.
+// The xy plane is close to the mean equator at J2000.0.
+// The x axis is close to the dynamical equinox at J2000.
+// The z axis is perpendicular to the xy plane and points to the northern side
+// of the xy plane.
+using ICRS = Frame<serialization::Frame::SolarSystemTag,
+                   serialization::Frame::ICRS,
+                   /*frame_is_inertial=*/true>;
 
 // The Geocentric Celestial Reference System.
 // The origin is the centre of mass of the whole Earth system, including oceans
@@ -50,11 +51,12 @@ using ICRFJ2000Equator =
 // - The transformation between BCRS and GCRS spatial coordinates has no
 //   rotational component, i.e., the GCRS is kinematically non-rotating with
 //   respect to the BCRS; as a result, it rotates dynamically with respect to
-//   the BCRS.
+//   the BCRS; in particular, the equations of motion in the GCRS include de
+//   Sitter and Lense–Thirring precession.
 // - The time coordinate of the BCRS is TCB, and the time coordinate of the GCRS
 //   is TCG; TT is a linear scaling of TCG, and TDB is a linear scaling of TDB;
 //   for practical purposes TT and TDB are within 2 ms of each other;
-//   Principia's Instant is TT.
+//   Principia's |Instant| is TT.
 using GCRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::GCRS,
                    /*frame_is_inertial=*/false>;
@@ -140,20 +142,20 @@ using Sky =
 // Rotation around the common x axis mapping equatorial coordinates to ecliptic
 // coordinates.  The angle is the one defined by the XVIth General Assembly of
 // the International Astronomical Union.
-geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic> const
+geometry::Rotation<ICRS, ICRFJ2000Ecliptic> const
     ICRFJ200EquatorialToEcliptic =
-        geometry::Rotation<ICRFJ2000Equator, ICRFJ2000Ecliptic>(
+        geometry::Rotation<ICRS, ICRFJ2000Ecliptic>(
             23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
-            geometry::Bivector<double, ICRFJ2000Equator>({1, 0, 0}),
+            geometry::Bivector<double, ICRS>({1, 0, 0}),
             geometry::DefinesFrame<ICRFJ2000Ecliptic>{});
 
 geometry::Position<ICRFJ2000Ecliptic> const SolarSystemBarycentreEcliptic;
-geometry::Position<ICRFJ2000Equator> const SolarSystemBarycentreEquator;
+geometry::Position<ICRS> const SolarSystemBarycentreEquator;
 
 }  // namespace internal_frames
 
 using internal_frames::ICRFJ2000Ecliptic;
-using internal_frames::ICRFJ2000Equator;
+using internal_frames::ICRS;
 using internal_frames::ICRFJ200EquatorialToEcliptic;
 using internal_frames::SolarSystemBarycentreEcliptic;
 using internal_frames::SolarSystemBarycentreEquator;

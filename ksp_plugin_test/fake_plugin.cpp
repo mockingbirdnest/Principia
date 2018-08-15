@@ -17,7 +17,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::SolarSystemFactory;
 
-FakePlugin::FakePlugin(SolarSystem<ICRFJ2000Equator> const& solar_system)
+FakePlugin::FakePlugin(SolarSystem<ICRS> const& solar_system)
     : Plugin(/*game_epoch=*/solar_system.epoch_literal(),
              /*solar_system_epoch=*/solar_system.epoch_literal(),
              /*planetarium_rotation=*/0 * Radian) {

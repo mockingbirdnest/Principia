@@ -37,7 +37,7 @@
 namespace principia {
 
 using astronomy::ICRFJ2000Ecliptic;
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using astronomy::ICRFJ200EquatorialToEcliptic;
 using base::make_not_null_unique;
 using base::not_null;
@@ -200,8 +200,8 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   while (state.KeepRunning()) {
     state.PauseTiming();
     // A probe near the L4 point of the Sun-Earth system.
-    Identity<ICRFJ2000Equator, Barycentric> to_barycentric;
-    Identity<Barycentric, ICRFJ2000Equator> from_barycentric;
+    Identity<ICRS, Barycentric> to_barycentric;
+    Identity<Barycentric, ICRS> from_barycentric;
     MasslessBody probe;
     DiscreteTrajectory<Barycentric> trajectory;
     DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =

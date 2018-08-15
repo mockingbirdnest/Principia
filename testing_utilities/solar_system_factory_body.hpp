@@ -89,10 +89,10 @@ void SolarSystemFactory::AdjustAccuracy(
   }
 }
 
-inline not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+inline not_null<std::unique_ptr<SolarSystem<ICRS>>>
 SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
   auto solar_system =
-      base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>(
+      base::make_not_null_unique<SolarSystem<ICRS>>(
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
               "sol_initial_state_jd_2436116_311504629.proto.txt");
@@ -100,10 +100,10 @@ SolarSystemFactory::AtСпутник1Launch(Accuracy const accuracy) {
   return solar_system;
 }
 
-inline not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+inline not_null<std::unique_ptr<SolarSystem<ICRS>>>
 SolarSystemFactory::AtСпутник2Launch(Accuracy const accuracy) {
   auto solar_system =
-      base::make_not_null_unique<SolarSystem<ICRFJ2000Equator>>(
+      base::make_not_null_unique<SolarSystem<ICRS>>(
           SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
           SOLUTION_DIR / "astronomy" /
               "sol_initial_state_jd_2436145_604166667.proto.txt");

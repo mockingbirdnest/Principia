@@ -29,9 +29,9 @@ constexpr Length fitting_tolerance = 1 * Milli(Metre);
 }  // namespace
 
 LocalErrorAnalyser::LocalErrorAnalyser(
-    not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system,
+    not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system,
     FixedStepSizeIntegrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator,
+        Ephemeris<ICRS>::NewtonianMotionEquation> const& integrator,
     Time const& step)
     : solar_system_(std::move(solar_system)),
       integrator_(integrator),
@@ -48,21 +48,21 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 void LocalErrorAnalyser::WriteLocalErrors(
     std::filesystem::path const& path,
     FixedStepSizeIntegrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+        Ephemeris<ICRS>::NewtonianMotionEquation> const&
         fine_integrator,
     Time const& fine_step,
     Time const& granularity,
     Time const& duration) const {
   auto const reference_ephemeris = solar_system_->MakeEphemeris(
       fitting_tolerance,
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator_, step_));
+      Ephemeris<ICRS>::FixedStepParameters(integrator_, step_));
   reference_ephemeris->Prolong(solar_system_->epoch());
   std::vector<std::vector<Length>> errors;
   for (Instant t0 = solar_system_->epoch(),
                t = t0 + granularity;
        t < solar_system_->epoch() + duration;
        t0 = t, t += granularity) {
-    std::unique_ptr<Ephemeris<ICRFJ2000Equator>> refined_ephemeris =
+    std::unique_ptr<Ephemeris<ICRS>> refined_ephemeris =
         ForkEphemeris(*reference_ephemeris, t0, fine_integrator, fine_step);
     reference_ephemeris->Prolong(t);
     refined_ephemeris->Prolong(t);
@@ -86,24 +86,23 @@ void LocalErrorAnalyser::WriteLocalErrors(
   file << Assign("errors", ExpressIn(Metre, errors));
 }
 
-not_null<std::unique_ptr<Ephemeris<ICRFJ2000Equator>>>
-LocalErrorAnalyser::ForkEphemeris(
-    Ephemeris<ICRFJ2000Equator> const& original,
+not_null<std::unique_ptr<Ephemeris<ICRS>>> LocalErrorAnalyser::ForkEphemeris(
+    Ephemeris<ICRS> const& original,
     Instant const& t,
-    FixedStepSizeIntegrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator,
+    FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
+        integrator,
     Time const& step) const {
-  std::vector<DegreesOfFreedom<ICRFJ2000Equator>> degrees_of_freedom;
+  std::vector<DegreesOfFreedom<ICRS>> degrees_of_freedom;
   for (not_null<MassiveBody const*> const body : original.bodies()) {
     degrees_of_freedom.emplace_back(
         original.trajectory(body)->EvaluateDegreesOfFreedom(t));
   }
-  return make_not_null_unique<Ephemeris<ICRFJ2000Equator>>(
+  return make_not_null_unique<Ephemeris<ICRS>>(
       solar_system_->MakeAllMassiveBodies(),
       degrees_of_freedom,
       t,
       fitting_tolerance,
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator, step));
+      Ephemeris<ICRS>::FixedStepParameters(integrator, step));
 }
 
 }  // namespace mathematica
