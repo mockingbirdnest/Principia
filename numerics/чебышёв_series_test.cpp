@@ -13,7 +13,7 @@ namespace principia {
 namespace numerics {
 namespace internal_чебышёв_series {
 
-using astronomy::ICRFJ2000Ecliptic;
+using astronomy::ICRS;
 using geometry::Instant;
 using geometry::Vector;
 using quantities::Length;
@@ -112,7 +112,7 @@ TEST_F(ЧебышёвSeriesTest, T2Dimension) {
 }
 
 TEST_F(ЧебышёвSeriesTest, X6Vector) {
-  using V = Vector<Length, ICRFJ2000Ecliptic>;
+  using V = Vector<Length, ICRS>;
   // {T3, X5, X6}
   V const c0 = V({0.0 * Metre, 0.0 * Metre, 10.0 / 32.0 * Metre});
   V const c1 = V({0.0 * Metre, 10.0 / 16.0 * Metre, 0.0 * Metre});
@@ -121,7 +121,7 @@ TEST_F(ЧебышёвSeriesTest, X6Vector) {
   V const c4 = V({0.0 * Metre, 0.0 * Metre, 6.0 / 32.0 * Metre});
   V const c5 = V({0.0 * Metre, 1.0 / 16.0 * Metre, 0 * Metre});
   V const c6 = V({0.0 * Metre, 0.0 * Metre, 1.0 / 32.0 * Metre});
-  ЧебышёвSeries<Vector<Length, ICRFJ2000Ecliptic>> x6(
+  ЧебышёвSeries<Vector<Length, ICRS>> x6(
       {c0, c1, c2, c3, c4, c5, c6},
       t_min_, t_max_);
   EXPECT_EQ(V({-1 * Metre, -1 * Metre, 1 * Metre}),

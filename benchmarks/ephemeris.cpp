@@ -36,12 +36,14 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Ecliptic;
+using astronomy::Ecliptic;
 using astronomy::ICRS;
-using astronomy::ICRFJ200EquatorialToEcliptic;
+using astronomy::equatorial_to_ecliptic;
 using base::make_not_null_unique;
 using base::not_null;
 using base::ThreadPool;
+using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Identity;
 using geometry::Instant;
@@ -210,29 +212,40 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
     DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Earth));
-    Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
-        ICRFJ200EquatorialToEcliptic(
-            from_barycentric(earth_degrees_of_freedom.position() -
-                             sun_degrees_of_freedom.position()));
-    Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
+
+    // The BCRS, but with non-ICRS axes; the x axis is the ICRS x axis, the xy
+    // plane is the ecliptic realized by the obliquity given by the IAU in 1976
+    // (16th general assembly, resolution 10, commission 4, recommendation 1),
+    // identifying the ICRS xy plane with the mean equator of J2000.0.
+    struct Ecliptic;
+
+    Rotation<ICRS, Ecliptic> const equatorial_to_ecliptic(
+        23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
+        Bivector<double, ICRS>({1, 0, 0}),
+        DefinesFrame<Ecliptic>{});
+    auto const ecliptic_to_equatorial = equatorial_to_ecliptic.Inverse();
+
+        Displacement<Ecliptic> const sun_earth_displacement =
+            equatorial_to_ecliptic(
+                from_barycentric(earth_degrees_of_freedom.position() -
+                                 sun_degrees_of_freedom.position()));
+    Rotation<Ecliptic, Ecliptic> const l4_rotation(
         Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
-    Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
+    Displacement<Ecliptic> const sun_l4_displacement =
         l4_rotation(sun_earth_displacement);
-    Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
-        ICRFJ200EquatorialToEcliptic(
-            from_barycentric(earth_degrees_of_freedom.velocity() -
-                             sun_degrees_of_freedom.velocity()));
-    Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
-        l4_rotation(sun_earth_velocity);
+    Velocity<Ecliptic> const sun_earth_velocity = equatorial_to_ecliptic(
+        from_barycentric(earth_degrees_of_freedom.velocity() -
+                         sun_degrees_of_freedom.velocity()));
+    Velocity<Ecliptic> const sun_l4_velocity = l4_rotation(sun_earth_velocity);
     trajectory.Append(at_спутник_1_launch->epoch(),
                       DegreesOfFreedom<Barycentric>(
                           sun_degrees_of_freedom.position() +
                               to_barycentric(
-                                  ICRFJ200EquatorialToEcliptic.Inverse()(
+                                  ecliptic_to_equatorial(
                                       sun_l4_displacement)),
                           sun_degrees_of_freedom.velocity() +
                               to_barycentric(
-                                  ICRFJ200EquatorialToEcliptic.Inverse()(
+                                  ecliptic_to_equatorial(
                                       sun_l4_velocity))));
 
     state.ResumeTiming();
