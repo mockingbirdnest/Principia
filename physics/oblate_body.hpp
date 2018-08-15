@@ -23,6 +23,7 @@ using geometry::Vector;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Order2ZonalCoefficient;
+using quantities::Order3ZonalCoefficient;
 using quantities::Quotient;
 
 template<typename Frame>
@@ -36,10 +37,19 @@ class OblateBody : public RotatingBody<Frame> {
     Parameters(double const j2,
                Length const& reference_radius);
 
+    Parameters(Order2ZonalCoefficient const& j2,
+               Order3ZonalCoefficient const& j3);
+    Parameters(double const j2,
+               double const j3,
+               Length const& reference_radius);
+
    private:
     std::optional<Order2ZonalCoefficient> j2_;
     std::optional<
         Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
+    std::optional<Order3ZonalCoefficient> j3_;
+    std::optional<
+        Quotient<Order3ZonalCoefficient, GravitationalParameter>> j3_over_μ_;
     template<typename F>
     friend class OblateBody;
   };
@@ -55,6 +65,16 @@ class OblateBody : public RotatingBody<Frame> {
   // Returns |j2 / μ|.
   Quotient<Order2ZonalCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
+
+  // Returns the j3 coefficient.  |has_j3| must be true.
+  Order3ZonalCoefficient const& j3() const;
+
+  // Returns |j3 / μ|.  |has_j3| must be true.
+  Quotient<Order3ZonalCoefficient,
+           GravitationalParameter> const& j3_over_μ() const;
+
+  // Whether this body has a j3.
+  bool has_j3() const;
 
   // Returns false.
   bool is_massless() const override;

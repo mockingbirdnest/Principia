@@ -95,6 +95,7 @@ gravity_model {
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
     j2                      : 0.00108262545
+    j3                      : -0.00000253241
     reference_radius        : "6378.1363 km"
   }
   body {
