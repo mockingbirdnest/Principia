@@ -284,9 +284,9 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
   auto const earth = SolarSystem<ICRS>::MakeMassiveBody(
-                         solar_system.gravity_model_message("Earth"));
+      solar_system.gravity_model_message("Earth"));
   auto const moon = SolarSystem<ICRS>::MakeMassiveBody(
-                        solar_system.gravity_model_message("Moon"));
+      solar_system.gravity_model_message("Moon"));
   // The numbers in the gravity models and those from the query above both come
   // from DE431, so the sums are the same up to round-off.
   EXPECT_THAT(
@@ -311,8 +311,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   partial_elements.apoapsis_distance.reset();
   partial_elements.true_anomaly.reset();
   {
-    KeplerOrbit<ICRS> moon_orbit(
-        *earth, *moon, partial_elements, date);
+    KeplerOrbit<ICRS> moon_orbit(*earth, *moon, partial_elements, date);
     EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 15));
     EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
@@ -324,8 +323,7 @@ TEST_F(KeplerOrbitTest, EarthMoon) {
   partial_elements.semimajor_axis.reset();
   partial_elements.periapsis_distance = MoonElements().periapsis_distance;
   {
-    KeplerOrbit<ICRS> moon_orbit(
-        *earth, *moon, partial_elements, date);
+    KeplerOrbit<ICRS> moon_orbit(*earth, *moon, partial_elements, date);
     EXPECT_THAT(moon_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 13, 15));
     EXPECT_THAT(moon_orbit.StateVectors(date).velocity(),
@@ -364,7 +362,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
   auto const sun = SolarSystem<ICRS>::MakeMassiveBody(
-                         solar_system.gravity_model_message("Sun"));
+      solar_system.gravity_model_message("Sun"));
   MasslessBody const voyager1{};
   constexpr Instant date = "2017-05-25T19:44:00,000"_TT;
 
@@ -382,8 +380,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
   partial_elements.periapsis_distance.reset();
   partial_elements.true_anomaly.reset();
   {
-    KeplerOrbit<ICRS> voyager_orbit(
-        *sun, voyager1, partial_elements, date);
+    KeplerOrbit<ICRS> voyager_orbit(*sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 37, 49));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
@@ -395,8 +392,7 @@ TEST_F(KeplerOrbitTest, Voyager1) {
   partial_elements.semimajor_axis.reset();
   partial_elements.periapsis_distance = VoyagerElements().periapsis_distance;
   {
-    KeplerOrbit<ICRS> voyager_orbit(
-        *sun, voyager1, partial_elements, date);
+    KeplerOrbit<ICRS> voyager_orbit(*sun, voyager1, partial_elements, date);
     EXPECT_THAT(voyager_orbit.StateVectors(date).displacement(),
                 AlmostEquals(expected_displacement, 31, 44));
     EXPECT_THAT(voyager_orbit.StateVectors(date).velocity(),
@@ -431,9 +427,8 @@ TEST_F(KeplerOrbitTest, TrueAnomalyToEllipticMeanAnomaly) {
   elements.periapsis_distance = SimpleEllipse().periapsis_distance;
   elements.argument_of_periapsis.emplace();
   elements.true_anomaly = SimpleEllipse().true_anomaly;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.true_anomaly, Eq(*SimpleEllipse().true_anomaly));
   EXPECT_THAT(*elements.mean_anomaly,
               AlmostEquals(*SimpleEllipse().mean_anomaly, 0));
@@ -447,9 +442,8 @@ TEST_F(KeplerOrbitTest, TrueAnomalyToHyperbolicMeanAnomaly) {
   elements.periapsis_distance = SimpleHyperbola().periapsis_distance;
   elements.argument_of_periapsis.emplace();
   elements.true_anomaly = SimpleHyperbola().true_anomaly;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.true_anomaly, Eq(*SimpleHyperbola().true_anomaly));
   EXPECT_THAT(*elements.mean_anomaly,
               AlmostEquals(*SimpleHyperbola().mean_anomaly, 0));
@@ -463,9 +457,8 @@ TEST_F(KeplerOrbitTest, EllipticMeanAnomalyToTrueAnomaly) {
   elements.periapsis_distance = SimpleEllipse().periapsis_distance;
   elements.argument_of_periapsis.emplace();
   elements.mean_anomaly = SimpleEllipse().mean_anomaly;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.mean_anomaly, Eq(*SimpleEllipse().mean_anomaly));
   EXPECT_THAT(*elements.true_anomaly,
               AlmostEquals(*SimpleEllipse().true_anomaly, 1));
@@ -479,9 +472,8 @@ TEST_F(KeplerOrbitTest, HyperbolicMeanAnomalyToTrueAnomaly) {
   elements.periapsis_distance = SimpleHyperbola().periapsis_distance;
   elements.argument_of_periapsis.emplace();
   elements.hyperbolic_mean_anomaly = SimpleHyperbola().hyperbolic_mean_anomaly;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.hyperbolic_mean_anomaly,
               Eq(*SimpleHyperbola().hyperbolic_mean_anomaly));
   EXPECT_THAT(*elements.true_anomaly,
@@ -499,9 +491,8 @@ TEST_F(KeplerOrbitTest, OrientationFromLongitudeOfPeriapsis) {
   elements.longitude_of_ascending_node =
       SimpleEllipse().longitude_of_ascending_node;
   elements.longitude_of_periapsis = SimpleEllipse().longitude_of_periapsis;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.longitude_of_periapsis,
               Eq(*SimpleEllipse().longitude_of_periapsis));
   EXPECT_THAT(*elements.argument_of_periapsis,
@@ -517,9 +508,8 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
   elements.longitude_of_ascending_node =
       SimpleEllipse().longitude_of_ascending_node;
   elements.argument_of_periapsis = SimpleEllipse().argument_of_periapsis;
-  elements =
-      KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
-          .elements_at_epoch();
+  elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)
+                 .elements_at_epoch();
   EXPECT_THAT(*elements.argument_of_periapsis,
               Eq(*SimpleEllipse().argument_of_periapsis));
   EXPECT_THAT(*elements.longitude_of_periapsis,
@@ -527,18 +517,17 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
 }
 
 #define CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(element1, element2, reference)       \
-  \
-[&]() {                                                                        \
-    KeplerianElements<ICRS> elements;                              \
+                                                                               \
+  [&]() {                                                                      \
+    KeplerianElements<ICRS> elements;                                          \
     elements.element1 = (reference).element1;                                  \
     elements.element2 = (reference).element2;                                  \
     /* Leaving the orientation parameters and anomalies to their default    */ \
     /* values.  This test does not exercise them.                           */ \
     elements.argument_of_periapsis.emplace();                                  \
     elements.mean_anomaly.emplace();                                           \
-    elements =                                                                 \
-        KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)  \
-            .elements_at_epoch();                                              \
+    elements = KeplerOrbit<ICRS>(body_, MasslessBody{}, elements, J2000)       \
+                   .elements_at_epoch();                                       \
     /* The inputs must not change.                                          */ \
     EXPECT_THAT(*elements.element1, Eq(*(reference).element1));                \
     EXPECT_THAT(*elements.element2, Eq(*(reference).element2));                \
@@ -551,9 +540,8 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
 // Test all choices of two categories of conic parameters.
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemimajorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semimajor_axis, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semimajor_axis, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -575,9 +563,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemimajorAxis) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemiminorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semiminor_axis, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semiminor_axis, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -599,9 +586,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemiminorAxis) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semilatus_rectum, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semilatus_rectum, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -623,9 +609,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, periapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, periapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -647,9 +632,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, apoapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, apoapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -671,9 +655,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndSemiminorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, semiminor_axis, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, semiminor_axis, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -695,9 +678,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndSemiminorAxis) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, semilatus_rectum, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, semilatus_rectum, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -719,9 +701,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, periapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, periapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -743,9 +724,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, apoapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, apoapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -767,9 +747,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemimajorAxisAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, semilatus_rectum, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semiminor_axis, semilatus_rectum, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -791,9 +770,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, periapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semiminor_axis, periapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/2,
@@ -815,9 +793,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semiminor_axis, apoapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semiminor_axis, apoapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/1,
@@ -839,9 +816,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemiminorAxisAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemilatusRectumAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semilatus_rectum, periapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semilatus_rectum, periapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -863,9 +839,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemilatusRectumAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromSemilatusRectumAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semilatus_rectum, apoapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semilatus_rectum, apoapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -887,9 +862,8 @@ TEST_F(KeplerOrbitTest, EllipseFromSemilatusRectumAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromPeriapsisDistanceAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          periapsis_distance, apoapsis_distance, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      periapsis_distance, apoapsis_distance, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -914,9 +888,8 @@ TEST_F(KeplerOrbitTest, EllipseFromPeriapsisDistanceAndApoapsisDistance) {
 // is already tested above).
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSpecificEnergy) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, specific_energy, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, specific_energy, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -938,9 +911,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSpecificEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndCharacteristicEnergy) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, characteristic_energy, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, characteristic_energy, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -962,9 +934,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndCharacteristicEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndMeanMotion) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, mean_motion, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, mean_motion, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1012,9 +983,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndPeriod) {
 // itself is already tested above).
 
 TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSpecificAngularMomentum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, specific_angular_momentum, SimpleEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, specific_angular_momentum, SimpleEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1040,9 +1010,8 @@ TEST_F(KeplerOrbitTest, EllipseFromEccentricityAndSpecificAngularMomentum) {
 // Test all choices of two categories of conic parameters.
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemimajorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semimajor_axis, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semimajor_axis, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1064,9 +1033,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemimajorAxis) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndImpactParameter) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, impact_parameter, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, impact_parameter, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1088,9 +1056,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndImpactParameter) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semilatus_rectum, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semilatus_rectum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1112,9 +1079,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1136,9 +1102,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, apoapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1160,9 +1125,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndImpactParameter) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, impact_parameter, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, impact_parameter, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1184,9 +1148,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndImpactParameter) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, semilatus_rectum, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, semilatus_rectum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1208,9 +1171,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1232,9 +1194,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semimajor_axis, apoapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semimajor_axis, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1256,9 +1217,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemimajorAxisAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          impact_parameter, semilatus_rectum, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      impact_parameter, semilatus_rectum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1280,9 +1240,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndSemilatusRectum) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          impact_parameter, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      impact_parameter, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1304,9 +1263,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          impact_parameter, apoapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      impact_parameter, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1328,9 +1286,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromImpactParameterAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semilatus_rectum, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semilatus_rectum, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1352,9 +1309,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndPeriapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          semilatus_rectum, apoapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      semilatus_rectum, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1376,9 +1332,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromSemilatusRectumAndApoapsisDistance) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromPeriapsisDistanceAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          periapsis_distance, apoapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      periapsis_distance, apoapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1404,9 +1359,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromPeriapsisDistanceAndApoapsisDistance) {
 
 TEST_F(KeplerOrbitTest,
        HyperbolaFromAsymptoticTrueAnomalyAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          asymptotic_true_anomaly, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      asymptotic_true_anomaly, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/1,
@@ -1428,9 +1382,8 @@ TEST_F(KeplerOrbitTest,
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromTurningAngleAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          turning_angle, periapsis_distance, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      turning_angle, periapsis_distance, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1455,9 +1408,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromTurningAngleAndPeriapsisDistance) {
 // is already tested above).
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificEnergy) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, specific_energy, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, specific_energy, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1479,9 +1431,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndCharacteristicEnergy) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, characteristic_energy, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, characteristic_energy, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1503,9 +1454,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndCharacteristicEnergy) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, hyperbolic_mean_motion, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, hyperbolic_mean_motion, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1527,9 +1477,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicMeanMotion) {
 }
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, hyperbolic_excess_velocity, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, hyperbolic_excess_velocity, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1554,9 +1503,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndHyperbolicExcessVelocity) {
 // itself is already tested above).
 
 TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificAngularMomentum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, specific_angular_momentum, SimpleHyperbola());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, specific_angular_momentum, SimpleHyperbola());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/SimpleHyperbola(),
                                    /*eccentrity_ulps=*/0,
@@ -1581,9 +1529,8 @@ TEST_F(KeplerOrbitTest, HyperbolaFromEccentricityAndSpecificAngularMomentum) {
 
 TEST_F(KeplerOrbitTest,
        NearlyParabolicEllipseFromEccentricityAndSemimajorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semimajor_axis, NearlyParabolicEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semimajor_axis, NearlyParabolicEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/NearlyParabolicEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1606,9 +1553,8 @@ TEST_F(KeplerOrbitTest,
 
 TEST_F(KeplerOrbitTest,
        NearlyParabolicEllipseFromEccentricityAndSemiminorAxis) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semiminor_axis, NearlyParabolicEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semiminor_axis, NearlyParabolicEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/NearlyParabolicEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1631,9 +1577,8 @@ TEST_F(KeplerOrbitTest,
 
 TEST_F(KeplerOrbitTest,
        NearlyParabolicEllipseFromEccentricityAndSemilatusRectum) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, semilatus_rectum, NearlyParabolicEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, semilatus_rectum, NearlyParabolicEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/NearlyParabolicEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1656,9 +1601,8 @@ TEST_F(KeplerOrbitTest,
 
 TEST_F(KeplerOrbitTest,
        NearlyParabolicEllipseFromEccentricityAndPeriapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, periapsis_distance, NearlyParabolicEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, periapsis_distance, NearlyParabolicEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/NearlyParabolicEllipse(),
                                    /*eccentrity_ulps=*/0,
@@ -1681,9 +1625,8 @@ TEST_F(KeplerOrbitTest,
 
 TEST_F(KeplerOrbitTest,
        NearlyParabolicEllipseFromEccentricityAndApoapsisDistance) {
-  KeplerianElements<ICRS> const elements =
-      CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
-          eccentricity, apoapsis_distance, NearlyParabolicEllipse());
+  KeplerianElements<ICRS> const elements = CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(
+      eccentricity, apoapsis_distance, NearlyParabolicEllipse());
   ExpectConicParametersAlmostEqual(/*actual=*/elements,
                                    /*expected=*/NearlyParabolicEllipse(),
                                    /*eccentrity_ulps=*/0,

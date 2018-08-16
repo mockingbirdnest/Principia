@@ -90,15 +90,12 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_frame_ = std::make_unique<
-                     BodyCentredNonRotatingDynamicFrame<ICRS, Big>>(
-                         ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, big));
-    small_frame_ = std::make_unique<
-                     BodyCentredNonRotatingDynamicFrame<ICRS,
-                                                        Small>>(
-                         ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, small));
+    big_frame_ =
+        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Big>>(
+            ephemeris_.get(), solar_system_.massive_body(*ephemeris_, big));
+    small_frame_ =
+        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Small>>(
+            ephemeris_.get(), solar_system_.massive_body(*ephemeris_, small));
   }
 
   Time const period_;
@@ -109,10 +106,8 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
   GravitationalParameter const big_gravitational_parameter_;
   DegreesOfFreedom<ICRS> const small_initial_state_;
   GravitationalParameter const small_gravitational_parameter_;
-  std::unique_ptr<
-      BodyCentredNonRotatingDynamicFrame<ICRS, Big>> big_frame_;
-  std::unique_ptr<
-      BodyCentredNonRotatingDynamicFrame<ICRS, Small>> small_frame_;
+  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Big>> big_frame_;
+  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Small>> small_frame_;
 };
 
 
@@ -129,10 +124,8 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
         solar_system_.trajectory(*ephemeris_, small).
             EvaluateDegreesOfFreedom(t);
 
-    auto const rotation_in_big_frame_at_t =
-        Rotation<ICRS, Big>(2 * π * (t - t0_) * Radian / period_,
-                                        axis,
-                                        DefinesFrame<Big>{});
+    auto const rotation_in_big_frame_at_t = Rotation<ICRS, Big>(
+        2 * π * (t - t0_) * Radian / period_, axis, DefinesFrame<Big>{});
     DegreesOfFreedom<Big> const small_in_big_frame_at_t(
         rotation_in_big_frame_at_t(initial_big_to_small.displacement()) +
             Big::origin,
@@ -208,8 +201,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
   EXPECT_EQ(1, extension.centre());
 
   auto const read_small_frame =
-      DynamicFrame<ICRS, Small>::ReadFromMessage(
-          message, ephemeris_.get());
+      DynamicFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

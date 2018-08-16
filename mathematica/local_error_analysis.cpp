@@ -30,8 +30,8 @@ constexpr Length fitting_tolerance = 1 * Milli(Metre);
 
 LocalErrorAnalyser::LocalErrorAnalyser(
     not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system,
-    FixedStepSizeIntegrator<
-        Ephemeris<ICRS>::NewtonianMotionEquation> const& integrator,
+    FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
+        integrator,
     Time const& step)
     : solar_system_(std::move(solar_system)),
       integrator_(integrator),
@@ -47,8 +47,7 @@ LocalErrorAnalyser::LocalErrorAnalyser(
 
 void LocalErrorAnalyser::WriteLocalErrors(
     std::filesystem::path const& path,
-    FixedStepSizeIntegrator<
-        Ephemeris<ICRS>::NewtonianMotionEquation> const&
+    FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
         fine_integrator,
     Time const& fine_step,
     Time const& granularity,

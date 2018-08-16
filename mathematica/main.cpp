@@ -95,9 +95,9 @@ int main(int argc, char const* argv[]) {
         std::filesystem::path(*flags["initial_state"]);
     auto solar_system = make_not_null_unique<SolarSystem<ICRS>>(
         gravity_model_path, initial_state_path, /*ignore_frame=*/true);
-    auto const& integrator = ParseFixedStepSizeIntegrator<
-        Ephemeris<ICRS>::NewtonianMotionEquation>(
-        *flags["integrator"]);
+    auto const& integrator =
+        ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
+            *flags["integrator"]);
     auto const time_step = ParseQuantity<Time>(*flags["time_step"]);
     auto const out =
         std::filesystem::path(
@@ -108,8 +108,7 @@ int main(int argc, char const* argv[]) {
     LocalErrorAnalyser analyser(std::move(solar_system), integrator, time_step);
     analyser.WriteLocalErrors(
         out,
-        ParseFixedStepSizeIntegrator<
-            Ephemeris<ICRS>::NewtonianMotionEquation>(
+        ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
             flags["fine_integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
         ParseQuantity<Time>(flags["fine_step"].value_or("1 min")),
         ParseQuantity<Time>(flags["granularity"].value_or("1 d")),

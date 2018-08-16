@@ -65,13 +65,12 @@ void BM_NewhallApproximationDouble(benchmark::State& state) {
 }
 
 template<typename Result,
-         Result (*newhall)(
-             int degree,
-             std::vector<Displacement<ICRS>> const& q,
-             std::vector<Variation<Displacement<ICRS>>> const& v,
-             Instant const& t_min,
-             Instant const& t_max,
-             Displacement<ICRS>& error_estimate)>
+         Result (*newhall)(int degree,
+                           std::vector<Displacement<ICRS>> const& q,
+                           std::vector<Variation<Displacement<ICRS>>> const& v,
+                           Instant const& t_min,
+                           Instant const& t_max,
+                           Displacement<ICRS>& error_estimate)>
 void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   int const degree = state.range_x();
   std::mt19937_64 random(42);
@@ -87,10 +86,9 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
     p.clear();
     v.clear();
     for (int i = 0; i <= 8; ++i) {
-      p.push_back(Displacement<ICRS>(
-          {static_cast<double>(random()) * Metre,
-           static_cast<double>(random()) * Metre,
-           static_cast<double>(random()) * Metre}));
+      p.push_back(Displacement<ICRS>({static_cast<double>(random()) * Metre,
+                                      static_cast<double>(random()) * Metre,
+                                      static_cast<double>(random()) * Metre}));
       v.push_back(Variation<Displacement<ICRS>>(
           {static_cast<double>(random()) * Metre / Second,
            static_cast<double>(random()) * Metre / Second,
@@ -101,14 +99,12 @@ void BM_NewhallApproximationDisplacement(benchmark::State& state) {
   }
 }
 
-using ResultЧебышёвDouble =
-    ЧебышёвSeries<double>;
-using ResultЧебышёвDisplacement =
-    ЧебышёвSeries<Displacement<ICRS>>;
+using ResultЧебышёвDouble = ЧебышёвSeries<double>;
+using ResultЧебышёвDisplacement = ЧебышёвSeries<Displacement<ICRS>>;
 using ResultMonomialDouble =
     not_null<std::unique_ptr<Polynomial<double, Instant>>>;
-using ResultMonomialDisplacement = not_null<
-    std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
+using ResultMonomialDisplacement =
+    not_null<std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
 
 BENCHMARK_TEMPLATE2(
     BM_NewhallApproximationDouble,

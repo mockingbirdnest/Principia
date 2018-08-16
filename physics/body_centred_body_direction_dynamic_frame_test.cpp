@@ -102,9 +102,9 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
     EXPECT_CALL(mock_ephemeris_,
                 trajectory(solar_system_.massive_body(*ephemeris_, small)))
         .WillOnce(Return(&mock_small_trajectory_));
-    mock_frame_ = std::make_unique<
-        BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>(
-        &mock_ephemeris_, big_, small_);
+    mock_frame_ =
+        std::make_unique<BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>(
+            &mock_ephemeris_, big_, small_);
 
     ephemeris_->Prolong(t0_ + 2 * period_);
     big_small_frame_ = std::make_unique<
@@ -206,12 +206,10 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
       {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
            ICRS::origin,
        Velocity<ICRS>()};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({40 * Metre / Second,
-                                   -30 * Metre / Second,
-                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof = {
+      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -221,20 +219,20 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CoriolisAcceleration) {
       .WillRepeatedly(Return(small_dof));
   {
     InSequence s;
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(big_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+    EXPECT_CALL(
+        mock_ephemeris_,
+        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             -300 * Metre / Pow<2>(Second),
-                             -400 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({-300 * Metre / Pow<2>(Second),
+                                               -400 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
@@ -257,18 +255,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({0 * Metre / Second,
-                                   0 * Metre / Second,
-                                   0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({40 * Metre / Second,
-                                   -30 * Metre / Second,
-                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {
+      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof = {
+      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -278,20 +272,20 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
       .WillRepeatedly(Return(small_dof));
   {
     InSequence s;
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(big_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+    EXPECT_CALL(
+        mock_ephemeris_,
+        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             -300 * Metre / Pow<2>(Second),
-                             -400 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({-300 * Metre / Pow<2>(Second),
+                                               -400 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
@@ -315,18 +309,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({0 * Metre / Second,
-                                   0 * Metre / Second,
-                                   0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({40 * Metre / Second,
-                                   -30 * Metre / Second,
-                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {
+      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof = {
+      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
@@ -336,20 +326,20 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
   {
     // The acceleration is centripetal + tangential.
     InSequence s;
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(big_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+    EXPECT_CALL(
+        mock_ephemeris_,
+        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second),
+                                               0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             (-300 + 400) * Metre / Pow<2>(Second),
-                             (-400 - 300) * Metre / Pow<2>(Second),
-                             0 * Metre / Pow<2>(Second)})));
+        .WillOnce(Return(
+            Vector<Acceleration, ICRS>({(-300 + 400) * Metre / Pow<2>(Second),
+                                        (-400 - 300) * Metre / Pow<2>(Second),
+                                        0 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
@@ -373,18 +363,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({0 * Metre / Second,
-                                   0 * Metre / Second,
-                                   0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof =
-      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) +
-           ICRS::origin,
-       Velocity<ICRS>({40 * Metre / Second,
-                                   -30 * Metre / Second,
-                                   0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof = {
+      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof = {
+      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+      Velocity<ICRS>(
+          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -395,20 +381,20 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
   {
     // The acceleration is linear + centripetal.
     InSequence s;
-    EXPECT_CALL(mock_ephemeris_,
-                ComputeGravitationalAccelerationOnMassiveBody(
-                    check_not_null(big_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             -160 * Metre / Pow<2>(Second),
-                             120 * Metre / Pow<2>(Second),
-                             300 * Metre / Pow<2>(Second)})));
+    EXPECT_CALL(
+        mock_ephemeris_,
+        ComputeGravitationalAccelerationOnMassiveBody(check_not_null(big_), t))
+        .WillOnce(
+            Return(Vector<Acceleration, ICRS>({-160 * Metre / Pow<2>(Second),
+                                               120 * Metre / Pow<2>(Second),
+                                               300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMassiveBody(
                     check_not_null(small_), t))
-        .WillOnce(Return(Vector<Acceleration, ICRS>({
-                             (-160 - 300) * Metre / Pow<2>(Second),
-                             (120 - 400) * Metre / Pow<2>(Second),
-                             300 * Metre / Pow<2>(Second)})));
+        .WillOnce(Return(
+            Vector<Acceleration, ICRS>({(-160 - 300) * Metre / Pow<2>(Second),
+                                        (120 - 400) * Metre / Pow<2>(Second),
+                                        300 * Metre / Pow<2>(Second)})));
     EXPECT_CALL(mock_ephemeris_,
                 ComputeGravitationalAccelerationOnMasslessBody(_, t))
         .WillOnce(Return(Vector<Acceleration, ICRS>()));
@@ -453,8 +439,8 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
   EXPECT_EQ(1, extension.secondary());
 
   auto const read_big_small_frame =
-      DynamicFrame<ICRS, BigSmallFrame>::ReadFromMessage(
-          message, ephemeris_.get());
+      DynamicFrame<ICRS, BigSmallFrame>::ReadFromMessage(message,
+                                                         ephemeris_.get());
   EXPECT_THAT(read_big_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;
@@ -512,10 +498,9 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
     // geometric acceleration when this is not the case.
     auto const intrinsic_acceleration =
         ephemeris_->ComputeGravitationalAccelerationOnMasslessBody(
-            ICRS::origin +
-                Displacement<ICRS>({0 * Kilo(Metre),
-                                                10.0 / 7.0 * Kilo(Metre),
-                                                0 * Kilo(Metre)}),
+            ICRS::origin + Displacement<ICRS>({0 * Kilo(Metre),
+                                               10.0 / 7.0 * Kilo(Metre),
+                                               0 * Kilo(Metre)}),
             t0_ + t);
     EXPECT_THAT(
         (barycentric_from_discrete.GeometricAcceleration(t0_ + t,

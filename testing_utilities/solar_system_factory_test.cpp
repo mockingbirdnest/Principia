@@ -78,15 +78,14 @@ class SolarSystemFactoryTest : public testing::Test {
       DegreesOfFreedom<ICRS> const& secondary_dof,
       std::optional<std::reference_wrapper<MassiveBody const>> const&
           primary_body,
-      std::optional <std::reference_wrapper<
-          DegreesOfFreedom<ICRS> const>> const& primary_dof,
+      std::optional<std::reference_wrapper<DegreesOfFreedom<ICRS> const>> const&
+          primary_dof,
       std::string const& message) {
     RelativeDegreesOfFreedom<ICRS> const tertiary_secondary =
         tertiary_dof - secondary_dof;
     KeplerOrbit<ICRS> orbit{
         secondary_body, tertiary_body, tertiary_secondary, J2000};
-    Vector<Length, ICRS> const& r =
-        tertiary_secondary.displacement();
+    Vector<Length, ICRS> const& r = tertiary_secondary.displacement();
     EXPECT_THAT(
         RelativeError(eccentricity, *orbit.elements_at_epoch().eccentricity),
         Lt(relative_error))
@@ -106,14 +105,13 @@ class SolarSystemFactoryTest : public testing::Test {
     }
   }
 
-  void TestStronglyBoundOrbit(
-      double excentricity,
-      double relative_error,
-      MassiveBody const& tertiary_body,
-      DegreesOfFreedom<ICRS> const& tertiary_dof,
-      MassiveBody const& secondary_body,
-      DegreesOfFreedom<ICRS> const& secondary_dof,
-      std::string const& message) {
+  void TestStronglyBoundOrbit(double excentricity,
+                              double relative_error,
+                              MassiveBody const& tertiary_body,
+                              DegreesOfFreedom<ICRS> const& tertiary_dof,
+                              MassiveBody const& secondary_body,
+                              DegreesOfFreedom<ICRS> const& secondary_dof,
+                              std::string const& message) {
     TestStronglyBoundOrbit(excentricity,
                            relative_error,
                            tertiary_body,
@@ -138,14 +136,13 @@ class SolarSystemFactoryTest : public testing::Test {
   }
 
   std::vector<std::unique_ptr<MassiveBody>> GetMassiveBodies(
-    SolarSystem<ICRS> const& solar_system) {
+      SolarSystem<ICRS> const& solar_system) {
     std::vector<std::unique_ptr<MassiveBody>> massive_bodies;
     for (int i = SolarSystemFactory::Sun;
          i <= SolarSystemFactory::LastBody;
          ++i) {
-      massive_bodies.emplace_back(
-          SolarSystem<ICRS>::MakeMassiveBody(
-              solar_system.gravity_model_message(SolarSystemFactory::name(i))));
+      massive_bodies.emplace_back(SolarSystem<ICRS>::MakeMassiveBody(
+          solar_system.gravity_model_message(SolarSystemFactory::name(i))));
     }
     return massive_bodies;
   }

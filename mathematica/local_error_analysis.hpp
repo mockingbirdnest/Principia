@@ -24,8 +24,7 @@ class LocalErrorAnalyser {
  public:
   LocalErrorAnalyser(
       not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system,
-      FixedStepSizeIntegrator<
-          Ephemeris<ICRS>::NewtonianMotionEquation> const&
+      FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
           integrator,
       Time const& step);
 
@@ -34,8 +33,7 @@ class LocalErrorAnalyser {
   // system epoch.  Writes the errors to a file with the given |path|.
   void WriteLocalErrors(
       std::filesystem::path const& path,
-      FixedStepSizeIntegrator<
-          Ephemeris<ICRS>::NewtonianMotionEquation> const&
+      FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
           fine_integrator,
       Time const& fine_step,
       Time const& granularity,
@@ -45,8 +43,7 @@ class LocalErrorAnalyser {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> ForkEphemeris(
       Ephemeris<ICRS> const& original,
       Instant const& t,
-      FixedStepSizeIntegrator<
-          Ephemeris<ICRS>::NewtonianMotionEquation> const&
+      FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
           integrator,
       Time const& step) const;
 

@@ -258,31 +258,28 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::ALICE_WORLD>();
   TestRotatingBody<serialization::Frame::PluginTag,
-                  serialization::Frame::BARYCENTRIC>();
+                   serialization::Frame::BARYCENTRIC>();
   TestRotatingBody<serialization::Frame::PluginTag,
                    serialization::Frame::NAVIGATION>();
   TestRotatingBody<serialization::Frame::PluginTag,
-                  serialization::Frame::WORLD>();
+                   serialization::Frame::WORLD>();
   TestRotatingBody<serialization::Frame::PluginTag,
-                  serialization::Frame::WORLD_SUN>();
+                   serialization::Frame::WORLD_SUN>();
 
   TestRotatingBody<serialization::Frame::SolarSystemTag,
-                  serialization::Frame::ICRF_J2000_ECLIPTIC>();
+                   serialization::Frame::ICRF_J2000_ECLIPTIC>();
   TestRotatingBody<serialization::Frame::SolarSystemTag,
-                  serialization::Frame::ICRS>();
+                   serialization::Frame::ICRS>();
 
+  TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::TEST>();
   TestRotatingBody<serialization::Frame::TestTag,
-                  serialization::Frame::TEST>();
-  TestRotatingBody<serialization::Frame::TestTag,
-                  serialization::Frame::TEST1>();
+                   serialization::Frame::TEST1>();
   TestRotatingBody<serialization::Frame::TestTag,
                    serialization::Frame::TEST2>();
-  TestRotatingBody<serialization::Frame::TestTag,
-                   serialization::Frame::FROM>();
+  TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::FROM>();
   TestRotatingBody<serialization::Frame::TestTag,
                    serialization::Frame::THROUGH>();
-  TestRotatingBody<serialization::Frame::TestTag,
-                   serialization::Frame::TO>();
+  TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::TO>();
 }
 
 }  // namespace internal_body

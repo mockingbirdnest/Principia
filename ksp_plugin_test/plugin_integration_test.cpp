@@ -134,10 +134,7 @@ class PluginIntegrationTest : public testing::Test {
   }
 
   Identity<ICRS, Barycentric> ircf_to_barycentric_linear_;
-  AffineMap<ICRS,
-            Barycentric,
-            Length,
-            Identity> icrf_to_barycentric_positions_;
+  AffineMap<ICRS, Barycentric, Length, Identity> icrf_to_barycentric_positions_;
   Permutation<ICRS, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string initial_time_;

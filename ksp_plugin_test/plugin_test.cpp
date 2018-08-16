@@ -284,14 +284,13 @@ class PluginTest : public testing::Test {
   Velocity<AliceSun> satellite_initial_velocity_;
 };
 
-RigidMotion<ICRS, Barycentric> const
-    PluginTest::id_icrf_barycentric_(
-        RigidTransformation<ICRS, Barycentric>(
-            ICRS::origin,
-            Barycentric::origin,
-            OrthogonalMap<ICRS, Barycentric>::Identity()),
-        AngularVelocity<ICRS>(),
-        Velocity<ICRS>());
+RigidMotion<ICRS, Barycentric> const PluginTest::id_icrf_barycentric_(
+    RigidTransformation<ICRS, Barycentric>(
+        ICRS::origin,
+        Barycentric::origin,
+        OrthogonalMap<ICRS, Barycentric>::Identity()),
+    AngularVelocity<ICRS>(),
+    Velocity<ICRS>());
 
 using PluginDeathTest = PluginTest;
 

@@ -108,11 +108,10 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     }
   }
 
-  OrbitError CompareOrbits(
-      int const index,
-      Ephemeris<ICRS> const& ephemeris,
-      SolarSystem<ICRS> const& system,
-      SolarSystem<ICRS> const& expected_system) {
+  OrbitError CompareOrbits(int const index,
+                           Ephemeris<ICRS> const& ephemeris,
+                           SolarSystem<ICRS> const& system,
+                           SolarSystem<ICRS> const& expected_system) {
     Instant const& epoch = expected_system.epoch();
     Time const duration = epoch - system.epoch();
 
@@ -120,9 +119,8 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     auto const parent_name =
         SolarSystemFactory::name(SolarSystemFactory::parent(index));
     auto const body = system.massive_body(ephemeris, name);
-    auto const parent =
-        dynamic_cast_not_null<RotatingBody<ICRS> const*>(
-            system.massive_body(ephemeris, parent_name));
+    auto const parent = dynamic_cast_not_null<RotatingBody<ICRS> const*>(
+        system.massive_body(ephemeris, parent_name));
 
     BarycentreCalculator<DegreesOfFreedom<ICRS>,
                          GravitationalParameter> actual_subsystem_barycentre;
@@ -193,27 +191,21 @@ class SolarSystemDynamicsTest : public ::testing::Test {
       auto const declination_of_invariable_plane =
           OrientedAngleBetween(z, solar_system_angular_momentum, normal);
       EXPECT_THAT(declination_of_invariable_plane, Gt(0 * Radian));
-      rotation =
-          Rotation<ICRS, ParentEquator>(
-              declination_of_invariable_plane,
-              normal,
-              DefinesFrame<ParentEquator>{});
+      rotation = Rotation<ICRS, ParentEquator>(declination_of_invariable_plane,
+                                               normal,
+                                               DefinesFrame<ParentEquator>{});
     } else {
       auto const ω = parent->angular_velocity();
-      Bivector<double, ICRS> const normal =
-          Commutator(z, Normalize(ω));
+      Bivector<double, ICRS> const normal = Commutator(z, Normalize(ω));
       auto const parent_axis_declination = OrientedAngleBetween(z, ω, normal);
       EXPECT_THAT(parent_axis_declination, Gt(0 * Radian));
       rotation = Rotation<ICRS, ParentEquator>(
           parent_axis_declination, normal, DefinesFrame<ParentEquator>{});
     }
-    RigidMotion<ICRS, ParentEquator> const
-        to_parent_equator(
-            {ICRS::origin,
-             ParentEquator::origin,
-             rotation->Forget()},
-            /*angular_velocity_of_to_frame=*/{},
-            /*velocity_of_to_frame_origin=*/{});
+    RigidMotion<ICRS, ParentEquator> const to_parent_equator(
+        {ICRS::origin, ParentEquator::origin, rotation->Forget()},
+        /*angular_velocity_of_to_frame=*/{},
+        /*velocity_of_to_frame_origin=*/{});
 
     KeplerOrbit<ParentEquator> actual_osculating_orbit(
         /*primary=*/*parent,

@@ -96,10 +96,8 @@ char constexpr small_name[] = "Small";
 
 }  // namespace
 
-class EphemerisTest
-    : public testing::TestWithParam<
-          FixedStepSizeIntegrator<
-              Ephemeris<ICRS>::NewtonianMotionEquation> const*> {
+class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
+                          Ephemeris<ICRS>::NewtonianMotionEquation> const*> {
  protected:
   EphemerisTest()
       : solar_system_(
@@ -108,8 +106,7 @@ class EphemerisTest
                 "sol_initial_state_jd_2433282_500000000.proto.txt"),
         t0_(solar_system_.epoch()) {}
 
-  FixedStepSizeIntegrator<
-      Ephemeris<ICRS>::NewtonianMotionEquation> const&
+  FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
   integrator() {
     return *GetParam();
   }
@@ -131,34 +128,27 @@ class EphemerisTest
 
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
-    auto moon =
-        SolarSystem<ICRS>::MakeMassiveBody(moon_gravity_model);
-    auto earth =
-        SolarSystem<ICRS>::MakeMassiveBody(earth_gravity_model);
+    auto moon = SolarSystem<ICRS>::MakeMassiveBody(moon_gravity_model);
+    auto earth = SolarSystem<ICRS>::MakeMassiveBody(earth_gravity_model);
 
     // The Earth-Moon system, roughly, with a circular orbit with velocities
     // in the centre-of-mass frame.
-    Position<ICRS> const q1 = ICRS::origin +
-        Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre});
-    Position<ICRS> const q2 = ICRS::origin +
-        Displacement<ICRS>({0 * Metre,
-                                        4e8 * Metre,
-                                        0 * Metre});
+    Position<ICRS> const q1 =
+        ICRS::origin + Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre});
+    Position<ICRS> const q2 =
+        ICRS::origin + Displacement<ICRS>({0 * Metre, 4e8 * Metre, 0 * Metre});
     Length const semi_major_axis = (q1 - q2).Norm();
     period = 2 * π *
              Sqrt(Pow<3>(semi_major_axis) / (earth->gravitational_parameter() +
                                              moon->gravitational_parameter()));
-    centre_of_mass =
-        Barycentre<Position<ICRS>, Mass>(
-            {q1, q2}, {earth->mass(), moon->mass()});
-    Velocity<ICRS> const v1(
-        {-2 * π * (q1 - centre_of_mass).Norm() / period,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()});
-    Velocity<ICRS> const v2(
-        {2 * π * (q2 - centre_of_mass).Norm() / period,
-         0 * SIUnit<Speed>(),
-         0 * SIUnit<Speed>()});
+    centre_of_mass = Barycentre<Position<ICRS>, Mass>(
+        {q1, q2}, {earth->mass(), moon->mass()});
+    Velocity<ICRS> const v1({-2 * π * (q1 - centre_of_mass).Norm() / period,
+                             0 * SIUnit<Speed>(),
+                             0 * SIUnit<Speed>()});
+    Velocity<ICRS> const v2({2 * π * (q2 - centre_of_mass).Norm() / period,
+                             0 * SIUnit<Speed>(),
+                             0 * SIUnit<Speed>()});
 
     bodies.push_back(std::move(earth));
     bodies.push_back(std::move(moon));
@@ -177,14 +167,12 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
   Time period;
   SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
   EXPECT_THAT(ephemeris.planetary_integrator(), Ref(integrator()));
 
   EXPECT_EQ(astronomy::InfinitePast, ephemeris.t_max());
@@ -215,27 +203,22 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
   Time period;
   SetUpEarthMoonSystem(bodies, initial_state, centre_of_mass, period);
 
-  Position<ICRS> const earth_position =
-      initial_state[0].position();
+  Position<ICRS> const earth_position = initial_state[0].position();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory;
-  trajectory.Append(t0_,
-                    DegreesOfFreedom<ICRS>(
-                        earth_position +
-                            Displacement<ICRS>(
-                                {0 * Metre, distance, 0 * Metre}),
-                        Velocity<ICRS>(
-                            {velocity, velocity, velocity})));
+  trajectory.Append(
+      t0_,
+      DegreesOfFreedom<ICRS>(
+          earth_position + Displacement<ICRS>({0 * Metre, distance, 0 * Metre}),
+          Velocity<ICRS>({velocity, velocity, velocity})));
 
   EXPECT_OK(ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -276,14 +259,12 @@ TEST_P(EphemerisTest, EarthMoon) {
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   ephemeris.Prolong(t0_ + period);
 
@@ -328,21 +309,19 @@ TEST_P(EphemerisTest, ForgetBefore) {
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 10));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 10));
 
   ephemeris.Prolong(t0_ + 16 * period);
 
   ContinuousTrajectory<ICRS> const& earth_trajectory =
-    *ephemeris.trajectory(earth);
+      *ephemeris.trajectory(earth);
   ContinuousTrajectory<ICRS> const& moon_trajectory =
-    *ephemeris.trajectory(moon);
+      *ephemeris.trajectory(moon);
 
   Instant t_max = ephemeris.t_max();
   EXPECT_EQ(t0_ + 16 * period, t_max);
@@ -368,14 +347,12 @@ TEST_P(EphemerisTest, Moon) {
 
   MassiveBody const* const moon = bodies[0].get();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   ephemeris.Prolong(t0_ + period);
 
@@ -384,8 +361,8 @@ TEST_P(EphemerisTest, Moon) {
 
   DegreesOfFreedom<ICRS> const moon_degrees_of_freedom =
       moon_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
-  Length const q = (moon_degrees_of_freedom.position() -
-                    ICRS::origin).coordinates().y;
+  Length const q =
+      (moon_degrees_of_freedom.position() - ICRS::origin).coordinates().y;
   Speed const v = moon_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> moon_positions;
   for (int i = 0; i <= 100; ++i) {
@@ -424,34 +401,29 @@ TEST_P(EphemerisTest, EarthProbe) {
   initial_state.erase(initial_state.begin() + 1);
 
   MassiveBody const* const earth = bodies[0].get();
-  Position<ICRS> const earth_position =
-      initial_state[0].position();
-  Velocity<ICRS> const earth_velocity =
-      initial_state[0].velocity();
+  Position<ICRS> const earth_position = initial_state[0].position();
+  Velocity<ICRS> const earth_velocity = initial_state[0].velocity();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
   DiscreteTrajectory<ICRS> trajectory;
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRS>(
                         earth_position + Vector<Length, ICRS>(
-                            {0 * Metre, distance, 0 * Metre}),
+                                             {0 * Metre, distance, 0 * Metre}),
                         earth_velocity));
-  auto const intrinsic_acceleration =
-      [earth, distance](Instant const& t) {
-        return Vector<Acceleration, ICRS>(
-            {0 * SIUnit<Acceleration>(),
-             earth->gravitational_parameter() / (distance * distance),
-             0 * SIUnit<Acceleration>()});
-      };
+  auto const intrinsic_acceleration = [earth, distance](Instant const& t) {
+    return Vector<Acceleration, ICRS>(
+        {0 * SIUnit<Acceleration>(),
+         earth->gravitational_parameter() / (distance * distance),
+         0 * SIUnit<Acceleration>()});
+  };
 
   ephemeris.FlowWithAdaptiveStep(
       &trajectory,
@@ -472,8 +444,8 @@ TEST_P(EphemerisTest, EarthProbe) {
 
   DegreesOfFreedom<ICRS> const earth_degrees_of_freedom =
       earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
-  Length const q_earth = (earth_degrees_of_freedom.position() -
-                          ICRS::origin).coordinates().y;
+  Length const q_earth =
+      (earth_degrees_of_freedom.position() - ICRS::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
@@ -497,12 +469,11 @@ TEST_P(EphemerisTest, EarthProbe) {
   EXPECT_THAT(earth_positions[100].coordinates().y, Eq(q_earth));
 
   Length const q_probe = (trajectory.last().degrees_of_freedom().position() -
-                         ICRS::origin).coordinates().y;
+                          ICRS::origin).coordinates().y;
   Speed const v_probe =
       trajectory.last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe_positions;
-  for (DiscreteTrajectory<ICRS>::Iterator it =
-           trajectory.Begin();
+  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory.Begin();
        it != trajectory.End();
        ++it) {
     probe_positions.push_back(it.degrees_of_freedom().position() -
@@ -552,19 +523,15 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
   initial_state.erase(initial_state.begin() + 1);
 
   MassiveBody const* const earth = bodies[0].get();
-  Position<ICRS> const earth_position =
-      initial_state[0].position();
-  Velocity<ICRS> const earth_velocity =
-      initial_state[0].velocity();
+  Position<ICRS> const earth_position = initial_state[0].position();
+  Velocity<ICRS> const earth_velocity = initial_state[0].velocity();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe1;
   DiscreteTrajectory<ICRS> trajectory1;
@@ -573,13 +540,12 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_position + Vector<Length, ICRS>(
                              {0 * Metre, distance_1, 0 * Metre}),
                          earth_velocity));
-  auto const intrinsic_acceleration1 =
-      [earth, distance_1](Instant const& t) {
-        return Vector<Acceleration, ICRS>(
-            {0 * SIUnit<Acceleration>(),
-             earth->gravitational_parameter() / (distance_1 * distance_1),
-             0 * SIUnit<Acceleration>()});
-      };
+  auto const intrinsic_acceleration1 = [earth, distance_1](Instant const& t) {
+    return Vector<Acceleration, ICRS>(
+        {0 * SIUnit<Acceleration>(),
+         earth->gravitational_parameter() / (distance_1 * distance_1),
+         0 * SIUnit<Acceleration>()});
+  };
 
   MasslessBody probe2;
   DiscreteTrajectory<ICRS> trajectory2;
@@ -588,19 +554,17 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
                          earth_position + Vector<Length, ICRS>(
                              {0 * Metre, -distance_2, 0 * Metre}),
                          earth_velocity));
-  auto const intrinsic_acceleration2 =
-      [earth, distance_2](Instant const& t) {
-        return Vector<Acceleration, ICRS>(
-            {0 * SIUnit<Acceleration>(),
-             -earth->gravitational_parameter() / (distance_2 * distance_2),
-             0 * SIUnit<Acceleration>()});
-      };
+  auto const intrinsic_acceleration2 = [earth, distance_2](Instant const& t) {
+    return Vector<Acceleration, ICRS>(
+        {0 * SIUnit<Acceleration>(),
+         -earth->gravitational_parameter() / (distance_2 * distance_2),
+         0 * SIUnit<Acceleration>()});
+  };
 
   auto instance = ephemeris.NewInstance(
       {&trajectory1, &trajectory2},
       {intrinsic_acceleration1, intrinsic_acceleration2},
-      Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                       period / 1000));
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 1000));
   EXPECT_OK(ephemeris.FlowWithFixedStep(t0_ + period, *instance));
 
   ContinuousTrajectory<ICRS> const& earth_trajectory =
@@ -608,8 +572,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
 
   DegreesOfFreedom<ICRS> const earth_degrees_of_freedom =
       earth_trajectory.EvaluateDegreesOfFreedom(t0_ + period);
-  Length const q_earth = (earth_degrees_of_freedom.position() -
-                          ICRS::origin).coordinates().y;
+  Length const q_earth =
+      (earth_degrees_of_freedom.position() - ICRS::origin).coordinates().y;
   Speed const v_earth = earth_degrees_of_freedom.velocity().coordinates().x;
   std::vector<Displacement<ICRS>> earth_positions;
   for (int i = 0; i <= 100; ++i) {
@@ -642,15 +606,13 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
       trajectory2.last().degrees_of_freedom().velocity().coordinates().x;
   std::vector<Displacement<ICRS>> probe1_positions;
   std::vector<Displacement<ICRS>> probe2_positions;
-  for (DiscreteTrajectory<ICRS>::Iterator it =
-           trajectory1.Begin();
+  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory1.Begin();
        it != trajectory1.End();
        ++it) {
     probe1_positions.push_back(it.degrees_of_freedom().position() -
                                ICRS::origin);
   }
-  for (DiscreteTrajectory<ICRS>::Iterator it =
-           trajectory2.Begin();
+  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory2.Begin();
        it != trajectory2.End();
        ++it) {
     probe2_positions.push_back(it.degrees_of_freedom().position() -
@@ -678,14 +640,12 @@ TEST_P(EphemerisTest, Serialization) {
   MassiveBody const* const earth = bodies[0].get();
   MassiveBody const* const moon = bodies[1].get();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           period / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
   ephemeris.Prolong(t0_ + period);
 
   EXPECT_EQ(0, ephemeris.serialization_index_for_body(earth));
@@ -696,8 +656,7 @@ TEST_P(EphemerisTest, Serialization) {
   serialization::Ephemeris message;
   ephemeris.WriteToMessage(&message);
 
-  auto const ephemeris_read =
-      Ephemeris<ICRS>::ReadFromMessage(message);
+  auto const ephemeris_read = Ephemeris<ICRS>::ReadFromMessage(message);
   MassiveBody const* const earth_read = ephemeris_read->bodies()[0];
   MassiveBody const* const moon_read = ephemeris_read->bodies()[1];
 
@@ -738,19 +697,15 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   bodies.push_back(std::move(earth));
   initial_state.emplace_back(q, v);
 
-  Position<ICRS> const earth_position =
-      initial_state[0].position();
-  Velocity<ICRS> const earth_velocity =
-      initial_state[0].velocity();
+  Position<ICRS> const earth_position = initial_state[0].position();
+  Velocity<ICRS> const earth_velocity = initial_state[0].velocity();
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                           duration / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
 
   // The elephant's initial position and velocity.
   DiscreteTrajectory<ICRS> trajectory;
@@ -778,8 +733,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       trajectory.last().degrees_of_freedom().velocity().coordinates().y;
   std::vector<Displacement<ICRS>> elephant_positions;
   std::vector<Vector<Acceleration, ICRS>> elephant_accelerations;
-  for (DiscreteTrajectory<ICRS>::Iterator it =
-           trajectory.Begin();
+  for (DiscreteTrajectory<ICRS>::Iterator it = trajectory.Begin();
        it != trajectory.End();
        ++it) {
     elephant_positions.push_back(it.degrees_of_freedom().position() -
@@ -826,18 +780,15 @@ TEST_P(EphemerisTest, CollisionDetection) {
   bodies.push_back(std::move(earth));
   initial_state.emplace_back(q, v);
 
-  Position<ICRS> const earth_position =
-      initial_state[0].position();
-  Velocity<ICRS> const earth_velocity =
-      initial_state[0].velocity();
+  Position<ICRS> const earth_position = initial_state[0].position();
+  Velocity<ICRS> const earth_velocity = initial_state[0].velocity();
 
   Ephemeris<ICRS> ephemeris(
       std::move(bodies),
       initial_state,
       t0_,
       5 * Milli(Metre),
-      Ephemeris<ICRS>::FixedStepParameters(integrator(),
-                                                       short_duration / 100));
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), short_duration / 100));
 
   // The apple's initial position and velocity
   DiscreteTrajectory<ICRS> trajectory;
