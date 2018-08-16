@@ -124,12 +124,10 @@ class BodyCentredBodyDirectionDynamicFrameTest : public ::testing::Test {
   GravitationalParameter small_gravitational_parameter_;
   StrictMock<MockEphemeris<ICRS>> mock_ephemeris_;
 
-  std::unique_ptr<
-      BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>
+  std::unique_ptr<BodyCentredBodyDirectionDynamicFrame<ICRS, MockFrame>>
       mock_frame_;
-  std::unique_ptr<
-      BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>
-          big_small_frame_;
+  std::unique_ptr<BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>>
+      big_small_frame_;
   StrictMock<MockContinuousTrajectory<ICRS>> mock_big_trajectory_;
   StrictMock<MockContinuousTrajectory<ICRS>> mock_small_trajectory_;
 };

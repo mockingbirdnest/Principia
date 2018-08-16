@@ -226,10 +226,10 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         DefinesFrame<Ecliptic>{});
     auto const ecliptic_to_equatorial = equatorial_to_ecliptic.Inverse();
 
-        Displacement<Ecliptic> const sun_earth_displacement =
-            equatorial_to_ecliptic(
-                from_barycentric(earth_degrees_of_freedom.position() -
-                                 sun_degrees_of_freedom.position()));
+    Displacement<Ecliptic> const sun_earth_displacement =
+        equatorial_to_ecliptic(
+            from_barycentric(earth_degrees_of_freedom.position() -
+                             sun_degrees_of_freedom.position()));
     Rotation<Ecliptic, Ecliptic> const l4_rotation(
         Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
     Displacement<Ecliptic> const sun_l4_displacement =
