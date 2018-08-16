@@ -79,9 +79,9 @@ using GCRS = Frame<serialization::Frame::SolarSystemTag,
 //   http://itrf.ensg.ign.fr/doc_ITRF/Transfo-ITRF2014_ITRFs.txt.  Identifying
 //   recent ITRFs (2005 and later) results in errors of a few millimetres at the
 //   geocentre, scale errors on the order of 1 part-per-billion, and angular
-//   errors below 1 μas.  Identifying earlier ITRFs results in errors may result
-//   in errors of tens of centimetres at the geocentre, scale errors on the
-//   order of ten parts per billion, and arcsecond-level angular errors.
+//   errors below 1 μas.  Identifying earlier ITRFs may result in errors of tens
+//   of centimetres at the geocentre, scale errors on the order of ten parts per
+//   billion, and arcsecond-level angular errors.
 // - ETRFyy is always related to the corresponding ITRFyy by a linearized rigid
 //   transformation depending linearly on time, however it is related to other
 //   ITRFs by time-dependent similarity with time-dependent nonzero scaling; see
