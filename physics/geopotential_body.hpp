@@ -42,15 +42,43 @@ Geopotential<Frame>::Order2ZonalAcceleration(
     Exponentiation<Length, -3> const& one_over_r³) const {
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r⁵ = body_->j2_over_μ() * one_over_r³ * one_over_r²;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const axis_effect =
-      (-3 * j2_over_r⁵ * r_axis_projection) * axis;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const radial_effect =
-      (j2_over_r⁵ *
-           (-1.5 +
-            7.5 * r_axis_projection * r_axis_projection * one_over_r²)) * r;
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      axis_effect = -3 * j2_over_r⁵ * r_axis_projection * axis;
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      radial_effect =
+          j2_over_r⁵ *
+          (-1.5 + 7.5 * r_axis_projection * r_axis_projection * one_over_r²) *
+          r;
   return axis_effect + radial_effect;
+}
+
+template<typename Frame>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::Order2TesseralAcceleration(
+    UnitVector const& reference,
+    UnitVector const& bireference,
+    Displacement<Frame> const& r,
+    Exponentiation<Length, -2> const& one_over_r²,
+    Exponentiation<Length, -3> const& one_over_r³) const {
+  Length const r_reference_projection = InnerProduct(reference, r);
+  Length const r_bireference_projection = InnerProduct(bireference, r);
+  auto const c22_over_r⁵ = body_->c22_over_μ() * one_over_r³ * one_over_r²;
+  auto const s22_over_r⁵ = body_->s22_over_μ() * one_over_r³ * one_over_r²;
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      c22_effect = 6 * c22_over_r⁵ *
+                   (-r_reference_projection * reference +
+                    r_bireference_projection * bireference +
+                    2.5 *
+                        (r_reference_projection * r_reference_projection -
+                         r_bireference_projection * r_bireference_projection) *
+                        one_over_r² * r);
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
+      s22_effect = -6 * s22_over_r⁵ *
+                   (r_bireference_projection * reference +
+                    r_reference_projection * bireference -
+                    5 * r_reference_projection * r_bireference_projection *
+                        one_over_r² * r);
+  return c22_effect + s22_effect;
 }
 
 template<typename Frame>

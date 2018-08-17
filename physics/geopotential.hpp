@@ -57,6 +57,14 @@ class Geopotential {
                           Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Order2TesseralAcceleration(
+      UnitVector const& reference,
+      UnitVector const& bireference,
+      Displacement<Frame> const& r,
+      Exponentiation<Length, -2> const& one_over_r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
+
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Order3ZonalAcceleration(UnitVector const& axis,
                           Displacement<Frame> const& r,
                           Square<Length> const& r²,
