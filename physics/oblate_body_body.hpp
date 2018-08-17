@@ -38,21 +38,60 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(
     Degree2SphericalHarmonicCoefficient const& j2,
-    Degree3SphericalHarmonicCoefficient const& j3)
-    : j2_(j2), j3_(j3) {
+    Degree2SphericalHarmonicCoefficient const& c22,
+    Degree2SphericalHarmonicCoefficient const& s22)
+    : j2_(j2), c22_(c22), s22_(s22) {
   CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
       << "Oblate body must have positive j2";
+  CHECK_NE(Degree3SphericalHarmonicCoefficient(), c22)
+      << "Oblate body cannot have zero c22";
+  CHECK_NE(Degree3SphericalHarmonicCoefficient(), s22)
+      << "Oblate body cannot have zero s22";
+}
+
+template<typename Frame>
+OblateBody<Frame>::Parameters::Parameters(double const j2,
+                                          double const c22,
+                                          double const s22,
+                                          Length const& reference_radius)
+    : j2_over_μ_(j2 * reference_radius * reference_radius),
+      c22_over_μ_(c22 * reference_radius * reference_radius),
+      s22_over_μ_(s22 * reference_radius * reference_radius) {
+  CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
+  CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
+  CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
+}
+
+template<typename Frame>
+OblateBody<Frame>::Parameters::Parameters(
+    Degree2SphericalHarmonicCoefficient const& j2,
+    Degree2SphericalHarmonicCoefficient const& c22,
+    Degree2SphericalHarmonicCoefficient const& s22,
+    Degree3SphericalHarmonicCoefficient const& j3)
+    : j2_(j2), c22_(c22), s22_(s22), j3_(j3) {
+  CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
+      << "Oblate body must have positive j2";
+  CHECK_NE(Degree3SphericalHarmonicCoefficient(), c22)
+      << "Oblate body cannot have zero c22";
+  CHECK_NE(Degree3SphericalHarmonicCoefficient(), s22)
+      << "Oblate body cannot have zero s22";
   CHECK_NE(Degree3SphericalHarmonicCoefficient(), j3)
       << "Oblate body cannot have zero j3";
 }
 
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
+                                          double const c22,
+                                          double const s22,
                                           double const j3,
                                           Length const& reference_radius)
     : j2_over_μ_(j2 * reference_radius * reference_radius),
+      c22_over_μ_(c22 * reference_radius * reference_radius),
+      s22_over_μ_(s22 * reference_radius * reference_radius),
       j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
+  CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
+  CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
   CHECK_NE(0.0, j3) << "Oblate body cannot have zero j3";
 }
 

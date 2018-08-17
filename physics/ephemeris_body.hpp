@@ -936,7 +936,7 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             order_2_zonal_effect1 =
-                Degree2SphericalHarmonicAcceleration<Frame>(
+                Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
                     one_over_Δq²,
@@ -948,7 +948,7 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             order_2_zonal_effect2 =
-                Degree2SphericalHarmonicAcceleration<Frame>(
+                Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
                     one_over_Δq²,
@@ -994,7 +994,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           order_2_zonal_effect1 =
-              Degree2SphericalHarmonicAcceleration<Frame>(
+              Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
                   one_over_Δq²,
