@@ -27,10 +27,9 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
       Order2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
   if (body_->has_c22() || body_->has_s22()) {
-    //TODO(phl): Separate the frames?
-    auto const from_surface_frame = body_->FromSurfaceFrame<Frame>(t);
-    UnitVector const reference = from_surface_frame(UnitVector({1, 0, 0}));
-    UnitVector const bireference = from_surface_frame(UnitVector({0, 1, 0}));
+    auto const from_surface_frame = body_->FromSurfaceFrame<SurfaceFrame>(t);
+    UnitVector const reference = from_surface_frame(x_);
+    UnitVector const bireference = from_surface_frame(y_);
     acceleration +=
         Order2TesseralAcceleration(
             reference, bireference, r, one_over_r², one_over_r³);
@@ -111,6 +110,13 @@ Geopotential<Frame>::Order3ZonalAcceleration(
                       (7.5 - 17.5 * r_axis_projection² * one_over_r²) * r;
   return axis_effect + radial_effect;
 }
+
+template<typename Frame>
+const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
+    Geopotential<Frame>::x_({1, 0, 0});
+template<typename Frame>
+const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
+    Geopotential<Frame>::y_({0, 1, 0});
 
 }  // namespace internal_geopotential
 }  // namespace physics

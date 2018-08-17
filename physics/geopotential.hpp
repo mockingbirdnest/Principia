@@ -35,6 +35,11 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
+  // The frame of the surface of the celestial.
+  struct SurfaceFrame;
+  static const Vector<double, SurfaceFrame> x_;
+  static const Vector<double, SurfaceFrame> y_;
+
   using UnitVector = Vector<double, Frame>;
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
