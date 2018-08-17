@@ -147,11 +147,11 @@ using Sky =
 
 }  // namespace internal_frames
 
+using internal_frames::CelestialIntermediateReferenceSystem;
 using internal_frames::GCRS;
 using internal_frames::ICRS;
 using internal_frames::ITRS;
 using internal_frames::Sky;
-using internal_frames::CelestialIntermediateReferenceSystem;
 using internal_frames::TerrestrialIntermediateReferenceSystem;
 
 }  // namespace astronomy
