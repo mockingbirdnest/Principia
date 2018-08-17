@@ -22,9 +22,10 @@ using quantities::si::Radian;
 using quantities::si::Second;
 
 template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2)
-    : j2_(j2) {
-  CHECK_LT(Order2ZonalCoefficient(), j2) << "Oblate body must have positive j2";
+OblateBody<Frame>::Parameters::Parameters(
+    Degree2SphericalHarmonicCoefficient const& j2) : j2_(j2) {
+  CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
+      << "Oblate body must have positive j2";
 }
 
 template<typename Frame>
@@ -35,11 +36,14 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
 }
 
 template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(Order2ZonalCoefficient const& j2,
-                                          Order3ZonalCoefficient const& j3)
+OblateBody<Frame>::Parameters::Parameters(
+    Degree2SphericalHarmonicCoefficient const& j2,
+    Degree3SphericalHarmonicCoefficient const& j3)
     : j2_(j2), j3_(j3) {
-  CHECK_LT(Order2ZonalCoefficient(), j2) << "Oblate body must have positive j2";
-  CHECK_NE(Order3ZonalCoefficient(), j3) << "Oblate body cannot have zero j3";
+  CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
+      << "Oblate body must have positive j2";
+  CHECK_NE(Degree3SphericalHarmonicCoefficient(), j3)
+      << "Oblate body cannot have zero j3";
 }
 
 template<typename Frame>
@@ -76,25 +80,25 @@ OblateBody<Frame>::OblateBody(
 #undef PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS
 
 template<typename Frame>
-Order2ZonalCoefficient const& OblateBody<Frame>::j2() const {
+Degree2SphericalHarmonicCoefficient const& OblateBody<Frame>::j2() const {
   return *parameters_.j2_;
 }
 
 template<typename Frame>
-Quotient<Order2ZonalCoefficient,
+Quotient<Degree2SphericalHarmonicCoefficient,
          GravitationalParameter> const& OblateBody<Frame>::j2_over_μ() const {
   return *parameters_.j2_over_μ_;
 }
 
 template<typename Frame>
-Order3ZonalCoefficient const & OblateBody<Frame>::j3() const {
-  return parameters_.j3_.value_or(Order3ZonalCoefficient());
+Degree3SphericalHarmonicCoefficient const & OblateBody<Frame>::j3() const {
+  return parameters_.j3_.value_or(Degree3SphericalHarmonicCoefficient());
 }
 
 template<typename Frame>
-Quotient<Order3ZonalCoefficient, GravitationalParameter> const&
+Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter> const&
     OblateBody<Frame>::j3_over_μ() const {
-  return parameters_.j3_over_μ_.value_or(Order3ZonalCoefficient());
+  return parameters_.j3_over_μ_.value_or(Degree3SphericalHarmonicCoefficient());
 }
 
 template<typename Frame>
@@ -150,11 +154,11 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
   std::unique_ptr<Parameters> parameters;
   if (message.has_j3()) {
     parameters = std::make_unique<Parameters>(
-        Order2ZonalCoefficient::ReadFromMessage(message.j2()),
-        Order3ZonalCoefficient::ReadFromMessage(message.j3()));
+        Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
+        Degree3SphericalHarmonicCoefficient::ReadFromMessage(message.j3()));
   } else {
     parameters = std::make_unique<Parameters>(
-        Order2ZonalCoefficient::ReadFromMessage(message.j2()));
+        Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()));
   }
 
   return std::make_unique<OblateBody<Frame>>(massive_body_parameters,

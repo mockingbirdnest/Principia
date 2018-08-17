@@ -56,13 +56,13 @@ class Geopotential {
   // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
   // be negative.
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order2ZonalAcceleration(UnitVector const& axis,
-                          Displacement<Frame> const& r,
-                          Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³) const;
+  Degree2ZonalAcceleration(UnitVector const& axis,
+                           Displacement<Frame> const& r,
+                           Exponentiation<Length, -2> const& one_over_r²,
+                           Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order2TesseralAcceleration(
+  Degree2TesseralAcceleration(
       UnitVector const& reference,
       UnitVector const& bireference,
       Displacement<Frame> const& r,
@@ -70,11 +70,11 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order3ZonalAcceleration(UnitVector const& axis,
-                          Displacement<Frame> const& r,
-                          Square<Length> const& r²,
-                          Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³) const;
+  Degree3ZonalAcceleration(UnitVector const& axis,
+                           Displacement<Frame> const& r,
+                           Square<Length> const& r²,
+                           Exponentiation<Length, -2> const& one_over_r²,
+                           Exponentiation<Length, -3> const& one_over_r³) const;
 
   not_null<OblateBody<Frame> const*> const body_;
 };

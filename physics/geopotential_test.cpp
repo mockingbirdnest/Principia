@@ -18,8 +18,8 @@ namespace internal_geopotential {
 using geometry::Frame;
 using quantities::Angle;
 using quantities::AngularFrequency;
-using quantities::Order2ZonalCoefficient;
-using quantities::Order3ZonalCoefficient;
+using quantities::Degree2SphericalHarmonicCoefficient;
+using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Degree;
@@ -70,7 +70,7 @@ TEST_F(GeopotentialTest, J2) {
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters(
-                            163 * SIUnit<Order2ZonalCoefficient>()));
+                            6 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis.
@@ -112,11 +112,12 @@ TEST_F(GeopotentialTest, J2) {
 
 TEST_F(GeopotentialTest, J3) {
   OblateBody<World> const body =
-      OblateBody<World>(massive_body_parameters_,
-                        rotating_body_parameters_,
-                        OblateBody<World>::Parameters(
-                            163 * SIUnit<Order2ZonalCoefficient>(),
-                            -51 * SIUnit<Order3ZonalCoefficient>()));
+      OblateBody<World>(
+          massive_body_parameters_,
+          rotating_body_parameters_,
+          OblateBody<World>::Parameters(
+              6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              -5 * SIUnit<Degree3SphericalHarmonicCoefficient>()));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis.

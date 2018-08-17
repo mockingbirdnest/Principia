@@ -25,25 +25,25 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
   Exponentiation<Length, -2> const one_over_r² = 1 / r²;
   UnitVector const& axis = body_->polar_axis();
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
-      Order2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
+      Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
   if (body_->has_c22() || body_->has_s22()) {
     auto const from_surface_frame = body_->FromSurfaceFrame<SurfaceFrame>(t);
     UnitVector const reference = from_surface_frame(x_);
     UnitVector const bireference = from_surface_frame(y_);
     acceleration +=
-        Order2TesseralAcceleration(
+        Degree2TesseralAcceleration(
             reference, bireference, r, one_over_r², one_over_r³);
   }
   if (body_->has_j3()) {
     acceleration +=
-        Order3ZonalAcceleration(axis, r, r², one_over_r², one_over_r³);
+        Degree3ZonalAcceleration(axis, r, r², one_over_r², one_over_r³);
   }
   return acceleration;
 }
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Order2ZonalAcceleration(
+Geopotential<Frame>::Degree2ZonalAcceleration(
     UnitVector const& axis,
     Displacement<Frame> const& r,
     Exponentiation<Length, -2> const& one_over_r²,
@@ -62,7 +62,7 @@ Geopotential<Frame>::Order2ZonalAcceleration(
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Order2TesseralAcceleration(
+Geopotential<Frame>::Degree2TesseralAcceleration(
     UnitVector const& reference,
     UnitVector const& bireference,
     Displacement<Frame> const& r,
@@ -91,7 +91,7 @@ Geopotential<Frame>::Order2TesseralAcceleration(
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Order3ZonalAcceleration(
+Geopotential<Frame>::Degree3ZonalAcceleration(
     UnitVector const& axis,
     Displacement<Frame> const& r,
     Square<Length> const& r²,
