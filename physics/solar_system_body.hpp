@@ -547,11 +547,21 @@ template<typename Frame>
 not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
-  if (body.has_j3()) {
-    return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-        body.j2(),
-        body.j3(),
-        ParseQuantity<Length>(body.reference_radius()));
+  if (body.has_c22() || body.has_s22()) {
+    if (body.has_j3()) {
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          body.j2(),
+          body.c22(),
+          body.s22(),
+          body.j3(),
+          ParseQuantity<Length>(body.reference_radius()));
+    } else {
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          body.j2(),
+          body.c22(),
+          body.s22(),
+          ParseQuantity<Length>(body.reference_radius()));
+    }
   } else {
     return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
         body.j2(),
