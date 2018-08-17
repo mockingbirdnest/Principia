@@ -23,9 +23,18 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   Exponentiation<Length, -2> const one_over_r² = 1 / r²;
-  Vector<double, Frame> const& axis = body_->polar_axis();
+  UnitVector const& axis = body_->polar_axis();
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
       Order2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
+  if (body_->has_c22() || body_->has_s22()) {
+    //TODO(phl): Separate the frames?
+    auto const from_surface_frame = body_->FromSurfaceFrame<Frame>(t);
+    UnitVector const reference = from_surface_frame(UnitVector({1, 0, 0}));
+    UnitVector const bireference = from_surface_frame(UnitVector({0, 1, 0}));
+    acceleration +=
+        Order2TesseralAcceleration(
+            reference, bireference, r, one_over_r², one_over_r³);
+  }
   if (body_->has_j3()) {
     acceleration +=
         Order3ZonalAcceleration(axis, r, r², one_over_r², one_over_r³);
