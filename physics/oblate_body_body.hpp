@@ -43,9 +43,9 @@ OblateBody<Frame>::Parameters::Parameters(
     : j2_(j2), c22_(c22), s22_(s22) {
   CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
       << "Oblate body must have positive j2";
-  CHECK_NE(Degree3SphericalHarmonicCoefficient(), c22)
+  CHECK_NE(Degree2SphericalHarmonicCoefficient(), c22)
       << "Oblate body cannot have zero c22";
-  CHECK_NE(Degree3SphericalHarmonicCoefficient(), s22)
+  CHECK_NE(Degree2SphericalHarmonicCoefficient(), s22)
       << "Oblate body cannot have zero s22";
 }
 
@@ -71,9 +71,9 @@ OblateBody<Frame>::Parameters::Parameters(
     : j2_(j2), c22_(c22), s22_(s22), j3_(j3) {
   CHECK_LT(Degree2SphericalHarmonicCoefficient(), j2)
       << "Oblate body must have positive j2";
-  CHECK_NE(Degree3SphericalHarmonicCoefficient(), c22)
+  CHECK_NE(Degree2SphericalHarmonicCoefficient(), c22)
       << "Oblate body cannot have zero c22";
-  CHECK_NE(Degree3SphericalHarmonicCoefficient(), s22)
+  CHECK_NE(Degree2SphericalHarmonicCoefficient(), s22)
       << "Oblate body cannot have zero s22";
   CHECK_NE(Degree3SphericalHarmonicCoefficient(), j3)
       << "Oblate body cannot have zero j3";
@@ -179,6 +179,12 @@ void OblateBody<Frame>::WriteToMessage(
       message->MutableExtension(serialization::RotatingBody::extension)->
                MutableExtension(serialization::OblateBody::extension);
   parameters_.j2_->WriteToMessage(oblate_body->mutable_j2());
+  if (has_c22()) {
+    parameters_.c22_->WriteToMessage(oblate_body->mutable_c22());
+  }
+  if (has_s22()) {
+    parameters_.s22_->WriteToMessage(oblate_body->mutable_s22());
+  }
   if (has_j3()) {
     parameters_.j3_->WriteToMessage(oblate_body->mutable_j3());
   }
@@ -191,10 +197,19 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       typename RotatingBody<Frame>::Parameters const&
           rotating_body_parameters) {
   std::unique_ptr<Parameters> parameters;
-  if (message.has_j3()) {
-    parameters = std::make_unique<Parameters>(
-        Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
-        Degree3SphericalHarmonicCoefficient::ReadFromMessage(message.j3()));
+  if (message.has_c22() || message.has_s22()) {
+    if (message.has_j3()) {
+      parameters = std::make_unique<Parameters>(
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.c22()),
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.s22()),
+          Degree3SphericalHarmonicCoefficient::ReadFromMessage(message.j3()));
+    } else {
+      parameters = std::make_unique<Parameters>(
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.c22()),
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.s22()));
+    }
   } else {
     parameters = std::make_unique<Parameters>(
         Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()));
