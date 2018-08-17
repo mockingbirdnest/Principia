@@ -32,10 +32,18 @@ using quantities::si::Degree;
 //   (HCRF); these realizations have different errors, but are consistent. ICRF3
 //   is in preparation, as well as an optical realization based on Gaia data.
 // - The terms Barycentric Celestial Reference System (BCRS) and ICRS are often
-//   used interchangeably; the relativistic framework, including the metric
-//   tensor, is defined for the BCRS (IAU 2000 resolution B1.3); the orientation
-//   of the BCRS is given by the ICRS axes unless otherwise stated (IAU 2006
-//   resolution B2 recommendation 2).
+//   used interchangeably:
+//   - the ICRS has its origin at the barycentre (IAU 1997 resolution B2; Arias
+//     et al. 1995 "The extragalactic reference system of the International
+//     Earth Rotation Service", IAU 1991 recommendations);
+//   - the relativistic framework, including the metric
+//     tensor, is defined for the BCRS (IAU 2000 resolution B1.3);
+//   - the orientation of the BCRS is given by the ICRS axes unless otherwise
+//     stated (IAU 2006 resolution B2 recommendation 2).
+//   However, the term BCRS tends to be used in practice when the time scale
+//   in use is the time coordinate of the BCRS, namely TCB.  Since Principia
+//   does not support general relativity, and uses only one time scale (TT
+//   identified with TCB), we call this ICRS.
 using ICRS = Frame<serialization::Frame::SolarSystemTag,
                    serialization::Frame::ICRS,
                    /*frame_is_inertial=*/true>;
@@ -47,7 +55,8 @@ using ICRS = Frame<serialization::Frame::SolarSystemTag,
 // - The BCRS and GCRS are relativistic reference systems.
 // - The transformation between BCRS and GCRS spatial coordinates has no
 //   rotational component, i.e., the GCRS is kinematically non-rotating with
-//   respect to the BCRS; as a result, it rotates dynamically with respect to
+//   respect to the BCRS; since its origin moves in the BCRS, it follows from
+//   general relativistic effects that it rotates dynamically with respect to
 //   the BCRS; in particular, the equations of motion in the GCRS include de
 //   Sitter and Lense–Thirring precession.
 // - The time coordinate of the BCRS is TCB, and the time coordinate of the GCRS
