@@ -47,6 +47,12 @@ class OblateBody : public RotatingBody<Frame> {
     std::optional<Order2ZonalCoefficient> j2_;
     std::optional<
         Quotient<Order2ZonalCoefficient, GravitationalParameter>> j2_over_μ_;
+    std::optional<Order2ZonalCoefficient> c22_;
+    std::optional<
+        Quotient<Order2ZonalCoefficient, GravitationalParameter>> c22_over_μ_;
+    std::optional<Order2ZonalCoefficient> s22_;
+    std::optional<
+        Quotient<Order2ZonalCoefficient, GravitationalParameter>> s22_over_μ_;
     std::optional<Order3ZonalCoefficient> j3_;
     std::optional<
         Quotient<Order3ZonalCoefficient, GravitationalParameter>> j3_over_μ_;
@@ -66,14 +72,16 @@ class OblateBody : public RotatingBody<Frame> {
   Quotient<Order2ZonalCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
 
-  // Returns the j3 coefficient.  |has_j3| must be true.
+  // Returns the j3 coefficient.
   Order3ZonalCoefficient const& j3() const;
 
-  // Returns |j3 / μ|.  |has_j3| must be true.
+  // Returns |j3 / μ|.
   Quotient<Order3ZonalCoefficient,
            GravitationalParameter> const& j3_over_μ() const;
 
-  // Whether this body has a j3.
+  // Whether this body has a c22, s22, or j3.
+  bool has_c22() const;
+  bool has_s22() const;
   bool has_j3() const;
 
   // Returns false.

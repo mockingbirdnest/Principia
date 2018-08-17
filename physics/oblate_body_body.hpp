@@ -52,6 +52,16 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
   CHECK_NE(0.0, j3) << "Oblate body cannot have zero j3";
 }
 
+#define PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(name)                    \
+  if (parameters_.name##_) {                                           \
+    parameters_.name##_over_μ_ =                                       \
+        *parameters_.name##_ / this->gravitational_parameter();        \
+  }                                                                    \
+  if (parameters_.name##_over_μ_) {                                    \
+    parameters_.name##_ =                                              \
+        *parameters_.name##_over_μ_ * this->gravitational_parameter(); \
+  }
+
 template<typename Frame>
 OblateBody<Frame>::OblateBody(
     MassiveBody::Parameters const& massive_body_parameters,
@@ -59,19 +69,11 @@ OblateBody<Frame>::OblateBody(
     Parameters const& parameters)
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
       parameters_(parameters) {
-  if (parameters_.j2_) {
-    parameters_.j2_over_μ_ = *parameters_.j2_ / this->gravitational_parameter();
-  }
-  if (parameters_.j2_over_μ_) {
-    parameters_.j2_ = *parameters_.j2_over_μ_ * this->gravitational_parameter();
-  }
-  if (parameters_.j3_) {
-    parameters_.j3_over_μ_ = *parameters_.j3_ / this->gravitational_parameter();
-  }
-  if (parameters_.j3_over_μ_) {
-    parameters_.j3_ = *parameters_.j3_over_μ_ * this->gravitational_parameter();
-  }
+  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j2);
+  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j3);
 }
+
+#undef PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS
 
 template<typename Frame>
 Order2ZonalCoefficient const& OblateBody<Frame>::j2() const {
@@ -86,13 +88,23 @@ Quotient<Order2ZonalCoefficient,
 
 template<typename Frame>
 Order3ZonalCoefficient const & OblateBody<Frame>::j3() const {
-  return *parameters_.j3_;
+  return parameters_.j3_.value_or(Order3ZonalCoefficient());
 }
 
 template<typename Frame>
 Quotient<Order3ZonalCoefficient, GravitationalParameter> const&
     OblateBody<Frame>::j3_over_μ() const {
-  return *parameters_.j3_over_μ_;
+  return parameters_.j3_over_μ_.value_or(Order3ZonalCoefficient());
+}
+
+template<typename Frame>
+bool OblateBody<Frame>::has_c22() const {
+  return parameters_.c22_.has_value();
+}
+
+template<typename Frame>
+bool OblateBody<Frame>::has_s22() const {
+  return parameters_.s22_.has_value();
 }
 
 template<typename Frame>
