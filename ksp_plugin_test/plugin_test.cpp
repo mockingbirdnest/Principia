@@ -272,7 +272,7 @@ class PluginTest : public testing::Test {
         serialized.get());
   }
 
-  static RigidMotion<ICRS, Barycentric> const id_icrf_barycentric_;
+  static RigidMotion<ICRS, Barycentric> const id_icrs_barycentric_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string const initial_time_;
   Angle planetarium_rotation_;
@@ -284,7 +284,7 @@ class PluginTest : public testing::Test {
   Velocity<AliceSun> satellite_initial_velocity_;
 };
 
-RigidMotion<ICRS, Barycentric> const PluginTest::id_icrf_barycentric_(
+RigidMotion<ICRS, Barycentric> const PluginTest::id_icrs_barycentric_(
     RigidTransformation<ICRS, Barycentric>(
         ICRS::origin,
         Barycentric::origin,
@@ -461,7 +461,7 @@ TEST_F(PluginTest, Initialization) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
-    auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
+    auto const to_icrs = id_icrs_barycentric_.orthogonal_map().Inverse() *
                          plugin_->InversePlanetariumRotation().Forget();
     Index const parent_index = SolarSystemFactory::parent(index);
     RelativeDegreesOfFreedom<ICRS> const from_parent =
@@ -470,11 +470,11 @@ TEST_F(PluginTest, Initialization) {
             SolarSystemFactory::name(parent_index));
     EXPECT_THAT(from_parent,
                 Componentwise(
-                    AlmostEquals(to_icrf(plugin_->CelestialFromParent(index)
+                    AlmostEquals(to_icrs(plugin_->CelestialFromParent(index)
                                              .displacement()),
                                  0, 458752),
                     AlmostEquals(
-                        to_icrf(plugin_->CelestialFromParent(index).velocity()),
+                        to_icrs(plugin_->CelestialFromParent(index).velocity()),
                         441, 9400740)))
         << SolarSystemFactory::name(index);
   }
@@ -992,15 +992,15 @@ TEST_F(PluginTest, UpdateCelestialHierarchy) {
   for (int index = SolarSystemFactory::Sun + 1;
        index <= SolarSystemFactory::LastMajorBody;
        ++index) {
-    auto const to_icrf = id_icrf_barycentric_.orthogonal_map().Inverse() *
+    auto const to_icrs = id_icrs_barycentric_.orthogonal_map().Inverse() *
                          plugin_->InversePlanetariumRotation().Forget();
     RelativeDegreesOfFreedom<ICRS> const initial_from_parent =
         solar_system_->degrees_of_freedom(SolarSystemFactory::name(index)) -
         solar_system_->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
     RelativeDegreesOfFreedom<ICRS> const computed_from_parent(
-        to_icrf(plugin_->CelestialFromParent(index).displacement()),
-        to_icrf(plugin_->CelestialFromParent(index).velocity()));
+        to_icrs(plugin_->CelestialFromParent(index).displacement()),
+        to_icrs(plugin_->CelestialFromParent(index).velocity()));
     EXPECT_THAT(
         (initial_from_parent.displacement() -
          computed_from_parent.displacement()).Norm(),
