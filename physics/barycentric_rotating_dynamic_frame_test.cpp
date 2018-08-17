@@ -214,14 +214,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
        Velocity<MockFrame>({(80 - 30) * Metre / Second,
                             (-60 - 40) * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const barycentre_dof =
       Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
           {big_dof, small_dof},
@@ -275,14 +275,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof = 
+      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const barycentre_dof =
       Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
           {big_dof, small_dof},
@@ -336,14 +336,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const barycentre_dof =
       Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
           {big_dof, small_dof},
@@ -399,14 +399,14 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const barycentre_dof =
       Barycentre<DegreesOfFreedom<ICRS>, GravitationalParameter>(
           {big_dof, small_dof},

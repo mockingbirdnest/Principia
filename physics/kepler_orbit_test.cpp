@@ -517,7 +517,6 @@ TEST_F(KeplerOrbitTest, OrientationFromArgumentOfPeriapsis) {
 }
 
 #define CONSTRUCT_CONIC_FROM_TWO_ELEMENTS(element1, element2, reference)       \
-                                                                               \
   [&]() {                                                                      \
     KeplerianElements<ICRS> elements;                                          \
     elements.element1 = (reference).element1;                                  \

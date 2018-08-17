@@ -866,15 +866,12 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   initial_state.emplace_back(q2, v);
   initial_state.emplace_back(q3, v);
 
-  Ephemeris<ICRS>
-      ephemeris(
-          std::move(bodies),
-          initial_state,
-          t0_,
-          5 * Milli(Metre),
-          Ephemeris<ICRS>::FixedStepParameters(
-              integrator(),
-              duration / 100));
+  Ephemeris<ICRS> ephemeris(
+      std::move(bodies),
+      initial_state,
+      t0_,
+      5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
   ephemeris.Prolong(t0_ + duration);
 
   Vector<Acceleration, ICRS> actual_acceleration0 =

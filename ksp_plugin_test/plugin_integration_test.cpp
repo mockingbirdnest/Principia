@@ -78,7 +78,7 @@ std::string const vessel_name = "NCC-1701-D";
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : icrf_to_barycentric_positions_(ICRS::origin,
+      : icrs_to_barycentric_positions_(ICRS::origin,
                                        Barycentric::origin,
                                        ircf_to_barycentric_linear_),
         looking_glass_(Permutation<ICRS, AliceSun>::XZY),
@@ -109,9 +109,9 @@ class PluginIntegrationTest : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
-  DegreesOfFreedom<Barycentric> ICRFToBarycentric(
+  DegreesOfFreedom<Barycentric> icrsToBarycentric(
       DegreesOfFreedom<ICRS> const& degrees_of_freedom) {
-    return {icrf_to_barycentric_positions_(degrees_of_freedom.position()),
+    return {icrs_to_barycentric_positions_(degrees_of_freedom.position()),
             ircf_to_barycentric_linear_(degrees_of_freedom.velocity())};
   }
 
@@ -134,7 +134,7 @@ class PluginIntegrationTest : public testing::Test {
   }
 
   Identity<ICRS, Barycentric> ircf_to_barycentric_linear_;
-  AffineMap<ICRS, Barycentric, Length, Identity> icrf_to_barycentric_positions_;
+  AffineMap<ICRS, Barycentric, Length, Identity> icrs_to_barycentric_positions_;
   Permutation<ICRS, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string initial_time_;

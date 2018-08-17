@@ -253,14 +253,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, CentrifugalAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
@@ -307,14 +307,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, EulerAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)
       .WillRepeatedly(Return(big_dof));
@@ -361,14 +361,14 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, LinearAcceleration) {
        Velocity<MockFrame>({0 * Metre / Second,
                             0 * Metre / Second,
                             0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const big_dof = {
-      Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = {
-      Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
-      Velocity<ICRS>(
-          {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const big_dof =
+      {Displacement<ICRS>({0 * Metre, 0 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {0 * Metre / Second, 0 * Metre / Second, 0 * Metre / Second})};
+  DegreesOfFreedom<ICRS> const small_dof =
+      {Displacement<ICRS>({3 * Metre, 4 * Metre, 0 * Metre}) + ICRS::origin,
+       Velocity<ICRS>(
+           {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
 
   EXPECT_CALL(mock_big_trajectory_, EvaluateDegreesOfFreedom(t))
       .Times(2)

@@ -162,12 +162,12 @@ message Frame {
 
   // The frame tags used in the astronomical simulations.
   enum SolarSystemTag {
+    GCRS = 5;
+    ICRS = 2;
+    ITRS = 4;
+    SKY = 3;
     reserved 1;
     reserved "ICRF_J2000_ECLIPTIC";
-    ICRS = 2;
-    SKY = 3;
-    ITRS = 4;
-    GCRS = 5;
   }
 
   // The frame tags used in tests.

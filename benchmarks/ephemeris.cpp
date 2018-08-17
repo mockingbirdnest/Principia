@@ -193,20 +193,12 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   ephemeris->Prolong(final_time);
 
-  // Compute the total degree of the underlying polynomials.  Useful for
-  // benchmarking the effect of the fitting tolerance.
-  double total_degree = 0;
-  for (auto const& body : ephemeris->bodies()) {
-    total_degree += ephemeris->trajectory(body)->average_degree();
-  }
-
-  while (state.KeepRunning()) {
-    state.PauseTiming();
+  auto make_l4_probe_trajectory = [&ephemeris, &at_спутник_1_launch]() {
     // A probe near the L4 point of the Sun-Earth system.
     Identity<ICRS, Barycentric> to_barycentric;
     Identity<Barycentric, ICRS> from_barycentric;
     MasslessBody probe;
-    DiscreteTrajectory<Barycentric> trajectory;
+    auto trajectory = std::make_unique<DiscreteTrajectory<Barycentric>>();
     DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
         at_спутник_1_launch->degrees_of_freedom(
             SolarSystemFactory::name(SolarSystemFactory::Sun));
@@ -238,34 +230,45 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
         from_barycentric(earth_degrees_of_freedom.velocity() -
                          sun_degrees_of_freedom.velocity()));
     Velocity<Ecliptic> const sun_l4_velocity = l4_rotation(sun_earth_velocity);
-    trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<Barycentric>(
-                          sun_degrees_of_freedom.position() +
-                              to_barycentric(
-                                  ecliptic_to_equatorial(
-                                      sun_l4_displacement)),
-                          sun_degrees_of_freedom.velocity() +
-                              to_barycentric(
-                                  ecliptic_to_equatorial(
-                                      sun_l4_velocity))));
+    trajectory->Append(
+        at_спутник_1_launch->epoch(),
+        DegreesOfFreedom<Barycentric>(
+            sun_degrees_of_freedom.position() +
+                to_barycentric(ecliptic_to_equatorial(sun_l4_displacement)),
+            sun_degrees_of_freedom.velocity() +
+                to_barycentric(ecliptic_to_equatorial(sun_l4_velocity))));
+    return trajectory;
+  };
 
-    state.ResumeTiming();
-    flow(&trajectory, final_time, *ephemeris);
+  // Compute the total degree of the underlying polynomials.  Useful for
+  // benchmarking the effect of the fitting tolerance.
+  double total_degree = 0;
+  for (auto const& body : ephemeris->bodies()) {
+    total_degree += ephemeris->trajectory(body)->average_degree();
+  }
+
+  while (state.KeepRunning()) {
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory =
+        make_l4_probe_trajectory();
     state.PauseTiming();
 
-    sun_error = (at_спутник_1_launch->trajectory(
-                     *ephemeris,
-                     SolarSystemFactory::name(SolarSystemFactory::Sun)).
-                         EvaluatePosition(final_time) -
-                 trajectory.last().degrees_of_freedom().position()).
-                     Norm();
-    earth_error = (at_спутник_1_launch->trajectory(
-                       *ephemeris,
-                       SolarSystemFactory::name(SolarSystemFactory::Earth)).
-                           EvaluatePosition(final_time) -
-                   trajectory.last().degrees_of_freedom().position()).
-                       Norm();
-    steps = trajectory.Size();
+    state.ResumeTiming();
+    flow(trajectory.get(), final_time, *ephemeris);
+    state.PauseTiming();
+
+    sun_error =
+        (at_спутник_1_launch->trajectory(
+             *ephemeris,
+             SolarSystemFactory::name(
+                 SolarSystemFactory::Sun)).EvaluatePosition(final_time) -
+         trajectory->last().degrees_of_freedom().position()).Norm();
+    earth_error =
+        (at_спутник_1_launch->trajectory(
+             *ephemeris,
+             SolarSystemFactory::name(
+                 SolarSystemFactory::Earth)).EvaluatePosition(final_time) -
+         trajectory->last().degrees_of_freedom().position()).Norm();
+    steps = trajectory->Size();
     state.ResumeTiming();
   }
   std::stringstream ss;
