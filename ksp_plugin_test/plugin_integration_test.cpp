@@ -80,7 +80,7 @@ class PluginIntegrationTest : public testing::Test {
   PluginIntegrationTest()
       : icrs_to_barycentric_positions_(ICRS::origin,
                                        Barycentric::origin,
-                                       ircf_to_barycentric_linear_),
+                                       icrs_to_barycentric_linear_),
         looking_glass_(Permutation<ICRS, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
@@ -112,7 +112,7 @@ class PluginIntegrationTest : public testing::Test {
   DegreesOfFreedom<Barycentric> icrsToBarycentric(
       DegreesOfFreedom<ICRS> const& degrees_of_freedom) {
     return {icrs_to_barycentric_positions_(degrees_of_freedom.position()),
-            ircf_to_barycentric_linear_(degrees_of_freedom.velocity())};
+            icrs_to_barycentric_linear_(degrees_of_freedom.velocity())};
   }
 
   void InsertAllSolarSystemBodies() {
@@ -133,7 +133,7 @@ class PluginIntegrationTest : public testing::Test {
     }
   }
 
-  Identity<ICRS, Barycentric> ircf_to_barycentric_linear_;
+  Identity<ICRS, Barycentric> icrs_to_barycentric_linear_;
   AffineMap<ICRS, Barycentric, Length, Identity> icrs_to_barycentric_positions_;
   Permutation<ICRS, AliceSun> looking_glass_;
   not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
