@@ -39,7 +39,6 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::ICRS;
-using astronomy::SolarSystemBarycentreEquator;
 using base::not_null;
 using geometry::Barycentre;
 using geometry::AngularVelocity;
