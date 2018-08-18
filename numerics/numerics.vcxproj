@@ -17,6 +17,7 @@
     <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="hermite3.hpp" />
     <ClInclude Include="hermite3_body.hpp" />
+    <ClInclude Include="legendre.hpp" />
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
