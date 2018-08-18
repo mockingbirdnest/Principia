@@ -215,7 +215,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CoriolisAcceleration) {
                             (-60 - 40) * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
+       ICRS::origin,
        Velocity<ICRS>(
            {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const small_dof =
@@ -276,10 +277,11 @@ TEST_F(BarycentricRotatingDynamicFrameTest, CentrifugalAcceleration) {
                             0 * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
+       ICRS::origin,
        Velocity<ICRS>(
            {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
-  DegreesOfFreedom<ICRS> const small_dof = 
+  DegreesOfFreedom<ICRS> const small_dof =
       {Displacement<ICRS>({5 * Metre, 5 * Metre, 0 * Metre}) + ICRS::origin,
        Velocity<ICRS>(
            {40 * Metre / Second, -30 * Metre / Second, 0 * Metre / Second})};
@@ -337,7 +339,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, EulerAcceleration) {
                             0 * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
+       ICRS::origin,
        Velocity<ICRS>(
            {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const small_dof =
@@ -400,7 +403,8 @@ TEST_F(BarycentricRotatingDynamicFrameTest, LinearAcceleration) {
                             0 * Metre / Second,
                             0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const big_dof =
-      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) + ICRS::origin,
+      {Displacement<ICRS>({0.8 * Metre, -0.6 * Metre, 0 * Metre}) +
+       ICRS::origin,
        Velocity<ICRS>(
            {-16 * Metre / Second, 12 * Metre / Second, 0 * Metre / Second})};
   DegreesOfFreedom<ICRS> const small_dof =
