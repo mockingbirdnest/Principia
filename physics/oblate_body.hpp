@@ -77,19 +77,19 @@ class OblateBody : public RotatingBody<Frame> {
                  rotating_body_parameters,
              Parameters const& parameters);
 
-  // Returns the j2 coefficient.
+  // Selectors for the various spherical harmonics coefficients.
   Degree2SphericalHarmonicCoefficient const& j2() const;
-
-  // Returns |j2 / μ|.
   Quotient<Degree2SphericalHarmonicCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
-
-  // Returns the j3 coefficient.
-  Degree3SphericalHarmonicCoefficient const& j3() const;
-
-  // Returns |j3 / μ|.
+  Degree2SphericalHarmonicCoefficient const c22() const;
+  Quotient<Degree2SphericalHarmonicCoefficient,
+           GravitationalParameter> const c22_over_μ() const;
+  Degree2SphericalHarmonicCoefficient const s22() const;
+  Quotient<Degree2SphericalHarmonicCoefficient,
+           GravitationalParameter> const s22_over_μ() const;
+  Degree3SphericalHarmonicCoefficient const j3() const;
   Quotient<Degree3SphericalHarmonicCoefficient,
-           GravitationalParameter> const& j3_over_μ() const;
+           GravitationalParameter> const j3_over_μ() const;
 
   // Whether this body has a c22, s22, or j3.
   bool has_c22() const;

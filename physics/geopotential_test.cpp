@@ -9,6 +9,7 @@
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -28,6 +29,7 @@ using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
+using testing_utilities::IsNear;
 using testing_utilities::VanishesBefore;
 using ::testing::An;
 using ::testing::Gt;
@@ -93,7 +95,7 @@ TEST_F(GeopotentialTest, J2) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                AlmostEquals(0.75, 1));
+                AlmostEquals(0.75, 0));
     EXPECT_THAT(acceleration.coordinates().z,
                 VanishesBefore(1 * Pow<-2>(Metre), 0));
   }
@@ -110,6 +112,43 @@ TEST_F(GeopotentialTest, J2) {
   }
 }
 
+TEST_F(GeopotentialTest, C22S22) {
+  OblateBody<World> const body = OblateBody<World>(
+      massive_body_parameters_,
+      rotating_body_parameters_,
+      OblateBody<World>::Parameters(
+          6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+          10 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+          -13 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
+  Geopotential<World> const geopotential(&body);
+
+  // The acceleration at a point located on the axis is along the axis for the
+  // (2, 2) harmonics.
+  {
+    auto const acceleration = SphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}));
+    EXPECT_THAT(acceleration,
+                Componentwise(VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              An<Exponentiation<Length, -2>>()));
+  }
+
+  // The acceleration at a point located in the equatorial plane is in the plane
+  // but not directed to the centre.
+  {
+    auto const acceleration = SphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
+    EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
+                Not(IsNear(0.75)));
+    EXPECT_THAT(acceleration.coordinates().z,
+                VanishesBefore(1 * Pow<-2>(Metre), 0));
+  }
+}
+
 TEST_F(GeopotentialTest, J3) {
   OblateBody<World> const body =
       OblateBody<World>(
@@ -117,6 +156,8 @@ TEST_F(GeopotentialTest, J3) {
           rotating_body_parameters_,
           OblateBody<World>::Parameters(
               6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
               -5 * SIUnit<Degree3SphericalHarmonicCoefficient>()));
   Geopotential<World> const geopotential(&body);
 
@@ -140,7 +181,7 @@ TEST_F(GeopotentialTest, J3) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                AlmostEquals(0.75, 1));
+                AlmostEquals(0.75, 0));
     EXPECT_THAT(acceleration.coordinates().z,
                 Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
     EXPECT_THAT(acceleration.coordinates().z, Gt(0 * Pow<-2>(Metre)));

@@ -113,6 +113,8 @@ OblateBody<Frame>::OblateBody(
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
       parameters_(parameters) {
   PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j2);
+  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(c22);
+  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(s22);
   PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j3);
 }
 
@@ -130,14 +132,39 @@ Quotient<Degree2SphericalHarmonicCoefficient,
 }
 
 template<typename Frame>
-Degree3SphericalHarmonicCoefficient const & OblateBody<Frame>::j3() const {
+Degree2SphericalHarmonicCoefficient const OblateBody<Frame>::c22() const {
+  return parameters_.c22_.value_or(Degree2SphericalHarmonicCoefficient());
+}
+
+template<typename Frame>
+Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter> const
+    OblateBody<Frame>::c22_over_μ() const {
+  return parameters_.c22_over_μ_.value_or(
+      Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter>());
+}
+
+template<typename Frame>
+Degree2SphericalHarmonicCoefficient const OblateBody<Frame>::s22() const {
+  return parameters_.s22_.value_or(Degree2SphericalHarmonicCoefficient());
+}
+
+template<typename Frame>
+Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter> const
+    OblateBody<Frame>::s22_over_μ() const {
+  return parameters_.s22_over_μ_.value_or(
+      Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter>());
+}
+
+template<typename Frame>
+Degree3SphericalHarmonicCoefficient const OblateBody<Frame>::j3() const {
   return parameters_.j3_.value_or(Degree3SphericalHarmonicCoefficient());
 }
 
 template<typename Frame>
-Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter> const&
+Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter> const
     OblateBody<Frame>::j3_over_μ() const {
-  return parameters_.j3_over_μ_.value_or(Degree3SphericalHarmonicCoefficient());
+  return parameters_.j3_over_μ_.value_or(
+      Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter>());
 }
 
 template<typename Frame>
