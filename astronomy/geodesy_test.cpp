@@ -5,6 +5,7 @@
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/is_near.hpp"
 
 namespace principia {
@@ -23,12 +24,17 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using integrators::methods::Quinlan1999Order8A;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodySurfaceDynamicFrame;
+using physics::ContinuousTrajectory;
 using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::Ephemeris;
+using physics::KeplerianElements;
+using physics::KeplerOrbit;
+using physics::MasslessBody;
 using physics::OblateBody;
 using physics::SolarSystem;
 using quantities::si::ArcMinute;
+using quantities::si::ArcSecond;
 using quantities::si::Deci;
 using quantities::si::Degree;
 using quantities::si::Kilo;
@@ -36,6 +42,7 @@ using quantities::si::Metre;
 using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Second;
+using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using ::testing::Eq;
 
@@ -54,17 +61,20 @@ class GeodesyTest : public ::testing::Test {
                 /*step=*/10 * Minute))),
         earth_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
             solar_system_2000_.massive_body(*ephemeris_, "Earth"))),
+        earth_trajectory_(*ephemeris_->trajectory(earth_)),
         itrs_(ephemeris_.get(), earth_) {}
 
   SolarSystem<ICRS> solar_system_2000_;
-  not_null<std::unique_ptr<Ephemeris<ICRS>>> ephemeris_;
-  not_null<OblateBody<ICRS> const*> earth_;
+  not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
+  not_null<OblateBody<ICRS> const*> const earth_;
+  ContinuousTrajectory<ICRS> const& earth_trajectory_;
   // TODO(egg): find a bound on the error induced by this approximation to the
   // Earth Rotation Angle.
   BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
 };
 
 TEST_F(GeodesyTest, LAGEOS2) {
+  MasslessBody lageos2;
   // Initial state and expected state from the ILRS official primary analysis
   // product ILRSA, see
   // https://ilrs.cddis.eosdis.nasa.gov/data_and_products/products/index.html;
@@ -146,18 +156,54 @@ TEST_F(GeodesyTest, LAGEOS2) {
   auto const actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
       lageos2_trajectory.last().degrees_of_freedom());
 
-  // Absolute error.
+  // Absolute error in position.
   EXPECT_THAT(
-      (actual_final_dof.position() - expected_final_dof.position()).Norm(),
+      AbsoluteError(actual_final_dof.position(), expected_final_dof.position()),
       IsNear(570 * Kilo(Metre)));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(actual_final_dof.position() - ITRS::origin,
                            expected_final_dof.position() - ITRS::origin),
               IsNear(2 * Degree + 41 * ArcMinute));
   // Radial error at the geocentre.
-  EXPECT_THAT((actual_final_dof.position() - ITRS::origin).Norm() -
-                  (expected_final_dof.position() - ITRS::origin).Norm(),
-              IsNear(270 * Metre));
+  EXPECT_THAT(
+      AbsoluteError((actual_final_dof.position() - ITRS::origin).Norm(),
+                    (expected_final_dof.position() - ITRS::origin).Norm()),
+      IsNear(270 * Metre));
+
+  // Errors in orbital elements.
+  KeplerianElements<ICRS> const expected_elements =
+      KeplerOrbit<ICRS>(
+          *earth_,
+          lageos2,
+          itrs_.FromThisFrameAtTime(final_time)(expected_final_dof) -
+              earth_trajectory_.EvaluateDegreesOfFreedom(final_time),
+          final_time).elements_at_epoch();
+  KeplerianElements<ICRS> const actual_elements =
+      KeplerOrbit<ICRS>(
+          *earth_,
+          lageos2,
+          itrs_.FromThisFrameAtTime(final_time)(actual_final_dof) -
+              earth_trajectory_.EvaluateDegreesOfFreedom(final_time),
+          final_time).elements_at_epoch();
+
+  EXPECT_THAT(AbsoluteError(*actual_elements.periapsis_distance,
+                            *expected_elements.periapsis_distance),
+              IsNear(2 * Kilo(Metre)));
+  EXPECT_THAT(AbsoluteError(*actual_elements.apoapsis_distance,
+                            *expected_elements.apoapsis_distance),
+              IsNear(2 * Kilo(Metre)));
+  EXPECT_THAT(AbsoluteError(actual_elements.longitude_of_ascending_node,
+                            expected_elements.longitude_of_ascending_node),
+              IsNear(4 * ArcMinute + 21 * ArcSecond));
+  EXPECT_THAT(AbsoluteError(actual_elements.inclination,
+                            expected_elements.inclination),
+              IsNear(1.2 * ArcSecond));
+  EXPECT_THAT(AbsoluteError(*actual_elements.argument_of_periapsis,
+                            *expected_elements.argument_of_periapsis),
+              IsNear(15 * ArcMinute + 57 * ArcSecond));
+  EXPECT_THAT(AbsoluteError(*actual_elements.mean_anomaly,
+                            *expected_elements.mean_anomaly),
+              IsNear(2 * Degree + 31 * ArcMinute));
 }
 
 }  // namespace astronomy
