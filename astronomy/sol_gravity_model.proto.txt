@@ -84,8 +84,9 @@ gravity_model {
 
   # Telluric planets.
   body {
-    # J2 coefficient and reference radius from the combined GRACE/GEOS model
-    # GGM05C.ICGEM at ftp://ftp.csr.utexas.edu/pub/grace/GGM05/.
+    # Spherical harmonic coefficients, and reference radius from the combined
+    # GRACE/GEOS model GGM05C.ICGEM at
+    # ftp://ftp.csr.utexas.edu/pub/grace/GGM05/.
     name                    : "Earth"
     gravitational_parameter : "3.9860043543609598e+05 km^3/s^2"
     reference_instant       : "JD2451545.000000000"

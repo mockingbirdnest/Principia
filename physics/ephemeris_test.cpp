@@ -790,7 +790,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   // The small residual in x comes from the fact that the cosine of the
   // declination (90 degrees) is not exactly zero, so the axis of our Earth is
   // slightly tilted.  This greatly annoys the elephant.
-  EXPECT_THAT(elephant_positions.size(), Eq(9));
+  EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               VanishesBefore(1 * Metre, 0));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
@@ -798,7 +798,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           earth_polar_radius), 8e-7);
 
-  EXPECT_THAT(elephant_accelerations.size(), Eq(9));
+  EXPECT_THAT(elephant_accelerations.size(), Eq(8));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
               VanishesBefore(1 * Metre / Second / Second, 0));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,

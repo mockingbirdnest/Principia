@@ -225,7 +225,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(163, oblate_body_extension.j2().magnitude());
+  EXPECT_EQ(6, oblate_body_extension.j2().magnitude());
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
