@@ -1,5 +1,5 @@
 gravity_model {
-  solar_system_frame : ICRF_J2000_EQUATOR
+  solar_system_frame : ICRS
 
   # Unless otherwise mentioned, axis directions, mean radii, reference angles
   # and angular frequencies are from "Report of the IAU Working Group on

@@ -21,7 +21,7 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using astronomy::J2000;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
@@ -65,7 +65,7 @@ void GenerateConfiguration(std::string const& game_epoch,
                            std::string const& needs) {
   std::filesystem::path const directory =
       SOLUTION_DIR / "astronomy";
-  SolarSystem<ICRFJ2000Equator> solar_system(
+  SolarSystem<ICRS> solar_system(
       (directory / gravity_model_stem).replace_extension(proto_txt),
       (directory / initial_state_stem).replace_extension(proto_txt),
       /*ignore_frame=*/true);
@@ -169,10 +169,10 @@ void GenerateConfiguration(std::string const& game_epoch,
     auto const barycentric_system =
         hierarchical_system->ConsumeBarycentricSystem();
 
-    auto displacement = [](DegreesOfFreedom<ICRFJ2000Equator> const& dof) {
-      return (dof.position() - ICRFJ2000Equator::origin).coordinates();
+    auto displacement = [](DegreesOfFreedom<ICRS> const& dof) {
+      return (dof.position() - ICRS::origin).coordinates();
     };
-    auto velocity = [](DegreesOfFreedom<ICRFJ2000Equator> const& dof) {
+    auto velocity = [](DegreesOfFreedom<ICRS> const& dof) {
       return dof.velocity().coordinates();
     };
 

@@ -155,8 +155,10 @@ inline not_null<std::unique_ptr<MassiveBody>> MassiveBody::ReadFromMessage(
       using Tag = serialization::Frame::SolarSystemTag;
       if (enum_descriptor == google::protobuf::GetEnumDescriptor<Tag>()) {
         switch (static_cast<Tag>(enum_value_descriptor->number())) {
-          ROTATING_BODY_TAG_VALUE_CASE(ICRF_J2000_ECLIPTIC);
-          ROTATING_BODY_TAG_VALUE_CASE(ICRF_J2000_EQUATOR);
+          ROTATING_BODY_TAG_VALUE_CASE(GCRS);
+          ROTATING_BODY_TAG_VALUE_CASE(ICRS);
+          ROTATING_BODY_TAG_VALUE_CASE(ITRS);
+          ROTATING_BODY_TAG_VALUE_CASE(SKY);
         }
       }
     }

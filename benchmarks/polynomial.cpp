@@ -14,7 +14,7 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Ecliptic;
+using astronomy::ICRS;
 using geometry::Displacement;
 using geometry::Multivector;
 using geometry::R3Element;
@@ -154,32 +154,28 @@ void BM_EvaluatePolynomialInMonomialBasisVectorDouble(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
-      EvaluatePolynomialInMonomialBasis<
-          Multivector<double, ICRFJ2000Ecliptic, 1>,
-          Time,
-          4,
-          Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
+                                        Time,
+                                        4,
+                                        Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<
-          Multivector<double, ICRFJ2000Ecliptic, 1>,
-          Time,
-          8,
-          Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
+                                        Time,
+                                        8,
+                                        Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<
-          Multivector<double, ICRFJ2000Ecliptic, 1>,
-          Time,
-          12,
-          Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
+                                        Time,
+                                        12,
+                                        Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<
-          Multivector<double, ICRFJ2000Ecliptic, 1>,
-          Time,
-          16,
-          Evaluator>(state);
+      EvaluatePolynomialInMonomialBasis<Multivector<double, ICRS, 1>,
+                                        Time,
+                                        16,
+                                        Evaluator>(state);
       break;
     default:
       LOG(FATAL) << "Degree " << degree
@@ -192,25 +188,25 @@ void BM_EvaluatePolynomialInMonomialBasisDisplacement(benchmark::State& state) {
   int const degree = state.range_x();
   switch (degree) {
     case 4:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
+      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
                                         Time,
                                         4,
                                         Evaluator>(state);
       break;
     case 8:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
+      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
                                         Time,
                                         8,
                                         Evaluator>(state);
       break;
     case 12:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
+      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
                                         Time,
                                         12,
                                         Evaluator>(state);
       break;
     case 16:
-      EvaluatePolynomialInMonomialBasis<Displacement<ICRFJ2000Ecliptic>,
+      EvaluatePolynomialInMonomialBasis<Displacement<ICRS>,
                                         Time,
                                         16,
                                         Evaluator>(state);

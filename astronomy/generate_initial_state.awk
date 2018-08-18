@@ -3,7 +3,7 @@
 # |principia.serialization.SolarSystemFile| containing an |initial_state| field.
 BEGIN {
   print "initial_state {"
-  print "  solar_system_frame : ICRF_J2000_EQUATOR"
+  print "  solar_system_frame : ICRS"
   n = 0
   skip = 1
 }

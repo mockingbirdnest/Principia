@@ -26,7 +26,7 @@ namespace principia {
 namespace physics {
 namespace internal_body_centred_non_rotating_dynamic_frame {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using geometry::Barycentre;
 using geometry::Bivector;
 using geometry::DefinesFrame;
@@ -78,10 +78,10 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         t0_(solar_system_.epoch()),
         ephemeris_(solar_system_.MakeEphemeris(
             /*fitting_tolerance=*/1 * Milli(Metre),
-            Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+            Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,
-                    Position<ICRFJ2000Equator>>(),
+                    Position<ICRS>>(),
                 /*step=*/10 * Milli(Second)))),
         big_initial_state_(solar_system_.degrees_of_freedom(big)),
         big_gravitational_parameter_(
@@ -90,29 +90,24 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
         small_gravitational_parameter_(
             solar_system_.gravitational_parameter(small)) {
     ephemeris_->Prolong(t0_ + 2 * period_);
-    big_frame_ = std::make_unique<
-                     BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>>(
-                         ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, big));
-    small_frame_ = std::make_unique<
-                     BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator,
-                                                        Small>>(
-                         ephemeris_.get(),
-                         solar_system_.massive_body(*ephemeris_, small));
+    big_frame_ =
+        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Big>>(
+            ephemeris_.get(), solar_system_.massive_body(*ephemeris_, big));
+    small_frame_ =
+        std::make_unique<BodyCentredNonRotatingDynamicFrame<ICRS, Small>>(
+            ephemeris_.get(), solar_system_.massive_body(*ephemeris_, small));
   }
 
   Time const period_;
-  SolarSystem<ICRFJ2000Equator> solar_system_;
+  SolarSystem<ICRS> solar_system_;
   Instant const t0_;
-  std::unique_ptr<Ephemeris<ICRFJ2000Equator>> const ephemeris_;
-  DegreesOfFreedom<ICRFJ2000Equator> const big_initial_state_;
+  std::unique_ptr<Ephemeris<ICRS>> const ephemeris_;
+  DegreesOfFreedom<ICRS> const big_initial_state_;
   GravitationalParameter const big_gravitational_parameter_;
-  DegreesOfFreedom<ICRFJ2000Equator> const small_initial_state_;
+  DegreesOfFreedom<ICRS> const small_initial_state_;
   GravitationalParameter const small_gravitational_parameter_;
-  std::unique_ptr<
-      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Big>> big_frame_;
-  std::unique_ptr<
-      BodyCentredNonRotatingDynamicFrame<ICRFJ2000Equator, Small>> small_frame_;
+  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Big>> big_frame_;
+  std::unique_ptr<BodyCentredNonRotatingDynamicFrame<ICRS, Small>> small_frame_;
 };
 
 
@@ -120,19 +115,17 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
 // the big body.
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, SmallBodyInBigFrame) {
   int const steps = 100;
-  Bivector<double, ICRFJ2000Equator> const axis({0, 0, 1});
+  Bivector<double, ICRS> const axis({0, 0, 1});
 
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
+  RelativeDegreesOfFreedom<ICRS> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
   for (Instant t = t0_; t < t0_ + 1 * period_; t += period_ / steps) {
-    DegreesOfFreedom<ICRFJ2000Equator> const small_in_inertial_frame_at_t =
+    DegreesOfFreedom<ICRS> const small_in_inertial_frame_at_t =
         solar_system_.trajectory(*ephemeris_, small).
             EvaluateDegreesOfFreedom(t);
 
-    auto const rotation_in_big_frame_at_t =
-        Rotation<ICRFJ2000Equator, Big>(2 * π * (t - t0_) * Radian / period_,
-                                        axis,
-                                        DefinesFrame<Big>{});
+    auto const rotation_in_big_frame_at_t = Rotation<ICRS, Big>(
+        2 * π * (t - t0_) * Radian / period_, axis, DefinesFrame<Big>{});
     DegreesOfFreedom<Big> const small_in_big_frame_at_t(
         rotation_in_big_frame_at_t(initial_big_to_small.displacement()) +
             Big::origin,
@@ -166,7 +159,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Inverse) {
 
 TEST_F(BodyCentredNonRotatingDynamicFrameTest, GeometricAcceleration) {
   int const steps = 10;
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const initial_big_to_small =
+  RelativeDegreesOfFreedom<ICRS> const initial_big_to_small =
       small_initial_state_ - big_initial_state_;
   Length const big_to_small = initial_big_to_small.displacement().Norm();
   Acceleration const small_on_big =
@@ -208,8 +201,7 @@ TEST_F(BodyCentredNonRotatingDynamicFrameTest, Serialization) {
   EXPECT_EQ(1, extension.centre());
 
   auto const read_small_frame =
-      DynamicFrame<ICRFJ2000Equator, Small>::ReadFromMessage(
-          message, ephemeris_.get());
+      DynamicFrame<ICRS, Small>::ReadFromMessage(message, ephemeris_.get());
   EXPECT_THAT(read_small_frame, Not(IsNull()));
 
   Instant const t = t0_ + period_;

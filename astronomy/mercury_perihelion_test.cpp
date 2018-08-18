@@ -61,9 +61,9 @@ class MercuryPerihelionTest : public testing::Test {
     google::LogToStderr();
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+        Ephemeris<ICRS>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*step=*/10 * Minute));
   }
 
@@ -110,24 +110,24 @@ class MercuryPerihelionTest : public testing::Test {
     keplerian_elements_2050_.mean_anomaly = 3.105229688140852e+01 * Degree;
   }
 
-  static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
-  static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
+  static SolarSystem<ICRS> solar_system_1950_;
+  static std::unique_ptr<Ephemeris<ICRS>> ephemeris_;
 
   not_null<MassiveBody const*> sun_;
   not_null<MassiveBody const*> mercury_;
   Instant t_1950_;
   Instant t_1960_;
   Instant t_2050_;
-  KeplerianElements<ICRFJ2000Equator> keplerian_elements_1950_;
-  KeplerianElements<ICRFJ2000Equator> keplerian_elements_1960_;
-  KeplerianElements<ICRFJ2000Equator> keplerian_elements_2050_;
+  KeplerianElements<ICRS> keplerian_elements_1950_;
+  KeplerianElements<ICRS> keplerian_elements_1960_;
+  KeplerianElements<ICRS> keplerian_elements_2050_;
 };
 
-SolarSystem<ICRFJ2000Equator> MercuryPerihelionTest::solar_system_1950_(
+SolarSystem<ICRS> MercuryPerihelionTest::solar_system_1950_(
     SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
     SOLUTION_DIR / "astronomy" /
         "sol_initial_state_jd_2433282_500000000.proto.txt");
-std::unique_ptr<Ephemeris<ICRFJ2000Equator>> MercuryPerihelionTest::ephemeris_;
+std::unique_ptr<Ephemeris<ICRS>> MercuryPerihelionTest::ephemeris_;
 
 TEST_F(MercuryPerihelionTest, Year1950) {
   ephemeris_->Prolong(t_1950_);
@@ -137,13 +137,12 @@ TEST_F(MercuryPerihelionTest, Year1950) {
   auto const& mercury_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
+  RelativeDegreesOfFreedom<ICRS> const relative_degrees_of_freedom =
       mercury_trajectory.EvaluateDegreesOfFreedom(t_1950_) -
       sun_trajectory.EvaluateDegreesOfFreedom(t_1950_);
-  KeplerOrbit<ICRFJ2000Equator> orbit(
+  KeplerOrbit<ICRS> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_1950_);
-  KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
-      orbit.elements_at_epoch();
+  KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
   EXPECT_THAT(RelativeError(*keplerian_elements.eccentricity,
                              *keplerian_elements_1950_.eccentricity),
@@ -178,13 +177,12 @@ TEST_F(MercuryPerihelionTest, Year1960) {
   auto const& mercury_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
+  RelativeDegreesOfFreedom<ICRS> const relative_degrees_of_freedom =
       mercury_trajectory.EvaluateDegreesOfFreedom(t_1960_) -
       sun_trajectory.EvaluateDegreesOfFreedom(t_1960_);
-  KeplerOrbit<ICRFJ2000Equator> orbit(
+  KeplerOrbit<ICRS> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_1960_);
-  KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
-      orbit.elements_at_epoch();
+  KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
   EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
                           *keplerian_elements_1960_.eccentricity), 5.3e-7);
@@ -213,13 +211,12 @@ TEST_F(MercuryPerihelionTest, DISABLED_Year2050) {
   auto const& mercury_trajectory =
       solar_system_1950_.trajectory(*ephemeris_, "Mercury");
 
-  RelativeDegreesOfFreedom<ICRFJ2000Equator> const relative_degrees_of_freedom =
+  RelativeDegreesOfFreedom<ICRS> const relative_degrees_of_freedom =
       mercury_trajectory.EvaluateDegreesOfFreedom(t_2050_) -
       sun_trajectory.EvaluateDegreesOfFreedom(t_2050_);
-  KeplerOrbit<ICRFJ2000Equator> orbit(
+  KeplerOrbit<ICRS> orbit(
       *sun_, *mercury_, relative_degrees_of_freedom, t_2050_);
-  KeplerianElements<ICRFJ2000Equator> const keplerian_elements =
-      orbit.elements_at_epoch();
+  KeplerianElements<ICRS> const keplerian_elements = orbit.elements_at_epoch();
 
   EXPECT_LT(RelativeError(*keplerian_elements.eccentricity,
                           *keplerian_elements_2050_.eccentricity), 9.8e-8);

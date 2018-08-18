@@ -36,12 +36,12 @@
 
 namespace principia {
 
-using astronomy::ICRFJ2000Ecliptic;
-using astronomy::ICRFJ2000Equator;
-using astronomy::ICRFJ200EquatorialToEcliptic;
+using astronomy::ICRS;
 using base::make_not_null_unique;
 using base::not_null;
 using base::ThreadPool;
+using geometry::Bivector;
+using geometry::DefinesFrame;
 using geometry::Displacement;
 using geometry::Identity;
 using geometry::Instant;
@@ -67,7 +67,10 @@ using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::bipm::NauticalMile;
+using quantities::si::ArcMinute;
+using quantities::si::ArcSecond;
 using quantities::si::AstronomicalUnit;
+using quantities::si::Degree;
 using quantities::si::Hertz;
 using quantities::si::Kilo;
 using quantities::si::Metre;
@@ -190,6 +193,53 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
   ephemeris->Prolong(final_time);
 
+  auto make_l4_probe_trajectory = [&ephemeris, &at_спутник_1_launch]() {
+    // A probe near the L4 point of the Sun-Earth system.
+    Identity<ICRS, Barycentric> to_barycentric;
+    Identity<Barycentric, ICRS> from_barycentric;
+    MasslessBody probe;
+    auto trajectory = std::make_unique<DiscreteTrajectory<Barycentric>>();
+    DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
+        at_спутник_1_launch->degrees_of_freedom(
+            SolarSystemFactory::name(SolarSystemFactory::Sun));
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
+        at_спутник_1_launch->degrees_of_freedom(
+            SolarSystemFactory::name(SolarSystemFactory::Earth));
+
+    // The BCRS, but with non-ICRS axes; the x axis is the ICRS x axis, the xy
+    // plane is the ecliptic realized by the obliquity given by the IAU in 1976
+    // (16th general assembly, resolution 10, commission 4, recommendation 1),
+    // identifying the ICRS xy plane with the mean equator of J2000.0.
+    struct Ecliptic;
+
+    Rotation<ICRS, Ecliptic> const equatorial_to_ecliptic(
+        23 * Degree + 26 * ArcMinute + 21.448 * ArcSecond,
+        Bivector<double, ICRS>({1, 0, 0}),
+        DefinesFrame<Ecliptic>{});
+    auto const ecliptic_to_equatorial = equatorial_to_ecliptic.Inverse();
+
+    Displacement<Ecliptic> const sun_earth_displacement =
+        equatorial_to_ecliptic(
+            from_barycentric(earth_degrees_of_freedom.position() -
+                             sun_degrees_of_freedom.position()));
+    Rotation<Ecliptic, Ecliptic> const l4_rotation(
+        Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
+    Displacement<Ecliptic> const sun_l4_displacement =
+        l4_rotation(sun_earth_displacement);
+    Velocity<Ecliptic> const sun_earth_velocity = equatorial_to_ecliptic(
+        from_barycentric(earth_degrees_of_freedom.velocity() -
+                         sun_degrees_of_freedom.velocity()));
+    Velocity<Ecliptic> const sun_l4_velocity = l4_rotation(sun_earth_velocity);
+    trajectory->Append(
+        at_спутник_1_launch->epoch(),
+        DegreesOfFreedom<Barycentric>(
+            sun_degrees_of_freedom.position() +
+                to_barycentric(ecliptic_to_equatorial(sun_l4_displacement)),
+            sun_degrees_of_freedom.velocity() +
+                to_barycentric(ecliptic_to_equatorial(sun_l4_velocity))));
+    return trajectory;
+  };
+
   // Compute the total degree of the underlying polynomials.  Useful for
   // benchmarking the effect of the fitting tolerance.
   double total_degree = 0;
@@ -198,60 +248,27 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   }
 
   while (state.KeepRunning()) {
+    not_null<std::unique_ptr<DiscreteTrajectory<Barycentric>>> trajectory =
+        make_l4_probe_trajectory();
     state.PauseTiming();
-    // A probe near the L4 point of the Sun-Earth system.
-    Identity<ICRFJ2000Equator, Barycentric> to_barycentric;
-    Identity<Barycentric, ICRFJ2000Equator> from_barycentric;
-    MasslessBody probe;
-    DiscreteTrajectory<Barycentric> trajectory;
-    DegreesOfFreedom<Barycentric> const sun_degrees_of_freedom =
-        at_спутник_1_launch->degrees_of_freedom(
-            SolarSystemFactory::name(SolarSystemFactory::Sun));
-    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
-        at_спутник_1_launch->degrees_of_freedom(
-            SolarSystemFactory::name(SolarSystemFactory::Earth));
-    Displacement<ICRFJ2000Ecliptic> const sun_earth_displacement =
-        ICRFJ200EquatorialToEcliptic(
-            from_barycentric(earth_degrees_of_freedom.position() -
-                             sun_degrees_of_freedom.position()));
-    Rotation<ICRFJ2000Ecliptic, ICRFJ2000Ecliptic> const l4_rotation(
-        Quaternion(cos(π / 6), {0, 0, sin(π / 6)}));
-    Displacement<ICRFJ2000Ecliptic> const sun_l4_displacement =
-        l4_rotation(sun_earth_displacement);
-    Velocity<ICRFJ2000Ecliptic> const sun_earth_velocity =
-        ICRFJ200EquatorialToEcliptic(
-            from_barycentric(earth_degrees_of_freedom.velocity() -
-                             sun_degrees_of_freedom.velocity()));
-    Velocity<ICRFJ2000Ecliptic> const sun_l4_velocity =
-        l4_rotation(sun_earth_velocity);
-    trajectory.Append(at_спутник_1_launch->epoch(),
-                      DegreesOfFreedom<Barycentric>(
-                          sun_degrees_of_freedom.position() +
-                              to_barycentric(
-                                  ICRFJ200EquatorialToEcliptic.Inverse()(
-                                      sun_l4_displacement)),
-                          sun_degrees_of_freedom.velocity() +
-                              to_barycentric(
-                                  ICRFJ200EquatorialToEcliptic.Inverse()(
-                                      sun_l4_velocity))));
 
     state.ResumeTiming();
-    flow(&trajectory, final_time, *ephemeris);
+    flow(trajectory.get(), final_time, *ephemeris);
     state.PauseTiming();
 
-    sun_error = (at_спутник_1_launch->trajectory(
-                     *ephemeris,
-                     SolarSystemFactory::name(SolarSystemFactory::Sun)).
-                         EvaluatePosition(final_time) -
-                 trajectory.last().degrees_of_freedom().position()).
-                     Norm();
-    earth_error = (at_спутник_1_launch->trajectory(
-                       *ephemeris,
-                       SolarSystemFactory::name(SolarSystemFactory::Earth)).
-                           EvaluatePosition(final_time) -
-                   trajectory.last().degrees_of_freedom().position()).
-                       Norm();
-    steps = trajectory.Size();
+    sun_error =
+        (at_спутник_1_launch->trajectory(
+             *ephemeris,
+             SolarSystemFactory::name(
+                 SolarSystemFactory::Sun)).EvaluatePosition(final_time) -
+         trajectory->last().degrees_of_freedom().position()).Norm();
+    earth_error =
+        (at_спутник_1_launch->trajectory(
+             *ephemeris,
+             SolarSystemFactory::name(
+                 SolarSystemFactory::Earth)).EvaluatePosition(final_time) -
+         trajectory->last().degrees_of_freedom().position()).Norm();
+    steps = trajectory->Size();
     state.ResumeTiming();
   }
   std::stringstream ss;

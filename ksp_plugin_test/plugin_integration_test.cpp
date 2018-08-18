@@ -24,7 +24,7 @@ namespace principia {
 namespace ksp_plugin {
 namespace internal_plugin {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using astronomy::ParseTT;
 using base::make_not_null_unique;
 using geometry::AffineMap;
@@ -78,10 +78,7 @@ std::string const vessel_name = "NCC-1701-D";
 class PluginIntegrationTest : public testing::Test {
  protected:
   PluginIntegrationTest()
-      : icrf_to_barycentric_positions_(ICRFJ2000Equator::origin,
-                                       Barycentric::origin,
-                                       ircf_to_barycentric_linear_),
-        looking_glass_(Permutation<ICRFJ2000Equator, AliceSun>::XZY),
+      : looking_glass_(Permutation<ICRS, AliceSun>::XZY),
         solar_system_(
             SolarSystemFactory::AtСпутник1Launch(
                 SolarSystemFactory::Accuracy::MinorAndMajorBodies)),
@@ -109,12 +106,6 @@ class PluginIntegrationTest : public testing::Test {
                  satellite_initial_displacement_.Norm()) * unit_tangent;
   }
 
-  DegreesOfFreedom<Barycentric> ICRFToBarycentric(
-      DegreesOfFreedom<ICRFJ2000Equator> const& degrees_of_freedom) {
-    return {icrf_to_barycentric_positions_(degrees_of_freedom.position()),
-            ircf_to_barycentric_linear_(degrees_of_freedom.velocity())};
-  }
-
   void InsertAllSolarSystemBodies() {
     for (int index = SolarSystemFactory::Sun;
          index <= SolarSystemFactory::LastBody;
@@ -133,13 +124,8 @@ class PluginIntegrationTest : public testing::Test {
     }
   }
 
-  Identity<ICRFJ2000Equator, Barycentric> ircf_to_barycentric_linear_;
-  AffineMap<ICRFJ2000Equator,
-            Barycentric,
-            Length,
-            Identity> icrf_to_barycentric_positions_;
-  Permutation<ICRFJ2000Equator, AliceSun> looking_glass_;
-  not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>> solar_system_;
+  Permutation<ICRS, AliceSun> looking_glass_;
+  not_null<std::unique_ptr<SolarSystem<ICRS>>> solar_system_;
   std::string initial_time_;
   Angle planetarium_rotation_;
 

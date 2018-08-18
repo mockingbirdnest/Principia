@@ -17,7 +17,7 @@ namespace principia {
 namespace physics {
 namespace internal_body_surface_dynamic_frame {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using astronomy::J2000;
 using geometry::Displacement;
 using geometry::InnerProduct;
@@ -41,7 +41,7 @@ class BodySurfaceFrameFieldTest : public ::testing::Test {
 
   BodySurfaceFrameFieldTest()
       : body_(MassiveBody::Parameters(1 * Kilogram),
-              RotatingBody<ICRFJ2000Equator>::Parameters(
+              RotatingBody<ICRS>::Parameters(
                   /*mean_radius=*/1 * Metre,
                   /*reference_angle=*/0 * Radian,
                   /*reference_instant=*/J2000,
@@ -51,39 +51,37 @@ class BodySurfaceFrameFieldTest : public ::testing::Test {
     // The polar axis is {1/2, 1/2, 1/Sqrt[2]}.
     EXPECT_CALL(ephemeris_, trajectory(_)).WillOnce(Return(&trajectory_));
     EXPECT_CALL(trajectory_, EvaluatePosition(J2000))
-        .WillOnce(Return(ICRFJ2000Equator::origin));
-    field_ =
-        std::make_unique<BodySurfaceFrameField<ICRFJ2000Equator, TestFrame>>(
-            ephemeris_, J2000, &body_);
+        .WillOnce(Return(ICRS::origin));
+    field_ = std::make_unique<BodySurfaceFrameField<ICRS, TestFrame>>(
+        ephemeris_, J2000, &body_);
   }
 
-  MockEphemeris<ICRFJ2000Equator> const ephemeris_;
-  RotatingBody<ICRFJ2000Equator> const body_;
-  MockContinuousTrajectory<ICRFJ2000Equator> trajectory_;
-  std::unique_ptr<BodySurfaceFrameField<ICRFJ2000Equator, TestFrame>> field_;
+  MockEphemeris<ICRS> const ephemeris_;
+  RotatingBody<ICRS> const body_;
+  MockContinuousTrajectory<ICRS> trajectory_;
+  std::unique_ptr<BodySurfaceFrameField<ICRS, TestFrame>> field_;
 };
 
 TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
-  Displacement<ICRFJ2000Equator> const displacement(
-      {2 * Metre, 3 * Metre, 4 * Metre});
-  Rotation<TestFrame, ICRFJ2000Equator> const rotation =
-      field_->FromThisFrame(ICRFJ2000Equator::origin + displacement);
+  Displacement<ICRS> const displacement({2 * Metre, 3 * Metre, 4 * Metre});
+  Rotation<TestFrame, ICRS> const rotation =
+      field_->FromThisFrame(ICRS::origin + displacement);
   {
     auto const actual = rotation(Vector<double, TestFrame>({1, 0, 0}));
-    auto const expected = Vector<double, ICRFJ2000Equator>(
-        {Sqrt((4531 + 1624 * Sqrt(2)) / 8149),
-         -2 * Sqrt((419 - 116 * Sqrt(2)) / 8149),
-         -Sqrt(((2 * (971 - 580 * Sqrt(2))) / 8149))});
+    auto const expected =
+        Vector<double, ICRS>({Sqrt((4531 + 1624 * Sqrt(2)) / 8149),
+                              -2 * Sqrt((419 - 116 * Sqrt(2)) / 8149),
+                              -Sqrt(((2 * (971 - 580 * Sqrt(2))) / 8149))});
     EXPECT_THAT(actual, AlmostEquals(expected, 9, 43));
     EXPECT_THAT(InnerProduct(actual, displacement),
                 VanishesBefore(displacement.Norm(), 2, 11));
   }
   {
     auto const actual = rotation(Vector<double, TestFrame>({0, 1, 0}));
-    auto const expected = Vector<double, ICRFJ2000Equator>(
-        {-Sqrt((86 - 56 * Sqrt(2)) / 281),
-         -2 * Sqrt(2 * (17 + 2 * Sqrt(2)) / 281),
-         Sqrt((59 + 40 * Sqrt(2)) / 281)});
+    auto const expected =
+        Vector<double, ICRS>({-Sqrt((86 - 56 * Sqrt(2)) / 281),
+                              -2 * Sqrt(2 * (17 + 2 * Sqrt(2)) / 281),
+                              Sqrt((59 + 40 * Sqrt(2)) / 281)});
     EXPECT_THAT(actual, AlmostEquals(expected, 10, 74));
     EXPECT_THAT(InnerProduct(actual, displacement),
                 VanishesBefore(displacement.Norm(), 0, 17));
@@ -92,8 +90,8 @@ TEST_F(BodySurfaceFrameFieldTest, FromThisFrame) {
   }
   {
     auto const actual = rotation(Vector<double, TestFrame>({0, 0, 1}));
-    auto const expected = Vector<double, ICRFJ2000Equator>(
-        {-2 / Sqrt(29), -3 / Sqrt(29), -4 / Sqrt(29)});
+    auto const expected =
+        Vector<double, ICRS>({-2 / Sqrt(29), -3 / Sqrt(29), -4 / Sqrt(29)});
     EXPECT_THAT(actual, AlmostEquals(expected, 7, 76));
   }
 }

@@ -12,7 +12,7 @@
 namespace principia {
 namespace interface {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using base::make_not_null_unique;
 using ksp_plugin::GUID;
 using ksp_plugin::Navigation;
@@ -45,7 +45,7 @@ constexpr char const* vessel_name = "Enterprise";
 class InterfaceExternalTest : public ::testing::Test {
  protected:
   InterfaceExternalTest()
-      : plugin_(SolarSystem<ICRFJ2000Equator>(
+      : plugin_(SolarSystem<ICRS>(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt")) {

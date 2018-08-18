@@ -63,9 +63,9 @@ class LunarEclipseTest : public ::testing::Test {
     google::LogToStderr();
     ephemeris_ = solar_system_1950_.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+        Ephemeris<ICRS>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*step=*/10 * Minute));
     r_sun_ = solar_system_1950_.mean_radius("Sun");
     r_moon_ = solar_system_1950_.mean_radius("Moon");
@@ -212,19 +212,19 @@ class LunarEclipseTest : public ::testing::Test {
               << " " << actual_contact_time - current_time;
   }
 
-  static SolarSystem<ICRFJ2000Equator> solar_system_1950_;
-  static std::unique_ptr<Ephemeris<ICRFJ2000Equator>> ephemeris_;
+  static SolarSystem<ICRS> solar_system_1950_;
+  static std::unique_ptr<Ephemeris<ICRS>> ephemeris_;
   static Length r_sun_;
   static Length r_earth_;
   static Length r_moon_;
   static Length atmospheric_depth_;
 };
 
-SolarSystem<ICRFJ2000Equator> LunarEclipseTest::solar_system_1950_(
+SolarSystem<ICRS> LunarEclipseTest::solar_system_1950_(
     SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
     SOLUTION_DIR / "astronomy" /
         "sol_initial_state_jd_2433282_500000000.proto.txt");
-std::unique_ptr<Ephemeris<ICRFJ2000Equator>> LunarEclipseTest::ephemeris_;
+std::unique_ptr<Ephemeris<ICRS>> LunarEclipseTest::ephemeris_;
 Length LunarEclipseTest::r_sun_;
 Length LunarEclipseTest::r_earth_;
 Length LunarEclipseTest::r_moon_;

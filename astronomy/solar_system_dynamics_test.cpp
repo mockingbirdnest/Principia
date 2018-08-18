@@ -108,11 +108,10 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     }
   }
 
-  OrbitError CompareOrbits(
-      int const index,
-      Ephemeris<ICRFJ2000Equator> const& ephemeris,
-      SolarSystem<ICRFJ2000Equator> const& system,
-      SolarSystem<ICRFJ2000Equator> const& expected_system) {
+  OrbitError CompareOrbits(int const index,
+                           Ephemeris<ICRS> const& ephemeris,
+                           SolarSystem<ICRS> const& system,
+                           SolarSystem<ICRS> const& expected_system) {
     Instant const& epoch = expected_system.epoch();
     Time const duration = epoch - system.epoch();
 
@@ -120,13 +119,12 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     auto const parent_name =
         SolarSystemFactory::name(SolarSystemFactory::parent(index));
     auto const body = system.massive_body(ephemeris, name);
-    auto const parent =
-        dynamic_cast_not_null<RotatingBody<ICRFJ2000Equator> const*>(
-            system.massive_body(ephemeris, parent_name));
+    auto const parent = dynamic_cast_not_null<RotatingBody<ICRS> const*>(
+        system.massive_body(ephemeris, parent_name));
 
-    BarycentreCalculator<DegreesOfFreedom<ICRFJ2000Equator>,
+    BarycentreCalculator<DegreesOfFreedom<ICRS>,
                          GravitationalParameter> actual_subsystem_barycentre;
-    BarycentreCalculator<DegreesOfFreedom<ICRFJ2000Equator>,
+    BarycentreCalculator<DegreesOfFreedom<ICRS>,
                          GravitationalParameter> expected_subsystem_barycentre;
 
     actual_subsystem_barycentre.Add(
@@ -162,28 +160,25 @@ class SolarSystemDynamicsTest : public ::testing::Test {
     // celestial reference frame, we'll use that in the plugin too.
     enum LocalFrameTag { tag };
     using ParentEquator = Frame<LocalFrameTag, tag, /*frame_is_inertial=*/true>;
-    auto const z = Bivector<double, ICRFJ2000Equator>({0, 0, 1});
-    std::optional<Rotation<ICRFJ2000Equator, ParentEquator>> rotation;
+    auto const z = Bivector<double, ICRS>({0, 0, 1});
+    std::optional<Rotation<ICRS, ParentEquator>> rotation;
 
     if (SolarSystemFactory::parent(index) == SolarSystemFactory::Sun) {
-      Bivector<AngularMomentum, ICRFJ2000Equator>
-          solar_system_angular_momentum;
+      Bivector<AngularMomentum, ICRS> solar_system_angular_momentum;
       for (int i = SolarSystemFactory::Sun + 1;
            i <= SolarSystemFactory::LastBody;
            ++i) {
         auto const body_name = SolarSystemFactory::name(i);
         auto const body = system.massive_body(ephemeris, body_name);
-        RelativeDegreesOfFreedom<ICRFJ2000Equator> const
-            from_solar_system_barycentre =
-                expected_system.degrees_of_freedom(body_name) -
-                DegreesOfFreedom<ICRFJ2000Equator>(ICRFJ2000Equator::origin,
-                                                   {});
+        RelativeDegreesOfFreedom<ICRS> const from_solar_system_barycentre =
+            expected_system.degrees_of_freedom(body_name) -
+            DegreesOfFreedom<ICRS>(ICRS::origin, {});
         solar_system_angular_momentum +=
             Wedge(from_solar_system_barycentre.displacement(),
                   body->mass() * from_solar_system_barycentre.velocity()) *
             Radian;
       }
-      Bivector<double, ICRFJ2000Equator> const normal =
+      Bivector<double, ICRS> const normal =
           Commutator(z, Normalize(solar_system_angular_momentum));
       // Check that we computed the invariable plane properly by computing its
       // angle to the Sun's equator.
@@ -196,27 +191,21 @@ class SolarSystemDynamicsTest : public ::testing::Test {
       auto const declination_of_invariable_plane =
           OrientedAngleBetween(z, solar_system_angular_momentum, normal);
       EXPECT_THAT(declination_of_invariable_plane, Gt(0 * Radian));
-      rotation =
-          Rotation<ICRFJ2000Equator, ParentEquator>(
-              declination_of_invariable_plane,
-              normal,
-              DefinesFrame<ParentEquator>{});
+      rotation = Rotation<ICRS, ParentEquator>(declination_of_invariable_plane,
+                                               normal,
+                                               DefinesFrame<ParentEquator>{});
     } else {
       auto const ω = parent->angular_velocity();
-      Bivector<double, ICRFJ2000Equator> const normal =
-          Commutator(z, Normalize(ω));
+      Bivector<double, ICRS> const normal = Commutator(z, Normalize(ω));
       auto const parent_axis_declination = OrientedAngleBetween(z, ω, normal);
       EXPECT_THAT(parent_axis_declination, Gt(0 * Radian));
-      rotation = Rotation<ICRFJ2000Equator, ParentEquator>(
+      rotation = Rotation<ICRS, ParentEquator>(
           parent_axis_declination, normal, DefinesFrame<ParentEquator>{});
     }
-    RigidMotion<ICRFJ2000Equator, ParentEquator> const
-        to_parent_equator(
-            {ICRFJ2000Equator::origin,
-             ParentEquator::origin,
-             rotation->Forget()},
-            /*angular_velocity_of_to_frame=*/{},
-            /*velocity_of_to_frame_origin=*/{});
+    RigidMotion<ICRS, ParentEquator> const to_parent_equator(
+        {ICRS::origin, ParentEquator::origin, rotation->Forget()},
+        /*angular_velocity_of_to_frame=*/{},
+        /*velocity_of_to_frame_origin=*/{});
 
     KeplerOrbit<ParentEquator> actual_osculating_orbit(
         /*primary=*/*parent,
@@ -264,21 +253,21 @@ class SolarSystemDynamicsTest : public ::testing::Test {
 
 // This takes a minute to run.
 TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+  SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
 
-  SolarSystem<ICRFJ2000Equator> ten_years_later(
+  SolarSystem<ICRS> ten_years_later(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2455200_500000000.proto.txt");
 
   auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+      Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                Position<ICRFJ2000Equator>>(),
+                                                Position<ICRS>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(ten_years_later.epoch());
 
@@ -385,32 +374,32 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
 // This test produces the file phobos.generated.wl which is consumed by the
 // notebook phobos.nb.
 TEST(MarsTest, Phobos) {
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+  SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
       /*fitting_tolerance=*/5 * Milli(Metre),
-      Ephemeris<ICRFJ2000Equator>::FixedStepParameters(
+      Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
-                                                Position<ICRFJ2000Equator>>(),
+                                                Position<ICRS>>(),
           /*step=*/45 * Minute));
   ephemeris->Prolong(J2000 + 1 * JulianYear);
 
-  ContinuousTrajectory<ICRFJ2000Equator> const& mars_trajectory =
+  ContinuousTrajectory<ICRS> const& mars_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Mars");
 
-  std::vector<Position<ICRFJ2000Equator>> mars_positions;
-  std::vector<Velocity<ICRFJ2000Equator>> mars_velocities;
+  std::vector<Position<ICRS>> mars_positions;
+  std::vector<Velocity<ICRS>> mars_velocities;
 
-  ContinuousTrajectory<ICRFJ2000Equator> const& phobos_trajectory =
+  ContinuousTrajectory<ICRS> const& phobos_trajectory =
       solar_system_at_j2000.trajectory(*ephemeris, "Phobos");
 
-  std::vector<Position<ICRFJ2000Equator>> phobos_positions;
-  std::vector<Velocity<ICRFJ2000Equator>> phobos_velocities;
+  std::vector<Position<ICRS>> phobos_positions;
+  std::vector<Velocity<ICRS>> phobos_velocities;
 
-  std::vector<Displacement<ICRFJ2000Equator>> mars_phobos_displacements;
-  std::vector<Velocity<ICRFJ2000Equator>> mars_phobos_velocities;
+  std::vector<Displacement<ICRS>> mars_phobos_displacements;
+  std::vector<Velocity<ICRS>> mars_phobos_velocities;
   for (Instant t = J2000; t < J2000 + 30 * Day; t += 5 * Minute) {
     mars_positions.push_back(mars_trajectory.EvaluatePosition(t));
     mars_velocities.push_back(mars_trajectory.EvaluateVelocity(t));
@@ -433,7 +422,7 @@ TEST(MarsTest, Phobos) {
 
 struct ConvergenceTestParameters {
   FixedStepSizeIntegrator<
-      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const& integrator;
+      Ephemeris<ICRS>::NewtonianMotionEquation> const& integrator;
   int iterations;
   double first_step_in_seconds;
 };
@@ -451,8 +440,7 @@ class SolarSystemDynamicsConvergenceTest
   }
 
  protected:
-  FixedStepSizeIntegrator<
-      Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation> const&
+  FixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation> const&
   integrator() const {
     return GetParam().integrator;
   }
@@ -475,13 +463,13 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
   google::LogToStderr();
   Time const integration_duration = 1 * JulianYear;
 
-  SolarSystem<ICRFJ2000Equator> solar_system_at_j2000(
+  SolarSystem<ICRS> solar_system_at_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
   std::vector<std::string> const& body_names = solar_system_at_j2000.names();
 
-  std::map<std::string, std::vector<DegreesOfFreedom<ICRFJ2000Equator>>>
+  std::map<std::string, std::vector<DegreesOfFreedom<ICRS>>>
       name_to_degrees_of_freedom;
   std::vector<Time> steps;
   std::vector<std::chrono::duration<double>> durations;
@@ -493,7 +481,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
     auto const start = std::chrono::system_clock::now();
     auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
-        Ephemeris<ICRFJ2000Equator>::FixedStepParameters(integrator(), step));
+        Ephemeris<ICRS>::FixedStepParameters(integrator(), step));
     ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
     auto const end = std::chrono::system_clock::now();
     durations.push_back(end - start);
@@ -507,7 +495,7 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
     }
   }
 
-  std::map<std::string, std::vector<RelativeDegreesOfFreedom<ICRFJ2000Equator>>>
+  std::map<std::string, std::vector<RelativeDegreesOfFreedom<ICRS>>>
       name_to_errors;
   for (auto const& pair : name_to_degrees_of_freedom) {
     auto const& name = pair.first;
@@ -554,28 +542,28 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         ConvergenceTestParameters{
             SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN11B,
-                                                  Position<ICRFJ2000Equator>>(),
+                                                  Position<ICRS>>(),
             /*iterations=*/8,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
             SymplecticRungeKuttaNyströmIntegrator<
                  McLachlanAtela1992Order5Optimal,
-                 Position<ICRFJ2000Equator>>(),
+                 Position<ICRS>>(),
              /*iterations=*/8,
              /*first_step_in_seconds=*/32},
         ConvergenceTestParameters{
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order8,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
         ConvergenceTestParameters{
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order10,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*iterations=*/6,
             /*first_step_in_seconds=*/64},
 
@@ -584,7 +572,7 @@ INSTANTIATE_TEST_CASE_P(
         // elapsed time.  For steps larger than about 680 s, the errors explode.
         ConvergenceTestParameters{
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
-                                               Position<ICRFJ2000Equator>>(),
+                                               Position<ICRS>>(),
             /*iterations=*/5,
             /*first_step_in_seconds=*/75}));
 

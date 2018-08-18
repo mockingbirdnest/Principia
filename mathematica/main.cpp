@@ -15,7 +15,7 @@
 #include "physics/solar_system.hpp"
 #include "quantities/parser.hpp"
 
-using ::principia::astronomy::ICRFJ2000Equator;
+using ::principia::astronomy::ICRS;
 using ::principia::base::Contains;
 using ::principia::base::make_not_null_unique;
 using ::principia::quantities::ParseQuantity;
@@ -93,11 +93,11 @@ int main(int argc, char const* argv[]) {
         std::filesystem::path(*flags["gravity_model"]);
     auto const initial_state_path =
         std::filesystem::path(*flags["initial_state"]);
-    auto solar_system = make_not_null_unique<SolarSystem<ICRFJ2000Equator>>(
+    auto solar_system = make_not_null_unique<SolarSystem<ICRS>>(
         gravity_model_path, initial_state_path, /*ignore_frame=*/true);
-    auto const& integrator = ParseFixedStepSizeIntegrator<
-        Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
-        *flags["integrator"]);
+    auto const& integrator =
+        ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
+            *flags["integrator"]);
     auto const time_step = ParseQuantity<Time>(*flags["time_step"]);
     auto const out =
         std::filesystem::path(
@@ -108,8 +108,7 @@ int main(int argc, char const* argv[]) {
     LocalErrorAnalyser analyser(std::move(solar_system), integrator, time_step);
     analyser.WriteLocalErrors(
         out,
-        ParseFixedStepSizeIntegrator<
-            Ephemeris<ICRFJ2000Equator>::NewtonianMotionEquation>(
+        ParseFixedStepSizeIntegrator<Ephemeris<ICRS>::NewtonianMotionEquation>(
             flags["fine_integrator"].value_or("BLANES_MOAN_2002_SRKN_14A")),
         ParseQuantity<Time>(flags["fine_step"].value_or("1 min")),
         ParseQuantity<Time>(flags["granularity"].value_or("1 d")),

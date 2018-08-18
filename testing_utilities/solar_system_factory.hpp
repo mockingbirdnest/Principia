@@ -22,7 +22,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_solar_system_factory {
 
-using astronomy::ICRFJ2000Equator;
+using astronomy::ICRS;
 using base::not_constructible;
 using base::not_null;
 using physics::SolarSystem;
@@ -89,11 +89,11 @@ class SolarSystemFactory : not_constructible {
                              SolarSystem<Frame>& solar_system);
 
   // A solar system at the time of the launch of Простейший Спутник-1.
-  static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+  static not_null<std::unique_ptr<SolarSystem<ICRS>>>
   AtСпутник1Launch(Accuracy accuracy);
 
   // A solar system at the time of the launch of Простейший Спутник-2.
-  static not_null<std::unique_ptr<SolarSystem<ICRFJ2000Equator>>>
+  static not_null<std::unique_ptr<SolarSystem<ICRS>>>
   AtСпутник2Launch(Accuracy accuracy);
 
   // Returns the index of the parent of the body with the given |index|.
