@@ -31,7 +31,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
     UnitVector const reference = from_surface_frame(x_);
     UnitVector const bireference = from_surface_frame(y_);
     acceleration +=
-        Degree2TesseralAcceleration(
+        Degree2SectoralAcceleration(
             reference, bireference, r, one_over_r², one_over_r³);
   }
   if (body_->has_j3()) {
