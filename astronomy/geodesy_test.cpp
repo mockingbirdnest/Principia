@@ -113,14 +113,15 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // #cV2018  7 29  0  0  0.00000000    5040   SLR SLR08 FIT COMB
   // ## 2012      0.00000000   120.00000000 58328 0.0000000000000
   // +    1   L52  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
-  // 
+  // [... Lines 4 through 12 omitted                         ...]
   // %c L  cc UTC ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
   // %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
   // %f  0.0000000  0.000000000  0.00000000000  0.000000000000000
+  // [... Lines 15 through 18 omitted                        ...]
   // %/* ilrsa.orb.lageos2.180804.v70.sp3 Reference TRF: SLRF2008
   // %/* Input orbits: ASI v70, BKG v70, DGFI v70, ESA v70,
   // %/* GFZ v70, JCET v70, NSGF v70,  
-  // %/* Combination details in README_CC.ilrsa                  
+  // %/* Combination details in README_CC.ilrsa
   // *  2018  7 29  0  0  0.00000000
   // PL52 -11150.750217   5070.184012   1340.324930 999999.999999
   // VL52 -15231.027828 -21132.111357 -44478.560714 999999.999999
