@@ -17,3 +17,5 @@ class LegendrePolynomial : public
 }  // namespace internal_legendre
 }  // namespace numerics
 }  // namespace principia
+
+#include "numerics/legendre_body.hpp"
