@@ -62,7 +62,7 @@ class Geopotential {
                            Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2TesseralAcceleration(
+  Degree2SectoralAcceleration(
       UnitVector const& reference,
       UnitVector const& bireference,
       Displacement<Frame> const& r,

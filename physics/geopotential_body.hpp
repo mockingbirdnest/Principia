@@ -62,7 +62,7 @@ Geopotential<Frame>::Degree2ZonalAcceleration(
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Degree2TesseralAcceleration(
+Geopotential<Frame>::Degree2SectoralAcceleration(
     UnitVector const& reference,
     UnitVector const& bireference,
     Displacement<Frame> const& r,

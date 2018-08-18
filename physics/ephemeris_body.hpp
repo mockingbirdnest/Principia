@@ -935,26 +935,26 @@ void Ephemeris<Frame>::
       if (body1_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
-            order_2_zonal_effect1 =
+            degree_2_zonal_effect1 =
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
                     one_over_Δq²,
                     one_over_Δq³);
-        acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
-        acceleration_on_b2 += μ1 * order_2_zonal_effect1;
+        acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
+        acceleration_on_b2 += μ1 * degree_2_zonal_effect1;
       }
       if (body2_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
-            order_2_zonal_effect2 =
+            degree_2_zonal_effect2 =
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
                     one_over_Δq²,
                     one_over_Δq³);
-        acceleration_on_b1 += μ2 * order_2_zonal_effect2;
-        acceleration_on_b2 -= μ1 * order_2_zonal_effect2;
+        acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
+        acceleration_on_b2 -= μ1 * degree_2_zonal_effect2;
       }
     }
   }
@@ -993,13 +993,13 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
-          order_2_zonal_effect1 =
+          degree_2_zonal_effect1 =
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
                   one_over_Δq²,
                   one_over_Δq³);
-      accelerations[b2] += μ1 * order_2_zonal_effect1;
+      accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
   return ok;
