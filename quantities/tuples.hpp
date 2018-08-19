@@ -9,15 +9,16 @@ namespace quantities {
 namespace internal_tuples {
 
 // This struct has a |Type| member which is a tuple obtained by applying
-// |Transform| to each element type in |Tuple| (which must be a tuple or an array
-// or a pair).
+// |Transform| to each element type in |Tuple| (which must be a tuple or an
+// array or a pair).
 template<template<typename> class Transform,
          typename Tuple,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct ApplyGenerator;
 
-// This struct has a |Type| member which is a tuple made of successive
-// derivatives of |Value| with respect to |Argument| from 0 to |n|, exclusively.
+// This struct has a |Type| member which is an n-element tuple of successive
+// derivatives of |Value| with respect to |Argument|; the first element is
+// |Value|.
 template<typename Value, typename Argument, int n,
          typename = std::make_integer_sequence<int, n>>
 struct DerivativesGenerator;

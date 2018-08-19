@@ -3,6 +3,9 @@
 
 #include "quantities/tuples.hpp"
 
+#include <tuple>
+#include <utility>
+
 #include "base/not_constructible.hpp"
 
 namespace principia {
