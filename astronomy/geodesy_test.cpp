@@ -73,6 +73,8 @@ class GeodesyTest : public ::testing::Test {
   BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
 };
 
+#if !defined(_DEBUG)
+
 TEST_F(GeodesyTest, LAGEOS2) {
   MasslessBody lageos2;
   // Initial state and expected state from the ILRS official primary analysis
@@ -206,6 +208,8 @@ TEST_F(GeodesyTest, LAGEOS2) {
                             *expected_elements.mean_anomaly),
               IsNear(2 * Degree + 31 * ArcMinute));
 }
+
+#endif
 
 }  // namespace astronomy
 }  // namespace principia
