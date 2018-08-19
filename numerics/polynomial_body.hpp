@@ -264,11 +264,8 @@ ReadFromMessage(serialization::Polynomial const& message) {
 }
 
 template<typename Scalar,
-         typename Value,
-         typename Argument,
-         int degree_,
-         template<typename, typename, int>
-         class Evaluator>
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
@@ -279,6 +276,15 @@ operator*(Scalar const& left,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left, right.coefficients_));
+}
+
+template<typename Value, typename Argument, int degree_,
+         >
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>();
 }
 
 }  // namespace internal_polynomial
