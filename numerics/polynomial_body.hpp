@@ -240,7 +240,7 @@ ReadFromMessage(serialization::Polynomial const& message) {
 template<typename Tuple,
          template<typename>
          class Transformer,
-         typename>
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct TupleTransformer;
 template<typename Tuple, template<typename> class Transformer, int... indices>
 struct TupleTransformer<Tuple,
@@ -252,19 +252,18 @@ struct TupleTransformer<Tuple,
 };
 
 template<typename Tuple, template<typename> class Transformer>
-using TupleTransformer2 = typename TupleTransformer<
-    Tuple,
-    Transformer,
-    std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>::Type;
+using TupleTransformer2 = typename TupleTransformer<Tuple, Transformer>::Type;
 
-template<typename Scalar, typename Tuple, typename>
+template<typename Scalar,
+         typename Tuple,
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct TupleArithmetic;
 template<typename Scalar, typename Tuple, int... indices>
 struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
     : not_constructible {
   template<typename T>
   using Multiplier = Product<Scalar, T>;
-  static constexpr TupleTransformer2<Tuple, Multiplier> Multiply(
+  static constexpr typename TupleTransformer<Tuple, Multiplier>::Type Multiply(
       Scalar const& left,
       Tuple const& right);
 };
@@ -273,7 +272,7 @@ template<typename Scalar, typename Tuple, int... indices>
 constexpr auto
 TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
     Multiply(Scalar const& left, Tuple const& right)
-        -> TupleTransformer2<Tuple, Multiplier> {
+        -> typename TupleTransformer<Tuple, Multiplier>::Type {
   return {left * std::get<indices>(right)...};
 }
 
@@ -288,14 +287,12 @@ operator*(Scalar left,
                                    Argument,
                                    degree_,
                                    Evaluator>(
-      TupleArithmetic<
-          Scalar,
-          typename PolynomialInMonomialBasis<Value,
-                                             Argument,
-                                             degree_,
-                                             Evaluator>::Coefficients,
-          std::make_integer_sequence<int, degree_ + 1>>::
-          Multiply(left, right.coefficients_));
+      TupleArithmetic<Scalar,
+                      typename PolynomialInMonomialBasis<Value,
+                                                         Argument,
+                                                         degree_,
+                                                         Evaluator>::
+                          Coefficients>::Multiply(left, right.coefficients_));
 }
 
 }  // namespace internal_polynomial
