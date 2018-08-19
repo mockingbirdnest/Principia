@@ -155,6 +155,14 @@ TEST_F(PolynomialTest, Ring) {
         Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
+
+  {
+    auto const p = p2v - p2v;
+    auto const actual = p.Evaluate(0 * Second);
+    auto const expected =
+        Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre});
+    EXPECT_THAT(actual, AlmostEquals(expected, 0));
+  }
 }
 
 // Check that polynomials may be serialized.

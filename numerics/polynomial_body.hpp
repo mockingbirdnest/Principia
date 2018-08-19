@@ -29,6 +29,7 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   using ScalarLeftMultiplier = Product<Scalar, T>;
 
   static constexpr Tuple Add(Tuple const& left, Tuple const& right);
+  static constexpr Tuple Subtract(Tuple const& left, Tuple const& right);
 
   static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
@@ -39,6 +40,13 @@ constexpr Tuple
 TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::Add(
     Tuple const& left, Tuple const& right) {
   return {std::get<indices>(left) + std::get<indices>(right)...};
+}
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr Tuple
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Subtract(Tuple const& left, Tuple const& right) {
+  return {std::get<indices>(left) - std::get<indices>(right)...};
 }
 
 template<typename Scalar, typename Tuple, int... indices>
@@ -284,6 +292,20 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Add(left.coefficients_,
                                              right.coefficients_));
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      TupleArithmetic<double,
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
+                          Coefficients>::Subtract(left.coefficients_,
+                                                  right.coefficients_));
 }
 
 template<typename Scalar,
