@@ -74,16 +74,16 @@ Geopotential<Frame>::Degree2SectoralAcceleration(
   auto const s22_over_r⁵ = body_->s22_over_μ() * one_over_r³ * one_over_r²;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
       c22_effect = 6 * c22_over_r⁵ *
-                   (-r_reference_projection * reference +
-                    r_bireference_projection * bireference +
+                   (-r_bireference_projection * bireference +
+                    r_reference_projection * reference +
                     2.5 *
-                        (r_reference_projection * r_reference_projection -
-                         r_bireference_projection * r_bireference_projection) *
+                        (r_bireference_projection * r_bireference_projection -
+                         r_reference_projection * r_reference_projection) *
                         one_over_r² * r);
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      s22_effect = -6 * s22_over_r⁵ *
-                   (r_bireference_projection * reference +
-                    r_reference_projection * bireference -
+      s22_effect = 6 * s22_over_r⁵ *
+                   (r_reference_projection * bireference +
+                    r_bireference_projection * reference -
                     5 * r_reference_projection * r_bireference_projection *
                         one_over_r² * r);
   return c22_effect + s22_effect;
@@ -104,10 +104,10 @@ Geopotential<Frame>::Degree3ZonalAcceleration(
   auto const j3_over_r⁷ =
       body_->j3_over_μ() * one_over_r³ * one_over_r²* one_over_r²;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      axis_effect = 1.5 * j3_over_r⁷ * (5 * r_axis_projection² - r²) * axis;
+      axis_effect = 1.5 * j3_over_r⁷ * (r² - 5 * r_axis_projection²) * axis;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
       radial_effect = j3_over_r⁷ * r_axis_projection *
-                      (7.5 - 17.5 * r_axis_projection² * one_over_r²) * r;
+                      (-7.5 + 17.5 * r_axis_projection² * one_over_r²) * r;
   return axis_effect + radial_effect;
 }
 
