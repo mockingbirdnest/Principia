@@ -1,4 +1,6 @@
 ﻿
+#include <limits>
+
 #include "astronomy/frames.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -122,7 +124,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // [... Lines 15 through 18 omitted                        ...]
   // %/* ilrsa.orb.lageos2.180804.v70.sp3 Reference TRF: SLRF2008
   // %/* Input orbits: ASI v70, BKG v70, DGFI v70, ESA v70,
-  // %/* GFZ v70, JCET v70, NSGF v70,  
+  // %/* GFZ v70, JCET v70, NSGF v70,
   // %/* Combination details in README_CC.ilrsa
   // *  2018  7 29  0  0  0.00000000
   // PL52 -11150.750217   5070.184012   1340.324930 999999.999999
@@ -197,7 +199,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
               IsNear(2 * Kilo(Metre)));
   EXPECT_THAT(AbsoluteError(actual_elements.longitude_of_ascending_node,
                             expected_elements.longitude_of_ascending_node),
-              IsNear(4 * ArcMinute + 21 * ArcSecond));
+              IsNear(4 * ArcMinute + 40 * ArcSecond));
   EXPECT_THAT(AbsoluteError(actual_elements.inclination,
                             expected_elements.inclination),
               IsNear(1.2 * ArcSecond));
