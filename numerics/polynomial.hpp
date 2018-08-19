@@ -13,16 +13,19 @@ namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::not_constructible;
 using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
+using quantities::Product;
 
 template<typename Value, typename Argument, typename>
 struct DerivativesGenerator;
 template<typename Value, typename Argument, int... orders>
 struct DerivativesGenerator<Value,
                             Argument,
-                            std::integer_sequence<int, orders...>> {
+                            std::integer_sequence<int, orders...>>
+    : not_constructible {
   using Type = std::tuple<Derivative<Value, Argument, orders>...>;
 };
 
@@ -126,6 +129,14 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Coefficients coefficients_;
   Point<Argument> origin_;
 };
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(Scalar left,
+          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              right);
 
 }  // namespace internal_polynomial
 
