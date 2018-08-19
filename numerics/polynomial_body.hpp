@@ -28,9 +28,18 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   template<typename T>
   using ScalarLeftMultiplier = Product<Scalar, T>;
 
+  static constexpr Tuple Add(Tuple const& left, Tuple const& right);
+
   static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
 };
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr Tuple
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::Add(
+    Tuple const& left, Tuple const& right) {
+  return {std::get<indices>(left) + std::get<indices>(right)...};
+}
 
 template<typename Scalar, typename Tuple, int... indices>
 constexpr auto
@@ -263,12 +272,23 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      TupleArithmetic<double,
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
+                          Coefficients>::Add(left.coefficients_,
+                                             right.coefficients_));
+}
+
 template<typename Scalar,
-         typename Value,
-         typename Argument,
-         int degree_,
-         template<typename, typename, int>
-         class Evaluator>
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
@@ -279,15 +299,6 @@ operator*(Scalar const& left,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left, right.coefficients_));
-}
-
-template<typename Value, typename Argument, int degree_,
-         >
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>();
 }
 
 }  // namespace internal_polynomial

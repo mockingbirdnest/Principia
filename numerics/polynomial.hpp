@@ -93,6 +93,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  private:
   Coefficients coefficients_;
 
+  template<typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<V, A, d, E>
+  friend operator+(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   PolynomialInMonomialBasis<V, A, d, E> const& right);
   template<typename S,
            typename V, typename A, int d,
            template<typename, typename, int> class E>
@@ -137,6 +142,14 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Point<Argument> origin_;
 };
 
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>
+operator+(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right);
+
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -144,13 +157,6 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right);
-
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        right);
 
 }  // namespace internal_polynomial
 
