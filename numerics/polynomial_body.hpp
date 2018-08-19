@@ -281,6 +281,15 @@ operator*(Scalar const& left,
                           Coefficients>::Multiply(left, right.coefficients_));
 }
 
+template<typename Value, typename Argument, int degree_,
+         >
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>();
+}
+
 }  // namespace internal_polynomial
 }  // namespace numerics
 }  // namespace principia
