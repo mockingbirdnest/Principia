@@ -86,6 +86,12 @@
     <ClInclude Include="wide_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="tuples.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tuples_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="quantities_test.cpp">

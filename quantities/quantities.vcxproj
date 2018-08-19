@@ -30,6 +30,8 @@
     <ClInclude Include="si.hpp" />
     <ClInclude Include="si_body.hpp" />
     <ClInclude Include="traits.hpp" />
+    <ClInclude Include="tuples.hpp" />
+    <ClInclude Include="tuples_body.hpp" />
     <ClInclude Include="uk.hpp" />
     <ClInclude Include="wide.hpp" />
     <ClInclude Include="wide_body.hpp" />
