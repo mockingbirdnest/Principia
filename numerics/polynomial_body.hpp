@@ -15,7 +15,7 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
-using quantities::Tuple;
+using quantities::Apply;
 
 template<typename Scalar,
          typename Tuple,
@@ -28,7 +28,7 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   template<typename T>
   using ScalarLeftMultiplier = Product<Scalar, T>;
 
-  static constexpr typename quantities::Tuple<Tuple, ScalarLeftMultiplier>
+  static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
 };
 
@@ -36,7 +36,7 @@ template<typename Scalar, typename Tuple, int... indices>
 constexpr auto
 TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
     Multiply(Scalar const& left, Tuple const& right) ->
-    typename quantities::Tuple<Tuple, ScalarLeftMultiplier> {
+    typename Apply<ScalarLeftMultiplier, Tuple> {
   return {left * std::get<indices>(right)...};
 }
 
