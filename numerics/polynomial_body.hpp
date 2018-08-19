@@ -365,12 +365,12 @@ operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Quotient<Scalar, Value>, Argument, degree_, Evaluator>
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
   return PolynomialInMonomialBasis<
-             Quotient<Scalar, Value>, Argument, degree_, Evaluator>(
+             Quotient<Value, Scalar>, Argument, degree_, Evaluator>(
       TupleArithmetic<Scalar,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::

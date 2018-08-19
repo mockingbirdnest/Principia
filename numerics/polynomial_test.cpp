@@ -169,10 +169,10 @@ TEST_F(PolynomialTest, Ring) {
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
   {
-    auto const p = p2v / (3.0 * Joule);
+    auto const p = p2v / (4.0 * Joule);
     auto const actual = p.Evaluate(0 * Second);
     auto const expected = Vector<Quotient<Length, Energy>, World>(
-                  {0 * Metre / Joule, 0 * Metre / Joule, 3 * Metre / Joule});
+                  {0 * Metre / Joule, 0 * Metre / Joule, 0.25 * Metre / Joule});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
 }

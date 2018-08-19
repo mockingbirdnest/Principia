@@ -101,6 +101,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   PolynomialInMonomialBasis<Product<V, S>, A, d, E>
   friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
+  friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
 };
 
 template<typename Value, typename Argument, int degree_,
