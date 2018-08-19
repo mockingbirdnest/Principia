@@ -70,8 +70,11 @@ class GeodesyTest : public ::testing::Test {
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;
-  // TODO(egg): find a bound on the error induced by this approximation to the
-  // Earth Rotation Angle.
+  // NOTE(egg): using the WGCCRE 2009 elements instead of the proper ERA as
+  // defined by the IERS induces the following errors between 2000 and 2020:
+  // - a systematic error of 2.8 arcminutes;
+  // - a systematic drift of 2.6 milliarcseconds per year;
+  // - short-period errors at the milliarcsecond level;
   BodySurfaceDynamicFrame<ICRS, ITRS> itrs_;
 };
 
