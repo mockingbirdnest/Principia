@@ -270,18 +270,14 @@ template<typename Scalar,
          template<typename, typename, int>
          class Evaluator>
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
-operator*(Scalar left,
+operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
-  return PolynomialInMonomialBasis<Product<Scalar, Value>,
-                                   Argument,
-                                   degree_,
-                                   Evaluator>(
+  return PolynomialInMonomialBasis<
+             Product<Scalar, Value>, Argument, degree_, Evaluator>(
       TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<Value,
-                                                         Argument,
-                                                         degree_,
-                                                         Evaluator>::
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left, right.coefficients_));
 }
 

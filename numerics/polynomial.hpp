@@ -90,8 +90,15 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
- //private:
+ private:
   Coefficients coefficients_;
+
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  friend operator*(S const& left,
+                   PolynomialInMonomialBasis<V, A, d, E> const& right);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -134,7 +141,7 @@ template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
-operator*(Scalar left,
+operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right);
 
