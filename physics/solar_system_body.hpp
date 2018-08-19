@@ -466,6 +466,8 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
   CHECK(it != gravity_model_map_.end()) << name << " does not exist";
   serialization::GravityModel::Body* body = it->second;
   body->clear_j2();
+  body->clear_c22();
+  body->clear_s22();
   body->clear_j3();
   body->clear_reference_radius();
 }
@@ -508,6 +510,8 @@ void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK_EQ(body.has_reference_instant(),
            body.has_angular_frequency()) << body.name();
   CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
+  CHECK(body.has_j2() || !body.has_c22()) << body.name();
+  CHECK(body.has_j2() || !body.has_s22()) << body.name();
   CHECK(body.has_j2() || !body.has_j3()) << body.name();
 }
 

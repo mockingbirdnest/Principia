@@ -258,7 +258,8 @@ Ephemeris<Frame>::Ephemeris(
     CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     if (body->is_oblate()) {
-      geopotentials_.emplace_back(
+      geopotentials_.emplace(
+          geopotentials_.cbegin(),
           dynamic_cast_not_null<OblateBody<Frame> const*>(body.get()));
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
