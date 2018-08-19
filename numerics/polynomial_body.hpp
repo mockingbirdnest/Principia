@@ -257,57 +257,24 @@ using TupleTransformer2 = typename TupleTransformer<
     Transformer,
     std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>::Type;
 
-template<typename Scalar,
-         typename Tuple, int k = 0, int size = std::tuple_size_v<Tuple>>
-struct TupleArithmetic : not_constructible {
-  //static constexpr Tuple Add(Tuple const& left, Tuple const& right);
+template<typename Scalar, typename Tuple, typename>
+struct TupleArithmetic;
+template<typename Scalar, typename Tuple, int... indices>
+struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
+    : not_constructible {
   template<typename T>
   using Multiplier = Product<Scalar, T>;
   static constexpr TupleTransformer2<Tuple, Multiplier> Multiply(
-      Scalar left,
+      Scalar const& left,
       Tuple const& right);
 };
 
-template<typename Scalar, typename Tuple, int size>
-struct TupleArithmetic<Scalar, Tuple, size, size> : not_constructible {
-  //static constexpr Tuple Add(Tuple const& left, Tuple const& right);
-  template<typename T>
-  using Multiplier = Product<Scalar, T>;
-  static constexpr TupleTransformer2<Tuple, Multiplier> Multiply(
-      Scalar left,
-      Tuple const& right);
-};
-
-//template<typename Scalar, typename Tuple, int k, int size>
-//constexpr Tuple TupleArithmetic<Scalar, Tuple, k, size>::Add(
-//    Tuple const& left,
-//    Tuple const& right) {
-//  Tuple result = right;
-//  std::get<k>(result) += std::get<k>(left);
-//  return TupleArithmetic<Tuple, k + 1, size>::Add(left, result);
-//}
-
-template<typename Scalar, typename Tuple, int k, int size>
-constexpr auto TupleArithmetic<Scalar, Tuple, k, size>::Multiply(
-    Scalar const left,
-    Tuple const& right) -> TupleTransformer2<Tuple, Multiplier> {
-  Tuple result = right;
-  std::get<k>(result) *= left;
-  return TupleArithmetic<Scalar, Tuple, k + 1, size>::Multiply(left, result);
-}
-
-//template<typename Scalar, typename Tuple, int size>
-//constexpr Tuple TupleArithmetic<Scalar, Tuple, size, size>::Add(
-//    Tuple const& left,
-//    Tuple const& right) {
-//  return right;
-//}
-
-template<typename Scalar, typename Tuple, int size>
-constexpr auto TupleArithmetic<Scalar, Tuple, size, size>::Multiply(
-    Scalar const left,
-    Tuple const& right) -> TupleTransformer2<Tuple, Multiplier> {
-  return right;
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Multiply(Scalar const& left, Tuple const& right)
+        -> TupleTransformer2<Tuple, Multiplier> {
+  return {left * std::get<indices>(right)...};
 }
 
 template<typename Scalar,
@@ -321,12 +288,14 @@ operator*(Scalar left,
                                    Argument,
                                    degree_,
                                    Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<Value,
-                                                         Argument,
-                                                         degree_,
-                                                         Evaluator>::
-                          Coefficients>::Multiply(left, right.coefficients_));
+      TupleArithmetic<
+          Scalar,
+          typename PolynomialInMonomialBasis<Value,
+                                             Argument,
+                                             degree_,
+                                             Evaluator>::Coefficients,
+          std::make_integer_sequence<int, degree_ + 1>>::
+          Multiply(left, right.coefficients_));
 }
 
 }  // namespace internal_polynomial
