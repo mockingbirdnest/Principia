@@ -597,6 +597,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
     auto const& current_body = bodies_[b];
     auto const& current_body_trajectory = trajectories_[b];
     if (current_body.get() == body) {
+      CHECK_EQ(-1, b1);
       b1 = b;
     }
     positions.push_back(current_body_trajectory->EvaluatePosition(t));
@@ -658,7 +659,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         positions, accelerations);
   }
 
-  return accelerations[0];
+  return accelerations[b1];
 }
 
 template<typename Frame>
