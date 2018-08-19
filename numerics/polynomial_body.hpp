@@ -3,6 +3,7 @@
 #include "numerics/polynomial.hpp"
 
 #include <tuple>
+#include <utility>
 
 #include "base/not_constructible.hpp"
 #include "geometry/serialization.hpp"
@@ -247,63 +248,65 @@ struct TupleTransformer<Tuple,
                         std::integer_sequence<int, indices...>>
     : not_constructible {
   using Type = std::tuple<
-      typename Transformer<std::tuple_element<indices, Tuple>>::Type...>;
+      typename Transformer<std::tuple_element_t<indices, Tuple>>...>;
 };
 
-template<typename Tuple,
-         template<typename>
-         class Transformer,
-         typename Sequence>
-struct TupleTransformer2 : not_constructible {
-  using Type = typename TupleTransformer<
-      Tuple,
-      Transformer,
-      std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>::Type;
-};
+template<typename Tuple, template<typename> class Transformer>
+using TupleTransformer2 = typename TupleTransformer<
+    Tuple,
+    Transformer,
+    std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>::Type;
 
-//TODO(phl): Do I *really* have to do this?
 template<typename Scalar,
          typename Tuple, int k = 0, int size = std::tuple_size_v<Tuple>>
 struct TupleArithmetic : not_constructible {
-  static constexpr Tuple Add(Tuple const& left, Tuple const& right);
-  static constexpr Tuple Multiply(Scalar left, Tuple const& right);
+  //static constexpr Tuple Add(Tuple const& left, Tuple const& right);
+  template<typename T>
+  using Multiplier = Product<Scalar, T>;
+  static constexpr TupleTransformer2<Tuple, Multiplier> Multiply(
+      Scalar left,
+      Tuple const& right);
 };
 
 template<typename Scalar, typename Tuple, int size>
 struct TupleArithmetic<Scalar, Tuple, size, size> : not_constructible {
-  static constexpr Tuple Add(Tuple const& left, Tuple const& right);
-  static constexpr Tuple Multiply(Scalar left, Tuple const& right);
+  //static constexpr Tuple Add(Tuple const& left, Tuple const& right);
+  template<typename T>
+  using Multiplier = Product<Scalar, T>;
+  static constexpr TupleTransformer2<Tuple, Multiplier> Multiply(
+      Scalar left,
+      Tuple const& right);
 };
 
-template<typename Scalar, typename Tuple, int k, int size>
-constexpr Tuple TupleArithmetic<Scalar, Tuple, k, size>::Add(
-    Tuple const& left,
-    Tuple const& right) {
-  Tuple result = right;
-  std::get<k>(result) += std::get<k>(left);
-  return TupleArithmetic<Tuple, k + 1, size>::Add(left, result);
-}
+//template<typename Scalar, typename Tuple, int k, int size>
+//constexpr Tuple TupleArithmetic<Scalar, Tuple, k, size>::Add(
+//    Tuple const& left,
+//    Tuple const& right) {
+//  Tuple result = right;
+//  std::get<k>(result) += std::get<k>(left);
+//  return TupleArithmetic<Tuple, k + 1, size>::Add(left, result);
+//}
 
 template<typename Scalar, typename Tuple, int k, int size>
-constexpr Tuple TupleArithmetic<Scalar, Tuple, k, size>::Multiply(
+constexpr auto TupleArithmetic<Scalar, Tuple, k, size>::Multiply(
     Scalar const left,
-    Tuple const& right) {
+    Tuple const& right) -> TupleTransformer2<Tuple, Multiplier> {
   Tuple result = right;
   std::get<k>(result) *= left;
-  return TupleArithmetic<Tuple, k + 1, size>::Multiply(left, result);
+  return TupleArithmetic<Scalar, Tuple, k + 1, size>::Multiply(left, result);
 }
 
-template<typename Scalar, typename Tuple, int size>
-constexpr Tuple TupleArithmetic<Scalar, Tuple, size, size>::Add(
-    Tuple const& left,
-    Tuple const& right) {
-  return right;
-}
+//template<typename Scalar, typename Tuple, int size>
+//constexpr Tuple TupleArithmetic<Scalar, Tuple, size, size>::Add(
+//    Tuple const& left,
+//    Tuple const& right) {
+//  return right;
+//}
 
 template<typename Scalar, typename Tuple, int size>
-constexpr Tuple TupleArithmetic<Scalar, Tuple, size, size>::Multiply(
+constexpr auto TupleArithmetic<Scalar, Tuple, size, size>::Multiply(
     Scalar const left,
-    Tuple const& right) {
+    Tuple const& right) -> TupleTransformer2<Tuple, Multiplier> {
   return right;
 }
 
@@ -314,6 +317,16 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
+  return PolynomialInMonomialBasis<Product<Scalar, Value>,
+                                   Argument,
+                                   degree_,
+                                   Evaluator>(
+      TupleArithmetic<Scalar,
+                      typename PolynomialInMonomialBasis<Value,
+                                                         Argument,
+                                                         degree_,
+                                                         Evaluator>::
+                          Coefficients>::Multiply(left, right.coefficients_));
 }
 
 }  // namespace internal_polynomial

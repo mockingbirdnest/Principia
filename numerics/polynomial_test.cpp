@@ -30,6 +30,7 @@ using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Time;
+using quantities::si::Joule;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -131,6 +132,11 @@ TEST_F(PolynomialTest, Evaluate17) {
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
                                                    0 * Metre,
                                                    0 * Metre}), 0));
+}
+
+TEST_F(PolynomialTest, Ring) {
+  P2V p2v(coefficients_);
+  auto const result = 3.0 * Joule * p2v;
 }
 
 // Check that polynomials may be serialized.

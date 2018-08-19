@@ -90,7 +90,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   static PolynomialInMonomialBasis ReadFromMessage(
       serialization::Polynomial const& message);
 
- private:
+ //private:
   Coefficients coefficients_;
 };
 
