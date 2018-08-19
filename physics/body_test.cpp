@@ -24,8 +24,8 @@ using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using quantities::Angle;
 using quantities::AngularFrequency;
+using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
-using quantities::Order2ZonalCoefficient;
 using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -100,7 +100,7 @@ class BodyTest : public testing::Test {
                             right_ascension_of_pole_,
                             declination_of_pole_),
                         OblateBody<World>::Parameters(
-                            163 * SIUnit<Order2ZonalCoefficient>()));
+                            6 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
 };
 
 using BodyDeathTest = BodyTest;
@@ -225,7 +225,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(163, oblate_body_extension.j2().magnitude());
+  EXPECT_EQ(6, oblate_body_extension.j2().magnitude());
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =

@@ -35,15 +35,20 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
+  // The frame of the surface of the celestial.
+  struct SurfaceFrame;
+  static const Vector<double, SurfaceFrame> x_;
+  static const Vector<double, SurfaceFrame> y_;
+
   using UnitVector = Vector<double, Frame>;
 
-  // If j is a unit vector along the axis of rotation, and r a vector from the
+  // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here
   // is:
   //
-  //   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
+  //   -(J₂ / (μ ‖r‖⁵)) (3 z (r.z) + r (3 - 15 (r.z)² / ‖r‖²) / 2)
   //
-  // Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
+  // Where ‖r‖ is the norm of r and r.z is the inner product.  It is the
   // additional acceleration exerted by the oblateness of |body| on a point at
   // position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
   // because the planets are oblate, not prolate.  Note that this follows IERS
@@ -51,17 +56,25 @@ class Geopotential {
   // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
   // be negative.
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order2ZonalAcceleration(UnitVector const& axis,
-                          Displacement<Frame> const& r,
-                          Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³) const;
+  Degree2ZonalAcceleration(UnitVector const& axis,
+                           Displacement<Frame> const& r,
+                           Exponentiation<Length, -2> const& one_over_r²,
+                           Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Order3ZonalAcceleration(UnitVector const& axis,
-                          Displacement<Frame> const& r,
-                          Square<Length> const& r²,
-                          Exponentiation<Length, -2> const& one_over_r²,
-                          Exponentiation<Length, -3> const& one_over_r³) const;
+  Degree2SectoralAcceleration(
+      UnitVector const& reference,
+      UnitVector const& bireference,
+      Displacement<Frame> const& r,
+      Exponentiation<Length, -2> const& one_over_r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
+
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Degree3ZonalAcceleration(UnitVector const& axis,
+                           Displacement<Frame> const& r,
+                           Square<Length> const& r²,
+                           Exponentiation<Length, -2> const& one_over_r²,
+                           Exponentiation<Length, -3> const& one_over_r³) const;
 
   not_null<OblateBody<Frame> const*> const body_;
 };
