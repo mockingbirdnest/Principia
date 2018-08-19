@@ -64,7 +64,7 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
-#define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
+#define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
 
 #if !PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
 // If j is a unit vector along the axis of rotation, and r a vector from the
@@ -612,7 +612,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*body1=*/*body, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/0, /*b2_end=*/b1,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/true>(
@@ -620,7 +620,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*body1=*/*body, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
@@ -629,7 +629,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
@@ -638,7 +638,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*body1=*/*body, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
@@ -647,7 +647,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/b1,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
@@ -656,7 +656,7 @@ ComputeGravitationalAccelerationOnMassiveBody(
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions, accelerations);
+        positions, accelerations, geopotentials_);
   }
 
   return accelerations[b1];
@@ -927,7 +927,8 @@ void Ephemeris<Frame>::
         std::size_t const b2_begin,
         std::size_t const b2_end,
         std::vector<Position<Frame>> const& positions,
-        std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        std::vector<Vector<Acceleration, Frame>>& accelerations,
+        std::vector<Geopotential<Frame>> const& geopotentials) {
   Position<Frame> const& position_of_b1 = positions[b1];
   Vector<Acceleration, Frame>& acceleration_on_b1 = accelerations[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
@@ -960,7 +961,7 @@ void Ephemeris<Frame>::
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect1 =
 #if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-                geopotentials_[b1].SphericalHarmonicsAcceleration(
+                geopotentials[b1].SphericalHarmonicsAcceleration(
                     t,
                     -Δq,
                     Δq²,
@@ -980,7 +981,7 @@ void Ephemeris<Frame>::
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect2 =
 #if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-                geopotentials_[b2].SphericalHarmonicsAcceleration(
+                geopotentials[b2].SphericalHarmonicsAcceleration(
                     t,
                     Δq,
                     Δq²,
@@ -1069,8 +1070,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
@@ -1079,8 +1079,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
        b1 < number_of_oblate_bodies_ +
@@ -1095,8 +1094,7 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
   }
 }
 

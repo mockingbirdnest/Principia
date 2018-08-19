@@ -288,7 +288,8 @@ class Ephemeris {
       std::size_t const b2_begin,
       std::size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations);
+      std::vector<Vector<Acceleration, Frame>>& accelerations,
+      std::vector<Geopotential<Frame>> const& geopotentials);
 
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
