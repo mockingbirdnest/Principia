@@ -15,6 +15,31 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using quantities::Tuple;
+
+template<typename Scalar,
+         typename Tuple,
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+struct TupleArithmetic;
+
+template<typename Scalar, typename Tuple, int... indices>
+struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
+    : not_constructible {
+  template<typename T>
+  using ScalarLeftMultiplier = Product<Scalar, T>;
+
+  static constexpr typename quantities::Tuple<Tuple, ScalarLeftMultiplier>
+  Multiply(Scalar const& left, Tuple const& right);
+};
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Multiply(Scalar const& left, Tuple const& right) ->
+    typename quantities::Tuple<Tuple, ScalarLeftMultiplier> {
+  return {left * std::get<indices>(right)...};
+}
+
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -68,6 +93,7 @@ template<typename Tuple, int size>
 void TupleSerializer<Tuple, size, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {}
+
 
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
   case value:                                                          \
@@ -237,48 +263,12 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
-template<typename Tuple,
-         template<typename>
-         class Transformer,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct TupleTransformer;
-template<typename Tuple, template<typename> class Transformer, int... indices>
-struct TupleTransformer<Tuple,
-                        Transformer,
-                        std::integer_sequence<int, indices...>>
-    : not_constructible {
-  using Type = std::tuple<
-      typename Transformer<std::tuple_element_t<indices, Tuple>>...>;
-};
-
-template<typename Tuple, template<typename> class Transformer>
-using TupleTransformer2 = typename TupleTransformer<Tuple, Transformer>::Type;
-
 template<typename Scalar,
-         typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct TupleArithmetic;
-template<typename Scalar, typename Tuple, int... indices>
-struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
-    : not_constructible {
-  template<typename T>
-  using Multiplier = Product<Scalar, T>;
-  static constexpr typename TupleTransformer<Tuple, Multiplier>::Type Multiply(
-      Scalar const& left,
-      Tuple const& right);
-};
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Multiply(Scalar const& left, Tuple const& right)
-        -> typename TupleTransformer<Tuple, Multiplier>::Type {
-  return {left * std::get<indices>(right)...};
-}
-
-template<typename Scalar,
-         typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
+         typename Value,
+         typename Argument,
+         int degree_,
+         template<typename, typename, int>
+         class Evaluator>
 PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&

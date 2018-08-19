@@ -47,6 +47,9 @@ using Derivative = typename std::conditional_t<
 template<typename T>
 using Variation = Derivative<T, Time>;
 
+template<typename Qs, template<typename> class Transform>
+using Tuple = typename internal_generators::TupleGenerator<Qs, Transform>::Type;
+
 // The solid angle is really the square of the angle: for instance, the surface
 // element on the sphere is cos(θ) dθ dφ, and the cylinder with radius r and
 // height 2r, whose surface is equal to that of the sphere, has a surface of

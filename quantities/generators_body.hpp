@@ -112,6 +112,13 @@ struct QuotientGenerator<double, double> : not_constructible {
   using Type = double;
 };
 
+template<typename Qs, template<typename> class Transform, int... indices>
+struct TupleGenerator<Qs, Transform, std::integer_sequence<int, indices...>>
+    : not_constructible {
+  using Type = std::tuple<
+      typename Transform<std::tuple_element_t<indices, Qs>>...>;
+};
+
 }  // namespace internal_generators
 }  // namespace quantities
 }  // namespace principia
