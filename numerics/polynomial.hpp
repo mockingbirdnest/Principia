@@ -7,28 +7,20 @@
 #include "base/not_null.hpp"
 #include "geometry/point.hpp"
 #include "quantities/named_quantities.hpp"
+#include "quantities/tuples.hpp"
 #include "serialization/numerics.pb.h"
 
 namespace principia {
 namespace numerics {
 namespace internal_polynomial {
 
+using base::not_constructible;
 using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
-
-template<typename Value, typename Argument, typename>
-struct DerivativesGenerator;
-template<typename Value, typename Argument, int... orders>
-struct DerivativesGenerator<Value,
-                            Argument,
-                            std::integer_sequence<int, orders...>> {
-  using Type = std::tuple<Derivative<Value, Argument, orders>...>;
-};
-
-template<typename Value, typename Argument, typename Sequence>
-using Derivatives =
-    typename DerivativesGenerator<Value, Argument, Sequence>::Type;
+using quantities::Derivatives;
+using quantities::Product;
+using quantities::Quotient;
 
 // |Value| must belong to an affine space.  |Argument| must belong to a ring or
 // to Point based on a ring.
@@ -67,10 +59,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   //   std::tuple<Value,
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
-  using Coefficients =
-      Derivatives<Value,
-                  Argument,
-                  std::make_integer_sequence<int, degree_ + 1>>;
+  using Coefficients = Derivatives<Value, Argument, degree_ + 1>;
 
   // The coefficients are applied to powers of argument.
   explicit PolynomialInMonomialBasis(Coefficients const& coefficients);
@@ -89,6 +78,13 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
  private:
   Coefficients coefficients_;
+
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  friend operator*(S const& left,
+                   PolynomialInMonomialBasis<V, A, d, E> const& right);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -100,10 +96,7 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   //   std::tuple<Value,
   //              Derivative<Value, Argument>,
   //              Derivative<Derivative<Value, Argument>>...>
-  using Coefficients =
-      Derivatives<Value,
-                  Argument,
-                  std::make_integer_sequence<int, degree_ + 1>>;
+  using Coefficients = Derivatives<Value, Argument, degree_ + 1>;
 
   // The coefficients are relative to origin; in other words they are applied to
   // powers of (argument - origin).
@@ -126,6 +119,14 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Coefficients coefficients_;
   Point<Argument> origin_;
 };
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(Scalar const& left,
+          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              right);
 
 }  // namespace internal_polynomial
 

@@ -3,6 +3,7 @@
 #include "numerics/polynomial.hpp"
 
 #include <tuple>
+#include <utility>
 
 #include "base/not_constructible.hpp"
 #include "geometry/serialization.hpp"
@@ -14,6 +15,31 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using quantities::Apply;
+
+template<typename Scalar,
+         typename Tuple,
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+struct TupleArithmetic;
+
+template<typename Scalar, typename Tuple, int... indices>
+struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
+    : not_constructible {
+  template<typename T>
+  using ScalarLeftMultiplier = Product<Scalar, T>;
+
+  static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
+  Multiply(Scalar const& left, Tuple const& right);
+};
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Multiply(Scalar const& left, Tuple const& right) ->
+    typename Apply<ScalarLeftMultiplier, Tuple> {
+  return {left * std::get<indices>(right)...};
+}
+
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -67,6 +93,7 @@ template<typename Tuple, int size>
 void TupleSerializer<Tuple, size, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {}
+
 
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
   case value:                                                          \
@@ -234,6 +261,21 @@ ReadFromMessage(serialization::Polynomial const& message) {
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
   auto const origin = Point<Argument>::ReadFromMessage(extension.origin());
   return PolynomialInMonomialBasis(coefficients, origin);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(Scalar const& left,
+          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              right) {
+  return PolynomialInMonomialBasis<
+             Product<Scalar, Value>, Argument, degree_, Evaluator>(
+      TupleArithmetic<Scalar,
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
+                          Coefficients>::Multiply(left, right.coefficients_));
 }
 
 }  // namespace internal_polynomial
