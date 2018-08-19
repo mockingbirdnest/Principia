@@ -109,6 +109,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   PolynomialInMonomialBasis<Product<S, V>, A, d, E>
   friend operator*(S const& left,
                    PolynomialInMonomialBasis<V, A, d, E> const& right);
+  template<typename S,
+           typename V, typename A, int d,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
+                   S const& right);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -170,6 +176,14 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right);
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right);
 
 }  // namespace internal_polynomial
 

@@ -139,15 +139,6 @@ TEST_F(PolynomialTest, Evaluate17) {
 
 TEST_F(PolynomialTest, Ring) {
   P2V p2v(coefficients_);
-
-  {
-    auto const p = 3.0 * Joule * p2v;
-    auto const actual = p.Evaluate(0 * Second);
-    auto const expected = Vector<Product<Energy, Length>, World>(
-                  {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
-    EXPECT_THAT(actual, AlmostEquals(expected, 0));
-  }
-
   {
     auto const p = p2v + p2v;
     auto const actual = p.Evaluate(0 * Second);
@@ -155,12 +146,25 @@ TEST_F(PolynomialTest, Ring) {
         Displacement<World>({0 * Metre, 0 * Metre, 2 * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
-
   {
     auto const p = p2v - p2v;
     auto const actual = p.Evaluate(0 * Second);
     auto const expected =
         Displacement<World>({0 * Metre, 0 * Metre, 0 * Metre});
+    EXPECT_THAT(actual, AlmostEquals(expected, 0));
+  }
+  {
+    auto const p = 3.0 * Joule * p2v;
+    auto const actual = p.Evaluate(0 * Second);
+    auto const expected = Vector<Product<Energy, Length>, World>(
+                  {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
+    EXPECT_THAT(actual, AlmostEquals(expected, 0));
+  }
+  {
+    auto const p = p2v * (3.0 * Joule);
+    auto const actual = p.Evaluate(0 * Second);
+    auto const expected = Vector<Product<Energy, Length>, World>(
+                  {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
   }
 }

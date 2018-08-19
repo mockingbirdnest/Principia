@@ -27,12 +27,16 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
     : not_constructible {
   template<typename T>
   using ScalarLeftMultiplier = Product<Scalar, T>;
+  template<typename T>
+  using ScalarRightMultiplier = Product<T, Scalar>;
 
   static constexpr Tuple Add(Tuple const& left, Tuple const& right);
   static constexpr Tuple Subtract(Tuple const& left, Tuple const& right);
 
   static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
+  static constexpr typename Apply<ScalarRightMultiplier, Tuple>
+  Multiply(Tuple const& left, Scalar const& right);
 };
 
 template<typename Scalar, typename Tuple, int... indices>
@@ -57,6 +61,13 @@ TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
   return {left * std::get<indices>(right)...};
 }
 
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Multiply(Tuple const& left, Scalar const& right) ->
+    typename Apply<ScalarRightMultiplier, Tuple> {
+  return {std::get<indices>(left) * right...};
+}
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -321,6 +332,21 @@ operator*(Scalar const& left,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left, right.coefficients_));
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<
+             Product<Scalar, Value>, Argument, degree_, Evaluator>(
+      TupleArithmetic<Scalar,
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
+                          Coefficients>::Multiply(left.coefficients_, right));
 }
 
 }  // namespace internal_polynomial
