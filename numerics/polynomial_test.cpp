@@ -29,7 +29,11 @@ using geometry::Instant;
 using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
+using quantities::Energy;
+using quantities::Length;
+using quantities::Product;
 using quantities::Time;
+using quantities::si::Joule;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -131,6 +135,15 @@ TEST_F(PolynomialTest, Evaluate17) {
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
                                                    0 * Metre,
                                                    0 * Metre}), 0));
+}
+
+TEST_F(PolynomialTest, Ring) {
+  P2V p2v(coefficients_);
+  auto const p = 3.0 * Joule * p2v;
+  auto const actual = p.Evaluate(0 * Second);
+  auto const expected = Vector<Product<Energy, Length>, World>(
+                {0 * Joule * Metre, 0 * Joule * Metre, 3 * Joule * Metre});
+  EXPECT_THAT(actual, AlmostEquals(expected, 0));
 }
 
 // Check that polynomials may be serialized.
