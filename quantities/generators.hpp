@@ -22,14 +22,6 @@ struct ProductGenerator;
 template<typename Left, typename Right>
 struct QuotientGenerator;
 
-// This struct has a |Type| member which is a tuple obtained by applying
-// |Transform| to each element type in |Qs| (which must be a tuple or an array
-// or a pair).
-template<template<typename> class Transform,
-         typename Qs,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Qs>>>
-struct ApplyGenerator;
-
 }  // namespace internal_generators
 }  // namespace quantities
 }  // namespace principia
