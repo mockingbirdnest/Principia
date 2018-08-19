@@ -18,6 +18,7 @@ using base::not_null;
 using geometry::Point;
 using quantities::Derivative;
 using quantities::Product;
+using quantities::Quotient;
 
 template<typename Value, typename Argument, typename>
 struct DerivativesGenerator;
@@ -112,7 +113,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   template<typename S,
            typename V, typename A, int d,
            template<typename, typename, int> class E>
-  PolynomialInMonomialBasis<Product<S, V>, A, d, E>
+  PolynomialInMonomialBasis<Product<V, S>, A, d, E>
   friend operator*(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
 };
@@ -153,6 +154,8 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
   Point<Argument> origin_;
 };
 
+// Vector space of polynomials.
+
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>
@@ -180,8 +183,16 @@ operator*(Scalar const& left,
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right);
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
+operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right);
 

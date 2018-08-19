@@ -29,6 +29,8 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   using ScalarLeftMultiplier = Product<Scalar, T>;
   template<typename T>
   using ScalarRightMultiplier = Product<T, Scalar>;
+  template<typename T>
+  using ScalarRightDivider = Quotient<T, Scalar>;
 
   static constexpr Tuple Add(Tuple const& left, Tuple const& right);
   static constexpr Tuple Subtract(Tuple const& left, Tuple const& right);
@@ -37,6 +39,9 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   Multiply(Scalar const& left, Tuple const& right);
   static constexpr typename Apply<ScalarRightMultiplier, Tuple>
   Multiply(Tuple const& left, Scalar const& right);
+
+  static constexpr typename Apply<ScalarRightDivider, Tuple>
+  Divide(Tuple const& left, Scalar const& right);
 };
 
 template<typename Scalar, typename Tuple, int... indices>
@@ -67,6 +72,14 @@ TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
     Multiply(Tuple const& left, Scalar const& right) ->
     typename Apply<ScalarRightMultiplier, Tuple> {
   return {std::get<indices>(left) * right...};
+}
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto
+TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
+    Divide(Tuple const& left, Scalar const& right) ->
+    typename Apply<ScalarRightDivider, Tuple> {
+  return {std::get<indices>(left) / right...};
 }
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
@@ -337,16 +350,31 @@ operator*(Scalar const& left,
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
   return PolynomialInMonomialBasis<
-             Product<Scalar, Value>, Argument, degree_, Evaluator>(
+             Product<Value, Scalar>, Argument, degree_, Evaluator>(
       TupleArithmetic<Scalar,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left.coefficients_, right));
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Quotient<Scalar, Value>, Argument, degree_, Evaluator>
+operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<
+             Quotient<Scalar, Value>, Argument, degree_, Evaluator>(
+      TupleArithmetic<Scalar,
+                      typename PolynomialInMonomialBasis<
+                                   Value, Argument, degree_, Evaluator>::
+                          Coefficients>::Divide(left.coefficients_, right));
 }
 
 }  // namespace internal_polynomial
