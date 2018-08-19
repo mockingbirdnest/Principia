@@ -194,5 +194,8 @@
     <ClCompile Include="..\base\bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="geodesy_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
