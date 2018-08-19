@@ -7,7 +7,6 @@
 
 #include "base/not_constructible.hpp"
 #include "geometry/serialization.hpp"
-#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace numerics {
@@ -28,36 +27,10 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
     : not_constructible {
   template<typename T>
   using ScalarLeftMultiplier = Product<Scalar, T>;
-  template<typename T>
-  using ScalarRightMultiplier = Product<T, Scalar>;
-  template<typename T>
-  using ScalarRightDivider = Quotient<T, Scalar>;
-
-  static constexpr Tuple Add(Tuple const& left, Tuple const& right);
-  static constexpr Tuple Subtract(Tuple const& left, Tuple const& right);
 
   static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
-  static constexpr typename Apply<ScalarRightMultiplier, Tuple>
-  Multiply(Tuple const& left, Scalar const& right);
-
-  static constexpr typename Apply<ScalarRightDivider, Tuple>
-  Divide(Tuple const& left, Scalar const& right);
 };
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr Tuple
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::Add(
-    Tuple const& left, Tuple const& right) {
-  return {std::get<indices>(left) + std::get<indices>(right)...};
-}
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr Tuple
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Subtract(Tuple const& left, Tuple const& right) {
-  return {std::get<indices>(left) - std::get<indices>(right)...};
-}
 
 template<typename Scalar, typename Tuple, int... indices>
 constexpr auto
@@ -67,21 +40,6 @@ TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
   return {left * std::get<indices>(right)...};
 }
 
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Multiply(Tuple const& left, Scalar const& right) ->
-    typename Apply<ScalarRightMultiplier, Tuple> {
-  return {std::get<indices>(left) * right...};
-}
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Divide(Tuple const& left, Scalar const& right) ->
-    typename Apply<ScalarRightDivider, Tuple> {
-  return {std::get<indices>(left) / right...};
-}
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -305,34 +263,6 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
-      TupleArithmetic<double,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Add(left.coefficients_,
-                                             right.coefficients_));
-}
-
-template<typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-        right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
-      TupleArithmetic<double,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Subtract(left.coefficients_,
-                                                  right.coefficients_));
-}
-
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
@@ -346,36 +276,6 @@ operator*(Scalar const& left,
                       typename PolynomialInMonomialBasis<
                                    Value, Argument, degree_, Evaluator>::
                           Coefficients>::Multiply(left, right.coefficients_));
-}
-
-template<typename Scalar,
-         typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
-operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-              left,
-          Scalar const& right) {
-  return PolynomialInMonomialBasis<
-             Product<Value, Scalar>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Multiply(left.coefficients_, right));
-}
-
-template<typename Scalar,
-         typename Value, typename Argument, int degree_,
-         template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Quotient<Scalar, Value>, Argument, degree_, Evaluator>
-operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
-              left,
-          Scalar const& right) {
-  return PolynomialInMonomialBasis<
-             Quotient<Scalar, Value>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Divide(left.coefficients_, right));
 }
 
 }  // namespace internal_polynomial
