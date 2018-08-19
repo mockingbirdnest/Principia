@@ -14,10 +14,10 @@ namespace numerics {
 
 namespace {
 
-using P2 = PolynomialInMonomialBasis</*Value=*/double,
+using P3 = PolynomialInMonomialBasis</*Value=*/double,
                                      /*Argument=*/double,
-                                     /*degree=*/2,
-                                     /*Evaluator=*/HornerEvaluator>;
+                                     /*degree=*/3,
+                                     /*Evaluator=*/EstrinEvaluator>;
 
 // 2nd-degree polynomials that minimize the absolute error on sin and cos over
 // the interval [0, 1/8].  The minimization algorithm is run on
@@ -25,12 +25,22 @@ using P2 = PolynomialInMonomialBasis</*Value=*/double,
 // the right behavior near 0 and the proper parity.  Because of extra
 // oscillations, the lower bounds of the minimization intervals are 1/36 and
 // 1/24 respectively.  This is where the maximum error is found.
-P2 sin_polynomial(P2::Coefficients{6.28315387593158874093559349802,
-                                   -41.3255673715186216778612605095,
-                                   79.5314110676979262924240784281});
-P2 cos_polynomial(P2::Coefficients{-19.7391672615468690589481752820,
-                                   64.9232282990046449731568966307,
-                                   -83.6659064641344641438100039739});
+// The coefficients are scaled to accept arguments expressed in right angles.
+
+// The sine polynomial uses a custom evaluation, so the individual coefficients
+// are named.  The polynomial for Sin(2 π y/4) is s₁ y + s₃ y³ + s₅ y⁵.
+double const s₁ = 6.28315387593158874093559349802 / 4;
+double const s₃ = -41.3255673715186216778612605095 / (4 * 16);
+double const s₅ = 79.5314110676979262924240784281 / (4 * 16 * 16);
+
+// The cosine polynomial for 16 z² ⟼ (Cos(2 π z) - 1)/(16 z²) is turned into a
+// polynomial for 16 z² ⟼ Cos(2 π z) by multiplying by the argument and adding
+// 1, i.e., prepending 1 to the list of coefficients.
+P3 cos_polynomial(P3::Coefficients{
+    1.0,
+    -19.7391672615468690589481752820 / 16,
+    64.9232282990046449731568966307 / (16 * 16),
+    -83.6659064641344641438100039739 / (16 * 16 * 16)});
 
 struct Decomposition {
   std::int64_t integer_part;
@@ -54,19 +64,25 @@ Decomposition Decompose(double const x) {
 
 }  // namespace
 
-void FastSinCos2π(double cycles, double& sin, double& cos) {
-  // Argument reduction.  cycles_reduced is in [-1/8, 1/8] and quadrant goes
-  // from 0 to 3, with 0 indicating the principal quadrant and the others
-  // numbered in the trigonometric direction.  These quantities are computed by
-  // extracting the integer and fractional parts of 4 * cycles.
+void FastSinCos2π(double const cycles, double& sin, double& cos) {
+  // Argument reduction.
+  // - quadrant goes from 0 to 3, with 0 indicating the principal quadrant and
+  //   the others numbered in the trigonometric direction;
+  // - y is in [-1/2, 1/2], corresponding to reduced angles of [-π/4, π/4] in
+  //   the quadrant.
+  // These quantities are computed by extracting the integer and fractional
+  // parts of 4 * cycles.
   Decomposition const decomposition = Decompose(4.0 * cycles);
-  double const cycles_reduced = 0.25 * decomposition.fractional_part;
+  double const y = decomposition.fractional_part;
+  double const y² = y * y;
+  double const y³ = y² * y;
   std::int64_t const quadrant = decomposition.integer_part & 0b11;
 
-  double const cycles_reduced² = cycles_reduced * cycles_reduced;
-  double const s = sin_polynomial.Evaluate(cycles_reduced²) * cycles_reduced;
-  double const c = 1.0 +
-                   cos_polynomial.Evaluate(cycles_reduced²) * cycles_reduced²;
+  // The custom evaluation, compared to Estrin followed by multiplication by the
+  // argument, i.e., y * (s₁ + s₃ * y² + s₅ * (y² * y²)), avoids having a
+  // multiplication by y at the end.
+  double const s = s₁ * y + (s₃ + s₅ * y²) * y³;
+  double const c = cos_polynomial.Evaluate(y²);
 
   switch (quadrant) {
     case 0:

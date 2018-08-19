@@ -116,14 +116,12 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
       Position<ICRS>& centre_of_mass,
       Time& period) {
     // Make the bodies non-oblate so that the system can be computed explicitly.
-    serialization::GravityModel::Body earth_gravity_model =
+    solar_system_.RemoveOblateness("Earth");
+    solar_system_.RemoveOblateness("Moon");
+    serialization::GravityModel::Body const earth_gravity_model =
         solar_system_.gravity_model_message("Earth");
-    earth_gravity_model.clear_j2();
-    earth_gravity_model.clear_reference_radius();
-    serialization::GravityModel::Body moon_gravity_model =
+    serialization::GravityModel::Body const moon_gravity_model =
         solar_system_.gravity_model_message("Moon");
-    moon_gravity_model.clear_j2();
-    moon_gravity_model.clear_reference_radius();
 
     // Create the Moon before the Earth to exercise a bug caused by the order of
     // pointers differing from the order of bodies (don't ask).
@@ -745,7 +743,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   // The small residual in x comes from the fact that the cosine of the
   // declination (90 degrees) is not exactly zero, so the axis of our Earth is
   // slightly tilted.  This greatly annoys the elephant.
-  EXPECT_THAT(elephant_positions.size(), Eq(9));
+  EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               VanishesBefore(1 * Metre, 0));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
@@ -753,7 +751,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           earth_polar_radius), 8e-7);
 
-  EXPECT_THAT(elephant_accelerations.size(), Eq(9));
+  EXPECT_THAT(elephant_accelerations.size(), Eq(8));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
               VanishesBefore(1 * Metre / Second / Second, 0));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,

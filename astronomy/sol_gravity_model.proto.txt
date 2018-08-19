@@ -84,8 +84,9 @@ gravity_model {
 
   # Telluric planets.
   body {
-    # J2 coefficient and reference radius from
-    # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    # Spherical harmonic coefficients, and reference radius from the combined
+    # GRACE/GEOS model GGM05C.ICGEM at
+    # ftp://ftp.csr.utexas.edu/pub/grace/GGM05/.
     name                    : "Earth"
     gravitational_parameter : "3.9860043543609598e+05 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
@@ -94,7 +95,10 @@ gravity_model {
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
-    j2                      : 0.00108262545
+    j2                      : 0.0010826358191967031477
+    c22                     : -1.5746087691861196952e-6
+    s22                     : 9.0388589793913325092e-7
+    j3                      : -2.5324199142860519223e-6
     reference_radius        : "6378.1363 km"
   }
   body {

@@ -466,6 +466,7 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
   CHECK(it != gravity_model_map_.end()) << name << " does not exist";
   serialization::GravityModel::Body* body = it->second;
   body->clear_j2();
+  body->clear_j3();
   body->clear_reference_radius();
 }
 
@@ -507,6 +508,7 @@ void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
   CHECK_EQ(body.has_reference_instant(),
            body.has_angular_frequency()) << body.name();
   CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
+  CHECK(body.has_j2() || !body.has_j3()) << body.name();
 }
 
 template<typename Frame>
@@ -545,9 +547,26 @@ template<typename Frame>
 not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
-  return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-      body.j2(),
-      ParseQuantity<Length>(body.reference_radius()));
+  if (body.has_c22() || body.has_s22()) {
+    if (body.has_j3()) {
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          body.j2(),
+          body.c22(),
+          body.s22(),
+          body.j3(),
+          ParseQuantity<Length>(body.reference_radius()));
+    } else {
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          body.j2(),
+          body.c22(),
+          body.s22(),
+          ParseQuantity<Length>(body.reference_radius()));
+    }
+  } else {
+    return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+        body.j2(),
+        ParseQuantity<Length>(body.reference_radius()));
+  }
 }
 
 template<typename Frame>
