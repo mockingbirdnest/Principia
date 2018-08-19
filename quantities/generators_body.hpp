@@ -3,6 +3,8 @@
 
 #include "quantities/generators.hpp"
 
+#include <tuple>
+
 #include "base/not_constructible.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/quantities.hpp"
