@@ -14,7 +14,7 @@ template<typename LTuple, typename RTuple, int... indices>
 struct CartesianProductAdditiveGroup<LTuple, RTuple,
                                      std::integer_sequence<int, indices...>> {
   // The types of the result of addition and subtraction, with suitable
-  // specialization for the void case of Apply2.
+  // specializations for the void case of Apply2.
   template<typename L, typename R>
   struct TypesGenerator {
     using Sum = quantities::Sum<L, R>;
@@ -54,8 +54,9 @@ constexpr auto CartesianProductAdditiveGroup<
   return {(
       indices < std::min(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)
           ? std::get<indices>(left) + std::get<indices>(right)
-          : indices < std::tuple_size_v<LTuple> ? std::get<indices>(left)
-                                                : std::get<indices>(right))...};
+          : indices < std::tuple_size_v<LTuple>
+                ? std::get<indices>(left)
+                : std::get<indices>(right))...};
 }
 
 template<typename LTuple, typename RTuple, int... indices>
