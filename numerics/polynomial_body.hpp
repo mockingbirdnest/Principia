@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/not_constructible.hpp"
+#include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 
 namespace principia {
@@ -14,6 +15,7 @@ namespace internal_polynomial {
 
 using base::make_not_null_unique;
 using base::not_constructible;
+using geometry::CartesianProductAdditiveGroup;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Apply;
 
@@ -32,9 +34,6 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   template<typename T>
   using ScalarRightDivider = Quotient<T, Scalar>;
 
-  static constexpr Tuple Add(Tuple const& left, Tuple const& right);
-  static constexpr Tuple Subtract(Tuple const& left, Tuple const& right);
-
   static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
   Multiply(Scalar const& left, Tuple const& right);
   static constexpr typename Apply<ScalarRightMultiplier, Tuple>
@@ -43,20 +42,6 @@ struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
   static constexpr typename Apply<ScalarRightDivider, Tuple>
   Divide(Tuple const& left, Scalar const& right);
 };
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr Tuple
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::Add(
-    Tuple const& left, Tuple const& right) {
-  return {std::get<indices>(left) + std::get<indices>(right)...};
-}
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr Tuple
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Subtract(Tuple const& left, Tuple const& right) {
-  return {std::get<indices>(left) - std::get<indices>(right)...};
-}
 
 template<typename Scalar, typename Tuple, int... indices>
 constexpr auto
@@ -310,12 +295,11 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
-      TupleArithmetic<double,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Add(left.coefficients_,
-                                             right.coefficients_));
+  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
+  return P(CartesianProductAdditiveGroup<typename P::Coefficients,
+                                         typename P::Coefficients>::
+               Add(left.coefficients_,
+                   right.coefficients_));
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -324,12 +308,11 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
-      TupleArithmetic<double,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Subtract(left.coefficients_,
-                                                  right.coefficients_));
+  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
+  return P(CartesianProductAdditiveGroup<typename P::Coefficients,
+                                         typename P::Coefficients>::
+               Subtract(left.coefficients_,
+                        right.coefficients_));
 }
 
 template<typename Scalar,

@@ -2,10 +2,13 @@
 #include "geometry/cartesian_product.hpp"
 
 #include "quantities/named_quantities.hpp"
+#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace geometry {
 namespace internal_cartesian_product {
+
+using quantities::Apply2;
 
 template<typename LTuple, typename RTuple, int... indices>
 struct CartesianProductAdditiveGroup<LTuple, RTuple,
