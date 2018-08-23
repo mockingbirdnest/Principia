@@ -126,45 +126,75 @@ constexpr auto CartesianProductVectorSpace<
   return {std::get<indices>(left) / right...};
 }
 
+template<typename Tuple,
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+struct TailGenerator;
+
 template<typename Tuple, int head_index, int... tail_indices>
-std::tuple<std::tuple_element_t<tail_indices, Tuple>...> Tail(
-    Tuple const& tuple) {
+struct TailGenerator<Tuple,
+                     std::integer_sequence<int, head_index, tail_indices...>> {
+  using Type = std::tuple<std::tuple_element_t<tail_indices, Tuple>...>;
+  static constexpr Type Tail(Tuple const& tuple);
+};
+
+template<typename Tuple, int head_index, int... tail_indices>
+constexpr auto
+TailGenerator<Tuple, std::integer_sequence<int, head_index, tail_indices...>>::
+Tail(Tuple const& tuple) -> Type {
   return std::make_tuple(std::get<tail_indices>(tuple)...);
 }
 
-template<typename LTuple, typename RTuple, int lsize_>
-struct CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
-  using RElement = std::element_type_t<0, RTuple>;
-  using Result =
-      decltype(CartesianProductVectorSpace<LTuple, RElement>::Multiply(
+template<typename LTuple, typename RTuple, int lsize_, int rsize_>
+struct CartesianProductAlgebra {
+  using RHead = std::element_type_t<0, RTuple>;
+  using RTail = typename TailGenerator<LTuple>::Type;
+  using LTupleRHeadProduct =
+      decltype(CartesianProductVectorSpace<LTuple, RHead>::Multiply(
           std::declval<LTuple>(),
-          std::declval<RElement>()));
+          std::declval<RHead>()));
+  using LTupleRTailProduct =
+      decltype(CartesianProductVectorSpace<LTuple, RTail>::Multiply(
+          std::declval<LTuple>(),
+          std::declval<RTail>()));
+  using Result = int;
   constexpr Result Mult(LTuple const& left, RTuple const& right);
 };
 
-//template<typename LTuple, typename RTuple, int lsize_, int rsize_>
-//void CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(LTuple const& left,
-//                                               RTuple const& right) {
-//  // Right is split into head (index 0) and tail (the rest).  The tail is a
-//  // polynomial with valuation 1.
-//  auto const right_head = std::get<0>(right);
-//  auto const right_tail = Tail(right);
-//  // To implement the polynomial multiplication left * right_tail, we need to
-//  // insert a zero for the lowest degree (because of the valuation 1).  This is
-//  // the type of that zero.
-//  using Zero =
-//      Product<std::tuple_element_t<0, LTuple>, std::tuple_element_t<0, RTuple>>;
-//  return Arithmetic::Multiply(left, right_head) +
-//         std::tuple_cat({std::declval<Zero>()}, Mult(left, right_tail));
-//}
+template<typename LTuple, typename RTuple, int lsize_>
+struct CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
+  using RHead = std::element_type_t<0, RTuple>;
+  using LTupleRHeadProduct =
+      decltype(CartesianProductVectorSpace<LTuple, RHead>::Multiply(
+          std::declval<LTuple>(),
+          std::declval<RHead>()));
+  constexpr LTupleRHeadProduct Mult(LTuple const& left, RTuple const& right);
+};
+
+template<typename LTuple, typename RTuple, int lsize_, int rsize_>
+constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(
+    LTuple const& left,
+    RTuple const& right) -> Result {
+  // Right is split into head (index 0) and tail (the rest).  The tail is a
+  // polynomial with valuation 1.
+  RHead const right_head = std::get<0>(right);
+  auto const right_tail = TailGenerator<RTuple>::Tail(right);
+
+  // To implement the polynomial multiplication left * right_tail, we need to
+  // insert a zero for the lowest degree (because of the valuation 1).  This is
+  // the type of that zero.
+  using Zero = quantities::Product<std::tuple_element_t<0, LTuple>,
+                                   std::tuple_element_t<0, RTuple>>;
+  return CartesianProductVectorSpace<LTuple, RHead>::Multiply(left,
+                                                                 right_head) +
+         std::tuple_cat({Zero{}}, Mult(left, right_tail));
+}
 
 template<typename LTuple, typename RTuple, int lsize_>
 constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, 1>::Mult(
     LTuple const& left,
-    RTuple const& right) -> Result {
-  auto const right_head = std::get<0>(right);
-  return CartesianProductVectorSpace<LTuple, RElement>::Multiply(
-      left, right_head);
+    RTuple const& right) -> LTupleRHeadProduct {
+  RHead const right_head = std::get<0>(right);
+  return CartesianProductVectorSpace<LTuple, RHead>::Multiply(left, right_head);
 }
 
 auto a = std::make_tuple(1.0, true);
