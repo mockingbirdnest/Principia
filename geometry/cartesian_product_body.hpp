@@ -131,7 +131,7 @@ template<typename Element, typename Tuple, int... indices>
 constexpr auto
 ConsGenerator<Element, Tuple, std::integer_sequence<int, indices...>>::
 Cons(Element const& element, Tuple const& tuple) -> Type {
-  return std::make_tuple(element, std::get<tail_indices>(tuple)...);
+  return std::make_tuple(element, std::get<indices>(tuple)...);
 }
 
 template<typename Tuple,
@@ -178,8 +178,8 @@ struct CartesianProductAlgebra {
 
   using Result = decltype(
       CartesianProductAdditiveGroup<LTupleRHeadProduct, LTupleRTailProduct>::
-          Add(std::declval(LTupleRHeadProduct),
-              std::declval(LTupleRTailProduct)));
+          Add(std::declval<LTupleRHeadProduct>(),
+              std::declval<LTupleRTailProduct>()));
   static constexpr Result Mult(LTuple const& left, RTuple const& right);
 };
 
