@@ -184,6 +184,19 @@ operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right);
 
+// Algebra of polynomials.
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Product<LValue, RValue>, Argument, ldegree_ + rdegree_, Evaluator>
+operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
+
 }  // namespace internal_polynomial
 
 using internal_polynomial::Polynomial;

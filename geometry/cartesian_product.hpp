@@ -37,6 +37,12 @@ template<typename Scalar,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct CartesianProductVectorSpace;
 
+//TODO(phl):comment
+template<typename LTuple, typename RTuple,
+         int lsize_ = std::tuple_size_v<LTuple>,
+         int rsize_ = std::tuple_size_v<RTuple>>
+struct CartesianProductAlgebra;
+
 }  // namespace internal_cartesian_product
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;

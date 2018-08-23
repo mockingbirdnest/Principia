@@ -126,6 +126,51 @@ constexpr auto CartesianProductVectorSpace<
   return {std::get<indices>(left) / right...};
 }
 
+template<typename Tuple, int head_index, int... tail_indices>
+std::tuple<std::tuple_element_t<tail_indices, Tuple>...> Tail(
+    Tuple const& tuple) {
+  return std::make_tuple(std::get<tail_indices>(tuple)...);
+}
+
+template<typename LTuple, typename RTuple, int lsize_>
+struct CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
+  using RElement = std::element_type_t<0, RTuple>;
+  using Result =
+      decltype(CartesianProductVectorSpace<LTuple, RElement>::Multiply(
+          std::declval<LTuple>(),
+          std::declval<RElement>()));
+  constexpr Result Mult(LTuple const& left, RTuple const& right);
+};
+
+//template<typename LTuple, typename RTuple, int lsize_, int rsize_>
+//void CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(LTuple const& left,
+//                                               RTuple const& right) {
+//  // Right is split into head (index 0) and tail (the rest).  The tail is a
+//  // polynomial with valuation 1.
+//  auto const right_head = std::get<0>(right);
+//  auto const right_tail = Tail(right);
+//  // To implement the polynomial multiplication left * right_tail, we need to
+//  // insert a zero for the lowest degree (because of the valuation 1).  This is
+//  // the type of that zero.
+//  using Zero =
+//      Product<std::tuple_element_t<0, LTuple>, std::tuple_element_t<0, RTuple>>;
+//  return Arithmetic::Multiply(left, right_head) +
+//         std::tuple_cat({std::declval<Zero>()}, Mult(left, right_tail));
+//}
+
+template<typename LTuple, typename RTuple, int lsize_>
+constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, 1>::Mult(
+    LTuple const& left,
+    RTuple const& right) -> Result {
+  auto const right_head = std::get<0>(right);
+  return CartesianProductVectorSpace<LTuple, RElement>::Multiply(
+      left, right_head);
+}
+
+auto a = std::make_tuple(1.0, true);
+auto b = std::make_tuple("foo", 2);
+auto c = CartesianProductAlgebra<decltype(a), decltype(b)>::Mult(a, b);
+
 }  // namespace internal_cartesian_product
 }  // namespace geometry
 }  // namespace principia
