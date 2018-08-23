@@ -11,6 +11,8 @@
     <ClInclude Include="affine_map_body.hpp" />
     <ClInclude Include="barycentre_calculator.hpp" />
     <ClInclude Include="barycentre_calculator_body.hpp" />
+    <ClInclude Include="cartesian_product.hpp" />
+    <ClInclude Include="cartesian_product_body.hpp" />
     <ClInclude Include="frame.hpp" />
     <ClInclude Include="frame_body.hpp" />
     <ClInclude Include="identity.hpp" />
