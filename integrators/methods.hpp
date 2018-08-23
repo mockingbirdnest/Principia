@@ -674,7 +674,7 @@ struct NewtonDelambreStørmerVerletLeapfrog : SymplecticPartitionedRungeKutta {
 
 // Coefficients from Okunbor and Skeel (1994),
 // Canonical Runge-Kutta-Nyström methods of orders 5 and 6,
-// https://www.semanticscholar.org/paper/Canonical-Runge-kutta-Nystr%C2%A8om-Methods-of-Orders-5-Okunbor-Skeel/9169348ce040b8486df66dee75bd6587fc77e995
+// https://bionum.cs.purdue.edu/94OkSk.pdf
 // NOTE(egg): The coefficients were actually copied from McLachlan (1995), they
 // seem to differ after a dozen significant figures or so.  Okunbor and Skeel
 // remark "we did not use HYBRJ1 to improve the accuracy of method coefficients
