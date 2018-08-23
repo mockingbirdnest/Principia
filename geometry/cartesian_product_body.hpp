@@ -2,6 +2,7 @@
 #include "geometry/cartesian_product.hpp"
 
 #include <algorithm>
+#include <type_traits>
 
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
@@ -17,28 +18,17 @@ template<typename LTuple, typename RTuple, int... indices>
 struct CartesianProductAdditiveGroup<LTuple, RTuple,
                                      std::integer_sequence<int, indices...>> {
   // The types of the result of addition and subtraction, with suitable
-  // specializations for the void case of Apply2.
+  // checks for the void case of Apply2.
   template<typename L, typename R>
-  struct TypesGenerator {
-    using Sum = quantities::Sum<L, R>;
-    using Difference = quantities::Difference<L, R>;
-  };
-  template<typename L>
-  struct TypesGenerator<L, void> {
-    using Sum = L;
-    using Difference = L;
-  };
-  template<typename R>
-  struct TypesGenerator<void, R> {
-    using Sum = R;
-    using Difference = R;
-  };
-
-  // Aliases for use as the transform in Apply2.
+  using Sum =
+      std::conditional_t<std::is_void_v<L>, R,
+                         std::conditional_t<std::is_void_v<R>, L,
+                                            quantities::Sum<L, R>>>;
   template<typename L, typename R>
-  using Sum = typename TypesGenerator<L, R>::Sum;
-  template<typename L, typename R>
-  using Difference = typename TypesGenerator<L, R>::Difference;
+  using Difference =
+      std::conditional_t<std::is_void_v<L>, R,
+                         std::conditional_t<std::is_void_v<R>, L,
+                                            quantities::Difference<L, R>>>;
 
   static constexpr Apply2<Sum, LTuple, RTuple> Add(
       LTuple const& left,
