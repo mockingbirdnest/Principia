@@ -16,56 +16,9 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::CartesianProductAdditiveGroup;
+using geometry::CartesianProductVectorSpace;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Apply;
-
-template<typename Scalar,
-         typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct TupleArithmetic;
-
-template<typename Scalar, typename Tuple, int... indices>
-struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
-    : not_constructible {
-  template<typename T>
-  using ScalarLeftMultiplier = Product<Scalar, T>;
-  template<typename T>
-  using ScalarRightMultiplier = Product<T, Scalar>;
-  template<typename T>
-  using ScalarRightDivider = Quotient<T, Scalar>;
-
-  static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
-  Multiply(Scalar const& left, Tuple const& right);
-  static constexpr typename Apply<ScalarRightMultiplier, Tuple>
-  Multiply(Tuple const& left, Scalar const& right);
-
-  static constexpr typename Apply<ScalarRightDivider, Tuple>
-  Divide(Tuple const& left, Scalar const& right);
-};
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Multiply(Scalar const& left, Tuple const& right) ->
-    typename Apply<ScalarLeftMultiplier, Tuple> {
-  return {left * std::get<indices>(right)...};
-}
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Multiply(Tuple const& left, Scalar const& right) ->
-    typename Apply<ScalarRightMultiplier, Tuple> {
-  return {std::get<indices>(left) * right...};
-}
-
-template<typename Scalar, typename Tuple, int... indices>
-constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Divide(Tuple const& left, Scalar const& right) ->
-    typename Apply<ScalarRightDivider, Tuple> {
-  return {std::get<indices>(left) / right...};
-}
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -322,12 +275,11 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
-  return PolynomialInMonomialBasis<
-             Product<Scalar, Value>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Multiply(left, right.coefficients_));
+  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
+  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
+                                   Evaluator>(
+             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
+                 Multiply(left, right.coefficients_));
 }
 
 template<typename Scalar,
@@ -337,12 +289,11 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  return PolynomialInMonomialBasis<
-             Product<Value, Scalar>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Multiply(left.coefficients_, right));
+  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
+  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(
+             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
+                 Multiply(left.coefficients_, right));
 }
 
 template<typename Scalar,
@@ -352,12 +303,11 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  return PolynomialInMonomialBasis<
-             Quotient<Value, Scalar>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Divide(left.coefficients_, right));
+  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
+  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(
+             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
+                 Divide(left.coefficients_, right));
 }
 
 }  // namespace internal_polynomial

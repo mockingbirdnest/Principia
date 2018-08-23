@@ -10,6 +10,7 @@ namespace principia {
 namespace geometry {
 namespace internal_cartesian_product {
 
+using quantities::Apply;
 using quantities::Apply2;
 
 template<typename LTuple, typename RTuple, int... indices>
@@ -73,6 +74,56 @@ constexpr auto CartesianProductAdditiveGroup<
            : indices < std::tuple_size_v<LTuple>
                  ? std::get<indices>(left)
                  : -std::get<indices>(right))...};
+}
+
+template<typename Scalar, typename Tuple, int... indices>
+struct CartesianProductVectorSpace<Scalar,
+                                   Tuple,
+                                   std::integer_sequence<int, indices...>> {
+  template<typename T>
+  using ScalarLeftProduct = quantities::Product<Scalar, T>;
+  template<typename T>
+  using ScalarRightProduct = quantities::Product<T, Scalar>;
+  template<typename T>
+  using Quotient = quantities::Quotient<T, Scalar>;
+
+  static constexpr typename Apply<ScalarLeftProduct, Tuple> Multiply(
+      Scalar const& left,
+      Tuple const& right);
+  static constexpr typename Apply<ScalarRightProduct, Tuple> Multiply(
+      Tuple const& left,
+      Scalar const& right);
+
+  static constexpr typename Apply<Quotient, Tuple> Divide(
+      Tuple const& left,
+      Scalar const& right);
+};
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto CartesianProductVectorSpace<
+    Scalar, Tuple,
+    std::integer_sequence<int, indices...>>::Multiply(Scalar const& left,
+                                                      Tuple const& right)
+    -> typename Apply<ScalarLeftProduct, Tuple> {
+  return {left * std::get<indices>(right)...};
+}
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto CartesianProductVectorSpace<
+    Scalar, Tuple,
+    std::integer_sequence<int, indices...>>::Multiply(Tuple const& left,
+                                                      Scalar const& right)
+    -> typename Apply<ScalarRightProduct, Tuple> {
+  return {std::get<indices>(left) * right...};
+}
+
+template<typename Scalar, typename Tuple, int... indices>
+constexpr auto CartesianProductVectorSpace<
+    Scalar, Tuple,
+    std::integer_sequence<int, indices...>>::Divide(Tuple const& left,
+                                                    Scalar const& right)
+    -> typename Apply<Quotient, Tuple> {
+  return {std::get<indices>(left) / right...};
 }
 
 }  // namespace internal_cartesian_product
