@@ -138,7 +138,7 @@ TEST_F(PolynomialTest, Evaluate17) {
                                                    0 * Metre}), 0));
 }
 
-TEST_F(PolynomialTest, Ring) {
+TEST_F(PolynomialTest, Algebra) {
   P2V p2v(coefficients_);
   {
     auto const p = p2v + p2v;
@@ -174,6 +174,10 @@ TEST_F(PolynomialTest, Ring) {
     auto const expected = Vector<Quotient<Length, Energy>, World>(
                   {0 * Metre / Joule, 0 * Metre / Joule, 0.25 * Metre / Joule});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
+  }
+  {
+    auto const p = p2v * p2v;
+    auto const actual = p.Evaluate(0 * Second);
   }
 }
 

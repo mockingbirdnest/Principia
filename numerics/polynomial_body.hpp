@@ -319,7 +319,15 @@ operator*(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
-        right) {}
+        right) {
+  using LP = PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator>;
+  using RP = PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator>;
+  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                   ldegree_ + rdegree_, Evaluator>(
+             CartesianProductAlgebra<typename LP::Coefficients,
+                                     typename RP::Coefficients>::
+                 Mult(left, right));
+}
 
 }  // namespace internal_polynomial
 }  // namespace numerics

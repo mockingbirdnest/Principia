@@ -46,6 +46,7 @@ struct CartesianProductAlgebra;
 }  // namespace internal_cartesian_product
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
+using internal_cartesian_product::CartesianProductAlgebra;
 using internal_cartesian_product::CartesianProductVectorSpace;
 
 }  // namespace geometry
