@@ -1,6 +1,8 @@
 
 #include "geometry/cartesian_product.hpp"
 
+#include <algorithm>
+
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 
