@@ -33,8 +33,12 @@ using quantities::Energy;
 using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
+using quantities::Current;
+using quantities::Temperature;
 using quantities::Time;
+using quantities::si::Ampere;
 using quantities::si::Joule;
+using quantities::si::Kelvin;
 using quantities::si::Metre;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
@@ -138,7 +142,7 @@ TEST_F(PolynomialTest, Evaluate17) {
                                                    0 * Metre}), 0));
 }
 
-TEST_F(PolynomialTest, Algebra) {
+TEST_F(PolynomialTest, VectorSpace) {
   P2V p2v(coefficients_);
   {
     auto const p = p2v + p2v;
@@ -174,11 +178,18 @@ TEST_F(PolynomialTest, Algebra) {
     auto const expected = Vector<Quotient<Length, Energy>, World>(
                   {0 * Metre / Joule, 0 * Metre / Joule, 0.25 * Metre / Joule});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
-  }
-  {
-    auto const p = p2v * p2v;
-    auto const actual = p.Evaluate(0 * Second);
-  }
+  }}
+
+TEST_F(PolynomialTest, Ring) {
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
+  P2 p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+  P3 p3({2 * Ampere,
+         -4 * Ampere / Second,
+         3 * Ampere / Second / Second,
+         1 * Ampere / Second / Second / Second});
+  auto const p = p2 * p3;
+  auto const actual = p.Evaluate(0 * Second);
 }
 
 // Check that polynomials may be serialized.
