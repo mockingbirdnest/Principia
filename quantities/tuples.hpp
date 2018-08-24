@@ -22,8 +22,7 @@ struct ApplyGenerator;
 // is passed to |Transform| for the missing element types.
 template<template<typename, typename> class Transform,
          typename LTuple, typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
+         typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
 struct Apply2Generator;
 

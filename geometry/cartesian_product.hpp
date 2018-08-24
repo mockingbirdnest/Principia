@@ -40,18 +40,25 @@ template<typename Scalar,
 struct CartesianProductVectorSpace;
 
 //TODO(phl):comment
-template<typename LTuple, typename RTuple,
-         int lsize_ = std::tuple_size_v<LTuple>,
-         int rsize_ = std::tuple_size_v<RTuple>>
-struct CartesianProductAlgebra;
+//template<typename LTuple, typename RTuple,
+//         int lsize_ = std::tuple_size_v<LTuple>,
+//         int rsize_ = std::tuple_size_v<RTuple>>
+//struct CartesianProductAlgebra;
 
 }  // namespace internal_cartesian_product
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
-using internal_cartesian_product::CartesianProductAlgebra;
+//using internal_cartesian_product::CartesianProductAlgebra;
 using internal_cartesian_product::CartesianProductVectorSpace;
 
 }  // namespace geometry
 }  // namespace principia
 
 #include "geometry/cartesian_product_body.hpp"
+
+
+namespace principia {
+namespace geometry {
+using internal_cartesian_product::CartesianProductAlgebra;
+}  // namespace geometry
+}  // namespace principia

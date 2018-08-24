@@ -77,14 +77,14 @@ struct CartesianProductVectorSpace<Scalar,
   template<typename T>
   using Quotient = quantities::Quotient<T, Scalar>;
 
-  static constexpr typename Apply<ScalarLeftProduct, Tuple> Multiply(
+  static constexpr Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,
       Tuple const& right);
-  static constexpr typename Apply<ScalarRightProduct, Tuple> Multiply(
+  static constexpr Apply<ScalarRightProduct, Tuple> Multiply(
       Tuple const& left,
       Scalar const& right);
 
-  static constexpr typename Apply<Quotient, Tuple> Divide(
+  static constexpr Apply<Quotient, Tuple> Divide(
       Tuple const& left,
       Scalar const& right);
 };
@@ -94,7 +94,7 @@ constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
     std::integer_sequence<int, indices...>>::Multiply(Scalar const& left,
                                                       Tuple const& right)
-    -> typename Apply<ScalarLeftProduct, Tuple> {
+    -> Apply<ScalarLeftProduct, Tuple> {
   return {left * std::get<indices>(right)...};
 }
 
@@ -103,7 +103,7 @@ constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
     std::integer_sequence<int, indices...>>::Multiply(Tuple const& left,
                                                       Scalar const& right)
-    -> typename Apply<ScalarRightProduct, Tuple> {
+    -> Apply<ScalarRightProduct, Tuple> {
   return {std::get<indices>(left) * right...};
 }
 
@@ -112,7 +112,7 @@ constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
     std::integer_sequence<int, indices...>>::Divide(Tuple const& left,
                                                     Scalar const& right)
-    -> typename Apply<Quotient, Tuple> {
+    -> Apply<Quotient, Tuple> {
   return {std::get<indices>(left) / right...};
 }
 
@@ -152,21 +152,23 @@ Tail(Tuple const& tuple) -> Type {
   return std::make_tuple(std::get<tail_indices>(tuple)...);
 }
 
-template<typename LTuple, typename RTuple, int lsize_, int rsize_>
+template<typename LTuple, typename RTuple,
+         int lsize_ = std::tuple_size_v<LTuple>,
+         int rsize_ = std::tuple_size_v<RTuple>>
 struct CartesianProductAlgebra {
   // Right is split into head (index 0) and tail (the rest).  The tail is a
   // polynomial with valuation 1.
   using RHead = std::tuple_element_t<0, RTuple>;
-  using RTail = typename TailGenerator<LTuple>::Type;
+  using RTail = typename TailGenerator<RTuple>::Type;
 
   // To implement the polynomial multiplication left * right_tail, we need to
   // insert a zero for the lowest degree (because of the valuation 1).  This is
   // the type of that zero.
-  using LHead = std::tuple_element_t<0, RTuple>;
+  using LHead = std::tuple_element_t<0, LTuple>;
   using Zero = quantities::Product<LHead, RHead>;
 
   using LTupleRHeadProduct =
-      decltype(CartesianProductVectorSpace<LTuple, RHead>::Multiply(
+      decltype(CartesianProductVectorSpace<RHead, LTuple>::Multiply(
           std::declval<LTuple>(),
           std::declval<RHead>()));
   using LTupleRTailProduct =
@@ -186,7 +188,7 @@ struct CartesianProductAlgebra {
 template<typename LTuple, typename RTuple, int lsize_>
 struct CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
   using RHead = std::tuple_element_t<0, RTuple>;
-  using Result = decltype(CartesianProductVectorSpace<LTuple, RHead>::Multiply(
+  using Result = decltype(CartesianProductVectorSpace<RHead, LTuple>::Multiply(
       std::declval<LTuple>(),
       std::declval<RHead>()));
   static constexpr Result Mult(LTuple const& left, RTuple const& right);
