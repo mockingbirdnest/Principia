@@ -20,6 +20,7 @@ struct ApplyGenerator;
 // Same as above, but |Transform| is applied to corresponding pairs of element
 // types from |LTuple| and |RTuple|.  If the tuples have different sizes, |void|
 // is passed to |Transform| for the missing element types.
+//TODO(phl):index_sequence vs. integer_sequence?
 template<template<typename, typename> class Transform,
          typename LTuple, typename RTuple,
          typename = std::make_index_sequence<

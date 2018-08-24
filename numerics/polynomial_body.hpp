@@ -322,7 +322,9 @@ operator*(
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
   using TT=CartesianProductAdditiveGroup<std::pair<int,double>, std::tuple<bool>>;
-  TT tt;
+  std::pair<int,double> a;
+  std::tuple<bool> b;
+  auto c = TT::Add(a, b);
 
   using LP = PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator>;
   using RP = PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator>;

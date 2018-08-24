@@ -21,8 +21,7 @@ namespace internal_cartesian_product {
 // addition on the relevant types.
 template<typename LTuple,
          typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
+         typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
 struct CartesianProductAdditiveGroup;
 

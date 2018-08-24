@@ -26,6 +26,7 @@ template<template<typename, typename> class Transform,
 struct Apply2Generator<Transform, LTuple, RTuple,
                        std::index_sequence<indices...>>
     : not_constructible {
+  //TODO(phl): no conditional_t, ?:0 helper
   using Type = std::tuple<
       Transform<std::conditional_t<
                     (indices < std::tuple_size_v<LTuple>),

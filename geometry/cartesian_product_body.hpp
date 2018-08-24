@@ -14,21 +14,32 @@ namespace internal_cartesian_product {
 using quantities::Apply;
 using quantities::Apply2;
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 struct CartesianProductAdditiveGroup<LTuple, RTuple,
-                                     std::integer_sequence<int, indices...>> {
+                                     std::index_sequence<indices...>> {
   // The types of the result of addition and subtraction, with suitable
-  // checks for the void case of Apply2.
+  // specializations for the void case of Apply2.
   template<typename L, typename R>
-  using Sum =
-      std::conditional_t<std::is_void_v<L>, R,
-                         std::conditional_t<std::is_void_v<R>, L,
-                                            quantities::Sum<L, R>>>;
+  struct TypesGenerator {
+    using Sum = quantities::Sum<L, R>;
+    using Difference = quantities::Difference<L, R>;
+  };
+  template<typename L>
+  struct TypesGenerator<L, void> {
+    using Sum = L;
+    using Difference = L;
+  };
+  template<typename R>
+  struct TypesGenerator<void, R> {
+    using Sum = R;
+    using Difference = R;
+  };
+
+  // Aliases for use as the transform in Apply2.
   template<typename L, typename R>
-  using Difference =
-      std::conditional_t<std::is_void_v<L>, R,
-                         std::conditional_t<std::is_void_v<R>, L,
-                                            quantities::Difference<L, R>>>;
+  using Sum = typename TypesGenerator<L, R>::Sum;
+  template<typename L, typename R>
+  using Difference = typename TypesGenerator<L, R>::Difference;
 
   static constexpr Apply2<Sum, LTuple, RTuple> Add(
       LTuple const& left,
@@ -38,25 +49,26 @@ struct CartesianProductAdditiveGroup<LTuple, RTuple,
       RTuple const& right);
 };
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
-    std::integer_sequence<int, indices...>>::Add(LTuple const& left,
-                                                 RTuple const& right)
+    std::index_sequence<indices...>>::Add(LTuple const& left,
+                                          RTuple const& right)
     -> Apply2<Sum, LTuple, RTuple> {
   return {(
       indices < std::min(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)
-          ? std::get<indices>(left) + std::get<indices>(right)
+          ? std::get<indices < std::tuple_size_v<LTuple> ? indices : 0>(left) +
+            std::get<indices < std::tuple_size_v<RTuple> ? indices : 0>(right)
           : indices < std::tuple_size_v<LTuple>
                 ? std::get<indices>(left)
                 : std::get<indices>(right))...};
 }
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
-    std::integer_sequence<int, indices...>>::Subtract(LTuple const& left,
-                                                      RTuple const& right)
+    std::index_sequence<indices...>>::Subtract(LTuple const& left,
+                                               RTuple const& right)
     -> Apply2<Difference, LTuple, RTuple> {
   return {
       (indices < std::min(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)
@@ -202,7 +214,7 @@ constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(
   auto const right_tail = TailGenerator<RTuple>::Tail(right);
 
   return CartesianProductAdditiveGroup<LTupleRHeadProduct, LTupleRTailProduct>::
-      Add(CartesianProductVectorSpace<LTuple, RHead>::Multiply(left,
+      Add(CartesianProductVectorSpace<RHead, LTuple>::Multiply(left,
                                                                right_head),
           ConsGenerator<Zero, LTupleRTailProduct>::Cons(
               Zero{}, Mult(left, right_tail)));
