@@ -332,7 +332,7 @@ operator*(
                                    ldegree_ + rdegree_, Evaluator>(
              CartesianProductAlgebra<typename LP::Coefficients,
                                      typename RP::Coefficients>::
-                 Mult(left, right));
+                 Mult(left.coefficients_, right.coefficients_));
 }
 
 }  // namespace internal_polynomial

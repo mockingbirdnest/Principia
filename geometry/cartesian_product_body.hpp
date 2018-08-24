@@ -49,19 +49,28 @@ struct CartesianProductAdditiveGroup<LTuple, RTuple,
       RTuple const& right);
 };
 
+template<typename Result, typename LTuple, typename RTuple, std::size_t index>
+constexpr Result ElementSum(LTuple const& left, RTuple const& right) {
+  if constexpr (index < std::min(std::tuple_size_v<LTuple>,
+                                 std::tuple_size_v<RTuple>)) {
+    return std::get<index>(left) + std::get<index>(right);
+  } else if constexpr (index < std::tuple_size_v<LTuple>) {
+    return std::get<index>(left);
+  } else {
+    return std::get<index>(right);
+  }
+}
+
 template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
     std::index_sequence<indices...>>::Add(LTuple const& left,
                                           RTuple const& right)
     -> Apply2<Sum, LTuple, RTuple> {
-  return {(
-      indices < std::min(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)
-          ? std::get<indices < std::tuple_size_v<LTuple> ? indices : 0>(left) +
-            std::get<indices < std::tuple_size_v<RTuple> ? indices : 0>(right)
-          : indices < std::tuple_size_v<LTuple>
-                ? std::get<indices>(left)
-                : std::get<indices>(right))...};
+  return {ElementSum<std::tuple_element_t<indices, Apply2<Sum, LTuple, RTuple>>,
+                     LTuple,
+                     RTuple,
+                     indices>(left, right)...};
 }
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
