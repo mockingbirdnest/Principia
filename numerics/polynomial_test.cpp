@@ -189,7 +189,26 @@ TEST_F(PolynomialTest, Ring) {
          3 * Ampere / Second / Second,
          1 * Ampere / Second / Second / Second});
   auto const p = p2 * p3;
-  auto const actual = p.Evaluate(0 * Second);
+  {
+    auto const actual = p.Evaluate(0 * Second);
+    EXPECT_THAT(actual, AlmostEquals(2 * Ampere * Kelvin, 0));
+  }
+  {
+    auto const actual = p.Evaluate(1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-8 * Ampere * Kelvin, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-1 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-80 * Ampere * Kelvin, 0));
+  }
+  {
+    auto const actual = p.Evaluate(2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(-350 * Ampere * Kelvin, 0));
+  }
+  {
+    auto const actual = p.Evaluate(-2 * Second);
+    EXPECT_THAT(actual, AlmostEquals(518 * Ampere * Kelvin, 0));
+  }
 }
 
 // Check that polynomials may be serialized.
