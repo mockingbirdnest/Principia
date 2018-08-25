@@ -20,6 +20,7 @@ using geometry::cartesian_product::operator+;
 using geometry::cartesian_product::operator-;
 using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
+using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
@@ -273,7 +274,7 @@ operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
-                                   Evaluator>(left* right.coefficients_);
+                                   Evaluator>(left * right.coefficients_);
 }
 
 template<typename Scalar,
@@ -296,6 +297,21 @@ operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
           Scalar const& right) {
   return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
                                    Evaluator>(left.coefficients_ / right);
+}
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Product<LValue, RValue>, Argument, ldegree_ + rdegree_, Evaluator>
+operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                   ldegree_ + rdegree_, Evaluator>(
+             left.coefficients_ * right.coefficients_);
 }
 
 }  // namespace internal_polynomial

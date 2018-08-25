@@ -108,6 +108,12 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
   PolynomialInMonomialBasis<Quotient<V, S>, A, d, E>
   friend operator/(PolynomialInMonomialBasis<V, A, d, E> const& left,
                    S const& right);
+  template<typename L, typename R, typename A,
+           int l, int r,
+           template<typename, typename, int> class E>
+  PolynomialInMonomialBasis<Product<L, R>, A, l + r, E> friend operator*(
+      PolynomialInMonomialBasis<L, A, l, E> const& left,
+      PolynomialInMonomialBasis<R, A, r, E> const& right);
 };
 
 template<typename Value, typename Argument, int degree_,
@@ -184,6 +190,19 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right);
+
+// Algebra of polynomials.
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Product<LValue, RValue>, Argument, ldegree_ + rdegree_, Evaluator>
+operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right);
 
 }  // namespace internal_polynomial
 
