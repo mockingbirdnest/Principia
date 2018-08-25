@@ -2,6 +2,7 @@
 
 #include "numerics/polynomial.hpp"
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
