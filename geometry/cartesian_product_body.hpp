@@ -15,7 +15,7 @@ using quantities::Apply;
 using quantities::Apply2;
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
-struct CartesianProductAdditiveGroup<LTuple, RTuple,
+class CartesianProductAdditiveGroup<LTuple, RTuple,
                                      std::index_sequence<indices...>> {
   // The types of the result of addition and subtraction, with suitable
   // specializations for the void case of Apply2.
@@ -41,16 +41,49 @@ struct CartesianProductAdditiveGroup<LTuple, RTuple,
   template<typename L, typename R>
   using Difference = typename TypesGenerator<L, R>::Difference;
 
+ public:
   static constexpr Apply2<Sum, LTuple, RTuple> Add(
       LTuple const& left,
       RTuple const& right);
   static constexpr Apply2<Difference, LTuple, RTuple> Subtract(
       LTuple const& left,
       RTuple const& right);
+
+ private:
+  // Utilities for adding/subtracting elements at the given index.
+  template<std::size_t index>
+  static constexpr std::tuple_element_t<index, Apply2<Sum, LTuple, RTuple>>
+  AddElement(LTuple const& left, RTuple const& right);
+  template<std::size_t index>
+  static constexpr std::tuple_element_t<index,
+                                        Apply2<Difference, LTuple, RTuple>>
+  SubtractElement(LTuple const& left, RTuple const& right);
 };
 
-template<typename Result, typename LTuple, typename RTuple, std::size_t index>
-constexpr Result ElementSum(LTuple const& left, RTuple const& right) {
+template<typename LTuple, typename RTuple, std::size_t... indices>
+constexpr auto CartesianProductAdditiveGroup<
+    LTuple, RTuple,
+    std::index_sequence<indices...>>::Add(LTuple const& left,
+                                          RTuple const& right)
+    -> Apply2<Sum, LTuple, RTuple> {
+  return {AddElement<indices>(left, right)...};
+}
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
+constexpr auto CartesianProductAdditiveGroup<
+    LTuple, RTuple,
+    std::index_sequence<indices...>>::Subtract(LTuple const& left,
+                                               RTuple const& right)
+    -> Apply2<Difference, LTuple, RTuple> {
+  return {SubtractElement<indices>(left, right)...};
+}
+
+template<typename LTuple, typename RTuple, std::size_t... indices>
+template<std::size_t index>
+constexpr auto
+CartesianProductAdditiveGroup<LTuple, RTuple, std::index_sequence<indices...>>::
+AddElement(LTuple const& left, RTuple const& right)
+    -> std::tuple_element_t<index, Apply2<Sum, LTuple, RTuple>> {
   if constexpr (index < std::min(std::tuple_size_v<LTuple>,
                                  std::tuple_size_v<RTuple>)) {
     return std::get<index>(left) + std::get<index>(right);
@@ -62,29 +95,19 @@ constexpr Result ElementSum(LTuple const& left, RTuple const& right) {
 }
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
-constexpr auto CartesianProductAdditiveGroup<
-    LTuple, RTuple,
-    std::index_sequence<indices...>>::Add(LTuple const& left,
-                                          RTuple const& right)
-    -> Apply2<Sum, LTuple, RTuple> {
-  return {ElementSum<std::tuple_element_t<indices, Apply2<Sum, LTuple, RTuple>>,
-                     LTuple,
-                     RTuple,
-                     indices>(left, right)...};
-}
-
-template<typename LTuple, typename RTuple, std::size_t... indices>
-constexpr auto CartesianProductAdditiveGroup<
-    LTuple, RTuple,
-    std::index_sequence<indices...>>::Subtract(LTuple const& left,
-                                               RTuple const& right)
-    -> Apply2<Difference, LTuple, RTuple> {
-  return {
-      (indices < std::min(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)
-           ? std::get<indices>(left) - std::get<indices>(right)
-           : indices < std::tuple_size_v<LTuple>
-                 ? std::get<indices>(left)
-                 : -std::get<indices>(right))...};
+template<std::size_t index>
+constexpr auto
+CartesianProductAdditiveGroup<LTuple, RTuple, std::index_sequence<indices...>>::
+SubtractElement(LTuple const& left, RTuple const& right)
+    -> std::tuple_element_t<index, Apply2<Difference, LTuple, RTuple>> {
+  if constexpr (index < std::min(std::tuple_size_v<LTuple>,
+                                 std::tuple_size_v<RTuple>)) {
+    return std::get<index>(left) - std::get<index>(right);
+  } else if constexpr (index < std::tuple_size_v<LTuple>) {
+    return std::get<index>(left);
+  } else {
+    return -std::get<index>(right);
+  }
 }
 
 template<typename Scalar, typename Tuple, int... indices>

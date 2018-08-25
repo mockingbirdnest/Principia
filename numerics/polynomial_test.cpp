@@ -178,7 +178,8 @@ TEST_F(PolynomialTest, VectorSpace) {
     auto const expected = Vector<Quotient<Length, Energy>, World>(
                   {0 * Metre / Joule, 0 * Metre / Joule, 0.25 * Metre / Joule});
     EXPECT_THAT(actual, AlmostEquals(expected, 0));
-  }}
+  }
+}
 
 TEST_F(PolynomialTest, Ring) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
@@ -207,7 +208,7 @@ TEST_F(PolynomialTest, Ring) {
   }
   {
     auto const actual = p.Evaluate(-2 * Second);
-    EXPECT_THAT(actual, AlmostEquals(518 * Ampere * Kelvin, 0));
+    EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
   }
 }
 
