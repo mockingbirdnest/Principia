@@ -7,7 +7,7 @@
 
 \title{%
 \textdisplay{%
-Calculations for the second-order zonal harmonic%
+Calculations for the second-degree zonal harmonic%
 }%
 }
 \author{Pascal~Leroy (phl) \& Robin~Leroy (eggrobin)}
@@ -18,85 +18,44 @@ Notations:\[
 \vr=\begin{pmatrix}
 x \\ y \\ z
 \end{pmatrix} \text{, }
-\norm{\vj}=1 \text{, }
+\norm{\vz}=1 \text{, }
 r = \norm{\vr}\text.
 \]
 For oblateness along the $z$-axis, the potential is
 \[
 \frac{J_2}{2r^5}\pa{3z^2 - r^2}\text.
 \]
-For oblateness along $\vj$,
+For oblateness along $\vz$,
 \[
-U\of\vr = \frac{J_2}{2r^5}\pa{3\pascal{\scal{\vr}{\vj}}^2 - r^2}\text.
+U\of\vr = \frac{J_2}{2r^5}\pa{3\pascal{\scal{\vr}{\vz}}^2 - r^2}\text.
 \]
 Differentiating,
 \[
 \deriv \vr U = \frac{J_2}{2}\pa{-\frac{5}{r^6} \deriv \vr r
-                   \pa{3\pascal{\scal\vr\vj}^2 - r^2}
-               + \frac{1}{r^5}\pa{3\derivop \vr \pascal{\scal\vr\vj}^2 -
+                   \pa{3\pascal{\scal\vr\vz}^2 - r^2}
+               + \frac{1}{r^5}\pa{3\derivop \vr \pascal{\scal\vr\vz}^2 -
                    2 r \deriv \vr r}}\text.
 \]
 Recall that $\deriv \vr r = \frac{\vr}{r}$,
 \begin{align*}
 \deriv \vr U &= \frac{J_2}{2}\pa{-\frac{5\vr}{r^7}
-                    \pa{3\pascal{\scal\vr\vj}^2 - r^2}
-                + \frac{1}{r^5}\pa{3\derivop \vr \pascal{\scal\vr\vj}^2 -
+                    \pa{3\pascal{\scal\vr\vz}^2 - r^2}
+                + \frac{1}{r^5}\pa{3\derivop \vr \pascal{\scal\vr\vz}^2 -
                     2 \vr}} \\
              &= \frac{J_2}{2}\pa{-\frac{15\vr}{r^7}
-                    \pascal{\scal\vr\vj}^2 + \frac{3\vr}{r^5}
-                + \frac{3}{r^5}3\derivop \vr \pascal{\scal\vr\vj}^2}\text.
+                    \pascal{\scal\vr\vz}^2 + \frac{3\vr}{r^5}
+                + \frac{3}{r^5}3\derivop \vr \pascal{\scal\vr\vz}^2}\text.
 \end{align*}
-With $\derivop \vr \pascal{\scal\vr\vj}^2 =
-  2\pascal{\scal\vr\vj}\deriv\vr{\pascal{\scal\vr\vj}} = 2\pascal{\scal\vr\vj}\vj$,
+With $\derivop \vr \pascal{\scal\vr\vz}^2 =
+  2\pascal{\scal\vr\vz}\deriv\vr{\pascal{\scal\vr\vz}} = 2\pascal{\scal\vr\vz}\vz$,
 \begin{align*}
 \deriv \vr U &= \frac{J_2}{2}\pa{-\frac{15\vr}{r^7}
-                    \pascal{\scal\vr\vj}^2 + \frac{3\vr}{r^5}
-                + \frac{6\vj}{r^5}\pascal{\scal\vr\vj}} \\
-             &= \frac{3J_2}{2r^5}\pa{2\vj\pascal{\scal\vr\vj}
-                + \vr \pa{1 - \frac{5\pascal{\scal\vr\vj}^2}{r^2}}}\text.
+                    \pascal{\scal\vr\vz}^2 + \frac{3\vr}{r^5}
+                + \frac{6\vz}{r^5}\pascal{\scal\vr\vz}} \\
+             &= \frac{3J_2}{2r^5}\pa{2\vz\pascal{\scal\vr\vz}
+                + \vr \pa{1 - \frac{5\pascal{\scal\vr\vz}^2}{r^2}}}\text.
 \end{align*}
-Note that this is invariant under $\vj\mapsto -\vj$ (but not under $\vr\mapsto -\vr$).
-\vfill
-\pagebreak
+Note that this is invariant under $\vz\mapsto -\vz$ (but not under $\vr\mapsto -\vr$).
 
-\noindent
-Implementation:
-{\small%
-\begin{verbatim}
 
-// If j is a unit vector along the axis of rotation, and r a vector from the
-// center of |body| to some point in space, the acceleration computed here is:
-//
-//   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
-//
-// Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
-// additional acceleration exerted by the oblateness of |body| on a point at
-// position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
-// because the planets are oblate, not prolate.  Note that this follows IERS
-// Technical Note 36 and it differs from
-// https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to be
-// negative.
-template<typename Frame>
-FORCE_INLINE Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Order2ZonalAcceleration(OblateBody<Frame> const& body,
-                        Displacement<Frame> const& r,
-                        Exponentiation<Length, -2> const& one_over_r_squared,
-                        Exponentiation<Length, -3> const& one_over_r_cubed) {
-  Vector<double, Frame> const& axis = body.polar_axis();
-  Length const r_axis_projection = InnerProduct(axis, r);
-  auto const j2_over_r_fifth =
-      body.j2_over_μ() * one_over_r_cubed * one_over_r_squared;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const axis_effect =
-      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const radial_effect =
-      (j2_over_r_fifth *
-           (-1.5 +
-            7.5 * r_axis_projection *
-                  r_axis_projection * one_over_r_squared)) * r;
-  return axis_effect + radial_effect;
-}
-\end{verbatim}%
-}
 \end{document}

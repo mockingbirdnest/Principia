@@ -78,10 +78,10 @@ Time const max_time_between_checkpoints = 180 * Day;
 template<typename Frame>
 FORCE_INLINE(inline)
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Order2ZonalAcceleration(OblateBody<Frame> const& body,
-                        Displacement<Frame> const& r,
-                        Exponentiation<Length, -2> const& one_over_r²,
-                        Exponentiation<Length, -3> const& one_over_r³) {
+Degree2ZonalAcceleration(OblateBody<Frame> const& body,
+                         Displacement<Frame> const& r,
+                         Exponentiation<Length, -2> const& one_over_r²,
+                         Exponentiation<Length, -3> const& one_over_r³) {
   Vector<double, Frame> const& axis = body.polar_axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth = body.j2_over_μ() * one_over_r³ * one_over_r²;
@@ -935,26 +935,26 @@ void Ephemeris<Frame>::
       if (body1_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
-            order_2_zonal_effect1 =
-                Order2ZonalAcceleration<Frame>(
+            degree_2_zonal_effect1 =
+                Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
                     one_over_Δq²,
                     one_over_Δq³);
-        acceleration_on_b1 -= μ2 * order_2_zonal_effect1;
-        acceleration_on_b2 += μ1 * order_2_zonal_effect1;
+        acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
+        acceleration_on_b2 += μ1 * degree_2_zonal_effect1;
       }
       if (body2_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
-            order_2_zonal_effect2 =
-                Order2ZonalAcceleration<Frame>(
+            degree_2_zonal_effect2 =
+                Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
                     one_over_Δq²,
                     one_over_Δq³);
-        acceleration_on_b1 += μ2 * order_2_zonal_effect2;
-        acceleration_on_b2 -= μ1 * order_2_zonal_effect2;
+        acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
+        acceleration_on_b2 -= μ1 * degree_2_zonal_effect2;
       }
     }
   }
@@ -993,13 +993,13 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
-          order_2_zonal_effect1 =
-              Order2ZonalAcceleration<Frame>(
+          degree_2_zonal_effect1 =
+              Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
                   one_over_Δq²,
                   one_over_Δq³);
-      accelerations[b2] += μ1 * order_2_zonal_effect1;
+      accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
   return ok;

@@ -80,10 +80,10 @@ using Torque              = Variation<AngularMomentum>;
 
 using GravitationalParameter = Quotient<Exponentiation<Length, 3>,
                                         Exponentiation<Time, 2>>;
-using Order2ZonalCoefficient = Product<GravitationalParameter,
-                                       Exponentiation<Length, 2>>;
-using Order3ZonalCoefficient = Product<GravitationalParameter,
-                                       Exponentiation<Length, 3>>;
+using Degree2SphericalHarmonicCoefficient = Product<GravitationalParameter,
+                                                    Exponentiation<Length, 2>>;
+using Degree3SphericalHarmonicCoefficient = Product<GravitationalParameter,
+                                                    Exponentiation<Length, 3>>;
 
 // Astrodynamics
 using SpecificImpulse         = Quotient<Momentum, Mass>;

@@ -24,7 +24,9 @@ message GravityModel {
     optional string angular_frequency = 9;
     // Oblate body.
     optional double j2 = 11;
-    optional double j3 = 14;
+    optional double c22 = 14;
+    optional double s22 = 15;
+    optional double j3 = 16;
     optional string reference_radius = 6;
     reserved 5, 10;
   }

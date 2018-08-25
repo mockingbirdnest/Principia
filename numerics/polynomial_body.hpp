@@ -3,8 +3,10 @@
 #include "numerics/polynomial.hpp"
 
 #include <tuple>
+#include <utility>
 
 #include "base/not_constructible.hpp"
+#include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
 
 namespace principia {
@@ -14,6 +16,12 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::cartesian_product::operator+;
+using geometry::cartesian_product::operator-;
+using geometry::cartesian_product::operator*;
+using geometry::cartesian_product::operator/;
+using geometry::polynomial_ring::operator*;
+using quantities::Apply;
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -68,6 +76,7 @@ void TupleSerializer<Tuple, size, size>::FillFromMessage(
     serialization::PolynomialInMonomialBasis const& message,
     Tuple& tuple) {}
 
+
 #define PRINCIPIA_POLYNOMIAL_DEGREE_VALUE_CASE(value)                  \
   case value:                                                          \
     return make_not_null_unique<                                       \
@@ -116,7 +125,7 @@ Polynomial<Value, Argument>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+constexpr PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients)
     : coefficients_(coefficients) {}
 
@@ -175,6 +184,7 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+constexpr
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients,
                           Point<Argument> const& origin)
@@ -234,6 +244,74 @@ ReadFromMessage(serialization::Polynomial const& message) {
   TupleSerializer<Coefficients, 0>::FillFromMessage(extension, coefficients);
   auto const origin = Point<Argument>::ReadFromMessage(extension.origin());
   return PolynomialInMonomialBasis(coefficients, origin);
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      left.coefficients_ + right.coefficients_);
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      left.coefficients_ - right.coefficients_);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+operator*(Scalar const& left,
+          PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              right) {
+  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
+                                   Evaluator>(left * right.coefficients_);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
+operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(left.coefficients_ * right);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
+operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(left.coefficients_ / right);
+}
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+PolynomialInMonomialBasis<
+    Product<LValue, RValue>, Argument, ldegree_ + rdegree_, Evaluator>
+operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                   ldegree_ + rdegree_, Evaluator>(
+             left.coefficients_ * right.coefficients_);
 }
 
 }  // namespace internal_polynomial

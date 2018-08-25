@@ -170,7 +170,9 @@ message OblateBody {
     optional OblateBody extension = 4000;
   }
   required Quantity j2 = 1;
-  optional Quantity j3 = 2;
+  optional Quantity c22 = 2;
+  optional Quantity s22 = 3;
+  optional Quantity j3 = 4;
 }
 
 message RotatingBody {
