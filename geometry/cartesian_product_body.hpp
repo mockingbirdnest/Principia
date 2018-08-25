@@ -143,13 +143,13 @@ constexpr auto operator-(LTuple const& left, RTuple const& right) {
 }
 
 template<typename Scalar, typename Tuple, typename>
-constexpr auto operator*(Scalar const left, Tuple const& right) {
+constexpr auto operator*(Scalar const& left, Tuple const& right) {
   return internal_cartesian_product::
       CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
-template<typename Tuple, typename Scalar, typename>
-constexpr auto operator*(Tuple const& left, Scalar const right) {
+template<typename Tuple, typename Scalar, typename, typename>
+constexpr auto operator*(Tuple const& left, Scalar const& right) {
   return internal_cartesian_product::
       CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }

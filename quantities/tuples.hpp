@@ -14,6 +14,7 @@ namespace internal_tuples {
 using base::not_constructible;
 
 // A trait for finding if something is a tuple.
+// TODO(phl): We might want to use this for pair and array too.
 template<typename T>
 struct is_tuple : std::false_type, not_constructible {};
 template<typename... D>

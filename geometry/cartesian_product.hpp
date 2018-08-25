@@ -20,14 +20,15 @@ constexpr auto operator+(LTuple const& left, RTuple const& right);
 template<typename LTuple, typename RTuple>
 constexpr auto operator-(LTuple const& left, RTuple const& right);
 
-// The scalar is passed by copy in the two operators below so that the two
-// definitions can be disambiguated.
 template<typename Scalar, typename Tuple,
          typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
-constexpr auto operator*(Scalar left, Tuple const& right);
+constexpr auto operator*(Scalar const& left, Tuple const& right);
+
+// The extra typename lifts an ambiguity on the definition.
 template<typename Tuple, typename Scalar,
-         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
-constexpr auto operator*(Tuple const& left, Scalar right);
+         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>,
+         typename = void>
+constexpr auto operator*(Tuple const& left, Scalar const& right);
 
 template<typename Scalar, typename Tuple>
 constexpr auto operator/(Tuple const& left, Scalar const& right);
