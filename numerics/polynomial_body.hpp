@@ -274,7 +274,7 @@ operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
-                                   Evaluator>(left* right.coefficients_);
+                                   Evaluator>(left * right.coefficients_);
 }
 
 template<typename Scalar,
@@ -309,13 +309,9 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
-  using LP = PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator>;
-  using RP = PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator>;
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                    ldegree_ + rdegree_, Evaluator>(
-             PolynomialRing<typename LP::Coefficients,
-                            typename RP::Coefficients>::
-                 Multiply(left.coefficients_, right.coefficients_));
+             left.coefficients_ * right.coefficients_);
 }
 
 }  // namespace internal_polynomial
