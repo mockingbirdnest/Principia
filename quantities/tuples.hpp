@@ -5,9 +5,13 @@
 #include <tuple>
 #include <utility>
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace quantities {
 namespace internal_tuples {
+
+using base::not_constructible;
 
 // A trait for finding if something is a tuple.
 template<typename T>
