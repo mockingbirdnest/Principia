@@ -2,6 +2,7 @@
 #include "geometry/cartesian_product.hpp"
 
 #include <algorithm>
+#include <tuple>
 #include <type_traits>
 
 #include "quantities/named_quantities.hpp"
