@@ -5,45 +5,35 @@
 #include <tuple>
 #include <utility>
 
+#include "quantities/tuples.hpp"
+
 namespace principia {
 namespace geometry {
-namespace internal_cartesian_product {
 
-// This struct exports two functions:
-//
-//   static constexpr ... Add(LTuple const& left, RTuple const& right);
-//   static constexpr ... Subtract(LTuple const& left, RTuple const& right);
-//
-// where the return types are appropriate for the operation.  The two tuples may
-// be of different types (including different sizes) but corresponding element
-// types must have an addition and a subtraction.  In case of different sizes,
-// the smaller tuple is zero-extended, where zero is the neutral element of
-// addition on the relevant types.
-template<typename LTuple,
-         typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
-             std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
-struct CartesianProductAdditiveGroup;
+// These operators live in a separate (non-internal) namespace to avoid
+// polluting the entire universe in cases where they are not useful.
+namespace cartesian_product {
 
-// This struct exports three functions:
-//
-//   static constexpr ... Multiply(Scalar const& left, Tuple const& right);
-//   static constexpr ... Multiply(Tuple const& left, Scalar const& right);
-//   static constexpr ... Divide(Tuple const& left, Scalar const& right);
-//
-// where the return types are appropriate for the operation.  The element types
-// of the tuple must have a structure of vector space.
-template<typename Scalar,
-         typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct CartesianProductVectorSpace;
+template<typename LTuple, typename RTuple>
+constexpr auto operator+(LTuple const& left, RTuple const& right);
 
-}  // namespace internal_cartesian_product
+template<typename LTuple, typename RTuple>
+constexpr auto operator-(LTuple const& left, RTuple const& right);
 
-using internal_cartesian_product::CartesianProductAdditiveGroup;
-using internal_cartesian_product::CartesianProductVectorSpace;
+template<typename Scalar, typename Tuple,
+         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
+constexpr auto operator*(Scalar const& left, Tuple const& right);
 
+// The extra typename lifts an ambiguity on the definition.
+template<typename Tuple, typename Scalar,
+         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>,
+         typename = void>
+constexpr auto operator*(Tuple const& left, Scalar const& right);
+
+template<typename Scalar, typename Tuple>
+constexpr auto operator/(Tuple const& left, Scalar const& right);
+
+}  // namespace cartesian_product
 }  // namespace geometry
 }  // namespace principia
 
