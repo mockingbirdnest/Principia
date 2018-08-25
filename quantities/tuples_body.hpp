@@ -15,6 +15,23 @@ namespace internal_tuples {
 
 using base::not_constructible;
 
+// A helper for getting the type of an element even for an index that is not in
+// range.  In that case, the member Type is defined to be void.  Doing this with
+// conditional_t is awkward.
+template<typename Tuple, int index,
+         bool in_range = (index < std::tuple_size_v<Tuple>)>
+struct TupleElementOrVoid;
+
+template<typename Tuple, int index>
+struct TupleElementOrVoid<Tuple, index, false> {
+  using Type = void;
+};
+
+template<typename Tuple, int index>
+struct TupleElementOrVoid<Tuple, index, true> {
+  using Type = std::tuple_element_t<index, Tuple>;
+};
+
 template<template<typename> class Transform, typename Tuple, int... indices>
 struct ApplyGenerator<Transform, Tuple, std::integer_sequence<int, indices...>>
     : not_constructible {
@@ -22,24 +39,13 @@ struct ApplyGenerator<Transform, Tuple, std::integer_sequence<int, indices...>>
 };
 
 template<template<typename, typename> class Transform,
-         typename LTuple, typename RTuple, std::size_t... indices>
+         typename LTuple, typename RTuple, int... indices>
 struct Apply2Generator<Transform, LTuple, RTuple,
-                       std::index_sequence<indices...>>
+                       std::integer_sequence<int, indices...>>
     : not_constructible {
-  //TODO(phl): no conditional_t, ?:0 helper
   using Type = std::tuple<
-      Transform<std::conditional_t<
-                    (indices < std::tuple_size_v<LTuple>),
-                    std::tuple_element_t<
-                        (indices < std::tuple_size_v<LTuple> ? indices : 0),
-                        LTuple>,
-                    void>,
-                std::conditional_t<
-                    (indices < std::tuple_size_v<RTuple>),
-                    std::tuple_element_t<
-                        (indices < std::tuple_size_v<RTuple> ? indices : 0),
-                        RTuple>,
-                    void>>...>;
+      Transform<typename TupleElementOrVoid<LTuple, indices>::Type,
+                typename TupleElementOrVoid<RTuple, indices>::Type>...>;
 };
 
 template<typename Value, typename Argument, int n, int... orders>
