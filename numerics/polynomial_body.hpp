@@ -321,18 +321,13 @@ operator*(
         left,
     PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
         right) {
-  using TT=CartesianProductAdditiveGroup<std::pair<int,double>, std::tuple<bool>>;
-  std::pair<int,double> a;
-  std::tuple<bool> b;
-  auto c = TT::Add(a, b);
-
   using LP = PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator>;
   using RP = PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator>;
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                    ldegree_ + rdegree_, Evaluator>(
              CartesianProductAlgebra<typename LP::Coefficients,
                                      typename RP::Coefficients>::
-                 Mult(left.coefficients_, right.coefficients_));
+                 Multiply(left.coefficients_, right.coefficients_));
 }
 
 }  // namespace internal_polynomial

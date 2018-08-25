@@ -16,7 +16,7 @@ using quantities::Apply2;
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
 class CartesianProductAdditiveGroup<LTuple, RTuple,
-                                     std::index_sequence<indices...>> {
+                                    std::index_sequence<indices...>> {
   // The types of the result of addition and subtraction, with suitable
   // specializations for the void case of Apply2.
   template<typename L, typename R>
@@ -161,10 +161,11 @@ constexpr auto CartesianProductVectorSpace<
   return {std::get<indices>(left) / right...};
 }
 
+// A helper for prepending an element to a tuple.  Somewhat similar to
+// std::tuple_cat but conveniently exports the type of the result.
 template<typename Element, typename Tuple,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct ConsGenerator;
-
 template<typename Element, typename Tuple, int... indices>
 struct ConsGenerator<Element, Tuple,
                      std::integer_sequence<int, indices...>> {
@@ -179,10 +180,11 @@ Cons(Element const& element, Tuple const& tuple) -> Type {
   return std::make_tuple(element, std::get<indices>(tuple)...);
 }
 
+// A helper for extracting the tail of a tuple, i.e., everything except element
+// 0.
 template<typename Tuple,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct TailGenerator;
-
 template<typename Tuple, int head_index, int... tail_indices>
 struct TailGenerator<Tuple,
                      std::integer_sequence<int, head_index, tail_indices...>> {
@@ -200,7 +202,7 @@ Tail(Tuple const& tuple) -> Type {
 template<typename LTuple, typename RTuple,
          int lsize_ = std::tuple_size_v<LTuple>,
          int rsize_ = std::tuple_size_v<RTuple>>
-struct CartesianProductAlgebra {
+class CartesianProductAlgebra {
   // Right is split into head (index 0) and tail (the rest).  The tail is a
   // polynomial with valuation 1.
   using RHead = std::tuple_element_t<0, RTuple>;
@@ -217,32 +219,36 @@ struct CartesianProductAlgebra {
           std::declval<LTuple>(),
           std::declval<RHead>()));
   using LTupleRTailProduct =
-      decltype(CartesianProductAlgebra<LTuple, RTail>::Mult(
+      decltype(CartesianProductAlgebra<LTuple, RTail>::Multiply(
           std::declval<LTuple>(),
           std::declval<RTail>()));
   using ZeroLTupleRTailProduct =
       typename ConsGenerator<Zero, LTupleRTailProduct>::Type;
 
   using Result =
-      decltype(
-          CartesianProductAdditiveGroup<LTupleRHeadProduct,
-                                        ZeroLTupleRTailProduct>::
-              Add(std::declval<LTupleRHeadProduct>(),
-                  std::declval<ZeroLTupleRTailProduct>()));
-  static constexpr Result Mult(LTuple const& left, RTuple const& right);
+      decltype(CartesianProductAdditiveGroup<LTupleRHeadProduct,
+                                             ZeroLTupleRTailProduct>::
+                   Add(std::declval<LTupleRHeadProduct>(),
+                       std::declval<ZeroLTupleRTailProduct>()));
+
+ public:
+  static constexpr Result Multiply(LTuple const& left, RTuple const& right);
 };
 
 template<typename LTuple, typename RTuple, int lsize_>
-struct CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
+class CartesianProductAlgebra<LTuple, RTuple, lsize_, 1> {
   using RHead = std::tuple_element_t<0, RTuple>;
   using Result = decltype(CartesianProductVectorSpace<RHead, LTuple>::Multiply(
       std::declval<LTuple>(),
       std::declval<RHead>()));
-  static constexpr Result Mult(LTuple const& left, RTuple const& right);
+
+ public:
+  static constexpr Result Multiply(LTuple const& left, RTuple const& right);
 };
 
 template<typename LTuple, typename RTuple, int lsize_, int rsize_>
-constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(
+constexpr auto
+CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
   RHead const right_head = std::get<0>(right);
@@ -254,12 +260,12 @@ constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, rsize_>::Mult(
                                                                   right_head),
              ConsGenerator<Zero, LTupleRTailProduct>::Cons(
                  Zero{}, 
-                 CartesianProductAlgebra<LTuple, RTail>::Mult(left,
+                 CartesianProductAlgebra<LTuple, RTail>::Multiply(left,
                                                               right_tail)));
 }
 
 template<typename LTuple, typename RTuple, int lsize_>
-constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, 1>::Mult(
+constexpr auto CartesianProductAlgebra<LTuple, RTuple, lsize_, 1>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
   RHead const right_head = std::get<0>(right);
