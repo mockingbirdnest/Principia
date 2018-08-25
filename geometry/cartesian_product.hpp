@@ -9,7 +9,7 @@ namespace principia {
 namespace geometry {
 namespace internal_cartesian_product {
 
-// This struct exports two functions:
+// This class exports two functions:
 //
 //   static constexpr ... Add(LTuple const& left, RTuple const& right);
 //   static constexpr ... Subtract(LTuple const& left, RTuple const& right);
@@ -23,7 +23,7 @@ template<typename LTuple,
          typename RTuple,
          typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
-struct CartesianProductAdditiveGroup;
+class CartesianProductAdditiveGroup;
 
 // This struct exports three functions:
 //
@@ -36,28 +36,26 @@ struct CartesianProductAdditiveGroup;
 template<typename Scalar,
          typename Tuple,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct CartesianProductVectorSpace;
+class CartesianProductVectorSpace;
 
-//TODO(phl):comment
-//template<typename LTuple, typename RTuple,
-//         int lsize_ = std::tuple_size_v<LTuple>,
-//         int rsize_ = std::tuple_size_v<RTuple>>
-//struct CartesianProductAlgebra;
+// This class exports one function:
+//
+//   static constexpr ... Multiply(LTuple const& left, RTuple const& right);
+//
+// where the return types are appropriate for the operation.  The element types
+// of the tuples must have a structure of multiplicative ring.
+template<typename LTuple, typename RTuple,
+         int lsize_ = std::tuple_size_v<LTuple>,
+         int rsize_ = std::tuple_size_v<RTuple>>
+class CartesianProductRing;
 
 }  // namespace internal_cartesian_product
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
-//using internal_cartesian_product::CartesianProductAlgebra;
+using internal_cartesian_product::CartesianProductRing;
 using internal_cartesian_product::CartesianProductVectorSpace;
 
 }  // namespace geometry
 }  // namespace principia
 
 #include "geometry/cartesian_product_body.hpp"
-
-
-namespace principia {
-namespace geometry {
-using internal_cartesian_product::CartesianProductAlgebra;
-}  // namespace geometry
-}  // namespace principia

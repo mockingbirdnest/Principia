@@ -16,7 +16,7 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::CartesianProductAdditiveGroup;
-using geometry::CartesianProductAlgebra;
+using geometry::CartesianProductRing;
 using geometry::CartesianProductVectorSpace;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
 using quantities::Apply;
@@ -325,7 +325,7 @@ operator*(
   using RP = PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator>;
   return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
                                    ldegree_ + rdegree_, Evaluator>(
-             CartesianProductAlgebra<typename LP::Coefficients,
+             CartesianProductRing<typename LP::Coefficients,
                                      typename RP::Coefficients>::
                  Multiply(left.coefficients_, right.coefficients_));
 }
