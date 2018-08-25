@@ -39,6 +39,7 @@ constexpr auto operator/(Tuple const& left, Scalar const& right);
 
 namespace polynomial_ring {
 
+// The product assumes that the tuple elements are in the monomial basis.
 template<typename LTuple, typename RTuple,
          typename = std::enable_if_t<quantities::is_tuple_v<LTuple>>,
          typename = std::enable_if_t<quantities::is_tuple_v<RTuple>>>
