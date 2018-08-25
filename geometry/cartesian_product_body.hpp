@@ -14,6 +14,13 @@ namespace internal_cartesian_product {
 using quantities::Apply;
 using quantities::Apply2;
 
+template<typename LTuple,
+         typename RTuple,
+         typename = std::make_integer_sequence<
+             int,
+             std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
+struct CartesianProductAdditiveGroup;
+
 template<typename LTuple, typename RTuple, int... indices>
 struct CartesianProductAdditiveGroup<LTuple, RTuple,
                                      std::integer_sequence<int, indices...>> {
@@ -66,6 +73,11 @@ constexpr auto CartesianProductAdditiveGroup<
                  : -std::get<indices>(right))...};
 }
 
+template<typename Scalar,
+         typename Tuple,
+         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+struct CartesianProductVectorSpace;
+
 template<typename Scalar, typename Tuple, int... indices>
 struct CartesianProductVectorSpace<Scalar,
                                    Tuple,
@@ -117,5 +129,39 @@ constexpr auto CartesianProductVectorSpace<
 }
 
 }  // namespace internal_cartesian_product
+
+namespace cartesian_product {
+
+template<typename LTuple, typename RTuple>
+constexpr auto operator+(LTuple const& left, RTuple const& right) {
+  internal_cartesian_product::CartesianProductAdditiveGroup<LTuple, RTuple>::
+      Add(left, right);
+}
+
+template<typename LTuple, typename RTuple>
+constexpr auto operator-(LTuple const& left, RTuple const& right) {
+  internal_cartesian_product::CartesianProductAdditiveGroup<LTuple, RTuple>::
+      Subtract(left, right);
+}
+
+template<typename Scalar, typename Tuple>
+constexpr auto operator*(Scalar const& left, Tuple const& right) {
+  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
+      Multiply(left, right);
+}
+
+template<typename Scalar, typename Tuple>
+constexpr auto operator*(Tuple const& left, Scalar const& right) {
+  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
+      Multiply(left, right);
+}
+
+template<typename Scalar, typename Tuple>
+constexpr auto operator/(Tuple const& left, Scalar const& right) {
+  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
+      Divide(left, right);
+}
+
+}  // namespace cartesian_product
 }  // namespace geometry
 }  // namespace principia
