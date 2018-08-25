@@ -14,8 +14,7 @@ namespace internal_cartesian_product {
 using quantities::Apply;
 using quantities::Apply2;
 
-template<typename LTuple,
-         typename RTuple,
+template<typename LTuple, typename RTuple,
          typename = std::make_integer_sequence<
              int,
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
@@ -73,8 +72,7 @@ constexpr auto CartesianProductAdditiveGroup<
                  : -std::get<indices>(right))...};
 }
 
-template<typename Scalar,
-         typename Tuple,
+template<typename Scalar, typename Tuple,
          typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
 struct CartesianProductVectorSpace;
 
