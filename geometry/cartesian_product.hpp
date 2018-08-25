@@ -43,18 +43,20 @@ class CartesianProductVectorSpace;
 //
 //   static constexpr ... Multiply(LTuple const& left, RTuple const& right);
 //
-// where the return types are appropriate for the operation.  The element types
-// of the tuples must have a structure of multiplicative ring.
+// where the return types are appropriate for the operation.  The tuples must
+// have the types of the monomial basis of polynomials with the same type of
+// argument.  Multiplication and addition must be defined between all their
+// element types.
 template<typename LTuple, typename RTuple,
          int lsize_ = std::tuple_size_v<LTuple>,
          int rsize_ = std::tuple_size_v<RTuple>>
-class CartesianProductRing;
+class PolynomialRing;
 
 }  // namespace internal_cartesian_product
 
 using internal_cartesian_product::CartesianProductAdditiveGroup;
-using internal_cartesian_product::CartesianProductRing;
 using internal_cartesian_product::CartesianProductVectorSpace;
+using internal_cartesian_product::PolynomialRing;
 
 }  // namespace geometry
 }  // namespace principia

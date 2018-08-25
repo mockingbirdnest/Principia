@@ -205,7 +205,7 @@ Tail(Tuple const& tuple) -> Type {
 template<typename LTuple, typename RTuple,
          int lsize_,
          int rsize_>
-class CartesianProductRing {
+class PolynomialRing {
   // Right is split into head (index 0) and tail (the rest).  The tail is a
   // polynomial with valuation 1.
   using RHead = std::tuple_element_t<0, RTuple>;
@@ -223,7 +223,7 @@ class CartesianProductRing {
           std::declval<LTuple>(),
           std::declval<RHead>()));
   using LTupleRTailProduct =
-      decltype(CartesianProductRing<LTuple, RTail>::Multiply(
+      decltype(PolynomialRing<LTuple, RTail>::Multiply(
           std::declval<LTuple>(),
           std::declval<RTail>()));
   using ZeroLTupleRTailProduct =
@@ -240,7 +240,7 @@ class CartesianProductRing {
 };
 
 template<typename LTuple, typename RTuple, int lsize_>
-class CartesianProductRing<LTuple, RTuple, lsize_, 1> {
+class PolynomialRing<LTuple, RTuple, lsize_, 1> {
   using RHead = std::tuple_element_t<0, RTuple>;
   using Result = decltype(CartesianProductVectorSpace<RHead, LTuple>::Multiply(
       std::declval<LTuple>(),
@@ -251,8 +251,7 @@ class CartesianProductRing<LTuple, RTuple, lsize_, 1> {
 };
 
 template<typename LTuple, typename RTuple, int lsize_, int rsize_>
-constexpr auto
-CartesianProductRing<LTuple, RTuple, lsize_, rsize_>::Multiply(
+constexpr auto PolynomialRing<LTuple, RTuple, lsize_, rsize_>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
   RHead const right_head = std::get<0>(right);
@@ -264,12 +263,11 @@ CartesianProductRing<LTuple, RTuple, lsize_, rsize_>::Multiply(
                                                                   right_head),
              ConsGenerator<Zero, LTupleRTailProduct>::Cons(
                  Zero{},
-                 CartesianProductRing<LTuple, RTail>::Multiply(left,
-                                                               right_tail)));
+                 PolynomialRing<LTuple, RTail>::Multiply(left, right_tail)));
 }
 
 template<typename LTuple, typename RTuple, int lsize_>
-constexpr auto CartesianProductRing<LTuple, RTuple, lsize_, 1>::Multiply(
+constexpr auto PolynomialRing<LTuple, RTuple, lsize_, 1>::Multiply(
     LTuple const& left,
     RTuple const& right) -> Result {
   RHead const right_head = std::get<0>(right);
