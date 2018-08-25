@@ -19,11 +19,8 @@ LegendrePolynomial() {
     constexpr int n = degree_;
     PolynomialInMonomialBasis<double, double, 1, Evaluator> const
         multiplier({0, 2 * n - 1});
-    auto a = multiplier * LegendrePolynomial<degree_ - 1, Evaluator>();
-    auto b = (n - 1) * LegendrePolynomial<degree_ - 2, Evaluator>();
-    return a;
-    //return ((2 * n - 1) * LegendrePolynomial<degree_ - 1, Evaluator>() -
-    //        (n - 1) * LegendrePolynomial<degree_ - 2, Evaluator>()) ;// n;
+    return (multiplier * LegendrePolynomial<degree_ - 1, Evaluator>() -
+            (n - 1) * LegendrePolynomial<degree_ - 2, Evaluator>()) / n;
   }
 }
 

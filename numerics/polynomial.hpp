@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
@@ -80,16 +81,16 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
  private:
   Coefficients coefficients_;
 
-  template<typename V, typename A, int d,
+  template<typename V, typename A, int r, int l,
            template<typename, typename, int> class E>
-  PolynomialInMonomialBasis<V, A, d, E>
-  friend operator+(PolynomialInMonomialBasis<V, A, d, E> const& left,
-                   PolynomialInMonomialBasis<V, A, d, E> const& right);
-  template<typename V, typename A, int d,
+  PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  friend operator+(PolynomialInMonomialBasis<V, A, r, E> const& left,
+                   PolynomialInMonomialBasis<V, A, l, E> const& right);
+  template<typename V, typename A, int r, int l,
            template<typename, typename, int> class E>
-  PolynomialInMonomialBasis<V, A, d, E>
-  friend operator-(PolynomialInMonomialBasis<V, A, d, E> const& left,
-                   PolynomialInMonomialBasis<V, A, d, E> const& right);
+  PolynomialInMonomialBasis<V, A, std::max(r, l), E>
+  friend operator-(PolynomialInMonomialBasis<V, A, r, E> const& left,
+                   PolynomialInMonomialBasis<V, A, l, E> const& right);
   template<typename S,
            typename V, typename A, int d,
            template<typename, typename, int> class E>
@@ -151,20 +152,22 @@ class PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>
 
 // Vector space of polynomials.
 
-template<typename Value, typename Argument, int degree_,
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator>
 operator+(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right);
 
-template<typename Value, typename Argument, int degree_,
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator>
 operator-(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right);
 
 template<typename Scalar,
