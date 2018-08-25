@@ -5,9 +5,23 @@
 #include <tuple>
 #include <utility>
 
+#include "base/not_constructible.hpp"
+
 namespace principia {
 namespace quantities {
 namespace internal_tuples {
+
+using base::not_constructible;
+
+// A trait for finding if something is a tuple.
+// TODO(phl): We might want to use this for pair and array too.
+template<typename T>
+struct is_tuple : std::false_type, not_constructible {};
+template<typename... D>
+struct is_tuple<std::tuple<D...>> : std::true_type, not_constructible {};
+
+template<typename T>
+constexpr bool is_tuple_v = is_tuple<T>::value;
 
 // This struct has a |Type| member which is a tuple obtained by applying
 // |Transform| to each element type in |Tuple| (which must be a tuple or an
@@ -35,6 +49,9 @@ template<typename Value, typename Argument, int n,
 struct DerivativesGenerator;
 
 }  // namespace internal_tuples
+
+using internal_tuples::is_tuple;
+using internal_tuples::is_tuple_v;
 
 template<template<typename> class Transform, typename Tuple>
 using Apply = typename internal_tuples::ApplyGenerator<Transform, Tuple>::Type;

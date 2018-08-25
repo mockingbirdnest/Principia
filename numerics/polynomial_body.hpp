@@ -15,10 +15,12 @@ namespace internal_polynomial {
 
 using base::make_not_null_unique;
 using base::not_constructible;
-using geometry::CartesianProductAdditiveGroup;
-using geometry::CartesianProductVectorSpace;
-using geometry::PolynomialRing;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::cartesian_product::operator+;
+using geometry::cartesian_product::operator-;
+using geometry::cartesian_product::operator*;
+using geometry::cartesian_product::operator/;
+using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
@@ -123,7 +125,7 @@ Polynomial<Value, Argument>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+constexpr PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients)
     : coefficients_(coefficients) {}
 
@@ -182,6 +184,7 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+constexpr
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients,
                           Point<Argument> const& origin)
@@ -249,11 +252,8 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         right) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
-  return P(CartesianProductAdditiveGroup<typename P::Coefficients,
-                                         typename P::Coefficients>::
-               Add(left.coefficients_,
-                   right.coefficients_));
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      left.coefficients_ + right.coefficients_);
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -262,11 +262,8 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
         right) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
-  return P(CartesianProductAdditiveGroup<typename P::Coefficients,
-                                         typename P::Coefficients>::
-               Subtract(left.coefficients_,
-                        right.coefficients_));
+  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+      left.coefficients_ - right.coefficients_);
 }
 
 template<typename Scalar,
@@ -276,11 +273,8 @@ PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
   return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
-                                   Evaluator>(
-             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
-                 Multiply(left, right.coefficients_));
+                                   Evaluator>(left* right.coefficients_);
 }
 
 template<typename Scalar,
@@ -290,11 +284,8 @@ PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
   return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
-                                   Evaluator>(
-             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
-                 Multiply(left.coefficients_, right));
+                                   Evaluator>(left.coefficients_ * right);
 }
 
 template<typename Scalar,
@@ -304,11 +295,8 @@ PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
-  using P = PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>;
   return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
-                                   Evaluator>(
-             CartesianProductVectorSpace<Scalar, typename P::Coefficients>::
-                 Divide(left.coefficients_, right));
+                                   Evaluator>(left.coefficients_ / right);
 }
 
 template<typename LValue, typename RValue,
