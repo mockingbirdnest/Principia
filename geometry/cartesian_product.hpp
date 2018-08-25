@@ -5,6 +5,8 @@
 #include <tuple>
 #include <utility>
 
+#include "quantities/tuples.hpp"
+
 namespace principia {
 namespace geometry {
 
@@ -18,10 +20,12 @@ constexpr auto operator+(LTuple const& left, RTuple const& right);
 template<typename LTuple, typename RTuple>
 constexpr auto operator-(LTuple const& left, RTuple const& right);
 
-template<typename Scalar, typename Tuple>
+template<typename Scalar, typename Tuple,
+         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
 constexpr auto operator*(Scalar const& left, Tuple const& right);
 
-template<typename Scalar, typename Tuple>
+template<typename Tuple, typename Scalar,
+         typename = std::enable_if_t<quantities::is_tuple_v<Tuple>>>
 constexpr auto operator*(Tuple const& left, Scalar const& right);
 
 template<typename Scalar, typename Tuple>

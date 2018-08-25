@@ -134,32 +134,32 @@ namespace cartesian_product {
 
 template<typename LTuple, typename RTuple>
 constexpr auto operator+(LTuple const& left, RTuple const& right) {
-  internal_cartesian_product::CartesianProductAdditiveGroup<LTuple, RTuple>::
-      Add(left, right);
+  return internal_cartesian_product::
+      CartesianProductAdditiveGroup<LTuple, RTuple>::Add(left, right);
 }
 
 template<typename LTuple, typename RTuple>
 constexpr auto operator-(LTuple const& left, RTuple const& right) {
-  internal_cartesian_product::CartesianProductAdditiveGroup<LTuple, RTuple>::
-      Subtract(left, right);
+  return internal_cartesian_product::
+      CartesianProductAdditiveGroup<LTuple, RTuple>::Subtract(left, right);
 }
 
-template<typename Scalar, typename Tuple>
+template<typename Scalar, typename Tuple, typename>
 constexpr auto operator*(Scalar const& left, Tuple const& right) {
-  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
-      Multiply(left, right);
+  return internal_cartesian_product::
+      CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
-template<typename Scalar, typename Tuple>
+template<typename Scalar, typename Tuple, typename>
 constexpr auto operator*(Tuple const& left, Scalar const& right) {
-  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
-      Multiply(left, right);
+  return internal_cartesian_product::
+      CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
 template<typename Scalar, typename Tuple>
 constexpr auto operator/(Tuple const& left, Scalar const& right) {
-  internal_cartesian_product::CartesianProductVectorSpace<LTuple, RTuple>::
-      Divide(left, right);
+  return internal_cartesian_product::
+      CartesianProductVectorSpace<Scalar, Tuple>::Divide(left, right);
 }
 
 }  // namespace cartesian_product
