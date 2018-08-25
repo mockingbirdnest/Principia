@@ -111,9 +111,9 @@ SubtractElement(LTuple const& left, RTuple const& right)
 }
 
 template<typename Scalar, typename Tuple, int... indices>
-struct CartesianProductVectorSpace<Scalar,
-                                   Tuple,
-                                   std::integer_sequence<int, indices...>> {
+class CartesianProductVectorSpace<Scalar,
+                                  Tuple,
+                                  std::integer_sequence<int, indices...>> {
   template<typename T>
   using ScalarLeftProduct = quantities::Product<Scalar, T>;
   template<typename T>
@@ -121,6 +121,7 @@ struct CartesianProductVectorSpace<Scalar,
   template<typename T>
   using Quotient = quantities::Quotient<T, Scalar>;
 
+ public:
   static constexpr Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,
       Tuple const& right);
