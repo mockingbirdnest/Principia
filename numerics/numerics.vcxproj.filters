@@ -83,6 +83,12 @@
     <ClInclude Include="fast_sin_cos_2π.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="legendre.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="legendre_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -122,6 +128,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fast_sin_cos_2π_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="legendre_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

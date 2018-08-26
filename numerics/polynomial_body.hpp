@@ -2,6 +2,7 @@
 
 #include "numerics/polynomial.hpp"
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
@@ -246,23 +247,27 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
-template<typename Value, typename Argument, int degree_,
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator+(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator> operator+(
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree_, rdegree_), Evaluator>(
       left.coefficients_ + right.coefficients_);
 }
 
-template<typename Value, typename Argument, int degree_,
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> operator-(
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const& left,
-    PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator> operator-(
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
-  return PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>(
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree_, rdegree_), Evaluator>(
       left.coefficients_ - right.coefficients_);
 }
 
