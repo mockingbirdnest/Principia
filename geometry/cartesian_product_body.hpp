@@ -5,8 +5,12 @@
 #include <tuple>
 #include <type_traits>
 
+#include "base/macros.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
+
+// The use of FORCE_INLINE in this file is because we want the construction of
+// complex polynomials to be reasonably efficient.
 
 namespace principia {
 namespace geometry {
@@ -49,10 +53,10 @@ class CartesianProductAdditiveGroup<LTuple, RTuple,
   using Difference = typename TypesGenerator<L, R>::Difference;
 
  public:
-  static constexpr Apply2<Sum, LTuple, RTuple> Add(
+  FORCE_INLINE(static constexpr) Apply2<Sum, LTuple, RTuple> Add(
       LTuple const& left,
       RTuple const& right);
-  static constexpr Apply2<Difference, LTuple, RTuple> Subtract(
+  FORCE_INLINE(static constexpr) Apply2<Difference, LTuple, RTuple> Subtract(
       LTuple const& left,
       RTuple const& right);
 
@@ -135,14 +139,14 @@ class CartesianProductVectorSpace<Scalar,
   using Quotient = quantities::Quotient<T, Scalar>;
 
  public:
-  static constexpr Apply<ScalarLeftProduct, Tuple> Multiply(
+  FORCE_INLINE(static constexpr) Apply<ScalarLeftProduct, Tuple> Multiply(
       Scalar const& left,
       Tuple const& right);
-  static constexpr Apply<ScalarRightProduct, Tuple> Multiply(
+  FORCE_INLINE(static constexpr) Apply<ScalarRightProduct, Tuple> Multiply(
       Tuple const& left,
       Scalar const& right);
 
-  static constexpr Apply<Quotient, Tuple> Divide(
+  FORCE_INLINE(static constexpr) Apply<Quotient, Tuple> Divide(
       Tuple const& left,
       Scalar const& right);
 };
@@ -246,7 +250,8 @@ class PolynomialRing {
                        std::declval<ZeroLTupleRTailProduct>()));
 
  public:
-  static constexpr Result Multiply(LTuple const& left, RTuple const& right);
+  FORCE_INLINE(static constexpr)
+  Result Multiply(LTuple const& left, RTuple const& right);
 };
 
 template<typename LTuple, typename RTuple, int lsize_>
@@ -257,7 +262,8 @@ class PolynomialRing<LTuple, RTuple, lsize_, 1> {
       std::declval<RHead>()));
 
  public:
-  static constexpr Result Multiply(LTuple const& left, RTuple const& right);
+  FORCE_INLINE(static constexpr)
+  Result Multiply(LTuple const& left, RTuple const& right);
 };
 
 template<typename LTuple, typename RTuple, int lsize_, int rsize_>
@@ -291,31 +297,33 @@ constexpr auto PolynomialRing<LTuple, RTuple, lsize_, 1>::Multiply(
 namespace cartesian_product {
 
 template<typename LTuple, typename RTuple>
-constexpr auto operator+(LTuple const& left, RTuple const& right) {
+FORCE_INLINE(constexpr)
+auto operator+(LTuple const& left, RTuple const& right) {
   return internal_cartesian_product::
       CartesianProductAdditiveGroup<LTuple, RTuple>::Add(left, right);
 }
 
 template<typename LTuple, typename RTuple>
-constexpr auto operator-(LTuple const& left, RTuple const& right) {
+FORCE_INLINE(constexpr)
+auto operator-(LTuple const& left, RTuple const& right) {
   return internal_cartesian_product::
       CartesianProductAdditiveGroup<LTuple, RTuple>::Subtract(left, right);
 }
 
 template<typename Scalar, typename Tuple, typename, typename>
-constexpr auto operator*(Scalar const& left, Tuple const& right) {
+FORCE_INLINE(constexpr) auto operator*(Scalar const& left, Tuple const& right) {
   return internal_cartesian_product::
       CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
 template<typename Tuple, typename Scalar, typename, typename, typename>
-constexpr auto operator*(Tuple const& left, Scalar const& right) {
+FORCE_INLINE(constexpr) auto operator*(Tuple const& left, Scalar const& right) {
   return internal_cartesian_product::
       CartesianProductVectorSpace<Scalar, Tuple>::Multiply(left, right);
 }
 
 template<typename Scalar, typename Tuple>
-constexpr auto operator/(Tuple const& left, Scalar const& right) {
+FORCE_INLINE(constexpr) auto operator/(Tuple const& left, Scalar const& right) {
   return internal_cartesian_product::
       CartesianProductVectorSpace<Scalar, Tuple>::Divide(left, right);
 }
@@ -325,7 +333,8 @@ constexpr auto operator/(Tuple const& left, Scalar const& right) {
 namespace polynomial_ring {
 
 template<typename LTuple, typename RTuple, typename, typename>
-constexpr auto operator*(LTuple const & left, RTuple const & right) {
+FORCE_INLINE(constexpr)
+auto operator*(LTuple const& left, RTuple const& right) {
   return internal_cartesian_product::
       PolynomialRing<LTuple, RTuple>::Multiply(left, right);
 }

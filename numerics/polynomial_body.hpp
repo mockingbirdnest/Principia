@@ -249,8 +249,10 @@ ReadFromMessage(serialization::Polynomial const& message) {
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator> operator+(
+                          std::max(ldegree_, rdegree_), Evaluator>
+operator+(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
@@ -261,8 +263,10 @@ PolynomialInMonomialBasis<Value, Argument,
 
 template<typename Value, typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<Value, Argument,
-                          std::max(ldegree_, rdegree_), Evaluator> operator-(
+                          std::max(ldegree_, rdegree_), Evaluator>
+operator-(
     PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
     PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
         right) {
@@ -274,7 +278,9 @@ PolynomialInMonomialBasis<Value, Argument,
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument,
+                          degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
@@ -285,7 +291,9 @@ operator*(Scalar const& left,
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_, Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument,
+                          degree_, Evaluator>
 operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
@@ -296,7 +304,9 @@ operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_, Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument,
+                          degree_, Evaluator>
 operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               left,
           Scalar const& right) {
@@ -307,8 +317,9 @@ operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
 template<typename LValue, typename RValue,
          typename Argument, int ldegree_, int rdegree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<
-    Product<LValue, RValue>, Argument, ldegree_ + rdegree_, Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                          ldegree_ + rdegree_, Evaluator>
 operator*(
     PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
         left,
