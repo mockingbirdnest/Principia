@@ -7,6 +7,8 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClInclude Include="combinatorics.hpp" />
+    <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="fit_hermite_spline.hpp" />

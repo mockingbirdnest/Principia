@@ -4,14 +4,10 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+#include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
-
-// n choose k.
-constexpr int Binomial(int n, int k) {
-  return k == 0 ? 1 : n == k ? 1 : Binomial(n - 1, k - 1) + Binomial(n - 1, k);
-}
 
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:
