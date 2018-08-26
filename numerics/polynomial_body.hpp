@@ -155,6 +155,15 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+template<int order>
+PolynomialInMonomialBasis<
+    Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+Derivative() const {
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
 void PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
     WriteToMessage(not_null<serialization::Polynomial*> message) const {
   message->set_degree(degree_);

@@ -77,6 +77,11 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   constexpr int degree() const override;
 
+  template<int order>
+  PolynomialInMonomialBasis<
+      Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
+  Derivative() const;
+
   void WriteToMessage(
       not_null<serialization::Polynomial*> message) const override;
   static PolynomialInMonomialBasis ReadFromMessage(
