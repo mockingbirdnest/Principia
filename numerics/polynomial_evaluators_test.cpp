@@ -4,20 +4,16 @@
 #include <utility>
 
 #include "gtest/gtest.h"
+#include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
-
-// n choose k.
-constexpr int Binomial(int n, int k) {
-  return k == 0 ? 1 : n == k ? 1 : Binomial(n - 1, k - 1) + Binomial(n - 1, k);
-}
 
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:
   template<typename Tuple, int n, int... k>
   Tuple MakeBinomialTuple(std::integer_sequence<int, k...>) {
-    return std::make_tuple(Binomial(n, k)...);
+    return {Binomial(n, k)...};
   }
 
   // This test builds the binomial polynomial (1 + x)^degree and evaluates it

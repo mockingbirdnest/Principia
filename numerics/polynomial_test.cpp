@@ -104,7 +104,7 @@ TEST_F(PolynomialTest, Coefficients) {
 
 // Check that a polynomial can be constructed and evaluated.
 TEST_F(PolynomialTest, Evaluate2V) {
-  P2V p(coefficients_);
+  P2V const p(coefficients_);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p.Evaluate(0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(0.5 * Second);
@@ -119,7 +119,7 @@ TEST_F(PolynomialTest, Evaluate2V) {
 // Check that a polynomial can be for an affine argument.
 TEST_F(PolynomialTest, Evaluate2A) {
   Instant const t0 = Instant() + 0.3 * Second;
-  P2A p(coefficients_, t0);
+  P2A const p(coefficients_, t0);
   EXPECT_EQ(2, p.degree());
   Displacement<World> const d = p.Evaluate(t0 + 0.5 * Second);
   Velocity<World> const v = p.EvaluateDerivative(t0 + 0.5 * Second);
@@ -134,7 +134,7 @@ TEST_F(PolynomialTest, Evaluate2A) {
 // Check that a polynomial of high order may be declared.
 TEST_F(PolynomialTest, Evaluate17) {
   P17::Coefficients const coefficients;
-  P17 p(coefficients);
+  P17 const p(coefficients);
   EXPECT_EQ(17, p.degree());
   Displacement<World> const d = p.Evaluate(0.5 * Second);
   EXPECT_THAT(d, AlmostEquals(Displacement<World>({0 * Metre,
@@ -143,7 +143,7 @@ TEST_F(PolynomialTest, Evaluate17) {
 }
 
 TEST_F(PolynomialTest, VectorSpace) {
-  P2V p2v(coefficients_);
+  P2V const p2v(coefficients_);
   {
     auto const p = p2v + p2v;
     auto const actual = p.Evaluate(0 * Second);
@@ -184,11 +184,11 @@ TEST_F(PolynomialTest, VectorSpace) {
 TEST_F(PolynomialTest, Ring) {
   using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
   using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
-  P2 p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
-  P3 p3({2 * Ampere,
-         -4 * Ampere / Second,
-         3 * Ampere / Second / Second,
-         1 * Ampere / Second / Second / Second});
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+  P3 const p3({2 * Ampere,
+               -4 * Ampere / Second,
+               3 * Ampere / Second / Second,
+               1 * Ampere / Second / Second / Second});
   auto const p = p2 * p3;
   {
     auto const actual = p.Evaluate(0 * Second);
@@ -210,6 +210,28 @@ TEST_F(PolynomialTest, Ring) {
     auto const actual = p.Evaluate(-2 * Second);
     EXPECT_THAT(actual, AlmostEquals(-518 * Ampere * Kelvin, 0));
   }
+}
+
+TEST_F(PolynomialTest, Derivative) {
+  using P2 = PolynomialInMonomialBasis<Temperature, Time, 2, HornerEvaluator>;
+  using P3 = PolynomialInMonomialBasis<Current, Time, 3, HornerEvaluator>;
+  P2 const p2({1 * Kelvin, 3 * Kelvin / Second, -8 * Kelvin / Second / Second});
+  P3 const p3({2 * Ampere,
+               -4 * Ampere / Second,
+               3 * Ampere / Second / Second,
+               1 * Ampere / Second / Second / Second});
+
+  EXPECT_EQ(3 * Kelvin / Second,
+            p2.Derivative<1>().Evaluate(0 * Second));
+  EXPECT_EQ(-16 * Kelvin / Second / Second,
+            p2.Derivative<2>().Evaluate(0 * Second));
+
+  EXPECT_EQ(-4 * Ampere / Second,
+            p3.Derivative<1>().Evaluate(0 * Second));
+  EXPECT_EQ(6 * Ampere / Second / Second,
+            p3.Derivative<2>().Evaluate(0 * Second));
+  EXPECT_EQ(6 * Ampere / Second / Second / Second,
+            p3.Derivative<3>().Evaluate(0 * Second));
 }
 
 // Check that polynomials may be serialized.
