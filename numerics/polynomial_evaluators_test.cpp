@@ -1,6 +1,7 @@
 
 #include "numerics/polynomial_evaluators.hpp"
 
+#include <cstddef>
 #include <utility>
 
 #include "gtest/gtest.h"
@@ -11,8 +12,8 @@ namespace numerics {
 
 class PolynomialEvaluatorTest : public ::testing::Test {
  public:
-  template<typename Tuple, int n, int... k>
-  Tuple MakeBinomialTuple(std::integer_sequence<int, k...>) {
+  template<typename Tuple, int n, std::size_t... k>
+  Tuple MakeBinomialTuple(std::index_sequence<k...>) {
     return {Binomial(n, k)...};
   }
 
@@ -25,7 +26,7 @@ class PolynomialEvaluatorTest : public ::testing::Test {
     using E = Evaluator<double, double, degree>;
     auto const binomial_coefficients =
         MakeBinomialTuple<typename E::Coefficients, degree>(
-            std::make_integer_sequence<int, degree + 1>());
+            std::make_index_sequence<degree + 1>());
     for (int argument = -degree; argument <= degree; ++argument) {
       EXPECT_EQ(E::Evaluate(binomial_coefficients, argument),
                 std::pow(argument + 1, degree)) << argument << " " << degree;

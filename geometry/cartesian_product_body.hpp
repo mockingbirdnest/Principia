@@ -20,14 +20,13 @@ using quantities::Apply;
 using quantities::Apply2;
 
 template<typename LTuple, typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
+         typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
 struct CartesianProductAdditiveGroup;
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 class CartesianProductAdditiveGroup<LTuple, RTuple,
-                                    std::integer_sequence<int, indices...>> {
+                                    std::index_sequence<indices...>> {
   // The types of the result of addition and subtraction, with suitable
   // specializations for the void case of Apply2.
   template<typename L, typename R>
@@ -71,30 +70,30 @@ class CartesianProductAdditiveGroup<LTuple, RTuple,
   SubtractElement(LTuple const& left, RTuple const& right);
 };
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
-    std::integer_sequence<int, indices...>>::Add(LTuple const& left,
-                                                 RTuple const& right)
+    std::index_sequence<indices...>>::Add(LTuple const& left,
+                                          RTuple const& right)
     -> Apply2<Sum, LTuple, RTuple> {
   return {AddElement<indices>(left, right)...};
 }
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
-    std::integer_sequence<int, indices...>>::Subtract(LTuple const& left,
-                                                      RTuple const& right)
+    std::index_sequence<indices...>>::Subtract(LTuple const& left,
+                                               RTuple const& right)
     -> Apply2<Difference, LTuple, RTuple> {
   return {SubtractElement<indices>(left, right)...};
 }
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 template<std::size_t index>
-constexpr auto
-CartesianProductAdditiveGroup<LTuple, RTuple,
-                              std::integer_sequence<int, indices...>>::
-AddElement(LTuple const& left, RTuple const& right)
+constexpr auto CartesianProductAdditiveGroup<
+    LTuple, RTuple,
+    std::index_sequence<indices...>>::AddElement(LTuple const& left,
+                                                 RTuple const& right)
     -> std::tuple_element_t<index, Apply2<Sum, LTuple, RTuple>> {
   if constexpr (index < std::min(std::tuple_size_v<LTuple>,
                                  std::tuple_size_v<RTuple>)) {
@@ -106,12 +105,12 @@ AddElement(LTuple const& left, RTuple const& right)
   }
 }
 
-template<typename LTuple, typename RTuple, int... indices>
+template<typename LTuple, typename RTuple, std::size_t... indices>
 template<std::size_t index>
-constexpr auto
-CartesianProductAdditiveGroup<LTuple, RTuple,
-                              std::integer_sequence<int, indices...>>::
-SubtractElement(LTuple const& left, RTuple const& right)
+constexpr auto CartesianProductAdditiveGroup<
+    LTuple, RTuple,
+    std::index_sequence<indices...>>::SubtractElement(LTuple const& left,
+                                                      RTuple const& right)
     -> std::tuple_element_t<index, Apply2<Difference, LTuple, RTuple>> {
   if constexpr (index < std::min(std::tuple_size_v<LTuple>,
                                  std::tuple_size_v<RTuple>)) {
@@ -124,13 +123,12 @@ SubtractElement(LTuple const& left, RTuple const& right)
 }
 
 template<typename Scalar, typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct CartesianProductVectorSpace;
 
-template<typename Scalar, typename Tuple, int... indices>
-class CartesianProductVectorSpace<Scalar,
-                                  Tuple,
-                                  std::integer_sequence<int, indices...>> {
+template<typename Scalar, typename Tuple, std::size_t... indices>
+class CartesianProductVectorSpace<Scalar, Tuple,
+                                  std::index_sequence<indices...>> {
   template<typename T>
   using ScalarLeftProduct = quantities::Product<Scalar, T>;
   template<typename T>
@@ -151,29 +149,29 @@ class CartesianProductVectorSpace<Scalar,
       Scalar const& right);
 };
 
-template<typename Scalar, typename Tuple, int... indices>
+template<typename Scalar, typename Tuple, std::size_t... indices>
 constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
-    std::integer_sequence<int, indices...>>::Multiply(Scalar const& left,
-                                                      Tuple const& right)
+    std::index_sequence<indices...>>::Multiply(Scalar const& left,
+                                               Tuple const& right)
     -> Apply<ScalarLeftProduct, Tuple> {
   return {left * std::get<indices>(right)...};
 }
 
-template<typename Scalar, typename Tuple, int... indices>
+template<typename Scalar, typename Tuple, std::size_t... indices>
 constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
-    std::integer_sequence<int, indices...>>::Multiply(Tuple const& left,
-                                                      Scalar const& right)
+    std::index_sequence<indices...>>::Multiply(Tuple const& left,
+                                               Scalar const& right)
     -> Apply<ScalarRightProduct, Tuple> {
   return {std::get<indices>(left) * right...};
 }
 
-template<typename Scalar, typename Tuple, int... indices>
+template<typename Scalar, typename Tuple, std::size_t... indices>
 constexpr auto CartesianProductVectorSpace<
     Scalar, Tuple,
-    std::integer_sequence<int, indices...>>::Divide(Tuple const& left,
-                                                    Scalar const& right)
+    std::index_sequence<indices...>>::Divide(Tuple const& left,
+                                             Scalar const& right)
     -> Apply<Quotient, Tuple> {
   return {std::get<indices>(left) / right...};
 }
@@ -181,18 +179,16 @@ constexpr auto CartesianProductVectorSpace<
 // A helper for prepending an element to a tuple.  Somewhat similar to
 // std::tuple_cat but conveniently exports the type of the result.
 template<typename Element, typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct ConsGenerator;
-template<typename Element, typename Tuple, int... indices>
-struct ConsGenerator<Element, Tuple,
-                     std::integer_sequence<int, indices...>> {
+template<typename Element, typename Tuple, std::size_t... indices>
+struct ConsGenerator<Element, Tuple, std::index_sequence<indices...>> {
   using Type = std::tuple<Element, std::tuple_element_t<indices, Tuple>...>;
   static constexpr Type Cons(Element const& element, Tuple const& tuple);
 };
 
-template<typename Element, typename Tuple, int... indices>
-constexpr auto
-ConsGenerator<Element, Tuple, std::integer_sequence<int, indices...>>::
+template<typename Element, typename Tuple, std::size_t... indices>
+constexpr auto ConsGenerator<Element, Tuple, std::index_sequence<indices...>>::
 Cons(Element const& element, Tuple const& tuple) -> Type {
   return std::make_tuple(element, std::get<indices>(tuple)...);
 }
@@ -200,18 +196,17 @@ Cons(Element const& element, Tuple const& tuple) -> Type {
 // A helper for extracting the tail of a tuple, i.e., everything except element
 // 0.
 template<typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct TailGenerator;
-template<typename Tuple, int head_index, int... tail_indices>
-struct TailGenerator<Tuple,
-                     std::integer_sequence<int, head_index, tail_indices...>> {
+template<typename Tuple, std::size_t head_index, std::size_t... tail_indices>
+struct TailGenerator<Tuple, std::index_sequence<head_index, tail_indices...>> {
   using Type = std::tuple<std::tuple_element_t<tail_indices, Tuple>...>;
   static constexpr Type Tail(Tuple const& tuple);
 };
 
-template<typename Tuple, int head_index, int... tail_indices>
+template<typename Tuple, std::size_t head_index, std::size_t... tail_indices>
 constexpr auto
-TailGenerator<Tuple, std::integer_sequence<int, head_index, tail_indices...>>::
+TailGenerator<Tuple, std::index_sequence<head_index, tail_indices...>>::
 Tail(Tuple const& tuple) -> Type {
   return std::make_tuple(std::get<tail_indices>(tuple)...);
 }

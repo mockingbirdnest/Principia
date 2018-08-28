@@ -26,18 +26,17 @@ using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 
 template<typename Tuple, int order,
-         typename =
-             std::make_integer_sequence<int, std::tuple_size_v<Tuple> - order>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
 struct TupleDerivation;
 
-template<typename Tuple, int order, int... indices>
-struct TupleDerivation<Tuple, order, std::integer_sequence<int, indices...>> {
+template<typename Tuple, int order, std::size_t... indices>
+struct TupleDerivation<Tuple, order, std::index_sequence<indices...>> {
   static constexpr auto Derive(Tuple const& tuple);
 };
 
-template<typename Tuple, int order, int... indices>
+template<typename Tuple, int order, std::size_t... indices>
 constexpr auto
-TupleDerivation<Tuple, order, std::integer_sequence<int, indices...>>::Derive(
+TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
     Tuple const& tuple) {
   return std::make_tuple(FallingFactorial(order + indices, order) *
                          std::get<order + indices>(tuple)...);
