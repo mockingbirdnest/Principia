@@ -28,7 +28,7 @@ constexpr bool is_tuple_v = is_tuple<T>::value;
 // array or a pair).
 template<template<typename> class Transform,
          typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
 struct ApplyGenerator;
 
 // Same as above, but |Transform| is applied to corresponding pairs of element
@@ -36,8 +36,7 @@ struct ApplyGenerator;
 // is passed to |Transform| for the missing element types.
 template<template<typename, typename> class Transform,
          typename LTuple, typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
+         typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
 struct Apply2Generator;
 
@@ -45,7 +44,7 @@ struct Apply2Generator;
 // derivatives of |Value| with respect to |Argument|; the first element is
 // |Value|.
 template<typename Value, typename Argument, int n,
-         typename = std::make_integer_sequence<int, n>>
+         typename = std::make_index_sequence<n>>
 struct DerivativesGenerator;
 
 }  // namespace internal_tuples
