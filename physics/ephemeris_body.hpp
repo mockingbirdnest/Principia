@@ -64,7 +64,7 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
-#define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
+#define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
 
 #if !PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
 // If j is a unit vector along the axis of rotation, and r a vector from the
