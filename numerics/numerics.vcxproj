@@ -7,6 +7,8 @@
   </PropertyGroup>
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
+    <ClInclude Include="combinatorics.hpp" />
+    <ClInclude Include="combinatorics_body.hpp" />
     <ClInclude Include="cbrt.hpp" />
     <ClInclude Include="fast_sin_cos_2π.hpp" />
     <ClInclude Include="fit_hermite_spline.hpp" />
@@ -17,6 +19,8 @@
     <ClInclude Include="double_precision_body.hpp" />
     <ClInclude Include="hermite3.hpp" />
     <ClInclude Include="hermite3_body.hpp" />
+    <ClInclude Include="legendre.hpp" />
+    <ClInclude Include="legendre_body.hpp" />
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />
     <ClInclude Include="newhall_body.hpp" />
@@ -40,6 +44,7 @@
     <ClCompile Include="fit_hermite_spline_test.cpp" />
     <ClCompile Include="fixed_arrays_test.cpp" />
     <ClCompile Include="hermite3_test.cpp" />
+    <ClCompile Include="legendre_test.cpp" />
     <ClCompile Include="newhall_test.cpp" />
     <ClCompile Include="polynomial_evaluators_test.cpp" />
     <ClCompile Include="polynomial_test.cpp" />

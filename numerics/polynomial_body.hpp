@@ -2,11 +2,14 @@
 
 #include "numerics/polynomial.hpp"
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
 #include "base/not_constructible.hpp"
+#include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
+#include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
@@ -15,31 +18,29 @@ namespace internal_polynomial {
 using base::make_not_null_unique;
 using base::not_constructible;
 using geometry::DoubleOrQuantityOrMultivectorSerializer;
+using geometry::cartesian_product::operator+;
+using geometry::cartesian_product::operator-;
+using geometry::cartesian_product::operator*;
+using geometry::cartesian_product::operator/;
+using geometry::polynomial_ring::operator*;
 using quantities::Apply;
 
-template<typename Scalar,
-         typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
-struct TupleArithmetic;
+template<typename Tuple, int order,
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
+struct TupleDerivation;
 
-template<typename Scalar, typename Tuple, int... indices>
-struct TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>
-    : not_constructible {
-  template<typename T>
-  using ScalarLeftMultiplier = Product<Scalar, T>;
-
-  static constexpr typename Apply<ScalarLeftMultiplier, Tuple>
-  Multiply(Scalar const& left, Tuple const& right);
+template<typename Tuple, int order, std::size_t... indices>
+struct TupleDerivation<Tuple, order, std::index_sequence<indices...>> {
+  static constexpr auto Derive(Tuple const& tuple);
 };
 
-template<typename Scalar, typename Tuple, int... indices>
+template<typename Tuple, int order, std::size_t... indices>
 constexpr auto
-TupleArithmetic<Scalar, Tuple, std::integer_sequence<int, indices...>>::
-    Multiply(Scalar const& left, Tuple const& right) ->
-    typename Apply<ScalarLeftMultiplier, Tuple> {
-  return {left * std::get<indices>(right)...};
+TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
+    Tuple const& tuple) {
+  return std::make_tuple(FallingFactorial(order + indices, order) *
+                         std::get<order + indices>(tuple)...);
 }
-
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -143,7 +144,7 @@ Polynomial<Value, Argument>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+constexpr PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients)
     : coefficients_(coefficients) {}
 
@@ -168,6 +169,19 @@ template<typename Value, typename Argument, int degree_,
 constexpr int
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
   return degree_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int order>
+PolynomialInMonomialBasis<
+    Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+Derivative() const {
+  return PolynomialInMonomialBasis<
+             quantities::Derivative<Value, Argument, order>, Argument,
+             degree_ - order, Evaluator>(
+             TupleDerivation<Coefficients, order>::Derive(coefficients_));
 }
 
 template<typename Value, typename Argument, int degree_,
@@ -202,6 +216,7 @@ PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::ReadFromMessage(
 
 template<typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
+constexpr
 PolynomialInMonomialBasis<Value, Point<Argument>, degree_, Evaluator>::
 PolynomialInMonomialBasis(Coefficients const& coefficients,
                           Point<Argument> const& origin)
@@ -263,19 +278,87 @@ ReadFromMessage(serialization::Polynomial const& message) {
   return PolynomialInMonomialBasis(coefficients, origin);
 }
 
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator>
+operator+(
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree_, rdegree_), Evaluator>(
+      left.coefficients_ + right.coefficients_);
+}
+
+template<typename Value, typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Value, Argument,
+                          std::max(ldegree_, rdegree_), Evaluator>
+operator-(
+    PolynomialInMonomialBasis<Value, Argument, ldegree_, Evaluator> const& left,
+    PolynomialInMonomialBasis<Value, Argument, rdegree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Value, Argument,
+                                   std::max(ldegree_, rdegree_), Evaluator>(
+      left.coefficients_ - right.coefficients_);
+}
+
 template<typename Scalar,
          typename Value, typename Argument, int degree_,
          template<typename, typename, int> class Evaluator>
-PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_, Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<Scalar, Value>, Argument,
+                          degree_, Evaluator>
 operator*(Scalar const& left,
           PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
               right) {
-  return PolynomialInMonomialBasis<
-             Product<Scalar, Value>, Argument, degree_, Evaluator>(
-      TupleArithmetic<Scalar,
-                      typename PolynomialInMonomialBasis<
-                                   Value, Argument, degree_, Evaluator>::
-                          Coefficients>::Multiply(left, right.coefficients_));
+  return PolynomialInMonomialBasis<Product<Scalar, Value>, Argument, degree_,
+                                   Evaluator>(left * right.coefficients_);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<Value, Scalar>, Argument,
+                          degree_, Evaluator>
+operator*(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<Product<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(left.coefficients_ * right);
+}
+
+template<typename Scalar,
+         typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument,
+                          degree_, Evaluator>
+operator/(PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator> const&
+              left,
+          Scalar const& right) {
+  return PolynomialInMonomialBasis<Quotient<Value, Scalar>, Argument, degree_,
+                                   Evaluator>(left.coefficients_ / right);
+}
+
+template<typename LValue, typename RValue,
+         typename Argument, int ldegree_, int rdegree_,
+         template<typename, typename, int> class Evaluator>
+FORCE_INLINE(constexpr)
+PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                          ldegree_ + rdegree_, Evaluator>
+operator*(
+    PolynomialInMonomialBasis<LValue, Argument, ldegree_, Evaluator> const&
+        left,
+    PolynomialInMonomialBasis<RValue, Argument, rdegree_, Evaluator> const&
+        right) {
+  return PolynomialInMonomialBasis<Product<LValue, RValue>, Argument,
+                                   ldegree_ + rdegree_, Evaluator>(
+             left.coefficients_ * right.coefficients_);
 }
 
 }  // namespace internal_polynomial
