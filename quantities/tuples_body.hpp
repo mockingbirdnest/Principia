@@ -4,6 +4,7 @@
 #include "quantities/tuples.hpp"
 
 #include <algorithm>
+#include <cstddef>
 #include <tuple>
 #include <utility>
 
@@ -52,9 +53,9 @@ struct ApplyGenerator {
   using Type = typename Result<std::make_index_sequence<result_size>>::Type;
 };
 
-template<typename Value, typename Argument, int n, int... orders>
+template<typename Value, typename Argument, int n, std::size_t... orders>
 struct DerivativesGenerator<Value, Argument, n,
-                            std::integer_sequence<int, orders...>>
+                            std::index_sequence<orders...>>
     : not_constructible {
   using Type = std::tuple<Derivative<Value, Argument, orders>...>;
 };

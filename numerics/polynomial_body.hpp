@@ -9,6 +9,7 @@
 #include "base/not_constructible.hpp"
 #include "geometry/cartesian_product.hpp"
 #include "geometry/serialization.hpp"
+#include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
@@ -23,6 +24,23 @@ using geometry::cartesian_product::operator*;
 using geometry::cartesian_product::operator/;
 using geometry::polynomial_ring::operator*;
 using quantities::Apply;
+
+template<typename Tuple, int order,
+         typename = std::make_index_sequence<std::tuple_size_v<Tuple> - order>>
+struct TupleDerivation;
+
+template<typename Tuple, int order, std::size_t... indices>
+struct TupleDerivation<Tuple, order, std::index_sequence<indices...>> {
+  static constexpr auto Derive(Tuple const& tuple);
+};
+
+template<typename Tuple, int order, std::size_t... indices>
+constexpr auto
+TupleDerivation<Tuple, order, std::index_sequence<indices...>>::Derive(
+    Tuple const& tuple) {
+  return std::make_tuple(FallingFactorial(order + indices, order) *
+                         std::get<order + indices>(tuple)...);
+}
 
 template<typename Tuple, int k, int size = std::tuple_size_v<Tuple>>
 struct TupleSerializer : not_constructible {
@@ -151,6 +169,19 @@ template<typename Value, typename Argument, int degree_,
 constexpr int
 PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::degree() const {
   return degree_;
+}
+
+template<typename Value, typename Argument, int degree_,
+         template<typename, typename, int> class Evaluator>
+template<int order>
+PolynomialInMonomialBasis<
+    Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
+PolynomialInMonomialBasis<Value, Argument, degree_, Evaluator>::
+Derivative() const {
+  return PolynomialInMonomialBasis<
+             quantities::Derivative<Value, Argument, order>, Argument,
+             degree_ - order, Evaluator>(
+             TupleDerivation<Coefficients, order>::Derive(coefficients_));
 }
 
 template<typename Value, typename Argument, int degree_,

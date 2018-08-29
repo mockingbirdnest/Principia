@@ -34,7 +34,7 @@ struct ApplyGenerator;
 // derivatives of |Value| with respect to |Argument|; the first element is
 // |Value|.
 template<typename Value, typename Argument, int n,
-         typename = std::make_integer_sequence<int, n>>
+         typename = std::make_index_sequence<n>>
 struct DerivativesGenerator;
 
 }  // namespace internal_tuples
