@@ -28,7 +28,7 @@ constexpr bool is_tuple_v = is_tuple<T>::value;
 // arrays, or pairs).  If the |Tuples| have different sizes, |void| is passed to
 // |Transform| for the missing element types.
 template<template<typename...> typename Transform, typename... Tuples>
-struct ApplyGenerator;
+class ApplyGenerator;
 
 // This struct has a |Type| member which is an n-element tuple of successive
 // derivatives of |Value| with respect to |Argument|; the first element is
