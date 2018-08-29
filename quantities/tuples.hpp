@@ -42,7 +42,7 @@ struct DerivativesGenerator;
 using internal_tuples::is_tuple;
 using internal_tuples::is_tuple_v;
 
-template<template<typename> class Transform, typename... Tuples>
+template<template<typename...> typename Transform, typename... Tuples>
 using Apply =
     typename internal_tuples::ApplyGenerator<Transform, Tuples...>::Type;
 

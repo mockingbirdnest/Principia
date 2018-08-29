@@ -35,14 +35,13 @@ struct TupleElementOrVoid<Tuple, index, true> {
 
 template<template<typename...> typename Transform,
          typename... Tuples>
-struct ApplyGenerator {
+class ApplyGenerator {
   template<std::size_t index>
   using ResultElement =
       Transform<typename TupleElementOrVoid<Tuples, index>::Type...>;
 
   template<typename index_sequence>
   struct Result;
-
   template<std::size_t... indices>
   struct Result<std::index_sequence<indices...>> {
     using Type = std::tuple<ResultElement<indices>...>;
@@ -50,6 +49,7 @@ struct ApplyGenerator {
 
   static constexpr std::size_t result_size = std::max({std::tuple_size_v<Tuples>...});
 
+ public:
   using Type = typename Result<std::make_index_sequence<result_size>>::Type;
 };
 
