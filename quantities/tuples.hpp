@@ -24,22 +24,11 @@ template<typename T>
 constexpr bool is_tuple_v = is_tuple<T>::value;
 
 // This struct has a |Type| member which is a tuple obtained by applying
-// |Transform| to each element type in |Tuple| (which must be a tuple or an
-// array or a pair).
-template<template<typename> class Transform,
-         typename Tuple,
-         typename = std::make_integer_sequence<int, std::tuple_size_v<Tuple>>>
+// |Transform| to corresponding elements in |Tuples| (which may be tuples,
+// arrays, or pairs).  If the |Tuples| have different sizes, |void| is passed to
+// |Transform| for the missing element types.
+template<template<typename...> typename Transform, typename... Tuples>
 struct ApplyGenerator;
-
-// Same as above, but |Transform| is applied to corresponding pairs of element
-// types from |LTuple| and |RTuple|.  If the tuples have different sizes, |void|
-// is passed to |Transform| for the missing element types.
-template<template<typename, typename> class Transform,
-         typename LTuple, typename RTuple,
-         typename = std::make_integer_sequence<
-             int,
-             std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
-struct Apply2Generator;
 
 // This struct has a |Type| member which is an n-element tuple of successive
 // derivatives of |Value| with respect to |Argument|; the first element is
@@ -53,13 +42,9 @@ struct DerivativesGenerator;
 using internal_tuples::is_tuple;
 using internal_tuples::is_tuple_v;
 
-template<template<typename> class Transform, typename Tuple>
-using Apply = typename internal_tuples::ApplyGenerator<Transform, Tuple>::Type;
-
-template<template<typename, typename> class Transform,
-         typename LTuple, typename RTuple>
-using Apply2 =
-    typename internal_tuples::Apply2Generator<Transform, LTuple, RTuple>::Type;
+template<template<typename> class Transform, typename... Tuples>
+using Apply =
+    typename internal_tuples::ApplyGenerator<Transform, Tuples...>::Type;
 
 template<typename Value, typename Argument, int n>
 using Derivatives =

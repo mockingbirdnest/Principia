@@ -18,34 +18,38 @@ using base::not_constructible;
 // A helper for getting the type of an element even for an index that is not in
 // range.  In that case, the member Type is defined to be void.  Doing this with
 // conditional_t is awkward.
-template<typename Tuple, int index,
+template<typename Tuple, std::size_t index,
          bool in_range = (index < std::tuple_size_v<Tuple>)>
 struct TupleElementOrVoid;
 
-template<typename Tuple, int index>
+template<typename Tuple, std::size_t index>
 struct TupleElementOrVoid<Tuple, index, false> {
   using Type = void;
 };
 
-template<typename Tuple, int index>
+template<typename Tuple, std::size_t index>
 struct TupleElementOrVoid<Tuple, index, true> {
   using Type = std::tuple_element_t<index, Tuple>;
 };
 
-template<template<typename> class Transform, typename Tuple, int... indices>
-struct ApplyGenerator<Transform, Tuple, std::integer_sequence<int, indices...>>
-    : not_constructible {
-  using Type = std::tuple<Transform<std::tuple_element_t<indices, Tuple>>...>;
-};
+template<template<typename...> typename Transform,
+         typename... Tuples>
+struct ApplyGenerator {
+  template<std::size_t index>
+  using ResultElement =
+      Transform<typename TupleElementOrVoid<Tuples, index>::Type...>;
 
-template<template<typename, typename> class Transform,
-         typename LTuple, typename RTuple, int... indices>
-struct Apply2Generator<Transform, LTuple, RTuple,
-                       std::integer_sequence<int, indices...>>
-    : not_constructible {
-  using Type = std::tuple<
-      Transform<typename TupleElementOrVoid<LTuple, indices>::Type,
-                typename TupleElementOrVoid<RTuple, indices>::Type>...>;
+  template<typename index_sequence>
+  struct Result;
+
+  template<std::size_t... indices>
+  struct Result<std::index_sequence<indices...>> {
+    using Type = std::tuple<ResultElement<indices>...>;
+  };
+
+  static constexpr std::size_t result_size = std::max({std::tuple_size_v<Tuples>...});
+
+  using Type = typename Result<std::make_index_sequence<result_size>>::Type;
 };
 
 template<typename Value, typename Argument, int n, int... orders>
