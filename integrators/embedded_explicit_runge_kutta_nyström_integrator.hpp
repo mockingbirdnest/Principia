@@ -43,6 +43,11 @@ using quantities::Variation;
 //   b′ for the velocity weights of the low-order method.
 // See Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, for an example.
+// Note that the velocity weights b′ are sometimes called d instead, e.g.,
+// المكاوى and رحمو‎ (2003), A new optimized non-FSAL embedded
+// Runge–Kutta–Nystrom algorithm of orders 6 and 4 in six stages, or
+// Sommeijer (1993), Explicit, high-order Runge-Kutta-Nyström methods for
+// parallel computers.
 // In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
 // the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ
 // also appear in the litterature.
