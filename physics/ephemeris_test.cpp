@@ -742,12 +742,13 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   // The small residual in x comes from the fact that the cosine of the
   // declination (90 degrees) is not exactly zero, so the axis of our Earth is
-  // slightly tilted.  This greatly annoys the elephant.
+  // slightly tilted.  Also, the geopotential is not rotationally symmetrical,
+  // so there is a small residual in y too.  This greatly annoys the elephant.
   EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               VanishesBefore(1 * Metre, 0));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AlmostEquals(duration * v_elephant_y, 0));
+              VanishesBefore(1 * Metre, 0));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           earth_polar_radius), 8e-7);
 
@@ -755,7 +756,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
               VanishesBefore(1 * Metre / Second / Second, 0));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
-              AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+              VanishesBefore(1 * Metre / Second / Second, 0));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
 }
