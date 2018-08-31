@@ -6,8 +6,8 @@
 #ifndef PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
 #include "integrators/integrators.hpp"
 #else
-#ifndef PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
-#define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
+#ifndef PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_GENERALIZED_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
+#define PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_GENERALIZED_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
 
 #include <functional>
 #include <vector>
@@ -22,7 +22,7 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_runge_kutta_nyström_integrator {
+namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {
 
 using base::not_null;
 using base::Status;
@@ -32,44 +32,42 @@ using numerics::FixedVector;
 using quantities::Time;
 using quantities::Variation;
 
-// This class solves ordinary differential equations of the form q″ = f(q, t)
-// using an embedded Runge-Kutta-Nyström method.  We follow the standard
-// conventions for the coefficients, i.e.,
+// This class solves ordinary differential equations of the form
+//   q″ = f(q, q′, t)
+// using an embedded generalized Runge-Kutta-Nyström (RKNG) method.  We follow
+// the following conventions for the coefficients:
 //   c for the nodes;
 //   a for the position Runge-Kutta matrix;
+//   a′ for the velocity Runge-Kutta matrix;
 //   b̂ for the position weights of the high-order method;
 //   b̂′ for the velocity weights of the high-order method;
 //   b for the position weights of the low-order method;
 //   b′ for the velocity weights of the low-order method.
-// See Dormand, El-Mikkawy and Prince (1986),
-// Families of Runge-Kutta-Nyström formulae, for an example.
-// Note that other notations exist for the weights:
-// المكاوى and رحمو‎ (2003), A new optimized non-FSAL embedded
-// Runge–Kutta–Nystrom algorithm of orders 6 and 4 in six stages, and
-// Sommeijer (1993), Explicit, high-order Runge-Kutta-Nyström methods for
-// parallel computers, call the the velocity weights d instead of b′,
-// and Alonso-Mallo, Cano, and Moreta (2005), Stability of Runge–Kutta–Nyström
-// methods, call the position and velocity weights β and b instead of b and b′.
-// Further, Dormand (1996), Numerical Methods for Differential Equations: A
-// Computational Approach, uses ā for the Runge-Kutta matrix, and b̄ and b for
-// the position and velocity weights.
-
-// In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
-// the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ
-// also appear in the litterature.
-// Since we are interested in physical applications, we call the solution q and
-// its derivative v, rather than the more common y and y′ found in the
-// literature on Runge-Kutta-Nyström methods.
-// The order of the template parameters follow the notation of Dormand and
-// Prince, whose RKNq(p)sF has higher order q, lower order p, comprises
-// s stages, and has the first-same-as-last property.
+// This is a common notation, used, e.g., by Fine (1987), Low Order Practical
+// Runge-Kutta-Nyström Methods.  This notation is consistent with the one we use
+// for Runge-Kutta-Nyström methods (which have no a′).
+// Alternative notations use a and b for the velocity Runge Kutta matrix and
+// weights: Murua (1998), Runge-Kutta-Nyström methods for general second Order
+// ODEs with application to multi-body Systems, uses (c, α, a, β̂, b̂, β, b),
+// and Dormand (1996), Numerical Methods for Differential Equations: A
+// Computational Approach, uses (c, ā, a, b̄̂, b̂, b̄, b).
+// These alternative notations are more consistent with the usual notation for
+// Runge-Kutta methods, as a Runge-Kutta method with nodes cᵢ, Runge-Kutta
+// matrix aⁱⱼ, and weights bᵢ, applied to the 1st order ODE
+// (q, q′)′ = (q′, f(q, q′, t)), is equivalent to a Runge-Kutta-Nyström
+// Generalized method with, using Einstein summation convention,
+//   nodes cᵢ;
+//   position Runge-Kutta matrix aⁱₖaᵏⱼ;
+//   velocity Runge-Kutta matrix aⁱⱼ;
+//   position weights bₖaᵏᵢ;
+//   velocity weights bᵢ.
 
 template<typename Method, typename Position>
-class EmbeddedExplicitRungeKuttaNyströmIntegrator
+class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<
-                 SpecialSecondOrderDifferentialEquation<Position>> {
+                 SecondOrderDifferentialEquation<Position>> {
  public:
-  using ODE = SpecialSecondOrderDifferentialEquation<Position>;
+  using ODE = SecondOrderDifferentialEquation<Position>;
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -78,21 +76,21 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   static constexpr auto lower_order = Method::lower_order;
   static constexpr auto first_same_as_last = Method::first_same_as_last;
 
-  EmbeddedExplicitRungeKuttaNyströmIntegrator();
+  EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 
-  EmbeddedExplicitRungeKuttaNyströmIntegrator(
+  EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
-  EmbeddedExplicitRungeKuttaNyströmIntegrator(
+  EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
-  EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
+  EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
-  EmbeddedExplicitRungeKuttaNyströmIntegrator& operator=(
+  EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator& operator=(
       EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
     Status Solve(Instant const& t_final) override;
-    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator()
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const& integrator()
         const override;
     not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> Clone()
         const override;
@@ -107,8 +105,8 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
              Parameters const& adaptive_step_size,
              EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
 
-    EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator_;
-    friend class EmbeddedExplicitRungeKuttaNyströmIntegrator;
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const& integrator_;
+    friend class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
   };
 
   not_null<std::unique_ptr<typename Integrator<ODE>::Instance>> NewInstance(
@@ -139,7 +137,7 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   static constexpr auto b_prime_ = Method::b_prime;
 };
 
-}  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
 
 template<typename Method, typename Position>
 internal_embedded_explicit_runge_kutta_nyström_integrator::
@@ -149,7 +147,7 @@ EmbeddedExplicitRungeKuttaNyströmIntegrator();
 }  // namespace integrators
 }  // namespace principia
 
-#include "integrators/embedded_explicit_runge_kutta_nyström_integrator_body.hpp"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator_body.hpp"
 
-#endif  // PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
+#endif  // PRINCIPIA_INTEGRATORS_EMBEDDED_EXPLICIT_GENERALIZED_RUNGE_KUTTA_NYSTRÖM_INTEGRATOR_HPP_  // NOLINT(whitespace/line_length)
 #endif  // PRINCIPIA_INTEGRATORS_INTEGRATORS_HPP_
