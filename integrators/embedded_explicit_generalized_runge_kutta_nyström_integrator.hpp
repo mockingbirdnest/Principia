@@ -65,9 +65,9 @@ using quantities::Variation;
 template<typename Method, typename Position>
 class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<
-                 SecondOrderDifferentialEquation<Position>> {
+                 ExplicitSecondOrderDifferentialEquation<Position>> {
  public:
-  using ODE = SecondOrderDifferentialEquation<Position>;
+  using ODE = ExplicitSecondOrderDifferentialEquation<Position>;
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -79,13 +79,13 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
   EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 
   EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator&&) = delete;
   EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator const&) = delete;
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const&) = delete;
   EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator& operator=(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator&&) = delete;
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator&&) = delete;
 
   class Instance : public AdaptiveStepSizeIntegrator<ODE>::Instance {
    public:
@@ -103,7 +103,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
              AppendState const& append_state,
              ToleranceToErrorRatio const& tolerance_to_error_ratio,
              Parameters const& adaptive_step_size,
-             EmbeddedExplicitRungeKuttaNyströmIntegrator const& integrator);
+             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const& integrator);
 
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator const& integrator_;
     friend class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
