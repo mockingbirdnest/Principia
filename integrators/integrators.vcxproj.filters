@@ -77,6 +77,9 @@
     <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp">
