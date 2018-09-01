@@ -33,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp" />
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />

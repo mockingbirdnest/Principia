@@ -219,6 +219,8 @@ struct IntegrationProblem final {
 
 using internal_ordinary_differential_equations::
     DecomposableFirstOrderDifferentialEquation;
+using internal_ordinary_differential_equations::
+    ExplicitSecondOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::IntegrationProblem;
 using internal_ordinary_differential_equations::
     SpecialSecondOrderDifferentialEquation;

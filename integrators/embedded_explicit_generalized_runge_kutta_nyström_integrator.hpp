@@ -69,9 +69,9 @@ using quantities::Variation;
 template<typename Method, typename Position>
 class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
     : public AdaptiveStepSizeIntegrator<
-                 ExplicitSecondOrderDifferentialEquation<Position>> {
+                 ExplicitSecondOrderOrdinaryDifferentialEquation<Position>> {
  public:
-  using ODE = ExplicitSecondOrderDifferentialEquation<Position>;
+  using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<Position>;
   using typename Integrator<ODE>::AppendState;
   using typename AdaptiveStepSizeIntegrator<ODE>::Parameters;
   using typename AdaptiveStepSizeIntegrator<ODE>::ToleranceToErrorRatio;
@@ -145,7 +145,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
 
 template<typename Method, typename Position>
-internal_embedded_explicit_runge_kutta_nyström_integrator::
+internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
     EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position> const&
 EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 

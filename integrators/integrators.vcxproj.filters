@@ -94,5 +94,8 @@
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
