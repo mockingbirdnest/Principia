@@ -47,7 +47,8 @@ class ApplyGenerator {
     using Type = std::tuple<ResultElement<indices>...>;
   };
 
-  static constexpr std::size_t result_size = std::max({std::tuple_size_v<Tuples>...});
+  static constexpr std::size_t result_size =
+      std::max({std::tuple_size_v<Tuples>...});
 
  public:
   using Type = typename Result<std::make_index_sequence<result_size>>::Type;
