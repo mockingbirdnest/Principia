@@ -33,21 +33,25 @@ struct TupleElementOrVoid<Tuple, index, true> {
   using Type = std::tuple_element_t<index, Tuple>;
 };
 
-template<template<typename> class Transform,
-         typename Tuple, std::size_t... indices>
-struct ApplyGenerator<Transform, Tuple, std::index_sequence<indices...>>
-    : not_constructible {
-  using Type = std::tuple<Transform<std::tuple_element_t<indices, Tuple>>...>;
-};
+template<template<typename...> typename Transform,
+         typename... Tuples>
+class ApplyGenerator {
+  template<std::size_t index>
+  using ResultElement =
+      Transform<typename TupleElementOrVoid<Tuples, index>::Type...>;
 
-template<template<typename, typename> class Transform,
-         typename LTuple, typename RTuple, std::size_t... indices>
-struct Apply2Generator<Transform, LTuple, RTuple,
-                       std::index_sequence<indices...>>
-    : not_constructible {
-  using Type = std::tuple<
-      Transform<typename TupleElementOrVoid<LTuple, indices>::Type,
-                typename TupleElementOrVoid<RTuple, indices>::Type>...>;
+  template<typename index_sequence>
+  struct Result;
+  template<std::size_t... indices>
+  struct Result<std::index_sequence<indices...>> {
+    using Type = std::tuple<ResultElement<indices>...>;
+  };
+
+  static constexpr std::size_t result_size =
+      std::max({std::tuple_size_v<Tuples>...});
+
+ public:
+  using Type = typename Result<std::make_index_sequence<result_size>>::Type;
 };
 
 template<typename Value, typename Argument, int n, std::size_t... orders>

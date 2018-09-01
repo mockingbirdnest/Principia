@@ -17,7 +17,6 @@ namespace geometry {
 namespace internal_cartesian_product {
 
 using quantities::Apply;
-using quantities::Apply2;
 
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<
@@ -28,7 +27,7 @@ template<typename LTuple, typename RTuple, std::size_t... indices>
 class CartesianProductAdditiveGroup<LTuple, RTuple,
                                     std::index_sequence<indices...>> {
   // The types of the result of addition and subtraction, with suitable
-  // specializations for the void case of Apply2.
+  // specializations for the void case of Apply.
   template<typename L, typename R>
   struct TypesGenerator {
     using Sum = quantities::Sum<L, R>;
@@ -52,21 +51,21 @@ class CartesianProductAdditiveGroup<LTuple, RTuple,
   using Difference = typename TypesGenerator<L, R>::Difference;
 
  public:
-  FORCE_INLINE(static constexpr) Apply2<Sum, LTuple, RTuple> Add(
+  FORCE_INLINE(static constexpr) Apply<Sum, LTuple, RTuple> Add(
       LTuple const& left,
       RTuple const& right);
-  FORCE_INLINE(static constexpr) Apply2<Difference, LTuple, RTuple> Subtract(
+  FORCE_INLINE(static constexpr) Apply<Difference, LTuple, RTuple> Subtract(
       LTuple const& left,
       RTuple const& right);
 
  private:
   // Utilities for adding/subtracting elements at the given index.
   template<std::size_t index>
-  static constexpr std::tuple_element_t<index, Apply2<Sum, LTuple, RTuple>>
+  static constexpr std::tuple_element_t<index, Apply<Sum, LTuple, RTuple>>
   AddElement(LTuple const& left, RTuple const& right);
   template<std::size_t index>
   static constexpr std::tuple_element_t<index,
-                                        Apply2<Difference, LTuple, RTuple>>
+                                        Apply<Difference, LTuple, RTuple>>
   SubtractElement(LTuple const& left, RTuple const& right);
 };
 
@@ -75,7 +74,7 @@ constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
     std::index_sequence<indices...>>::Add(LTuple const& left,
                                           RTuple const& right)
-    -> Apply2<Sum, LTuple, RTuple> {
+    -> Apply<Sum, LTuple, RTuple> {
   return {AddElement<indices>(left, right)...};
 }
 
@@ -84,7 +83,7 @@ constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
     std::index_sequence<indices...>>::Subtract(LTuple const& left,
                                                RTuple const& right)
-    -> Apply2<Difference, LTuple, RTuple> {
+    -> Apply<Difference, LTuple, RTuple> {
   return {SubtractElement<indices>(left, right)...};
 }
 
@@ -94,7 +93,7 @@ constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
     std::index_sequence<indices...>>::AddElement(LTuple const& left,
                                                  RTuple const& right)
-    -> std::tuple_element_t<index, Apply2<Sum, LTuple, RTuple>> {
+    -> std::tuple_element_t<index, Apply<Sum, LTuple, RTuple>> {
   if constexpr (index < std::min(std::tuple_size_v<LTuple>,
                                  std::tuple_size_v<RTuple>)) {
     return std::get<index>(left) + std::get<index>(right);
@@ -111,7 +110,7 @@ constexpr auto CartesianProductAdditiveGroup<
     LTuple, RTuple,
     std::index_sequence<indices...>>::SubtractElement(LTuple const& left,
                                                       RTuple const& right)
-    -> std::tuple_element_t<index, Apply2<Difference, LTuple, RTuple>> {
+    -> std::tuple_element_t<index, Apply<Difference, LTuple, RTuple>> {
   if constexpr (index < std::min(std::tuple_size_v<LTuple>,
                                  std::tuple_size_v<RTuple>)) {
     return std::get<index>(left) - std::get<index>(right);
