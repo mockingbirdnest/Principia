@@ -94,7 +94,7 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
       Angle const mλ = m * λ;
       double const sin_mλ = Sin(mλ);
       double const cos_mλ = Cos(mλ);
-      auto const longitudinal_factor = Cnm * cos_m λ +Snm * sin_m λ ;
+      auto const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
       auto const longitudinal_factor_derivative =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
 
