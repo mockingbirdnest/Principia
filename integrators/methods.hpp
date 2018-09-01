@@ -29,6 +29,21 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr FixedVector<double, stages> bʹ = ...;
 };
 
+struct EmbeddedExplicitGeneralizedRungeKuttaNyström : EmbeddedExplicitRungeKuttaNyström {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+  // static constexpr FixedVector<double, stages> bʹ = ...;
+};
+
 struct SymmetricLinearMultistep : not_constructible {
   static constexpr int Half(int const order) {
     return order / 2 + 1;
