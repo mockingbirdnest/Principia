@@ -58,6 +58,16 @@ class GeopotentialTest : public ::testing::Test {
     return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
   }
 
+  Vector<Quotient<Acceleration, GravitationalParameter>, World>
+  FullSphericalHarmonicsAcceleration(Geopotential<World> const& geopotential,
+                                     Instant const& t,
+                                     Displacement<World> const& r) {
+    auto const r² = r.Norm²();
+    auto const one_over_r³ = 1.0 / (r² * r.Norm());
+    return geopotential.FullSphericalHarmonicsAcceleration(
+        t, r, r², one_over_r³);
+  }
+
   // The axis of rotation is along the z axis for ease of testing.
   AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
   Angle const right_ascension_of_pole_ = 0 * Degree;
@@ -187,6 +197,30 @@ TEST_F(GeopotentialTest, J3) {
     EXPECT_THAT(acceleration.coordinates().z, Gt(0 * Pow<-2>(Metre)));
   }
 }
+
+TEST_F(GeopotentialTest, Full) {
+  OblateBody<World> const body =
+      OblateBody<World>(
+          massive_body_parameters_,
+          rotating_body_parameters_,
+          OblateBody<World>::Parameters(
+              6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
+              -5 * SIUnit<Degree3SphericalHarmonicCoefficient>()));
+  Geopotential<World> const geopotential(&body);
+
+  // The acceleration at a point located on the axis is along the axis.
+  {
+    auto const acceleration = FullSphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}));
+    EXPECT_THAT(acceleration,
+                Componentwise(VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              VanishesBefore(1 * Pow<-2>(Metre), 0),
+                              An<Exponentiation<Length, -2>>()));
+  }}
 
 }  // namespace internal_geopotential
 }  // namespace physics

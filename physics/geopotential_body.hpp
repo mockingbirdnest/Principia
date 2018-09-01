@@ -2,14 +2,22 @@
 
 #include "physics/geopotential.hpp"
 
+#include <cmath>
+
+#include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
+#include "quantities/si.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
 using geometry::InnerProduct;
+using quantities::Cos;
 using quantities::Length;
+using quantities::Sqrt;
+using quantities::Sin;
+using quantities::SIUnit;
 
 template<typename Frame>
 Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body)
@@ -40,6 +48,66 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
   }
   return acceleration;
 }
+
+template<typename Frame>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
+    Instant const& t,
+    Displacement<Frame> const& r,
+    Square<Length> const& r²,
+    Exponentiation<Length, -3> const& one_over_r³) const {
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration;
+
+  auto const from_surface_frame = body_->FromSurfaceFrame<SurfaceFrame>(t);
+  UnitVector const x = from_surface_frame(x_);
+  UnitVector const y = from_surface_frame(y_);
+  UnitVector const& z = body_->polar_axis();
+
+  Length const rx = InnerProduct(r, x);
+  Length const ry = InnerProduct(r, y);
+  Length const rz = InnerProduct(r, z);
+
+  Length const r_norm = r.Norm();
+  double const sin_β = rz / r_norm;
+  double const cos_β = Sqrt(r² - rz * rz) / r_norm;
+  double const one_over_cos²_β = r² / (r² - rz * rz);
+  Angle const λ = SIUnit<Angle>() *
+                  std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
+
+  auto radial_factor = one_over_r³;
+  for (int n = 2; n < 10; ++n) {
+    auto radial_factor_derivative = -(n + 1) * radial_factor / r²;
+
+    for (int m = 0; m <= n; ++m) {
+      auto const latitudinal_factor = AssociatedLegendrePolynomial(n, m, sin_β);
+      auto const latitudinal_factor_derivative =
+          one_over_cos²_β *
+          (cos_β * AssociatedLegendrePolynomial(n, m + 1, sin_β) +
+           m * sin_β * AssociatedLegendrePolynomial(m, n, sin_β)) *
+          (r * rz * one_over_r³- z / r_norm);
+
+      auto const longitudinal_factor =
+          Cnm * Cos(m * λ) + Snm * Sin(m * λ);
+      auto const longitudinal_factor_derivative =
+          m * (Snm * Cos(m * λ) - Cnm * Sin(m * λ)) *
+              (rx * y - ry * x) / (r² - rz * rz);
+
+      acceleration +=
+          radial_factor_derivative * latitudinal_factor * longitudinal_factor +
+          radial_factor * latitudinal_factor_derivative * longitudinal_factor +
+          radial_factor * latitudinal_factor * longitudinal_factor_derivative;
+    }
+
+    radial_factor /= r_norm;
+  }
+
+  return acceleration;
+}
+
+template<typename Frame>
+double Geopotential<Frame>::AssociatedLegendrePolynomial(int n,
+                                                         int m,
+                                                         double argument) {}
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -74,16 +142,16 @@ Geopotential<Frame>::Degree2SectoralAcceleration(
   auto const s22_over_r⁵ = body_->s22_over_μ() * one_over_r³ * one_over_r²;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
       c22_effect = 6 * c22_over_r⁵ *
-                   (-r_reference_projection * reference +
-                    r_bireference_projection * bireference +
+                   (-r_bireference_projection * bireference +
+                    r_reference_projection * reference +
                     2.5 *
-                        (r_reference_projection * r_reference_projection -
-                         r_bireference_projection * r_bireference_projection) *
+                        (r_bireference_projection * r_bireference_projection -
+                         r_reference_projection * r_reference_projection) *
                         one_over_r² * r);
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      s22_effect = -6 * s22_over_r⁵ *
-                   (r_bireference_projection * reference +
-                    r_reference_projection * bireference -
+      s22_effect = 6 * s22_over_r⁵ *
+                   (r_reference_projection * bireference +
+                    r_bireference_projection * reference -
                     5 * r_reference_projection * r_bireference_projection *
                         one_over_r² * r);
   return c22_effect + s22_effect;
@@ -104,10 +172,10 @@ Geopotential<Frame>::Degree3ZonalAcceleration(
   auto const j3_over_r⁷ =
       body_->j3_over_μ() * one_over_r³ * one_over_r²* one_over_r²;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      axis_effect = 1.5 * j3_over_r⁷ * (5 * r_axis_projection² - r²) * axis;
+      axis_effect = 1.5 * j3_over_r⁷ * (r² - 5 * r_axis_projection²) * axis;
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
       radial_effect = j3_over_r⁷ * r_axis_projection *
-                      (7.5 - 17.5 * r_axis_projection² * one_over_r²) * r;
+                      (-7.5 + 17.5 * r_axis_projection² * one_over_r²) * r;
   return axis_effect + radial_effect;
 }
 

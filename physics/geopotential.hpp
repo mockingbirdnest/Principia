@@ -34,6 +34,13 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  FullSphericalHarmonicsAcceleration(
+      Instant const& t,
+      Displacement<Frame> const& r,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
+
  private:
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
@@ -41,6 +48,9 @@ class Geopotential {
   static const Vector<double, SurfaceFrame> y_;
 
   using UnitVector = Vector<double, Frame>;
+
+  //TODO(phl): Comment
+  static double AssociatedLegendrePolynomial(int n, int m, double argument);
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here
