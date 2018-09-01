@@ -80,7 +80,7 @@ constexpr auto CartesianProductAdditiveGroup<
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
 constexpr auto CartesianProductAdditiveGroup<
-    LTuple, RTuple
+    LTuple, RTuple,
     std::index_sequence<indices...>>::Subtract(LTuple const& left,
                                                RTuple const& right)
     -> Apply<Difference, LTuple, RTuple> {
