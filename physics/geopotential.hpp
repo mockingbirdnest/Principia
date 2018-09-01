@@ -76,7 +76,7 @@ class Geopotential {
                            Exponentiation<Length, -2> const& one_over_r²,
                            Exponentiation<Length, -3> const& one_over_r³) const;
 
-  not_null<OblateBody<Frame> const*> const body_;
+  not_null<OblateBody<Frame> const*> body_;
 };
 
 }  // namespace internal_geopotential

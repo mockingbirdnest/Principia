@@ -31,6 +31,7 @@ namespace physics {
 namespace internal_ephemeris {
 
 using astronomy::J2000;
+using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
@@ -63,6 +64,13 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
+#if defined(_DEBUG)
+# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
+#else
+# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
+#endif
+
+#if !PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
 // If j is a unit vector along the axis of rotation, and r a vector from the
 // center of |body| to some point in space, the acceleration computed here is:
 //
@@ -95,6 +103,7 @@ Degree2ZonalAcceleration(OblateBody<Frame> const& body,
             7.5 * r_axis_projection * r_axis_projection * one_over_r²)) * r;
   return axis_effect + radial_effect;
 }
+#endif
 
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
@@ -253,6 +262,9 @@ Ephemeris<Frame>::Ephemeris(
     CHECK_OK(trajectory->Append(initial_time, degrees_of_freedom));
 
     if (body->is_oblate()) {
+      geopotentials_.emplace(
+          geopotentials_.cbegin(),
+          dynamic_cast_not_null<OblateBody<Frame> const*>(body.get()));
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
       trajectories_.insert(trajectories_.begin(), trajectory);
@@ -580,64 +592,79 @@ ComputeGravitationalAccelerationOnMassiveBody(
     Instant const& t) const {
   bool const body_is_oblate = body->is_oblate();
 
-  // |reodered_bodies| is |bodies_| with |body| moved to position 0.  Index 0 in
-  // |positions| and |accelerations| alos corresponds to |body|, the other
-  // indices to the other bodies in the same order as in |bodies| and |bodies_|.
-  std::vector<not_null<MassiveBody const*>> reodered_bodies;
   std::vector<Position<Frame>> positions;
   std::vector<Vector<Acceleration, Frame>> accelerations(bodies_.size());
-
-  // Make room for |body|.
-  reodered_bodies.push_back(body);
-  positions.resize(1);
+  int b1 = -1;
 
   // Evaluate the |positions|.
+  positions.reserve(bodies_.size());
   for (int b = 0; b < bodies_.size(); ++b) {
     auto const& current_body = bodies_[b];
     auto const& current_body_trajectory = trajectories_[b];
     if (current_body.get() == body) {
-      positions[0] =
-          current_body_trajectory->EvaluatePosition(t);
-    } else {
-      reodered_bodies.push_back(current_body.get());
-      positions.push_back(
-          current_body_trajectory->EvaluatePosition(t));
+      CHECK_EQ(-1, b1);
+      b1 = b;
     }
+    positions.push_back(current_body_trajectory->EvaluatePosition(t));
   }
+  CHECK_LE(0, b1);
 
   if (body_is_oblate) {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/true>(
-        /*body1=*/*body, /*b1=*/0,
-        /*bodies2=*/reodered_bodies,
-        /*b2_begin=*/1, /*b2_end=*/number_of_oblate_bodies_,
-        positions, accelerations);
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/true,
+        /*body2_is_oblate=*/true>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
-        /*body1=*/*body, /*b1=*/0,
-        /*bodies2=*/reodered_bodies,
-        /*b2_begin=*/number_of_oblate_bodies_, /*b2_end=*/bodies_.size(),
-        positions, accelerations);
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
   } else {
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/true>(
-        /*body1=*/*body, /*b1=*/0,
-        /*bodies2=*/reodered_bodies,
-        /*b2_begin=*/1, /*b2_end=*/number_of_oblate_bodies_ + 1,
-        positions, accelerations);
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/0, /*b2_end=*/number_of_oblate_bodies_,
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
-        /*body1=*/*body, /*b1=*/0,
-        /*bodies2=*/reodered_bodies,
-        /*b2_begin=*/number_of_oblate_bodies_ + 1, /*b2_end=*/bodies_.size(),
-        positions, accelerations);
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/number_of_oblate_bodies_,
+        /*b2_end=*/b1,
+        positions, accelerations, geopotentials_);
+    ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
+        /*body1_is_oblate=*/false,
+        /*body2_is_oblate=*/false>(
+        t,
+        /*body1=*/*body, b1,
+        /*bodies2=*/bodies_,
+        /*b2_begin=*/b1 + 1,
+        /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
+        positions, accelerations, geopotentials_);
   }
 
-  return accelerations[0];
+  return accelerations[b1];
 }
 
 template<typename Frame>
@@ -898,13 +925,15 @@ template<bool body1_is_oblate,
          typename MassiveBodyConstPtr>
 void Ephemeris<Frame>::
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
+        Instant const& t,
         MassiveBody const& body1,
         std::size_t const b1,
         std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
         std::size_t const b2_begin,
         std::size_t const b2_end,
         std::vector<Position<Frame>> const& positions,
-        std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        std::vector<Vector<Acceleration, Frame>>& accelerations,
+        std::vector<Geopotential<Frame>> const& geopotentials) {
   Position<Frame> const& position_of_b1 = positions[b1];
   Vector<Acceleration, Frame>& acceleration_on_b1 = accelerations[b1];
   GravitationalParameter const& μ1 = body1.gravitational_parameter();
@@ -936,11 +965,19 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect1 =
+#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
+                geopotentials[b1].SphericalHarmonicsAcceleration(
+                    t,
+                    -Δq,
+                    Δq²,
+                    one_over_Δq³);
+#else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
                     one_over_Δq²,
                     one_over_Δq³);
+#endif
         acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
         acceleration_on_b2 += μ1 * degree_2_zonal_effect1;
       }
@@ -948,11 +985,19 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect2 =
+#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
+                geopotentials[b2].SphericalHarmonicsAcceleration(
+                    t,
+                    Δq,
+                    Δq²,
+                    one_over_Δq³);
+#else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
                     one_over_Δq²,
                     one_over_Δq³);
+#endif
         acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
         acceleration_on_b2 -= μ1 * degree_2_zonal_effect2;
       }
@@ -994,11 +1039,19 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           degree_2_zonal_effect1 =
+#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
+              geopotentials_[b1].SphericalHarmonicsAcceleration(
+                  t,
+                  -Δq,
+                  Δq²,
+                  one_over_Δq³);
+#else
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
                   one_over_Δq²,
                   one_over_Δq³);
+#endif
       accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
@@ -1017,21 +1070,21 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/true>(
+        t,
         body1, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/true,
         /*body2_is_oblate=*/false>(
+        t,
         body1, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/number_of_oblate_bodies_,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
   }
   for (std::size_t b1 = number_of_oblate_bodies_;
        b1 < number_of_oblate_bodies_ +
@@ -1041,12 +1094,12 @@ void Ephemeris<Frame>::ComputeMassiveBodiesGravitationalAccelerations(
     ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies<
         /*body1_is_oblate=*/false,
         /*body2_is_oblate=*/false>(
+        t,
         body1, b1,
         /*bodies2=*/bodies_,
         /*b2_begin=*/b1 + 1,
         /*b2_end=*/number_of_oblate_bodies_ + number_of_spherical_bodies_,
-        positions,
-        accelerations);
+        positions, accelerations, geopotentials_);
   }
 }
 

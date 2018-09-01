@@ -40,6 +40,12 @@ struct MatcherParameterType<U<T>> : not_constructible {
   using type = typename MatcherParameterType<T>::type;
 };
 
+template<typename T1, typename T2, template<typename, typename> class U>
+struct MatcherParameterType<U<T1, T2>> : not_constructible {
+  // TODO(phl): Why T1?
+  using type = typename MatcherParameterType<T1>::type;
+};
+
 // |type| must be a type for which we implement MatchAndExplain.  We don't care
 // which one exactly, since |MatcherParameterType| is only used for describing
 // the matchers.  So we pick the simplest, |R3Element|.

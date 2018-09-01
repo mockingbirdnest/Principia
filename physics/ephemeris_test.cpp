@@ -29,10 +29,10 @@
 #include "serialization/geometry.pb.h"
 #include "serialization/physics.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/matchers.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
-#include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
 namespace physics {
@@ -76,10 +76,10 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::AbsoluteError;
 using testing_utilities::EqualsProto;
+using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::SolarSystemFactory;
 using testing_utilities::StatusIs;
-using testing_utilities::VanishesBefore;
 using ::testing::AnyOf;
 using ::testing::Eq;
 using ::testing::Gt;
@@ -742,20 +742,22 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
 
   // The small residual in x comes from the fact that the cosine of the
   // declination (90 degrees) is not exactly zero, so the axis of our Earth is
-  // slightly tilted.  This greatly annoys the elephant.
+  // slightly tilted.  Also, the geopotential is not rotationally symmetrical,
+  // so there is a tiny residual in y too.  This greatly annoys the elephant.
   EXPECT_THAT(elephant_positions.size(), Eq(8));
   EXPECT_THAT(elephant_positions.back().coordinates().x,
-              VanishesBefore(1 * Metre, 0));
+              IsNear(-9.8e-19 * Metre));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AlmostEquals(duration * v_elephant_y, 0));
+              AnyOf(IsNear(-2.3e-31 * Metre), Eq(0 * Metre)));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           earth_polar_radius), 8e-7);
 
   EXPECT_THAT(elephant_accelerations.size(), Eq(8));
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
-              VanishesBefore(1 * Metre / Second / Second, 0));
+              IsNear(-2.0e-18 * Metre / Second / Second));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
-              AlmostEquals(0 * SIUnit<Acceleration>(), 0));
+              AnyOf(IsNear(-2.7e-30 * Metre / Second / Second),
+                    Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
 }

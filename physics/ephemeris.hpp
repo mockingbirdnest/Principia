@@ -17,6 +17,7 @@
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/geopotential.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
@@ -280,13 +281,15 @@ class Ephemeris {
            bool body2_is_oblate,
            typename MassiveBodyConstPtr>
   static void ComputeGravitationalAccelerationByMassiveBodyOnMassiveBodies(
+      Instant const& t,
       MassiveBody const& body1,
       std::size_t const b1,
       std::vector<not_null<MassiveBodyConstPtr>> const& bodies2,
       std::size_t const b2_begin,
       std::size_t const b2_end,
       std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations);
+      std::vector<Vector<Acceleration, Frame>>& accelerations,
+      std::vector<Geopotential<Frame>> const& geopotentials);
 
   // Computes the accelerations due to one body, |body1| (with index |b1| in the
   // |bodies_| and |trajectories_| arrays) on massless bodies at the given
@@ -348,6 +351,9 @@ class Ephemeris {
   // The oblate bodies precede the spherical bodies in this vector.  The system
   // state is indexed in the same order.
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies_;
+
+  // Only has entries for the oblate bodies, at the same indices as |bodies_|.
+  std::vector<Geopotential<Frame>> geopotentials_;
 
   // The indices in |bodies_| correspond to those in |trajectories_|.
   std::vector<not_null<ContinuousTrajectory<Frame>*>> trajectories_;

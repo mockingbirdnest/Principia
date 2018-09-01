@@ -25,12 +25,14 @@ using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Metre;
 using quantities::si::Micro;
+using quantities::si::Milli;
 using quantities::si::Newton;
 using quantities::si::Tonne;
 using testing_utilities::Componentwise;
 using testing_utilities::IsOk;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
+using ::testing::AnyOf;
 using ::testing::Eq;
 
 namespace {
@@ -98,13 +100,16 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
       to_world.Inverse()(FromQP<RelativeDegreesOfFreedom<World>>(result));
   // The reference position is far above the apoapsis, so the result is roughly
   // the apoapsis.
-  EXPECT_THAT(barycentric_result,
-              Componentwise(Componentwise(IsNear(-12'000 * Kilo(Metre)),
-                                          IsNear(-120 * Kilo(Metre)),
-                                          IsNear(2.2 * Metre)),
-                            Componentwise(IsNear(-6.6 * Metre / Second),
-                                          IsNear(-4.9 * Kilo(Metre) / Second),
-                                          IsNear(54 * Micro(Metre) / Second))));
+  EXPECT_THAT(
+      barycentric_result,
+      Componentwise(
+          Componentwise(IsNear(-12'000 * Kilo(Metre)),
+                        IsNear(-120 * Kilo(Metre)),
+                        AnyOf(IsNear(2.2 * Metre), IsNear(-35 * Metre))),
+          Componentwise(IsNear(-6.6 * Metre / Second),
+                        IsNear(-4.9 * Kilo(Metre) / Second),
+                        AnyOf(IsNear(54 * Micro(Metre) / Second),
+                              IsNear(6.6 * Milli(Metre) / Second)))));
 }
 
 }  // namespace interface
