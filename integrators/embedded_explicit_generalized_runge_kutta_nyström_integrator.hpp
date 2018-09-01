@@ -43,9 +43,13 @@ using quantities::Variation;
 //   b̂′ for the velocity weights of the high-order method;
 //   b for the position weights of the low-order method;
 //   b′ for the velocity weights of the low-order method.
-// This is a common notation, used, e.g., by Fine (1987), Low Order Practical
-// Runge-Kutta-Nyström Methods.  This notation is consistent with the one we use
-// for Runge-Kutta-Nyström methods (which have no a′).
+// This is similar to the notation used, e.g., by Fine (1987), Low Order
+// Practical Runge-Kutta-Nyström Methods.  This notation is consistent with the
+// one we use for Runge-Kutta-Nyström methods (which have no a′).
+// However, note that Fine uses ^ for the low order method, whereas we use it
+// for the high order method, consistently with the notation used by Dormand,
+// المكاوى, and Prince for RKN methods.
+
 // Alternative notations use a and b for the velocity Runge Kutta matrix and
 // weights: Murua (1998), Runge-Kutta-Nyström methods for general second Order
 // ODEs with application to multi-body Systems, uses (c, α, a, β̂, b̂, β, b),
