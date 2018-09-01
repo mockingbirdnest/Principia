@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "numerics/legendre.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -12,10 +13,13 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
 using quantities::Cos;
 using quantities::Length;
+using quantities::Pow;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::Sin;
 using quantities::SIUnit;
 
@@ -68,9 +72,10 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
   Length const rz = InnerProduct(r, z);
 
   Length const r_norm = r.Norm();
+  Square<Length> const rx²_plus_ry² = r² - rz * rz;
   double const sin_β = rz / r_norm;
-  double const cos_β = Sqrt(r² - rz * rz) / r_norm;
-  double const one_over_cos²_β = r² / (r² - rz * rz);
+  double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
+  double const one_over_cos²_β = r² / rx²_plus_ry²;
   Angle const λ = SIUnit<Angle>() *
                   std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
 
@@ -79,18 +84,19 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
     auto radial_factor_derivative = -(n + 1) * radial_factor / r²;
 
     for (int m = 0; m <= n; ++m) {
-      auto const latitudinal_factor = AssociatedLegendrePolynomial(n, m, sin_β);
+      auto const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
       auto const latitudinal_factor_derivative =
           one_over_cos²_β *
-          (cos_β * AssociatedLegendrePolynomial(n, m + 1, sin_β) +
-           m * sin_β * AssociatedLegendrePolynomial(m, n, sin_β)) *
+          (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
+           m * sin_β * latitudinal_factor) *
           (r * rz * one_over_r³- z / r_norm);
 
-      auto const longitudinal_factor =
-          Cnm * Cos(m * λ) + Snm * Sin(m * λ);
+      Angle const mλ = m * λ;
+      double const sin_mλ = Sin(mλ);
+      double const cos_mλ = Cos(mλ);
+      auto const longitudinal_factor = Cnm * cos_m λ +Snm * sin_m λ ;
       auto const longitudinal_factor_derivative =
-          m * (Snm * Cos(m * λ) - Cnm * Sin(m * λ)) *
-              (rx * y - ry * x) / (r² - rz * rz);
+          m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
 
       acceleration +=
           radial_factor_derivative * latitudinal_factor * longitudinal_factor +
@@ -105,9 +111,19 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
 }
 
 template<typename Frame>
-double Geopotential<Frame>::AssociatedLegendrePolynomial(int n,
-                                                         int m,
-                                                         double argument) {}
+template<int degree, int order>
+double Geopotential<Frame>::AssociatedLegendrePolynomial(
+    double const argument) {
+  static auto const Pn = LegendrePolynomial<degree>();
+  static auto const DmPn = Pn.Derivative<order>();
+  double const one_minus_argument² = 1 - argument * argument;
+  double const multiplier = Pow<order / 2>(one_minus_argument²);
+  if constexpr (order % 2 == 0) {
+    return DmPn.Evaluate(argument);
+  } else {
+    return -Sqrt(one_minus_argument²) * DmPn.Evaluate(argument);
+  }
+}
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>

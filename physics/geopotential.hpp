@@ -50,7 +50,8 @@ class Geopotential {
   using UnitVector = Vector<double, Frame>;
 
   //TODO(phl): Comment
-  static double AssociatedLegendrePolynomial(int n, int m, double argument);
+  template<int degree, int order>
+  static double AssociatedLegendrePolynomial(double argument);
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here
