@@ -11,6 +11,7 @@ namespace principia {
 namespace numerics {
 namespace internal_fixed_arrays {
 
+using quantities::Difference;
 using quantities::Product;
 
 template<typename Scalar, int rows, int columns>
@@ -86,6 +87,11 @@ class FixedMatrix final {
       FixedMatrix<L, r, c> const& left,
       FixedVector<R, c> const& right);
 };
+
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right);
 
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(

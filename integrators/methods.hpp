@@ -343,6 +343,37 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                    +0.6756035959798288170}}};
 };
 
+// Coefficients from Fine (1987), Low order practical Methods.
+struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
+  static constexpr int higher_order = 4;
+  static constexpr int lower_order = 3;
+  static constexpr int stages = 5;
+  static constexpr bool first_same_as_last = true;
+  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
+      serialization::AdaptiveStepSizeIntegrator::
+          DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM;
+  static constexpr FixedVector<double, stages> c{{
+      { 0           ,    2 /   9.0,   1 /     3.0,  3 /     4.0,  1.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+      {  2 /    81.0,
+         1 /    36.0,    1 /  36.0,
+         9 /   128.0,    0        ,  27 /   128.0,
+        11 /    60.0,   -3 /  20.0,   9 /    25.0,  8 /    75.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ{{
+      {  2 /     9.0,
+         1 /    12.0,    1 /   4.0,
+        69 /   128.0, -234 / 128.0, 135 /    64.0,
+       -17 /    12.0,   27 /   4.0, -27 /     5.0, 16 /    15.0}}};
+  static constexpr FixedVector<double, stages> b̂{{
+      { 19 /   180.0,    0        ,  63 /   200.0, 16 /   225.0,   1 / 120.0}}};
+  static constexpr FixedVector<double, stages> b̂ʹ{{
+      {  1 /     9.0,    0        ,   9 /    20.0, 16 /    45.0,   1 /  12.0}}};
+  static constexpr auto b = b̂ - FixedVector<double, stages>{{
+      { 25 / 1'116.0,    0        , -63 / 1'240.0, 64 / 1'395.0, -13 / 744.0}}};
+  static constexpr auto bʹ = b̂ʹ - FixedVector<double, stages>{{
+      {  2 /   125.0,    0        , -27 /   625.0, 32 /   625.0,  -3 / 125.0}}};
+};
+
 // Coefficients from Dormand, المكاوى (El-Mikkawy), and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.

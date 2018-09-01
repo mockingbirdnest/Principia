@@ -150,6 +150,18 @@ FixedMatrix<Scalar, rows, columns>::row() const {
   return Row<r>(this);
 }
 
+template<typename ScalarLeft, typename ScalarRight, int size>
+constexpr FixedVector<Difference<ScalarLeft, ScalarRight>, size> operator-(
+    FixedVector<ScalarLeft, size> const& left,
+    FixedVector<ScalarRight, size> const& right) {
+  std::array<Difference<ScalarLeft, ScalarRight>, size> result{};
+  for (int i = 0; i < size; ++i) {
+    result[i] = left[i] - right[i];
+  }
+  return FixedVector<Difference<ScalarLeft, ScalarRight>, size>(
+      std::move(result));
+}
+
 template<typename ScalarLeft, typename ScalarRight, int rows, int columns>
 FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
     FixedMatrix<ScalarLeft, rows, columns> const& left,

@@ -48,7 +48,7 @@ using ::std::placeholders::_3;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 
-using ODE = SpecialSecondOrderDifferentialEquation<Length>;
+using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<Length>;
 
 namespace {
 
@@ -73,7 +73,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest,
        HarmonicOscillatorBackAndForth) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
+          methods::Fine1987RKNG34,
           Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
@@ -180,7 +180,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest,
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, MaxSteps) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
+          methods::Fine1987RKNG34,
           Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
@@ -312,7 +312,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Singularity)
 
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
+          methods::Fine1987RKNG34,
           Length>();
 
   auto const instance = integrator.NewInstance(problem,
@@ -332,7 +332,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Singularity)
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Restart) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
+          methods::Fine1987RKNG34,
           Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;
@@ -437,7 +437,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Restart) {
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Serialization) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
+          methods::Fine1987RKNG34,
           Length>();
   Length const x_initial = 1 * Metre;
   Speed const v_initial = 0 * Metre / Second;

@@ -169,7 +169,7 @@ Instance::Solve(Instant const& t_final) {
         }
       }
 
-      Time const h² = h * h;
+      auto const h² = h * h;
 
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages_; ++i) {
