@@ -23,10 +23,10 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
   // static constexpr FixedVector<double, stages> c = ...;
   // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
-  // static constexpr FixedVector<double, stages> b_hat = ...;
-  // static constexpr FixedVector<double, stages> b_prime_hat = ...;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
   // static constexpr FixedVector<double, stages> b = ...;
-  // static constexpr FixedVector<double, stages> b_prime = ...;
+  // static constexpr FixedVector<double, stages> bʹ = ...;
 };
 
 struct SymmetricLinearMultistep : not_constructible {
@@ -331,13 +331,13 @@ struct DormandالمكاوىPrince1986RKN434FM :
       { 1.0 /   32.0,
         7.0 / 1000.0, 119.0 / 500.0,
         1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0}}};
-  static constexpr FixedVector<double, stages> b_hat{{
+  static constexpr FixedVector<double, stages> b̂{{
       { 1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0}}};
-  static constexpr FixedVector<double, stages> b_prime_hat{{
+  static constexpr FixedVector<double, stages> b̂ʹ{{
       { 1.0 /   14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0}}};
   static constexpr FixedVector<double, stages> b{{
       {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0}}};
-  static constexpr FixedVector<double, stages> b_prime{{
+  static constexpr FixedVector<double, stages> bʹ{{
       {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0}}};
 };
 

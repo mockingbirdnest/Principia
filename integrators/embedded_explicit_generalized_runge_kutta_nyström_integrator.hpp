@@ -131,10 +131,10 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
   static constexpr auto stages_ = Method::stages;
   static constexpr auto c_ = Method::c;
   static constexpr auto a_ = Method::a;
-  static constexpr auto b_hat_ = Method::b_hat;
-  static constexpr auto b_prime_hat_ = Method::b_prime_hat;
+  static constexpr auto b̂_ = Method::b̂;
+  static constexpr auto b̂ʹ_ = Method::b̂ʹ;
   static constexpr auto b_ = Method::b;
-  static constexpr auto b_prime_ = Method::b_prime;
+  static constexpr auto bʹ_ = Method::bʹ;
 };
 
 }  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
