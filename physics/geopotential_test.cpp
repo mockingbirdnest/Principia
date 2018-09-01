@@ -185,6 +185,7 @@ TEST_F(GeopotentialTest, J3) {
 
   // The acceleration at a point located in the equatorial plane points towards
   // the north, as it does on Earth (I think).
+  // TODO(phl): I don't know what I think anymore.  Oh the humanity!
   {
     auto const acceleration = SphericalHarmonicsAcceleration(
         geopotential,
@@ -194,7 +195,7 @@ TEST_F(GeopotentialTest, J3) {
                 AlmostEquals(0.75, 0));
     EXPECT_THAT(acceleration.coordinates().z,
                 Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
-    EXPECT_THAT(acceleration.coordinates().z, Gt(0 * Pow<-2>(Metre)));
+    EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
   }
 }
 
