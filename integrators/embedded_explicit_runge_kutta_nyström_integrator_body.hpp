@@ -167,6 +167,8 @@ Instance::Solve(Instant const& t_final) {
         }
       }
 
+      Time const h² = h * h;
+
       // Runge-Kutta-Nyström iteration; fills |g|.
       for (int i = first_stage; i < stages_; ++i) {
         Instant const t_stage =
@@ -178,8 +180,7 @@ Instance::Solve(Instant const& t_final) {
           for (int j = 0; j < i; ++j) {
             Σj_a_ij_g_jk += a[i][j] * g[j][k];
           }
-          q_stage[k] =
-              q̂[k].value + h * (c[i] * v̂[k].value + h * Σj_a_ij_g_jk);
+          q_stage[k] = q̂[k].value + h * c[i] * v̂[k].value + h² * Σj_a_ij_g_jk;
         }
         status.Update(equation.compute_acceleration(t_stage, q_stage, g[i]));
       }
@@ -199,8 +200,8 @@ Instance::Solve(Instant const& t_final) {
           Σi_bʹ_i_g_ik += bʹ[i] * g[i][k];
         }
         // The hat-less Δq and Δv are the low-order increments.
-        Δq̂[k]                   = h * (h * (Σi_b̂_i_g_ik) + v̂[k].value);
-        Displacement const Δq_k = h * (h * (Σi_b_i_g_ik) + v̂[k].value);
+        Δq̂[k]                   = h * v̂[k].value + h² * Σi_b̂_i_g_ik;
+        Displacement const Δq_k = h * v̂[k].value + h² * Σi_b_i_g_ik;
         Δv̂[k]                   = h * Σi_b̂ʹ_i_g_ik;
         Velocity const Δv_k     = h * Σi_bʹ_i_g_ik;
 
