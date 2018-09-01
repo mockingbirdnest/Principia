@@ -29,6 +29,9 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr FixedVector<double, stages> bʹ = ...;
 };
 
+// Every RKNG method is an RKN method by simply ignoring aʹ, hence the
+// inheritance.  Every RK method can be turned into an RKNG method, however this
+// requires a computation, so it is done explicitly.
 struct EmbeddedExplicitGeneralizedRungeKuttaNyström : EmbeddedExplicitRungeKuttaNyström {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
@@ -42,6 +45,18 @@ struct EmbeddedExplicitGeneralizedRungeKuttaNyström : EmbeddedExplicitRungeKutt
   // static constexpr FixedVector<double, stages> b̂ʹ = ...;
   // static constexpr FixedVector<double, stages> b = ...;
   // static constexpr FixedVector<double, stages> bʹ = ...;
+};
+
+struct EmbeddedExplicitRungeKutta : not_constructible {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
 };
 
 struct SymmetricLinearMultistep : not_constructible {

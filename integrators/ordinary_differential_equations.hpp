@@ -151,10 +151,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     std::vector<Velocity> velocity_error;
   };
 
-  // A functor that computes f(q, t) and stores it in |accelerations|.
+  // A functor that computes f(q, q′, t) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
-  // |positions.size()|, but there is no requirement on the values in
-  // |accelerations|.
+  // |positions.size()| and |velocities.size()| but there is no requirement on
+  // the values in |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 

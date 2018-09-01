@@ -49,6 +49,7 @@ Instance::Solve(Instant const& t_final) {
   using Acceleration = typename ODE::Acceleration;
 
   auto const& a = integrator_.a_;
+  auto const& aʹ = integrator_.aʹ_;
   auto const& b̂ = integrator_.b̂_;
   auto const& b̂ʹ = integrator_.b̂ʹ_;
   auto const& b = integrator_.b_;
@@ -105,6 +106,7 @@ Instance::Solve(Instant const& t_final) {
 
   // Current Runge-Kutta-Nyström stage.
   std::vector<Position> q_stage(dimension);
+  std::vector<Velocity> v_stage(dimension);
   // Accelerations at each stage.
   // TODO(egg): this is a rectangular container, use something more appropriate.
   std::vector<std::vector<Acceleration>> g(stages_);
@@ -175,13 +177,17 @@ Instance::Solve(Instant const& t_final) {
                 : t.value + (t.error + c[i] * h);
         for (int k = 0; k < dimension; ++k) {
           Acceleration Σj_a_ij_g_jk{};
+          Acceleration Σj_aʹ_ij_g_jk{};
           for (int j = 0; j < i; ++j) {
-            Σj_a_ij_g_jk += a[i][j] * g[j][k];
+            Σj_a_ij_g_jk  += a[i][j] * g[j][k];
+            Σj_aʹ_ij_g_jk += aʹ[i][j] * g[j][k];
           }
           q_stage[k] = q̂[k].value +
                            h * (c[i] * v̂[k].value + h * Σj_a_ij_g_jk);
+          v_stage[k] = v̂[k].value + h * Σj_aʹ_ij_g_jk;
         }
-        status.Update(equation.compute_acceleration(t_stage, q_stage, g[i]));
+        status.Update(
+            equation.compute_acceleration(t_stage, q_stage, v_stage, g[i]));
       }
 
       // Increment computation and step size control.
@@ -193,15 +199,15 @@ Instance::Solve(Instant const& t_final) {
         // Please keep the eight assigments below aligned, they become illegible
         // otherwise.
         for (int i = 0; i < stages_; ++i) {
-          Σi_b̂_i_g_ik       += b̂[i] * g[i][k];
-          Σi_b_i_g_ik           += b[i] * g[i][k];
+          Σi_b̂_i_g_ik  += b̂[i] * g[i][k];
+          Σi_b_i_g_ik  += b[i] * g[i][k];
           Σi_b̂ʹ_i_g_ik += b̂ʹ[i] * g[i][k];
-          Σi_bʹ_i_g_ik     += bʹ[i] * g[i][k];
+          Σi_bʹ_i_g_ik += bʹ[i] * g[i][k];
         }
         // The hat-less Δq and Δv are the low-order increments.
-        Δq̂[k]               = h * (h * (Σi_b̂_i_g_ik) + v̂[k].value);
+        Δq̂[k]                   = h * (h * (Σi_b̂_i_g_ik) + v̂[k].value);
         Displacement const Δq_k = h * (h * (Σi_b_i_g_ik) + v̂[k].value);
-        Δv̂[k]               = h * Σi_b̂ʹ_i_g_ik;
+        Δv̂[k]                   = h * Σi_b̂ʹ_i_g_ik;
         Velocity const Δv_k     = h * Σi_bʹ_i_g_ik;
 
         error_estimate.position_error[k] = Δq_k - Δq̂[k];
