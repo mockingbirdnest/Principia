@@ -82,9 +82,9 @@ Status ComputeЧебышёвPolynomialSecondDerivative(
     std::vector<Variation<Variation<double>>>& чʺ,
     int* evaluations) {
   constexpr int n² = degree * degree;
-  constexpr Time s² = Pow<2>(Second);
+  constexpr auto s² = Pow<2>(Second);
   Time const x = (t - J2000);
-  Time const x² = x * x;
+  auto const x² = x * x;
   чʺ[0] = (x * чʹ[0] - n² * ч[0]) / (1 * s² - x²);
   if (evaluations != nullptr) {
     ++*evaluations;
@@ -100,7 +100,9 @@ Status ComputeLegendrePolynomialSecondDerivative(
     std::vector<Variation<Variation<double>>>& pʺ,
     int* evaluations) {
   constexpr int n = degree;
+  constexpr auto s² = Pow<2>(Second);
   Time const x = (t - J2000);
+  auto const x² = x * x;
   pʺ[0] = (2 * x * pʹ[0] - n * (n + 1) * p[0]) / (1 * s² - x²);
   if (evaluations != nullptr) {
     ++*evaluations;
