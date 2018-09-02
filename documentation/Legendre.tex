@@ -1,0 +1,27 @@
+\documentclass[10pt, a4paper, oneside]{basestyle}
+\usepackage[Mathematics]{semtex}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+Explicit representation of Legendre polynomials%
+}%
+}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\noindent
+According to Wikipedia (\url{https://en.wikipedia.org/wiki/Legendre_polynomials}), the Legendre polynomials have the following representation in terms of monomials, which is immediate from the recursion formula:
+\begin{equation*}
+P_n(x) = 2^n \sum{k = 0}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
+\end{equation*}
+In this formula, the second binomial coefficient is actually nontrivial to evaluate because its upper index is not necessarily integral, and its lower index is greater than its upper index.
+First note that, because of the parity of the Legendre polynomials, the terms where $k$ and $n$ do not have the same value modulo 2 are 0.  Therefore the above can be rewritten as:
+\begin{equation*}
+P_n(x) = 2^n \sum{\substack{k = 0\\ k = n mod 2}}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
+\end{equation*}
+
+\end{document}
