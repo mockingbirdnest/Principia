@@ -348,7 +348,7 @@ struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
   static constexpr int higher_order = 4;
   static constexpr int lower_order = 3;
   static constexpr int stages = 5;
-  static constexpr bool first_same_as_last = true;
+  static constexpr bool first_same_as_last = false;
   static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
       serialization::AdaptiveStepSizeIntegrator::
           DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM;

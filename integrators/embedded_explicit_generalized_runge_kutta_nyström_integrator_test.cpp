@@ -1,5 +1,4 @@
-﻿
-#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
+﻿#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -68,16 +67,20 @@ double ToleranceToErrorRatio(
 class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
+
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
           methods::Fine1987RKNG34,
           double>();
-  constexpr int degree = 15;
-  double const x_initial = 1;
-  Variation<double> const v_initial = -6435 / (2048 * Second);
+  // TODO(egg): Change that back to 15 once compiling LegendrePolynomial<15>
+  // becomes tractable.
+  constexpr int degree = 3;
+  double const x_initial = 0;
+  Variation<double> const v_initial =
+      -3 / (2 * Second);  // -6435 / (2048 * Second);
   Instant const t_initial;
-  Instant const t_final = t_initial + 1 * Second;
+  Instant const t_final = t_initial + 0.99 * Second;
   double const tolerance = 1e-6;
   Variation<double> const derivative_tolerance = 1e-6 / Second;
   int const steps_forward = 132;
@@ -141,6 +144,8 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
     max_error = std::max(max_error, error);
     max_derivative_error = std::max(max_derivative_error, derivative_error);
   }
+  EXPECT_THAT(max_error, IsNear(172e-6));
+  EXPECT_THAT(max_derivative_error, IsNear(4.54e-3 / Second));
 }
 
 }  // namespace internal_ordinary_differential_equations
