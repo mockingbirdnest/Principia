@@ -1,13 +1,36 @@
-
+﻿
 #pragma once
 
 #include "numerics/legendre.hpp"
 
+#include <tuple>
+
 #include "base/macros.hpp"
+#include "numerics/combinatorics.hpp"
 
 namespace principia {
 namespace numerics {
 namespace internal_legendre {
+
+template<int degree, typename>
+struct LegendreCoefficientsGenerator;
+
+template<int degree, std::size_t... indices>
+struct LegendreCoefficientsGenerator<degree, std::index_sequence<indices...>> {
+  // This computation follows
+  // https://en.wikipedia.org/wiki/Legendre_polynomials, fourth formula in the
+  // "Explicit representations" section.  The formula has been rewritten to
+  // eliminate references to the Γ function.
+  // TODO(phl): Document the derivation of this formula.
+  static constexpr auto coefficients =
+      std::make_tuple((degree - indices) % 2 == 0
+                          ? ((degree - indices) % 4 == 0 ? 1 : -1) *
+                                DoubleFactorial(degree + indices - 1) *
+                                DoubleFactorial(degree - indices - 1) /
+                                static_cast<double>(Factorial(indices) *
+                                                    Factorial(degree - indices))
+                          : 0 ...);
+};
 
 // Apparently, FORCE_INLINE has to be on the definition for it to work on
 // namespace-level functions.
@@ -15,20 +38,13 @@ template<int degree_, template<typename, typename, int> class Evaluator>
 FORCE_INLINE(constexpr)
 PolynomialInMonomialBasis<double, double, degree_, Evaluator>
 LegendrePolynomial() {
-  using Pn = PolynomialInMonomialBasis<double, double, degree_, Evaluator>;
-  if constexpr (degree_ == 0) {
-    return Pn(std::make_tuple(1));
-  } else if constexpr (degree_ == 1) {
-    return Pn({0, 1});
-  } else {
-    constexpr int n = degree_;
-    // NOTE(phl): Would like to make this declaration constexpr, but the type is
-    // not a literal type.
-    PolynomialInMonomialBasis<double, double, 1, Evaluator> const
-        multiplier({0, 2 * n - 1});
-    return (multiplier * LegendrePolynomial<degree_ - 1, Evaluator>() -
-            (n - 1) * LegendrePolynomial<degree_ - 2, Evaluator>()) / n;
-  }
+  auto c = LegendreCoefficientsGenerator<
+          degree_,
+          std::make_index_sequence<degree_ + 1>>::coefficients;
+  return PolynomialInMonomialBasis<double, double, degree_, Evaluator>(
+      LegendreCoefficientsGenerator<
+          degree_,
+          std::make_index_sequence<degree_ + 1>>::coefficients);
 }
 
 }  // namespace internal_legendre

@@ -12,6 +12,14 @@ constexpr std::int64_t Binomial(std::int64_t const n, std::int64_t const k) {
   return FallingFactorial(n, k) / Factorial(k);
 }
 
+constexpr std::int64_t DoubleFactorial(std::int64_t n) {
+  std::int64_t result = 1;
+  for (std::int64_t i = n; i >= 1; i -= 2) {
+    result *= i;
+  }
+  return result;
+}
+
 constexpr std::int64_t Factorial(std::int64_t n) {
   return FallingFactorial(n, n);
 }
