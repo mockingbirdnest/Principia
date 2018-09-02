@@ -374,7 +374,7 @@ struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
       {  2 /   125.0,    0        , -27 /   625.0, 32 /   625.0,  -3 / 125.0}}};
 };
 
-// Coefficients from Dormand, المكاوى (El-Mikkawy), and Prince (1986),
+// Coefficients from Dormand, El-Mikkawy, and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
 struct DormandالمكاوىPrince1986RKN434FM :
@@ -714,7 +714,7 @@ struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyström {
 //   construction des tables astronomiques, in Mémoires de l'Académie Royale des
 //   Sciences de Turin, vol. V, Mémoires présentés à l'Académie, p. 143-180.
 //   http://www.biodiversitylibrary.org/item/32318#page/698/mode/1up.
-// - Størmer (1907), Sur les trajectoires des corpuscules électrisés dans
+// - Störmer (1907), Sur les trajectoires des corpuscules électrisés dans
 //   l'espace, avec application aux aurores boréales.
 //   https://hal.archives-ouvertes.fr/jpa-00242574/document.
 // - Verlet (1967) Computer "Experiments" on classical fluids. I.
@@ -866,10 +866,10 @@ struct Ruth1983 : SymplecticPartitionedRungeKutta {
       {{7.0 / 24.0, 3.0 / 4.0, -1.0 / 24.0}}};
 };
 
-// Coefficients from 鈴木 (Suzuki, 1990), Fractal decomposition of exponential
+// Coefficients from Suzuki (1990), Fractal decomposition of exponential
 // operators with applications to many-body theories and Monte Carlo
-// simulations; see also the Japanese version,
-// 量子系のフラクタル経路積分法 と量子コヒーレンス,
+// simulations; see also the Japanese version:
+// 鈴木 (1990), 量子系のフラクタル経路積分法 と量子コヒーレンス,
 // https://www.jstage.jst.go.jp/article/soken/82/3/82_KJ00004703731/_pdf.
 struct 鈴木1990 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
@@ -893,7 +893,7 @@ struct 鈴木1990 : SymplecticPartitionedRungeKutta {
                                                    +0.20724538589718786857}}};
 };
 
-// The following methods have coefficients from 吉田 (Yoshida, 1990),
+// The following methods have coefficients from Yoshida (1990),
 // Construction of higher order symplectic integrators
 // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
 // NOTE(egg): The coefficients were derived from equations 5.4 through 5.17

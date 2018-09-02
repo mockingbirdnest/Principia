@@ -44,7 +44,7 @@ using quantities::Variation;
 // See Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, for an example.
 // Note that other notations exist for the weights:
-// المكاوى and رحمو‎ (2003), A new optimized non-FSAL embedded
+// El-Mikkawy and Rahmo (2003), A new optimized non-FSAL embedded
 // Runge–Kutta–Nystrom algorithm of orders 6 and 4 in six stages, and
 // Sommeijer (1993), Explicit, high-order Runge-Kutta-Nyström methods for
 // parallel computers, call the the velocity weights d instead of b′,
