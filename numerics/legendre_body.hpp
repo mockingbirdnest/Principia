@@ -21,7 +21,6 @@ struct LegendreCoefficientsGenerator<degree, std::index_sequence<indices...>> {
   // https://en.wikipedia.org/wiki/Legendre_polynomials, fourth formula in the
   // "Explicit representations" section.  The formula has been rewritten to
   // eliminate references to the Γ function.
-  // TODO(phl): Document the derivation of this formula.
   static constexpr auto coefficients =
       std::make_tuple((degree - indices) % 2 == 0
                           ? ((degree - indices) % 4 == 0 ? 1 : -1) *
