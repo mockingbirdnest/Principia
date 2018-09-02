@@ -67,7 +67,6 @@ double ToleranceToErrorRatio(
 class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest
     : public ::testing::Test {};
 
-
 TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   AdaptiveStepSizeIntegrator<ODE> const& integrator =
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<

@@ -56,7 +56,7 @@ using quantities::Variation;
 
 // In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
 // the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ
-// also appear in the litterature.
+// also appear in the literature.
 // Since we are interested in physical applications, we call the solution q and
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.

@@ -27,7 +27,7 @@ using quantities::Quotient;
 template<typename Method, typename Position>
 EmbeddedExplicitRungeKuttaNyströmIntegrator<Method, Position>::
 EmbeddedExplicitRungeKuttaNyströmIntegrator() {
-  // the first node is always 0 in an explicit method.
+  // The first node is always 0 in an explicit method.
   CHECK_EQ(0.0, c_[0]);
   if (first_same_as_last) {
     // Check that the conditions for the FSAL property are satisfied, see for
@@ -117,7 +117,7 @@ Instance::Solve(Instant const& t_final) {
 
   // The first stage of the Runge-Kutta-Nyström iteration.  In the FSAL case,
   // |first_stage == 1| after the first step, since the first RHS evaluation has
-  // already occured in the previous step.  In the non-FSAL case and in the
+  // already occurred in the previous step.  In the non-FSAL case and in the
   // first step of the FSAL case, |first_stage == 0|.
   int first_stage = 0;
 
