@@ -146,8 +146,8 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   }
   EXPECT_THAT(max_error, IsNear(172e-6));
   EXPECT_THAT(max_derivative_error, IsNear(4.54e-3 / Second));
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT(whitespace/line_length)
+}
 
-}  // namespace internal_ordinary_differential_equations
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 }  // namespace integrators
 }  // namespace principia

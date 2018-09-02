@@ -345,7 +345,7 @@ ReadFromMessage(
                    *this));
 }
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT(whitespace/line_length)
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 
 template<typename Method, typename Position>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::

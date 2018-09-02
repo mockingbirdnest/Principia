@@ -143,7 +143,7 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
   static constexpr auto bʹ_ = Method::bʹ;
 };
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT(whitespace/line_length)
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT
 
 template<typename Method, typename Position>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
