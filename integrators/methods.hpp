@@ -32,7 +32,8 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
 // Every RKNG method is an RKN method by simply ignoring aʹ, hence the
 // inheritance.  Every RK method can be turned into an RKNG method, however this
 // requires a computation, so it is done explicitly.
-struct EmbeddedExplicitGeneralizedRungeKuttaNyström : EmbeddedExplicitRungeKuttaNyström {
+struct EmbeddedExplicitGeneralizedRungeKuttaNyström
+    : EmbeddedExplicitRungeKuttaNyström {
   // static constexpr int higher_order = ...;
   // static constexpr int lower_order = ...;
   // static constexpr int stages = ...;
@@ -40,7 +41,7 @@ struct EmbeddedExplicitGeneralizedRungeKuttaNyström : EmbeddedExplicitRungeKutt
   // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
   // static constexpr FixedVector<double, stages> c = ...;
   // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
-  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = ..;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = .;
   // static constexpr FixedVector<double, stages> b̂ = ...;
   // static constexpr FixedVector<double, stages> b̂ʹ = ...;
   // static constexpr FixedVector<double, stages> b = ...;

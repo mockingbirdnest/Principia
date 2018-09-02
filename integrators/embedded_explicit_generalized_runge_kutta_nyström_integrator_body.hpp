@@ -15,7 +15,7 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {
+namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
 using base::make_not_null_unique;
 using geometry::Sign;
@@ -42,8 +42,9 @@ EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
 }
 
 template<typename Method, typename Position>
-Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
-Instance::Solve(Instant const& t_final) {
+Status EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+    Method,
+    Position>::Instance::Solve(Instant const& t_final) {
   using Displacement = typename ODE::Displacement;
   using Velocity = typename ODE::Velocity;
   using Acceleration = typename ODE::Acceleration;
@@ -273,14 +274,13 @@ void EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position>::
 Instance::WriteToMessage(
     not_null<serialization::IntegratorInstance*> message) const {
   AdaptiveStepSizeIntegrator<ODE>::Instance::WriteToMessage(message);
+  auto const& rkng_extension = serialization::
+      EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::extension;
   auto* const extension =
       message
           ->MutableExtension(
               serialization::AdaptiveStepSizeIntegratorInstance::extension)
-          ->MutableExtension(
-              serialization::
-                  EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
-                      extension);
+          ->MutableExtension(rkng_extension);
 }
 
 template<typename Method, typename Position>
@@ -330,8 +330,9 @@ ReadFromMessage(
     ToleranceToErrorRatio const& tolerance_to_error_ratio,
     Parameters const& parameters) const {
   CHECK(message.HasExtension(
-      serialization::EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
-          extension))
+      serialization::
+          EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance::
+              extension))
       << message.DebugString();
 
   // Cannot use |make_not_null_unique| because the constructor of |Instance| is
@@ -344,7 +345,7 @@ ReadFromMessage(
                    *this));
 }
 
-}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT(whitespace/line_length)
 
 template<typename Method, typename Position>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::

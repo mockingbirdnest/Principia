@@ -1,4 +1,4 @@
-﻿#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
+﻿#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"  // NOLINT(whitespace/line_length)
 
 #include <algorithm>
 #include <limits>
@@ -19,7 +19,7 @@
 
 namespace principia {
 namespace integrators {
-namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {
+namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator {  // NOLINT(whitespace/line_length)
 
 using numerics::EstrinEvaluator;
 using numerics::LegendrePolynomial;
@@ -56,8 +56,9 @@ double ToleranceToErrorRatio(
     double const& tolerance,
     Variation<double> const& derivative_tolerance,
     std::function<void(bool tolerable)> callback) {
-  double const r = std::min(tolerance / Abs(error.position_error[0]),
-                            derivative_tolerance / Abs(error.velocity_error[0]));
+  double const r =
+      std::min(tolerance / Abs(error.position_error[0]),
+               derivative_tolerance / Abs(error.velocity_error[0]));
   callback(r > 1.0);
   return r;
 }
@@ -145,7 +146,7 @@ TEST_F(EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegratorTest, Legendre) {
   }
   EXPECT_THAT(max_error, IsNear(172e-6));
   EXPECT_THAT(max_derivative_error, IsNear(4.54e-3 / Second));
-}
+}  // namespace internal_embedded_explicit_generalized_runge_kutta_nyström_integrator  // NOLINT(whitespace/line_length)
 
 }  // namespace internal_ordinary_differential_equations
 }  // namespace integrators
