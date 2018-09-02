@@ -1,5 +1,7 @@
 \documentclass[10pt, a4paper, oneside]{basestyle}
 \usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
 
 %%%% Shorthands.
 
@@ -18,10 +20,80 @@ According to Wikipedia (\url{https://en.wikipedia.org/wiki/Legendre_polynomials}
 \begin{equation*}
 P_n(x) = 2^n \sum{k = 0}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
 \end{equation*}
-In this formula, the second binomial coefficient is actually nontrivial to evaluate because its upper index is not necessarily integral, and its lower index is greater than its upper index.
+In this formula, the second binomial coefficient is actually nontrivial to evaluate because its upper index is not necessarily integral, and its lower index is greater than its upper index, so it involves the $\Gamma$ function.
+
 First note that, because of the parity of the Legendre polynomials, the terms where $k$ and $n$ do not have the same value modulo 2 are 0.  Therefore the above can be rewritten as:
 \begin{equation*}
-P_n(x) = 2^n \sum{\substack{k = 0\\ k = n mod 2}}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
+P_n(x) = 2^n \sum{\substack{k = 0\\ k \equiv n \pmod 2}}[n] x^k \binom{n}{k} \binom{\frac{n + k - 1}{2}}{n}
 \end{equation*}
-
+Note that, in this formula, $\frac{n + k - 1}{2}$ is a half-integer.  We are now going to compute the coefficient of $x^k$.  Expanding the binomial coefficients we obtain:
+\begin{align*}
+\binom{n}{k} \binom{\frac{n + k - 1}{2}}{n} &=
+  \frac{\Factorial{n}}
+       {\Factorial{k}\Factorial{\pa{n - k}}}
+  \frac{\Factorial{\pa{\frac{n + k - 1}{2}}}}
+       {\Factorial{n}\Factorial{\pa{\frac{n + k - 1}{2} - n}}}\\
+&=
+  \frac{1}
+       {\Factorial{k}\Factorial{\pa{n - k}}}
+  \frac{\Factorial{\pa{\frac{n + k - 1}{2}}}}
+       {\Factorial{\pa{\frac{k - n - 1}{2}}}}
+\end{align*}
+This can be rewritten in terms of the $\Gamma$ function, using $\Gamma\of{n + 1} = \Factorial{n}$:
+\begin{equation}
+\label{coefficientusinggamma}
+\binom{n}{k} \binom{\frac{n + k - 1}{2}}{n} =
+  \frac{1}
+       {\Factorial{k}\Factorial{\pa{n - k}}}
+  \frac{\Gamma\of{\frac{n + k + 1}{2}}}
+       {\Gamma\of{\frac{k - n + 1}{2}}}
+\end{equation}
+For positive half-integers, the $\Gamma$ function is given by:
+\begin{equation}
+\label{gammahalfinteger}
+\Gamma\of{\frac{m}{2}} =
+  \sqrt{\Pi}
+  \frac{\DoubleFactorial{\pa{m - 2}}}{2^{\frac{m - 1}{2}}}
+\end{equation}
+Thus, since $n + k + 1 > 0$, we find:
+\begin{equation*}
+\Gamma\of{\frac{n + k + 1}{2}} =
+  \sqrt{\Pi}
+  \frac{\DoubleFactorial{\pa{n + k - 1}}}{2^{\frac{n + k}{2}}}
+\end{equation*}
+For computing the denominator of (\ref{coefficientusinggamma}), we observe that $k - n + 1 < 0$.  The $\Gamma$ function for a negative half-integer may be computed using the reflection formula:
+\begin{equation*}
+\Gamma\of{\frac{m}{2}}\Gamma\of{1 - \frac{m}{2}} = \frac{\Pi}{\sin\of{\Pi\frac{m}{2}}} = \pa{-1}^{\frac{m + 1}{2}} \Pi
+\end{equation*}
+Thus:
+\begin{align*}
+\Gamma\of{\frac{k - n + 1}{2}} &= \frac{\pa{-1}^{\frac{n - k}{2} \Pi}}{\Gamma\of{1 - \frac{k - n + 1}{2}}}\\
+&= \frac{\pa{-1}^{\frac{n - k}{2} \Pi}}{\Gamma\of{\frac{n - k + 1}{2}}}
+\end{align*}
+Using (\ref{gammahalfinteger}) to rewrite the denominator we obtain:
+\begin{equation*}
+\Gamma\of{\frac{k - n + 1}{2}} =
+  \sqrt{\Pi}
+  \frac
+    {\pa{-1}^{\frac{n - k}{2}}{2^{\frac{n - k}{2}}}}
+    {\DoubleFactorial{\pa{n - k - 1}}}
+\end{equation*}
+Putting everything together, the coefficient of $x^k$ is:
+\begin{equation*}
+\binom{n}{k} \binom{\frac{n + k - 1}{2}}{n} =
+  \frac
+    {\pa{-1}^{\frac{n - k}{2}}}
+    {2^n}
+  \frac
+    {\DoubleFactorial{\pa{n + k - 1}}\DoubleFactorial{\pa{n - k - 1}}}
+    {\Factorial{k}\Factorial{\pa{n - k}}}
+\end{equation*}
+And finally:
+\begin{equation*}
+P_n(x) = \sum{\substack{k = 0\\ k \equiv n \pmod 2}}[n]
+  x^k \pa{-1}^{\frac{n - k}{2}}
+  \frac
+    {\DoubleFactorial{\pa{n + k - 1}}\DoubleFactorial{\pa{n - k - 1}}}
+    {\Factorial{k}\Factorial{\pa{n - k}}}
+\end{equation*}
 \end{document}
