@@ -139,5 +139,8 @@
     <ClCompile Include="legendre_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="combinatorics_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
