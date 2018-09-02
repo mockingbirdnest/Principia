@@ -16,9 +16,9 @@ constexpr int FloorOfPowerOf2(int const n) {
   return n == 0 ? 0 : n == 1 ? 1 : FloorOfPowerOf2(n >> 1) << 1;
 }
 
-// Ceiling log2 of n.  8 -> 3, 7 -> 2.
+// Ceiling log2 of n, or 0 for n = 0.  8 -> 3, 7 -> 2.
 constexpr int CeilingLog2(int const n) {
-  return n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
+  return n == 0 ? 0 : n == 1 ? 0 : CeilingLog2(n >> 1) + 1;
 }
 
 }  // namespace
@@ -228,15 +228,19 @@ Derivative<Value, Argument>
 EstrinEvaluator<Value, Argument, degree>::EvaluateDerivative(
     Coefficients const& coefficients,
     Argument const& argument) {
-  using InternalEvaluator = InternalEstrinEvaluator<Value,
-                                                    Argument,
-                                                    degree,
-                                                    /*low=*/1,
-                                                    /*subdegree=*/degree - 1>;
-  return InternalEvaluator::EvaluateDerivative(
-      coefficients,
-      argument,
-      InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  if constexpr (degree == 0) {
+    return Derivative<Value, Argument>{};
+  } else {
+    using InternalEvaluator = InternalEstrinEvaluator<Value,
+                                                      Argument,
+                                                      degree,
+                                                      /*low=*/1,
+                                                      /*subdegree=*/degree - 1>;
+    return InternalEvaluator::EvaluateDerivative(
+        coefficients,
+        argument,
+        InternalEvaluator::ArgumentSquaresGenerator::Evaluate(argument));
+  }
 }
 
 // Internal helper for Horner evaluation.  |degree| is the degree of the overall

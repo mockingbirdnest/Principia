@@ -8,6 +8,7 @@
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "numerics/polynomial_evaluators.hpp"
+#include "quantities/constants.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -30,19 +31,24 @@ using geometry::Vector;
 using geometry::Velocity;
 using quantities::Acceleration;
 using quantities::Energy;
+using quantities::Entropy;
 using quantities::Length;
 using quantities::Product;
 using quantities::Quotient;
 using quantities::Current;
 using quantities::Temperature;
 using quantities::Time;
+using quantities::constants::BoltzmannConstant;
+using quantities::constants::SpeedOfLight;
 using quantities::si::Ampere;
 using quantities::si::Joule;
 using quantities::si::Kelvin;
 using quantities::si::Metre;
 using quantities::si::Second;
+using quantities::si::Watt;
 using testing_utilities::AlmostEquals;
 using testing_utilities::EqualsProto;
+using ::testing::Eq;
 
 namespace numerics {
 
@@ -232,6 +238,31 @@ TEST_F(PolynomialTest, Derivative) {
             p3.Derivative<2>().Evaluate(0 * Second));
   EXPECT_EQ(6 * Ampere / Second / Second / Second,
             p3.Derivative<3>().Evaluate(0 * Second));
+}
+
+TEST_F(PolynomialTest, EvaluateConstant) {
+  PolynomialInMonomialBasis<Entropy, Time, 0, HornerEvaluator> const
+      horner_boltzmann(std::make_tuple(BoltzmannConstant));
+  PolynomialInMonomialBasis<Entropy, Time, 0, EstrinEvaluator> const
+      estrin_boltzmann(std::make_tuple(BoltzmannConstant));
+  EXPECT_THAT(horner_boltzmann.Evaluate(1729 * Second), Eq(BoltzmannConstant));
+  EXPECT_THAT(estrin_boltzmann.Evaluate(1729 * Second), Eq(BoltzmannConstant));
+  EXPECT_THAT(horner_boltzmann.EvaluateDerivative(1729 * Second),
+              Eq(0 * Watt / Kelvin));
+  EXPECT_THAT(estrin_boltzmann.EvaluateDerivative(1729 * Second),
+              Eq(0 * Watt / Kelvin));
+}
+
+TEST_F(PolynomialTest, EvaluateLinear) {
+  PolynomialInMonomialBasis<Length, Time, 1, HornerEvaluator> const
+      horner_light({0 * Metre, SpeedOfLight});
+  PolynomialInMonomialBasis<Length, Time, 1, EstrinEvaluator> const
+      estrin_light({0 * Metre, SpeedOfLight});
+  constexpr Length light_second = Second * SpeedOfLight;
+  EXPECT_THAT(horner_light.Evaluate(1729 * Second), Eq(1729 * light_second));
+  EXPECT_THAT(estrin_light.Evaluate(1729 * Second), Eq(1729 * light_second));
+  EXPECT_THAT(horner_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
+  EXPECT_THAT(estrin_light.EvaluateDerivative(1729 * Second), Eq(SpeedOfLight));
 }
 
 // Check that polynomials may be serialized.
