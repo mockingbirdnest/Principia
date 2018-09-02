@@ -482,7 +482,7 @@ TEST_P(EphemerisTest, EarthProbe) {
               AnyOf(Eq(410),    // MSVC Release
                     Eq(421)));  // MSVC Debug
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 230, 259));
+              AlmostEquals(1.00 * period * v_probe, 222, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
