@@ -382,9 +382,10 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
 
     // Check that the time step has been updated.
     EXPECT_EQ(131, solution1.size());
-    EXPECT_THAT(solution1[solution1.size() - 1].time.value -
-                solution1[solution1.size() - 2].time.value,
-                AlmostEquals(0.00810677945075361400 * duration, 0));
+    EXPECT_THAT(
+        solution1[solution1.size() - 1].time.value -
+            solution1[solution1.size() - 2].time.value,
+        AlmostEquals(0.509'363'975'335'290'320 * Second, 0));
 
     // Restart the integration.
     outcome = instance->Solve(t_initial + 2.0 * duration);
@@ -392,9 +393,10 @@ TEST_F(EmbeddedExplicitRungeKuttaNyströmIntegratorTest, Restart) {
 
     // Check that the time step has been updated again.
     EXPECT_EQ(261, solution1.size());
-    EXPECT_THAT(solution1[solution1.size() - 1].time.value -
-                solution1[solution1.size() - 2].time.value,
-                AlmostEquals(0.00805976959833537384 * duration, 0, 128));
+    EXPECT_THAT(
+        solution1[solution1.size() - 1].time.value -
+            solution1[solution1.size() - 2].time.value,
+        AlmostEquals(0.506'410'259'195'249'068 * Second, 0));
   }
 
   // Do it again in one call to |Solve| and check associativity.
