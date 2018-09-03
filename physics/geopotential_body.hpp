@@ -27,7 +27,8 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
       Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
   if (body_->has_c22() || body_->has_s22()) {
-    auto const from_surface_frame = body_->FromSurfaceFrame<SurfaceFrame>(t);
+    auto const from_surface_frame =
+        body_->template FromSurfaceFrame<SurfaceFrame>(t);
     UnitVector const reference = from_surface_frame(x_);
     UnitVector const bireference = from_surface_frame(y_);
     acceleration +=

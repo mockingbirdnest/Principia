@@ -21,7 +21,7 @@ using quantities::Apply;
 template<typename LTuple, typename RTuple,
          typename = std::make_index_sequence<
              std::max(std::tuple_size_v<LTuple>, std::tuple_size_v<RTuple>)>>
-struct CartesianProductAdditiveGroup;
+class CartesianProductAdditiveGroup;
 
 template<typename LTuple, typename RTuple, std::size_t... indices>
 class CartesianProductAdditiveGroup<LTuple, RTuple,
@@ -123,7 +123,7 @@ constexpr auto CartesianProductAdditiveGroup<
 
 template<typename Scalar, typename Tuple,
          typename = std::make_index_sequence<std::tuple_size_v<Tuple>>>
-struct CartesianProductVectorSpace;
+class CartesianProductVectorSpace;
 
 template<typename Scalar, typename Tuple, std::size_t... indices>
 class CartesianProductVectorSpace<Scalar, Tuple,
