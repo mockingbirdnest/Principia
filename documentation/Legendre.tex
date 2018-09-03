@@ -79,21 +79,28 @@ Using (\ref{gammahalfinteger}) to rewrite the denominator we obtain:
     {\DoubleFactorial{\pa{n - k - 1}}}
 \end{equation*}
 Putting everything together, the coefficient of $x^k$ is:
-\begin{equation*}
-\binom{n}{k} \binom{\frac{n + k - 1}{2}}{n} =
+\begin{align*}
+\binom{n}{k} \binom{\frac{n + k - 1}{2}}{n} &=
   \frac
     {\pa{-1}^{\frac{n - k}{2}}}
     {2^n}
   \frac
     {\DoubleFactorial{\pa{n + k - 1}}\DoubleFactorial{\pa{n - k - 1}}}
     {\Factorial{k}\Factorial{\pa{n - k}}}
-\end{equation*}
+&=
+  \frac
+    {\pa{-1}^{\frac{n - k}{2}}}
+    {2^n}
+  \frac
+    {\DoubleFactorial{\pa{n + k - 1}}}
+    {\Factorial{k}\DoubleFactorial{\pa{n - k}}}
+\end{align*}
 And finally:
 \begin{equation*}
 P_n(x) = \sum{\substack{k = 0\\ k \equiv n \pmod 2}}[n]
   x^k \pa{-1}^{\frac{n - k}{2}}
   \frac
-    {\DoubleFactorial{\pa{n + k - 1}}\DoubleFactorial{\pa{n - k - 1}}}
-    {\Factorial{k}\Factorial{\pa{n - k}}}
+    {\DoubleFactorial{\pa{n + k - 1}}}
+    {\Factorial{k}\DoubleFactorial{\pa{n - k}}}
 \end{equation*}
 \end{document}
