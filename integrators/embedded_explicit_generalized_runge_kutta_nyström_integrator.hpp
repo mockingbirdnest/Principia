@@ -147,8 +147,9 @@ class EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator
 
 template<typename Method, typename Position>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position> const&
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
+                                                           Position> const&
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator();
 
 }  // namespace integrators
 }  // namespace principia

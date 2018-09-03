@@ -349,14 +349,17 @@ ReadFromMessage(
 
 template<typename Method, typename Position>
 internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
-    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position> const&
-EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
+    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
+                                                           Position> const&
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator() {
   static_assert(
       std::is_base_of<methods::EmbeddedExplicitGeneralizedRungeKuttaNyström,
                       Method>::value,
-      "Method must be derived from EmbeddedExplicitGeneralizedRungeKuttaNyström");
+      "Method must be derived from "
+      "EmbeddedExplicitGeneralizedRungeKuttaNyström");
   static internal_embedded_explicit_runge_kutta_nyström_integrator::
-      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method, Position> const
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
+                                                             Position> const
           integrator;
   return integrator;
 }
