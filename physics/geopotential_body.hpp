@@ -54,43 +54,76 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 }
 
 template<typename Frame>
-template<int degree, std::size_t head_order, std::size_t... tail_orders>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::DegreeNOrderMAcceleration(
-    Displacement<Frame> const& r,
-    Length const& rx,
-    Length const& ry,
-    Length const& rz,
-    Length const& r_norm,
-    Exponentiation<Length, -3> const& one_over_r³,
-    double const sin_β,
-    double const cos_β,
-    double const one_over_cos²_β,
-    Angle const& λ) {
-  constexpr int n = degree;
-  constexpr int m = head_order;
-  auto const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
-  auto const latitudinal_factor_derivative =
-      one_over_cos²_β *
-      (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
-        m * sin_β * latitudinal_factor) *
-      (r * rz * one_over_r³- z / r_norm);
+template<int degree, int order>
+struct Geopotential<Frame>::DegreeNOrderM {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration(Displacement<Frame> const& r,
+               Length const& rx,
+               Length const& ry,
+               Length const& rz,
+               Length const& r_norm,
+               Exponentiation<Length, -3> const& one_over_r³,
+               double const sin_β,
+               double const cos_β,
+               double const one_over_cos²_β,
+               Angle const& λ) {
+    constexpr int n = degree;
+    constexpr int m = order;
+    auto const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
+    auto const latitudinal_factor_derivative =
+        one_over_cos²_β *
+        (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
+          m * sin_β * latitudinal_factor) *
+        (r * rz * one_over_r³- z / r_norm);
 
-  Angle const mλ = m * λ;
-  double const sin_mλ = Sin(mλ);
-  double const cos_mλ = Cos(mλ);
-  auto const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
-  auto const longitudinal_factor_derivative =
-      m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
+    Angle const mλ = m * λ;
+    double const sin_mλ = Sin(mλ);
+    double const cos_mλ = Cos(mλ);
+    auto const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
+    auto const longitudinal_factor_derivative =
+        m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
 
-  return radial_factor_derivative * latitudinal_factor * longitudinal_factor +
-         radial_factor * latitudinal_factor_derivative * longitudinal_factor +
-         radial_factor * latitudinal_factor * longitudinal_factor_derivative +
-         DegreeNOrderMAcceleration<degree, tail_orders>(
-            r, rx, ry, rz, r_norm, one_over_r³,
-            sin_β, cos_β, one_over_cos²_β,
-            λ);
-}
+    return radial_factor_derivative * latitudinal_factor * longitudinal_factor +
+           radial_factor * latitudinal_factor_derivative * longitudinal_factor +
+           radial_factor * latitudinal_factor * longitudinal_factor_derivative;
+  }
+};
+
+template<typename Frame>
+template<int degree, int... orders>
+struct Geopotential<Frame>::
+DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration(Displacement<Frame> const& r,
+               Length const& rx,
+               Length const& ry,
+               Length const& rz,
+               Length const& r_norm,
+               Exponentiation<Length, -3> const& one_over_r³,
+               double const sin_β,
+               double const cos_β,
+               double const one_over_cos²_β,
+               Angle const& λ) {
+    return (DegreeNOrderM<degree, orders>::Acceleration(
+                r, rx, ry, rz, r_norm, one_over_r³,
+                sin_β, cos_β, one_over_cos²_β,
+                λ) + ...);
+  }
+};
+
+template<typename Frame>
+template<int... degrees>
+struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration() {
+    return (DegreeNAllOrders<degrees,
+                             std::make_integer_sequence<int, degrees + 1>>::
+            Acceleration(r, rx, ry, rz, r_norm, one_over_r³,
+                         sin_β, cos_β, one_over_cos²_β,
+                         λ) +
+            ...);
+  }
+};
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -119,34 +152,12 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
                   std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
 
   auto radial_factor = one_over_r³;
-  for (int n = 2; n < 10; ++n) {
-    auto radial_factor_derivative = -(n + 1) * radial_factor / r²;
-
-    for (int m = 0; m <= n; ++m) {
-      auto const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
-      auto const latitudinal_factor_derivative =
-          one_over_cos²_β *
-          (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
-           m * sin_β * latitudinal_factor) *
-          (r * rz * one_over_r³- z / r_norm);
-
-      Angle const mλ = m * λ;
-      double const sin_mλ = Sin(mλ);
-      double const cos_mλ = Cos(mλ);
-      auto const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
-      auto const longitudinal_factor_derivative =
-          m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
-
-      acceleration +=
-          radial_factor_derivative * latitudinal_factor * longitudinal_factor +
-          radial_factor * latitudinal_factor_derivative * longitudinal_factor +
-          radial_factor * latitudinal_factor * longitudinal_factor_derivative;
-    }
-
-    radial_factor /= r_norm;
-  }
-
-  return acceleration;
+  auto radial_factor_derivative = -(n + 1) * radial_factor / r²;
+  radial_factor /= r_norm;
+  return AllDegrees<std::make_integer_sequence<int, 20>>::Acceleration(
+             r, rx, ry, rz, r_norm, one_over_r³,
+             sin_β, cos_β, one_over_cos²_β,
+             λ);
 }
 
 template<typename Frame>

@@ -51,18 +51,14 @@ class Geopotential {
   using UnitVector = Vector<double, Frame>;
 
   //TODO(phl): Comment
-  template<int degree, std::size_t head_order, std::size_t... tail_orders>
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  DegreeNOrderMAcceleration(Displacement<Frame> const& r,
-                            Length const& rx,
-                            Length const& ry,
-                            Length const& rz,
-                            Length const& r_norm,
-                            Exponentiation<Length, -3> const& one_over_r³,
-                            double sin_β,
-                            double cos_β,
-                            double one_over_cos²_β,
-                            Angle const& λ);
+  template<int degree, int order>
+  struct DegreeNOrderM;
+
+  template<int degree, typename>
+  struct DegreeNAllOrders;
+
+  template<typename>
+  struct AllDegrees;
 
   //TODO(phl): Comment
   template<int degree, int order>
