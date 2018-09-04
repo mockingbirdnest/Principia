@@ -16,6 +16,7 @@ namespace internal_geopotential {
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
 using quantities::Cos;
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Sqrt;
@@ -57,11 +58,18 @@ template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(Displacement<Frame> const& r,
+  Acceleration(UnitVector const& x,
+               UnitVector const& y,
+               UnitVector const& z,
+               Displacement<Frame> const& r,
+               Square<Length> const rx²_plus_ry²,
                Length const& rx,
                Length const& ry,
                Length const& rz,
                Length const& r_norm,
+               Inverse<Length> const& radial_factor,
+               Vector<Exponentiation<Length, -2>, Frame> const&
+                   radial_factor_derivative,
                Exponentiation<Length, -3> const& one_over_r³,
                double const sin_β,
                double const cos_β,
@@ -73,8 +81,12 @@ struct Geopotential<Frame>::DegreeNOrderM {
     auto const latitudinal_factor_derivative =
         one_over_cos²_β *
         (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
-          m * sin_β * latitudinal_factor) *
+            m * sin_β * latitudinal_factor) *
         (r * rz * one_over_r³- z / r_norm);
+
+    //TODO(phl): Fix.
+    double const Cnm = 1.0;
+    double const Snm = 1.0;
 
     Angle const mλ = m * λ;
     double const sin_mλ = Sin(mλ);
@@ -94,7 +106,13 @@ template<int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(Displacement<Frame> const& r,
+  Acceleration(UnitVector const& x,
+               UnitVector const& y,
+               UnitVector const& z,
+               Length const& reference_radius,
+               Displacement<Frame> const& r,
+               Square<Length> const& r²,
+               Square<Length> const rx²_plus_ry²,
                Length const& rx,
                Length const& ry,
                Length const& rz,
@@ -104,8 +122,15 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
                double const cos_β,
                double const one_over_cos²_β,
                Angle const& λ) {
+    constexpr int n = degree;
+    Inverse<Length> const radial_factor =
+        Pow<n>(reference_radius / r_norm) / r_norm;
+    Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
+        -(n + 1) * r * radial_factor / r²;
     return (DegreeNOrderM<degree, orders>::Acceleration(
-                r, rx, ry, rz, r_norm, one_over_r³,
+                x, y, z,
+                r, rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
+                radial_factor, radial_factor_derivative,
                 sin_β, cos_β, one_over_cos²_β,
                 λ) + ...);
   }
@@ -115,10 +140,27 @@ template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration() {
+  Acceleration(UnitVector const& x,
+               UnitVector const& y,
+               UnitVector const& z,
+               Length const& reference_radius,
+               Displacement<Frame> const& r,
+               Square<Length> const& r²,
+               Square<Length> const rx²_plus_ry²,
+               Length const& rx,
+               Length const& ry,
+               Length const& rz,
+               Length const& r_norm,
+               Exponentiation<Length, -3> const& one_over_r³,
+               double const sin_β,
+               double const cos_β,
+               double const one_over_cos²_β,
+               Angle const& λ) {
     return (DegreeNAllOrders<degrees,
                              std::make_integer_sequence<int, degrees + 1>>::
-            Acceleration(r, rx, ry, rz, r_norm, one_over_r³,
+            Acceleration(x, y, z,
+                         reference_radius,
+                         r, r², rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
                          sin_β, cos_β, one_over_cos²_β,
                          λ) +
             ...);
@@ -151,11 +193,13 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
   Angle const λ = SIUnit<Angle>() *
                   std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
 
-  auto radial_factor = one_over_r³;
-  auto radial_factor_derivative = -(n + 1) * radial_factor / r²;
-  radial_factor /= r_norm;
+  //TODO(phl): fix
+  Length const reference_radius;
+
   return AllDegrees<std::make_integer_sequence<int, 20>>::Acceleration(
-             r, rx, ry, rz, r_norm, one_over_r³,
+             x, y, z,
+             reference_radius,
+             r, r², rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
              sin_β, cos_β, one_over_cos²_β,
              λ);
 }
