@@ -35,7 +35,7 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
-  Vector<Exponentiation<Length, -2>, Frame>
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   FullSphericalHarmonicsAcceleration(
       Instant const& t,
       Displacement<Frame> const& r,

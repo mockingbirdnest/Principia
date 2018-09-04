@@ -60,7 +60,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  static Vector<Exponentiation<Length, -2>, Frame>
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -112,7 +112,7 @@ template<typename Frame>
 template<int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
-  static Vector<Exponentiation<Length, -2>, Frame>
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -146,7 +146,7 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static Vector<Exponentiation<Length, -2>, Frame>
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -175,7 +175,7 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 };
 
 template<typename Frame>
-Vector<Exponentiation<Length, -2>, Frame>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
     Instant const& t,
     Displacement<Frame> const& r,
