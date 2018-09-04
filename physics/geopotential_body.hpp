@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include "numerics/legendre.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using numerics::HornerEvaluator;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
 using quantities::Cos;
@@ -57,7 +59,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<Exponentiation<Length, -2>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -67,18 +69,18 @@ struct Geopotential<Frame>::DegreeNOrderM {
                Length const& ry,
                Length const& rz,
                Length const& r_norm,
+               Exponentiation<Length, -3> const& one_over_r³,
                Inverse<Length> const& radial_factor,
                Vector<Exponentiation<Length, -2>, Frame> const&
                    radial_factor_derivative,
-               Exponentiation<Length, -3> const& one_over_r³,
                double const sin_β,
                double const cos_β,
                double const one_over_cos²_β,
                Angle const& λ) {
     constexpr int n = degree;
     constexpr int m = order;
-    auto const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
-    auto const latitudinal_factor_derivative =
+    double const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
+    Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
         one_over_cos²_β *
         (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
             m * sin_β * latitudinal_factor) *
@@ -91,8 +93,8 @@ struct Geopotential<Frame>::DegreeNOrderM {
     Angle const mλ = m * λ;
     double const sin_mλ = Sin(mλ);
     double const cos_mλ = Cos(mλ);
-    auto const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
-    auto const longitudinal_factor_derivative =
+    double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
+    Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
         m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
 
     return radial_factor_derivative * latitudinal_factor * longitudinal_factor +
@@ -105,7 +107,7 @@ template<typename Frame>
 template<int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<Exponentiation<Length, -2>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -139,7 +141,7 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<Exponentiation<Length, -2>, Frame>
   Acceleration(UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
@@ -168,7 +170,7 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 };
 
 template<typename Frame>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Vector<Exponentiation<Length, -2>, Frame>
 Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
     Instant const& t,
     Displacement<Frame> const& r,
@@ -208,7 +210,7 @@ template<typename Frame>
 template<int degree, int order>
 double Geopotential<Frame>::AssociatedLegendrePolynomial(
     double const argument) {
-  static auto const Pn = LegendrePolynomial<degree>();
+  static auto const Pn = LegendrePolynomial<degree, HornerEvaluator>();
   static auto const DmPn = Pn.Derivative<order>();
   double const one_minus_argument² = 1 - argument * argument;
   double const multiplier = Pow<order / 2>(one_minus_argument²);
