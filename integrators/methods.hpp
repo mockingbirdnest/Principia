@@ -23,10 +23,41 @@ struct EmbeddedExplicitRungeKuttaNyström : not_constructible {
   // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
   // static constexpr FixedVector<double, stages> c = ...;
   // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
-  // static constexpr FixedVector<double, stages> b_hat = ...;
-  // static constexpr FixedVector<double, stages> b_prime_hat = ...;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
   // static constexpr FixedVector<double, stages> b = ...;
-  // static constexpr FixedVector<double, stages> b_prime = ...;
+  // static constexpr FixedVector<double, stages> bʹ = ...;
+};
+
+// Every RKNG method is an RKN method by simply ignoring aʹ, hence the
+// inheritance.  Every RK method can be turned into an RKNG method, however this
+// requires a computation, so it is done explicitly.
+struct EmbeddedExplicitGeneralizedRungeKuttaNyström
+    : EmbeddedExplicitRungeKuttaNyström {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ = .;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b̂ʹ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
+  // static constexpr FixedVector<double, stages> bʹ = ...;
+};
+
+struct EmbeddedExplicitRungeKutta : not_constructible {
+  // static constexpr int higher_order = ...;
+  // static constexpr int lower_order = ...;
+  // static constexpr int stages = ...;
+  // static constexpr bool first_same_as_last = ...;
+  // static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind = ..;
+  // static constexpr FixedVector<double, stages> c = ...;
+  // static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a = ..;
+  // static constexpr FixedVector<double, stages> b̂ = ...;
+  // static constexpr FixedVector<double, stages> b = ...;
 };
 
 struct SymmetricLinearMultistep : not_constructible {
@@ -313,7 +344,38 @@ struct CandyRozmus1991ForestRuth1990 : SymplecticPartitionedRungeKutta {
                                                    +0.6756035959798288170}}};
 };
 
-// Coefficients from Dormand, المكاوى (El-Mikkawy), and Prince (1986),
+// Coefficients from Fine (1987), Low order practical Methods.
+struct Fine1987RKNG34 : EmbeddedExplicitGeneralizedRungeKuttaNyström {
+  static constexpr int higher_order = 4;
+  static constexpr int lower_order = 3;
+  static constexpr int stages = 5;
+  static constexpr bool first_same_as_last = false;
+  static constexpr serialization::AdaptiveStepSizeIntegrator::Kind kind =
+      serialization::AdaptiveStepSizeIntegrator::
+          DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM;
+  static constexpr FixedVector<double, stages> c{{
+      { 0           ,    2 /   9.0,   1 /     3.0,  3 /     4.0,  1.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> a{{
+      {  2 /    81.0,
+         1 /    36.0,    1 /  36.0,
+         9 /   128.0,    0        ,  27 /   128.0,
+        11 /    60.0,   -3 /  20.0,   9 /    25.0,  8 /    75.0}}};
+  static constexpr FixedStrictlyLowerTriangularMatrix<double, stages> aʹ{{
+      {  2 /     9.0,
+         1 /    12.0,    1 /   4.0,
+        69 /   128.0, -234 / 128.0, 135 /    64.0,
+       -17 /    12.0,   27 /   4.0, -27 /     5.0, 16 /    15.0}}};
+  static constexpr FixedVector<double, stages> b̂{{
+      { 19 /   180.0,    0        ,  63 /   200.0, 16 /   225.0,   1 / 120.0}}};
+  static constexpr FixedVector<double, stages> b̂ʹ{{
+      {  1 /     9.0,    0        ,   9 /    20.0, 16 /    45.0,   1 /  12.0}}};
+  static constexpr auto b = b̂ - FixedVector<double, stages>{{
+      { 25 / 1'116.0,    0        , -63 / 1'240.0, 64 / 1'395.0, -13 / 744.0}}};
+  static constexpr auto bʹ = b̂ʹ - FixedVector<double, stages>{{
+      {  2 /   125.0,    0        , -27 /   625.0, 32 /   625.0,  -3 / 125.0}}};
+};
+
+// Coefficients from Dormand, El-Mikkawy, and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, table 3 (the RK4(3)4FM).
 // Minimizes the 4th order truncation error.
 struct DormandالمكاوىPrince1986RKN434FM :
@@ -331,13 +393,13 @@ struct DormandالمكاوىPrince1986RKN434FM :
       { 1.0 /   32.0,
         7.0 / 1000.0, 119.0 / 500.0,
         1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0}}};
-  static constexpr FixedVector<double, stages> b_hat{{
+  static constexpr FixedVector<double, stages> b̂{{
       { 1.0 /   14.0,   8.0 /  27.0,  25.0 / 189.0,  0.0}}};
-  static constexpr FixedVector<double, stages> b_prime_hat{{
+  static constexpr FixedVector<double, stages> b̂ʹ{{
       { 1.0 /   14.0,  32.0 /  81.0, 250.0 / 567.0,  5.0 / 54.0}}};
   static constexpr FixedVector<double, stages> b{{
       {-7.0 /  150.0,  67.0 / 150.0,   3.0 /  20.0, -1.0 / 20.0}}};
-  static constexpr FixedVector<double, stages> b_prime{{
+  static constexpr FixedVector<double, stages> bʹ{{
       {13.0 /   21.0, -20.0 /  27.0, 275.0 / 189.0, -1.0 /  3.0}}};
 };
 
@@ -653,7 +715,7 @@ struct McLachlanAtela1992Order5Optimal : SymplecticRungeKuttaNyström {
 //   construction des tables astronomiques, in Mémoires de l'Académie Royale des
 //   Sciences de Turin, vol. V, Mémoires présentés à l'Académie, p. 143-180.
 //   http://www.biodiversitylibrary.org/item/32318#page/698/mode/1up.
-// - Størmer (1907), Sur les trajectoires des corpuscules électrisés dans
+// - Störmer (1907), Sur les trajectoires des corpuscules électrisés dans
 //   l'espace, avec application aux aurores boréales.
 //   https://hal.archives-ouvertes.fr/jpa-00242574/document.
 // - Verlet (1967) Computer "Experiments" on classical fluids. I.
@@ -805,10 +867,10 @@ struct Ruth1983 : SymplecticPartitionedRungeKutta {
       {{7.0 / 24.0, 3.0 / 4.0, -1.0 / 24.0}}};
 };
 
-// Coefficients from 鈴木 (Suzuki, 1990), Fractal decomposition of exponential
+// Coefficients from Suzuki (1990), Fractal decomposition of exponential
 // operators with applications to many-body theories and Monte Carlo
-// simulations; see also the Japanese version,
-// 量子系のフラクタル経路積分法 と量子コヒーレンス,
+// simulations; see also the Japanese version:
+// 鈴木 (1990), 量子系のフラクタル経路積分法 と量子コヒーレンス,
 // https://www.jstage.jst.go.jp/article/soken/82/3/82_KJ00004703731/_pdf.
 struct 鈴木1990 : SymplecticPartitionedRungeKutta {
   static constexpr int order = 4;
@@ -832,7 +894,7 @@ struct 鈴木1990 : SymplecticPartitionedRungeKutta {
                                                    +0.20724538589718786857}}};
 };
 
-// The following methods have coefficients from 吉田 (Yoshida, 1990),
+// The following methods have coefficients from Yoshida (1990),
 // Construction of higher order symplectic integrators
 // http://sixtrack.web.cern.ch/SixTrack/doc/yoshida00.pdf.
 // NOTE(egg): The coefficients were derived from equations 5.4 through 5.17

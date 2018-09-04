@@ -25,13 +25,6 @@ ExplicitSecondOrderOrdinaryDifferentialEquation<
     Position_>::SystemState::SystemState(std::vector<Position> const& q,
                                          std::vector<Velocity> const& v,
                                          Instant const& t)
-    : positions(q), velocities(v), time(t) {}
-
-template<typename Position_>
-SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
-    std::vector<Position> const& q,
-    std::vector<Velocity> const& v,
-    Instant const& t)
     : time(t) {
   for (int i = 0; i < q.size(); ++i) {
     positions.emplace_back(q[i]);
@@ -40,9 +33,8 @@ SpecialSecondOrderDifferentialEquation<Position_>::SystemState::SystemState(
 }
 
 template<typename Position>
-void
-SpecialSecondOrderDifferentialEquation<Position>::SystemState::WriteToMessage(
-        not_null<serialization::SystemState*> const message) const {
+void ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState::
+    WriteToMessage(not_null<serialization::SystemState*> const message) const {
   for (auto const& position : positions) {
     position.WriteToMessage(message->add_position());
   }
@@ -53,9 +45,9 @@ SpecialSecondOrderDifferentialEquation<Position>::SystemState::WriteToMessage(
 }
 
 template<typename Position>
-typename SpecialSecondOrderDifferentialEquation<Position>::SystemState
-SpecialSecondOrderDifferentialEquation<Position>::SystemState::ReadFromMessage(
-        serialization::SystemState const& message) {
+typename ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState
+ExplicitSecondOrderOrdinaryDifferentialEquation<Position>::SystemState::
+    ReadFromMessage(serialization::SystemState const& message) {
   SystemState system_state;
   for (auto const& p : message.position()) {
     system_state.positions.push_back(

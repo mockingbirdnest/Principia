@@ -77,7 +77,7 @@ class PolynomialInMonomialBasis : public Polynomial<Value, Argument> {
 
   constexpr int degree() const override;
 
-  template<int order>
+  template<int order = 1>
   PolynomialInMonomialBasis<
       Derivative<Value, Argument, order>, Argument, degree_ - order, Evaluator>
   Derivative() const;

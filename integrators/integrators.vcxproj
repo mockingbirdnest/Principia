@@ -13,6 +13,8 @@
     <ClInclude Include="backward_difference_body.hpp" />
     <ClInclude Include="cohen_hubbard_oesterwinter.hpp" />
     <ClInclude Include="cohen_hubbard_oesterwinter_body.hpp" />
+    <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp" />
+    <ClInclude Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator.hpp" />
     <ClInclude Include="embedded_explicit_runge_kutta_nyström_integrator_body.hpp" />
     <ClInclude Include="backward_difference.hpp" />
@@ -31,6 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
+    <ClCompile Include="embedded_explicit_generalized_runge_kutta_nyström_integrator_test.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator_test.cpp" />
     <ClCompile Include="symmetric_linear_multistep_integrator_test.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator_test.cpp" />

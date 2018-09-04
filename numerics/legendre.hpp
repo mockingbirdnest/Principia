@@ -12,6 +12,9 @@ constexpr PolynomialInMonomialBasis<double, double, degree_, Evaluator>
 LegendrePolynomial();
 
 }  // namespace internal_legendre
+
+using internal_legendre::LegendrePolynomial;
+
 }  // namespace numerics
 }  // namespace principia
 
