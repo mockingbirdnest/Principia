@@ -80,11 +80,15 @@ struct Geopotential<Frame>::DegreeNOrderM {
                Angle const& λ) {
     constexpr int n = degree;
     constexpr int m = order;
+    static_assert(0 <= m && m <= n);
+
     double const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
+    double latitudinal_polynomials = m * sin_β * latitudinal_factor;
+    if constexpr (m < n) {
+      latitudinal_polynomials += AssociatedLegendrePolynomial<n, m + 1>(sin_β);
+    }
     Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
-        one_over_cos²_β *
-        (cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β) +
-            m * sin_β * latitudinal_factor) *
+        one_over_cos²_β * latitudinal_polynomials *
         (r * rz * one_over_r³- z / r_norm);
 
     //TODO(phl): Fix.
@@ -199,7 +203,7 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
   //TODO(phl): fix
   Length const reference_radius;
 
-  return AllDegrees<std::make_integer_sequence<int, 20>>::Acceleration(
+  return AllDegrees<std::make_integer_sequence<int, 4>>::Acceleration(
              x, y, z,
              reference_radius,
              r, r², rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
