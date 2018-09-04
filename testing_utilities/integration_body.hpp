@@ -5,6 +5,7 @@
 
 #include "testing_utilities/integration.hpp"
 
+#include "astronomy/epoch.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/named_quantities.hpp"
@@ -13,6 +14,7 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_integration {
 
+using astronomy::J2000;
 using geometry::Displacement;
 using geometry::InnerProduct;
 using quantities::Exponentiation;
@@ -28,19 +30,7 @@ using quantities::Sqrt;
 using quantities::Square;
 using quantities::Stiffness;
 using quantities::Time;
-
-inline void ComputeHarmonicOscillatorForce(
-    Time const& t,
-    std::vector<Length> const& q,
-    std::vector<Force>& result) {
-  result[0] = -q[0] * SIUnit<Stiffness>();
-}
-
-inline void ComputeHarmonicOscillatorVelocity(
-    std::vector<Momentum> const& p,
-    std::vector<Speed>& result) {
-  result[0] = p[0] / SIUnit<Mass>();
-}
+using quantities::si::Second;
 
 inline Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
@@ -83,33 +73,41 @@ inline Status ComputeKeplerAcceleration(
   return Status::OK;
 }
 
-template<typename Frame>
-void ComputeGravitationalAcceleration(
-    Time const& t,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>& result,
-    std::vector<MassiveBody> const& bodies) {
-  result.assign(result.size(), Vector<Acceleration, Frame>());
-  for (int b1 = 1; b1 < q.size(); ++b1) {
-    GravitationalParameter const& μ1 = bodies[b1].gravitational_parameter();
-    for (int b2 = 0; b2 < b1; ++b2) {
-      Displacement<Frame> const Δq = q[b1] - q[b2];
-      Square<Length> const r² = Δq.Norm²();
-      Exponentiation<Length, -3> const one_over_r³ = Sqrt(r²) / (r² * r²);
-      {
-        auto const μ1_over_r³ = μ1 * one_over_r³;
-        result[b2] += Δq * μ1_over_r³;
-      }
-      // Lex. III. Actioni contrariam semper & æqualem esse reactionem:
-      // sive corporum duorum actiones in se mutuo semper esse æquales &
-      // in partes contrarias dirigi.
-      {
-        GravitationalParameter const& μ2 = bodies[b2].gravitational_parameter();
-        auto const μ2_over_r³ = μ2 * one_over_r³;
-        result[b1] -= Δq * μ2_over_r³;
-      }
-    }
+
+template<int degree>
+Status ComputeЧебышёвPolynomialSecondDerivative(
+    Instant const& t,
+    std::vector<double> const& ч,
+    std::vector<Variation<double>> const& чʹ,
+    std::vector<Variation<Variation<double>>>& чʺ,
+    int* evaluations) {
+  constexpr int n² = degree * degree;
+  constexpr auto s² = Pow<2>(Second);
+  Time const x = (t - J2000);
+  auto const x² = x * x;
+  чʺ[0] = (x * чʹ[0] - n² * ч[0]) / (1 * s² - x²);
+  if (evaluations != nullptr) {
+    ++*evaluations;
   }
+  return Status::OK;
+}
+
+template<int degree>
+Status ComputeLegendrePolynomialSecondDerivative(
+    Instant const& t,
+    std::vector<double> const& p,
+    std::vector<Variation<double>> const& pʹ,
+    std::vector<Variation<Variation<double>>>& pʺ,
+    int* evaluations) {
+  constexpr int n = degree;
+  constexpr auto s² = Pow<2>(Second);
+  Time const x = (t - J2000);
+  auto const x² = x * x;
+  pʺ[0] = (2 * x * pʹ[0] - n * (n + 1) * p[0]) / (1 * s² - x²);
+  if (evaluations != nullptr) {
+    ++*evaluations;
+  }
+  return Status::OK;
 }
 
 }  // namespace internal_integration

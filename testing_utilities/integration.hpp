@@ -25,25 +25,13 @@ using quantities::Length;
 using quantities::Momentum;
 using quantities::Speed;
 using quantities::Time;
+using quantities::Variation;
 
 // Right-hand sides for various differential equations frequently used to test
 // the properties of integrators.
 
-// The one-dimensional unit harmonic oscillator,
-//   q' = p / m,  |ComputeHarmonicOscillatorVelocity|,
-//   p' = -k q, |ComputeHarmonicOscillatorForce|,
-// where m = 1 kg, k = 1 N / m.
-
-void ComputeHarmonicOscillatorForce(Time const& t,
-                                    std::vector<Length> const& q,
-                                    std::vector<Force>& result);
-
-void ComputeHarmonicOscillatorVelocity(
-    std::vector<Momentum> const& p,
-    std::vector<Speed>& result);
-
 // The Runge-Kutta-Nyström formulation
-//   q" = -q k / m.
+//   qʺ = -q k / m.
 Status ComputeHarmonicOscillatorAcceleration1D(
     Instant const& t,
     std::vector<Length> const& q,
@@ -67,21 +55,37 @@ Status ComputeKeplerAcceleration(Instant const& t,
                                  std::vector<Acceleration>& result,
                                  int* evaluations);
 
-template<typename Frame>
-void ComputeGravitationalAcceleration(
-    Time const& t,
-    std::vector<Position<Frame>> const& q,
-    std::vector<Vector<Acceleration, Frame>>& result,
-    std::vector<MassiveBody> const& bodies);
+// The right-hand side of the Чебышёв differential equation, with the
+// independent variable scaled so that the interval [-1, 1] maps to
+// [J2000 - 1 s, J2000 + 1 s].
+// ч, чʹ, and чʺ must have size 1.
+template<int degree>
+Status ComputeЧебышёвPolynomialSecondDerivative(
+    Instant const& t,
+    std::vector<double> const& ч,
+    std::vector<Variation<double>> const& чʹ,
+    std::vector<Variation<Variation<double>>>& чʺ,
+    int* evaluations);
+
+// The right-hand side of the Legendre differential equation, with the
+// independent variable scaled so that the interval [-1, 1] maps to
+// [J2000 - 1 s, J2000 + 1 s].
+// p, pʹ, and pʺ must have size 1.
+template<int degree>
+Status ComputeLegendrePolynomialSecondDerivative(
+    Instant const& t,
+    std::vector<double> const& p,
+    std::vector<Variation<double>> const& pʹ,
+    std::vector<Variation<Variation<double>>>& pʺ,
+    int* evaluations);
 
 }  // namespace internal_integration
 
-using internal_integration::ComputeGravitationalAcceleration;
+using internal_integration::ComputeЧебышёвPolynomialSecondDerivative;
 using internal_integration::ComputeHarmonicOscillatorAcceleration1D;
 using internal_integration::ComputeHarmonicOscillatorAcceleration3D;
-using internal_integration::ComputeHarmonicOscillatorForce;
-using internal_integration::ComputeHarmonicOscillatorVelocity;
 using internal_integration::ComputeKeplerAcceleration;
+using internal_integration::ComputeLegendrePolynomialSecondDerivative;
 
 }  // namespace testing_utilities
 }  // namespace principia

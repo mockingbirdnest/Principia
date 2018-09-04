@@ -217,7 +217,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .coordinates()
                     .ToSpherical()
                     .longitude,
-                AlmostEquals(elements.longitude_of_ascending_node, 2, 100));
+                AlmostEquals(elements.longitude_of_ascending_node, 1, 100));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 20));
     }
@@ -232,7 +232,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                 .coordinates()
                 .ToSpherical()
                 .longitude,
-        AlmostEquals(elements.longitude_of_ascending_node - π * Radian, 0, 25));
+        AlmostEquals(elements.longitude_of_ascending_node - π * Radian, 0, 26));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 29));
     }

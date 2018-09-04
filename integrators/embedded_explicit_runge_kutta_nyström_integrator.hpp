@@ -36,16 +36,27 @@ using quantities::Variation;
 // using an embedded Runge-Kutta-Nyström method.  We follow the standard
 // conventions for the coefficients, i.e.,
 //   c for the nodes;
-//   a for the Runge-Kutta matrix;
+//   a for the position Runge-Kutta matrix;
 //   b̂ for the position weights of the high-order method;
 //   b̂′ for the velocity weights of the high-order method;
 //   b for the position weights of the low-order method;
 //   b′ for the velocity weights of the low-order method.
 // See Dormand, El-Mikkawy and Prince (1986),
 // Families of Runge-Kutta-Nyström formulae, for an example.
+// Note that other notations exist for the weights:
+// El-Mikkawy and Rahmo (2003), A new optimized non-FSAL embedded
+// Runge–Kutta–Nystrom algorithm of orders 6 and 4 in six stages, and
+// Sommeijer (1993), Explicit, high-order Runge-Kutta-Nyström methods for
+// parallel computers, call the the velocity weights d instead of b′,
+// and Alonso-Mallo, Cano, and Moreta (2005), Stability of Runge–Kutta–Nyström
+// methods, call the position and velocity weights β and b instead of b and b′.
+// Further, Dormand (1996), Numerical Methods for Differential Equations: A
+// Computational Approach, uses ā for the Runge-Kutta matrix, and b̄ and b for
+// the position and velocity weights.
+
 // In the implementation, we follow Dormand, El-Mikkawy and Prince in calling
 // the results of the right-hand-side evaluations gᵢ.  The notations kᵢ or fᵢ
-// also appear in the litterature.
+// also appear in the literature.
 // Since we are interested in physical applications, we call the solution q and
 // its derivative v, rather than the more common y and y′ found in the
 // literature on Runge-Kutta-Nyström methods.
@@ -122,10 +133,10 @@ class EmbeddedExplicitRungeKuttaNyströmIntegrator
   static constexpr auto stages_ = Method::stages;
   static constexpr auto c_ = Method::c;
   static constexpr auto a_ = Method::a;
-  static constexpr auto b_hat_ = Method::b_hat;
-  static constexpr auto b_prime_hat_ = Method::b_prime_hat;
+  static constexpr auto b̂_ = Method::b̂;
+  static constexpr auto b̂ʹ_ = Method::b̂ʹ;
   static constexpr auto b_ = Method::b;
-  static constexpr auto b_prime_ = Method::b_prime;
+  static constexpr auto bʹ_ = Method::bʹ;
 };
 
 }  // namespace internal_embedded_explicit_runge_kutta_nyström_integrator

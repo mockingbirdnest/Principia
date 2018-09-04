@@ -151,10 +151,10 @@ struct ExplicitSecondOrderOrdinaryDifferentialEquation final {
     std::vector<Velocity> velocity_error;
   };
 
-  // A functor that computes f(q, t) and stores it in |accelerations|.
+  // A functor that computes f(q, q′, t) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
-  // |positions.size()|, but there is no requirement on the values in
-  // |accelerations|.
+  // |positions.size()| and |velocities.size()| but there is no requirement on
+  // the values in |accelerations|.
   RightHandSideComputation compute_acceleration;
 };
 
@@ -175,31 +175,11 @@ struct SpecialSecondOrderDifferentialEquation final {
                  std::vector<Position> const& positions,
                  std::vector<Acceleration>& accelerations)>;
 
-  struct SystemState final {
-    SystemState() = default;
-    SystemState(std::vector<Position> const& q,
-                std::vector<Velocity> const& v,
-                Instant const& t);
-
-    std::vector<DoublePrecision<Position>> positions;
-    std::vector<DoublePrecision<Velocity>> velocities;
-    DoublePrecision<Instant> time;
-
-    friend bool operator==(SystemState const& lhs, SystemState const& rhs) {
-      return lhs.positions == rhs.positions &&
-             lhs.velocities == rhs.velocities &&
-             lhs.time == rhs.time;
-    }
-
-    void WriteToMessage(not_null<serialization::SystemState*> message) const;
-    static SystemState ReadFromMessage(
-        serialization::SystemState const& message);
-  };
-
-  struct SystemStateError final {
-    std::vector<Displacement> position_error;
-    std::vector<Velocity> velocity_error;
-  };
+  using SystemState = typename ExplicitSecondOrderOrdinaryDifferentialEquation<
+      Position>::SystemState;
+  using SystemStateError =
+      typename ExplicitSecondOrderOrdinaryDifferentialEquation<
+          Position>::SystemStateError;
 
   // A functor that computes f(q, t) and stores it in |accelerations|.
   // This functor must be called with |accelerations.size()| equal to
@@ -219,6 +199,8 @@ struct IntegrationProblem final {
 
 using internal_ordinary_differential_equations::
     DecomposableFirstOrderDifferentialEquation;
+using internal_ordinary_differential_equations::
+    ExplicitSecondOrderOrdinaryDifferentialEquation;
 using internal_ordinary_differential_equations::IntegrationProblem;
 using internal_ordinary_differential_equations::
     SpecialSecondOrderDifferentialEquation;

@@ -84,7 +84,7 @@ message AdaptiveStepSizeIntegratorInstance {
   extend IntegratorInstance {
     optional AdaptiveStepSizeIntegratorInstance extension = 7001;
   }
-  extensions 9000 to 9999;  // Last used: 9000
+  extensions 9000 to 9999;  // Last used: 9001
   message Parameters {
     required Quantity first_time_step = 1;
     required double safety_factor = 2;
@@ -103,6 +103,13 @@ message EmbeddedExplicitRungeKuttaNystromIntegratorInstance {
   extend AdaptiveStepSizeIntegratorInstance {
     optional EmbeddedExplicitRungeKuttaNystromIntegratorInstance
         extension = 9000;
+  }
+}
+
+message EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance {
+  extend AdaptiveStepSizeIntegratorInstance {
+    optional EmbeddedExplicitGeneralizedRungeKuttaNystromIntegratorInstance
+        extension = 9001;
   }
 }
 

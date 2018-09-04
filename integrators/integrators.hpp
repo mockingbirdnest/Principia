@@ -146,9 +146,8 @@ class AdaptiveStepSizeIntegrator : public Integrator<ODE_> {
   // In both cases, the new step size is chosen so as to try and make the
   // result of the next call to this functor close to |safety_factor|.
   using ToleranceToErrorRatio =
-      std::function<
-          double(Time const& current_step_size,
-                  typename ODE::SystemStateError const& error)>;
+      std::function<double(Time const& current_step_size,
+                           typename ODE::SystemStateError const& error)>;
 
   struct Parameters final {
     Parameters(Time first_time_step,

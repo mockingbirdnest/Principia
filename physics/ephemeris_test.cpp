@@ -479,9 +479,10 @@ TEST_P(EphemerisTest, EarthProbe) {
   // The solution is a line, so the rounding errors dominate.  Different
   // libms result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
-              AnyOf(Eq(395), Eq(414), Eq(434), Eq(438), Eq(450)));
+              AnyOf(Eq(410),    // MSVC Release
+                    Eq(421)));  // MSVC Debug
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 230, 259));
+              AlmostEquals(1.00 * period * v_probe, 222, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
