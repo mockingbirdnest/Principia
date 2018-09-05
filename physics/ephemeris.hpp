@@ -340,7 +340,7 @@ class Ephemeris {
   // Guards |instance_|, |trajectories_|, and |bodies_to_trajectories_| during
   // integration.  Note that the thread-safety annotations are incomplete
   // because we do not attempt to protect all the operations, only integration.
-  mutable base::shared_mutex lock_;
+  mutable std::shared_mutex lock_;
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;
