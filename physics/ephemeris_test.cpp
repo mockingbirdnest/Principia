@@ -480,7 +480,8 @@ TEST_P(EphemerisTest, EarthProbe) {
   // libms result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
               AnyOf(Eq(410),    // MSVC Release
-                    Eq(421)));  // MSVC Debug
+                    Eq(421),    // MSVC Debug
+                    Eq(446)));  // Clang Linux
   EXPECT_THAT(probe_positions.back().coordinates().x,
               AlmostEquals(1.00 * period * v_probe, 222, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
