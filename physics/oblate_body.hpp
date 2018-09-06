@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "geometry/grassmann.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/quantities.hpp"
 
@@ -20,6 +21,7 @@ namespace internal_oblate_body {
 
 using base::not_null;
 using geometry::Vector;
+using numerics::FixedStrictlyLowerTriangularMatrix;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
@@ -31,6 +33,10 @@ class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
+  static constexpr int max_geopotential_degree = 5;
+  using GeopotentialCoefficients =
+      FixedStrictlyLowerTriangularMatrix<double, max_geopotential_degree + 1>;
+
   class PHYSICS_DLL Parameters final {
    public:
     explicit Parameters(Degree2SphericalHarmonicCoefficient const& j2);
@@ -53,6 +59,11 @@ class OblateBody : public RotatingBody<Frame> {
                double c22,
                double s22,
                double j3,
+               Length const& reference_radius);
+
+    Parameters(GeopotentialCoefficients const& cos,
+               GeopotentialCoefficients const& sin,
+               int degree,
                Length const& reference_radius);
 
    private:

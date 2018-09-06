@@ -103,6 +103,7 @@ class FixedStrictlyLowerTriangularMatrix final {
  public:
   static int constexpr dimension = rows * (rows - 1) / 2;
 
+  constexpr FixedStrictlyLowerTriangularMatrix();
   // The |data| must be in row-major format.
   constexpr explicit FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);

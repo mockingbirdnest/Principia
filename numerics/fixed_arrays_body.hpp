@@ -183,6 +183,11 @@ constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     : data_(data) {}
 
 template<typename Scalar, int rows>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix()
+  : data_{} {}
+
+template<typename Scalar, int rows>
 FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::initializer_list<Scalar> const& data) {
