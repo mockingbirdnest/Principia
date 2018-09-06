@@ -79,6 +79,11 @@ class OblateBody : public RotatingBody<Frame> {
     std::optional<Degree3SphericalHarmonicCoefficient> j3_;
     std::optional<Quotient<Degree3SphericalHarmonicCoefficient,
                            GravitationalParameter>> j3_over_μ_;
+    std::optional<GeopotentialCoefficients> cos_;
+    std::optional<GeopotentialCoefficients> sin_;
+    std::optional<int> degree_;
+    std::optional<Length> reference_radius_;
+
     template<typename F>
     friend class OblateBody;
   };
@@ -101,11 +106,16 @@ class OblateBody : public RotatingBody<Frame> {
   Degree3SphericalHarmonicCoefficient const j3() const;
   Quotient<Degree3SphericalHarmonicCoefficient,
            GravitationalParameter> const j3_over_μ() const;
+  GeopotentialCoefficients const& cos() const;
+  GeopotentialCoefficients const& sin() const;
 
-  // Whether this body has a c22, s22, or j3.
+  Length const& reference_radius() const;
+
+  // Whether this body has a c22, s22, j3 or geopotential.
   bool has_c22() const;
   bool has_s22() const;
   bool has_j3() const;
+  bool has_geopotential() const;
 
   // Returns false.
   bool is_massless() const override;

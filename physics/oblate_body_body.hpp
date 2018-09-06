@@ -31,7 +31,8 @@ OblateBody<Frame>::Parameters::Parameters(
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           Length const& reference_radius)
-    : j2_over_μ_(j2 * reference_radius * reference_radius) {
+    : j2_over_μ_(j2 * reference_radius * reference_radius),
+      reference_radius_(reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
 }
 
@@ -56,7 +57,8 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           Length const& reference_radius)
     : j2_over_μ_(j2 * reference_radius * reference_radius),
       c22_over_μ_(c22 * reference_radius * reference_radius),
-      s22_over_μ_(s22 * reference_radius * reference_radius) {
+      s22_over_μ_(s22 * reference_radius * reference_radius),
+      reference_radius_(reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
   CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
@@ -88,12 +90,28 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
     : j2_over_μ_(j2 * reference_radius * reference_radius),
       c22_over_μ_(c22 * reference_radius * reference_radius),
       s22_over_μ_(s22 * reference_radius * reference_radius),
-      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius) {
+      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius),
+      reference_radius_(reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
   CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
   CHECK_NE(0.0, j3) << "Oblate body cannot have zero j3";
 }
+
+template<typename Frame>
+OblateBody<Frame>::Parameters::Parameters(GeopotentialCoefficients const& cos,
+                                          GeopotentialCoefficients const& sin,
+                                          int degree,
+                                          Length const& reference_radius)
+    : j2_over_μ_(-cos[2][0] * reference_radius * reference_radius),
+      c22_over_μ_(cos[2][2] * reference_radius * reference_radius),
+      s22_over_μ_(sin[2][2] * reference_radius * reference_radius),
+      j3_over_μ_(-cos[3][0] * reference_radius * reference_radius *
+                 reference_radius),
+      cos_(cos),
+      sin_(sin),
+      degree_(degree),
+      reference_radius_(reference_radius) {}
 
 #define PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(name)                    \
   if (parameters_.name##_) {                                           \
@@ -168,6 +186,23 @@ Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter> const
 }
 
 template<typename Frame>
+typename OblateBody<Frame>::GeopotentialCoefficients const&
+OblateBody<Frame>::cos() const {
+  return *parameters_.cos_;
+}
+
+template<typename Frame>
+typename OblateBody<Frame>::GeopotentialCoefficients const&
+OblateBody<Frame>::sin() const {
+  return *parameters_.sin_;
+}
+
+template<typename Frame>
+Length const& OblateBody<Frame>::reference_radius() const {
+  return *parameters_.reference_radius_;
+}
+
+template<typename Frame>
 bool OblateBody<Frame>::has_c22() const {
   return parameters_.c22_.has_value();
 }
@@ -180,6 +215,11 @@ bool OblateBody<Frame>::has_s22() const {
 template<typename Frame>
 bool OblateBody<Frame>::has_j3() const {
   return parameters_.j3_.has_value();
+}
+
+template<typename Frame>
+bool OblateBody<Frame>::has_geopotential() const {
+  return parameters_.cos_.has_value();
 }
 
 template<typename Frame>
