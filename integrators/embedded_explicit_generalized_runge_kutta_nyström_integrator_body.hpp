@@ -357,7 +357,7 @@ internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
                       Method>::value,
       "Method must be derived from "
       "EmbeddedExplicitGeneralizedRungeKuttaNyström");
-  static internal_embedded_explicit_runge_kutta_nyström_integrator::
+  static internal_embedded_explicit_generalized_runge_kutta_nyström_integrator::
       EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<Method,
                                                              Position> const
           integrator;

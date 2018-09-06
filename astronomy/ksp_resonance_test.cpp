@@ -117,7 +117,7 @@ class KSPResonanceTest : public ::testing::Test {
     mid_term_ = solar_system_.epoch() + 60 * Day;
     long_term_ = solar_system_.epoch() + 100 * JulianYear;
 
-    return std::move(ephemeris);
+    return ephemeris;
   }
 
   void LogEphemeris(Ephemeris<KSP> const& ephemeris,
