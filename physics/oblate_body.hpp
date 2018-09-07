@@ -28,6 +28,8 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Quotient;
 
+// TODO(phl): c22, s22 and j3 in this class are temporary until we get the
+// general geopotential model to work at least as well as c22/s22/j3.
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
@@ -58,10 +60,20 @@ class OblateBody : public RotatingBody<Frame> {
                int degree,
                Length const& reference_radius);
 
+    static Parameters ReadFromMessage(
+        serialization::OblateBody::Geopotential const& message);
+
+    void WriteToMessage(
+        not_null<serialization::OblateBody::Geopotential*> message) const;
+
    private:
-    std::optional<Degree2SphericalHarmonicCoefficient> j2_;
+    Length reference_radius_;
+
+    //TODO(phl): The J2 stuff is wrong.
+    std::optional<double> j2_;
+    std::optional<Degree2SphericalHarmonicCoefficient> pre_descartes_j2_;
     std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
-                           GravitationalParameter>> j2_over_μ_;
+                           GravitationalParameter>> pre_descartes_j2_over_μ_;
     std::optional<Degree2SphericalHarmonicCoefficient> c22_;
     std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
                            GravitationalParameter>> c22_over_μ_;
@@ -74,7 +86,6 @@ class OblateBody : public RotatingBody<Frame> {
     std::optional<GeopotentialCoefficients> cos_;
     std::optional<GeopotentialCoefficients> sin_;
     std::optional<int> degree_;
-    std::optional<Length> reference_radius_;
 
     template<typename F>
     friend class OblateBody;
