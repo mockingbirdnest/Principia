@@ -26,7 +26,8 @@ using quantities::si::Second;
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           Length const& reference_radius)
-    : pre_descartes_j2_over_μ_(j2 * reference_radius * reference_radius),
+    : j2_(j2),
+      j2_over_μ_(j2 * reference_radius * reference_radius),
       reference_radius_(reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
 }
@@ -36,10 +37,11 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           double const c22,
                                           double const s22,
                                           Length const& reference_radius)
-    : pre_descartes_j2_over_μ_(j2 * reference_radius * reference_radius),
+    : reference_radius_(reference_radius),
+      j2_(j2),
+      j2_over_μ_(j2 * reference_radius * reference_radius),
       c22_over_μ_(c22 * reference_radius * reference_radius),
-      s22_over_μ_(s22 * reference_radius * reference_radius),
-      reference_radius_(reference_radius) {
+      s22_over_μ_(s22 * reference_radius * reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
   CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
@@ -51,11 +53,12 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           double const s22,
                                           double const j3,
                                           Length const& reference_radius)
-    : pre_descartes_j2_over_μ_(j2 * reference_radius * reference_radius),
+    : reference_radius_(reference_radius),
+      j2_(j2),
+      j2_over_μ_(j2 * reference_radius * reference_radius),
       c22_over_μ_(c22 * reference_radius * reference_radius),
       s22_over_μ_(s22 * reference_radius * reference_radius),
-      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius),
-      reference_radius_(reference_radius) {
+      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
   CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
@@ -67,16 +70,16 @@ OblateBody<Frame>::Parameters::Parameters(GeopotentialCoefficients const& cos,
                                           GeopotentialCoefficients const& sin,
                                           int degree,
                                           Length const& reference_radius)
-    : pre_descartes_j2_over_μ_(-cos[2][0] * reference_radius *
-                               reference_radius),
+    : reference_radius_(reference_radius),
+      j2_(-cos[2][0]),
+      j2_over_μ_(-cos[2][0] * reference_radius * reference_radius),
       c22_over_μ_(cos[2][2] * reference_radius * reference_radius),
       s22_over_μ_(sin[2][2] * reference_radius * reference_radius),
       j3_over_μ_(-cos[3][0] * reference_radius * reference_radius *
                  reference_radius),
       cos_(cos),
       sin_(sin),
-      degree_(degree),
-      reference_radius_(reference_radius) {}
+      degree_(degree) {}
 
 template<typename Frame>
 typename OblateBody<Frame>::Parameters
@@ -135,7 +138,6 @@ OblateBody<Frame>::OblateBody(
     Parameters const& parameters)
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
       parameters_(parameters) {
-  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(pre_descartes_j2);
   PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(c22);
   PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(s22);
   PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j3);
@@ -144,14 +146,14 @@ OblateBody<Frame>::OblateBody(
 #undef PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS
 
 template<typename Frame>
-Degree2SphericalHarmonicCoefficient const& OblateBody<Frame>::j2() const {
-  return *parameters_.pre_descartes_j2_;
+double OblateBody<Frame>::j2() const {
+  return *parameters_.j2_;
 }
 
 template<typename Frame>
 Quotient<Degree2SphericalHarmonicCoefficient,
          GravitationalParameter> const& OblateBody<Frame>::j2_over_μ() const {
-  return *parameters_.pre_descartes_j2_over_μ_;
+  return *parameters_.j2_over_μ_;
 }
 
 template<typename Frame>

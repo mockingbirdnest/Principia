@@ -69,11 +69,10 @@ class OblateBody : public RotatingBody<Frame> {
    private:
     Length reference_radius_;
 
-    //TODO(phl): The J2 stuff is wrong.
     std::optional<double> j2_;
     std::optional<Degree2SphericalHarmonicCoefficient> pre_descartes_j2_;
     std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
-                           GravitationalParameter>> pre_descartes_j2_over_μ_;
+                           GravitationalParameter>> j2_over_μ_;
     std::optional<Degree2SphericalHarmonicCoefficient> c22_;
     std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
                            GravitationalParameter>> c22_over_μ_;
@@ -97,7 +96,7 @@ class OblateBody : public RotatingBody<Frame> {
              Parameters const& parameters);
 
   // Selectors for the various spherical harmonics coefficients.
-  Degree2SphericalHarmonicCoefficient const& j2() const;
+  double j2() const;
   Quotient<Degree2SphericalHarmonicCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
   Degree2SphericalHarmonicCoefficient const c22() const;
