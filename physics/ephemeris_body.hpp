@@ -43,8 +43,11 @@ using geometry::Position;
 using geometry::R3Element;
 using geometry::Sign;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
+using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
+using integrators::methods::Fine1987RKNG34;
 using numerics::Bisect;
 using numerics::DoublePrecision;
 using numerics::Hermite3;
@@ -525,6 +528,115 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
                                           append_state,
                                           tolerance_to_error_ratio,
                                           integrator_parameters);
+  auto status = instance->Solve(t_final);
+
+  // We probably don't care if the vessel gets too close to the singularity, as
+  // we only use this integrator for the future.  So we swallow the error.
+  // TODO(phl): Is this the right thing to do long term?
+  if (status.error() == Error::OUT_OF_RANGE) {
+    status = Status::OK;
+  }
+
+  if (last_point_only) {
+    AppendMasslessBodiesState(last_state, trajectories);
+  }
+
+  // TODO(egg): when we have events in trajectories, we should add a singularity
+  // event at the end if the outcome indicates a singularity
+  // (|VanishingStepSize|).  We should not have an event on the trajectory if
+  // |ReachedMaximalStepCount|, since that is not a physical property, but
+  // rather a self-imposed constraint.
+  if (!status.ok() || t_final == t) {
+    return status;
+  } else {
+    return Status(Error::DEADLINE_EXCEEDED,
+                  "Couldn't reach " + DebugString(t_final) + ", stopping at " +
+                      DebugString(t));
+  }
+}
+
+template<typename Frame>
+Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
+      GeneralIntrinsicAcceleration intrinsic_acceleration,
+      Instant const& t,
+      AdaptiveStepParameters const& parameters,
+      std::int64_t max_ephemeris_steps,
+      bool last_point_only) {
+  using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
+  Instant const& trajectory_last_time = trajectory->last().time();
+  if (trajectory_last_time == t) {
+    return Status::OK;
+  }
+
+  std::vector<not_null<DiscreteTrajectory<Frame>*>> const trajectories =
+      {trajectory};
+  // The |min| is here to prevent us from spending too much time computing the
+  // ephemeris.  The |max| is here to ensure that we always try to integrate
+  // forward.  We use |last_state_.time.value| because this is always finite,
+  // contrary to |t_max()|, which is -∞ when |empty()|.
+  Instant const t_final =
+      std::min(std::max(instance_time() +
+                            max_ephemeris_steps * parameters_.step(),
+                        trajectory_last_time + parameters_.step()),
+               t);
+  Prolong(t_final);
+
+  IntegrationProblem<ODE> problem;
+  problem.equation.compute_acceleration =
+      [this, &intrinsic_acceleration](
+          Instant const& t,
+          std::vector<Position<Frame>> const& positions,
+          std::vector<Velocity<Frame>> const& velocities,
+          std::vector<Vector<Acceleration, Frame>>& accelerations) {
+        if (!ComputeMasslessBodiesGravitationalAccelerations(
+                t, positions, accelerations)) {
+          return Status(Error::OUT_OF_RANGE, "Collision detected");
+        }
+        accelerations[0] +=
+            intrinsic_acceleration(t, positions[0], velocities[0]);
+        return Status::OK;
+      };
+
+  auto const trajectory_last = trajectory->last();
+  auto const last_degrees_of_freedom = trajectory_last.degrees_of_freedom();
+  problem.initial_state = {{last_degrees_of_freedom.position()},
+                           {last_degrees_of_freedom.velocity()},
+                           trajectory_last.time()};
+
+  typename AdaptiveStepSizeIntegrator<ODE>::Parameters const
+      integrator_parameters(
+          /*first_time_step=*/t_final - problem.initial_state.time.value,
+          /*safety_factor=*/0.9,
+          parameters.max_steps_,
+          /*last_step_is_exact=*/true);
+  CHECK_GT(integrator_parameters.first_time_step, 0 * Second)
+      << "Flow back to the future: " << t_final
+      << " <= " << problem.initial_state.time.value;
+  auto const tolerance_to_error_ratio =
+      std::bind(&Ephemeris<Frame>::ToleranceToErrorRatio,
+                std::cref(parameters.length_integration_tolerance_),
+                std::cref(parameters.speed_integration_tolerance_),
+                _1, _2);
+
+  typename AdaptiveStepSizeIntegrator<ODE>::AppendState append_state;
+  typename ODE::SystemState last_state;
+  if (last_point_only) {
+    append_state = [&last_state](typename ODE::SystemState const& state) {
+      last_state = state;
+    };
+  } else {
+    append_state = std::bind(
+        &Ephemeris::AppendMasslessBodiesState, _1, std::cref(trajectories));
+  }
+
+  auto const instance =
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+          Fine1987RKNG34, Position<Frame>>().NewInstance(
+              problem,
+              append_state,
+              tolerance_to_error_ratio,
+              integrator_parameters);
   auto status = instance->Solve(t_final);
 
   // We probably don't care if the vessel gets too close to the singularity, as
