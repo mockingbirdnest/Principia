@@ -39,22 +39,14 @@ class OblateBody : public RotatingBody<Frame> {
 
   class PHYSICS_DLL Parameters final {
    public:
-    explicit Parameters(Degree2SphericalHarmonicCoefficient const& j2);
     Parameters(double j2,
                Length const& reference_radius);
 
-    Parameters(Degree2SphericalHarmonicCoefficient const& j2,
-               Degree2SphericalHarmonicCoefficient const& c22,
-               Degree2SphericalHarmonicCoefficient const& s22);
     Parameters(double j2,
                double c22,
                double s22,
                Length const& reference_radius);
 
-    Parameters(Degree2SphericalHarmonicCoefficient const& j2,
-               Degree2SphericalHarmonicCoefficient const& c22,
-               Degree2SphericalHarmonicCoefficient const& s22,
-               Degree3SphericalHarmonicCoefficient const& j3);
     Parameters(double j2,
                double c22,
                double s22,
