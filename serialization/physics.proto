@@ -169,10 +169,26 @@ message OblateBody {
   extend RotatingBody {
     optional OblateBody extension = 4000;
   }
-  required Quantity j2 = 1;
-  optional Quantity c22 = 2;
-  optional Quantity s22 = 3;
-  optional Quantity j3 = 4;
+  message Geopotential {
+    message GeopotentialDegreeN {
+      message GeopotentialDegreeNOrderM {
+        // These coefficients are normalized.
+        required double cos = 1;
+        required double sin = 2;
+      }
+      // For a given |degree|, the |order| array must contain |degree + 1|
+      // entries, in sequence from order 0 to order |degree|.
+      required int32 degree = 1;
+      repeated GeopotentialDegreeNOrderM order = 2;
+    }
+    repeated GeopotentialDegreeN degree = 1;
+  }
+  oneof oblateness {
+    Quantity pre_descartes_j2 = 1;
+    double j2 = 2;
+    Geopotential geopotential = 3;
+  }
+  optional Quantity reference_radius = 4;
 }
 
 message RotatingBody {

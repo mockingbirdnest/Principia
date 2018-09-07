@@ -2,6 +2,7 @@ syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
+import "serialization/physics.proto";
 
 package principia.serialization;
 
@@ -9,21 +10,6 @@ option cc_enable_arenas = true;
 
 message GravityModel {
   message Body {
-    message Geopotential {
-      message GeopotentialDegreeN {
-        message GeopotentialDegreeNOrderM {
-          // These coefficients are normalized.
-          required double cos = 1;
-          required double sin = 2;
-        }
-        // For a given |degree|, the |order| array must contain |degree + 1|
-        // entries, in sequence from order 0 to order |degree|.
-        required int32 degree = 1;
-        repeated GeopotentialDegreeNOrderM order = 2;
-      }
-      repeated GeopotentialDegreeN degree = 1;
-    }
-
     required string name = 1;
     // Massive body.
     oneof massive {
@@ -41,7 +27,7 @@ message GravityModel {
     optional string reference_radius = 6;
     // At most one of these two fields may be present.
     optional double j2 = 11;
-    optional Geopotential geopotential = 14;
+    optional OblateBody.Geopotential geopotential = 14;
     reserved 5, 10;
   }
   oneof frame {

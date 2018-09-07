@@ -226,24 +226,22 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
       typename RotatingBody<Frame>::Parameters const&
           rotating_body_parameters) {
   std::unique_ptr<Parameters> parameters;
-  if (message.has_c22() || message.has_s22()) {
-    if (message.has_j3()) {
+  switch (message.oblateness_case()) {
+    case serialization::OblateBody::kPreDescartesJ2:
       parameters = std::make_unique<Parameters>(
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.c22()),
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.s22()),
-          Degree3SphericalHarmonicCoefficient::ReadFromMessage(message.j3()));
-    } else {
+          Degree2SphericalHarmonicCoefficient::ReadFromMessage(
+              message.pre_descartes_j2()));
+      break;
+    case serialization::OblateBody::kJ2:
       parameters = std::make_unique<Parameters>(
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()),
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.c22()),
-          Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.s22()));
-    }
-  } else {
-    parameters = std::make_unique<Parameters>(
-        Degree2SphericalHarmonicCoefficient::ReadFromMessage(message.j2()));
+                       message.j2(),
+                       Length::ReadFromMessage(message.reference_radius()));
+      break;
+    case serialization::OblateBody::kGeopotential:
+      break;
+    case serialization::OblateBody::ONEOF_NAME_NOT_SET:
+      LOG(FATAL) << message.DebugString();
   }
-
   return std::make_unique<OblateBody<Frame>>(massive_body_parameters,
                                              rotating_body_parameters,
                                              *parameters);
