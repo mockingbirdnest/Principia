@@ -224,7 +224,7 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 }
 
 template<typename Scalar, int rows>
-int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
+constexpr int FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
 
 template<typename Scalar, int rows>
 constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix()
@@ -271,7 +271,7 @@ FixedLowerTriangularMatrix<Scalar, rows>::operator[](
 }
 
 template<typename Scalar, int rows>
-int constexpr FixedLowerTriangularMatrix<Scalar, rows>::dimension;
+constexpr int FixedLowerTriangularMatrix<Scalar, rows>::dimension;
 
 }  // namespace internal_fixed_arrays
 }  // namespace numerics
