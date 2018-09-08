@@ -95,10 +95,23 @@ gravity_model {
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
-    j2                      : 0.0010826358191967031477
-    c22                     : 1.5746087691861196952e-6
-    s22                     : -9.0388589793913325092e-7
-    j3                      : -2.5324199142860519223e-6
+    #TODO(phl): This is denormalized.
+    geopotential            : {
+      degree {degree: 0,
+              order {cos: 0, sin: 0}},
+      degree {degree: 1,
+              order {cos: 0, sin: 0},
+              order {cos: 0, sin: 0}},
+      degree {degree: 2,
+              order {cos: -0.0010826358191967031477, sin: 0},
+              order {cos: 0, sin: 0},
+              order {cos: 1.5746087691861196952e-6, sin: -9.0388589793913325092e-7}},
+      degree {degree: 3,
+              order {cos: 2.5324199142860519223e-6, sin: 0},
+              order {cos: 0, sin: 0},
+              order {cos: 0, sin: 0},
+              order {cos: 0, sin: 0}}
+    }
     reference_radius        : "6378.1363 km"
   }
   body {
