@@ -32,8 +32,10 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsOk;
 using testing_utilities::IsNear;
 using testing_utilities::SolarSystemFactory;
-using ::testing::AnyOf;
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 
 namespace {
 
@@ -102,14 +104,13 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
   // the apoapsis.
   EXPECT_THAT(
       barycentric_result,
-      Componentwise(
-          Componentwise(IsNear(-12'000 * Kilo(Metre)),
-                        IsNear(-120 * Kilo(Metre)),
-                        AnyOf(IsNear(2.2 * Metre), IsNear(-35 * Metre))),
-          Componentwise(IsNear(-6.6 * Metre / Second),
-                        IsNear(-4.9 * Kilo(Metre) / Second),
-                        AnyOf(IsNear(54 * Micro(Metre) / Second),
-                              IsNear(6.6 * Milli(Metre) / Second)))));
+      Componentwise(Componentwise(IsNear(-12'000 * Kilo(Metre)),
+                                  IsNear(-120 * Kilo(Metre)),
+                                  AllOf(Gt(-50 * Metre), Lt(50 * metre))),
+                    Componentwise(IsNear(-6.6 * Metre / Second),
+                                  IsNear(-4.9 * Kilo(Metre) / Second),
+                                  AllOf(Gt(-1 * Centi(Metre) / Second),
+                                        Lt(1 * Centi(Metre) / Second)))));
 }
 
 }  // namespace interface
