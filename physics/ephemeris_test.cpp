@@ -750,7 +750,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_positions.back().coordinates().x,
               IsNear(-9.8e-19 * Metre));
   EXPECT_THAT(elephant_positions.back().coordinates().y,
-              AnyOf(IsNear(1.7e-31 * Metre), Eq(0 * Metre)));
+              AnyOf(IsNear(-2.3e-31 * Metre), Eq(0 * Metre)));
   EXPECT_LT(RelativeError(elephant_positions.back().coordinates().z,
                           earth_polar_radius), 8e-7);
 
@@ -758,7 +758,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   EXPECT_THAT(elephant_accelerations.back().coordinates().x,
               IsNear(-2.0e-18 * Metre / Second / Second));
   EXPECT_THAT(elephant_accelerations.back().coordinates().y,
-              AnyOf(IsNear(2.0e-30 * Metre / Second / Second),
+              AnyOf(IsNear(-2.7e-30 * Metre / Second / Second),
                     Eq(0 * Metre / Second / Second)));
   EXPECT_LT(RelativeError(elephant_accelerations.back().coordinates().z,
                           -9.832 * SIUnit<Acceleration>()), 6.7e-6);
