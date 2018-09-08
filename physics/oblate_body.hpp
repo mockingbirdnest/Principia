@@ -95,6 +95,8 @@ class OblateBody : public RotatingBody<Frame> {
              Parameters const& parameters);
 
   // Selectors for the various spherical harmonics coefficients.
+
+  // These parameters are unnormalized.
   double j2() const;
   Quotient<Degree2SphericalHarmonicCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
@@ -107,6 +109,8 @@ class OblateBody : public RotatingBody<Frame> {
   Degree3SphericalHarmonicCoefficient const j3() const;
   Quotient<Degree3SphericalHarmonicCoefficient,
            GravitationalParameter> const j3_over_μ() const;
+
+  // These parameters are normalized.
   GeopotentialCoefficients const& cos() const;
   GeopotentialCoefficients const& sin() const;
 

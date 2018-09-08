@@ -95,7 +95,6 @@ gravity_model {
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
-    #TODO(phl): This is denormalized.
     geopotential            : {
       row {degree: 0,
            column {order: 0, cos: 0, sin: 0}},
@@ -103,13 +102,11 @@ gravity_model {
            column {order: 0, cos: 0, sin: 0},
            column {order: 1, cos: 0, sin: 0}},
       row {degree: 2,
-           column {order: 0, cos: -0.0010826358191967031477, sin: 0},
+           column {order: 0, cos: -4.841694573200e-4 , sin: 0},
            column {order: 1, cos: 0, sin: 0},
-           column {order: 2,
-                   cos: 1.5746087691861196952e-6,
-                   sin: -9.0388589793913325092e-7}},
+           column {order: 2, cos: 2.439373415940e-6, sin: -1.400294011836e-6}},
       row {degree: 3,
-           column {order: 0, cos: 2.5324199142860519223e-6, sin: 0},
+           column {order: 0, cos: 9.571647583412e-7, sin: 0},
            column {order: 1, cos: 0, sin: 0},
            column {order: 2, cos: 0, sin: 0},
            column {order: 3, cos: 0, sin: 0}}

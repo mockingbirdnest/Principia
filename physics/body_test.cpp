@@ -209,6 +209,7 @@ TEST_F(BodyTest, RotatingSerializationSuccess) {
             cast_rotating_body->AngleAt(Instant()));
 }
 
+//TODO(phl):test compatibility
 TEST_F(BodyTest, OblateSerializationSuccess) {
   EXPECT_FALSE(oblate_body_.is_massless());
   EXPECT_TRUE(oblate_body_.is_oblate());

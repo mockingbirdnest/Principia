@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
+#include "numerics/legendre.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -18,6 +19,7 @@ namespace internal_oblate_body {
 using astronomy::J2000;
 using geometry::AngularVelocity;
 using geometry::Instant;
+using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
 using quantities::SIUnit;
 using quantities::si::Radian;
@@ -98,15 +100,20 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
   }
   parameters.degree_ = *degrees_seen.crbegin();
 
-  // TODO(phl): Deal with normalization here.
-  parameters.j2_ = -(*parameters.cos_)[2][0];
-  parameters.j2_over_μ_ =
-      -(*parameters.cos_)[2][0] * reference_radius * reference_radius;
-  parameters.c22_over_μ_ =
-      (*parameters.cos_)[2][2] * reference_radius * reference_radius;
-  parameters.s22_over_μ_ =
-      (*parameters.sin_)[2][2] * reference_radius * reference_radius;
-  parameters.j3_over_μ_ = -(*parameters.cos_)[3][0] * reference_radius *
+  // Unnormalization.
+  parameters.j2_ =
+      -(*parameters.cos_)[2][0] * LegendreNormalizationFactor(2, 0);
+  parameters.j2_over_μ_ = -(*parameters.cos_)[2][0] *
+                          LegendreNormalizationFactor(2, 0) * reference_radius *
+                          reference_radius;
+  parameters.c22_over_μ_ = (*parameters.cos_)[2][2] *
+                           LegendreNormalizationFactor(2, 2) *
+                           reference_radius * reference_radius;
+  parameters.s22_over_μ_ = (*parameters.sin_)[2][2] *
+                           LegendreNormalizationFactor(2, 2) *
+                           reference_radius * reference_radius;
+  parameters.j3_over_μ_ = -(*parameters.cos_)[3][0] *
+                          LegendreNormalizationFactor(3, 0) * reference_radius *
                           reference_radius * reference_radius;
 
   return parameters;

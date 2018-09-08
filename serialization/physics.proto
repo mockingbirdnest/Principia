@@ -173,7 +173,6 @@ message OblateBody {
     message GeopotentialRow {
       message GeopotentialColumn {
         required int32 order = 1;
-        // These coefficients are normalized.
         required double cos = 2;
         required double sin = 3;
       }
@@ -186,9 +185,9 @@ message OblateBody {
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {
-    Quantity pre_descartes_j2 = 1;
-    double j2 = 2;
-    Geopotential geopotential = 3;
+    Quantity pre_descartes_j2 = 1;  // Unnormalized.
+    double j2 = 2;                  // Unnormalized.
+    Geopotential geopotential = 3;  // Normalized.
   }
 }
 
