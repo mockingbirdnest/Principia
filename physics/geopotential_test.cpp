@@ -58,7 +58,6 @@ class GeopotentialTest : public ::testing::Test {
     return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
   }
 
-  // The axis of rotation is along the z axis for ease of testing.
   AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
   Angle const right_ascension_of_pole_ = 0 * Degree;
   Angle const declination_of_pole_ = 90 * Degree;
@@ -71,8 +70,7 @@ TEST_F(GeopotentialTest, J2) {
   OblateBody<World> const body =
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
-                        OblateBody<World>::Parameters(
-                            6 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
+                        OblateBody<World>::Parameters(/*j2=*/6, 1 * Metre));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis.
@@ -113,13 +111,11 @@ TEST_F(GeopotentialTest, J2) {
 }
 
 TEST_F(GeopotentialTest, C22S22) {
-  OblateBody<World> const body = OblateBody<World>(
-      massive_body_parameters_,
-      rotating_body_parameters_,
-      OblateBody<World>::Parameters(
-          6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
-          10 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
-          -13 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
+  OblateBody<World> const body =
+      OblateBody<World>(massive_body_parameters_,
+                        rotating_body_parameters_,
+                        OblateBody<World>::Parameters(
+                            /*j2=*/6, /*c22=*/10, /*s22=*/-13, 1 * Metre));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis for the
@@ -151,14 +147,11 @@ TEST_F(GeopotentialTest, C22S22) {
 
 TEST_F(GeopotentialTest, J3) {
   OblateBody<World> const body =
-      OblateBody<World>(
-          massive_body_parameters_,
-          rotating_body_parameters_,
-          OblateBody<World>::Parameters(
-              6 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
-              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
-              1.0e-20 * SIUnit<Degree2SphericalHarmonicCoefficient>(),
-              -5 * SIUnit<Degree3SphericalHarmonicCoefficient>()));
+      OblateBody<World>(massive_body_parameters_,
+                        rotating_body_parameters_,
+                        OblateBody<World>::Parameters(
+                            /*j2=*/6, /*c22=*/1.0e-20, /*s22=*/1.0e-20,
+                            /*j3=*/-5, 1 * Metre));
   Geopotential<World> const geopotential(&body);
 
   // The acceleration at a point located on the axis is along the axis.

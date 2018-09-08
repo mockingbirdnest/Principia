@@ -100,7 +100,8 @@ class BodyTest : public testing::Test {
                             right_ascension_of_pole_,
                             declination_of_pole_),
                         OblateBody<World>::Parameters(
-                            6 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
+                            6,
+                            1 * Metre));
 };
 
 using BodyDeathTest = BodyTest;
@@ -225,7 +226,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(6, oblate_body_extension.j2().magnitude());
+  EXPECT_EQ(6, oblate_body_extension.j2());
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =

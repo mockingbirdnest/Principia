@@ -206,7 +206,7 @@ OblateBody<Frame>::sin() const {
 
 template<typename Frame>
 Length const& OblateBody<Frame>::reference_radius() const {
-  return *parameters_.reference_radius_;
+  return parameters_.reference_radius_;
 }
 
 template<typename Frame>
