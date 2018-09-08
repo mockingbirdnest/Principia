@@ -55,18 +55,17 @@ class OblateBody : public RotatingBody<Frame> {
                double j3,
                Length const& reference_radius);
 
-    Parameters(GeopotentialCoefficients const& cos,
-               GeopotentialCoefficients const& sin,
-               int degree,
-               Length const& reference_radius);
-
     static Parameters ReadFromMessage(
-        serialization::OblateBody::Geopotential const& message);
+        serialization::OblateBody::Geopotential const& message,
+        Length const& reference_radius);
 
     void WriteToMessage(
         not_null<serialization::OblateBody::Geopotential*> message) const;
 
    private:
+    // Only for use when building from a geopotential.
+    Parameters(Length const& reference_radius);
+
     Length reference_radius_;
 
     std::optional<double> j2_;

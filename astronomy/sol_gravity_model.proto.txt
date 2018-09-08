@@ -97,20 +97,22 @@ gravity_model {
     angular_frequency       : "360.9856235 deg / d"
     #TODO(phl): This is denormalized.
     geopotential            : {
-      degree {degree: 0,
-              order {cos: 0, sin: 0}},
-      degree {degree: 1,
-              order {cos: 0, sin: 0},
-              order {cos: 0, sin: 0}},
-      degree {degree: 2,
-              order {cos: -0.0010826358191967031477, sin: 0},
-              order {cos: 0, sin: 0},
-              order {cos: 1.5746087691861196952e-6, sin: -9.0388589793913325092e-7}},
-      degree {degree: 3,
-              order {cos: 2.5324199142860519223e-6, sin: 0},
-              order {cos: 0, sin: 0},
-              order {cos: 0, sin: 0},
-              order {cos: 0, sin: 0}}
+      row {degree: 0,
+           column {order: 0, cos: 0, sin: 0}},
+      row {degree: 1,
+           column {order: 0, cos: 0, sin: 0},
+           column {order: 1, cos: 0, sin: 0}},
+      row {degree: 2,
+           column {order: 0, cos: -0.0010826358191967031477, sin: 0},
+           column {order: 1, cos: 0, sin: 0},
+           column {order: 2,
+                   cos: 1.5746087691861196952e-6,
+                   sin: -9.0388589793913325092e-7}},
+      row {degree: 3,
+           column {order: 0, cos: 2.5324199142860519223e-6, sin: 0},
+           column {order: 1, cos: 0, sin: 0},
+           column {order: 2, cos: 0, sin: 0},
+           column {order: 3, cos: 0, sin: 0}}
     }
     reference_radius        : "6378.1363 km"
   }

@@ -66,44 +66,49 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
 }
 
 template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(GeopotentialCoefficients const& cos,
-                                          GeopotentialCoefficients const& sin,
-                                          int degree,
-                                          Length const& reference_radius)
+OblateBody<Frame>::Parameters::Parameters(Length const& reference_radius)
     : reference_radius_(reference_radius),
-      j2_(-cos[2][0]),
-      j2_over_μ_(-cos[2][0] * reference_radius * reference_radius),
-      c22_over_μ_(cos[2][2] * reference_radius * reference_radius),
-      s22_over_μ_(sin[2][2] * reference_radius * reference_radius),
-      j3_over_μ_(-cos[3][0] * reference_radius * reference_radius *
-                 reference_radius),
-      cos_(cos),
-      sin_(sin),
-      degree_(degree) {}
+      cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
+      sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
+      degree_(0) {}
 
 template<typename Frame>
 typename OblateBody<Frame>::Parameters
 OblateBody<Frame>::Parameters::ReadFromMessage(
-    serialization::OblateBody::Geopotential const& message) {
-  Parameters parameters(typename OblateBody<Frame>::GeopotentialCoefficients(),
-                        typename OblateBody<Frame>::GeopotentialCoefficients(),
-                        /*degree=*/message.degree_size() - 1,
-                        Length{});
+    serialization::OblateBody::Geopotential const& message,
+    Length const& reference_radius) {
+  Parameters parameters(reference_radius);
   std::set<int> degrees_seen;
-  for (auto const& degree : message.degree()) {
-    const int n = degree.degree();
+  for (auto const& row : message.row()) {
+    const int n = row.degree();
     CHECK_LE(n, OblateBody<Frame>::max_geopotential_degree);
     CHECK(degrees_seen.insert(n).second)
         << "Degree " << n << " specified multiple times";
-    int m = 0;
-    CHECK_EQ(n + 1, degree.order_size())
-        << "Degree " << n << " has " << m << " coefficients";
-    for (auto const& order : degree.order()) {
-      (*parameters.cos_)[n][m] = order.cos();
-      (*parameters.sin_)[n][m] = order.sin();
-      ++m;
+    CHECK_LE(row.column_size(), n + 1)
+        << "Degree " << n << " has " << row.column_size() << " coefficients";
+    std::set<int> orders_seen;
+    for (auto const& column : row.column()) {
+      const int m = column.order();
+      CHECK_LE(m, n);
+      CHECK(orders_seen.insert(m).second)
+          << "Degree " << n << " order " << m << " specified multiple times";
+      (*parameters.cos_)[n][m] = column.cos();
+      (*parameters.sin_)[n][m] = column.sin();
     }
   }
+  parameters.degree_ = *degrees_seen.crbegin();
+
+  // TODO(phl): Deal with normalization here.
+  parameters.j2_ = -(*parameters.cos_)[2][0];
+  parameters.j2_over_μ_ =
+      -(*parameters.cos_)[2][0] * reference_radius * reference_radius;
+  parameters.c22_over_μ_ =
+      (*parameters.cos_)[2][2] * reference_radius * reference_radius;
+  parameters.s22_over_μ_ =
+      (*parameters.sin_)[2][2] * reference_radius * reference_radius;
+  parameters.j3_over_μ_ = -(*parameters.cos_)[3][0] * reference_radius *
+                          reference_radius * reference_radius;
+
   return parameters;
 }
 
@@ -111,12 +116,13 @@ template<typename Frame>
 void OblateBody<Frame>::Parameters::WriteToMessage(
     not_null<serialization::OblateBody::Geopotential*> const message) const {
   for (int n = 0; n <= *degree_; ++n) {
-    auto const degree = message->add_degree();
-    degree->set_degree(n);
+    auto const row = message->add_row();
+    row->set_degree(n);
     for (int m = 0; m <= n; ++m) {
-      auto const order = degree->add_order();
-      order->set_cos((*cos_)[n][m]);
-      order->set_sin((*sin_)[n][m]);
+      auto const column = row->add_column();
+      column->set_order(m);
+      column->set_cos((*cos_)[n][m]);
+      column->set_sin((*sin_)[n][m]);
     }
   }
 }
@@ -271,7 +277,7 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
   std::unique_ptr<Parameters> parameters;
   switch (message.oblateness_case()) {
     case serialization::OblateBody::OblatenessCase::kPreDescartesJ2:
-      // In the legacy case we didn't record the reference radius, but we use a
+      // In the legacy case we didn't record the reference radius, so we use a
       // dummy value to achieve the right effect.
       CHECK(!message.has_reference_radius()) << message.DebugString();
       parameters = std::make_unique<Parameters>(
@@ -289,9 +295,8 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
     case serialization::OblateBody::OblatenessCase::kGeopotential:
       CHECK(message.has_reference_radius()) << message.DebugString();
       parameters = std::make_unique<Parameters>(Parameters::ReadFromMessage(
-          message.geopotential()));
-      parameters->reference_radius_ =
-          Length::ReadFromMessage(message.reference_radius());
+          message.geopotential(),
+          Length::ReadFromMessage(message.reference_radius())));
       break;
     case serialization::OblateBody::OblatenessCase::OBLATENESS_NOT_SET:
       LOG(FATAL) << message.DebugString();

@@ -58,6 +58,7 @@ class GeopotentialTest : public ::testing::Test {
     return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
   }
 
+  // The axis of rotation is along the z axis for ease of testing.
   AngularFrequency const angular_frequency_ = -1.5 * Radian / Second;
   Angle const right_ascension_of_pole_ = 0 * Degree;
   Angle const declination_of_pole_ = 90 * Degree;

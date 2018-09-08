@@ -170,18 +170,19 @@ message OblateBody {
     optional OblateBody extension = 4000;
   }
   message Geopotential {
-    message GeopotentialDegreeN {
-      message GeopotentialDegreeNOrderM {
+    message GeopotentialRow {
+      message GeopotentialColumn {
+        required int32 order = 1;
         // These coefficients are normalized.
-        required double cos = 1;
-        required double sin = 2;
+        required double cos = 2;
+        required double sin = 3;
       }
-      // For a given |degree|, the |order| array must contain |degree + 1|
-      // entries, in sequence from order 0 to order |degree|.
+      // For a given |degree|, the |column| array must contain at most
+      // |degree + 1| entries.
       required int32 degree = 1;
-      repeated GeopotentialDegreeNOrderM order = 2;
+      repeated GeopotentialColumn column = 2;
     }
-    repeated GeopotentialDegreeN degree = 1;
+    repeated GeopotentialRow row = 1;
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {

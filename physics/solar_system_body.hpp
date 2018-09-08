@@ -551,27 +551,10 @@ not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
   if (body.has_geopotential()) {
-    typename OblateBody<Frame>::GeopotentialCoefficients cos;
-    typename OblateBody<Frame>::GeopotentialCoefficients sin;
-    std::set<int> degrees_seen;
-    for (auto const& degree : body.geopotential().degree()) {
-      const int n = degree.degree();
-      CHECK_LE(n, OblateBody<Frame>::max_geopotential_degree);
-      CHECK(degrees_seen.insert(n).second)
-          << "Degree " << n << " specified multiple times";
-      int m = 0;
-      CHECK_EQ(n + 1, degree.order_size())
-          << "Degree " << n << " has " << m << " coefficients";
-      for (auto const& order : degree.order()) {
-        cos[n][m] = order.cos();
-        sin[n][m] = order.sin();
-        ++m;
-      }
-    }
     return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-        cos, sin,
-        /*degree=*/*degrees_seen.crbegin(),
-        ParseQuantity<Length>(body.reference_radius()));
+        OblateBody<Frame>::Parameters::ReadFromMessage(
+            body.geopotential(),
+            ParseQuantity<Length>(body.reference_radius())));
   } else {
     return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
         body.j2(),
