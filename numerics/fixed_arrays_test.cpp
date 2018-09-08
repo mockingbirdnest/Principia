@@ -9,20 +9,25 @@ namespace numerics {
 class FixedArraysTest : public ::testing::Test {
  protected:
   FixedArraysTest()
-    : m34_({-8, -6, -4, -7,
-            -4, -10, 9, -5,
-             6, -3, -2, -9}),
+    : m34_({-8,  -6, -4, -7,
+            -4, -10,  9, -5,
+             6,  -3, -2, -9}),
       v3_({10, 31, -47}),
       v4_({-3, -3, 1, 4}),
-      l4_({
-           1,
-           2, 3,
-           5, 8, 13}) {}
+      l4_({ 1,
+            2,  3,
+            5,  8,  13,
+            21, 34, 55, 89}),
+      sl4_({
+            1,
+            2, 3,
+            5, 8, 13}) {}
 
   FixedMatrix<double, 3, 4> m34_;
   FixedVector<double, 3> v3_;
   FixedVector<double, 4> v4_;
-  FixedStrictlyLowerTriangularMatrix<double, 4> l4_;
+  FixedLowerTriangularMatrix<double, 4> l4_;
+  FixedStrictlyLowerTriangularMatrix<double, 4> sl4_;
 };
 
 TEST_F(FixedArraysTest, Assignment) {
@@ -53,6 +58,8 @@ TEST_F(FixedArraysTest, Assignment) {
   FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {
                                                       0,
                                                       0, 0};
+  FixedStrictlyLowerTriangularMatrix<double, 3> o3;
+  EXPECT_EQ(o3, n3);
   n3 = {
         1,
         2, 3};
@@ -70,16 +77,32 @@ TEST_F(FixedArraysTest, VectorIndexing) {
   EXPECT_EQ(-666, v3_[2]);
 }
 
-TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
-  EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::dimension));
-  EXPECT_EQ(1, l4_[1][0]);
-  EXPECT_EQ(2, l4_[2][0]);
-  EXPECT_EQ(3, l4_[2][1]);
-  EXPECT_EQ(5, l4_[3][0]);
-  EXPECT_EQ(8, l4_[3][1]);
-  EXPECT_EQ(13, l4_[3][2]);
+TEST_F(FixedArraysTest, LowerTriangularMatrixIndexing) {
+  EXPECT_EQ(10, (FixedLowerTriangularMatrix<double, 4>::dimension));
+  EXPECT_EQ(1, l4_[0][0]);
+  EXPECT_EQ(2, l4_[1][0]);
+  EXPECT_EQ(3, l4_[1][1]);
+  EXPECT_EQ(5, l4_[2][0]);
+  EXPECT_EQ(8, l4_[2][1]);
+  EXPECT_EQ(13, l4_[2][2]);
+  EXPECT_EQ(21, l4_[3][0]);
+  EXPECT_EQ(34, l4_[3][1]);
+  EXPECT_EQ(55, l4_[3][2]);
+  EXPECT_EQ(89, l4_[3][3]);
   l4_[3][1] = -666;
   EXPECT_EQ(-666, l4_[3][1]);
+}
+
+TEST_F(FixedArraysTest, StrictlyLowerTriangularMatrixIndexing) {
+  EXPECT_EQ(6, (FixedStrictlyLowerTriangularMatrix<double, 4>::dimension));
+  EXPECT_EQ(1, sl4_[1][0]);
+  EXPECT_EQ(2, sl4_[2][0]);
+  EXPECT_EQ(3, sl4_[2][1]);
+  EXPECT_EQ(5, sl4_[3][0]);
+  EXPECT_EQ(8, sl4_[3][1]);
+  EXPECT_EQ(13, sl4_[3][2]);
+  sl4_[3][1] = -666;
+  EXPECT_EQ(-666, sl4_[3][1]);
 }
 
 TEST_F(FixedArraysTest, Row) {
