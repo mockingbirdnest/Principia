@@ -192,11 +192,6 @@ inline void noreturn() { std::exit(0); }
 #  define UNICODE_PATH(x) u8 ## x
 #endif
 
-// Mutex.
-#if !OS_MACOSX
-#  define HAS_SHARED_MUTEX 1
-#endif
-
 #define NAMED(expression) #expression << ": " << (expression)
 
 // Needed to circumvent lint warnings in constexpr functions where CHECK_LT and
