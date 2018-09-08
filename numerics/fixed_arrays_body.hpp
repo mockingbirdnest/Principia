@@ -178,6 +178,11 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 
 template<typename Scalar, int rows>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix()
+    : data_{} {}
+
+template<typename Scalar, int rows>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::array<Scalar, dimension> const& data)
     : data_(data) {}
@@ -220,6 +225,10 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 
 template<typename Scalar, int rows>
 int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
+
+template<typename Scalar, int rows>
+constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix()
+    : data_{} {}
 
 template<typename Scalar, int rows>
 constexpr FixedLowerTriangularMatrix<Scalar, rows>::

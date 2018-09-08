@@ -58,6 +58,8 @@ TEST_F(FixedArraysTest, Assignment) {
   FixedStrictlyLowerTriangularMatrix<double, 3> n3 = {
                                                       0,
                                                       0, 0};
+  FixedStrictlyLowerTriangularMatrix<double, 3> o3;
+  EXPECT_EQ(o3, n3);
   n3 = {
         1,
         2, 3};
