@@ -283,16 +283,19 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
           rotating_body_parameters) {
   std::unique_ptr<Parameters> parameters;
   switch (message.oblateness_case()) {
-    case serialization::OblateBody::OblatenessCase::kPreDescartesJ2:
+    case serialization::OblateBody::OblatenessCase::kPreDescartesJ2: {
       // In the legacy case we didn't record the reference radius, so we use a
       // dummy value to achieve the right effect.
       CHECK(!message.has_reference_radius()) << message.DebugString();
+      Length const reference_radius = SIUnit<Length>();
       parameters = std::make_unique<Parameters>(
           Degree2SphericalHarmonicCoefficient::ReadFromMessage(
               message.pre_descartes_j2()) /
-              SIUnit<Degree2SphericalHarmonicCoefficient>(),
-          SIUnit<Length>());
+              (massive_body_parameters.gravitational_parameter() *
+               reference_radius * reference_radius),
+          reference_radius);
       break;
+    }
     case serialization::OblateBody::OblatenessCase::kJ2:
       CHECK(message.has_reference_radius()) << message.DebugString();
       parameters = std::make_unique<Parameters>(

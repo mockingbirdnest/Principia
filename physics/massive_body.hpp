@@ -37,6 +37,9 @@ class PHYSICS_DLL MassiveBody : public Body {
     Parameters(std::string const& name,
                Mass const& mass);
 
+    // For pre-Descartes compatibility.
+    GravitationalParameter const& gravitational_parameter() const;
+
    private:
     std::string const name_;
     GravitationalParameter const gravitational_parameter_;

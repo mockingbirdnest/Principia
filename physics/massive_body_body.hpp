@@ -46,6 +46,11 @@ inline MassiveBody::Parameters::Parameters(std::string const& name,
   CHECK_NE(mass, Mass()) << "Massive body cannot have zero mass";
 }
 
+inline GravitationalParameter const&
+MassiveBody::Parameters::gravitational_parameter() const {
+  return gravitational_parameter_;
+}
+
 inline MassiveBody::MassiveBody(Parameters const& parameters)
     : parameters_(parameters) {}
 

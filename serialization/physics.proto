@@ -185,7 +185,8 @@ message OblateBody {
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {
-    Quantity pre_descartes_j2 = 1;  // Unnormalized.
+    // Unnormalized Degree2SphericalHarmonicCoefficient.
+    Quantity pre_descartes_j2 = 1;
     double j2 = 2;                  // Unnormalized.
     Geopotential geopotential = 3;  // Normalized.
   }
