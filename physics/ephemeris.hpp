@@ -32,6 +32,7 @@ using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
+using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::Integrator;
@@ -54,6 +55,11 @@ class Ephemeris {
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
+  using GeneralIntrinsicAcceleration =
+      std::function<Vector<Acceleration, Frame>(
+          Instant const& time,
+          Position<Frame> const& position,
+          Velocity<Frame> const& velocity)>;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
   static IntrinsicAccelerations const NoIntrinsicAccelerations;
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
@@ -179,6 +185,23 @@ class Ephemeris {
   virtual Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
+      Instant const& t,
+      AdaptiveStepParameters const& parameters,
+      std::int64_t max_ephemeris_steps,
+      bool last_point_only);
+
+  // Integrates, until exactly |t| (except for timeouts or singularities), the
+  // |trajectory| followed by a massless body in the gravitational potential
+  // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
+  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
+  // |last_point_only| is true, only the last point is appended to the
+  // trajectory.  Returns OK if and only if |*trajectory| was integrated until
+  // |t|.
+  // TODO(phl): the |parameters| are used, but |parameters.integrator_| is
+  // ignored and a hard-coded RKNG is used instead.
+  virtual Status FlowWithAdaptiveStepGeneralized(
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
+      GeneralIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       AdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
