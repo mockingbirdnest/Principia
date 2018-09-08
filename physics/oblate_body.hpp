@@ -21,7 +21,7 @@ namespace internal_oblate_body {
 
 using base::not_null;
 using geometry::Vector;
-using numerics::FixedStrictlyLowerTriangularMatrix;
+using numerics::FixedLowerTriangularMatrix;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::Degree3SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
@@ -37,7 +37,7 @@ class OblateBody : public RotatingBody<Frame> {
  public:
   static constexpr int max_geopotential_degree = 5;
   using GeopotentialCoefficients =
-      FixedStrictlyLowerTriangularMatrix<double, max_geopotential_degree + 1>;
+      FixedLowerTriangularMatrix<double, max_geopotential_degree + 1>;
 
   class PHYSICS_DLL Parameters final {
    public:
