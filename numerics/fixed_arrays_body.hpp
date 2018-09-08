@@ -178,6 +178,11 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 
 template<typename Scalar, int rows>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix()
+    : data_{} {}
+
+template<typename Scalar, int rows>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::array<Scalar, dimension> const& data)
     : data_(data) {}
@@ -225,6 +230,53 @@ FixedStrictlyLowerTriangularMatrix<Scalar, rows>::operator[](
 
 template<typename Scalar, int rows>
 int constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
+
+template<typename Scalar, int rows>
+constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix()
+    : data_{} {}
+
+template<typename Scalar, int rows>
+constexpr FixedLowerTriangularMatrix<Scalar, rows>::
+    FixedLowerTriangularMatrix(std::array<Scalar, dimension> const& data)
+    : data_(data) {}
+
+template<typename Scalar, int rows>
+FixedLowerTriangularMatrix<Scalar, rows>::
+    FixedLowerTriangularMatrix(std::initializer_list<Scalar> const& data) {
+  CHECK_EQ(dimension, data.size());
+  std::copy(data.begin(), data.end(), data_.begin());
+}
+
+template<typename Scalar, int rows>
+bool FixedLowerTriangularMatrix<Scalar, rows>::operator==(
+    FixedLowerTriangularMatrix const& right) const {
+  return data_ == right.data_;
+}
+
+template<typename Scalar, int rows>
+FixedLowerTriangularMatrix<Scalar, rows>&
+FixedLowerTriangularMatrix<Scalar, rows>::operator=(
+    std::initializer_list<Scalar> const& right) {
+  CHECK_EQ(dimension, right.size());
+  std::copy(right.begin(), right.end(), data_.begin());
+  return *this;
+}
+
+template<typename Scalar, int rows>
+Scalar* FixedLowerTriangularMatrix<Scalar, rows>::operator[](
+    int const index) {
+  return &data_[index * (index + 1) / 2];
+}
+
+template<typename Scalar, int rows>
+constexpr Scalar const*
+FixedLowerTriangularMatrix<Scalar, rows>::operator[](
+    int const index) const {
+  return &data_[index * (index + 1) / 2];
+}
+
+template<typename Scalar, int rows>
+int constexpr FixedLowerTriangularMatrix<Scalar, rows>::dimension;
 
 }  // namespace internal_fixed_arrays
 }  // namespace numerics
