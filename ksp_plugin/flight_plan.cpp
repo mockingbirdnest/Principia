@@ -14,9 +14,11 @@ namespace internal_flight_plan {
 
 using base::make_not_null_unique;
 using geometry::Position;
+using geometry::Vector;
 using geometry::Velocity;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
 
@@ -321,38 +323,35 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
         anomalous_segments_ = 1;
       }
     } else {
-      // We decompose the manœuvre in smaller unguided manœuvres (movements),
-      // which are unguided.
-      // TODO(egg): eventually we should just compute the direction in the
-      // right-hand-side of the integrator, but for that we need the velocity,
-      // which means we need general Runge-Kutta integrators.
-      constexpr int movements = 100;
-      Mass remaining_mass = manœuvre.initial_mass();
-      serialization::DynamicFrame serialized_manœuvre_frame;
-      manœuvre.frame()->WriteToMessage(&serialized_manœuvre_frame);
-      for (int i = 0; i < movements; ++i) {
-        NavigationManœuvre movement(manœuvre.thrust(),
-                                    remaining_mass,
-                                    manœuvre.specific_impulse(),
-                                    manœuvre.direction(),
-                                    NavigationFrame::ReadFromMessage(
-                                        serialized_manœuvre_frame, ephemeris_),
-                                    /*is_inertially_fixed=*/true);
-        movement.set_duration(manœuvre.duration() / movements);
-        movement.set_initial_time(segments_.back()->last().time());
-        movement.set_coasting_trajectory(segments_.back());
-        remaining_mass = movement.final_mass();
-        bool const reached_desired_final_time =
-            ephemeris_->FlowWithAdaptiveStep(segments_.back(),
-                                             movement.IntrinsicAcceleration(),
-                                             movement.final_time(),
-                                             adaptive_step_parameters_,
-                                             max_ephemeris_steps_per_frame,
-                                             /*last_point_only=*/false).ok();
-        if (!reached_desired_final_time) {
-          anomalous_segments_ = 1;
-          return;
-        }
+      // TODO(egg): move this to the Manœuvre class.
+      auto const intrinsic_acceleration =
+          [&manœuvre](Instant const& time,
+                      Position<Barycentric> const& position,
+                      Velocity<Barycentric> const& velocity)
+          -> Vector<Acceleration, Barycentric> {
+        auto const to_manœuvre_frame =
+            manœuvre.frame()->ToThisFrameAtTime(time);
+        auto const from_manœuvre_frame = to_manœuvre_frame.Inverse();
+        Vector<double, Barycentric> const direction =
+            from_manœuvre_frame.orthogonal_map()(manœuvre.frame()->FrenetFrame(
+                time,
+                to_manœuvre_frame({position, velocity}))(manœuvre.direction()));
+        return direction *
+               (manœuvre.thrust() /
+                (manœuvre.initial_mass() -
+                 (time - manœuvre.initial_time()) * manœuvre.mass_flow()));
+      };
+      bool const reached_desired_final_time =
+          ephemeris_->FlowWithAdaptiveStepGeneralized(
+              segments_.back(),
+              intrinsic_acceleration,
+              manœuvre.final_time(),
+              adaptive_step_parameters_,
+              max_ephemeris_steps_per_frame,
+              /*last_point_only=*/false).ok();
+      if (!reached_desired_final_time) {
+        anomalous_segments_ = 1;
+        return;
       }
     }
   }

@@ -101,7 +101,7 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
-  static int constexpr dimension = rows * (rows - 1) / 2;
+  static constexpr int dimension = rows * (rows - 1) / 2;
 
   constexpr FixedStrictlyLowerTriangularMatrix();
   // The |data| must be in row-major format.
@@ -127,7 +127,7 @@ class FixedStrictlyLowerTriangularMatrix final {
 template<typename Scalar, int rows>
 class FixedLowerTriangularMatrix final {
  public:
-  static int constexpr dimension = rows * (rows + 1) / 2;
+  static constexpr int dimension = rows * (rows + 1) / 2;
 
   constexpr FixedLowerTriangularMatrix();
   // The |data| must be in row-major format.
