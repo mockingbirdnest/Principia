@@ -20,6 +20,7 @@ using ksp_plugin::PartId;
 using ksp_plugin::FakePlugin;
 using ksp_plugin::Vessel;
 using physics::SolarSystem;
+using quantities::si::Centi;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -106,7 +107,7 @@ TEST_F(InterfaceExternalTest, GetNearestPlannedCoastDegreesOfFreedom) {
       barycentric_result,
       Componentwise(Componentwise(IsNear(-12'000 * Kilo(Metre)),
                                   IsNear(-120 * Kilo(Metre)),
-                                  AllOf(Gt(-50 * Metre), Lt(50 * metre))),
+                                  AllOf(Gt(-50 * Metre), Lt(50 * Metre))),
                     Componentwise(IsNear(-6.6 * Metre / Second),
                                   IsNear(-4.9 * Kilo(Metre) / Second),
                                   AllOf(Gt(-1 * Centi(Metre) / Second),
