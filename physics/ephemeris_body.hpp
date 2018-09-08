@@ -563,6 +563,8 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
       AdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only) {
+  // TODO(phl): FlowWithAdaptiveStepGeneralized and FlowWithAdaptiveStep are
+  // very similar.  Factor that which can be factored.
   using ODE = ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
   Instant const& trajectory_last_time = trajectory->last().time();
   if (trajectory_last_time == t) {
