@@ -25,7 +25,6 @@ message GravityModel {
     optional string angular_frequency = 9;
     // Oblate body.
     optional string reference_radius = 6;
-    // At most one of these two fields may be present.
     oneof oblateness {
       double j2 = 11;  // Unnormalized.
       OblateBody.Geopotential geopotential = 14;
