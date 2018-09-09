@@ -1,5 +1,7 @@
 # Principia
 
+**[Descartes](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#descartes), the September version of Principia, is available, with better integration of burns and multithreading on macOS.  Download it [here for 1.3.1](https://goo.gl/pDxjkE), and [here for 1.4.5](https://goo.gl/6ym7mP).**
+
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
 
 N-body gravitation is more complex than the toy physics of the stock game.  Therefore, before using the mod we recommend that you read the [concepts](https://github.com/mockingbirdnest/Principia/wiki/Concepts) document which explains the most important parts of Principia.  In particular, you should learn about the [plotting frame](https://github.com/mockingbirdnest/Principia/wiki/Concepts#plotting-frame) and [flight planning](https://github.com/mockingbirdnest/Principia/wiki/Concepts#flight-planning).
@@ -14,4 +16,4 @@ The [change log](https://github.com/mockingbirdnest/Principia/wiki/Change-Log) g
 
 Principia is released on every [new moon](https://en.wikipedia.org/wiki/New_moon) with whatever features and bug fixes are ready at the time.  This ensures relatively timely improvements and bug fixes.
 
-Download the binary (Ubuntu, macOS, and Windows) [here for 1.3.1](https://goo.gl/RsV7HP), and [here for 1.4.5](https://goo.gl/PpkKgX).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://goo.gl/pGVfXz).  Or, if you don't trust our binary, build the mod from the [Desargues](https://github.com/mockingbirdnest/Principia/releases/tag/2018081110-Desargues) release.
+Download the binary (Ubuntu, macOS, and Windows) [here for 1.3.1](https://goo.gl/pDxjkE), and [here for 1.4.5](https://goo.gl/6ym7mP).  Download the [“Trappist-1 for Principia”](https://github.com/mockingbirdnest/Principia/wiki/Installing,-reporting-bugs,-and-frequently-asked-questions#installing-trappist-1-for-principia) mini-mod [here](https://goo.gl/pGVfXz).  Or, if you don't trust our binary, build the mod from the [Descartes](https://github.com/mockingbirdnest/Principia/releases/tag/2018090918-Descartes) release.
