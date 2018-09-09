@@ -89,7 +89,8 @@ struct Geopotential<Frame>::DegreeNOrderM {
       double const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
       double latitudinal_polynomials = m * sin_β * latitudinal_factor;
       if constexpr (m < n) {
-        latitudinal_polynomials += AssociatedLegendrePolynomial<n, m + 1>(sin_β);
+        latitudinal_polynomials -=
+            cos_β * AssociatedLegendrePolynomial<n, m + 1>(sin_β);
       }
       Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
           one_over_cos²_β * latitudinal_polynomials *
