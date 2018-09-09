@@ -26,8 +26,10 @@ message GravityModel {
     // Oblate body.
     optional string reference_radius = 6;
     // At most one of these two fields may be present.
-    optional double j2 = 11;  // Unnormalized.
-    optional OblateBody.Geopotential geopotential = 14;
+    oneof oblateness {
+      double j2 = 11;  // Unnormalized.
+      OblateBody.Geopotential geopotential = 14;
+    }
     reserved 5, 10;
   }
   oneof frame {

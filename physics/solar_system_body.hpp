@@ -20,7 +20,6 @@
 #include "glog/logging.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/text_format.h"
-#include "numerics/fixed_arrays.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/hierarchical_system.hpp"
 #include "physics/massive_body.hpp"
@@ -47,7 +46,6 @@ using geometry::Position;
 using geometry::RadiusLatitudeLongitude;
 using geometry::Vector;
 using geometry::Velocity;
-using numerics::FixedStrictlyLowerTriangularMatrix;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::DebugString;
@@ -354,14 +352,15 @@ not_null<std::unique_ptr<MassiveBody>> SolarSystem<Frame>::MakeMassiveBody(
   auto const massive_body_parameters = MakeMassiveBodyParameters(body);
   if (body.has_mean_radius()) {
     auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
-    if (body.has_j2() || body.has_geopotential()) {
+    if (body.oblateness_case() ==
+        serialization::GravityModel::Body::OblatenessCase::OBLATENESS_NOT_SET) {
+      return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
+                                                   *rotating_body_parameters);
+    } else {
       auto const oblate_body_parameters = MakeOblateBodyParameters(body);
       return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
                                                  *rotating_body_parameters,
                                                  *oblate_body_parameters);
-    } else {
-      return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
-                                                   *rotating_body_parameters);
     }
   } else {
     return std::make_unique<MassiveBody>(*massive_body_parameters);
@@ -550,15 +549,19 @@ template<typename Frame>
 not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
-  if (body.has_geopotential()) {
-    return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-        OblateBody<Frame>::Parameters::ReadFromMessage(
-            body.geopotential(),
-            ParseQuantity<Length>(body.reference_radius())));
-  } else {
-    return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-        body.j2(),
-        ParseQuantity<Length>(body.reference_radius()));
+  switch (body.oblateness_case()) {
+    case serialization::GravityModel::Body::OblatenessCase::kJ2:
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          body.j2(), ParseQuantity<Length>(body.reference_radius()));
+    case serialization::GravityModel::Body::OblatenessCase::kGeopotential:
+      return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
+          OblateBody<Frame>::Parameters::ReadFromMessage(
+              body.geopotential(),
+              ParseQuantity<Length>(body.reference_radius())));
+    case serialization::GravityModel::Body::OblatenessCase::OBLATENESS_NOT_SET:
+    default:
+      LOG(FATAL) << body.DebugString();
+      base::noreturn();
   }
 }
 
