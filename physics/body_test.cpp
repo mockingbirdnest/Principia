@@ -26,6 +26,7 @@ using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
+using quantities::Length;
 using quantities::SIUnit;
 using quantities::si::Degree;
 using quantities::si::Metre;
@@ -100,7 +101,8 @@ class BodyTest : public testing::Test {
                             right_ascension_of_pole_,
                             declination_of_pole_),
                         OblateBody<World>::Parameters(
-                            6 * SIUnit<Degree2SphericalHarmonicCoefficient>()));
+                            6,
+                            1 * Metre));
 };
 
 using BodyDeathTest = BodyTest;
@@ -225,7 +227,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(6, oblate_body_extension.j2().magnitude());
+  EXPECT_EQ(6, oblate_body_extension.j2());
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
@@ -250,6 +252,38 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
             cast_oblate_body->gravitational_parameter());
   EXPECT_EQ(oblate_body_.j2(), cast_oblate_body->j2());
   EXPECT_EQ(oblate_body_.polar_axis(), cast_oblate_body->polar_axis());
+}
+
+TEST_F(BodyTest, OblateSerializationCompatibility) {
+  EXPECT_FALSE(oblate_body_.is_massless());
+  EXPECT_TRUE(oblate_body_.is_oblate());
+
+  // Construct a pre-Διόφαντος message.
+  serialization::Body message;
+  OblateBody<World> const* cast_oblate_body;
+  oblate_body_.WriteToMessage(&message);
+  serialization::OblateBody* const oblate_body_extension =
+      message.mutable_massive_body()->MutableExtension(
+                  serialization::RotatingBody::extension)->
+                      MutableExtension(serialization::OblateBody::extension);
+  oblate_body_extension->clear_reference_radius();
+  Degree2SphericalHarmonicCoefficient pre_διόφαντος_j2 =
+      7 * SIUnit<Degree2SphericalHarmonicCoefficient>();
+  pre_διόφαντος_j2.WriteToMessage(
+      oblate_body_extension->mutable_pre_diophantos_j2());
+
+  not_null<std::unique_ptr<Body const>> const body =
+      Body::ReadFromMessage(message);
+  cast_oblate_body =
+      dynamic_cast_not_null<OblateBody<World> const*>(body.get());
+  Length const reference_radius = 1 * Metre;
+  EXPECT_EQ(7 / (cast_oblate_body->gravitational_parameter() /
+                 SIUnit<GravitationalParameter>()),
+            cast_oblate_body->j2());
+  EXPECT_EQ(reference_radius, cast_oblate_body->reference_radius());
+  EXPECT_EQ(7 * SIUnit<Degree2SphericalHarmonicCoefficient>() /
+                cast_oblate_body->gravitational_parameter(),
+            cast_oblate_body->j2_over_μ());
 }
 
 TEST_F(BodyTest, AllFrames) {

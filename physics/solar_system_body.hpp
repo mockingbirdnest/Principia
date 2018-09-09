@@ -352,14 +352,15 @@ not_null<std::unique_ptr<MassiveBody>> SolarSystem<Frame>::MakeMassiveBody(
   auto const massive_body_parameters = MakeMassiveBodyParameters(body);
   if (body.has_mean_radius()) {
     auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
-    if (body.has_j2()) {
+    if (body.oblateness_case() ==
+        serialization::GravityModel::Body::OblatenessCase::OBLATENESS_NOT_SET) {
+      return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
+                                                   *rotating_body_parameters);
+    } else {
       auto const oblate_body_parameters = MakeOblateBodyParameters(body);
       return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
                                                  *rotating_body_parameters,
                                                  *oblate_body_parameters);
-    } else {
-      return std::make_unique<RotatingBody<Frame>>(*massive_body_parameters,
-                                                   *rotating_body_parameters);
     }
   } else {
     return std::make_unique<MassiveBody>(*massive_body_parameters);
@@ -374,7 +375,7 @@ SolarSystem<Frame>::MakeRotatingBody(
   CHECK(body.has_mean_radius());
   auto const massive_body_parameters = MakeMassiveBodyParameters(body);
   auto const rotating_body_parameters = MakeRotatingBodyParameters(body);
-  if (body.has_j2()) {
+  if (body.has_j2() || body.has_geopotential()) {
     auto const oblate_body_parameters = MakeOblateBodyParameters(body);
     return std::make_unique<OblateBody<Frame>>(*massive_body_parameters,
                                                *rotating_body_parameters,
@@ -465,11 +466,9 @@ void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
   auto const it = gravity_model_map_.find(name);
   CHECK(it != gravity_model_map_.end()) << name << " does not exist";
   serialization::GravityModel::Body* body = it->second;
-  body->clear_j2();
-  body->clear_c22();
-  body->clear_s22();
-  body->clear_j3();
   body->clear_reference_radius();
+  body->clear_j2();
+  body->clear_geopotential();
 }
 
 #define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \
@@ -509,10 +508,9 @@ void SolarSystem<Frame>::Check(serialization::GravityModel::Body const& body) {
            body.has_reference_angle()) << body.name();
   CHECK_EQ(body.has_reference_instant(),
            body.has_angular_frequency()) << body.name();
-  CHECK_EQ(body.has_j2(), body.has_reference_radius()) << body.name();
-  CHECK(body.has_j2() || !body.has_c22()) << body.name();
-  CHECK(body.has_j2() || !body.has_s22()) << body.name();
-  CHECK(body.has_j2() || !body.has_j3()) << body.name();
+  CHECK(!(body.has_j2() && body.has_geopotential())) << body.name();
+  CHECK_EQ(body.has_j2() || body.has_geopotential(),
+           body.has_reference_radius()) << body.name();
 }
 
 template<typename Frame>
@@ -551,25 +549,19 @@ template<typename Frame>
 not_null<std::unique_ptr<typename OblateBody<Frame>::Parameters>>
 SolarSystem<Frame>::MakeOblateBodyParameters(
     serialization::GravityModel::Body const& body) {
-  if (body.has_c22() || body.has_s22()) {
-    if (body.has_j3()) {
+  switch (body.oblateness_case()) {
+    case serialization::GravityModel::Body::OblatenessCase::kJ2:
       return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-          body.j2(),
-          body.c22(),
-          body.s22(),
-          body.j3(),
-          ParseQuantity<Length>(body.reference_radius()));
-    } else {
+          body.j2(), ParseQuantity<Length>(body.reference_radius()));
+    case serialization::GravityModel::Body::OblatenessCase::kGeopotential:
       return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-          body.j2(),
-          body.c22(),
-          body.s22(),
-          ParseQuantity<Length>(body.reference_radius()));
-    }
-  } else {
-    return make_not_null_unique<typename OblateBody<Frame>::Parameters>(
-        body.j2(),
-        ParseQuantity<Length>(body.reference_radius()));
+          OblateBody<Frame>::Parameters::ReadFromMessage(
+              body.geopotential(),
+              ParseQuantity<Length>(body.reference_radius())));
+    case serialization::GravityModel::Body::OblatenessCase::OBLATENESS_NOT_SET:
+    default:
+      LOG(FATAL) << body.DebugString();
+      base::noreturn();
   }
 }
 
