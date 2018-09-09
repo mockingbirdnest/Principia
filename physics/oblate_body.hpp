@@ -69,7 +69,7 @@ class OblateBody : public RotatingBody<Frame> {
     Length reference_radius_;
 
     std::optional<double> j2_;
-    std::optional<Degree2SphericalHarmonicCoefficient> pre_descartes_j2_;
+    std::optional<Degree2SphericalHarmonicCoefficient> pre_διόφαντος_j2_;
     std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
                            GravitationalParameter>> j2_over_μ_;
     std::optional<Degree2SphericalHarmonicCoefficient> c22_;

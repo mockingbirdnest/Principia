@@ -258,7 +258,7 @@ TEST_F(BodyTest, OblateSerializationCompatibility) {
   EXPECT_FALSE(oblate_body_.is_massless());
   EXPECT_TRUE(oblate_body_.is_oblate());
 
-  // Construct a pre-Descartes message.
+  // Construct a pre-Διόφαντος message.
   serialization::Body message;
   OblateBody<World> const* cast_oblate_body;
   oblate_body_.WriteToMessage(&message);
@@ -267,10 +267,10 @@ TEST_F(BodyTest, OblateSerializationCompatibility) {
                   serialization::RotatingBody::extension)->
                       MutableExtension(serialization::OblateBody::extension);
   oblate_body_extension->clear_reference_radius();
-  Degree2SphericalHarmonicCoefficient pre_descartes_j2 =
+  Degree2SphericalHarmonicCoefficient pre_διόφαντος_j2 =
       7 * SIUnit<Degree2SphericalHarmonicCoefficient>();
-  pre_descartes_j2.WriteToMessage(
-      oblate_body_extension->mutable_pre_descartes_j2());
+  pre_διόφαντος_j2.WriteToMessage(
+      oblate_body_extension->mutable_pre_diophantos_j2());
 
   not_null<std::unique_ptr<Body const>> const body =
       Body::ReadFromMessage(message);
