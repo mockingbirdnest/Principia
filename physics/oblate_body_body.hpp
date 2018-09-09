@@ -4,6 +4,7 @@
 #include "physics/oblate_body.hpp"
 
 #include <algorithm>
+#include <set>
 #include <vector>
 
 #include "astronomy/epoch.hpp"

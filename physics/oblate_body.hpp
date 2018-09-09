@@ -64,7 +64,7 @@ class OblateBody : public RotatingBody<Frame> {
 
    private:
     // Only for use when building from a geopotential.
-    Parameters(Length const& reference_radius);
+    explicit Parameters(Length const& reference_radius);
 
     Length reference_radius_;
 
