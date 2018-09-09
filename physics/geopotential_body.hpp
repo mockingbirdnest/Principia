@@ -215,11 +215,9 @@ double Geopotential<Frame>::AssociatedLegendrePolynomial(
   static auto const DmPn = Pn.Derivative<order>();
   double const one_minus_argument² = 1 - argument * argument;
   double const multiplier = Pow<order / 2>(one_minus_argument²);
-  if constexpr (order % 2 == 0) {
-    return DmPn.Evaluate(argument);
-  } else {
-    return -Sqrt(one_minus_argument²) * DmPn.Evaluate(argument);
-  }
+  // There is no (-1)^m here, see Ries et al. (2016), The combination global
+  // gravity model GGM05C.
+  return -Sqrt(one_minus_argument²) * DmPn.Evaluate(argument);
 }
 
 template<typename Frame>
