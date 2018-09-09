@@ -169,10 +169,27 @@ message OblateBody {
   extend RotatingBody {
     optional OblateBody extension = 4000;
   }
-  required Quantity j2 = 1;
-  optional Quantity c22 = 2;
-  optional Quantity s22 = 3;
-  optional Quantity j3 = 4;
+  message Geopotential {
+    message GeopotentialRow {
+      message GeopotentialColumn {
+        required int32 order = 1;
+        required double cos = 2;
+        required double sin = 3;
+      }
+      // For a given |degree|, the |column| array must contain at most
+      // |degree + 1| entries.
+      required int32 degree = 1;
+      repeated GeopotentialColumn column = 2;
+    }
+    repeated GeopotentialRow row = 1;
+  }
+  optional Quantity reference_radius = 4;
+  oneof oblateness {
+    // Unnormalized Degree2SphericalHarmonicCoefficient.
+    Quantity pre_diophantos_j2 = 1;
+    double j2 = 2;                  // Unnormalized.
+    Geopotential geopotential = 3;  // Normalized.
+  }
 }
 
 message RotatingBody {

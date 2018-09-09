@@ -95,10 +95,13 @@ gravity_model {
     axis_declination        : "90.0 deg"
     reference_angle         : "190.147 deg"
     angular_frequency       : "360.9856235 deg / d"
-    j2                      : 0.0010826358191967031477
-    c22                     : 1.5746087691861196952e-6
-    s22                     : -9.0388589793913325092e-7
-    j3                      : -2.5324199142860519223e-6
+    geopotential            : {
+      row {degree: 2,
+           column {order: 0, cos: -4.841694573200e-4 , sin: 0},
+           column {order: 2, cos: 2.439373415940e-6, sin: -1.400294011836e-6}},
+      row {degree: 3,
+           column {order: 0, cos: 9.571647583412e-7, sin: 0}}
+    }
     reference_radius        : "6378.1363 km"
   }
   body {

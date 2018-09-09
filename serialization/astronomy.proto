@@ -2,6 +2,7 @@ syntax = "proto2";
 
 import "serialization/geometry.proto";
 import "serialization/integrators.proto";
+import "serialization/physics.proto";
 
 package principia.serialization;
 
@@ -23,11 +24,11 @@ message GravityModel {
     optional string reference_angle = 8;
     optional string angular_frequency = 9;
     // Oblate body.
-    optional double j2 = 11;
-    optional double c22 = 14;
-    optional double s22 = 15;
-    optional double j3 = 16;
     optional string reference_radius = 6;
+    oneof oblateness {
+      double j2 = 11;  // Unnormalized.
+      OblateBody.Geopotential geopotential = 14;
+    }
     reserved 5, 10;
   }
   oneof frame {

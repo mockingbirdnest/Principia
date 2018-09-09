@@ -101,8 +101,9 @@ FixedVector<Product<ScalarLeft, ScalarRight>, rows> operator*(
 template<typename Scalar, int rows>
 class FixedStrictlyLowerTriangularMatrix final {
  public:
-  static int constexpr dimension = rows * (rows - 1) / 2;
+  static constexpr int dimension = rows * (rows - 1) / 2;
 
+  constexpr FixedStrictlyLowerTriangularMatrix();
   // The |data| must be in row-major format.
   constexpr explicit FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);
@@ -123,8 +124,35 @@ class FixedStrictlyLowerTriangularMatrix final {
   std::array<Scalar, dimension> data_;
 };
 
+template<typename Scalar, int rows>
+class FixedLowerTriangularMatrix final {
+ public:
+  static constexpr int dimension = rows * (rows + 1) / 2;
+
+  constexpr FixedLowerTriangularMatrix();
+  // The |data| must be in row-major format.
+  constexpr explicit FixedLowerTriangularMatrix(
+      std::array<Scalar, dimension> const& data);
+  FixedLowerTriangularMatrix(
+      std::initializer_list<Scalar> const& data);  // NOLINT(runtime/explicit)
+
+  bool operator==(FixedLowerTriangularMatrix const& right) const;
+  FixedLowerTriangularMatrix& operator=(
+      std::initializer_list<Scalar> const& right);
+
+  // For  0 < j <= i < rows, the entry a_ij is accessed as |a[i][j]|.
+  // if i and j do not satisfy these conditions, the expression |a[i][j]| is
+  // erroneous.
+  Scalar* operator[](int index);
+  constexpr Scalar const* operator[](int index) const;
+
+ private:
+  std::array<Scalar, dimension> data_;
+};
+
 }  // namespace internal_fixed_arrays
 
+using internal_fixed_arrays::FixedLowerTriangularMatrix;
 using internal_fixed_arrays::FixedMatrix;
 using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
 using internal_fixed_arrays::FixedVector;
