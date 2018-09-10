@@ -194,25 +194,53 @@ TEST_F(GeopotentialTest, J3) {
 }
 
 TEST_F(GeopotentialTest, Full) {
-  OblateBody<World> const body =
+  OblateBody<World> const body1 =
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters(
                             /*j2=*/6, /*c22=*/1.0e-20, /*s22=*/1.0e-20,
-                            /*j3=*/-5, 1 * Metre));
-  Geopotential<World> const geopotential(&body);
-
-  // The acceleration at a point located on the axis is along the axis.
+                            /*j3=*/1.0e-20, 1 * Metre));
+  Geopotential<World> const geopotential1(&body1);
+  serialization::OblateBody::Geopotential message;
   {
-    auto const acceleration = FullSphericalHarmonicsAcceleration(
-        geopotential,
-        Instant(),
-        Displacement<World>({0 * Metre, 0 * Metre, 10 * Metre}));
-    EXPECT_THAT(acceleration,
-                Componentwise(VanishesBefore(1 * Pow<-2>(Metre), 0),
-                              VanishesBefore(1 * Pow<-2>(Metre), 0),
-                              An<Exponentiation<Length, -2>>()));
-  }}
+    auto* const degree2 = message.add_row();
+    degree2->set_degree(2);
+    auto* const order0 = degree2->add_column();
+    order0->set_order(0);
+    order0->set_cos(6);
+    order0->set_sin(0);
+    auto* const order2 = degree2->add_column();
+    order2->set_order(2);
+    order2->set_cos(1.0e-20);
+    order2->set_sin(1.0e-20);
+  }
+  {
+    auto* const degree3 = message.add_row();
+    degree3->set_degree(3);
+    auto* const order0 = degree3->add_column();
+    order0->set_order(0);
+    order0->set_cos(6);
+    order0->set_sin(0);
+  }
+  OblateBody<World> const body2 =
+      OblateBody<World>(massive_body_parameters_,
+                        rotating_body_parameters_,
+                        OblateBody<World>::Parameters::ReadFromMessage(
+                            message, 1 * Metre));
+  Geopotential<World> const geopotential2(&body2);
+
+  // Check that the accelerations computed according to both methods are
+  // consistent.
+  auto const acceleration1 = SphericalHarmonicsAcceleration(
+      geopotential1,
+      Instant(),
+      Displacement<World>({5 * Metre, 7 * Metre, 11 * Metre}));
+  auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+      geopotential2,
+      Instant(),
+      Displacement<World>({5 * Metre, 7 * Metre, 11 * Metre}));
+  EXPECT_EQ(acceleration1, acceleration2);
+}
 
 }  // namespace internal_geopotential
 }  // namespace physics
