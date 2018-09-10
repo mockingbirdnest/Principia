@@ -219,6 +219,11 @@ OblateBody<Frame>::sin() const {
 }
 
 template<typename Frame>
+int OblateBody<Frame>::geopotential_degree() const {
+  return *parameters_.degree_;
+}
+
+template<typename Frame>
 Length const& OblateBody<Frame>::reference_radius() const {
   return parameters_.reference_radius_;
 }

@@ -196,6 +196,11 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   }
 };
 
+#define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                            \
+  case d:                                                                \
+    return AllDegrees<std::make_integer_sequence<int, d>>::Acceleration( \
+        *body_, t, r, r², one_over_r³)
+
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
@@ -203,10 +208,18 @@ Geopotential<Frame>::FullSphericalHarmonicsAcceleration(
     Displacement<Frame> const& r,
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
-  //TODO(phl): Switch.
-  return AllDegrees<std::make_integer_sequence<int, 4>>::Acceleration(
-      *body_, t, r, r², one_over_r³);
+  switch (body_->geopotential_degree()) {
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(2);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(4);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(5);
+    default:
+      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree();
+      base::noreturn();
+  }
 }
+
+#undef PRINCIPIA_CASE_SPHERICAL_HARMONICS
 
 template<typename Frame>
 template<int degree, int order>
