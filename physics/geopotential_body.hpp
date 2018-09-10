@@ -82,11 +82,15 @@ struct Geopotential<Frame>::DegreeNOrderM {
     if constexpr (degree == 2 && order == 1) {
       return {};
     } else {
+
       constexpr int n = degree;
       constexpr int m = order;
       static_assert(0 <= m && m <= n);
+      static double const normalization_factor =
+          LegendreNormalizationFactor(n, m);
 
-      double const latitudinal_factor = AssociatedLegendrePolynomial<n, m>(sin_β);
+      double const latitudinal_factor =
+          AssociatedLegendrePolynomial<n, m>(sin_β);
       double latitudinal_polynomials = m * sin_β * latitudinal_factor;
       if constexpr (m < n) {
         latitudinal_polynomials -=
@@ -106,12 +110,13 @@ struct Geopotential<Frame>::DegreeNOrderM {
       Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
 
-      return radial_factor_derivative * latitudinal_factor *
-                 longitudinal_factor +
-             radial_factor * latitudinal_factor_derivative *
-                 longitudinal_factor +
-             radial_factor * latitudinal_factor *
-                 longitudinal_factor_derivative;
+      return normalization_factor *
+             (radial_factor_derivative * latitudinal_factor *
+                  longitudinal_factor +
+              radial_factor * latitudinal_factor_derivative *
+                  longitudinal_factor +
+              radial_factor * latitudinal_factor *
+                  longitudinal_factor_derivative);
     }
   }
 };
@@ -225,13 +230,13 @@ template<typename Frame>
 template<int degree, int order>
 double Geopotential<Frame>::AssociatedLegendrePolynomial(
     double const argument) {
-  static auto const Pn = LegendrePolynomial<degree, HornerEvaluator>();
-  static auto const DmPn = Pn.Derivative<order>();
+  static auto const pn = LegendrePolynomial<degree, HornerEvaluator>();
+  static auto const dmpn = pn.Derivative<order>();
   double const one_minus_argument² = 1 - argument * argument;
-  double const multiplier = Pow<order / 2>(one_minus_argument²);
+  double const multiplier = Pow<order>(Sqrt(one_minus_argument²));
   // There is no (-1)^m here, see Ries et al. (2016), The combination global
   // gravity model GGM05C.
-  return -Sqrt(one_minus_argument²) * DmPn.Evaluate(argument);
+  return multiplier * dmpn.Evaluate(argument);
 }
 
 template<typename Frame>

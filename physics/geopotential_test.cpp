@@ -210,27 +210,21 @@ TEST_F(GeopotentialTest, Full) {
     order0->set_cos(-6 / LegendreNormalizationFactor(2, 0));
     order0->set_sin(0);
   }
-  LOG(ERROR)<<message.DebugString();
   OblateBody<World> const body2 =
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters::ReadFromMessage(
                             message, 1 * Metre));
   Geopotential<World> const geopotential2(&body2);
-  LOG(ERROR)<<body2.j2_over_μ();
-  LOG(ERROR)<<body2.geopotential_degree();
 
   // Check that the accelerations computed according to both methods are
   // consistent.
+  Displacement<World> displacement({1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
   auto const acceleration1 = SphericalHarmonicsAcceleration(
-      geopotential1,
-      Instant(),
-      Displacement<World>({1e-20 * Metre, 1e-20 * Metre, 11 * Metre}));
+      geopotential1, Instant(), displacement);
   auto const acceleration2 = FullSphericalHarmonicsAcceleration(
-      geopotential2,
-      Instant(),
-      Displacement<World>({1e-20 * Metre, 1e-20 * Metre, 11 * Metre}));
-  EXPECT_EQ(acceleration1, acceleration2);
+      geopotential2, Instant(), displacement);
+  EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
 }
 
 }  // namespace internal_geopotential
