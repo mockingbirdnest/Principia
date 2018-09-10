@@ -196,9 +196,9 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   }
 };
 
-#define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                            \
-  case d:                                                                \
-    return AllDegrees<std::make_integer_sequence<int, d>>::Acceleration( \
+#define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
+  case (d):                                                                    \
+    return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
         *body_, t, r, r², one_over_r³)
 
 template<typename Frame>

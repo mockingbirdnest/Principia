@@ -4,6 +4,7 @@
 #include "gtest/gtest.h"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/legendre.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -17,6 +18,7 @@ namespace physics {
 namespace internal_geopotential {
 
 using geometry::Frame;
+using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
@@ -197,9 +199,7 @@ TEST_F(GeopotentialTest, Full) {
   OblateBody<World> const body1 =
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
-                        OblateBody<World>::Parameters(
-                            /*j2=*/6, /*c22=*/1.0e-20, /*s22=*/1.0e-20,
-                            /*j3=*/1.0e-20, 1 * Metre));
+                        OblateBody<World>::Parameters(/*j2=*/6, 1 * Metre));
   Geopotential<World> const geopotential1(&body1);
   serialization::OblateBody::Geopotential message;
   {
@@ -207,38 +207,29 @@ TEST_F(GeopotentialTest, Full) {
     degree2->set_degree(2);
     auto* const order0 = degree2->add_column();
     order0->set_order(0);
-    order0->set_cos(6);
-    order0->set_sin(0);
-    auto* const order2 = degree2->add_column();
-    order2->set_order(2);
-    order2->set_cos(1.0e-20);
-    order2->set_sin(1.0e-20);
-  }
-  {
-    auto* const degree3 = message.add_row();
-    degree3->set_degree(3);
-    auto* const order0 = degree3->add_column();
-    order0->set_order(0);
-    order0->set_cos(6);
+    order0->set_cos(-6 / LegendreNormalizationFactor(2, 0));
     order0->set_sin(0);
   }
+  LOG(ERROR)<<message.DebugString();
   OblateBody<World> const body2 =
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters::ReadFromMessage(
                             message, 1 * Metre));
   Geopotential<World> const geopotential2(&body2);
+  LOG(ERROR)<<body2.j2_over_μ();
+  LOG(ERROR)<<body2.geopotential_degree();
 
   // Check that the accelerations computed according to both methods are
   // consistent.
   auto const acceleration1 = SphericalHarmonicsAcceleration(
       geopotential1,
       Instant(),
-      Displacement<World>({5 * Metre, 7 * Metre, 11 * Metre}));
+      Displacement<World>({1e-20 * Metre, 1e-20 * Metre, 11 * Metre}));
   auto const acceleration2 = FullSphericalHarmonicsAcceleration(
       geopotential2,
       Instant(),
-      Displacement<World>({5 * Metre, 7 * Metre, 11 * Metre}));
+      Displacement<World>({1e-20 * Metre, 1e-20 * Metre, 11 * Metre}));
   EXPECT_EQ(acceleration1, acceleration2);
 }
 
