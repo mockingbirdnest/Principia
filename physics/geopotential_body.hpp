@@ -65,16 +65,15 @@ struct Geopotential<Frame>::DegreeNOrderM {
                UnitVector const& x,
                UnitVector const& y,
                UnitVector const& z,
+               Length const& reference_radius,
                Displacement<Frame> const& r,
+               Square<Length> const& r²,
                Square<Length> const rx²_plus_ry²,
                Length const& rx,
                Length const& ry,
                Length const& rz,
                Length const& r_norm,
                Exponentiation<Length, -3> const& one_over_r³,
-               Inverse<Length> const& radial_factor,
-               Vector<Exponentiation<Length, -2>, Frame> const&
-                   radial_factor_derivative,
                double const sin_β,
                double const cos_β,
                double const one_over_cos²_β,
@@ -90,6 +89,11 @@ struct Geopotential<Frame>::DegreeNOrderM {
           LegendreNormalizationFactor(n, m);
 
       //TODO(phl):lots of stuff here that could be moved out.
+      Inverse<Length> const radial_factor =
+          Pow<n>(reference_radius / r_norm) / r_norm;
+      Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
+          -(n + 1) * r * radial_factor / r²;
+
       double const latitudinal_factor =
           Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
       double latitudinal_polynomials = 0.0;
@@ -97,12 +101,14 @@ struct Geopotential<Frame>::DegreeNOrderM {
         latitudinal_polynomials +=
             Pow<m + 1>(cos_β) * LegendrePolynomialDerivative<n, m + 1>(sin_β);
       }
-      if constexpr (0 < m) {
+      if constexpr (m > 0) {
         latitudinal_polynomials -=
             Pow<m - 1>(cos_β) * m * sin_β *
             LegendrePolynomialDerivative<n, m>(sin_β);
       }
       LOG(ERROR)<<sin_β<<" "<<cos_β<<" "<<λ<<" "<<Cos(λ)<<" "<<Sin(λ);
+      LOG(ERROR)<<-sin_β * Cos(λ) * x;
+      LOG(ERROR)<<-sin_β * Sin(λ) * y;
       Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
           latitudinal_polynomials *
           (-sin_β * Cos(λ) * x - sin_β * Sin(λ) * y + cos_β * z) /
@@ -116,19 +122,34 @@ struct Geopotential<Frame>::DegreeNOrderM {
       double const cos_mλ = Cos(mλ);
       double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
       Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
-          m * (Snm * cos_mλ - Cnm * sin_mλ) * (rx * y - ry * x) / rx²_plus_ry²;
+          m * (Snm * cos_mλ - Cnm * sin_mλ) * (-Sin(λ) * x + Cos(λ) * y) /
+          r_norm;
+      Vector<Inverse<Length>, Frame>
+          latitudinal_factor_times_longitudinal_factor_derivative;
+      if constexpr (m > 0) {
+        // Compensate a cos_β.
+        latitudinal_factor_times_longitudinal_factor_derivative +=
+            Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
+            longitudinal_factor_derivative;
+      }
 
       LOG(ERROR)<<radial_factor<<" "<<radial_factor_derivative;
       LOG(ERROR)<<latitudinal_factor<<" "<<latitudinal_factor_derivative;
       LOG(ERROR)<<longitudinal_factor<<" "<<longitudinal_factor_derivative;
+      LOG(ERROR)<<radial_factor_derivative * latitudinal_factor *
+                  longitudinal_factor;
+      LOG(ERROR)<<radial_factor * latitudinal_factor_derivative *
+                  longitudinal_factor;
+      LOG(ERROR)<<radial_factor *
+                  latitudinal_factor_times_longitudinal_factor_derivative;
 
       return normalization_factor *
              (radial_factor_derivative * latitudinal_factor *
                   longitudinal_factor +
               radial_factor * latitudinal_factor_derivative *
                   longitudinal_factor +
-              radial_factor * latitudinal_factor *
-                  longitudinal_factor_derivative);
+              radial_factor *
+                  latitudinal_factor_times_longitudinal_factor_derivative);
     }
   }
 };
@@ -159,15 +180,11 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
       return {};
     } else {
       constexpr int n = degree;
-      Inverse<Length> const radial_factor =
-          Pow<n>(reference_radius / r_norm) / r_norm;
-      Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
-          -(n + 1) * r * radial_factor / r²;
       return (DegreeNOrderM<degree, orders>::Acceleration(
                   body,
                   x, y, z,
-                  r, rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
-                  radial_factor, radial_factor_derivative,
+                  reference_radius,
+                  r, r², rx²_plus_ry², rx, ry, rz, r_norm, one_over_r³,
                   sin_β, cos_β, one_over_cos²_β,
                   λ) + ...);
     }
@@ -196,7 +213,7 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
     Length const rz = InnerProduct(r, z);
 
     Length const r_norm = r.Norm();
-    Square<Length> const rx²_plus_ry² = r² - rz * rz;
+    Square<Length> const rx²_plus_ry² = rx * rx + ry * ry;
     double const sin_β = rz / r_norm;
     double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
     double const one_over_cos²_β = r² / rx²_plus_ry²;
