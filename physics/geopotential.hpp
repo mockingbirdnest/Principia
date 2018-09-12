@@ -62,7 +62,7 @@ class Geopotential {
 
   //TODO(phl): Comment
   template<int degree, int order>
-  static double AssociatedLegendrePolynomial(double argument);
+  static double LegendrePolynomialDerivative(double argument);
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here

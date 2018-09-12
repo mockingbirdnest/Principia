@@ -219,12 +219,24 @@ TEST_F(GeopotentialTest, Full) {
 
   // Check that the accelerations computed according to both methods are
   // consistent.
-  Displacement<World> displacement({1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
-  auto const acceleration1 = SphericalHarmonicsAcceleration(
-      geopotential1, Instant(), displacement);
-  auto const acceleration2 = FullSphericalHarmonicsAcceleration(
-      geopotential2, Instant(), displacement);
-  EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  {
+    Displacement<World> const displacement(
+        {1e-7 * Metre, 1e-7 * Metre, 11 * Metre});
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential1, Instant(), displacement);
+    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+        geopotential2, Instant(), displacement);
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  }
+  {
+    Displacement<World> const displacement(
+        {5 * Metre, 7 * Metre, 11 * Metre});
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential1, Instant(), displacement);
+    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+        geopotential2, Instant(), displacement);
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  }
 }
 
 }  // namespace internal_geopotential
