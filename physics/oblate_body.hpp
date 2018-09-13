@@ -113,6 +113,7 @@ class OblateBody : public RotatingBody<Frame> {
   // These parameters are normalized.
   GeopotentialCoefficients const& cos() const;
   GeopotentialCoefficients const& sin() const;
+  int geopotential_degree() const;
 
   Length const& reference_radius() const;
 
