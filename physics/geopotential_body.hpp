@@ -15,6 +15,7 @@ namespace physics {
 namespace internal_geopotential {
 
 using numerics::HornerEvaluator;
+using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
 using quantities::Cos;
@@ -210,8 +211,11 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(4);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(5);
+    case 0:
+      return Vector<Quotient<Acceleration, GravitationalParameter>, Frame>{};
     default:
-      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree();
+      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree() << " "
+                 << body_->name();
       base::noreturn();
   }
 }
