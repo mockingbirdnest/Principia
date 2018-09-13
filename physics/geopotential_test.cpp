@@ -221,6 +221,15 @@ TEST_F(GeopotentialTest, VerifyJ2) {
   // consistent.
   {
     Displacement<World> const displacement(
+        {0 * Metre, 0 * Metre, 11 * Metre});
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential1, Instant(), displacement);
+    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+        geopotential2, Instant(), displacement);
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  }
+  {
+    Displacement<World> const displacement(
         {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
@@ -311,6 +320,65 @@ TEST_F(GeopotentialTest, VerifyS22) {
     order2->set_order(2);
     order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
     order2->set_sin(6 / LegendreNormalizationFactor(2, 2));
+  }
+  OblateBody<World> const body2 =
+      OblateBody<World>(massive_body_parameters_,
+                        rotating_body_parameters_,
+                        OblateBody<World>::Parameters::ReadFromMessage(
+                            message, 1 * Metre));
+  Geopotential<World> const geopotential2(&body2);
+
+  // Check that the accelerations computed according to both methods are
+  // consistent.
+  {
+    Displacement<World> const displacement(
+        {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential1, Instant(), displacement);
+    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+        geopotential2, Instant(), displacement);
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  }
+  {
+    Displacement<World> const displacement(
+        {5 * Metre, 7 * Metre, 11 * Metre});
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential1, Instant(), displacement);
+    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+        geopotential2, Instant(), displacement);
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+  }
+}
+
+TEST_F(GeopotentialTest, VerifyJ3) {
+  OblateBody<World> const body1 =
+      OblateBody<World>(massive_body_parameters_,
+                        rotating_body_parameters_,
+                        OblateBody<World>::Parameters(/*j2=*/1e-20,
+                                                      /*c22=*/1e-20,
+                                                      /*s22=*/1e-20,
+                                                      /*j3=*/6,
+                                                      1 * Metre));
+  Geopotential<World> const geopotential1(&body1);
+  serialization::OblateBody::Geopotential message;
+  {
+    auto* const degree2 = message.add_row();
+    degree2->set_degree(2);
+    auto* const order0 = degree2->add_column();
+    order0->set_order(0);
+    order0->set_cos(-1e-20 / LegendreNormalizationFactor(2, 0));
+    order0->set_sin(0);
+    auto* const order2 = degree2->add_column();
+    order2->set_order(2);
+    order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
+    order2->set_sin(1e-20 / LegendreNormalizationFactor(2, 2));
+  }
+  {
+    auto* const degree3 = message.add_row();
+    degree3->set_degree(3);
+    auto* const order0 = degree3->add_column();
+    order0->set_order(0);
+    order0->set_cos(-6 / LegendreNormalizationFactor(3, 0));
   }
   OblateBody<World> const body2 =
       OblateBody<World>(massive_body_parameters_,
