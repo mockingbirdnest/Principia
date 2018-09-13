@@ -36,7 +36,7 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  FullSphericalHarmonicsAcceleration(
+  GeneralSphericalHarmonicsAcceleration(
       Instant const& t,
       Displacement<Frame> const& r,
       Square<Length> const& r²,
@@ -50,7 +50,7 @@ class Geopotential {
 
   using UnitVector = Vector<double, Frame>;
 
-  //TODO(phl): Comment
+  // Helper templates for iterating over the degrees/orders of the geopotential.
   template<int degree, int order>
   struct DegreeNOrderM;
 
@@ -59,10 +59,6 @@ class Geopotential {
 
   template<typename>
   struct AllDegrees;
-
-  //TODO(phl): Comment
-  template<int degree, int order>
-  static double LegendrePolynomialDerivative(double argument);
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here

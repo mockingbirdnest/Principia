@@ -61,12 +61,12 @@ class GeopotentialTest : public ::testing::Test {
   }
 
   Vector<Quotient<Acceleration, GravitationalParameter>, World>
-  FullSphericalHarmonicsAcceleration(Geopotential<World> const& geopotential,
+  GeneralSphericalHarmonicsAcceleration(Geopotential<World> const& geopotential,
                                      Instant const& t,
                                      Displacement<World> const& r) {
     auto const r² = r.Norm²();
     auto const one_over_r³ = 1.0 / (r² * r.Norm());
-    return geopotential.FullSphericalHarmonicsAcceleration(
+    return geopotential.GeneralSphericalHarmonicsAcceleration(
         t, r, r², one_over_r³);
   }
 
@@ -224,27 +224,30 @@ TEST_F(GeopotentialTest, VerifyJ2) {
         {0 * Metre, 0 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2,
+                Componentwise(AlmostEquals(0 / Metre / Metre, 0),
+                              AlmostEquals(0 / Metre / Metre, 0),
+                              An<Exponentiation<Length, -2>>()));
   }
   {
     Displacement<World> const displacement(
         {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 182019));
   }
   {
     Displacement<World> const displacement(
         {5 * Metre, 7 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 2, 54));
   }
 }
 
@@ -284,18 +287,18 @@ TEST_F(GeopotentialTest, VerifyC22) {
         {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 1, 34));
   }
   {
     Displacement<World> const displacement(
         {5 * Metre, 7 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 2, 54));
   }
 }
 
@@ -335,18 +338,18 @@ TEST_F(GeopotentialTest, VerifyS22) {
         {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 4));
   }
   {
     Displacement<World> const displacement(
         {5 * Metre, 7 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 5, 6));
   }
 }
 
@@ -394,18 +397,18 @@ TEST_F(GeopotentialTest, VerifyJ3) {
         {1e-5 * Metre, 1e-5 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 264752));
   }
   {
     Displacement<World> const displacement(
         {5 * Metre, 7 * Metre, 11 * Metre});
     auto const acceleration1 = SphericalHarmonicsAcceleration(
         geopotential1, Instant(), displacement);
-    auto const acceleration2 = FullSphericalHarmonicsAcceleration(
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 3, 6));
   }
 }
 
