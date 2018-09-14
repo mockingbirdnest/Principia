@@ -15,6 +15,7 @@ namespace physics {
 namespace internal_geopotential {
 
 using numerics::HornerEvaluator;
+using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
 using quantities::Cos;
@@ -49,7 +50,6 @@ struct Geopotential<Frame>::DegreeNOrderM {
     if constexpr (degree == 2 && order == 1) {
       return {};
     } else {
-
       constexpr int n = degree;
       constexpr int m = order;
       static_assert(0 <= m && m <= n);
@@ -99,7 +99,7 @@ struct Geopotential<Frame>::DegreeNOrderM {
       Angle const mλ = m * λ;
       double const sin_mλ = Sin(mλ);
       double const cos_mλ = Cos(mλ);
-      double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ ;
+      double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ;
       Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * (-sin_λ * x + cos_λ * y) / r_norm;
       Vector<Inverse<Length>, Frame>
@@ -210,8 +210,11 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(4);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(5);
+    case 0:
+      return Vector<Quotient<Acceleration, GravitationalParameter>, Frame>{};
     default:
-      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree();
+      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree() << " "
+                 << body_->name();
       base::noreturn();
   }
 }
