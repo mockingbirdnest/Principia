@@ -48,7 +48,7 @@ LegendrePolynomial() {
           std::make_index_sequence<degree_ + 1>>::coefficients);
 }
 
-inline double LegendreNormalizationFactor(int degree, int order) {
+inline double LegendreNormalizationFactor(int const degree, int const order) {
   int const n = degree;
   int const m = order;
   return Sqrt((n + n + 1) * (2 - (m == 0 ? 1 : 0)) /
