@@ -2,6 +2,7 @@
 #include <limits>
 
 #include "astronomy/frames.hpp"
+#include "base/bundle.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "physics/body_surface_dynamic_frame.hpp"
@@ -13,8 +14,10 @@
 namespace principia {
 namespace astronomy {
 
+using base::Bundle;
 using base::dynamic_cast_not_null;
 using base::not_null;
+using base::Status;
 using geometry::AngleBetween;
 using geometry::Displacement;
 using geometry::Instant;
@@ -37,6 +40,7 @@ using physics::OblateBody;
 using physics::SolarSystem;
 using quantities::si::ArcMinute;
 using quantities::si::ArcSecond;
+using quantities::si::Centi;
 using quantities::si::Deci;
 using quantities::si::Degree;
 using quantities::si::Kilo;
@@ -107,13 +111,39 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // VL52  34323.584344 -10455.947225  38998.988146 999999.999999
 
   constexpr Instant initial_time = "2016-03-13T00:00:00,000"_UTC;
-  DegreesOfFreedom<ITRS> const initial_dof = {
-      ITRS::origin + Displacement<ITRS>({2505.232029 * Kilo(Metre),
+  DegreesOfFreedom<ITRS> const initial_dof_ilrsa = {
+      ITRS::origin + Displacement<ITRS>({  2505.232029 * Kilo(Metre),
                                          -10564.815741 * Kilo(Metre),
-                                         -5129.314404 * Kilo(Metre)}),
-      Velocity<ITRS>({34323.584344 * Deci(Metre) / Second,
+                                          -5129.314404 * Kilo(Metre)}),
+      Velocity<ITRS>({ 34323.584344 * Deci(Metre) / Second,
                       -10455.947225 * Deci(Metre) / Second,
-                      38998.988146 * Deci(Metre) / Second})};
+                       38998.988146 * Deci(Metre) / Second})};
+
+  // ilrsb.orb.lageos2.160319.v35.sp3, headers and first record, from
+  // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/160319/.
+  // #cV2016  3 13  0  0  0.00000000    5041   SLR ITRF97 FIT JCET
+  // ## 1888      0.00000000   120.00000000 57460 0.0000000000000
+  // +   1    L52  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+  // [... Lines 4 through 12 omitted                         ...]
+  // %c L  cc UTC ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
+  // %c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
+  // %f  0.0000000  0.000000000  0.00000000000  0.000000000000000
+  // [... Lines 15 through 18 omitted                        ...]
+  // %/* ilrsb.orb.lageos2.160319.v35.sp3 Reference TRF: SLRF2008
+  // %/* Input orbits:  ASI v35 GRGS v35 NSGF v35 ESA v35
+  // %/* GFZ v35 DGFI v35 JCET v35
+  // %/* Combination details in README_CC.ilrsb
+  // * 2016  3 13  0  0  0.00000000
+  // PL52   2505.232038 -10564.815750  -5129.314387
+  // VL52  34323.584276 -10455.947218  38998.988200
+
+  DegreesOfFreedom<ITRS> const initial_dof_ilrsb = {
+      ITRS::origin + Displacement<ITRS>({  2505.232038 * Kilo(Metre),
+                                         -10564.815750 * Kilo(Metre),
+                                          -5129.314387 * Kilo(Metre)}),
+      Velocity<ITRS>({ 34323.584276 * Deci(Metre) / Second,
+                      -10455.947218 * Deci(Metre) / Second,
+                       38998.988200 * Deci(Metre) / Second})};
 
   // ilrsa.orb.lageos2.180804.v70.sp3, headers and first record, from
   // ftp://cddis.gsfc.nasa.gov/pub/slr/products/orbits/lageos2/180804/.
@@ -136,45 +166,64 @@ TEST_F(GeodesyTest, LAGEOS2) {
   constexpr Instant final_time = "2018-07-29T00:00:00,000"_UTC;
   DegreesOfFreedom<ITRS> const expected_final_dof = {
       ITRS::origin + Displacement<ITRS>({-11150.750217 * Kilo(Metre),
-                                         5070.184012 * Kilo(Metre),
-                                         1340.324930 * Kilo(Metre)}),
+                                           5070.184012 * Kilo(Metre),
+                                           1340.324930 * Kilo(Metre)}),
       Velocity<ITRS>({-15231.027828 * Deci(Metre) / Second,
                       -21132.111357 * Deci(Metre) / Second,
                       -44478.560714 * Deci(Metre) / Second})};
 
   ephemeris_->Prolong(final_time);
 
-  DiscreteTrajectory<ICRS> lageos2_trajectory;
-  lageos2_trajectory.Append(
-      initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof));
-  CHECK_OK(ephemeris_->FlowWithAdaptiveStep(
-      &lageos2_trajectory,
-      Ephemeris<ICRS>::NoIntrinsicAcceleration,
-      final_time,
-      Ephemeris<ICRS>::AdaptiveStepParameters(
-          EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandالمكاوىPrince1986RKN434FM,
-              Position<ICRS>>(),
-          std::numeric_limits<std::int64_t>::max(),
-          /*length_integration_tolerance=*/1 * Milli(Metre),
-          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-      /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
-      /*last_point_only=*/true));
-  EXPECT_THAT(lageos2_trajectory.last().time(), Eq(final_time));
-  auto const actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
-      lageos2_trajectory.last().degrees_of_freedom());
+  DiscreteTrajectory<ICRS> primary_lageos2_trajectory;
+  primary_lageos2_trajectory.Append(
+      initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsa));
+  DiscreteTrajectory<ICRS> secondary_lageos2_trajectory;
+  secondary_lageos2_trajectory.Append(
+      initial_time, itrs_.FromThisFrameAtTime(initial_time)(initial_dof_ilrsb));
+  auto flow_lageos2 =
+      [this,
+       final_time](DiscreteTrajectory<ICRS>& lageos2_trajectory) -> Status {
+        return ephemeris_->FlowWithAdaptiveStep(
+            &lageos2_trajectory,
+            Ephemeris<ICRS>::NoIntrinsicAcceleration,
+            final_time,
+            Ephemeris<ICRS>::AdaptiveStepParameters(
+                EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                    DormandالمكاوىPrince1986RKN434FM,
+                    Position<ICRS>>(),
+                std::numeric_limits<std::int64_t>::max(),
+                /*length_integration_tolerance=*/1 * Milli(Metre),
+                /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+            /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
+            /*last_point_only=*/true);
+  };
+  Bundle bundle(2);
+  bundle.Add([&flow_lageos2, &primary_lageos2_trajectory]() {
+    return flow_lageos2(primary_lageos2_trajectory);
+  });
+  bundle.Add([&flow_lageos2, &secondary_lageos2_trajectory]() {
+    return flow_lageos2(secondary_lageos2_trajectory);
+  });
+  bundle.Join();
+  EXPECT_THAT(primary_lageos2_trajectory.last().time(), Eq(final_time));
+  EXPECT_THAT(secondary_lageos2_trajectory.last().time(), Eq(final_time));
+
+  auto const primary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
+      primary_lageos2_trajectory.last().degrees_of_freedom());
+  auto const secondary_actual_final_dof = itrs_.ToThisFrameAtTime(final_time)(
+      secondary_lageos2_trajectory.last().degrees_of_freedom());
 
   // Absolute error in position.
-  EXPECT_THAT(
-      AbsoluteError(actual_final_dof.position(), expected_final_dof.position()),
-      IsNear(570 * Kilo(Metre)));
+  EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
+                            expected_final_dof.position()),
+              IsNear(570 * Kilo(Metre)));
   // Angular error at the geocentre.
-  EXPECT_THAT(AngleBetween(actual_final_dof.position() - ITRS::origin,
+  EXPECT_THAT(AngleBetween(primary_actual_final_dof.position() - ITRS::origin,
                            expected_final_dof.position() - ITRS::origin),
               IsNear(2 * Degree + 41 * ArcMinute));
   // Radial error at the geocentre.
   EXPECT_THAT(
-      AbsoluteError((actual_final_dof.position() - ITRS::origin).Norm(),
+      AbsoluteError((primary_actual_final_dof.position() - ITRS::origin).Norm(),
                     (expected_final_dof.position() - ITRS::origin).Norm()),
       IsNear(270 * Metre));
 
@@ -190,7 +239,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
       KeplerOrbit<ICRS>(
           *earth_,
           lageos2,
-          itrs_.FromThisFrameAtTime(final_time)(actual_final_dof) -
+          itrs_.FromThisFrameAtTime(final_time)(primary_actual_final_dof) -
               earth_trajectory_.EvaluateDegreesOfFreedom(final_time),
           final_time).elements_at_epoch();
 
@@ -212,6 +261,22 @@ TEST_F(GeodesyTest, LAGEOS2) {
   EXPECT_THAT(AbsoluteError(*actual_elements.mean_anomaly,
                             *expected_elements.mean_anomaly),
               IsNear(2 * Degree + 31 * ArcMinute));
+
+  // Error arising from uncertainty in the initial state, estimated as the
+  // difference between the primary and secondary ILRS products.
+  // Absolute error in position.
+  EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
+                            primary_actual_final_dof.position()),
+              IsNear(23 * Metre));
+  // Angular error at the geocentre.
+  EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
+                           primary_actual_final_dof.position() - ITRS::origin),
+              IsNear(388 * Milli(ArcSecond)));
+  // Radial error at the geocentre.
+  EXPECT_THAT(AbsoluteError(
+                  (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
+                  (primary_actual_final_dof.position() - ITRS::origin).Norm()),
+              IsNear(10 * Centi(Metre)));
 }
 
 #endif
