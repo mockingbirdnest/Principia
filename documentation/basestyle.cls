@@ -36,6 +36,10 @@
   Contextuals=WordFinal,
             ]{Linux Libertine O}
 \setmonofont[Scale=MatchLowercase]{Consolas}
+
+% TODO(egg): rename to something else.
+\RequirePackage{savesym}
+\savesymbol{textup}
 \newfontface\textup[
   VerticalPosition=Superior,
   Numbers={OldStyle, Proportional}

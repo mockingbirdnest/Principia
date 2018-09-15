@@ -1,0 +1,64 @@
+\documentclass[10pt, a4paper, oneside]{basestyle}
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+Geopotential%
+}%
+}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\noindent
+This document describes the computations that are performed by the method \texttt{GeneralSphericalHarmonicsAcceleration} of class \texttt{Geopotential} to the determine the acceleration exerted by a non-spherical celestial on a point mass.
+
+Let $\vr$ be the vector going from the centre of the celestial to the point mass.  Let $\tuple{\vx, \vy, \vz}$ be a (direct) base whose $\vz$ axis is along the axis of rotation of the celestial and whose $\vx$ axis points toward a reference point on the celestial.  In this base $\vr$ has coordinates $\tuple{x, y, z}$ which can be expressed in terms of the latitude $\gb$ and the longitude $\gl$:
+\begin{equation*}
+\vr=\begin{pmatrix}
+x \\ y \\ z
+\end{pmatrix}
+=\begin{pmatrix}
+r \cos \gb \cos \gl\\
+r \cos \gb \sin \gl\\
+r \sin \gb
+\end{pmatrix}
+\end{equation*}
+where $r$ is the norm of $\vr$.
+
+The gravitational potential exerted by the celestial has the form:
+\begin{equation*}
+U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
+\pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
+\pa{C_{m n} \cos m \gl + S_{m n} \sin m \gl}
+}
+\end{equation*}
+where $P_{m n}$ is the associated Legendre function defined as:
+\begin{equation*}
+P_{m n} = \pa{1 - t^2}^{\frac{m}{2}} \deriv[m] t {P_n\of t}
+\end{equation*}
+The terms that are relevant for evaluating the acceleration exerted by the spherical harmonics on the point mass have the form:
+\begin{equation*}
+V_{n m}\of\vr = \frac{1}{r}\pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
+\pa{C_{m n} \cos m \gl + S_{m n} \sin m \gl}
+\end{equation*}
+and the acceleration itself is proportional to $\grad V_{n m}\of\vr$.
+
+$V_{n m}\of\vr$ can be written as the product of three terms dependent of $r$, $\gb$, and $\gl$, respectively:
+\begin{equation*}
+V_{n m}\of\vr = {\mathfrak R\of r} {\mathfrak B\of \gb} {\mathfrak L\of \gl}
+\end{equation*}
+where:
+\begin{equation*}
+\begin{cases}
+\mathfrak R\of r &= \frac{1}{r}\pa{\frac{R}{r}}^n\\
+\mathfrak B\of \gb &= P_{m n}\of{\sin \gb}\\
+\mathfrak L\of \gl &= C_{m n} \cos m \gl + S_{m n} \sin m \gl
+\end{cases}
+\end{equation*}
+\end{document}
