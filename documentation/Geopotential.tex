@@ -20,6 +20,7 @@ Geopotential%
 This document describes the computations that are performed by the method \texttt{GeneralSphericalHarmonicsAcceleration} of class \texttt{Geopotential} to the determine the acceleration exerted by a non-spherical celestial on a point mass.
 \end{sloppypar}
 
+\subsection*{Notation}
 Let $\vr$ be the vector going from the centre of the celestial to the point mass.  Let $\tuple{\vx, \vy, \vz}$ be a (direct) base whose $\vz$ axis is along the axis of rotation of the celestial and whose $\vx$ axis points toward a reference point on the celestial.  In this base $\vr$ has coordinates $\tuple{x, y, z}$ which can be expressed in terms of the latitude $\gb$ and the longitude $\gl$:
 \[
 \vr=\begin{pmatrix}
@@ -33,6 +34,7 @@ r \sin \gb
 \]
 where $r$ is the norm of $\vr$.
 
+\subsection*{Potential and acceleration}
 The gravitational potential exerted by the celestial has the form:
 \[
 U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
@@ -57,11 +59,11 @@ V_{n m}\of\vr = {\mathfrak R\of r}\,{\mathfrak B\of \gb}\,{\mathfrak L\of \gl}
 \]
 where:
 \[
-\begin{cases}
+\begin{dcases}
 \mathfrak R\of r &= \frac{1}{r}\pa{\frac{R}{r}}^n\\
 \mathfrak B\of \gb &= P_{m n}\of{\sin \gb}\\
 \mathfrak L\of \gl &= C_{m n} \cos m \gl + S_{m n} \sin m \gl
-\end{cases}
+\end{dcases}
 \]
 The overall gradient can then be written as:
 \[
@@ -70,7 +72,8 @@ The overall gradient can then be written as:
 {\mathfrak R\of r}\,{\grad \mathfrak B\of \gb}\,{\mathfrak L\of \gl} +
 {\mathfrak R\of r}\,{\mathfrak B\of \gb}\,{\grad \mathfrak L\of \gl}
 \]
-To compute this expression, we first determine the gradient of various elements appearing in the potential.  Starting with the $\mathfrak R$ term, we have trivially:
+\subsection*{Lemmata}
+To compute the acceleration, we first determine the gradient of various elements appearing in the potential.  Starting with the $\mathfrak R$ term, we have trivially:
 \[
 \grad r^2 = \grad\of{x^2 + y^2 + z^2} = 2 \vr
 \]
@@ -128,6 +131,46 @@ r \cos \gb \cos \gl \\
 -\sin \gl \\
 \cos \gl \\
 0
+\end{pmatrix}
+\]
+Finally, we will also need the derivative of the associated Legendre function:
+\begin{align*}
+P_{n m}'\of{t} &= \frac{m}{2} \pa{1 - t^2}^{\frac{m}{2} - 1} \pa{-2 t} \deriv[m]{t}{P_n\of t} +
+\pa{1 - t^2}^{\frac{m}{2}} \deriv[m + 1]{t}{P_n\of t}\\
+&= \pa{1 - t^2}^{\frac{m}{2} - 1}
+\pa{\pa{1 - t^2} \deriv[m + 1]{t}{P_n\of t} - m t \deriv[m]{t}{P_n\of t}}
+\end{align*}
+\subsection*{Gradients}
+We can now compute the gradient of the three terms that make up $V_{m n}\of\vr$.  First, the radial term:
+\[
+\grad \mathfrak R\of r = R^n \grad r^{-\pa{n + 1}} = -\pa{n + 1} R^n r^{-\pa{n + 3}} \vr
+=-\pa{n + 1}\frac{\mathfrak R\of r}{r^2}
+\]
+For the latitudinal term, the chain rule yields:
+\[
+\grad \mathfrak B\of \gb = P_{n m}'\of{\sin \gb} \, \grad \sin \gb
+= P_{n m}'\of{\sin \gb} \frac{\cos \gb}{r}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\]
+Substituting $\sin \gb$ for the argument of $P_{n m}$ and its derivative we obtain:
+\[
+\begin{dcases}
+P_{n m}\of{\sin \gb} = {\cos^m \gb} \deriv[m]{t}{P_n\of{\sin \gb}} \\
+P_{n m}'\of{\sin \gb} = {\cos^m \gb} \deriv[m + 1]{t}{P_n\of {\sin \gb}} -
+m \sin \gb \pa{\cos \gb}^{m - 2} \deriv[m]{t}{P_n\of{\sin \gb}}
+\end{dcases}
+\]
+and thus:
+\[
+\grad \mathfrak B\of \gb = \frac{1}{r}
+\pa{\pa{\cos \gb}^{m + 1} \deriv[m + 1]{t}{P_n\of {\sin \gb}} -
+m \sin \gb \pa{\cos \gb}^{m - 1} \deriv[m]{t}{P_n\of{\sin \gb}}}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
 \end{pmatrix}
 \]
 \end{document}
