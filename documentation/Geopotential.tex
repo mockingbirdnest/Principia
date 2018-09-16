@@ -158,18 +158,20 @@ For the latitudinal term, the chain rule yields:
 Substituting $\sin \gb$ for the argument of $P_{n m}$ and its derivative we obtain:
 \[
 \begin{dcases}
-P_{n m}\of{\sin \gb} = {\cos^m \gb} \deriv[m]{t}{P_n\of{\sin \gb}} \\
-P_{n m}'\of{\sin \gb} = {\cos^m \gb} \deriv[m + 1]{t}{P_n\of {\sin \gb}} -
-m \sin \gb \pa{\cos \gb}^{m - 2} \deriv[m]{t}{P_n\of{\sin \gb}}
+P_{n m}\of{\sin \gb} = {\cos^m \gb} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb} \\
+P_{n m}'\of{\sin \gb} 
+= {\cos^m \gb} \Evaluate{\deriv[m + 1]{t}{P_n\of t}}{t = \sin \gb} -
+m \sin \gb \pa{\cos \gb}^{m - 2} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb}
 \end{dcases}
 \]
 and thus:
 \[
 \begin{dcases}
-\mathfrak B\of \gb = {\cos^m \gb} \deriv[m]{t}{P_n\of{\sin \gb}} \\
+\mathfrak B\of \gb = {\cos^m \gb} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb} \\
 \grad \mathfrak B\of \gb = \frac{1}{r}
-\pa{\pa{\cos \gb}^{m + 1} \deriv[m + 1]{t}{P_n\of {\sin \gb}} -
-m \sin \gb \pa{\cos \gb}^{m - 1} \deriv[m]{t}{P_n\of{\sin \gb}}}\begin{pmatrix}
+\pa{\pa{\cos \gb}^{m + 1} \Evaluate{\deriv[m + 1]{t}{P_n\of t}}{t = \sin \gb} -
+m \sin \gb \pa{\cos \gb}^{m - 1}
+\Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb}\qquad\ \,}\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
@@ -194,8 +196,8 @@ There are however non-essential singularities that arise when $\cos \gb$ appears
 
 Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\cos \gb}^{-1}$.  However, that term is multiplied by $m$, so it vanishes.  Thus, for $m = 0$ we must use the special formula:
 \[
-{\grad \mathfrak B\of \gb}_{m = 0} =  \frac{1}{r}
-\cos \gb \deriv{t}{P_n\of {\sin \gb}}\begin{pmatrix}
+{\grad \mathfrak B\of \gb}_{m = 0} =  \frac{\cos \gb}{r}
+\Evaluate{\deriv{t}{P_n\of t}}{t = \sin \gb}\qquad\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
@@ -204,7 +206,7 @@ Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\c
 Similarly $\grad \mathfrak L\of \gl$ has $\cos \gb$ as its denominator.  To eliminate this term we note that $\grad \mathfrak L\of \gl$ always occurs in a product involving $\mathfrak B\of \gb$.  Let's write this product:
 \[
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl} = \frac{m \pa{\cos \gb}^{m - 1}}{r}
-\deriv[m]{t}{P_m\of {\sin \gb}}
+\Evaluate{\deriv[m]{t}{P_m\of t}}{t = \sin \gb}
 \pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl}\begin{pmatrix}
 -\sin \gl \\
 \cos \gl \\
