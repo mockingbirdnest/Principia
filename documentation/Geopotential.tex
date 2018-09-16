@@ -1,4 +1,4 @@
-\documentclass[10pt, a4paper, oneside]{basestyle}
+\documentclass[10pt, a4paper, twoside]{basestyle}
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -17,11 +17,12 @@ Geopotential%
 \maketitle
 \begin{sloppypar}
 \noindent
-This document describes the computations that are performed by the method \texttt{GeneralSphericalHarmonicsAcceleration} of class \texttt{Geopotential} to the determine the acceleration exerted by a non-spherical celestial on a point mass.
+This document describes the computations that are performed by the method \texttt{GeneralSphericalHarmonicsAcceleration} of class \texttt{Geopotential} to determine the acceleration exerted by a non-spherical celestial on a point mass.
 \end{sloppypar}
 
 \subsection*{Notation}
-Let $\vr$ be the vector going from the centre of the celestial to the point mass.  Let $\tuple{\vx, \vy, \vz}$ be a (direct) base whose $\vz$ axis is along the axis of rotation of the celestial and whose $\vx$ axis points toward a reference point on the celestial.  In this base $\vr$ has coordinates $\tuple{x, y, z}$ which can be expressed in terms of the latitude $\gb$ and the longitude $\gl$:
+Let $\vr$ be the vector going from the centre of the celestial to the point mass.  Let $\tuple{\hat{\vx}, \hat{\vy}, \hat{\vz}}$ be a (direct) base whose $\hat{\vz}$ axis is along the axis of rotation of the celestial and whose $\hat{\vx}$ axis points toward a reference point on the celestial.  In this base $\vr$ has coordinates $\tuple{x, y, z}$ which can be expressed in terms of the latitude $\gb \in \intclos{\frac{\Pi}{2}}{\frac{\Pi}{2}}$ and the longitude
+$\gl \in \intclos{0}{2 \Pi}$:
 \[
 \vr=\begin{pmatrix}
 x \\ y \\ z
@@ -32,10 +33,10 @@ r \cos \gb \sin \gl\\
 r \sin \gb
 \end{pmatrix}
 \]
-where $r$ is the norm of $\vr$.
+where $r$ is the norm of $\vr$.  Note that $\cos \gb > 0$, which will come handy when simplifying expressions like $\sqrt{1 - \sin^2 \gb}$.
 
 \subsection*{Potential and acceleration}
-The gravitational potential exerted by the celestial has the form:
+The gravitational potential due to the celestial has the form:
 \[
 U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
 \pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
@@ -81,10 +82,10 @@ from which we deduce:
 \[
 \grad r^n = \grad\of{\pa{r^2}^{\frac{n}{2}}} = \frac{n}{2}\pa{r^2}^{\frac{n}{2} - 1}\pa{2 \vr} = n r^{n - 2} \vr
 \]
-Noting that $\grad z = \vz$ we can compute the following gradient needed for the $\mathfrak B$ term:
+Noting that $\grad z = \hat{\vz}$ we can compute the following gradient needed for the $\mathfrak B$ term:
 \[
 \grad \sin \gb = \grad \frac{z}{r}
-= \frac{r \vz - z r^{-1} \vr}{r^2} = \frac{\vz}{r} - \vr \frac{z}{r^3}
+= \frac{r \hat{\vz} - z r^{-1} \vr}{r^2} = \frac{\hat{\vz}}{r} - \vr \frac{z}{r^3}
 \]
 which can be written, in coordinates:
 \[
@@ -112,8 +113,8 @@ For the $\mathfrak L$ term, we need to evaluate:
 The angle $\gl$ is $\arctan\frac{y}{x}$ thus:
 \[
 \grad \gl = \frac{1}{1 + \pa{\frac{y}{x}}^2} \grad\of{\frac{y}{x}}
-= \frac{1}{1 + \pa{\frac{y}{x}}^2}\frac{x \vy - y \vx}{x^2}
-= \frac{x \vy - y \vx}{x^2 + y^2}
+= \frac{1}{1 + \pa{\frac{y}{x}}^2}\frac{x \hat{\vy} - y \hat{\vx}}{x^2}
+= \frac{x \hat{\vy} - y \hat{\vx}}{x^2 + y^2}
 \]
 which can be written, in coordinates:
 \[
@@ -137,8 +138,8 @@ Finally, we will also need the derivative of the associated Legendre function:
 \begin{align*}
 P_{n m}'\of{t} &= \frac{m}{2} \pa{1 - t^2}^{\frac{m}{2} - 1} \pa{-2 t} \deriv[m]{t}{P_n\of t} +
 \pa{1 - t^2}^{\frac{m}{2}} \deriv[m + 1]{t}{P_n\of t}\\
-&= \pa{1 - t^2}^{\frac{m}{2} - 1}
-\pa{\pa{1 - t^2} \deriv[m + 1]{t}{P_n\of t} - m t \deriv[m]{t}{P_n\of t}}
+&= \pa{1 - t^2}^{\frac{m}{2}}\deriv[m + 1]{t}{P_n\of t} - 
+m t \pa{1 - t^2}^{\frac{m - 2}{2}} \deriv[m]{t}{P_n\of t}
 \end{align*}
 \subsection*{Gradients}
 We can now compute the gradient of the three terms that make up $V_{m n}\of\vr$.  First, the radial term:
@@ -188,7 +189,7 @@ For the longitudinal term we have:
 \end{pmatrix}
 \]
 \subsection*{Singularities}
-While the above formulae are all we need to compute the gradient of the geopotential, they present a number of singularities that required some care for implementation purposes.
+While the above formul{\ae} are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
 
 There is obviously an essential singularity when $r = 0$.  This one is not very interesting as we are never going to compute the acceleration at the centre of the celestial.
 
