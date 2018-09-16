@@ -9,6 +9,8 @@
 
 %%%% Shorthands.
 
+\newcommand{\p}{\AssociatedLegendreFunctionAstro}
+
 %%%% Title and authors.
 
 \title{%
@@ -43,18 +45,18 @@ where $r$ is the norm of $\vr$.  Note that $\cos \gb > 0$, which will come handy
 The gravitational potential due to the celestial has the form\cite{IERSConventions2010}:
 \[
 U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
-\pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
-\pa{C_{m n} \cos m \gl + S_{m n} \sin m \gl}
+\pa{\frac{R}{r}}^n \p{n}{m}\of{\sin \gb}
+\pa{C_{n m} \cos m \gl + S_{n m} \sin m \gl}
 }
 \]
-where $P_{m n}$ is the associated Legendre function defined as\cite[appendix]{RiesBettadpurEanesKangKoMcCulloughNagelPiePooleRichterSaveTapley2016}:
+where $\p{n}{m}$ is the associated Legendre function defined as\cite[appendix]{RiesBettadpurEanesKangKoMcCulloughNagelPiePooleRichterSaveTapley2016}:
 \[
-P_{m n} = \pa{1 - t^2}^{\frac{m}{2}} \deriv[m] t {P_n\of t}
+\p{n}{m} = \pa{1 - t^2}^{\frac{m}{2}} \deriv[m] t {\LegendrePolynomial n\of t}
 \]
 The terms that are relevant for evaluating the acceleration exerted by the spherical harmonics on the point mass have the form:
 \[
-V_{n m}\of\vr = \frac{1}{r}\pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
-\pa{C_{m n} \cos m \gl + S_{m n} \sin m \gl}
+V_{n m}\of\vr = \frac{1}{r}\pa{\frac{R}{r}}^n \p{n}{m}\of{\sin \gb}
+\pa{C_{n m} \cos m \gl + S_{n m} \sin m \gl}
 \]
 and the acceleration itself is proportional to $\grad V_{n m}\of\vr$.
 
@@ -66,8 +68,8 @@ where:
 \[
 \begin{dcases}
 \mathfrak R\of r &= \frac{1}{r}\pa{\frac{R}{r}}^n\\
-\mathfrak B\of \gb &= P_{m n}\of{\sin \gb}\\
-\mathfrak L\of \gl &= C_{m n} \cos m \gl + S_{m n} \sin m \gl
+\mathfrak B\of \gb &= \p{n}{m}\of{\sin \gb}\\
+\mathfrak L\of \gl &= C_{n m} \cos m \gl + S_{n m} \sin m \gl
 \end{dcases}
 \]
 The overall gradient can then be written as:
@@ -140,43 +142,49 @@ r \cos \gb \cos \gl \\
 \]
 Finally, we will also need the derivative of the associated Legendre function:
 \begin{align*}
-P_{n m}'\of{t} &= \frac{m}{2} \pa{1 - t^2}^{\frac{m}{2} - 1} \pa{-2 t} \deriv[m]{t}{P_n\of t} +
-\pa{1 - t^2}^{\frac{m}{2}} \deriv[m + 1]{t}{P_n\of t}\\
-&= \pa{1 - t^2}^{\frac{m}{2}}\deriv[m + 1]{t}{P_n\of t} - 
-m t \pa{1 - t^2}^{\frac{m - 2}{2}} \deriv[m]{t}{P_n\of t}
+\p{n}{m}'\of{t} &= \frac{m}{2} \pa{1 - t^2}^{\frac{m}{2} - 1}
+\pa{-2 t} \deriv[m]{t}{\LegendrePolynomial{n}\of t} +
+\pa{1 - t^2}^{\frac{m}{2}} \deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}\\
+&= \pa{1 - t^2}^{\frac{m}{2}}\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t} - 
+m t \pa{1 - t^2}^{\frac{m - 2}{2}} \deriv[m]{t}{\LegendrePolynomial{n}\of t}
 \end{align*}
 \subsection*{Gradients}
-We can now compute the gradient of the three terms that make up $V_{m n}\of\vr$.  First, the radial term:
+We can now compute the gradient of the three terms that make up $V_{n m}\of\vr$.  First, the radial term:
 \[
 \grad \mathfrak R\of r = R^n \grad r^{-\pa{n + 1}} = -\pa{n + 1} R^n r^{-\pa{n + 3}} \vr
 =-\pa{n + 1}\frac{\mathfrak R\of r}{r^2}
 \]
 For the latitudinal term, the chain rule yields:
 \[
-\grad \mathfrak B\of \gb = P_{n m}'\of{\sin \gb} \, \grad \sin \gb
-= P_{n m}'\of{\sin \gb} \frac{\cos \gb}{r}\begin{pmatrix}
+\grad \mathfrak B\of \gb = \p{n}{m}\of{\sin \gb} \, \grad \sin \gb
+= \p{n}{m}'\of{\sin \gb} \frac{\cos \gb}{r}\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
 \end{pmatrix}
 \]
-Substituting $\sin \gb$ for the argument of $P_{n m}$ and its derivative we obtain:
+Substituting $\sin \gb$ for the argument of $\p{n}{m}$ and its derivative we obtain:
 \[
 \begin{dcases}
-P_{n m}\of{\sin \gb} = {\cos^m \gb} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb} \\
-P_{n m}'\of{\sin \gb} 
-= {\cos^m \gb} \Evaluate{\deriv[m + 1]{t}{P_n\of t}}{t = \sin \gb} -
-m \sin \gb \pa{\cos \gb}^{m - 2} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb}
+\p{n}{m}\of{\sin \gb} = {\cos^m \gb}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} \\
+\p{n}{m}'\of{\sin \gb} 
+= {\cos^m \gb} \Evaluate{\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} -
+m \sin \gb \pa{\cos \gb}^{m - 2}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}
 \end{dcases}
 \]
 and thus:
 \[
 \begin{dcases}
-\mathfrak B\of \gb = {\cos^m \gb} \Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb} \\
+\mathfrak B\of \gb = {\cos^m \gb}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} \\
 \grad \mathfrak B\of \gb = \frac{1}{r}
-\pa{\pa{\cos \gb}^{m + 1} \Evaluate{\deriv[m + 1]{t}{P_n\of t}}{t = \sin \gb} -
+\pa{\pa{\cos \gb}^{m + 1}
+\Evaluate{\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} -
 m \sin \gb \pa{\cos \gb}^{m - 1}
-\Evaluate{\deriv[m]{t}{P_n\of t}}{t = \sin \gb}\qquad\ \,}\begin{pmatrix}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}\qquad\ \,}
+\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
@@ -202,7 +210,7 @@ There are however non-essential singularities that arise when $\cos \gb$ appears
 Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\cos \gb}^{-1}$.  However, that term is multiplied by $m$, so it vanishes.  Thus, for $m = 0$ we must use the special formula:
 \[
 {\grad \mathfrak B\of \gb}_{m = 0} =  \frac{\cos \gb}{r}
-\Evaluate{\deriv{t}{P_n\of t}}{t = \sin \gb}\qquad\begin{pmatrix}
+\Evaluate{\deriv{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}\qquad\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
@@ -211,7 +219,7 @@ Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\c
 Similarly $\grad \mathfrak L\of \gl$ has $\cos \gb$ as its denominator.  To eliminate this term we note that $\grad \mathfrak L\of \gl$ always occurs in a product involving $\mathfrak B\of \gb$.  Let's write this product:
 \[
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl} = \frac{m \pa{\cos \gb}^{m - 1}}{r}
-\Evaluate{\deriv[m]{t}{P_m\of t}}{t = \sin \gb}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}
 \pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl}\begin{pmatrix}
 -\sin \gl \\
 \cos \gl \\
