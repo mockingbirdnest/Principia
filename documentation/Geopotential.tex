@@ -185,4 +185,34 @@ For the longitudinal term we have:
 0
 \end{pmatrix}
 \]
+\subsection*{Singularities}
+While the above formulae are all we need to compute the gradient of the geopotential, they present a number of singularities that required some care for implementation purposes.
+
+There is obviously an essential singularity when $r = 0$.  This one is not very interesting as we are never going to compute the acceleration at the centre of the celestial.
+
+There are however non-essential singularities that arise when $\cos \gb$ appears at the denominator: any point on the axis of rotation of the celestial has $\cos \gb = 0$, but clearly the acceleration there is finite.
+
+Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\cos \gb}^{-1}$.  However, that term is multiplied by $m$, so it vanishes.  Thus, for $m = 0$ we must use the special formula:
+\[
+{\grad \mathfrak B\of \gb}_{m = 0} =  \frac{1}{r}
+\cos \gb \deriv{t}{P_n\of {\sin \gb}}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\]
+Similarly $\grad \mathfrak L\of \gl$ has $\cos \gb$ as its denominator.  To eliminate this term we note that $\grad \mathfrak L\of \gl$ always occurs in a product involving $\mathfrak B\of \gb$.  Let's write this product:
+\[
+{\mathfrak B\of \gb}{\grad \mathfrak L\of \gl} = \frac{m \pa{\cos \gb}^{m - 1}}{r}
+\deriv[m]{t}{P_m\of {\sin \gb}}
+\pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl}\begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
+\end{pmatrix}
+\]
+When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to special-case it:
+\[
+{\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
+\]
 \end{document}
