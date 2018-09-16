@@ -1,4 +1,8 @@
 \documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
+\bibliography{bibliography}
+
 \usepackage[Mathematics]{semtex}
 \usepackage{chngcntr}
 \counterwithout{equation}{section}
@@ -36,14 +40,14 @@ r \sin \gb
 where $r$ is the norm of $\vr$.  Note that $\cos \gb > 0$, which will come handy when simplifying expressions like $\sqrt{1 - \sin^2 \gb}$.
 
 \subsection*{Potential and acceleration}
-The gravitational potential due to the celestial has the form:
+The gravitational potential due to the celestial has the form\cite{IERSConventions2010}:
 \[
 U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
 \pa{\frac{R}{r}}^n P_{m n}\of{\sin \gb}
 \pa{C_{m n} \cos m \gl + S_{m n} \sin m \gl}
 }
 \]
-where $P_{m n}$ is the associated Legendre function defined as:
+where $P_{m n}$ is the associated Legendre function defined as\cite[appendix]{RiesBettadpurEanesKangKoMcCulloughNagelPiePooleRichterSaveTapley2016}:
 \[
 P_{m n} = \pa{1 - t^2}^{\frac{m}{2}} \deriv[m] t {P_n\of t}
 \]
@@ -218,4 +222,5 @@ When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to sp
 \[
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
 \]
+\printbibliography
 \end{document}
