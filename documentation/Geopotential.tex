@@ -165,12 +165,24 @@ m \sin \gb \pa{\cos \gb}^{m - 2} \deriv[m]{t}{P_n\of{\sin \gb}}
 \]
 and thus:
 \[
+\begin{dcases}
+\mathfrak B\of \gb = {\cos^m \gb} \deriv[m]{t}{P_n\of{\sin \gb}} \\
 \grad \mathfrak B\of \gb = \frac{1}{r}
 \pa{\pa{\cos \gb}^{m + 1} \deriv[m + 1]{t}{P_n\of {\sin \gb}} -
 m \sin \gb \pa{\cos \gb}^{m - 1} \deriv[m]{t}{P_n\of{\sin \gb}}}\begin{pmatrix}
 -\sin \gb \cos \gl \\
 -\sin \gb \sin \gl \\
 \cos \gb
+\end{pmatrix}
+\end{dcases}
+\]
+For the longitudinal term we have:
+\[
+\grad \mathfrak L\of \gl = \pa{-m C_{n m} \sin m \gl + m S_{n m} \cos m \gl} \grad \gl
+= \frac{m}{r \cos \gb} \pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl} \begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
 \end{pmatrix}
 \]
 \end{document}
