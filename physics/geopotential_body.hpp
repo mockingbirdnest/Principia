@@ -89,11 +89,11 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 
 template<int degree, int order>
 double LegendrePolynomialDerivative(double const argument) {
-  if constexpr (order > degree + 1) {
+  if constexpr (order > degree) {
     return 0;
   } else {
-    static auto const pn = LegendrePolynomial<degree, HornerEvaluator>();
-    static auto const dmpn = pn.Derivative<order>();
+    static auto const Pn = LegendrePolynomial<degree, HornerEvaluator>();
+    static auto const dmpn = Pn.Derivative<order>();
     return dmpn.Evaluate(argument);
   }
 }
@@ -138,14 +138,20 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& ℜ = precomputations.ℜ;
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
+#pragma warning(push)
+#pragma warning(disable: 4101)
+    double cos_β_to_the_m_minus_1th;  // Not used if m = 0.
+#pragma warning(pop)
     double const cos_β_to_the_mth = Pow<m>(cos_β);
     double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
     double const 𝔅 = cos_β_to_the_mth * Pnm_of_sin_β;
 
-    double grad_𝔅_polynomials = LegendrePolynomialDerivative<n, m + 1>(sin_β);
+    double grad_𝔅_polynomials = cos_β * cos_β_to_the_mth *
+                                LegendrePolynomialDerivative<n, m + 1>(sin_β);
     if constexpr (m > 0) {
+      cos_β_to_the_m_minus_1th = Pow<m - 1>(cos_β);
       // Remove a singularity when m == 0 and cos_β == 0.
-      grad_𝔅_polynomials -= Pow<m - 1>(cos_β) * m * sin_β * Pnm_of_sin_β;
+      grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1th * Pnm_of_sin_β;
     }
     Vector<Inverse<Length>, Frame> const grad_𝔅 =
         grad_𝔅_polynomials * grad_𝔅_vector;
@@ -165,7 +171,7 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       Vector<Inverse<Length>, Frame> const grad_𝔏 =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
-      𝔅_times_grad_𝔏 += Pow<m - 1>(cos_β) * Pnm_of_sin_β * grad_𝔏;
+      𝔅_times_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
     }
 
     return normalization_factor *
@@ -247,12 +253,12 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   cos_λ = Cos(λ);
   sin_λ = Sin(λ);
 
-  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
-  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
-
   Square<Length> const x²_plus_y² = x * x + y * y;
   sin_β = z / r_norm;
   cos_β = Sqrt(x²_plus_y²) / r_norm;
+
+  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
+  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
 
   return (
       DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
