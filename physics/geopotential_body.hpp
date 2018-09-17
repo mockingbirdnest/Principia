@@ -160,6 +160,8 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     double const sin_mλ = Sin(mλ);
     double const cos_mλ = Cos(mλ);
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
+    // singularity.
     Vector<Inverse<Length>, Frame> const grad_𝔏 =
         m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
     Vector<Inverse<Length>, Frame> 𝔅_times_grad_𝔏;
@@ -209,35 +211,52 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
                  Exponentiation<Length, -3> const& one_over_r³) {
   auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
   Precomputations precomputations;
-  precomputations.x̂ = from_surface_frame(x_);
-  precomputations.ŷ = from_surface_frame(y_);
-  precomputations.ẑ = body.polar_axis();
 
-  precomputations.x = InnerProduct(r, precomputations.x̂);
-  precomputations.y = InnerProduct(r, precomputations.ŷ);
-  precomputations.z = InnerProduct(r, precomputations.ẑ);
+  auto& x̂ = precomputations.x̂;
+  auto& ŷ = precomputations.ŷ;
+  auto& ẑ = precomputations.ẑ;
+
+  auto& x = precomputations.x;
+  auto& y = precomputations.y;
+  auto& z = precomputations.z;
+
+  auto& r_norm = precomputations.r_norm;
+
+  auto& λ = precomputations.λ;
+  auto& cos_λ = precomputations.cos_λ;
+  auto& sin_λ = precomputations.sin_λ;
+
+  auto& cos_β = precomputations.cos_β;
+  auto& sin_β = precomputations.sin_β;
+
+  auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
+  auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
+  auto& ℜ = precomputations.ℜ;
+  auto& grad_ℜ = precomputations.grad_ℜ;
+
+  x̂ = from_surface_frame(x_);
+  ŷ = from_surface_frame(y_);
+  ẑ = body.polar_axis();
+
+  x = InnerProduct(r, x̂);
+  y = InnerProduct(r, ŷ);
+  z = InnerProduct(r, ẑ);
 
   precomputations.r² = r²;
-  precomputations.r_norm = Sqrt(precomputations.r²);
+  r_norm = Sqrt(r²);
 
-  precomputations.λ =
-      SIUnit<Angle>() * std::atan2(precomputations.y / SIUnit<Length>(),
-                                   precomputations.x / SIUnit<Length>());
-  precomputations.cos_λ = Cos(precomputations.λ);
-  precomputations.sin_λ = Sin(precomputations.λ);
+  λ = SIUnit<Angle>() * std::atan2(y / SIUnit<Length>(),
+                                   x / SIUnit<Length>());
+  cos_λ = Cos(λ);
+  sin_λ = Sin(λ);
 
-  precomputations.grad_𝔅_vector =
-      (-precomputations.sin_β * precomputations.cos_λ * precomputations.x̂ -
-       precomputations.sin_β * precomputations.sin_λ * precomputations.ŷ +
-       precomputations.cos_β * precomputations.ẑ) / precomputations.r_norm;
-  precomputations.grad_𝔏_vector =
-      (-precomputations.sin_λ * precomputations.x̂ +
-       precomputations.cos_λ * precomputations.ŷ) / precomputations.r_norm;
+  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
+  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
 
-  Square<Length> const x²_plus_y² = precomputations.x * precomputations.x +
-                                    precomputations.y * precomputations.y;
-  precomputations.sin_β = precomputations.z / precomputations.r_norm;
-  precomputations.cos_β = Sqrt(x²_plus_y²) / precomputations.r_norm;
+  Square<Length> const x²_plus_y² = x * x + y * y;
+  sin_β = z / r_norm;
+  cos_β = Sqrt(x²_plus_y²) / r_norm;
 
   return (
       DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
