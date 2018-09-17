@@ -29,6 +29,7 @@ using quantities::SIUnit;
 
 template<typename Frame>
 struct Geopotential<Frame>::Precomputations {
+  // These quantities are independent from n and m.
   UnitVector x̂;
   UnitVector ŷ;
   UnitVector ẑ;
@@ -38,10 +39,18 @@ struct Geopotential<Frame>::Precomputations {
   Length z;
 
   Square<Length> r²;
+  Length r_norm;
 
   Angle λ;
   double cos_λ;
   double sin_λ;
+
+  double sin_β;
+  double cos_β;
+
+  // These quantities depend on n but are independent from m.
+  Inverse<Length> ℜ;
+  Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
 };
 
 template<typename Frame>
@@ -60,7 +69,7 @@ DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(OblateBody<Frame> const& body,
                Displacement<Frame> const& r,
-               Precomputations const& precomputations);
+               Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -110,22 +119,19 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& z = precomputations.z;
 
     auto const& r² = precomputations.r²;
+    auto const& r_norm = precomputations.r_norm;
 
     auto const& λ = precomputations.λ;
     auto const& cos_λ = precomputations.cos_λ;
     auto const& sin_λ = precomputations.sin_λ;
 
+    auto const& cos_β = precomputations.cos_β;
+    auto const& sin_β = precomputations.sin_β;
+
+    auto const& ℜ = precomputations.ℜ;
+    auto const& grad_ℜ = precomputations.grad_ℜ;
+
     // TODO(phl): Lots of stuff here that could be factored out.
-    Square<Length> const x²_plus_y² = x * x + y * y;
-    Length const r_norm = Sqrt(r²);
-    double const sin_β = z / r_norm;
-    double const cos_β = Sqrt(x²_plus_y²) / r_norm;
-
-    Inverse<Length> const radial_factor =
-        Pow<n>(body.reference_radius() / r_norm) / r_norm;
-    Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
-        -(n + 1) * r * radial_factor / r²;
-
     double const latitudinal_factor =
         Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
     double latitudinal_polynomials = 0.0;
@@ -161,12 +167,9 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     }
 
     return normalization_factor *
-            (radial_factor_derivative * latitudinal_factor *
-                longitudinal_factor +
-            radial_factor * latitudinal_factor_derivative *
-                longitudinal_factor +
-            radial_factor *
-                latitudinal_factor_times_longitudinal_factor_derivative);
+            (grad_ℜ * latitudinal_factor * longitudinal_factor +
+             ℜ * latitudinal_factor_derivative * longitudinal_factor +
+             ℜ * latitudinal_factor_times_longitudinal_factor_derivative);
   }
 }
 
@@ -176,10 +179,17 @@ Vector<Quotient<Acceleration, GravitationalParameter>, Frame> Geopotential<
     Frame>::DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
     Acceleration(OblateBody<Frame> const& body,
                  Displacement<Frame> const& r,
-                 Precomputations const& precomputations) {
+                 Precomputations& precomputations) {
   if constexpr (degree < 2) {
     return {};
   } else {
+    constexpr int n = degree;
+
+    auto const& r² = precomputations.r²;
+    auto const& r_norm = precomputations.r_norm;
+
+    precomputations.ℜ = Pow<n>(body.reference_radius() / r_norm) / r_norm;
+    precomputations.grad_ℜ = -(n + 1) * r * precomputations.ℜ / r²;
     return (
         DegreeNOrderM<degree, orders>::Acceleration(body, r, precomputations) +
         ...);
@@ -206,12 +216,18 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   precomputations.z = InnerProduct(r, precomputations.ẑ);
 
   precomputations.r² = r²;
+  precomputations.r_norm = Sqrt(precomputations.r²);
 
   precomputations.λ =
       SIUnit<Angle>() * std::atan2(precomputations.y / SIUnit<Length>(),
                                    precomputations.x / SIUnit<Length>());
   precomputations.cos_λ = Cos(precomputations.λ);
   precomputations.sin_λ = Sin(precomputations.λ);
+
+  Square<Length> const x²_plus_y² = precomputations.x * precomputations.x +
+                                    precomputations.y * precomputations.y;
+  precomputations.sin_β = precomputations.z / precomputations.r_norm;
+  precomputations.cos_β = Sqrt(x²_plus_y²) / precomputations.r_norm;
 
   return (
       DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
