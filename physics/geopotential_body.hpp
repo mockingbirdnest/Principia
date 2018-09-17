@@ -27,6 +27,40 @@ using quantities::Square;
 using quantities::Sin;
 using quantities::SIUnit;
 
+template<typename Frame>
+template<int degree, int order>
+struct Geopotential<Frame>::DegreeNOrderM {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration(OblateBody<Frame> const& body,
+               UnitVector const& x,
+               UnitVector const& y,
+               UnitVector const& z,
+               Displacement<Frame> const& r);
+};
+
+template<typename Frame>
+template<int degree, int... orders>
+struct Geopotential<Frame>::
+DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration(OblateBody<Frame> const& body,
+               UnitVector const& x,
+               UnitVector const& y,
+               UnitVector const& z,
+               Displacement<Frame> const& r);
+};
+
+template<typename Frame>
+template<int... degrees>
+struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
+  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  Acceleration(OblateBody<Frame> const& body,
+               Instant const& t,
+               Displacement<Frame> const& r,
+               Square<Length> const& r²,
+               Exponentiation<Length, -3> const& one_over_r³);
+};
+
 template<int degree, int order>
 double LegendrePolynomialDerivative(double const argument) {
   if constexpr (order > degree + 1) {
@@ -40,127 +74,122 @@ double LegendrePolynomialDerivative(double const argument) {
 
 template<typename Frame>
 template<int degree, int order>
-struct Geopotential<Frame>::DegreeNOrderM {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(OblateBody<Frame> const& body,
-               UnitVector const& x,
-               UnitVector const& y,
-               UnitVector const& z,
-               Displacement<Frame> const& r) {
-    if constexpr (degree == 2 && order == 1) {
-      return {};
-    } else {
-      constexpr int n = degree;
-      constexpr int m = order;
-      static_assert(0 <= m && m <= n);
-      static double const normalization_factor =
-          LegendreNormalizationFactor(n, m);
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
+    OblateBody<Frame> const& body,
+    UnitVector const& x,
+    UnitVector const& y,
+    UnitVector const& z,
+    Displacement<Frame> const& r) {
+  if constexpr (degree == 2 && order == 1) {
+    return {};
+  } else {
+    constexpr int n = degree;
+    constexpr int m = order;
+    static_assert(0 <= m && m <= n);
+    static double const normalization_factor =
+        LegendreNormalizationFactor(n, m);
 
-      // TODO(phl): Lots of stuff here that could be factored out.
-      Length const rx = InnerProduct(r, x);
-      Length const ry = InnerProduct(r, y);
-      Length const rz = InnerProduct(r, z);
+    // TODO(phl): Lots of stuff here that could be factored out.
+    Length const rx = InnerProduct(r, x);
+    Length const ry = InnerProduct(r, y);
+    Length const rz = InnerProduct(r, z);
 
-      Square<Length> const rx²_plus_ry² = rx * rx + ry * ry;
-      Square<Length> const r² = r.Norm²();
-      Length const r_norm = Sqrt(r²);
-      double const sin_β = rz / r_norm;
-      double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
-      Angle const λ = SIUnit<Angle>() *
-                      std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
-      double const sin_λ = Sin(λ);
-      double const cos_λ = Cos(λ);
+    Square<Length> const rx²_plus_ry² = rx * rx + ry * ry;
+    Square<Length> const r² = r.Norm²();
+    Length const r_norm = Sqrt(r²);
+    double const sin_β = rz / r_norm;
+    double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
+    Angle const λ = SIUnit<Angle>() *
+                    std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
+    double const sin_λ = Sin(λ);
+    double const cos_λ = Cos(λ);
 
-      Inverse<Length> const radial_factor =
-          Pow<n>(body.reference_radius() / r_norm) / r_norm;
-      Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
-          -(n + 1) * r * radial_factor / r²;
+    Inverse<Length> const radial_factor =
+        Pow<n>(body.reference_radius() / r_norm) / r_norm;
+    Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
+        -(n + 1) * r * radial_factor / r²;
 
-      double const latitudinal_factor =
-          Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
-      double latitudinal_polynomials = 0.0;
-      if constexpr (m < n) {
-        latitudinal_polynomials +=
-            Pow<m + 1>(cos_β) * LegendrePolynomialDerivative<n, m + 1>(sin_β);
-      }
-      if constexpr (m > 0) {
-        // Avoid a singularity when m == 0 and cos_β == 0.
-        latitudinal_polynomials -=
-            Pow<m - 1>(cos_β) * m * sin_β *
-            LegendrePolynomialDerivative<n, m>(sin_β);
-      }
-      Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
-          latitudinal_polynomials *
-          (-sin_β * cos_λ * x - sin_β * sin_λ * y + cos_β * z) / r_norm;
-
-      double const Cnm = body.cos()[n][m];
-      double const Snm = body.sin()[n][m];
-
-      Angle const mλ = m * λ;
-      double const sin_mλ = Sin(mλ);
-      double const cos_mλ = Cos(mλ);
-      double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ;
-      Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
-          m * (Snm * cos_mλ - Cnm * sin_mλ) * (-sin_λ * x + cos_λ * y) / r_norm;
-      Vector<Inverse<Length>, Frame>
-          latitudinal_factor_times_longitudinal_factor_derivative;
-      if constexpr (m > 0) {
-        // Compensate a cos_β to avoid a singularity when m == 0 and cos_β == 0.
-        latitudinal_factor_times_longitudinal_factor_derivative +=
-            Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
-            longitudinal_factor_derivative;
-      }
-
-      return normalization_factor *
-             (radial_factor_derivative * latitudinal_factor *
-                  longitudinal_factor +
-              radial_factor * latitudinal_factor_derivative *
-                  longitudinal_factor +
-              radial_factor *
-                  latitudinal_factor_times_longitudinal_factor_derivative);
+    double const latitudinal_factor =
+        Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
+    double latitudinal_polynomials = 0.0;
+    if constexpr (m < n) {
+      latitudinal_polynomials +=
+          Pow<m + 1>(cos_β) * LegendrePolynomialDerivative<n, m + 1>(sin_β);
     }
+    if constexpr (m > 0) {
+      // Avoid a singularity when m == 0 and cos_β == 0.
+      latitudinal_polynomials -= Pow<m - 1>(cos_β) * m * sin_β *
+                                 LegendrePolynomialDerivative<n, m>(sin_β);
+    }
+    Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
+        latitudinal_polynomials *
+        (-sin_β * cos_λ * x - sin_β * sin_λ * y + cos_β * z) / r_norm;
+
+    double const Cnm = body.cos()[n][m];
+    double const Snm = body.sin()[n][m];
+
+    Angle const mλ = m * λ;
+    double const sin_mλ = Sin(mλ);
+    double const cos_mλ = Cos(mλ);
+    double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ;
+    Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
+        m * (Snm * cos_mλ - Cnm * sin_mλ) * (-sin_λ * x + cos_λ * y) / r_norm;
+    Vector<Inverse<Length>, Frame>
+        latitudinal_factor_times_longitudinal_factor_derivative;
+    if constexpr (m > 0) {
+      // Compensate a cos_β to avoid a singularity when m == 0 and cos_β == 0.
+      latitudinal_factor_times_longitudinal_factor_derivative +=
+          Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
+          longitudinal_factor_derivative;
+    }
+
+    return normalization_factor *
+            (radial_factor_derivative * latitudinal_factor *
+                longitudinal_factor +
+            radial_factor * latitudinal_factor_derivative *
+                longitudinal_factor +
+            radial_factor *
+                latitudinal_factor_times_longitudinal_factor_derivative);
   }
-};
+}
 
 template<typename Frame>
 template<int degree, int... orders>
-struct Geopotential<Frame>::
-DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(OblateBody<Frame> const& body,
-               UnitVector const& x,
-               UnitVector const& y,
-               UnitVector const& z,
-               Displacement<Frame> const& r) {
-    if constexpr (degree < 2) {
-      return {};
-    } else {
-      return (DegreeNOrderM<degree, orders>::Acceleration(body, x, y, z, r) +
-              ...);
-    }
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame> Geopotential<
+    Frame>::DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
+    Acceleration(OblateBody<Frame> const& body,
+                 UnitVector const& x,
+                 UnitVector const& y,
+                 UnitVector const& z,
+                 Displacement<Frame> const& r) {
+  if constexpr (degree < 2) {
+    return {};
+  } else {
+    return (DegreeNOrderM<degree, orders>::Acceleration(body, x, y, z, r) +
+            ...);
   }
-};
+}
 
 template<typename Frame>
 template<int... degrees>
-struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(OblateBody<Frame> const& body,
-               Instant const& t,
-               Displacement<Frame> const& r,
-               Square<Length> const& r²,
-               Exponentiation<Length, -3> const& one_over_r³) {
-    auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
-    UnitVector const x = from_surface_frame(x_);
-    UnitVector const y = from_surface_frame(y_);
-    UnitVector const& z = body.polar_axis();
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+    Acceleration(OblateBody<Frame> const& body,
+                 Instant const& t,
+                 Displacement<Frame> const& r,
+                 Square<Length> const& r²,
+                 Exponentiation<Length, -3> const& one_over_r³) {
+  auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+  UnitVector const x = from_surface_frame(x_);
+  UnitVector const y = from_surface_frame(y_);
+  UnitVector const& z = body.polar_axis();
 
-    return (DegreeNAllOrders<degrees,
-                             std::make_integer_sequence<int, degrees + 1>>::
-                Acceleration(body, x, y, z, r) +
-            ...);
-  }
-};
+  return (
+      DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
+          Acceleration(body, x, y, z, r) +
+      ...);
+}
 
 template<typename Frame>
 Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body)
