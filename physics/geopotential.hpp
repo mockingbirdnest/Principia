@@ -43,6 +43,9 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
+  // Holds precomputed data for one evaluation of the acceleration.
+  struct Precomputations;
+
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
   static const Vector<double, SurfaceFrame> x_;
