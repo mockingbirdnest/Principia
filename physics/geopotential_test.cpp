@@ -1,9 +1,9 @@
 ﻿
 #include "physics/geopotential.hpp"
 
-#include "gtest/gtest.h"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "gtest/gtest.h"
 #include "numerics/legendre.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"

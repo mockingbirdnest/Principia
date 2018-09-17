@@ -32,7 +32,16 @@ struct Geopotential<Frame>::Precomputations {
   UnitVector x̂;
   UnitVector ŷ;
   UnitVector ẑ;
+
+  Length x;
+  Length y;
+  Length z;
+
+  Square<Length> r²;
+
   Angle λ;
+  double cos_λ;
+  double sin_λ;
 };
 
 template<typename Frame>
@@ -96,20 +105,21 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& ŷ = precomputations.ŷ;
     auto const& ẑ = precomputations.ẑ;
 
-    // TODO(phl): Lots of stuff here that could be factored out.
-    Length const rx = InnerProduct(r, x̂);
-    Length const ry = InnerProduct(r, ŷ);
-    Length const rz = InnerProduct(r, ẑ);
+    auto const& x = precomputations.x;
+    auto const& y = precomputations.y;
+    auto const& z = precomputations.z;
 
-    Square<Length> const rx²_plus_ry² = rx * rx + ry * ry;
-    Square<Length> const r² = r.Norm²();
+    auto const& r² = precomputations.r²;
+
+    auto const& λ = precomputations.λ;
+    auto const& cos_λ = precomputations.cos_λ;
+    auto const& sin_λ = precomputations.sin_λ;
+
+    // TODO(phl): Lots of stuff here that could be factored out.
+    Square<Length> const x²_plus_y² = x * x + y * y;
     Length const r_norm = Sqrt(r²);
-    double const sin_β = rz / r_norm;
-    double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
-    Angle const λ = SIUnit<Angle>() *
-                    std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
-    double const sin_λ = Sin(λ);
-    double const cos_λ = Cos(λ);
+    double const sin_β = z / r_norm;
+    double const cos_β = Sqrt(x²_plus_y²) / r_norm;
 
     Inverse<Length> const radial_factor =
         Pow<n>(body.reference_radius() / r_norm) / r_norm;
@@ -190,6 +200,18 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   precomputations.x̂ = from_surface_frame(x_);
   precomputations.ŷ = from_surface_frame(y_);
   precomputations.ẑ = body.polar_axis();
+
+  precomputations.x = InnerProduct(r, precomputations.x̂);
+  precomputations.y = InnerProduct(r, precomputations.ŷ);
+  precomputations.z = InnerProduct(r, precomputations.ẑ);
+
+  precomputations.r² = r²;
+
+  precomputations.λ =
+      SIUnit<Angle>() * std::atan2(precomputations.y / SIUnit<Length>(),
+                                   precomputations.x / SIUnit<Length>());
+  precomputations.cos_λ = Cos(precomputations.λ);
+  precomputations.sin_λ = Sin(precomputations.λ);
 
   return (
       DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
