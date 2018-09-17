@@ -27,6 +27,7 @@ using quantities::Square;
 using quantities::Sin;
 using quantities::SIUnit;
 
+// The notation in this file follows documentation/Geopotential.pdf.
 template<typename Frame>
 struct Geopotential<Frame>::Precomputations {
   // These quantities are independent from n and m.
@@ -47,6 +48,9 @@ struct Geopotential<Frame>::Precomputations {
 
   double sin_β;
   double cos_β;
+
+  Vector<Inverse<Length>, Frame> grad_𝔅_vector;
+  Vector<Inverse<Length>, Frame> grad_𝔏_vector;
 
   // These quantities depend on n but are independent from m.
   Inverse<Length> ℜ;
@@ -128,12 +132,14 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& cos_β = precomputations.cos_β;
     auto const& sin_β = precomputations.sin_β;
 
+    auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
+    auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
     auto const& ℜ = precomputations.ℜ;
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
     // TODO(phl): Lots of stuff here that could be factored out.
-    double const latitudinal_factor =
-        Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
+    double const 𝔅 = Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
     double latitudinal_polynomials = 0.0;
     if constexpr (m < n) {
       latitudinal_polynomials +=
@@ -144,9 +150,8 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       latitudinal_polynomials -= Pow<m - 1>(cos_β) * m * sin_β *
                                  LegendrePolynomialDerivative<n, m>(sin_β);
     }
-    Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
-        latitudinal_polynomials *
-        (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
+    Vector<Inverse<Length>, Frame> const grad_𝔅 =
+        latitudinal_polynomials * grad_𝔅_vector;
 
     double const Cnm = body.cos()[n][m];
     double const Snm = body.sin()[n][m];
@@ -154,22 +159,19 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     Angle const mλ = m * λ;
     double const sin_mλ = Sin(mλ);
     double const cos_mλ = Cos(mλ);
-    double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ;
-    Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
-        m * (Snm * cos_mλ - Cnm * sin_mλ) * (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
-    Vector<Inverse<Length>, Frame>
-        latitudinal_factor_times_longitudinal_factor_derivative;
+    double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    Vector<Inverse<Length>, Frame> const grad_𝔏 =
+        m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
+    Vector<Inverse<Length>, Frame> 𝔅_times_grad_𝔏;
     if constexpr (m > 0) {
       // Compensate a cos_β to avoid a singularity when m == 0 and cos_β == 0.
-      latitudinal_factor_times_longitudinal_factor_derivative +=
+      𝔅_times_grad_𝔏 +=
           Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
-          longitudinal_factor_derivative;
+          grad_𝔏;
     }
 
     return normalization_factor *
-            (grad_ℜ * latitudinal_factor * longitudinal_factor +
-             ℜ * latitudinal_factor_derivative * longitudinal_factor +
-             ℜ * latitudinal_factor_times_longitudinal_factor_derivative);
+           (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_times_grad_𝔏);
   }
 }
 
@@ -223,6 +225,14 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
                                    precomputations.x / SIUnit<Length>());
   precomputations.cos_λ = Cos(precomputations.λ);
   precomputations.sin_λ = Sin(precomputations.λ);
+
+  precomputations.grad_𝔅_vector =
+      (-precomputations.sin_β * precomputations.cos_λ * precomputations.x̂ -
+       precomputations.sin_β * precomputations.sin_λ * precomputations.ŷ +
+       precomputations.cos_β * precomputations.ẑ) / precomputations.r_norm;
+  precomputations.grad_𝔏_vector =
+      (-precomputations.sin_λ * precomputations.x̂ +
+       precomputations.cos_λ * precomputations.ŷ) / precomputations.r_norm;
 
   Square<Length> const x²_plus_y² = precomputations.x * precomputations.x +
                                     precomputations.y * precomputations.y;
