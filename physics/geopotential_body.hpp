@@ -138,20 +138,17 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& ℜ = precomputations.ℜ;
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
-    // TODO(phl): Lots of stuff here that could be factored out.
-    double const 𝔅 = Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
-    double latitudinal_polynomials = 0.0;
-    if constexpr (m < n) {
-      latitudinal_polynomials +=
-          Pow<m + 1>(cos_β) * LegendrePolynomialDerivative<n, m + 1>(sin_β);
-    }
+    double const cos_β_to_the_mth = Pow<m>(cos_β);
+    double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
+    double const 𝔅 = cos_β_to_the_mth * Pnm_of_sin_β;
+
+    double grad_𝔅_polynomials = LegendrePolynomialDerivative<n, m + 1>(sin_β);
     if constexpr (m > 0) {
-      // Avoid a singularity when m == 0 and cos_β == 0.
-      latitudinal_polynomials -= Pow<m - 1>(cos_β) * m * sin_β *
-                                 LegendrePolynomialDerivative<n, m>(sin_β);
+      // Remove a singularity when m == 0 and cos_β == 0.
+      grad_𝔅_polynomials -= Pow<m - 1>(cos_β) * m * sin_β * Pnm_of_sin_β;
     }
     Vector<Inverse<Length>, Frame> const grad_𝔅 =
-        latitudinal_polynomials * grad_𝔅_vector;
+        grad_𝔅_polynomials * grad_𝔅_vector;
 
     double const Cnm = body.cos()[n][m];
     double const Snm = body.sin()[n][m];
@@ -160,16 +157,15 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     double const sin_mλ = Sin(mλ);
     double const cos_mλ = Cos(mλ);
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
-    // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
-    // singularity.
-    Vector<Inverse<Length>, Frame> const grad_𝔏 =
-        m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
+
     Vector<Inverse<Length>, Frame> 𝔅_times_grad_𝔏;
     if constexpr (m > 0) {
-      // Compensate a cos_β to avoid a singularity when m == 0 and cos_β == 0.
-      𝔅_times_grad_𝔏 +=
-          Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
-          grad_𝔏;
+      // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
+      // singularity.
+      Vector<Inverse<Length>, Frame> const grad_𝔏 =
+          m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
+      // Compensate a cos_β to remove a singularity when cos_β == 0.
+      𝔅_times_grad_𝔏 += Pow<m - 1>(cos_β) * Pnm_of_sin_β * grad_𝔏;
     }
 
     return normalization_factor *
