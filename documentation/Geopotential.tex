@@ -129,7 +129,14 @@ r^2 \cos^2 \gb
 \]
 \end{proof}
 \end{lemma}
-For the $\mathfrak L$ term we will use the following lemma:
+For the $\mathfrak L$ term, we will need to evaluate the quantities:
+\[
+\begin{cases}
+\grad \cos m \gl &= -m \sin m \gl \, \grad \gl \\
+\grad \sin m \gl &= m \cos m \gl \, \grad \gl
+\end{cases}
+\]
+The following lemma helps with that computation:
 \begin{lemma}
 \[
 \grad \gl = \frac{1}{r \cos \gb}\begin{pmatrix}
@@ -139,13 +146,6 @@ For the $\mathfrak L$ term we will use the following lemma:
 \end{pmatrix}\text.
 \]
 \begin{proof}
-For the $\mathfrak L$ term, we need to evaluate:
-\[
-\begin{cases}
-\grad \cos m \gl &= -m \sin m \gl \, \grad \gl \\
-\grad \sin m \gl &= m \cos m \gl \, \grad \gl
-\end{cases}
-\]
 The angle $\gl$ is $\arctan\frac{y}{x}$ thus:
 \[
 \grad \gl = \frac{1}{1 + \pa{\frac{y}{x}}^2} \grad\of{\frac{y}{x}}
