@@ -1,0 +1,274 @@
+\documentclass[10pt, a4paper, twoside]{basestyle}
+
+\usepackage[backend=biber,firstinits=true,maxnames=100,style=alphabetic,maxalphanames=4,doi=true,isbn=false,url=false,eprint=true]{biblatex}
+\bibliography{bibliography}
+
+\usepackage[Mathematics]{semtex}
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+%%%% Shorthands.
+
+\newcommand{\p}{\AssociatedLegendreFunctionAstro}
+
+%%%% Title and authors.
+
+\title{%
+\textdisplay{%
+Geopotential%
+}%
+}
+\author{Pascal~Leroy (phl)}
+\begin{document}
+\maketitle
+\begin{sloppypar}
+\noindent
+This document describes the computations that are performed by the method \texttt{GeneralSphericalHarmonicsAcceleration} of class \texttt{Geopotential} to determine the acceleration exerted by a non-spherical celestial on a point mass.
+\end{sloppypar}
+
+\subsection*{Notation}
+Let $\vr$ be the vector going from the centre of the celestial to the point mass.  Let $\tuple{\hat{\vx}, \hat{\vy}, \hat{\vz}}$ be a (direct) base whose $\hat{\vz}$ axis is along the axis of rotation of the celestial and whose $\hat{\vx}$ axis points toward a reference point on the celestial.  In this base $\vr$ has coordinates $\tuple{x, y, z}$ which can be expressed in terms of the latitude $\gb \in \intclos{\frac{\Pi}{2}}{\frac{\Pi}{2}}$ and the longitude
+$\gl \in \intclos{0}{2 \Pi}$:
+\[
+\vr=\begin{pmatrix}
+x \\ y \\ z
+\end{pmatrix}
+=\begin{pmatrix}
+r \cos \gb \cos \gl\\
+r \cos \gb \sin \gl\\
+r \sin \gb
+\end{pmatrix}
+\]
+where $r$ is the norm of $\vr$.  Note that $\cos \gb > 0$, which will come handy when simplifying expressions like $\sqrt{1 - \sin^2 \gb}$.
+
+\subsection*{Potential and acceleration}
+The gravitational potential due to the celestial has the form\cite{IERSConventions2010}:
+\[
+U\of\vr = -\frac{\gm}{r}\pa{1 + \sum{n = 1}[\infty] \sum{m = 0}[n] 
+\pa{\frac{R}{r}}^n \p{n}{m}\of{\sin \gb}
+\pa{C_{n m} \cos m \gl + S_{n m} \sin m \gl}
+}
+\]
+where $\p{n}{m}$ is the associated Legendre function defined as\cite[appendix]{RiesBettadpurEanesKangKoMcCulloughNagelPiePooleRichterSaveTapley2016}:
+\[
+\p{n}{m} = \pa{1 - t^2}^{\frac{m}{2}} \deriv[m] t {\LegendrePolynomial n\of t}
+\]
+The terms that are relevant for evaluating the acceleration exerted by the spherical harmonics on the point mass have the form:
+\[
+V_{n m}\of\vr = \frac{1}{r}\pa{\frac{R}{r}}^n \p{n}{m}\of{\sin \gb}
+\pa{C_{n m} \cos m \gl + S_{n m} \sin m \gl}
+\]
+and the acceleration itself is proportional to $\grad V_{n m}\of\vr$.
+
+$V_{n m}\of\vr$ can be written as the product of a radial term, a latitudinal term and a longitudinal term, dependent of $r$, $\gb$, and $\gl$, respectively:
+\[
+V_{n m}\of\vr = {\mathfrak R\of r}\,{\mathfrak B\of \gb}\,{\mathfrak L\of \gl}
+\]
+where:
+\[
+\begin{dcases}
+\mathfrak R\of r &= \frac{1}{r}\pa{\frac{R}{r}}^n\\
+\mathfrak B\of \gb &= \p{n}{m}\of{\sin \gb}\\
+\mathfrak L\of \gl &= C_{n m} \cos m \gl + S_{n m} \sin m \gl
+\end{dcases}
+\]
+The overall gradient can then be written as:
+\[
+\grad V_{n m}\of\vr = 
+{\grad \mathfrak R\of r}\,{\mathfrak B\of \gb}\,{\mathfrak L\of \gl} +
+{\mathfrak R\of r}\,{\grad \mathfrak B\of \gb}\,{\mathfrak L\of \gl} +
+{\mathfrak R\of r}\,{\mathfrak B\of \gb}\,{\grad \mathfrak L\of \gl}
+\]
+\subsection*{Lemmata}
+To compute the acceleration, we first determine the gradient of various elements appearing in the potential.  The following lemma determines the gradient of the $\mathfrak R$ term:
+\begin{lemma}
+\[
+\grad r^n = n r^{n - 2} \vr\text.
+\]
+\begin{proof}
+We have trivially:
+\[
+\grad r = \grad \sqrt{x^2 + y^2 + z^2} = \frac{\vr}{r}
+\]
+from which we deduce:
+\[
+\grad r^n = n r^{n - 1} \grad r = n r^{n - 2} \vr
+\]
+\end{proof}
+\end{lemma}
+The following lemma is useful for computing the gradient of the $\mathfrak B$ term:
+\begin{lemma}
+\[
+\grad \sin \gb =\frac{\cos \gb}{r}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}\text.
+\]
+\begin{proof}
+Noting that $\grad z = \hat{\vz}$ we have:
+\[
+\grad \sin \gb = \grad \frac{z}{r}
+= \frac{r \hat{\vz} - z r^{-1} \vr}{r^2} = \frac{r^2 \hat{\vz} - z \vr}{r^3}
+\]
+which can be written, in coordinates:
+\[
+\grad \sin \gb =\frac{1}{r^3}\begin{pmatrix}
+-x z \\ -y z \\ x^2 + y^2
+\end{pmatrix}
+=\frac{1}{r^3}\begin{pmatrix}
+-r^2 \sin \gb \cos \gb \cos \gl \\
+-r^2 \sin \gb \cos \gb \sin \gl \\
+r^2 \cos^2 \gb
+\end{pmatrix}
+=\frac{\cos \gb}{r}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\]
+\end{proof}
+\end{lemma}
+For the $\mathfrak L$ term, we will need to evaluate the quantities:
+\[
+\begin{cases}
+\grad \cos m \gl &= -m \sin m \gl \, \grad \gl \\
+\grad \sin m \gl &= m \cos m \gl \, \grad \gl
+\end{cases}
+\]
+The following lemma helps with that computation:
+\begin{lemma}
+\[
+\grad \gl = \frac{1}{r \cos \gb}\begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
+\end{pmatrix}\text.
+\]
+\begin{proof}
+The angle $\gl$ is $\arctan\frac{y}{x}$ thus:
+\[
+\grad \gl = \frac{1}{1 + \pa{\frac{y}{x}}^2} \grad\of{\frac{y}{x}}
+= \frac{1}{1 + \pa{\frac{y}{x}}^2}\frac{x \hat{\vy} - y \hat{\vx}}{x^2}
+= \frac{x \hat{\vy} - y \hat{\vx}}{x^2 + y^2}
+\]
+which can be written, in coordinates:
+\[
+\grad \gl = \frac{1}{x^2 + y^2}\begin{pmatrix}
+-y \\
+x \\
+0
+\end{pmatrix}
+= \frac{1}{r^2 \cos^2 \gb}\begin{pmatrix}
+-r \cos \gb \sin \gl \\
+r \cos \gb \cos \gl \\
+0
+\end{pmatrix}
+= \frac{1}{r \cos \gb}\begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
+\end{pmatrix}
+\]
+\end{proof}
+\end{lemma}
+Finally, we will need the gradient of the associated Legendre polynomial, given by the following lemma:
+\begin{lemma}
+\[
+\p{n}{m}'\of{t} 
+= \pa{1 - t^2}^{\frac{m}{2}}\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t} - 
+m t \pa{1 - t^2}^{\frac{m - 2}{2}} \deriv[m]{t}{\LegendrePolynomial{n}\of t}\text.
+\]
+\begin{proof}
+This follows trivially from the definition:
+\[
+\p{n}{m}'\of{t} = \frac{m}{2} \pa{1 - t^2}^{\frac{m}{2} - 1}
+\pa{-2 t} \deriv[m]{t}{\LegendrePolynomial{n}\of t} +
+\pa{1 - t^2}^{\frac{m}{2}} \deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}
+\]
+\end{proof}
+\end{lemma}
+\subsection*{Gradients}
+We can now compute the gradient of the three terms that make up $V_{n m}\of\vr$.  First, the radial term:
+\[
+\grad \mathfrak R\of r = R^n \grad r^{-\pa{n + 1}} = -\pa{n + 1} R^n r^{-\pa{n + 3}} \vr
+=-\pa{n + 1}\frac{\mathfrak R\of r}{r^2} \vr
+\]
+For the latitudinal term, the chain rule yields:
+\[
+\grad \mathfrak B\of \gb = \p{n}{m}\of{\sin \gb} \, \grad \sin \gb
+= \p{n}{m}'\of{\sin \gb} \frac{\cos \gb}{r}\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\]
+Substituting $\sin \gb$ for the argument of $\p{n}{m}$ and its derivative we obtain:
+\[
+\begin{dcases}
+\p{n}{m}\of{\sin \gb} = {\cos^m \gb}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} \\
+\p{n}{m}'\of{\sin \gb} 
+= {\cos^m \gb} \Evaluate{\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} -
+m \sin \gb \pa{\cos \gb}^{m - 2}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}
+\end{dcases}
+\]
+and thus:
+\[
+\begin{dcases}
+\mathfrak B\of \gb = {\cos^m \gb}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} \\
+\grad \mathfrak B\of \gb = \frac{1}{r}
+\pa{\pa{\cos \gb}^{m + 1}
+\Evaluate{\deriv[m + 1]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb} -
+m \sin \gb \pa{\cos \gb}^{m - 1}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}\qquad\ \,}
+\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\end{dcases}
+\]
+For the longitudinal term we have:
+\[
+\grad \mathfrak L\of \gl = \pa{-m C_{n m} \sin m \gl + m S_{n m} \cos m \gl} \grad \gl
+= \frac{m}{r \cos \gb} \pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl} \begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
+\end{pmatrix}
+\]
+\subsection*{Singularities}
+While the above formul{\ae} are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
+
+There is obviously a pole when $r = 0$.  This one is not very interesting as we are never going to compute the acceleration at the centre of the celestial.
+
+There are however removable singularities that arise when $\cos \gb$ appears at the denominator: any point on the axis of rotation of the celestial has $\cos \gb = 0$, but clearly the acceleration there is finite.
+
+Consider $\grad \mathfrak B\of \gb$.  When $m = 0$ it includes a term in $\pa{\cos \gb}^{-1}$.  However, that term is multiplied by $m$, so it vanishes.  Thus, for $m = 0$ we must use the special formula:
+\[
+{\grad \mathfrak B\of \gb}_{m = 0} =  \frac{\cos \gb}{r}
+\Evaluate{\deriv{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}\qquad\begin{pmatrix}
+-\sin \gb \cos \gl \\
+-\sin \gb \sin \gl \\
+\cos \gb
+\end{pmatrix}
+\]
+Similarly $\grad \mathfrak L\of \gl$ has $\cos \gb$ as its denominator.  To eliminate this term we note that $\grad \mathfrak L\of \gl$ always occurs in a product involving $\mathfrak B\of \gb$.  Let's write this product:
+\[
+{\mathfrak B\of \gb}{\grad \mathfrak L\of \gl} = \frac{m \pa{\cos \gb}^{m - 1}}{r}
+\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}
+\pa{S_{n m} \cos m \gl - C_{n m} \sin m \gl}\begin{pmatrix}
+-\sin \gl \\
+\cos \gl \\
+0
+\end{pmatrix}
+\]
+When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to special-case it:
+\[
+{\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
+\]
+\printbibliography
+\end{document}
