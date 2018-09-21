@@ -4,9 +4,11 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
@@ -33,9 +35,11 @@ using geometry::Normalize;
 using geometry::OrientedAngleBetween;
 using geometry::Position;
 using geometry::RadiusLatitudeLongitude;
+using geometry::SphericalCoordinates;
 using geometry::Vector;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
+using numerics::Bisect;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
@@ -339,9 +343,6 @@ TEST_F(BodyTest, AllFrames) {
 
 TEST_F(BodyTest, SurfaceFrame) {
   struct SurfaceFrame;
-  const Vector<double, SurfaceFrame> x({1, 0, 0});
-  const Bivector<double, SurfaceFrame> z({0, 0, 1});
-
   SolarSystem<ICRS> solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
       SOLUTION_DIR / "astronomy" /
@@ -352,38 +353,46 @@ TEST_F(BodyTest, SurfaceFrame) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong(J2000 + 1 * Day);
+  ephemeris->Prolong(J2000 + 2 * Day);
 
   auto const earth = solar_system_j2000.rotating_body(*ephemeris, "Earth");
   auto const sun = solar_system_j2000.rotating_body(*ephemeris, "Sun");
-  auto const earth_trajectory = ephemeris->trajectory(earth);
-  auto const sun_trajectory = ephemeris->trajectory(sun);
 
-  auto const from_surface_frame_j2000 =
-      earth->FromSurfaceFrame<SurfaceFrame>(J2000);
-  auto const earth_centre_j2000 = earth_trajectory->EvaluatePosition(J2000);
-  auto const sun_centre_j2000 = sun_trajectory->EvaluatePosition(J2000);
-  auto const x_j2000 = from_surface_frame_j2000(x);
-  auto const earth_sun_j2000 = sun_centre_j2000 - earth_centre_j2000;
-  Displacement<ICRS> const projected_earth_sun_j2000(
-      {earth_sun_j2000.coordinates().x,
-       earth_sun_j2000.coordinates().y,
-       0 * Metre});
-  EXPECT_THAT(AngleBetween(x_j2000, projected_earth_sun_j2000),
-              IsNear(1.1 * Degree));
+  SphericalCoordinates<double> greenwich;
+  greenwich.radius = 1;
+  greenwich.latitude = 51.4826 * Degree;
+  greenwich.longitude = -0.0077 * Degree;
+  SphericalCoordinates<double> istanbul;
+  istanbul.radius = 1;
+  istanbul.latitude = 41.0082 * Degree;
+  istanbul.longitude = 28.9784 * Degree;
 
-  Instant const j2000_3h = J2000 + 3 * Hour;
-  auto const from_surface_frame_j2000_3h =
-      earth->FromSurfaceFrame<SurfaceFrame>(j2000_3h);
-  auto const earth_centre_j2000_3h =
-      earth_trajectory->EvaluatePosition(j2000_3h);
-  auto const sun_centre_j2000_3h = sun_trajectory->EvaluatePosition(j2000_3h);
-  auto const x_j2000_3h = from_surface_frame_j2000_3h(x);
-  auto const earth_sun_j2000_3h = sun_centre_j2000_3h - earth_centre_j2000_3h;
-  EXPECT_THAT(
-      OrientedAngleBetween(
-          earth_sun_j2000_3h, x_j2000_3h, from_surface_frame_j2000_3h(z)),
-      IsNear(48.3 * Degree));
+  Vector<double, SurfaceFrame> location;
+
+  auto solar_noon = [earth, &ephemeris, &location, sun](Instant const& t) {
+    Bivector<double, SurfaceFrame> const z({0, 0, 1});
+
+    auto const earth_trajectory = ephemeris->trajectory(earth);
+    auto const sun_trajectory = ephemeris->trajectory(sun);
+    auto const from_surface_frame = earth->FromSurfaceFrame<SurfaceFrame>(t);
+    auto const earth_centre = earth_trajectory->EvaluatePosition(t);
+    auto const sun_centre = sun_trajectory->EvaluatePosition(t);
+    auto const earth_sun = sun_centre - earth_centre;
+    return OrientedAngleBetween(
+        earth_sun, from_surface_frame(location), from_surface_frame(z));
+  };
+
+  location = Vector<double, SurfaceFrame>(greenwich.ToCartesian());
+  auto const solar_noon_greenwich =
+      Bisect(solar_noon, J2000 + 20 * Hour, J2000 + 28 * Hour);
+  location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
+  auto const solar_noon_istanbul =
+      Bisect(solar_noon, J2000 + 20 * Hour, J2000 + 28 * Hour);
+
+  EXPECT_THAT(solar_noon_greenwich - J2000 - 1 * Day,
+              IsNear(3 * Minute, 1.01));
+  EXPECT_THAT(solar_noon_istanbul - J2000 - 1 * Day,
+              IsNear(-2 * Hour + 7 * Minute, 1.01));
 }
 
 }  // namespace internal_body
