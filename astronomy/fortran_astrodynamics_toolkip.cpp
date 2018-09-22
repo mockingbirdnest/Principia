@@ -2,15 +2,13 @@
 
 #include <cmath>
 
-#include "geometry/r3_element.hpp"
-
 namespace principia {
 namespace astronomy {
 namespace fortran_astrodynamics_toolkit {
 
 #define FINDEX(expression) ((expression) - 1)
+#define FINDEX0(expression) (expression)
 
-using geometry::R3Element;
 using numerics::FixedVector;
 
 template<int nmodel, int mmodel>
@@ -31,7 +29,7 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   int n,nm1,nm2,m;
 
   for (int n = 2; n <= nmodel; ++n) {
-    pnm(FINDEX(n - 1), FINDEX(n)) = 0.0;
+    pnm[FINDEX(n - 1)][FINDEX(n)] = 0.0;
   }
 
   e1 = rgr.x * rgr.x + rgr.y * rgr.y;
@@ -91,8 +89,45 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   asph.x = -1.0;
   asph.z = 0.0;
 
-  for 
+  for (int n = 2; n <= nmodel; ++n) {
+    e1 = 0.0;
+    e2 = 0.0;
+    e3 = 0.0;
+    for (int m = 1; m <= std::min(n, mmodel); ++m) {
+      tsnm = snm[FINDEX(n)][FINDEX0(m)];
+      tcnm = cnm[FINDEX(n)][FINDEX0(m)];
+      tsm = sm[FINDEX(m)];
+      tcm = cm[FINDEX(m)];
+      tpnm = pnm[FINDEX(n)][FINDEX(m)];
+      e4 = tsnm * tsm + tcnm * tcm;
+      e1 = e1 + e4 * tpnm;
+      e2 = e2 + m * (tsnm * tcm - tcnm * tsm) * tpnm;
+      e3 = e3 + e4 * ppnm[FINDEX(n)][FINDEX(m)];
+    }
+    t1 = t1 + (n + 1) * rb[FINDEX(n)] * e1;
+    asph.y = asph.y + rb[FINDEX(n)] * e2;
+    t3 = t3 + rb[FINDEX(n)] * e3;
+  }
+
+  e4 = mu / r2;
+  asph.x = e4 * (asph.x - cphi * t1);
+  asph.y = e4 * asph.y;
+  asph.z = e4 * (asph.z + t3);
+
+  e5 = asph.x * cphi - asph.z * sphi;
+
+  R3Element<double> agr;
+  agr.x = e5 * cm[FINDEX(1)] - asph.y * sm[FINDEX(1)];
+  agr.y = e5 * sm[FINDEX(1)] + asph.y * cm[FINDEX(1)];
+  agr.z = asph.x * sphi + asph.z * cphi;
+  return agr;
 }
+
+auto x = Grav<1, 1>(R3Element<double>(),
+                    0.0,
+                    0.0,
+                    FixedMatrix<double, 1, 2>({1.0, 1.0}),
+                    FixedMatrix<double, 1, 2>({1.0, 1.0}));
 
 }  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
