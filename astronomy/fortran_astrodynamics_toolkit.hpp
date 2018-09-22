@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 
@@ -18,3 +21,5 @@ R3Element<double> Grav(R3Element<double> const& rgr,
 }  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
 }  // namespace principia
+
+#include "astronomy/fortran_astrodynamics_toolkit_body.hpp"

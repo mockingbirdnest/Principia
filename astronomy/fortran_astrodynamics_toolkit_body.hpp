@@ -1,3 +1,6 @@
+
+#pragma once
+
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 
 #include <cmath>
@@ -26,7 +29,7 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   FixedVector<double, nmodel> ppn;
   R3Element<double> asph;
   double e1,e2,e3,e4,e5,r1,r2,t1,t3,absr,sphi,cphi,tcm,tsm,tsnm,tcnm,tpnm;
-  int n,nm1,nm2,m;
+  int nm1,nm2;
 
   for (int n = 2; n <= nmodel; ++n) {
     pnm[FINDEX(n - 1)][FINDEX(n)] = 0.0;
@@ -72,11 +75,11 @@ R3Element<double> Grav(R3Element<double> const& rgr,
       pnm[FINDEX(n)][FINDEX(n)] = e1 * cphi * pnm[FINDEX(nm1)][FINDEX(nm1)];
       ppnm[FINDEX(n)][FINDEX(n)] = -n * sphi * pnm[FINDEX(n)][FINDEX(n)];
     }
-    for (int n = 3; n <= model; ++n) {
+    for (int n = 3; n <= nmodel; ++n) {
       nm1 = n - 1;
       e1 = (2 * n - 1) * sphi;
       e2 = -n * sphi;
-      for (int m = 1, m <= nm1; ++m) {
+      for (int m = 1; m <= nm1; ++m) {
         e3 = pnm[FINDEX(nm1)][FINDEX(m)];
         e4 = n + m;
         e5 = (e1 * e3 - (e4 - 1.0) * pnm[FINDEX(n - 2)][FINDEX(m)]) / (n - m);
@@ -88,6 +91,16 @@ R3Element<double> Grav(R3Element<double> const& rgr,
 
   asph.x = -1.0;
   asph.z = 0.0;
+
+  for (int n = 2; n <= nmodel; ++n) {
+    e1 = cnm[FINDEX(n)][FINDEX0(0)] * rb[FINDEX(n)];
+    asph.x = asph.x - (n + 1) * e1 * pn[FINDEX(n)];
+    asph.z = asph.z + e1 * ppn[FINDEX(n)];
+  }
+  asph.z = cphi * asph.z;
+  t1 = 0.0;
+  t3 = 0.0;
+  asph.y = 0.0;
 
   for (int n = 2; n <= nmodel; ++n) {
     e1 = 0.0;
@@ -122,12 +135,6 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   agr.z = asph.x * sphi + asph.z * cphi;
   return agr;
 }
-
-auto x = Grav<1, 1>(R3Element<double>(),
-                    0.0,
-                    0.0,
-                    FixedMatrix<double, 1, 2>({1.0, 1.0}),
-                    FixedMatrix<double, 1, 2>({1.0, 1.0}));
 
 }  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy
