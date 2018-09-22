@@ -3,6 +3,7 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
@@ -24,6 +25,7 @@ namespace physics {
 namespace internal_body {
 
 using astronomy::ICRS;
+using astronomy::operator""_UTC;
 using astronomy::J2000;
 using geometry::AngleBetween;
 using geometry::AngularVelocity;
@@ -353,7 +355,7 @@ TEST_F(BodyTest, SurfaceFrame) {
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),
           /*step=*/10 * Minute));
-  ephemeris->Prolong(J2000 + 2 * Day);
+  ephemeris->Prolong("2010-10-01T12:00:00"_UTC);
 
   auto const earth = solar_system_j2000.rotating_body(*ephemeris, "Earth");
   auto const sun = solar_system_j2000.rotating_body(*ephemeris, "Sun");
@@ -383,16 +385,28 @@ TEST_F(BodyTest, SurfaceFrame) {
   };
 
   location = Vector<double, SurfaceFrame>(greenwich.ToCartesian());
-  auto const solar_noon_greenwich =
-      Bisect(solar_noon, J2000 + 20 * Hour, J2000 + 28 * Hour);
-  location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
-  auto const solar_noon_istanbul =
-      Bisect(solar_noon, J2000 + 20 * Hour, J2000 + 28 * Hour);
+  auto solar_noon_greenwich = Bisect(solar_noon,
+                                     "2000-01-02T08:00:00"_UTC,
+                                     "2000-01-02T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_greenwich - "2000-01-02T12:00:00"_UTC,
+              IsNear(4 * Minute, 1.01));
+  solar_noon_greenwich = Bisect(solar_noon,
+                                "2010-09-30T08:00:00"_UTC,
+                                "2010-09-30T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_greenwich - "2010-09-30T11:00:00"_UTC,
+              IsNear(51 * Minute, 1.02));
 
-  EXPECT_THAT(solar_noon_greenwich - J2000 - 1 * Day,
-              IsNear(3 * Minute, 1.01));
-  EXPECT_THAT(solar_noon_istanbul - J2000 - 1 * Day,
-              IsNear(-2 * Hour + 7 * Minute, 1.01));
+  location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
+  auto solar_noon_istanbul = Bisect(solar_noon,
+                                    "2000-01-02T08:00:00"_UTC,
+                                    "2000-01-02T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_istanbul - "2000-01-02T10:00:00"_UTC,
+              IsNear(8 * Minute, 1.01));
+  solar_noon_istanbul = Bisect(solar_noon,
+                               "2010-09-30T08:00:00"_UTC,
+                               "2010-09-30T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:00:00"_UTC,
+              IsNear(55 * Minute, 1.02));
 }
 
 }  // namespace internal_body
