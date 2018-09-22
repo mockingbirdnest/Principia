@@ -1,6 +1,7 @@
 ﻿
 #include "physics/geopotential.hpp"
 
+#include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
@@ -248,6 +249,16 @@ TEST_F(GeopotentialTest, VerifyJ2) {
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
     EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 2, 54));
+    LOG(ERROR) << acceleration2;
+
+    geometry::R3Element<double> rgr{5, 7, 11};
+    double mu = 1;
+    double rbar = 1;
+    numerics::FixedMatrix<double, 2, 3> cnm;
+    numerics::FixedMatrix<double, 2, 3> snm;
+    cnm[2][0] = -6;
+    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
+        rgr, mu, rbar, cnm, snm);
   }
 }
 
@@ -409,6 +420,19 @@ TEST_F(GeopotentialTest, VerifyJ3) {
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
     EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 3, 6));
+    LOG(ERROR) << acceleration2;
+
+    geometry::R3Element<double> rgr{5, 7, 11};
+    double mu = 1;
+    double rbar = 1;
+    numerics::FixedMatrix<double, 3, 4> cnm;
+    numerics::FixedMatrix<double, 3, 4> snm;
+    cnm[2][0] = -1.0e-20;
+    cnm[2][2] = 1.0e-20;
+    snm[2][2] = 1.0-20;
+    cnm[3][0] = -6;
+    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<3, 3>(
+        rgr, mu, rbar, cnm, snm);
   }
 }
 
