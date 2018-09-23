@@ -63,7 +63,6 @@
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="date_time_test.cpp" />
-    <ClCompile Include="fortran_astrodynamics_toolkit_test.cpp" />
     <ClCompile Include="ksp_fingerprint_test.cpp" />
     <ClCompile Include="ksp_resonance_test.cpp" />
     <ClCompile Include="ksp_system_test.cpp" />

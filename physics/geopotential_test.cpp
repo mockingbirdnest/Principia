@@ -15,6 +15,7 @@
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/componentwise.hpp"
 #include "testing_utilities/is_near.hpp"
+#include "testing_utilities/numerics.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -22,6 +23,7 @@ namespace physics {
 namespace internal_geopotential {
 
 using astronomy::ICRS;
+using astronomy::ITRS;
 using geometry::Frame;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
@@ -39,6 +41,7 @@ using quantities::si::Second;
 using testing_utilities::AlmostEquals;
 using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
+using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
 using ::testing::An;
 using ::testing::Gt;
@@ -46,10 +49,8 @@ using ::testing::Lt;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
-  using Surface = Frame<serialization::Frame::TestTag,
-                        serialization::Frame::TEST1, false>;
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST2, true>;
+                      serialization::Frame::TEST, true>;
 
   GeopotentialTest()
       : massive_body_parameters_(17 * SIUnit<GravitationalParameter>()),
@@ -60,23 +61,25 @@ class GeopotentialTest : public ::testing::Test {
                                   right_ascension_of_pole_,
                                   declination_of_pole_) {}
 
-  Vector<Quotient<Acceleration, GravitationalParameter>, World>
-  SphericalHarmonicsAcceleration(Geopotential<World> const& geopotential,
+  template<typename Frame>
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  SphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
                                  Instant const& t,
-                                 Displacement<World> const& r) {
+                                 Displacement<Frame> const& r) {
     auto const r² = r.Norm²();
     auto const one_over_r³ = 1.0 / (r² * r.Norm());
     return geopotential.SphericalHarmonicsAcceleration(t, r, r², one_over_r³);
   }
 
-  Vector<Quotient<Acceleration, GravitationalParameter>, World>
-  GeneralSphericalHarmonicsAcceleration(Geopotential<World> const& geopotential,
-                                     Instant const& t,
-                                     Displacement<World> const& r) {
+  template<typename Frame>
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
+                                        Instant const& t,
+                                        Displacement<Frame> const& r) {
     auto const r² = r.Norm²();
     auto const one_over_r³ = 1.0 / (r² * r.Norm());
     return geopotential.GeneralSphericalHarmonicsAcceleration(
-        t, r, r², one_over_r³);
+               t, r, r², one_over_r³);
   }
 
   // The axis of rotation is along the z axis for ease of testing.
@@ -432,45 +435,46 @@ TEST_F(GeopotentialTest, TestVector) {
   auto const earth_reference_radius =
       ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
-  RotatingBody<World>::Parameters rotating_body_parameters(
+  RotatingBody<ICRS>::Parameters rotating_body_parameters(
       /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
       /*reference_angle=*/0 * Radian,
       /*reference_instant=*/Instant(),
       /*angular_frequency=*/1e-20 * Radian / Second,
       right_ascension_of_pole_,
       declination_of_pole_);
-  OblateBody<World> const body = OblateBody<World>(
+  OblateBody<ICRS> const earth = OblateBody<ICRS>(
       massive_body_parameters,
       rotating_body_parameters,
-      OblateBody<World>::Parameters::ReadFromMessage(
+      OblateBody<ICRS>::Parameters::ReadFromMessage(
           earth_message.geopotential(), earth_reference_radius));
-  Geopotential<World> const geopotential(&body);
+  Geopotential<ICRS> const geopotential(&earth);
 
   // This test vector is from Kuga & Carrara, "Fortran- and C-codes for higher
   // order and degree geopotential computation",
-  // www.dem.inpe.br/~hkk/software/high_geopot.html.
-  Displacement<Surface> const displacement(
+  // www.dem.inpe.br/~hkk/software/high_geopot.html.  They use EGM2008, so their
+  // actual results are expected to differ a bit from ours.
+  Displacement<ITRS> const displacement(
       {6000000 * Metre, -4000000 * Metre, 5000000 * Metre});
-  Vector<Acceleration, Surface> const expected_acceleration(
+  Vector<Acceleration, ITRS> const expected_acceleration(
       {-3.5377058876337 * Metre / Second / Second,
        2.3585194144421 * Metre / Second / Second,
        -2.9531441870790 * Metre / Second / Second});
 
-  Vector<Acceleration, Surface> actual_acceleration_cpp;
-  Vector<Acceleration, Surface> actual_acceleration_f90;
+  Vector<Acceleration, ITRS> actual_acceleration_cpp;
+  Vector<Acceleration, ITRS> actual_acceleration_f90;
 
   {
-    Displacement<World> const world_displacement =
-        body.FromSurfaceFrame<Surface>(Instant())(
-            Displacement<Surface>(displacement));
-    auto const world_acceleration =
+    Displacement<ICRS> const icrs_displacement =
+        earth.FromSurfaceFrame<ITRS>(Instant())(
+            Displacement<ITRS>(displacement));
+    auto const icrs_acceleration =
         earth_μ * (GeneralSphericalHarmonicsAcceleration(
-                       geopotential, Instant(), world_displacement) -
-                   world_displacement / Pow<3>(world_displacement.Norm()));
+                       geopotential, Instant(), icrs_displacement) -
+                   icrs_displacement / Pow<3>(icrs_displacement.Norm()));
     actual_acceleration_cpp =
-        body.ToSurfaceFrame<Surface>(Instant())(world_acceleration);
-    EXPECT_THAT(actual_acceleration_cpp,
-                AlmostEquals(expected_acceleration, 0));
+        earth.ToSurfaceFrame<ITRS>(Instant())(icrs_acceleration);
+    EXPECT_THAT(RelativeError(actual_acceleration_cpp, expected_acceleration),
+                IsNear(1.3e-8));
   }
   {
     double mu = earth_μ / SIUnit<GravitationalParameter>();
@@ -479,20 +483,20 @@ TEST_F(GeopotentialTest, TestVector) {
     numerics::FixedMatrix<double, 10, 10> snm;
     for (int n = 0; n <= 9; ++n) {
       for (int m = 0; m <= n; ++m) {
-        cnm[n][m] = body.cos()[n][m] * LegendreNormalizationFactor(n, m);
-        snm[n][m] = body.sin()[n][m] * LegendreNormalizationFactor(n, m);
+        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor(n, m);
+        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor(n, m);
       }
     }
-    actual_acceleration_f90 = Vector<Acceleration, Surface>(
+    actual_acceleration_f90 = Vector<Acceleration, ITRS>(
         SIUnit<Acceleration>() *
         astronomy::fortran_astrodynamics_toolkit::
             ComputeGravityAccelerationLear<9, 9>(
                 displacement.coordinates() / Metre, mu, rbar, cnm, snm));
-    EXPECT_THAT(actual_acceleration_f90,
-                AlmostEquals(expected_acceleration, 0));
+    EXPECT_THAT(RelativeError(actual_acceleration_f90, expected_acceleration),
+                IsNear(1.3e-8));
   }
   EXPECT_THAT(actual_acceleration_cpp,
-              AlmostEquals(actual_acceleration_f90, 0));
+              AlmostEquals(actual_acceleration_f90, 4));
 }
 
 }  // namespace internal_geopotential

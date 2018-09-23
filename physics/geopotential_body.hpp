@@ -171,16 +171,9 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       // singularity.
       Vector<Inverse<Length>, Frame> const grad_𝔏 =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
-      LOG_IF(ERROR, n == 3) << m <<" "<<Snm<<" "<<cos_mλ<<" "<<Cnm<<" "<<sin_mλ;
-      LOG_IF(ERROR, n == 3)<< grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
       𝔅_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
     }
-
-    LOG(ERROR)<<n<<" "<<m;
-    LOG(ERROR)<<grad_ℜ;
-    LOG(ERROR)<<grad_𝔅;
-    LOG(ERROR)<<𝔅_times_grad_𝔏;
 
     return normalization_factor *
            (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_grad_𝔏);

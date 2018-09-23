@@ -28,7 +28,7 @@ R3Element<double> ComputeGravityAccelerationLear(
   R3Element<double> asph;
   double e1, e2, e3, e4, e5, r1, r2, t1, t3, absr, sphi, cphi, tcm, tsm, tsnm,
       tcnm, tpnm;
-  int nm1,nm2;
+  int nm1, nm2;
 
   for (int n = 2; n <= nmodel; ++n) {
     pnm[n - 1][n] = 0.0;

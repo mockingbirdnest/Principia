@@ -203,8 +203,5 @@
     <ClCompile Include="geodesy_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="fortran_astrodynamics_toolkit_test.cpp">
-      <Filter>Test Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

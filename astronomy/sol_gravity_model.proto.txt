@@ -88,7 +88,7 @@ gravity_model {
     # GRACE/GEOS model GGM05C.ICGEM at
     # ftp://ftp.csr.utexas.edu/pub/grace/GGM05/.
     name                    : "Earth"
-    gravitational_parameter : "3.986004415e+5 km^3/s^2"
+    gravitational_parameter : "3.9860043543609598e+05 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
     mean_radius             : "6371.0084 km"
     axis_right_ascension    : "0.0 deg"
@@ -97,8 +97,8 @@ gravity_model {
     angular_frequency       : "360.9856235 deg / d"
     geopotential            : {
       row {degree: 2,
-           column {order: 0, cos: -4.841694573200e-4 , sin: 0},
-           column {order: 2, cos: 2.439373415940e-6, sin: -1.400294011836e-6}},
+        column {order: 0, cos: -4.841694573200e-4 , sin: 0},
+        column {order: 2, cos: 2.439373415940e-6, sin: -1.400294011836e-6}},
       row {degree: 3,
         column {order: 0, cos: 9.5716475834116e-07, sin: 0},
         column {order: 1, cos: 2.0304466371688e-06, sin: 2.4824063468478e-07},

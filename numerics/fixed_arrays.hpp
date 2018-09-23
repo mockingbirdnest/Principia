@@ -87,7 +87,7 @@ class FixedMatrix final {
   Scalar* operator[](int index);
   constexpr Scalar const* operator[](int index) const;
 
-private:
+ private:
   std::array<Scalar, rows * columns> data_;
 
   template<typename L, typename R, int r, int c>
