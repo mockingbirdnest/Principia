@@ -445,6 +445,12 @@
 % \int, \prod and \sum are respectively integration, product and summation over a space
 % indicated below. An optional second argument (upper bound) can follow, within square brackets.
 
+\newcommand{\LegendrePolynomial}[1]{\operatorname{\StandardSymbol P}_{#1}}
+% This is the non-ISO normalization, with both indices below.
+\newcommand{\AssociatedLegendreFunctionAstro}[2]{\operatorname{\StandardSymbol P}_{{#1}{#2}}}
+% This is the ISO normalization, with one index below and one above.
+\newcommand{\AssociatedLegendreFunctionQM}[2]{\operatorname{\StandardSymbol P}_{#1}^{#2}}
+
 \DeclareDocumentCommand\int{m O{}}{\mathchoice
 {\scalingIntegralSign{#1}{#2}{}}
 {\integralSign_{#1}^{#2}}

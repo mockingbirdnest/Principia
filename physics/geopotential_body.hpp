@@ -18,6 +18,7 @@ using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
+using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Inverse;
 using quantities::Length;
@@ -164,7 +165,7 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     double const cos_mλ = Cos(mλ);
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
-    Vector<Inverse<Length>, Frame> 𝔅_times_grad_𝔏;
+    Vector<Inverse<Length>, Frame> 𝔅_grad_𝔏;
     if constexpr (m > 0) {
       // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
       // singularity.
@@ -173,7 +174,7 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       LOG_IF(ERROR, n == 3) << m <<" "<<Snm<<" "<<cos_mλ<<" "<<Cnm<<" "<<sin_mλ;
       LOG_IF(ERROR, n == 3)<< grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
-      𝔅_times_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
+      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
     }
 
     LOG(ERROR)<<n<<" "<<m;
@@ -182,7 +183,7 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     LOG(ERROR)<<𝔅_times_grad_𝔏;
 
     return normalization_factor *
-           (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_times_grad_𝔏);
+           (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_grad_𝔏);
   }
 }
 
@@ -255,8 +256,7 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
 
-  λ = SIUnit<Angle>() * std::atan2(y / SIUnit<Length>(),
-                                   x / SIUnit<Length>());
+  λ = ArcTan(y, x);
   cos_λ = Cos(λ);
   sin_λ = Sin(λ);
 
