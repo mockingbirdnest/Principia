@@ -12,11 +12,12 @@ namespace fortran_astrodynamics_toolkit {
 using numerics::FixedVector;
 
 template<int nmodel, int mmodel>
-R3Element<double> Grav(R3Element<double> const& rgr,
-          double const mu,
-          double const rbar,
-          FixedMatrix<double, nmodel + 1, nmodel + 1> const& cnm,
-          FixedMatrix<double, nmodel + 1, nmodel + 1> const& snm) {
+R3Element<double> ComputeGravityAccelerationLear(
+    R3Element<double> const& rgr,
+    double const mu,
+    double const rbar,
+    FixedMatrix<double, nmodel + 1, nmodel + 1> const& cnm,
+    FixedMatrix<double, nmodel + 1, nmodel + 1> const& snm) {
   FixedMatrix<double, nmodel + 1, nmodel + 1> pnm;
   FixedMatrix<double, nmodel + 1, nmodel + 1> ppnm;
   FixedVector<double, nmodel + 1> cm;
@@ -25,7 +26,8 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   FixedVector<double, nmodel + 1> rb;
   FixedVector<double, nmodel + 1> ppn;
   R3Element<double> asph;
-  double e1,e2,e3,e4,e5,r1,r2,t1,t3,absr,sphi,cphi,tcm,tsm,tsnm,tcnm,tpnm;
+  double e1, e2, e3, e4, e5, r1, r2, t1, t3, absr, sphi, cphi, tcm, tsm, tsnm,
+      tcnm, tpnm;
   int nm1,nm2;
 
   for (int n = 2; n <= nmodel; ++n) {
