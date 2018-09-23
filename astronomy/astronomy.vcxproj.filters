@@ -157,7 +157,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="fortran_astrodynamics_toolkit_body.hpp">
-      <Filter>Header Files</Filter>
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -15,8 +15,8 @@ template<int nmodel, int mmodel>
 R3Element<double> Grav(R3Element<double> const& rgr,
                        double mu,
                        double rbar,
-                       FixedMatrix<double, nmodel, nmodel + 1> const& cnm,
-                       FixedMatrix<double, nmodel, nmodel + 1> const& snm);
+                       FixedMatrix<double, nmodel + 1, nmodel + 1> const& cnm,
+                       FixedMatrix<double, nmodel + 1, nmodel + 1> const& snm);
 
 }  // namespace fortran_astrodynamics_toolkit
 }  // namespace astronomy

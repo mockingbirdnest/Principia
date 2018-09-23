@@ -77,7 +77,7 @@ class GeopotentialTest : public ::testing::Test {
   Angle const declination_of_pole_ = 90 * Degree;
 
   MassiveBody::Parameters const massive_body_parameters_;
-  RotatingBody<World>::Parameters rotating_body_parameters_;
+  RotatingBody<World>::Parameters const rotating_body_parameters_;
 };
 
 TEST_F(GeopotentialTest, J2) {
@@ -164,7 +164,7 @@ TEST_F(GeopotentialTest, J3) {
       OblateBody<World>(massive_body_parameters_,
                         rotating_body_parameters_,
                         OblateBody<World>::Parameters(
-                            /*j2=*/6, /*c22=*/1.0e-20, /*s22=*/1.0e-20,
+                            /*j2=*/6, /*c22=*/1e-20, /*s22=*/1e-20,
                             /*j3=*/-5, 1 * Metre));
   Geopotential<World> const geopotential(&body);
 
@@ -249,16 +249,6 @@ TEST_F(GeopotentialTest, VerifyJ2) {
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
     EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 2, 54));
-    LOG(ERROR) << acceleration2;
-
-    geometry::R3Element<double> rgr{5, 7, 11};
-    double mu = 1;
-    double rbar = 1;
-    numerics::FixedMatrix<double, 2, 3> cnm;
-    numerics::FixedMatrix<double, 2, 3> snm;
-    cnm[2][0] = -6;
-    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
-        rgr, mu, rbar, cnm, snm);
   }
 }
 
@@ -420,20 +410,45 @@ TEST_F(GeopotentialTest, VerifyJ3) {
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
     EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 3, 6));
-    LOG(ERROR) << acceleration2;
+  }
+}
+
+TEST_F(GeopotentialTest, VerifyFortran) {
+  MassiveBody::Parameters const massive_body_parameters(
+      1 * SIUnit<GravitationalParameter>());
+  RotatingBody<World>::Parameters rotating_body_parameters(
+      /*mean_radius=*/1 * Metre,
+      /*reference_angle=*/0 * Radian,
+      /*reference_instant=*/Instant(),
+      /*angular_frequency=*/1e-20 * Radian / Second,
+      right_ascension_of_pole_,
+      declination_of_pole_);
+  OblateBody<World> const body = OblateBody<World>(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<World>::Parameters(/*j2=*/6, /*reference_radius=*/1 * Metre));
+  Geopotential<World> const geopotential(&body);
+  {
+    Displacement<World> const displacement(
+        {5 * Metre, 7 * Metre, 11 * Metre});
+    auto const acceleration = SphericalHarmonicsAcceleration(
+        geopotential, Instant(), displacement);
+    LOG(ERROR)<<acceleration;
 
     geometry::R3Element<double> rgr{5, 7, 11};
     double mu = 1;
     double rbar = 1;
-    numerics::FixedMatrix<double, 3, 4> cnm;
-    numerics::FixedMatrix<double, 3, 4> snm;
-    cnm[2][0] = -1.0e-20;
-    cnm[2][2] = 1.0e-20;
-    snm[2][2] = 1.0-20;
-    cnm[3][0] = -6;
-    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<3, 3>(
+    numerics::FixedMatrix<double, 3, 3> cnm;
+    numerics::FixedMatrix<double, 3, 3> snm;
+    cnm[2][0] = -6;
+    LOG(ERROR)<<cnm[2][0]<<" "<<cnm[2][1]<<" "<<cnm[2][2];
+    LOG(ERROR)<<snm[2][0]<<" "<<snm[2][1]<<" "<<snm[2][2];
+    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
         rgr, mu, rbar, cnm, snm);
   }
+}
+
+TEST_F(GeopotentialTest, TestVector) {
 }
 
 }  // namespace internal_geopotential

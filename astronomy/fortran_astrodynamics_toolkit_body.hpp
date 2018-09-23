@@ -9,30 +9,27 @@ namespace principia {
 namespace astronomy {
 namespace fortran_astrodynamics_toolkit {
 
-#define FINDEX(expression) ((expression) - 1)
-#define FINDEX0(expression) (expression)
-
 using numerics::FixedVector;
 
 template<int nmodel, int mmodel>
 R3Element<double> Grav(R3Element<double> const& rgr,
           double const mu,
           double const rbar,
-          FixedMatrix<double, nmodel, nmodel + 1> const& cnm,
-          FixedMatrix<double, nmodel, nmodel + 1> const& snm) {
-  FixedMatrix<double, nmodel, nmodel> pnm;
-  FixedMatrix<double, nmodel, nmodel> ppnm;
-  FixedVector<double, nmodel> cm;
-  FixedVector<double, nmodel> sm;
-  FixedVector<double, nmodel> pn;
-  FixedVector<double, nmodel> rb;
-  FixedVector<double, nmodel> ppn;
+          FixedMatrix<double, nmodel + 1, nmodel + 1> const& cnm,
+          FixedMatrix<double, nmodel + 1, nmodel + 1> const& snm) {
+  FixedMatrix<double, nmodel + 1, nmodel + 1> pnm;
+  FixedMatrix<double, nmodel + 1, nmodel + 1> ppnm;
+  FixedVector<double, nmodel + 1> cm;
+  FixedVector<double, nmodel + 1> sm;
+  FixedVector<double, nmodel + 1> pn;
+  FixedVector<double, nmodel + 1> rb;
+  FixedVector<double, nmodel + 1> ppn;
   R3Element<double> asph;
   double e1,e2,e3,e4,e5,r1,r2,t1,t3,absr,sphi,cphi,tcm,tsm,tsnm,tcnm,tpnm;
   int nm1,nm2;
 
   for (int n = 2; n <= nmodel; ++n) {
-    pnm[FINDEX(n - 1)][FINDEX(n)] = 0.0;
+    pnm[n - 1][n] = 0.0;
   }
 
   e1 = rgr.x * rgr.x + rgr.y * rgr.y;
@@ -42,49 +39,49 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   sphi = rgr.z / absr;
   cphi = r1 / absr;
   if (r1 == 0.0) {
-    sm[FINDEX(1)] = 0.0;
-    cm[FINDEX(1)] = 1.0;
+    sm[1] = 0.0;
+    cm[1] = 1.0;
   } else {
-    sm[FINDEX(1)] = rgr.y / r1;
-    cm[FINDEX(1)] = rgr.x / r1;
+    sm[1] = rgr.y / r1;
+    cm[1] = rgr.x / r1;
   }
-  rb[FINDEX(1)] = rbar / absr;
-  rb[FINDEX(2)] = rb[FINDEX(1)] * rb[FINDEX(1)];
-  sm[FINDEX(2)] = 2.0 * cm[FINDEX(1)] * sm[FINDEX(1)];
-  cm[FINDEX(2)] = 2.0 * cm[FINDEX(1)] * cm[FINDEX(1)] - 1.0;
-  pn[FINDEX(1)] = sphi;
-  pn[FINDEX(2)] = (3.0 * sphi * sphi - 1.0) / 2.0;
-  ppn[FINDEX(1)] = 1.0;
-  ppn[FINDEX(2)] = 3.0 * sphi;
-  pnm[FINDEX(1)][FINDEX(1)] = 1.0;
-  pnm[FINDEX(2)][FINDEX(2)] = 3.0 * cphi;
-  pnm[FINDEX(2)][FINDEX(1)] = ppn[FINDEX(2)];
-  ppnm[FINDEX(1)][FINDEX(1)] = -sphi;
-  ppnm[FINDEX(2)][FINDEX(2)] = -6.0 * sphi * cphi;
-  ppnm[FINDEX(2)][FINDEX(1)] = 3.0 - 6.0 * sphi * sphi;
+  rb[1] = rbar / absr;
+  rb[2] = rb[1] * rb[1];
+  sm[2] = 2.0 * cm[1] * sm[1];
+  cm[2] = 2.0 * cm[1] * cm[1] - 1.0;
+  pn[1] = sphi;
+  pn[2] = (3.0 * sphi * sphi - 1.0) / 2.0;
+  ppn[1] = 1.0;
+  ppn[2] = 3.0 * sphi;
+  pnm[1][1] = 1.0;
+  pnm[2][2] = 3.0 * cphi;
+  pnm[2][1] = ppn[2];
+  ppnm[1][1] = -sphi;
+  ppnm[2][2] = -6.0 * sphi * cphi;
+  ppnm[2][1] = 3.0 - 6.0 * sphi * sphi;
   if (nmodel >= 3) {
     for (int n = 3; n <= nmodel; ++n) {
       nm1 = n - 1;
       nm2 = n - 2;
-      rb[FINDEX(n)] = rb[FINDEX(nm1)] * rb[FINDEX(1)];
-      sm[FINDEX(n)] = 2.0 * cm[FINDEX(1)] * sm[FINDEX(nm1)] - sm[FINDEX(nm2)];
-      cm[FINDEX(n)] = 2.0 * cm[FINDEX(1)] * cm[FINDEX(nm1)] - cm[FINDEX(nm2)];
+      rb[n] = rb[nm1] * rb[1];
+      sm[n] = 2.0 * cm[1] * sm[nm1] - sm[nm2];
+      cm[n] = 2.0 * cm[1] * cm[nm1] - cm[nm2];
       e1 = 2 * n - 1;
-      pn[FINDEX(n)] = (e1 * sphi * pn[FINDEX(nm1)] - nm1 * pn[FINDEX(nm2)]) / n;
-      ppn[FINDEX(n)] = sphi * ppn[FINDEX(nm1)] + n * pn[FINDEX(nm1)];
-      pnm[FINDEX(n)][FINDEX(n)] = e1 * cphi * pnm[FINDEX(nm1)][FINDEX(nm1)];
-      ppnm[FINDEX(n)][FINDEX(n)] = -n * sphi * pnm[FINDEX(n)][FINDEX(n)];
+      pn[n] = (e1 * sphi * pn[nm1] - nm1 * pn[nm2]) / n;
+      ppn[n] = sphi * ppn[nm1] + n * pn[nm1];
+      pnm[n][n] = e1 * cphi * pnm[nm1][nm1];
+      ppnm[n][n] = -n * sphi * pnm[n][n];
     }
     for (int n = 3; n <= nmodel; ++n) {
       nm1 = n - 1;
       e1 = (2 * n - 1) * sphi;
       e2 = -n * sphi;
       for (int m = 1; m <= nm1; ++m) {
-        e3 = pnm[FINDEX(nm1)][FINDEX(m)];
+        e3 = pnm[nm1][m];
         e4 = n + m;
-        e5 = (e1 * e3 - (e4 - 1.0) * pnm[FINDEX(n - 2)][FINDEX(m)]) / (n - m);
-        pnm[FINDEX(n)][FINDEX(m)] = e5;
-        ppnm[FINDEX(n)][FINDEX(m)] = e2 * e5 + e4 * e3;
+        e5 = (e1 * e3 - (e4 - 1.0) * pnm[n - 2][m]) / (n - m);
+        pnm[n][m] = e5;
+        ppnm[n][m] = e2 * e5 + e4 * e3;
       }
     }
   }
@@ -93,9 +90,9 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   asph.z = 0.0;
 
   for (int n = 2; n <= nmodel; ++n) {
-    e1 = cnm[FINDEX(n)][FINDEX0(0)] * rb[FINDEX(n)];
-    asph.x = asph.x - (n + 1) * e1 * pn[FINDEX(n)];
-    asph.z = asph.z + e1 * ppn[FINDEX(n)];
+    e1 = cnm[n][0] * rb[n];
+    asph.x = asph.x - (n + 1) * e1 * pn[n];
+    asph.z = asph.z + e1 * ppn[n];
   }
   asph.z = cphi * asph.z;
   t1 = 0.0;
@@ -107,19 +104,19 @@ R3Element<double> Grav(R3Element<double> const& rgr,
     e2 = 0.0;
     e3 = 0.0;
     for (int m = 1; m <= std::min(n, mmodel); ++m) {
-      tsnm = snm[FINDEX(n)][FINDEX0(m)];
-      tcnm = cnm[FINDEX(n)][FINDEX0(m)];
-      tsm = sm[FINDEX(m)];
-      tcm = cm[FINDEX(m)];
-      tpnm = pnm[FINDEX(n)][FINDEX(m)];
+      tsnm = snm[n][m];
+      tcnm = cnm[n][m];
+      tsm = sm[m];
+      tcm = cm[m];
+      tpnm = pnm[n][m];
       e4 = tsnm * tsm + tcnm * tcm;
       e1 = e1 + e4 * tpnm;
       e2 = e2 + m * (tsnm * tcm - tcnm * tsm) * tpnm;
-      e3 = e3 + e4 * ppnm[FINDEX(n)][FINDEX(m)];
+      e3 = e3 + e4 * ppnm[n][m];
     }
-    t1 = t1 + (n + 1) * rb[FINDEX(n)] * e1;
-    asph.y = asph.y + rb[FINDEX(n)] * e2;
-    t3 = t3 + rb[FINDEX(n)] * e3;
+    t1 = t1 + (n + 1) * rb[n] * e1;
+    asph.y = asph.y + rb[n] * e2;
+    t3 = t3 + rb[n] * e3;
   }
 
   e4 = mu / r2;
@@ -130,8 +127,8 @@ R3Element<double> Grav(R3Element<double> const& rgr,
   e5 = asph.x * cphi - asph.z * sphi;
 
   R3Element<double> agr;
-  agr.x = e5 * cm[FINDEX(1)] - asph.y * sm[FINDEX(1)];
-  agr.y = e5 * sm[FINDEX(1)] + asph.y * cm[FINDEX(1)];
+  agr.x = e5 * cm[1] - asph.y * sm[1];
+  agr.y = e5 * sm[1] + asph.y * cm[1];
   agr.z = asph.x * sphi + asph.z * cphi;
   return agr;
 }
