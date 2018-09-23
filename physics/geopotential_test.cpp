@@ -429,28 +429,50 @@ TEST_F(GeopotentialTest, VerifyFortran) {
       /*angular_frequency=*/1e-20 * Radian / Second,
       right_ascension_of_pole_,
       declination_of_pole_);
-  OblateBody<World> const body = OblateBody<World>(
-      massive_body_parameters,
-      rotating_body_parameters,
-      OblateBody<World>::Parameters(/*j2=*/6, /*reference_radius=*/1 * Metre));
+  serialization::OblateBody::Geopotential message;
+  {
+    auto* const degree2 = message.add_row();
+    degree2->set_degree(2);
+    auto* const order0 = degree2->add_column();
+    order0->set_order(0);
+    order0->set_cos(6 / LegendreNormalizationFactor(2, 0));
+    order0->set_sin(0);
+    auto* const order2 = degree2->add_column();
+    order2->set_order(2);
+    order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
+    order2->set_sin(1e-20 / LegendreNormalizationFactor(2, 2));
+  }
+  OblateBody<World> const body =
+      OblateBody<World>(massive_body_parameters,
+                        rotating_body_parameters,
+                        OblateBody<World>::Parameters::ReadFromMessage(
+                            message, 1 * Metre));
   Geopotential<World> const geopotential(&body);
   {
     Displacement<World> const displacement(
         {5 * Metre, 7 * Metre, 11 * Metre});
-    auto const acceleration = SphericalHarmonicsAcceleration(
-        geopotential, Instant(), displacement);
-    LOG(ERROR)<<acceleration;
+    auto const acceleration1 = 1 * SIUnit<GravitationalParameter>() *
+                              (GeneralSphericalHarmonicsAcceleration(
+                                   geopotential, Instant(), displacement) -
+                               displacement / Pow<3>(displacement.Norm()));
+    LOG(ERROR)<<acceleration1;
 
     geometry::R3Element<double> rgr{5, 7, 11};
     double mu = 1;
     double rbar = 1;
     numerics::FixedMatrix<double, 3, 3> cnm;
     numerics::FixedMatrix<double, 3, 3> snm;
-    cnm[2][0] = -6;
+    cnm[2][0] = 6;
+    snm[2][2] = 1e-20;
+    cnm[2][2] = 1e-20;
     LOG(ERROR)<<cnm[2][0]<<" "<<cnm[2][1]<<" "<<cnm[2][2];
     LOG(ERROR)<<snm[2][0]<<" "<<snm[2][1]<<" "<<snm[2][2];
-    LOG(ERROR)<<astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
-        rgr, mu, rbar, cnm, snm);
+    auto const acceleration2 = Vector<Acceleration, World>(
+        1 * SIUnit<Acceleration>() *
+        astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
+            rgr, mu, rbar, cnm, snm));
+
+    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 0));
   }
 }
 
