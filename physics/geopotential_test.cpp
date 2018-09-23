@@ -1,9 +1,9 @@
 ﻿
 #include "physics/geopotential.hpp"
 
-#include "gtest/gtest.h"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
+#include "gtest/gtest.h"
 #include "numerics/legendre.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -340,7 +340,7 @@ TEST_F(GeopotentialTest, VerifyS22) {
         geopotential1, Instant(), displacement);
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 4));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 14));
   }
   {
     Displacement<World> const displacement(
@@ -399,7 +399,7 @@ TEST_F(GeopotentialTest, VerifyJ3) {
         geopotential1, Instant(), displacement);
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 264752));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 264755));
   }
   {
     Displacement<World> const displacement(

@@ -18,6 +18,7 @@ using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
+using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Inverse;
 using quantities::Length;
@@ -27,99 +28,43 @@ using quantities::Square;
 using quantities::Sin;
 using quantities::SIUnit;
 
-template<int degree, int order>
-double LegendrePolynomialDerivative(double const argument) {
-  if constexpr (order > degree + 1) {
-    return 0;
-  } else {
-    static auto const pn = LegendrePolynomial<degree, HornerEvaluator>();
-    static auto const dmpn = pn.Derivative<order>();
-    return dmpn.Evaluate(argument);
-  }
-}
+// The notation in this file follows documentation/Geopotential.pdf.
+template<typename Frame>
+struct Geopotential<Frame>::Precomputations {
+  // These quantities are independent from n and m.
+  UnitVector x̂;
+  UnitVector ŷ;
+  UnitVector ẑ;
+
+  Length x;
+  Length y;
+  Length z;
+
+  Square<Length> r²;
+  Length r_norm;
+
+  Angle λ;
+  double cos_λ;
+  double sin_λ;
+
+  double sin_β;
+  double cos_β;
+
+  Vector<Inverse<Length>, Frame> grad_𝔅_vector;
+  Vector<Inverse<Length>, Frame> grad_𝔏_vector;
+
+  // These quantities depend on n but are independent from m.
+  Inverse<Length> ℜ;
+  Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
+};
 
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(OblateBody<Frame> const& body,
-               UnitVector const& x,
-               UnitVector const& y,
-               UnitVector const& z,
-               Displacement<Frame> const& r) {
-    if constexpr (degree == 2 && order == 1) {
-      return {};
-    } else {
-      constexpr int n = degree;
-      constexpr int m = order;
-      static_assert(0 <= m && m <= n);
-      static double const normalization_factor =
-          LegendreNormalizationFactor(n, m);
-
-      // TODO(phl): Lots of stuff here that could be factored out.
-      Length const rx = InnerProduct(r, x);
-      Length const ry = InnerProduct(r, y);
-      Length const rz = InnerProduct(r, z);
-
-      Square<Length> const rx²_plus_ry² = rx * rx + ry * ry;
-      Square<Length> const r² = r.Norm²();
-      Length const r_norm = Sqrt(r²);
-      double const sin_β = rz / r_norm;
-      double const cos_β = Sqrt(rx²_plus_ry²) / r_norm;
-      Angle const λ = SIUnit<Angle>() *
-                      std::atan2(ry / SIUnit<Length>(), rx / SIUnit<Length>());
-      double const sin_λ = Sin(λ);
-      double const cos_λ = Cos(λ);
-
-      Inverse<Length> const radial_factor =
-          Pow<n>(body.reference_radius() / r_norm) / r_norm;
-      Vector<Exponentiation<Length, -2>, Frame> const radial_factor_derivative =
-          -(n + 1) * r * radial_factor / r²;
-
-      double const latitudinal_factor =
-          Pow<m>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β);
-      double latitudinal_polynomials = 0.0;
-      if constexpr (m < n) {
-        latitudinal_polynomials +=
-            Pow<m + 1>(cos_β) * LegendrePolynomialDerivative<n, m + 1>(sin_β);
-      }
-      if constexpr (m > 0) {
-        // Avoid a singularity when m == 0 and cos_β == 0.
-        latitudinal_polynomials -=
-            Pow<m - 1>(cos_β) * m * sin_β *
-            LegendrePolynomialDerivative<n, m>(sin_β);
-      }
-      Vector<Inverse<Length>, Frame> const latitudinal_factor_derivative =
-          latitudinal_polynomials *
-          (-sin_β * cos_λ * x - sin_β * sin_λ * y + cos_β * z) / r_norm;
-
-      double const Cnm = body.cos()[n][m];
-      double const Snm = body.sin()[n][m];
-
-      Angle const mλ = m * λ;
-      double const sin_mλ = Sin(mλ);
-      double const cos_mλ = Cos(mλ);
-      double const longitudinal_factor = Cnm * cos_mλ + Snm * sin_mλ;
-      Vector<Inverse<Length>, Frame> const longitudinal_factor_derivative =
-          m * (Snm * cos_mλ - Cnm * sin_mλ) * (-sin_λ * x + cos_λ * y) / r_norm;
-      Vector<Inverse<Length>, Frame>
-          latitudinal_factor_times_longitudinal_factor_derivative;
-      if constexpr (m > 0) {
-        // Compensate a cos_β to avoid a singularity when m == 0 and cos_β == 0.
-        latitudinal_factor_times_longitudinal_factor_derivative +=
-            Pow<m - 1>(cos_β) * LegendrePolynomialDerivative<n, m>(sin_β) *
-            longitudinal_factor_derivative;
-      }
-
-      return normalization_factor *
-             (radial_factor_derivative * latitudinal_factor *
-                  longitudinal_factor +
-              radial_factor * latitudinal_factor_derivative *
-                  longitudinal_factor +
-              radial_factor *
-                  latitudinal_factor_times_longitudinal_factor_derivative);
-    }
-  }
+               Displacement<Frame> const& r,
+               Precomputations const& precomputations);
 };
 
 template<typename Frame>
@@ -128,17 +73,8 @@ struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(OblateBody<Frame> const& body,
-               UnitVector const& x,
-               UnitVector const& y,
-               UnitVector const& z,
-               Displacement<Frame> const& r) {
-    if constexpr (degree < 2) {
-      return {};
-    } else {
-      return (DegreeNOrderM<degree, orders>::Acceleration(body, x, y, z, r) +
-              ...);
-    }
-  }
+               Displacement<Frame> const& r,
+               Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -149,18 +85,186 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
                Instant const& t,
                Displacement<Frame> const& r,
                Square<Length> const& r²,
-               Exponentiation<Length, -3> const& one_over_r³) {
-    auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
-    UnitVector const x = from_surface_frame(x_);
-    UnitVector const y = from_surface_frame(y_);
-    UnitVector const& z = body.polar_axis();
-
-    return (DegreeNAllOrders<degrees,
-                             std::make_integer_sequence<int, degrees + 1>>::
-                Acceleration(body, x, y, z, r) +
-            ...);
-  }
+               Exponentiation<Length, -3> const& one_over_r³);
 };
+
+template<int degree, int order>
+double LegendrePolynomialDerivative(double const argument) {
+  if constexpr (order > degree) {
+    return 0;
+  } else {
+    static auto const Pn = LegendrePolynomial<degree, HornerEvaluator>();
+    static auto const dmpn = Pn.Derivative<order>();
+    return dmpn.Evaluate(argument);
+  }
+}
+
+template<typename Frame>
+template<int degree, int order>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
+    OblateBody<Frame> const& body,
+    Displacement<Frame> const& r,
+    Precomputations const& precomputations) {
+  if constexpr (degree == 2 && order == 1) {
+    return {};
+  } else {
+    constexpr int n = degree;
+    constexpr int m = order;
+    static_assert(0 <= m && m <= n);
+    static double const normalization_factor =
+        LegendreNormalizationFactor(n, m);
+
+    auto const& x̂ = precomputations.x̂;
+    auto const& ŷ = precomputations.ŷ;
+    auto const& ẑ = precomputations.ẑ;
+
+    auto const& x = precomputations.x;
+    auto const& y = precomputations.y;
+    auto const& z = precomputations.z;
+
+    auto const& r² = precomputations.r²;
+    auto const& r_norm = precomputations.r_norm;
+
+    auto const& λ = precomputations.λ;
+    auto const& cos_λ = precomputations.cos_λ;
+    auto const& sin_λ = precomputations.sin_λ;
+
+    auto const& cos_β = precomputations.cos_β;
+    auto const& sin_β = precomputations.sin_β;
+
+    auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
+    auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
+    auto const& ℜ = precomputations.ℜ;
+    auto const& grad_ℜ = precomputations.grad_ℜ;
+
+#pragma warning(push)
+#pragma warning(disable: 4101)
+    double cos_β_to_the_m_minus_1th;  // Not used if m = 0.
+#pragma warning(pop)
+    double const cos_β_to_the_mth = Pow<m>(cos_β);
+    double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
+    double const 𝔅 = cos_β_to_the_mth * Pnm_of_sin_β;
+
+    double grad_𝔅_polynomials = cos_β * cos_β_to_the_mth *
+                                LegendrePolynomialDerivative<n, m + 1>(sin_β);
+    if constexpr (m > 0) {
+      cos_β_to_the_m_minus_1th = Pow<m - 1>(cos_β);
+      // Remove a singularity when m == 0 and cos_β == 0.
+      grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1th * Pnm_of_sin_β;
+    }
+    Vector<Inverse<Length>, Frame> const grad_𝔅 =
+        grad_𝔅_polynomials * grad_𝔅_vector;
+
+    double const Cnm = body.cos()[n][m];
+    double const Snm = body.sin()[n][m];
+
+    Angle const mλ = m * λ;
+    double const sin_mλ = Sin(mλ);
+    double const cos_mλ = Cos(mλ);
+    double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+
+    Vector<Inverse<Length>, Frame> 𝔅_grad_𝔏;
+    if constexpr (m > 0) {
+      // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
+      // singularity.
+      Vector<Inverse<Length>, Frame> const grad_𝔏 =
+          m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
+      // Compensate a cos_β to remove a singularity when cos_β == 0.
+      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
+    }
+
+    return normalization_factor *
+           (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_grad_𝔏);
+  }
+}
+
+template<typename Frame>
+template<int degree, int... orders>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame> Geopotential<
+    Frame>::DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
+    Acceleration(OblateBody<Frame> const& body,
+                 Displacement<Frame> const& r,
+                 Precomputations& precomputations) {
+  if constexpr (degree < 2) {
+    return {};
+  } else {
+    constexpr int n = degree;
+
+    auto const& r² = precomputations.r²;
+    auto const& r_norm = precomputations.r_norm;
+
+    precomputations.ℜ = Pow<n>(body.reference_radius() / r_norm) / r_norm;
+    precomputations.grad_ℜ = -(n + 1) * r * precomputations.ℜ / r²;
+    return (
+        DegreeNOrderM<degree, orders>::Acceleration(body, r, precomputations) +
+        ...);
+  }
+}
+
+template<typename Frame>
+template<int... degrees>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+    Acceleration(OblateBody<Frame> const& body,
+                 Instant const& t,
+                 Displacement<Frame> const& r,
+                 Square<Length> const& r²,
+                 Exponentiation<Length, -3> const& one_over_r³) {
+  auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+  Precomputations precomputations;
+
+  auto& x̂ = precomputations.x̂;
+  auto& ŷ = precomputations.ŷ;
+  auto& ẑ = precomputations.ẑ;
+
+  auto& x = precomputations.x;
+  auto& y = precomputations.y;
+  auto& z = precomputations.z;
+
+  auto& r_norm = precomputations.r_norm;
+
+  auto& λ = precomputations.λ;
+  auto& cos_λ = precomputations.cos_λ;
+  auto& sin_λ = precomputations.sin_λ;
+
+  auto& cos_β = precomputations.cos_β;
+  auto& sin_β = precomputations.sin_β;
+
+  auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
+  auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
+  auto& ℜ = precomputations.ℜ;
+  auto& grad_ℜ = precomputations.grad_ℜ;
+
+  x̂ = from_surface_frame(x_);
+  ŷ = from_surface_frame(y_);
+  ẑ = body.polar_axis();
+
+  x = InnerProduct(r, x̂);
+  y = InnerProduct(r, ŷ);
+  z = InnerProduct(r, ẑ);
+
+  precomputations.r² = r²;
+  r_norm = Sqrt(r²);
+
+  λ = ArcTan(y, x);
+  cos_λ = Cos(λ);
+  sin_λ = Sin(λ);
+
+  Square<Length> const x²_plus_y² = x * x + y * y;
+  sin_β = z / r_norm;
+  cos_β = Sqrt(x²_plus_y²) / r_norm;
+
+  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
+  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
+
+  return (
+      DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
+          Acceleration(body, r, precomputations) +
+      ...);
+}
 
 template<typename Frame>
 Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body)
