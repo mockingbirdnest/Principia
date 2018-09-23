@@ -3,6 +3,7 @@
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 namespace principia {
