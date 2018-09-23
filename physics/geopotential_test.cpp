@@ -2,10 +2,13 @@
 #include "physics/geopotential.hpp"
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
+#include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
 #include "geometry/named_quantities.hpp"
 #include "gtest/gtest.h"
 #include "numerics/legendre.hpp"
+#include "physics/solar_system.hpp"
+#include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
@@ -18,12 +21,15 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using astronomy::ICRS;
 using geometry::Frame;
 using numerics::LegendreNormalizationFactor;
+using physics::SolarSystem;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::Degree3SphericalHarmonicCoefficient;
+using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::si::Degree;
@@ -449,6 +455,38 @@ TEST_F(GeopotentialTest, VerifyFortran) {
 }
 
 TEST_F(GeopotentialTest, TestVector) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto const earth_message = solar_system_2000.gravity_model_message("Earth");
+
+  auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
+  MassiveBody::Parameters const massive_body_parameters(earth_μ);
+  RotatingBody<World>::Parameters rotating_body_parameters(
+      /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
+      /*reference_angle=*/0 * Radian,
+      /*reference_instant=*/Instant(),
+      /*angular_frequency=*/1e-20 * Radian / Second,
+      right_ascension_of_pole_,
+      declination_of_pole_);
+  OblateBody<World> const body = OblateBody<World>(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<World>::Parameters::ReadFromMessage(
+          earth_message.geopotential(),
+          ParseQuantity<Length>(earth_message.reference_radius())));
+  Geopotential<World> const geopotential(&body);
+  {
+    Displacement<World> const displacement(
+        {6000000 * Metre, -4000000 * Metre, 5000000 * Metre});
+    auto const acceleration =
+        earth_μ * (GeneralSphericalHarmonicsAcceleration(
+                       geopotential, Instant(), displacement) -
+                   displacement / Pow<3>(displacement.Norm()));
+    // Result shoud read: 9  -3.5377058876337  2.3585194144421  -2.9531441870790
+    LOG(ERROR)<<acceleration;
+  }
 }
 
 }  // namespace internal_geopotential
