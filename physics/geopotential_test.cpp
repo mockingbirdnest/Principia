@@ -435,12 +435,23 @@ TEST_F(GeopotentialTest, VerifyFortran) {
     degree2->set_degree(2);
     auto* const order0 = degree2->add_column();
     order0->set_order(0);
-    order0->set_cos(6 / LegendreNormalizationFactor(2, 0));
+    order0->set_cos(1e-20 / LegendreNormalizationFactor(2, 0));
     order0->set_sin(0);
     auto* const order2 = degree2->add_column();
     order2->set_order(2);
     order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
     order2->set_sin(1e-20 / LegendreNormalizationFactor(2, 2));
+  }
+  {
+    auto* const degree3 = message.add_row();
+    degree3->set_degree(3);
+    auto* const order0 = degree3->add_column();
+    order0->set_order(0);
+    order0->set_cos(1e-20 / LegendreNormalizationFactor(3, 0));
+    auto* const order1 = degree3->add_column();
+    order1->set_order(1);
+    order1->set_cos(1e-20 / LegendreNormalizationFactor(3, 1));
+    order1->set_sin(6 / LegendreNormalizationFactor(3, 1));
   }
   OblateBody<World> const body =
       OblateBody<World>(massive_body_parameters,
@@ -460,16 +471,21 @@ TEST_F(GeopotentialTest, VerifyFortran) {
     geometry::R3Element<double> rgr{5, 7, 11};
     double mu = 1;
     double rbar = 1;
-    numerics::FixedMatrix<double, 3, 3> cnm;
-    numerics::FixedMatrix<double, 3, 3> snm;
-    cnm[2][0] = 6;
-    snm[2][2] = 1e-20;
+    numerics::FixedMatrix<double, 4, 4> cnm;
+    numerics::FixedMatrix<double, 4, 4> snm;
+    cnm[2][0] = 1e-20;
     cnm[2][2] = 1e-20;
+    snm[2][2] = 1e-20;
+    cnm[3][0] = 1e-20;
+    cnm[3][1] = 1e-20;
+    snm[3][1] = 6;
     LOG(ERROR)<<cnm[2][0]<<" "<<cnm[2][1]<<" "<<cnm[2][2];
     LOG(ERROR)<<snm[2][0]<<" "<<snm[2][1]<<" "<<snm[2][2];
+    LOG(ERROR)<<cnm[3][0]<<" "<<cnm[3][1]<<" "<<cnm[3][2];
+    LOG(ERROR)<<snm[3][0]<<" "<<snm[3][1]<<" "<<snm[3][2];
     auto const acceleration2 = Vector<Acceleration, World>(
         1 * SIUnit<Acceleration>() *
-        astronomy::fortran_astrodynamics_toolkit::Grav<2, 2>(
+        astronomy::fortran_astrodynamics_toolkit::Grav<3, 3>(
             rgr, mu, rbar, cnm, snm));
 
     EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 0));
@@ -484,6 +500,8 @@ TEST_F(GeopotentialTest, TestVector) {
   auto const earth_message = solar_system_2000.gravity_model_message("Earth");
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
+  auto const earth_reference_radius =
+      ParseQuantity<Length>(earth_message.reference_radius());
   MassiveBody::Parameters const massive_body_parameters(earth_μ);
   RotatingBody<World>::Parameters rotating_body_parameters(
       /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
@@ -496,8 +514,7 @@ TEST_F(GeopotentialTest, TestVector) {
       massive_body_parameters,
       rotating_body_parameters,
       OblateBody<World>::Parameters::ReadFromMessage(
-          earth_message.geopotential(),
-          ParseQuantity<Length>(earth_message.reference_radius())));
+          earth_message.geopotential(), earth_reference_radius));
   Geopotential<World> const geopotential(&body);
   {
     Displacement<World> const displacement(
@@ -507,6 +524,25 @@ TEST_F(GeopotentialTest, TestVector) {
                        geopotential, Instant(), displacement) -
                    displacement / Pow<3>(displacement.Norm()));
     // Result shoud read: 9  -3.5377058876337  2.3585194144421  -2.9531441870790
+    LOG(ERROR)<<acceleration;
+  }
+  {
+    geometry::R3Element<double> rgr{6000000, -4000000, 5000000};
+    double mu = earth_μ / SIUnit<GravitationalParameter>();
+    double rbar = earth_reference_radius / Metre;
+    numerics::FixedMatrix<double, 10, 10> cnm;
+    numerics::FixedMatrix<double, 10, 10> snm;
+    for (int n = 0; n <= 9; ++n) {
+      for (int m = 0; m <= n; ++m) {
+        cnm[n][m] = body.cos()[n][m] * LegendreNormalizationFactor(n, m);
+        snm[n][m] = body.sin()[n][m] * LegendreNormalizationFactor(n, m);
+      }
+    }
+    LOG(ERROR)<<cnm[3][1]<<" "<<snm[3][1];
+    auto const acceleration = Vector<Acceleration, World>(
+        1 * SIUnit<Acceleration>() *
+        astronomy::fortran_astrodynamics_toolkit::Grav<9, 9>(
+            rgr, mu, rbar, cnm, snm));
     LOG(ERROR)<<acceleration;
   }
 }
