@@ -46,8 +46,10 @@ using ::testing::Lt;
 
 class GeopotentialTest : public ::testing::Test {
  protected:
+  using Surface = Frame<serialization::Frame::TestTag,
+                        serialization::Frame::TEST1, false>;
   using World = Frame<serialization::Frame::TestTag,
-                      serialization::Frame::TEST, true>;
+                      serialization::Frame::TEST2, true>;
 
   GeopotentialTest()
       : massive_body_parameters_(17 * SIUnit<GravitationalParameter>()),
@@ -435,23 +437,38 @@ TEST_F(GeopotentialTest, VerifyFortran) {
     degree2->set_degree(2);
     auto* const order0 = degree2->add_column();
     order0->set_order(0);
-    order0->set_cos(1e-20 / LegendreNormalizationFactor(2, 0));
+    order0->set_cos(0 / LegendreNormalizationFactor(2, 0));
     order0->set_sin(0);
     auto* const order2 = degree2->add_column();
     order2->set_order(2);
-    order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
-    order2->set_sin(1e-20 / LegendreNormalizationFactor(2, 2));
+    order2->set_cos(0 / LegendreNormalizationFactor(2, 2));
+    order2->set_sin(0 / LegendreNormalizationFactor(2, 2));
   }
   {
     auto* const degree3 = message.add_row();
     degree3->set_degree(3);
     auto* const order0 = degree3->add_column();
     order0->set_order(0);
-    order0->set_cos(1e-20 / LegendreNormalizationFactor(3, 0));
+    order0->set_cos(0 / LegendreNormalizationFactor(3, 0));
     auto* const order1 = degree3->add_column();
     order1->set_order(1);
-    order1->set_cos(1e-20 / LegendreNormalizationFactor(3, 1));
-    order1->set_sin(6 / LegendreNormalizationFactor(3, 1));
+    order1->set_cos(6 / LegendreNormalizationFactor(3, 1));
+    order1->set_sin(0 / LegendreNormalizationFactor(3, 1));
+    auto* const order2 = degree3->add_column();
+    order2->set_order(2);
+    order2->set_cos(0 / LegendreNormalizationFactor(3, 2));
+    order2->set_sin(0 / LegendreNormalizationFactor(3, 2));
+    auto* const order3 = degree3->add_column();
+    order3->set_order(3);
+    order3->set_cos(0 / LegendreNormalizationFactor(3, 3));
+    order3->set_sin(0 / LegendreNormalizationFactor(3, 3));
+  }
+  {
+    auto* const degree4 = message.add_row();
+    degree4->set_degree(4);
+    auto* const order0 = degree4->add_column();
+    order0->set_order(0);
+    order0->set_cos(0 / LegendreNormalizationFactor(4, 0));
   }
   OblateBody<World> const body =
       OblateBody<World>(massive_body_parameters,
@@ -460,35 +477,56 @@ TEST_F(GeopotentialTest, VerifyFortran) {
                             message, 1 * Metre));
   Geopotential<World> const geopotential(&body);
   {
-    Displacement<World> const displacement(
-        {5 * Metre, 7 * Metre, 11 * Metre});
+    geometry::R3Element<double> rgr{5, 0, 0};
+    double mu = 1;
+    double rbar = 1;
+    numerics::FixedMatrix<double, 5, 5> cnm;
+    numerics::FixedMatrix<double, 5, 5> snm;
+    cnm[2][0] = 0;
+    cnm[2][2] = 0;
+    snm[2][2] = 0;
+    cnm[3][0] = 0;
+    cnm[3][1] = 6;
+    snm[3][1] = 0;
+    cnm[3][2] = 0;
+    snm[3][2] = 0;
+    cnm[3][3] = 0;
+    snm[3][3] = 0;
+    cnm[4][0] = 0;
+    LOG(ERROR)<<cnm[2][0]<<" "<<cnm[2][1]<<" "<<cnm[2][2];
+    LOG(ERROR)<<snm[2][0]<<" "<<snm[2][1]<<" "<<snm[2][2];
+    LOG(ERROR)<<cnm[3][0]<<" "<<cnm[3][1]<<" "<<cnm[3][2]<<" "<<cnm[3][3];
+    LOG(ERROR)<<snm[3][0]<<" "<<snm[3][1]<<" "<<snm[3][2]<<" "<<snm[3][3];
+    auto const acceleration2 = Vector<Acceleration, Surface>(
+        1 * SIUnit<Acceleration>() *
+        astronomy::fortran_astrodynamics_toolkit::Grav<4, 4>(
+            rgr, mu, rbar, cnm, snm));
+
+    Displacement<World> const displacement =
+        body.FromSurfaceFrame<Surface>(Instant())(
+            Displacement<Surface>(rgr * Metre));
     auto const acceleration1 = 1 * SIUnit<GravitationalParameter>() *
                               (GeneralSphericalHarmonicsAcceleration(
                                    geopotential, Instant(), displacement) -
                                displacement / Pow<3>(displacement.Norm()));
-    LOG(ERROR)<<acceleration1;
+    auto const acceleration3 =
+        body.ToSurfaceFrame<Surface>(Instant())(acceleration1);
 
-    geometry::R3Element<double> rgr{5, 7, 11};
-    double mu = 1;
-    double rbar = 1;
-    numerics::FixedMatrix<double, 4, 4> cnm;
-    numerics::FixedMatrix<double, 4, 4> snm;
-    cnm[2][0] = 1e-20;
-    cnm[2][2] = 1e-20;
-    snm[2][2] = 1e-20;
-    cnm[3][0] = 1e-20;
-    cnm[3][1] = 1e-20;
-    snm[3][1] = 6;
-    LOG(ERROR)<<cnm[2][0]<<" "<<cnm[2][1]<<" "<<cnm[2][2];
-    LOG(ERROR)<<snm[2][0]<<" "<<snm[2][1]<<" "<<snm[2][2];
-    LOG(ERROR)<<cnm[3][0]<<" "<<cnm[3][1]<<" "<<cnm[3][2];
-    LOG(ERROR)<<snm[3][0]<<" "<<snm[3][1]<<" "<<snm[3][2];
-    auto const acceleration2 = Vector<Acceleration, World>(
-        1 * SIUnit<Acceleration>() *
-        astronomy::fortran_astrodynamics_toolkit::Grav<3, 3>(
-            rgr, mu, rbar, cnm, snm));
+    auto a = 1 * SIUnit<GravitationalParameter>() *
+             GeneralSphericalHarmonicsAcceleration(
+                 geopotential, Instant(), displacement);
+    auto b = 1 * SIUnit<GravitationalParameter>() *
+             (-displacement / Pow<3>(displacement.Norm()));
 
-    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 0));
+    EXPECT_THAT(acceleration3, AlmostEquals(acceleration2, 0));
+
+    auto cx =
+        (acceleration2.coordinates().x - b.coordinates().x) / a.coordinates().x;
+    auto cy =
+        (acceleration2.coordinates().y - b.coordinates().y) / a.coordinates().y;
+    auto cz =
+        (acceleration2.coordinates().z - b.coordinates().z) / a.coordinates().z;
+    LOG(ERROR)<<cx<<" "<<cy<<" "<<cz;
   }
 }
 
@@ -516,18 +554,22 @@ TEST_F(GeopotentialTest, TestVector) {
       OblateBody<World>::Parameters::ReadFromMessage(
           earth_message.geopotential(), earth_reference_radius));
   Geopotential<World> const geopotential(&body);
+
+  geometry::R3Element<double> rgr{6000000, -4000000, 5000000};
   {
-    Displacement<World> const displacement(
-        {6000000 * Metre, -4000000 * Metre, 5000000 * Metre});
+    Displacement<World> const displacement =
+        body.FromSurfaceFrame<Surface>(Instant())(
+            Displacement<Surface>(rgr * Metre));
     auto const acceleration =
         earth_μ * (GeneralSphericalHarmonicsAcceleration(
                        geopotential, Instant(), displacement) -
                    displacement / Pow<3>(displacement.Norm()));
+    auto const acceleration2 =
+        body.ToSurfaceFrame<Surface>(Instant())(acceleration);
     // Result shoud read: 9  -3.5377058876337  2.3585194144421  -2.9531441870790
-    LOG(ERROR)<<acceleration;
+    LOG(ERROR)<<acceleration2;
   }
   {
-    geometry::R3Element<double> rgr{6000000, -4000000, 5000000};
     double mu = earth_μ / SIUnit<GravitationalParameter>();
     double rbar = earth_reference_radius / Metre;
     numerics::FixedMatrix<double, 10, 10> cnm;
@@ -538,7 +580,6 @@ TEST_F(GeopotentialTest, TestVector) {
         snm[n][m] = body.sin()[n][m] * LegendreNormalizationFactor(n, m);
       }
     }
-    LOG(ERROR)<<cnm[3][1]<<" "<<snm[3][1];
     auto const acceleration = Vector<Acceleration, World>(
         1 * SIUnit<Acceleration>() *
         astronomy::fortran_astrodynamics_toolkit::Grav<9, 9>(
