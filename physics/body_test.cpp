@@ -343,6 +343,8 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::TO>();
 }
 
+#if !defined(_DEBUG)
+
 // Check that the rotation of the Earth gives the right solar noon.
 TEST_F(BodyTest, SolarNoon) {
   struct SurfaceFrame;
@@ -409,6 +411,8 @@ TEST_F(BodyTest, SolarNoon) {
   EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:55:00"_UTC,
               IsNear(-53 * Second));
 }
+
+#endif
 
 }  // namespace internal_body
 }  // namespace physics
