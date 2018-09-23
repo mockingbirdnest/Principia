@@ -343,7 +343,8 @@ TEST_F(BodyTest, AllFrames) {
   TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::TO>();
 }
 
-TEST_F(BodyTest, SurfaceFrame) {
+// Check that the rotation of the Earth gives the right solar noon.
+TEST_F(BodyTest, SolarNoon) {
   struct SurfaceFrame;
   SolarSystem<ICRS> solar_system_j2000(
       SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -394,7 +395,7 @@ TEST_F(BodyTest, SurfaceFrame) {
                                 "2010-09-30T08:00:00"_UTC,
                                 "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_greenwich - "2010-09-30T11:00:00"_UTC,
-              IsNear(51 * Minute, 1.02));
+              IsNear(51 * Minute, 1.04));
 
   location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
   auto solar_noon_istanbul = Bisect(solar_noon,
@@ -406,7 +407,7 @@ TEST_F(BodyTest, SurfaceFrame) {
                                "2010-09-30T08:00:00"_UTC,
                                "2010-09-30T16:00:00"_UTC);
   EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:00:00"_UTC,
-              IsNear(55 * Minute, 1.02));
+              IsNear(55 * Minute, 1.04));
 }
 
 }  // namespace internal_body
