@@ -35,7 +35,7 @@ class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
  public:
-  static constexpr int max_geopotential_degree = 5;
+  static constexpr int max_geopotential_degree = 10;
   using GeopotentialCoefficients =
       FixedLowerTriangularMatrix<double, max_geopotential_degree + 1>;
 

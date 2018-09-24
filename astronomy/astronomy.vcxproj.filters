@@ -153,6 +153,12 @@
     <ClInclude Include="solar_system_fingerprints.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fortran_astrodynamics_toolkit.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fortran_astrodynamics_toolkit_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="lunar_eclipse_test.cpp">
