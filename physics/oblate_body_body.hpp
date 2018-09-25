@@ -100,6 +100,10 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
     }
   }
   parameters.degree_ = *degrees_seen.crbegin();
+  if (message.has_max_degree()) {
+    CHECK_LE(message.max_degree(), *parameters.degree_);
+    parameters.degree_ = message.max_degree();
+  }
 
   // Unnormalization.
   parameters.j2_ =

@@ -1,4 +1,6 @@
 ﻿
+// .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Geopotential  // NOLINT(whitespace/line_length)
+
 #include "physics/geopotential_body.hpp"
 
 #include <random>
@@ -46,11 +48,14 @@ GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
 }
 
 void BM_ComputeGeopotential(benchmark::State& state) {
+  int const max_degree = state.range_x();
+
   SolarSystem<ICRS> solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
-  auto const earth_message = solar_system_2000.gravity_model_message("Earth");
+  auto earth_message = solar_system_2000.gravity_model_message("Earth");
+  earth_message.mutable_geopotential()->set_max_degree(max_degree);
 
   Angle const earth_right_ascension_of_pole = 0 * Degree;
   Angle const earth_declination_of_pole = 90 * Degree;
@@ -92,7 +97,7 @@ void BM_ComputeGeopotential(benchmark::State& state) {
   }
 }
 
-BENCHMARK(BM_ComputeGeopotential)
+BENCHMARK(BM_ComputeGeopotential)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
 
 }  // namespace physics
 }  // namespace principia
