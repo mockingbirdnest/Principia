@@ -4,6 +4,7 @@
 
 #include <cmath>
 
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre.hpp"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -14,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
@@ -56,6 +58,12 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on n but are independent from m.
   Inverse<Length> ℜ;
   Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
+
+  // These quantities depend on m but are independent from n.
+  FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1> cos_mλ;
+  FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1> sin_mλ;
+  FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1>
+      cos_β_to_the_mth;
 };
 
 template<typename Frame>
@@ -64,7 +72,7 @@ struct Geopotential<Frame>::DegreeNOrderM {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(OblateBody<Frame> const& body,
                Displacement<Frame> const& r,
-               Precomputations const& precomputations);
+               Precomputations& precomputations);
 };
 
 template<typename Frame>
@@ -105,7 +113,7 @@ Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     OblateBody<Frame> const& body,
     Displacement<Frame> const& r,
-    Precomputations const& precomputations) {
+    Precomputations& precomputations) {
   if constexpr (degree == 2 && order == 1) {
     return {};
   } else {
@@ -139,18 +147,32 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& ℜ = precomputations.ℜ;
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
+    auto& cos_mλ = precomputations.cos_mλ[m];
+    auto& sin_mλ = precomputations.sin_mλ[m];
+
+    auto& cos_β_to_the_mth = precomputations.cos_β_to_the_mth[m];
+
+    // The fold expressions in the caller ensures that we process n and m by
+    // increasing values.  Thus, only the last value of m needs to be
+    // initialized for a given value of n.
+    if constexpr (m == n) {
+      Angle const mλ = m * λ;
+      sin_mλ = Sin(mλ);
+      cos_mλ = Cos(mλ);
+      cos_β_to_the_mth = Pow<m>(cos_β);
+    }
+
 #pragma warning(push)
 #pragma warning(disable: 4101)
     double cos_β_to_the_m_minus_1th;  // Not used if m = 0.
 #pragma warning(pop)
-    double const cos_β_to_the_mth = Pow<m>(cos_β);
     double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
     double const 𝔅 = cos_β_to_the_mth * Pnm_of_sin_β;
 
     double grad_𝔅_polynomials = cos_β * cos_β_to_the_mth *
                                 LegendrePolynomialDerivative<n, m + 1>(sin_β);
     if constexpr (m > 0) {
-      cos_β_to_the_m_minus_1th = Pow<m - 1>(cos_β);
+      cos_β_to_the_m_minus_1th = precomputations.cos_β_to_the_mth[m - 1];
       // Remove a singularity when m == 0 and cos_β == 0.
       grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1th * Pnm_of_sin_β;
     }
@@ -159,10 +181,6 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
 
     double const Cnm = body.cos()[n][m];
     double const Snm = body.sin()[n][m];
-
-    Angle const mλ = m * λ;
-    double const sin_mλ = Sin(mλ);
-    double const cos_mλ = Cos(mλ);
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
     Vector<Inverse<Length>, Frame> 𝔅_grad_𝔏;
@@ -195,11 +213,15 @@ Vector<Quotient<Acceleration, GravitationalParameter>, Frame> Geopotential<
     auto const& r² = precomputations.r²;
     auto const& r_norm = precomputations.r_norm;
 
-    precomputations.ℜ = Pow<n>(body.reference_radius() / r_norm) / r_norm;
-    precomputations.grad_ℜ = -(n + 1) * r * precomputations.ℜ / r²;
-    return (
-        DegreeNOrderM<degree, orders>::Acceleration(body, r, precomputations) +
-        ...);
+    auto& ℜ = precomputations.ℜ;
+    auto& grad_ℜ = precomputations.grad_ℜ;
+
+    ℜ = Pow<n>(body.reference_radius() / r_norm) / r_norm;
+    grad_ℜ = -(n + 1) * r * ℜ / r²;
+
+    return (... +
+            DegreeNOrderM<degree, orders>::Acceleration(
+                body, r, precomputations));
   }
 }
 
@@ -235,8 +257,13 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
   auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-  auto& ℜ = precomputations.ℜ;
-  auto& grad_ℜ = precomputations.grad_ℜ;
+  auto& cos_0λ = precomputations.cos_mλ[0];
+  auto& sin_0λ = precomputations.sin_mλ[0];
+  auto& cos_1λ = precomputations.cos_mλ[1];
+  auto& sin_1λ = precomputations.sin_mλ[1];
+
+  auto& cos_β_to_the_0th = precomputations.cos_β_to_the_mth[0];
+  auto& cos_β_to_the_1th = precomputations.cos_β_to_the_mth[1];
 
   x̂ = from_surface_frame(x_);
   ŷ = from_surface_frame(y_);
@@ -260,10 +287,18 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
 
-  return (
-      DegreeNAllOrders<degrees, std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(body, r, precomputations) +
-      ...);
+  cos_0λ = 1.0;
+  sin_0λ = 0.0;
+  cos_1λ = cos_λ;
+  sin_1λ = sin_λ;
+
+  cos_β_to_the_0th = 1.0;
+  cos_β_to_the_1th = cos_β;
+
+  return (... +
+          DegreeNAllOrders<degrees,
+                           std::make_integer_sequence<int, degrees + 1>>::
+              Acceleration(body, r, precomputations));
 }
 
 template<typename Frame>
