@@ -63,7 +63,7 @@ struct Geopotential<Frame>::Precomputations {
   FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1> cos_mλ;
   FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1> sin_mλ;
   FixedVector<double, OblateBody<Frame>::max_geopotential_degree + 1>
-      cos_β_to_the_mth;
+      cos_β_to_the_m;
 };
 
 template<typename Frame>
@@ -150,31 +150,53 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto& cos_mλ = precomputations.cos_mλ[m];
     auto& sin_mλ = precomputations.sin_mλ[m];
 
-    auto& cos_β_to_the_mth = precomputations.cos_β_to_the_mth[m];
+    auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
     // The fold expressions in the caller ensures that we process n and m by
     // increasing values.  Thus, only the last value of m needs to be
     // initialized for a given value of n.
     if constexpr (m == n) {
+      static_assert(m >= 2);
       Angle const mλ = m * λ;
-      sin_mλ = Sin(mλ);
-      cos_mλ = Cos(mλ);
-      cos_β_to_the_mth = Pow<m>(cos_β);
+
+      // Compute the values for m * λ based on the values around m/2 * λ to
+      // reduce error accumulation.
+      if constexpr (m % 2 == 0) {
+        int const h = m / 2;
+        double const cos_hλ = precomputations.cos_mλ[h];
+        double const sin_hλ = precomputations.sin_mλ[h];
+        double const cos_β_to_the_h = precomputations.cos_β_to_the_m[h];
+        sin_mλ = 2 * sin_hλ * cos_hλ;
+        cos_mλ = cos_hλ * cos_hλ - sin_hλ * sin_hλ;
+        cos_β_to_the_m = cos_β_to_the_h * cos_β_to_the_h;
+      } else {
+        int const h1 = m / 2;
+        int const h2 = m - h1;
+        double const cos_h1λ = precomputations.cos_mλ[h1];
+        double const sin_h1λ = precomputations.sin_mλ[h1];
+        double const cos_β_to_the_h1 = precomputations.cos_β_to_the_m[h1];
+        double const cos_h2λ = precomputations.cos_mλ[h2];
+        double const sin_h2λ = precomputations.sin_mλ[h2];
+        double const cos_β_to_the_h2 = precomputations.cos_β_to_the_m[h2];
+        sin_mλ = sin_h1λ * cos_h2λ + cos_h1λ * sin_h2λ;
+        cos_mλ = cos_h1λ * cos_h2λ - sin_h1λ * sin_h2λ;
+        cos_β_to_the_m = cos_β_to_the_h1 * cos_β_to_the_h2;
+      }
     }
 
 #pragma warning(push)
 #pragma warning(disable: 4101)
-    double cos_β_to_the_m_minus_1th;  // Not used if m = 0.
+    double cos_β_to_the_m_minus_1;  // Not used if m = 0.
 #pragma warning(pop)
     double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
-    double const 𝔅 = cos_β_to_the_mth * Pnm_of_sin_β;
+    double const 𝔅 = cos_β_to_the_m * Pnm_of_sin_β;
 
-    double grad_𝔅_polynomials = cos_β * cos_β_to_the_mth *
+    double grad_𝔅_polynomials = cos_β * cos_β_to_the_m *
                                 LegendrePolynomialDerivative<n, m + 1>(sin_β);
     if constexpr (m > 0) {
-      cos_β_to_the_m_minus_1th = precomputations.cos_β_to_the_mth[m - 1];
+      cos_β_to_the_m_minus_1 = precomputations.cos_β_to_the_m[m - 1];
       // Remove a singularity when m == 0 and cos_β == 0.
-      grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1th * Pnm_of_sin_β;
+      grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1 * Pnm_of_sin_β;
     }
     Vector<Inverse<Length>, Frame> const grad_𝔅 =
         grad_𝔅_polynomials * grad_𝔅_vector;
@@ -190,7 +212,7 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
       Vector<Inverse<Length>, Frame> const grad_𝔏 =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
-      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1th * Pnm_of_sin_β * grad_𝔏;
+      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1 * Pnm_of_sin_β * grad_𝔏;
     }
 
     return normalization_factor *
@@ -262,8 +284,8 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& cos_1λ = precomputations.cos_mλ[1];
   auto& sin_1λ = precomputations.sin_mλ[1];
 
-  auto& cos_β_to_the_0th = precomputations.cos_β_to_the_mth[0];
-  auto& cos_β_to_the_1th = precomputations.cos_β_to_the_mth[1];
+  auto& cos_β_to_the_0 = precomputations.cos_β_to_the_m[0];
+  auto& cos_β_to_the_1 = precomputations.cos_β_to_the_m[1];
 
   x̂ = from_surface_frame(x_);
   ŷ = from_surface_frame(y_);
@@ -287,13 +309,13 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
 
-  cos_0λ = 1.0;
-  sin_0λ = 0.0;
+  cos_0λ = 1;
+  sin_0λ = 0;
   cos_1λ = cos_λ;
   sin_1λ = sin_λ;
 
-  cos_β_to_the_0th = 1.0;
-  cos_β_to_the_1th = cos_β;
+  cos_β_to_the_0 = 1;
+  cos_β_to_the_1 = cos_β;
 
   return (... +
           DegreeNAllOrders<degrees,
