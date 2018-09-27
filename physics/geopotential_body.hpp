@@ -45,10 +45,6 @@ struct Geopotential<Frame>::Precomputations {
   Square<Length> r²;
   Length r_norm;
 
-  Angle λ;
-  double cos_λ;
-  double sin_λ;
-
   double sin_β;
   double cos_β;
 
@@ -56,7 +52,8 @@ struct Geopotential<Frame>::Precomputations {
   Vector<Inverse<Length>, Frame> grad_𝔏_vector;
 
   // These quantities depend on n but are independent from m.
-  Inverse<Length> ℜ;
+  FixedVector<Inverse<Length>, OblateBody<Frame>::max_geopotential_degree + 1>
+      ℜ;
   Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
 
   // These quantities depend on m but are independent from n.
@@ -134,17 +131,13 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& r² = precomputations.r²;
     auto const& r_norm = precomputations.r_norm;
 
-    auto const& λ = precomputations.λ;
-    auto const& cos_λ = precomputations.cos_λ;
-    auto const& sin_λ = precomputations.sin_λ;
-
     auto const& cos_β = precomputations.cos_β;
     auto const& sin_β = precomputations.sin_β;
 
     auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-    auto const& ℜ = precomputations.ℜ;
+    auto const& ℜ = precomputations.ℜ[n];
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
     auto& cos_mλ = precomputations.cos_mλ[m];
@@ -157,7 +150,6 @@ Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     // initialized for a given value of n.
     if constexpr (m == n) {
       static_assert(m >= 2);
-      Angle const mλ = m * λ;
 
       // Compute the values for m * λ based on the values around m/2 * λ to
       // reduce error accumulation.
@@ -235,10 +227,23 @@ Vector<Quotient<Acceleration, GravitationalParameter>, Frame> Geopotential<
     auto const& r² = precomputations.r²;
     auto const& r_norm = precomputations.r_norm;
 
-    auto& ℜ = precomputations.ℜ;
+    auto& ℜ = precomputations.ℜ[n];
     auto& grad_ℜ = precomputations.grad_ℜ;
 
-    ℜ = Pow<n>(body.reference_radius() / r_norm) / r_norm;
+    // The fold expressions in the caller ensures that we process n by
+    // increasing values.  Thus, we can safely compute ℜ based on values for
+    // lower n's.
+    if constexpr (n % 2 == 0) {
+      int const h = n / 2;
+      auto const& ℜh = precomputations.ℜ[h];
+      ℜ = ℜh * ℜh * r_norm;
+    } else {
+      int const h1 = n / 2;
+      int const h2 = n - h1;
+      auto const& ℜh1 = precomputations.ℜ[h1];
+      auto const& ℜh2 = precomputations.ℜ[h2];
+      ℜ = ℜh1 * ℜh2 * r_norm;
+    }
     grad_ℜ = -(n + 1) * r * ℜ / r²;
 
     return (... +
@@ -269,15 +274,14 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 
   auto& r_norm = precomputations.r_norm;
 
-  auto& λ = precomputations.λ;
-  auto& cos_λ = precomputations.cos_λ;
-  auto& sin_λ = precomputations.sin_λ;
-
   auto& cos_β = precomputations.cos_β;
   auto& sin_β = precomputations.sin_β;
 
   auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
   auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
+
+  auto& ℜ0 = precomputations.ℜ[0];
+  auto& ℜ1 = precomputations.ℜ[1];
 
   auto& cos_0λ = precomputations.cos_mλ[0];
   auto& sin_0λ = precomputations.sin_mλ[0];
@@ -297,10 +301,9 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
-
-  λ = ArcTan(y, x);
-  cos_λ = Cos(λ);
-  sin_λ = Sin(λ);
+  Angle const λ = ArcTan(y, x);
+  double const cos_λ = Cos(λ);
+  double const sin_λ = Sin(λ);
 
   Square<Length> const x²_plus_y² = x * x + y * y;
   sin_β = z / r_norm;
@@ -308,6 +311,10 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 
   grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
+
+  //TODO(phl): 0 terms unneeded.
+  ℜ0 = 1 / r_norm;
+  ℜ1 = body.reference_radius() / r²;
 
   cos_0λ = 1;
   sin_0λ = 0;
