@@ -301,13 +301,19 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
-  Angle const λ = ArcTan(y, x);
-  double const cos_λ = Cos(λ);
-  double const sin_λ = Sin(λ);
 
   Square<Length> const x²_plus_y² = x * x + y * y;
+  Length const r_equatorial = Sqrt(x²_plus_y²);
+
+  double cos_λ = 1;
+  double sin_λ = 0;
+  if (r_equatorial > Length{}) {
+    cos_λ = x / r_equatorial;
+    sin_λ = y / r_equatorial;
+  }
+
   sin_β = z / r_norm;
-  cos_β = Sqrt(x²_plus_y²) / r_norm;
+  cos_β = r_equatorial / r_norm;
 
   grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;

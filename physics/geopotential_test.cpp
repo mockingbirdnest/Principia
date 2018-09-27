@@ -352,7 +352,7 @@ TEST_F(GeopotentialTest, VerifyS22) {
         geopotential1, Instant(), displacement);
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 14));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 17));
   }
   {
     Displacement<World> const displacement(
@@ -361,7 +361,7 @@ TEST_F(GeopotentialTest, VerifyS22) {
         geopotential1, Instant(), displacement);
     auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
         geopotential2, Instant(), displacement);
-    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 5, 6));
+    EXPECT_THAT(acceleration2, AlmostEquals(acceleration1, 0, 1));
   }
 }
 
