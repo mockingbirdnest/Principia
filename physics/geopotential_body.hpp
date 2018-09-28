@@ -53,7 +53,7 @@ struct Geopotential<Frame>::Precomputations {
   Vector<Inverse<Length>, Frame> grad_𝔏_vector;
 
   // These quantities depend on n but are independent from m.
-  FixedVector<Inverse<Length>, size> ℜ;
+  FixedVector<Inverse<Length>, size> ℜ;  // 0 unused.
   Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
 
   // These quantities depend on m but are independent from n.
@@ -281,7 +281,6 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& grad_𝔅_vector = precomputations.grad_𝔅_vector;
   auto& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-  auto& ℜ0 = precomputations.ℜ[0];
   auto& ℜ1 = precomputations.ℜ[1];
 
   auto& cos_0λ = precomputations.cos_mλ[0];
@@ -319,8 +318,6 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
 
-  //TODO(phl): 0 terms unneeded.
-  ℜ0 = 1 / r_norm;
   ℜ1 = body.reference_radius() / r²;
 
   cos_0λ = 1;
@@ -331,10 +328,20 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   cos_β_to_the_0 = 1;
   cos_β_to_the_1 = cos_β;
 
-  return (... +
-          DegreeNAllOrders<size, degrees,
-                           std::make_integer_sequence<int, degrees + 1>>::
-              Acceleration(body, r, precomputations));
+  // NOTE(phl): The fold expression below should call DegreeNAllOrders with
+  // increasing values of the degree.  Unfortunately in VS2017 15.8 it doesn't,
+  // in ways that mysteriously depend on the presence of the size parameter in
+  // template Precomputations.  We force the right ordering by using an
+  // initializer list.
+  std::array<Vector<Quotient<quantities::Acceleration,
+                             GravitationalParameter>, Frame>,
+             size> const accelerations = {
+      DegreeNAllOrders<size,
+                       degrees,
+                       std::make_integer_sequence<int, degrees + 1>>::
+          Acceleration(body, r, precomputations)...};
+
+  return (... + accelerations[degrees]);
 }
 
 template<typename Frame>
