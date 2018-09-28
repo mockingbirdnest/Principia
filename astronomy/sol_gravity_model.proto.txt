@@ -155,6 +155,18 @@ gravity_model {
         column {order: 7, cos: -1.1798115451725e-07, sin: -9.6920684034663e-08},
         column {order: 8, cos: 1.8813248989960e-07, sin: -3.0019794719453e-09},
         column {order: 9, cos: -4.7558362699944e-08, sin: 9.6876870006845e-08}},
+      row {degree: 10,
+        column {order: 0, cos: 5.3345275002101e-08, sin: 0},
+        column {order: 1, cos: 8.3753701278788e-08, sin: -1.3109438169724e-07},
+        column {order: 2, cos: -9.3977781512067e-08, sin: -5.1264999905428e-08},
+        column {order: 3, cos: -6.9910538916696e-09, sin: -1.5412815968052e-07},
+        column {order: 4, cos: -8.4459158980573e-08, sin: -7.9023911359757e-08},
+        column {order: 5, cos: -4.9285509081565e-08, sin: -5.0617431292160e-08},
+        column {order: 6, cos: -3.7586959404344e-08, sin: -7.9771481050624e-08},
+        column {order: 7, cos: 8.2571270822778e-09, sin: -3.0490009250716e-09},
+        column {order: 8, cos: 4.0589757557591e-08, sin: -9.1710645675513e-08},
+        column {order: 9, cos: 1.2538547435906e-07, sin: -3.7942358311393e-08},
+        column {order: 10, cos: 1.0042327725658e-07, sin: -2.3863826960514e-08}},
     }
     reference_radius        : "6378.1363 km"
   }

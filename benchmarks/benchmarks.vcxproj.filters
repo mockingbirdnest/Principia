@@ -65,6 +65,9 @@
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="geopotential.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
