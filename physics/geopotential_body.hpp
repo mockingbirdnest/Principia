@@ -74,8 +74,7 @@ template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
   FORCE_INLINE(static)
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(OblateBody<Frame> const& body,
-               Displacement<Frame> const& r,
+  Acceleration(Displacement<Frame> const& r,
                Precomputations<size>& precomputations);
 };
 
@@ -84,8 +83,7 @@ template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
   static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(OblateBody<Frame> const& body,
-               Displacement<Frame> const& r,
+  Acceleration(Displacement<Frame> const& r,
                Precomputations<size>& precomputations);
 };
 
@@ -104,7 +102,6 @@ template<typename Frame>
 template<int size, int degree, int order>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
-    OblateBody<Frame> const& body,
     Displacement<Frame> const& r,
     Precomputations<size>& precomputations) {
   if constexpr (degree == 2 && order == 1) {
@@ -253,9 +250,8 @@ template<int size, int degree, int... orders>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
-Acceleration(OblateBody<Frame> const& body,
-              Displacement<Frame> const& r,
-              Precomputations<size>& precomputations) {
+Acceleration(Displacement<Frame> const& r,
+             Precomputations<size>& precomputations) {
   if constexpr (degree < 2) {
     return {};
   } else {
@@ -285,8 +281,8 @@ Acceleration(OblateBody<Frame> const& body,
 
     // Force the evaluation by increasing order using an initializer list.
     Accelerations<size> const accelerations = {
-        DegreeNOrderM<size, degree, orders>::Acceleration(
-            body, r, precomputations)...};
+        DegreeNOrderM<size, degree, orders>::
+            Acceleration(r, precomputations)...};
 
     return (accelerations[orders] + ...);
   }
@@ -383,7 +379,7 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(body, r, precomputations)...};
+          Acceleration(r, precomputations)...};
 
   return (accelerations[degrees] + ...);
 }
