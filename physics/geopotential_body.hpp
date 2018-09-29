@@ -15,6 +15,7 @@ namespace principia {
 namespace physics {
 namespace internal_geopotential {
 
+using numerics::FixedLowerTriangularMatrix;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
@@ -60,6 +61,10 @@ struct Geopotential<Frame>::Precomputations {
   FixedVector<double, size> cos_mλ;
   FixedVector<double, size> sin_mλ;
   FixedVector<double, size> cos_β_to_the_m;
+
+  // These quantities depend on both n and m.  Note that the zeros for m > n are
+  // not stored.
+  FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β;
 };
 
 template<typename Frame>
@@ -92,17 +97,6 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
                Exponentiation<Length, -3> const& one_over_r³);
 };
 
-template<int degree, int order>
-double LegendrePolynomialDerivative(double const argument) {
-  if constexpr (order > degree) {
-    return 0;
-  } else {
-    static auto const Pn = LegendrePolynomial<degree, HornerEvaluator>();
-    static auto const dmpn = Pn.Derivative<order>();
-    return dmpn.Evaluate(argument);
-  }
-}
-
 template<typename Frame>
 template<int size, int degree, int order>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -111,6 +105,9 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     Displacement<Frame> const& r,
     Precomputations<size>& precomputations) {
   if constexpr (degree == 2 && order == 1) {
+    // Let's not forget the Legendre derivative that we would compute if we did
+    // not short-circuit.
+    precomputations.DmPn_of_sin_β[2][2] = 3;
     return {};
   } else {
     constexpr int n = degree;
@@ -144,6 +141,8 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
 
     auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
+    auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+
     // The fold expressions in the caller ensures that we process n and m by
     // increasing values.  Thus, only the last value of m needs to be
     // initialized for a given value of n.
@@ -175,19 +174,52 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
       }
     }
 
+    // Recurrence relationship between the Legendre polynomials.
+    if constexpr (m == 0) {
+      static_assert(n >= 2);
+      DmPn_of_sin_β[n][0] = ((2 * n - 1) * sin_β * DmPn_of_sin_β[n - 1][0] -
+                             (n - 1) * DmPn_of_sin_β[n - 2][0]) /
+                            n;
+    }
+
+    // Recurrence relationship between the associated Legendre polynomials.
+    // Account for the fact that DmPn_of_sin_β is identically zero if m > n.
+    if constexpr (m == n) {
+      // Do not store the zero.
+    } else if constexpr (m == n - 1) {
+      static_assert(n >= 1);
+      DmPn_of_sin_β[n][m + 1] =
+          ((2 * n - 1) * (m + 1) * DmPn_of_sin_β[n - 1][m]) / n;
+    } else if constexpr (m == n - 2) {
+      static_assert(n >= 1);
+      DmPn_of_sin_β[n][m + 1] =
+          ((2 * n - 1) * (sin_β * DmPn_of_sin_β[n - 1][m + 1] +
+                          (m + 1) * DmPn_of_sin_β[n - 1][m])) /
+          n;
+    } else {
+      static_assert(n >= 2);
+      DmPn_of_sin_β[n][m + 1] =
+          ((2 * n - 1) * (sin_β * DmPn_of_sin_β[n - 1][m + 1] +
+                          (m + 1) * DmPn_of_sin_β[n - 1][m]) -
+           (n - 1) * DmPn_of_sin_β[n - 2][m + 1]) /
+          n;
+    }
+
 #pragma warning(push)
 #pragma warning(disable: 4101)
     double cos_β_to_the_m_minus_1;  // Not used if m = 0.
 #pragma warning(pop)
-    double const Pnm_of_sin_β = LegendrePolynomialDerivative<n, m>(sin_β);
-    double const 𝔅 = cos_β_to_the_m * Pnm_of_sin_β;
+    double const 𝔅 = cos_β_to_the_m * DmPn_of_sin_β[n][m];
 
-    double grad_𝔅_polynomials = cos_β * cos_β_to_the_m *
-                                LegendrePolynomialDerivative<n, m + 1>(sin_β);
+    double grad_𝔅_polynomials = 0;
+    if constexpr (m < n) {
+      grad_𝔅_polynomials = cos_β * cos_β_to_the_m * DmPn_of_sin_β[n][m + 1];
+    }
     if constexpr (m > 0) {
       cos_β_to_the_m_minus_1 = precomputations.cos_β_to_the_m[m - 1];
       // Remove a singularity when m == 0 and cos_β == 0.
-      grad_𝔅_polynomials -= m * sin_β * cos_β_to_the_m_minus_1 * Pnm_of_sin_β;
+      grad_𝔅_polynomials -=
+          m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m];
     }
     Vector<Inverse<Length>, Frame> const grad_𝔅 =
         grad_𝔅_polynomials * grad_𝔅_vector;
@@ -203,7 +235,7 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
       Vector<Inverse<Length>, Frame> const grad_𝔏 =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
-      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1 * Pnm_of_sin_β * grad_𝔏;
+      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m] * grad_𝔏;
     }
 
     return normalization_factor *
@@ -246,9 +278,12 @@ Acceleration(OblateBody<Frame> const& body,
     }
     grad_ℜ = -(n + 1) * r * ℜ / r²;
 
-    return (... +
-            DegreeNOrderM<size, degree, orders>::Acceleration(
-                body, r, precomputations));
+    // Force the evaluation by increasing order using an initializer list.
+    Accelerations<size> const accelerations = {
+        DegreeNOrderM<size, degree, orders>::Acceleration(
+            body, r, precomputations)...};
+
+    return (accelerations[orders] + ...);
   }
 }
 
@@ -291,6 +326,8 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& cos_β_to_the_0 = precomputations.cos_β_to_the_m[0];
   auto& cos_β_to_the_1 = precomputations.cos_β_to_the_m[1];
 
+  auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+
   x̂ = from_surface_frame(x_);
   ŷ = from_surface_frame(y_);
   ẑ = body.polar_axis();
@@ -328,20 +365,18 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   cos_β_to_the_0 = 1;
   cos_β_to_the_1 = cos_β;
 
-  // NOTE(phl): The fold expression below should call DegreeNAllOrders with
-  // increasing values of the degree.  Unfortunately in VS2017 15.8 it doesn't,
-  // in ways that mysteriously depend on the presence of the size parameter in
-  // template Precomputations.  We force the right ordering by using an
-  // initializer list.
-  std::array<Vector<Quotient<quantities::Acceleration,
-                             GravitationalParameter>, Frame>,
-             size> const accelerations = {
+  DmPn_of_sin_β[0][0] = 1;
+  DmPn_of_sin_β[1][0] = sin_β;
+  DmPn_of_sin_β[1][1] = 1;
+
+  // Force the evaluation by increasing degree using an initializer list.
+  Accelerations<size> const accelerations = {
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
           Acceleration(body, r, precomputations)...};
 
-  return (... + accelerations[degrees]);
+  return (accelerations[degrees] + ...);
 }
 
 template<typename Frame>

@@ -50,6 +50,11 @@ class Geopotential {
 
   using UnitVector = Vector<double, Frame>;
 
+  template<int size>
+  using Accelerations =
+      std::array<Vector<Quotient<Acceleration, GravitationalParameter>, Frame>,
+                 size>;
+
   // Holds precomputed data for one evaluation of the acceleration.
   template<int size>
   struct Precomputations;
