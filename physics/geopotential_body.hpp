@@ -70,7 +70,8 @@ struct Geopotential<Frame>::Precomputations {
 template<typename Frame>
 template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  FORCE_INLINE(static)
+  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Acceleration(OblateBody<Frame> const& body,
                Displacement<Frame> const& r,
                Precomputations<size>& precomputations);
