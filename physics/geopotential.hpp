@@ -47,6 +47,8 @@ class Geopotential {
   struct SurfaceFrame;
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
+  static const Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+      zero_;
 
   using UnitVector = Vector<double, Frame>;
 
