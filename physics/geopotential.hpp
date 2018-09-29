@@ -47,10 +47,13 @@ class Geopotential {
   struct SurfaceFrame;
   static const Vector<double, SurfaceFrame> x_;
   static const Vector<double, SurfaceFrame> y_;
-  static const Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-      zero_;
 
   using UnitVector = Vector<double, Frame>;
+
+  template<int size>
+  using Accelerations =
+      std::array<Vector<Quotient<Acceleration, GravitationalParameter>, Frame>,
+                 size>;
 
   // Holds precomputed data for one evaluation of the acceleration.
   template<int size>
@@ -80,21 +83,6 @@ class Geopotential {
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   Degree2ZonalAcceleration(UnitVector const& axis,
                            Displacement<Frame> const& r,
-                           Exponentiation<Length, -2> const& one_over_r²,
-                           Exponentiation<Length, -3> const& one_over_r³) const;
-
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2SectoralAcceleration(
-      UnitVector const& reference,
-      UnitVector const& bireference,
-      Displacement<Frame> const& r,
-      Exponentiation<Length, -2> const& one_over_r²,
-      Exponentiation<Length, -3> const& one_over_r³) const;
-
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree3ZonalAcceleration(UnitVector const& axis,
-                           Displacement<Frame> const& r,
-                           Square<Length> const& r²,
                            Exponentiation<Length, -2> const& one_over_r²,
                            Exponentiation<Length, -3> const& one_over_r³) const;
 

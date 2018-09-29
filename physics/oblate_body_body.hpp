@@ -31,41 +31,12 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           Length const& reference_radius)
     : j2_(j2),
       j2_over_μ_(j2 * reference_radius * reference_radius),
-      reference_radius_(reference_radius) {
+      reference_radius_(reference_radius),
+      cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
+      sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
+      degree_(2) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
-}
-
-template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(double const j2,
-                                          double const c22,
-                                          double const s22,
-                                          Length const& reference_radius)
-    : reference_radius_(reference_radius),
-      j2_(j2),
-      j2_over_μ_(j2 * reference_radius * reference_radius),
-      c22_over_μ_(c22 * reference_radius * reference_radius),
-      s22_over_μ_(s22 * reference_radius * reference_radius) {
-  CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
-  CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
-  CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
-}
-
-template<typename Frame>
-OblateBody<Frame>::Parameters::Parameters(double const j2,
-                                          double const c22,
-                                          double const s22,
-                                          double const j3,
-                                          Length const& reference_radius)
-    : reference_radius_(reference_radius),
-      j2_(j2),
-      j2_over_μ_(j2 * reference_radius * reference_radius),
-      c22_over_μ_(c22 * reference_radius * reference_radius),
-      s22_over_μ_(s22 * reference_radius * reference_radius),
-      j3_over_μ_(j3 * reference_radius * reference_radius * reference_radius) {
-  CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
-  CHECK_NE(0.0, c22) << "Oblate body cannot have zero c22";
-  CHECK_NE(0.0, s22) << "Oblate body cannot have zero s22";
-  CHECK_NE(0.0, j3) << "Oblate body cannot have zero j3";
+  cos_[2][0] = -j2 / LegendreNormalizationFactor(2, 0);
 }
 
 template<typename Frame>
@@ -95,31 +66,21 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
       CHECK_LE(m, n);
       CHECK(orders_seen.insert(m).second)
           << "Degree " << n << " order " << m << " specified multiple times";
-      (*parameters.cos_)[n][m] = column.cos();
-      (*parameters.sin_)[n][m] = column.sin();
+      parameters.cos_[n][m] = column.cos();
+      parameters.sin_[n][m] = column.sin();
     }
   }
   parameters.degree_ = *degrees_seen.crbegin();
   if (message.has_max_degree()) {
-    CHECK_LE(message.max_degree(), *parameters.degree_);
+    CHECK_LE(message.max_degree(), parameters.degree_);
     parameters.degree_ = message.max_degree();
   }
 
   // Unnormalization.
-  parameters.j2_ =
-      -(*parameters.cos_)[2][0] * LegendreNormalizationFactor(2, 0);
-  parameters.j2_over_μ_ = -(*parameters.cos_)[2][0] *
+  parameters.j2_ = -parameters.cos_[2][0] * LegendreNormalizationFactor(2, 0);
+  parameters.j2_over_μ_ = -parameters.cos_[2][0] *
                           LegendreNormalizationFactor(2, 0) * reference_radius *
                           reference_radius;
-  parameters.c22_over_μ_ = (*parameters.cos_)[2][2] *
-                           LegendreNormalizationFactor(2, 2) *
-                           reference_radius * reference_radius;
-  parameters.s22_over_μ_ = (*parameters.sin_)[2][2] *
-                           LegendreNormalizationFactor(2, 2) *
-                           reference_radius * reference_radius;
-  parameters.j3_over_μ_ = -(*parameters.cos_)[3][0] *
-                          LegendreNormalizationFactor(3, 0) * reference_radius *
-                          reference_radius * reference_radius;
 
   return parameters;
 }
@@ -127,27 +88,17 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
 template<typename Frame>
 void OblateBody<Frame>::Parameters::WriteToMessage(
     not_null<serialization::OblateBody::Geopotential*> const message) const {
-  for (int n = 0; n <= *degree_; ++n) {
+  for (int n = 0; n <= degree_; ++n) {
     auto const row = message->add_row();
     row->set_degree(n);
     for (int m = 0; m <= n; ++m) {
       auto const column = row->add_column();
       column->set_order(m);
-      column->set_cos((*cos_)[n][m]);
-      column->set_sin((*sin_)[n][m]);
+      column->set_cos(cos_[n][m]);
+      column->set_sin(sin_[n][m]);
     }
   }
 }
-
-#define PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(name)                    \
-  if (parameters_.name##_) {                                           \
-    parameters_.name##_over_μ_ =                                       \
-        *parameters_.name##_ / this->gravitational_parameter();        \
-  }                                                                    \
-  if (parameters_.name##_over_μ_) {                                    \
-    parameters_.name##_ =                                              \
-        *parameters_.name##_over_μ_ * this->gravitational_parameter(); \
-  }
 
 template<typename Frame>
 OblateBody<Frame>::OblateBody(
@@ -155,101 +106,39 @@ OblateBody<Frame>::OblateBody(
     typename RotatingBody<Frame>::Parameters const& rotating_body_parameters,
     Parameters const& parameters)
     : RotatingBody<Frame>(massive_body_parameters, rotating_body_parameters),
-      parameters_(parameters) {
-  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(c22);
-  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(s22);
-  PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS(j3);
-}
-
-#undef PRINCIPIA_FILL_OBLATE_BODY_PARAMETERS
+      parameters_(parameters) {}
 
 template<typename Frame>
 double OblateBody<Frame>::j2() const {
-  return *parameters_.j2_;
+  return parameters_.j2_;
 }
 
 template<typename Frame>
 Quotient<Degree2SphericalHarmonicCoefficient,
          GravitationalParameter> const& OblateBody<Frame>::j2_over_μ() const {
-  return *parameters_.j2_over_μ_;
-}
-
-template<typename Frame>
-Degree2SphericalHarmonicCoefficient const OblateBody<Frame>::c22() const {
-  return parameters_.c22_.value_or(Degree2SphericalHarmonicCoefficient());
-}
-
-template<typename Frame>
-Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter> const
-    OblateBody<Frame>::c22_over_μ() const {
-  return parameters_.c22_over_μ_.value_or(
-      Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter>());
-}
-
-template<typename Frame>
-Degree2SphericalHarmonicCoefficient const OblateBody<Frame>::s22() const {
-  return parameters_.s22_.value_or(Degree2SphericalHarmonicCoefficient());
-}
-
-template<typename Frame>
-Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter> const
-    OblateBody<Frame>::s22_over_μ() const {
-  return parameters_.s22_over_μ_.value_or(
-      Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter>());
-}
-
-template<typename Frame>
-Degree3SphericalHarmonicCoefficient const OblateBody<Frame>::j3() const {
-  return parameters_.j3_.value_or(Degree3SphericalHarmonicCoefficient());
-}
-
-template<typename Frame>
-Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter> const
-    OblateBody<Frame>::j3_over_μ() const {
-  return parameters_.j3_over_μ_.value_or(
-      Quotient<Degree3SphericalHarmonicCoefficient, GravitationalParameter>());
+  return parameters_.j2_over_μ_;
 }
 
 template<typename Frame>
 typename OblateBody<Frame>::GeopotentialCoefficients const&
 OblateBody<Frame>::cos() const {
-  return *parameters_.cos_;
+  return parameters_.cos_;
 }
 
 template<typename Frame>
 typename OblateBody<Frame>::GeopotentialCoefficients const&
 OblateBody<Frame>::sin() const {
-  return *parameters_.sin_;
+  return parameters_.sin_;
 }
 
 template<typename Frame>
 int OblateBody<Frame>::geopotential_degree() const {
-  return *parameters_.degree_;
+  return parameters_.degree_;
 }
 
 template<typename Frame>
 Length const& OblateBody<Frame>::reference_radius() const {
   return parameters_.reference_radius_;
-}
-
-template<typename Frame>
-bool OblateBody<Frame>::has_c22() const {
-  return parameters_.c22_.has_value();
-}
-
-template<typename Frame>
-bool OblateBody<Frame>::has_s22() const {
-  return parameters_.s22_.has_value();
-}
-
-template<typename Frame>
-bool OblateBody<Frame>::has_j3() const {
-  return parameters_.j3_.has_value();
-}
-
-template<typename Frame>
-bool OblateBody<Frame>::has_geopotential() const {
-  return parameters_.cos_.has_value();
 }
 
 template<typename Frame>
@@ -277,12 +166,7 @@ void OblateBody<Frame>::WriteToMessage(
                MutableExtension(serialization::OblateBody::extension);
   parameters_.reference_radius_.WriteToMessage(
       oblate_body->mutable_reference_radius());
-  if (has_geopotential()) {
-    parameters_.WriteToMessage(oblate_body->mutable_geopotential());
-  } else {
-    CHECK(parameters_.j2_.has_value());
-    oblate_body->set_j2(*parameters_.j2_);
-  }
+  parameters_.WriteToMessage(oblate_body->mutable_geopotential());
 }
 
 template<typename Frame>
@@ -306,12 +190,6 @@ not_null<std::unique_ptr<OblateBody<Frame>>> OblateBody<Frame>::ReadFromMessage(
           reference_radius);
       break;
     }
-    case serialization::OblateBody::OblatenessCase::kJ2:
-      CHECK(message.has_reference_radius()) << message.DebugString();
-      parameters = std::make_unique<Parameters>(
-                       message.j2(),
-                       Length::ReadFromMessage(message.reference_radius()));
-      break;
     case serialization::OblateBody::OblatenessCase::kGeopotential:
       CHECK(message.has_reference_radius()) << message.DebugString();
       parameters = std::make_unique<Parameters>(Parameters::ReadFromMessage(
