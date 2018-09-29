@@ -65,6 +65,8 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on both n and m.  Note that the zeros for m > n are
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β;
+  typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
+  typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
 };
 
 template<typename Frame>
@@ -143,6 +145,8 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
     auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+    auto const& cos = precomputations.cos;
+    auto const& sin = precomputations.sin;
 
     // The fold expressions in the caller ensures that we process n and m by
     // increasing values.  Thus, only the last value of m needs to be
@@ -225,8 +229,8 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     Vector<Inverse<Length>, Frame> const grad_𝔅 =
         grad_𝔅_polynomials * grad_𝔅_vector;
 
-    double const Cnm = body.cos()[n][m];
-    double const Snm = body.sin()[n][m];
+    double const Cnm = (*cos)[n][m];
+    double const Snm = (*sin)[n][m];
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
     Vector<Inverse<Length>, Frame> 𝔅_grad_𝔏;
@@ -328,6 +332,8 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& cos_β_to_the_1 = precomputations.cos_β_to_the_m[1];
 
   auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
+  auto& cos = precomputations.cos;
+  auto& sin = precomputations.sin;
 
   x̂ = from_surface_frame(x_);
   ŷ = from_surface_frame(y_);
@@ -369,6 +375,8 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   DmPn_of_sin_β[0][0] = 1;
   DmPn_of_sin_β[1][0] = sin_β;
   DmPn_of_sin_β[1][1] = 1;
+  cos = &body.cos();
+  sin = &body.sin();
 
   // Force the evaluation by increasing degree using an initializer list.
   Accelerations<size> const accelerations = {
