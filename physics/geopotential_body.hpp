@@ -278,11 +278,12 @@ Acceleration(OblateBody<Frame> const& body,
     }
     grad_ℜ = -(n + 1) * r * ℜ / r²;
 
-    // The zero_ term lifts an ambiguity on the order of evaluation of the
-    // acceleration for orders 0 and 1.
-    return (zero_ + ... +
-            DegreeNOrderM<size, degree, orders>::Acceleration(
-                body, r, precomputations));
+    // Force the evaluation by increasing order using an initializer list.
+    Accelerations<size> const accelerations = {
+        DegreeNOrderM<size, degree, orders>::Acceleration(
+            body, r, precomputations)...};
+
+    return (accelerations[orders] + ...);
   }
 }
 
@@ -368,20 +369,14 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   DmPn_of_sin_β[1][0] = sin_β;
   DmPn_of_sin_β[1][1] = 1;
 
-  // NOTE(phl): The fold expression below should call DegreeNAllOrders with
-  // increasing values of the degree.  Unfortunately in VS2017 15.8 it doesn't,
-  // in ways that mysteriously depend on the presence of the size parameter in
-  // template Precomputations.  We force the right ordering by using an
-  // initializer list.
-  std::array<Vector<Quotient<quantities::Acceleration,
-                             GravitationalParameter>, Frame>,
-             size> const accelerations = {
+  // Force the evaluation by increasing degree using an initializer list.
+  Accelerations<size> const accelerations = {
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
           Acceleration(body, r, precomputations)...};
 
-  return (... + accelerations[degrees]);
+  return (accelerations[degrees] + ...);
 }
 
 template<typename Frame>
@@ -524,9 +519,6 @@ const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
 template<typename Frame>
 const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
     Geopotential<Frame>::y_({0, 1, 0});
-template<typename Frame>
-const Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-    Geopotential<Frame>::zero_;
 
 }  // namespace internal_geopotential
 }  // namespace physics
