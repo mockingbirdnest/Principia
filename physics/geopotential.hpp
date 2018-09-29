@@ -43,9 +43,6 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
-  // Holds precomputed data for one evaluation of the acceleration.
-  struct Precomputations;
-
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
   static const Vector<double, SurfaceFrame> x_;
@@ -53,13 +50,15 @@ class Geopotential {
 
   using UnitVector = Vector<double, Frame>;
 
+  // Holds precomputed data for one evaluation of the acceleration.
+  template<int size>
+  struct Precomputations;
+
   // Helper templates for iterating over the degrees/orders of the geopotential.
-  template<int degree, int order>
+  template<int size, int degree, int order>
   struct DegreeNOrderM;
-
-  template<int degree, typename>
+  template<int size, int degree, typename>
   struct DegreeNAllOrders;
-
   template<typename>
   struct AllDegrees;
 
