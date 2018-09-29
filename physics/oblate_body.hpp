@@ -44,17 +44,6 @@ class OblateBody : public RotatingBody<Frame> {
     Parameters(double j2,
                Length const& reference_radius);
 
-    Parameters(double j2,
-               double c22,
-               double s22,
-               Length const& reference_radius);
-
-    Parameters(double j2,
-               double c22,
-               double s22,
-               double j3,
-               Length const& reference_radius);
-
     static Parameters ReadFromMessage(
         serialization::OblateBody::Geopotential const& message,
         Length const& reference_radius);
@@ -68,22 +57,12 @@ class OblateBody : public RotatingBody<Frame> {
 
     Length reference_radius_;
 
-    std::optional<double> j2_;
-    std::optional<Degree2SphericalHarmonicCoefficient> pre_διόφαντος_j2_;
-    std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
-                           GravitationalParameter>> j2_over_μ_;
-    std::optional<Degree2SphericalHarmonicCoefficient> c22_;
-    std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
-                           GravitationalParameter>> c22_over_μ_;
-    std::optional<Degree2SphericalHarmonicCoefficient> s22_;
-    std::optional<Quotient<Degree2SphericalHarmonicCoefficient,
-                           GravitationalParameter>> s22_over_μ_;
-    std::optional<Degree3SphericalHarmonicCoefficient> j3_;
-    std::optional<Quotient<Degree3SphericalHarmonicCoefficient,
-                           GravitationalParameter>> j3_over_μ_;
-    std::optional<GeopotentialCoefficients> cos_;
-    std::optional<GeopotentialCoefficients> sin_;
-    std::optional<int> degree_;
+    double j2_;
+    Quotient<Degree2SphericalHarmonicCoefficient, GravitationalParameter>
+        j2_over_μ_;
+    GeopotentialCoefficients cos_;
+    GeopotentialCoefficients sin_;
+    int degree_;
 
     template<typename F>
     friend class OblateBody;
@@ -94,21 +73,10 @@ class OblateBody : public RotatingBody<Frame> {
                  rotating_body_parameters,
              Parameters const& parameters);
 
-  // Selectors for the various spherical harmonics coefficients.
-
   // These parameters are unnormalized.
   double j2() const;
   Quotient<Degree2SphericalHarmonicCoefficient,
            GravitationalParameter> const& j2_over_μ() const;
-  Degree2SphericalHarmonicCoefficient const c22() const;
-  Quotient<Degree2SphericalHarmonicCoefficient,
-           GravitationalParameter> const c22_over_μ() const;
-  Degree2SphericalHarmonicCoefficient const s22() const;
-  Quotient<Degree2SphericalHarmonicCoefficient,
-           GravitationalParameter> const s22_over_μ() const;
-  Degree3SphericalHarmonicCoefficient const j3() const;
-  Quotient<Degree3SphericalHarmonicCoefficient,
-           GravitationalParameter> const j3_over_μ() const;
 
   // These parameters are normalized.
   GeopotentialCoefficients const& cos() const;
@@ -116,12 +84,6 @@ class OblateBody : public RotatingBody<Frame> {
   int geopotential_degree() const;
 
   Length const& reference_radius() const;
-
-  // Whether this body has a c22, s22, j3 or geopotential.
-  bool has_c22() const;
-  bool has_s22() const;
-  bool has_j3() const;
-  bool has_geopotential() const;
 
   // Returns false.
   bool is_massless() const override;

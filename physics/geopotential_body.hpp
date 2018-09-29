@@ -186,11 +186,11 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     // Account for the fact that DmPn_of_sin_β is identically zero if m > n.
     if constexpr (m == n) {
       // Do not store the zero.
-    } else if constexpr (m == n - 1) {
+    } else if constexpr (m == n - 1) {  // NOLINT(readability/braces)
       static_assert(n >= 1);
       DmPn_of_sin_β[n][m + 1] =
           ((2 * n - 1) * (m + 1) * DmPn_of_sin_β[n - 1][m]) / n;
-    } else if constexpr (m == n - 2) {
+    } else if constexpr (m == n - 2) {  // NOLINT(readability/braces)
       static_assert(n >= 1);
       DmPn_of_sin_β[n][m + 1] =
           ((2 * n - 1) * (sin_β * DmPn_of_sin_β[n - 1][m + 1] +
@@ -392,22 +392,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
     Exponentiation<Length, -3> const& one_over_r³) const {
   Exponentiation<Length, -2> const one_over_r² = 1 / r²;
   UnitVector const& axis = body_->polar_axis();
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> acceleration =
-      Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
-  if (body_->has_c22() || body_->has_s22()) {
-    auto const from_surface_frame =
-        body_->template FromSurfaceFrame<SurfaceFrame>(t);
-    UnitVector const reference = from_surface_frame(x_);
-    UnitVector const bireference = from_surface_frame(y_);
-    acceleration +=
-        Degree2SectoralAcceleration(
-            reference, bireference, r, one_over_r², one_over_r³);
-  }
-  if (body_->has_j3()) {
-    acceleration +=
-        Degree3ZonalAcceleration(axis, r, r², one_over_r², one_over_r³);
-  }
-  return acceleration;
+  return Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
 }
 
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
@@ -459,57 +444,6 @@ Geopotential<Frame>::Degree2ZonalAcceleration(
           j2_over_r⁵ *
           (-1.5 + 7.5 * r_axis_projection * r_axis_projection * one_over_r²) *
           r;
-  return axis_effect + radial_effect;
-}
-
-template<typename Frame>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Degree2SectoralAcceleration(
-    UnitVector const& reference,
-    UnitVector const& bireference,
-    Displacement<Frame> const& r,
-    Exponentiation<Length, -2> const& one_over_r²,
-    Exponentiation<Length, -3> const& one_over_r³) const {
-  Length const r_reference_projection = InnerProduct(reference, r);
-  Length const r_bireference_projection = InnerProduct(bireference, r);
-  auto const c22_over_r⁵ = body_->c22_over_μ() * one_over_r³ * one_over_r²;
-  auto const s22_over_r⁵ = body_->s22_over_μ() * one_over_r³ * one_over_r²;
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      c22_effect = 6 * c22_over_r⁵ *
-                   (-r_bireference_projection * bireference +
-                    r_reference_projection * reference +
-                    2.5 *
-                        (r_bireference_projection * r_bireference_projection -
-                         r_reference_projection * r_reference_projection) *
-                        one_over_r² * r);
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      s22_effect = 6 * s22_over_r⁵ *
-                   (r_reference_projection * bireference +
-                    r_bireference_projection * reference -
-                    5 * r_reference_projection * r_bireference_projection *
-                        one_over_r² * r);
-  return c22_effect + s22_effect;
-}
-
-template<typename Frame>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::Degree3ZonalAcceleration(
-    UnitVector const& axis,
-    Displacement<Frame> const& r,
-    Square<Length> const& r²,
-    Exponentiation<Length, -2> const& one_over_r²,
-    Exponentiation<Length, -3> const& one_over_r³) const {
-  // TODO(phl): Factor the projections across accelerations?
-  Length const r_axis_projection = InnerProduct(axis, r);
-  Square<Length> const r_axis_projection² =
-      r_axis_projection * r_axis_projection;
-  auto const j3_over_r⁷ =
-      body_->j3_over_μ() * one_over_r³ * one_over_r²* one_over_r²;
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      axis_effect = 1.5 * j3_over_r⁷ * (r² - 5 * r_axis_projection²) * axis;
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame> const
-      radial_effect = j3_over_r⁷ * r_axis_projection *
-                      (-7.5 + 17.5 * r_axis_projection² * one_over_r²) * r;
   return axis_effect + radial_effect;
 }
 

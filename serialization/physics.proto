@@ -190,8 +190,7 @@ message OblateBody {
   oneof oblateness {
     // Unnormalized Degree2SphericalHarmonicCoefficient.
     Quantity pre_diophantos_j2 = 1;
-    double j2 = 2;                  // Unnormalized.
-    Geopotential geopotential = 3;  // Normalized.
+    Geopotential geopotential = 2;  // Normalized.
   }
 }
 
