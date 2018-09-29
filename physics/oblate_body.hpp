@@ -7,7 +7,6 @@
 #ifndef PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 #define PRINCIPIA_PHYSICS_OBLATE_BODY_HPP_
 
-#include <optional>
 #include <vector>
 
 #include "geometry/grassmann.hpp"
@@ -28,8 +27,6 @@ using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::Quotient;
 
-// TODO(phl): c22, s22 and j3 in this class are temporary until we get the
-// general geopotential model to work at least as well as c22/s22/j3.
 template<typename Frame>
 class OblateBody : public RotatingBody<Frame> {
   static_assert(Frame::is_inertial, "Frame must be inertial");
