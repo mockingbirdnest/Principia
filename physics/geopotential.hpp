@@ -86,21 +86,6 @@ class Geopotential {
                            Exponentiation<Length, -2> const& one_over_r²,
                            Exponentiation<Length, -3> const& one_over_r³) const;
 
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2SectoralAcceleration(
-      UnitVector const& reference,
-      UnitVector const& bireference,
-      Displacement<Frame> const& r,
-      Exponentiation<Length, -2> const& one_over_r²,
-      Exponentiation<Length, -3> const& one_over_r³) const;
-
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree3ZonalAcceleration(UnitVector const& axis,
-                           Displacement<Frame> const& r,
-                           Square<Length> const& r²,
-                           Exponentiation<Length, -2> const& one_over_r²,
-                           Exponentiation<Length, -3> const& one_over_r³) const;
-
   not_null<OblateBody<Frame> const*> body_;
 };
 

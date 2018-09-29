@@ -129,7 +129,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 143, 257));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 135, 257));
     }
     previous_time = time;
   }
@@ -217,7 +217,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .coordinates()
                     .ToSpherical()
                     .longitude,
-                AlmostEquals(elements.longitude_of_ascending_node, 1, 100));
+                AlmostEquals(elements.longitude_of_ascending_node, 0, 100));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 20));
     }

@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "numerics/legendre.hpp"
 #include "numerics/root_finders.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
@@ -42,6 +43,7 @@ using geometry::Vector;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::QuinlanTremaine1990Order12;
 using numerics::Bisect;
+using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
@@ -252,7 +254,9 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(6, oblate_body_extension.j2());
+  EXPECT_EQ(-6,
+            oblate_body_extension.geopotential().row(2).column(0).cos() *
+                LegendreNormalizationFactor(2, 0));
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
