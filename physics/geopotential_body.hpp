@@ -300,16 +300,13 @@ Acceleration(OblateBody<Frame> const& body,
 
   auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
 
-  cos = &body.cos();
-  sin = &body.sin();
-
   R3Element<Length> r_surface_coordinates = r_surface.coordinates();
   Length const x = r_surface_coordinates.x;
   Length const y = r_surface_coordinates.y;
   Length const z = r_surface_coordinates.z;
 
-  Length const r_norm = Sqrt(r²);
   auto const r_over_r² = r_surface / r²;
+  Length const r_norm = Sqrt(r²);
   Inverse<Length> const one_over_r_norm = 1 / r_norm;
 
   Square<Length> const x²_plus_y² = x * x + y * y;
@@ -323,8 +320,11 @@ Acceleration(OblateBody<Frame> const& body,
     sin_λ = y * one_over_r_equatorial;
   }
 
-  sin_β = z * one_over_r_norm;
+  cos = &body.cos();
+  sin = &body.sin();
+
   cos_β = r_equatorial * one_over_r_norm;
+  sin_β = z * one_over_r_norm;
 
   grad_𝔅_vector = UnitVector<SurfaceFrame>({-sin_β * cos_λ,
                                             -sin_β * sin_λ,
