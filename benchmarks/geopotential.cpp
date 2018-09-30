@@ -55,9 +55,7 @@ GeneralSphericalHarmonicsAccelerationCpp(
     Instant const& t,
     Displacement<Frame> const& r) {
   auto const r² = r.Norm²();
-  auto const one_over_r³ = 1.0 / (r² * r.Norm());
-  return geopotential.GeneralSphericalHarmonicsAcceleration(
-              t, r, r², one_over_r³);
+  return geopotential.GeneralSphericalHarmonicsAcceleration(t, r, r²);
 }
 
 // For fairness, the Fortran implementation is wrapped to have the same API as

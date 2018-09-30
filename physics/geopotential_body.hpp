@@ -42,9 +42,7 @@ struct Geopotential<Frame>::Precomputations {
   typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
   typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
 
-  Square<Length> r²;
   Length r_norm;
-  Vector<Inverse<Length>, SurfaceFrame> r_over_r²;
 
   double sin_β;
   double cos_β;
@@ -78,7 +76,9 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static auto Acceleration(Precomputations<size>& precomputations)
+  static auto Acceleration(
+      Vector<Inverse<Length>, SurfaceFrame> const& r_over_r²,
+      Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, SurfaceFrame>;
 };
 
@@ -89,8 +89,7 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   Acceleration(OblateBody<Frame> const& body,
                Instant const& t,
                Displacement<Frame> const& r,
-               Square<Length> const& r²,
-               Exponentiation<Length, -3> const& one_over_r³);
+               Square<Length> const& r²);
 };
 
 template<typename Frame>
@@ -231,7 +230,8 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
-Acceleration(Precomputations<size>& precomputations)
+Acceleration(Vector<Inverse<Length>, SurfaceFrame> const& r_over_r²,
+             Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, SurfaceFrame> {
   if constexpr (degree < 2) {
     return {};
@@ -239,7 +239,6 @@ Acceleration(Precomputations<size>& precomputations)
     constexpr int n = degree;
 
     auto const& r_norm = precomputations.r_norm;
-    auto const& r_over_r² = precomputations.r_over_r²;
 
     auto& ℜ = precomputations.ℜ[n];
     auto& grad_ℜ = precomputations.grad_ℜ;
@@ -272,10 +271,9 @@ template<int... degrees>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 Acceleration(OblateBody<Frame> const& body,
-              Instant const& t,
-              Displacement<Frame> const& r,
-              Square<Length> const& r²,
-              Exponentiation<Length, -3> const& one_over_r³) {
+             Instant const& t,
+             Displacement<Frame> const& r,
+             Square<Length> const& r²) {
   constexpr int size = sizeof...(degrees);
   auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
   auto const to_surface_frame = from_surface_frame.Inverse();
@@ -287,7 +285,6 @@ Acceleration(OblateBody<Frame> const& body,
   auto& sin = precomputations.sin;
 
   auto& r_norm = precomputations.r_norm;
-  auto& r_over_r² = precomputations.r_over_r²;
 
   auto& cos_β = precomputations.cos_β;
   auto& sin_β = precomputations.sin_β;
@@ -315,9 +312,8 @@ Acceleration(OblateBody<Frame> const& body,
   Length const y = r_surface_coordinates.y;
   Length const z = r_surface_coordinates.z;
 
-  precomputations.r² = r²;
   r_norm = Sqrt(r²);
-  r_over_r² = r_surface / r²;
+  auto const r_over_r² = r_surface / r²;
   Inverse<Length> const one_over_r_norm = 1 / r_norm;
 
   Square<Length> const x²_plus_y² = x * x + y * y;
@@ -360,7 +356,7 @@ Acceleration(OblateBody<Frame> const& body,
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(precomputations)...};
+          Acceleration(r_over_r², precomputations)...};
 
   return from_surface_frame((accelerations[degrees] + ...));
 }
@@ -384,15 +380,14 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
   case (d):                                                                    \
     return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
-        *body_, t, r, r², one_over_r³)
+        *body_, t, r, r²)
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Instant const& t,
     Displacement<Frame> const& r,
-    Square<Length> const& r²,
-    Exponentiation<Length, -3> const& one_over_r³) const {
+    Square<Length> const& r²) const {
   switch (body_->geopotential_degree()) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(2);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);
