@@ -77,9 +77,7 @@ class GeopotentialTest : public ::testing::Test {
                                         Instant const& t,
                                         Displacement<Frame> const& r) {
     auto const r² = r.Norm²();
-    auto const one_over_r³ = 1.0 / (r² * r.Norm());
-    return geopotential.GeneralSphericalHarmonicsAcceleration(
-               t, r, r², one_over_r³);
+    return geopotential.GeneralSphericalHarmonicsAcceleration(t, r, r²);
   }
 
   // The axis of rotation is along the z axis for ease of testing.
