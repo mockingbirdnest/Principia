@@ -42,8 +42,6 @@ struct Geopotential<Frame>::Precomputations {
   typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
   typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
 
-  Length r_norm;
-
   double sin_β;
   double cos_β;
 
@@ -78,6 +76,7 @@ struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
   static auto Acceleration(
       Vector<Inverse<Length>, SurfaceFrame> const& r_over_r²,
+      Length const& r_norm,
       Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, SurfaceFrame>;
 };
@@ -231,14 +230,13 @@ template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
 Acceleration(Vector<Inverse<Length>, SurfaceFrame> const& r_over_r²,
+             Length const& r_norm,
              Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, SurfaceFrame> {
   if constexpr (degree < 2) {
     return {};
   } else {
     constexpr int n = degree;
-
-    auto const& r_norm = precomputations.r_norm;
 
     auto& ℜ = precomputations.ℜ[n];
     auto& grad_ℜ = precomputations.grad_ℜ;
@@ -284,8 +282,6 @@ Acceleration(OblateBody<Frame> const& body,
   auto& cos = precomputations.cos;
   auto& sin = precomputations.sin;
 
-  auto& r_norm = precomputations.r_norm;
-
   auto& cos_β = precomputations.cos_β;
   auto& sin_β = precomputations.sin_β;
 
@@ -312,7 +308,7 @@ Acceleration(OblateBody<Frame> const& body,
   Length const y = r_surface_coordinates.y;
   Length const z = r_surface_coordinates.z;
 
-  r_norm = Sqrt(r²);
+  Length const r_norm = Sqrt(r²);
   auto const r_over_r² = r_surface / r²;
   Inverse<Length> const one_over_r_norm = 1 / r_norm;
 
@@ -356,7 +352,7 @@ Acceleration(OblateBody<Frame> const& body,
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(r_over_r², precomputations)...};
+          Acceleration(r_over_r², r_norm, precomputations)...};
 
   return from_surface_frame((accelerations[degrees] + ...));
 }
