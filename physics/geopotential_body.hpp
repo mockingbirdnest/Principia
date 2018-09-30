@@ -36,10 +36,6 @@ template<typename Frame>
 template<int size>
 struct Geopotential<Frame>::Precomputations {
   // These quantities are independent from n and m.
-  UnitVector x̂;
-  UnitVector ŷ;
-  UnitVector ẑ;
-
   Length x;
   Length y;
   Length z;
@@ -50,12 +46,12 @@ struct Geopotential<Frame>::Precomputations {
   double sin_β;
   double cos_β;
 
-  Vector<Inverse<Length>, Frame> grad_𝔅_vector;
-  Vector<Inverse<Length>, Frame> grad_𝔏_vector;
+  Vector<Inverse<Length>, SurfaceFrame> grad_𝔅_vector;
+  Vector<Inverse<Length>, SurfaceFrame> grad_𝔏_vector;
 
   // These quantities depend on n but are independent from m.
   FixedVector<Inverse<Length>, size> ℜ;  // 0 unused.
-  Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
+  Vector<Exponentiation<Length, -2>, SurfaceFrame> grad_ℜ;
 
   // These quantities depend on m but are independent from n.
   FixedVector<double, size> cos_mλ;
@@ -73,23 +69,23 @@ template<typename Frame>
 template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
   FORCE_INLINE(static)
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(Precomputations<size>& precomputations);
+  auto Acceleration(Precomputations<size>& precomputations)
+      -> Vector<ReducedAcceleration, SurfaceFrame>;
 };
 
 template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(Displacement<Frame> const& r,
-               Precomputations<size>& precomputations);
+  static auto Acceleration(Displacement<SurfaceFrame> const& r_surface,
+                           Precomputations<size>& precomputations)
+      -> Vector<ReducedAcceleration, SurfaceFrame>;
 };
 
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+  static Vector<ReducedAcceleration, Frame>
   Acceleration(OblateBody<Frame> const& body,
                Instant const& t,
                Displacement<Frame> const& r,
@@ -99,9 +95,9 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 
 template<typename Frame>
 template<int size, int degree, int order>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
-    Precomputations<size>& precomputations) {
+auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
+    Precomputations<size>& precomputations)
+    -> Vector<ReducedAcceleration, SurfaceFrame> {
   if constexpr (degree == 2 && order == 1) {
     // Let's not forget the Legendre derivative that we would compute if we did
     // not short-circuit.
@@ -113,10 +109,6 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     static_assert(0 <= m && m <= n);
     static double const normalization_factor =
         LegendreNormalizationFactor(n, m);
-
-    auto const& x̂ = precomputations.x̂;
-    auto const& ŷ = precomputations.ŷ;
-    auto const& ẑ = precomputations.ẑ;
 
     auto const& x = precomputations.x;
     auto const& y = precomputations.y;
@@ -143,9 +135,8 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     auto const& cos = precomputations.cos;
     auto const& sin = precomputations.sin;
 
-    // The fold expressions in the caller ensures that we process n and m by
-    // increasing values.  Thus, only the last value of m needs to be
-    // initialized for a given value of n.
+    // The caller ensures that we process n and m by increasing values.  Thus,
+    // only the last value of m needs to be initialized for a given value of n.
     if constexpr (m == n) {
       static_assert(m >= 2);
 
@@ -221,18 +212,18 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
       grad_𝔅_polynomials -=
           m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m];
     }
-    Vector<Inverse<Length>, Frame> const grad_𝔅 =
+    Vector<Inverse<Length>, SurfaceFrame> const grad_𝔅 =
         grad_𝔅_polynomials * grad_𝔅_vector;
 
     double const Cnm = (*cos)[n][m];
     double const Snm = (*sin)[n][m];
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
-    Vector<Inverse<Length>, Frame> 𝔅_grad_𝔏;
+    Vector<Inverse<Length>, SurfaceFrame> 𝔅_grad_𝔏;
     if constexpr (m > 0) {
       // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
       // singularity.
-      Vector<Inverse<Length>, Frame> const grad_𝔏 =
+      Vector<Inverse<Length>, SurfaceFrame> const grad_𝔏 =
           m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
       𝔅_grad_𝔏 += cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m] * grad_𝔏;
@@ -245,11 +236,11 @@ Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
 
 template<typename Frame>
 template<int size, int degree, int... orders>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::
+auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
-Acceleration(Displacement<Frame> const& r,
-             Precomputations<size>& precomputations) {
+Acceleration(Displacement<SurfaceFrame> const& r_surface,
+             Precomputations<size>& precomputations)
+    -> Vector<ReducedAcceleration, SurfaceFrame> {
   if constexpr (degree < 2) {
     return {};
   } else {
@@ -261,9 +252,8 @@ Acceleration(Displacement<Frame> const& r,
     auto& ℜ = precomputations.ℜ[n];
     auto& grad_ℜ = precomputations.grad_ℜ;
 
-    // The fold expressions in the caller ensures that we process n by
-    // increasing values.  Thus, we can safely compute ℜ based on values for
-    // lower n's.
+    // The caller ensures that we process n by increasing values.  Thus, we can
+    // safely compute ℜ based on values for lower n's.
     if constexpr (n % 2 == 0) {
       int const h = n / 2;
       auto const& ℜh = precomputations.ℜ[h];
@@ -275,7 +265,7 @@ Acceleration(Displacement<Frame> const& r,
       auto const& ℜh2 = precomputations.ℜ[h2];
       ℜ = ℜh1 * ℜh2 * r_norm;
     }
-    grad_ℜ = -(n + 1) * r * ℜ / r²;
+    grad_ℜ = -(n + 1) * r_surface * ℜ / r²;
 
     // Force the evaluation by increasing order using an initializer list.
     Accelerations<size> const accelerations = {
@@ -289,18 +279,17 @@ template<typename Frame>
 template<int... degrees>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
-    Acceleration(OblateBody<Frame> const& body,
-                 Instant const& t,
-                 Displacement<Frame> const& r,
-                 Square<Length> const& r²,
-                 Exponentiation<Length, -3> const& one_over_r³) {
+Acceleration(OblateBody<Frame> const& body,
+              Instant const& t,
+              Displacement<Frame> const& r,
+              Square<Length> const& r²,
+              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
-  auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
-  Precomputations<size> precomputations;
+  auto const to_surface_frame = body.ToSurfaceFrame<SurfaceFrame>(t);
+  auto const from_surface_frame = to_surface_frame.Inverse();
+  Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
 
-  auto& x̂ = precomputations.x̂;
-  auto& ŷ = precomputations.ŷ;
-  auto& ẑ = precomputations.ẑ;
+  Precomputations<size> precomputations;
 
   auto& x = precomputations.x;
   auto& y = precomputations.y;
@@ -328,13 +317,9 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   auto& cos = precomputations.cos;
   auto& sin = precomputations.sin;
 
-  x̂ = from_surface_frame(x_);
-  ŷ = from_surface_frame(y_);
-  ẑ = body.polar_axis();
-
-  x = InnerProduct(r, x̂);
-  y = InnerProduct(r, ŷ);
-  z = InnerProduct(r, ẑ);
+  x = r_surface.coordinates().x;
+  y = r_surface.coordinates().y;
+  z = r_surface.coordinates().z;
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
@@ -352,8 +337,12 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
   sin_β = z / r_norm;
   cos_β = r_equatorial / r_norm;
 
-  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) / r_norm;
-  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) / r_norm;
+  grad_𝔅_vector = UnitVector<SurfaceFrame>({-sin_β * cos_λ,
+                                            -sin_β * sin_λ,
+                                            cos_β}) / r_norm;
+  grad_𝔏_vector = UnitVector<SurfaceFrame>({-sin_λ,
+                                            cos_λ,
+                                            0}) / r_norm;
 
   ℜ1 = body.reference_radius() / r²;
 
@@ -376,9 +365,9 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(r, precomputations)...};
+          Acceleration(r_surface, precomputations)...};
 
-  return (accelerations[degrees] + ...);
+  return from_surface_frame((accelerations[degrees] + ...));
 }
 
 template<typename Frame>
@@ -393,7 +382,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   Exponentiation<Length, -2> const one_over_r² = 1 / r²;
-  UnitVector const& axis = body_->polar_axis();
+  UnitVector<Frame> const& axis = body_->polar_axis();
   return Degree2ZonalAcceleration(axis, r, one_over_r², one_over_r³);
 }
 
@@ -433,7 +422,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::Degree2ZonalAcceleration(
-    UnitVector const& axis,
+    UnitVector<Frame> const& axis,
     Displacement<Frame> const& r,
     Exponentiation<Length, -2> const& one_over_r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
@@ -448,13 +437,6 @@ Geopotential<Frame>::Degree2ZonalAcceleration(
           r;
   return axis_effect + radial_effect;
 }
-
-template<typename Frame>
-const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
-    Geopotential<Frame>::x_({1, 0, 0});
-template<typename Frame>
-const Vector<double, typename Geopotential<Frame>::SurfaceFrame>
-    Geopotential<Frame>::y_({0, 1, 0});
 
 }  // namespace internal_geopotential
 }  // namespace physics
