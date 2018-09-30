@@ -36,10 +36,6 @@ template<typename Frame>
 template<int size>
 struct Geopotential<Frame>::Precomputations {
   // These quantities are independent from n and m.
-  Length x;
-  Length y;
-  Length z;
-
   Square<Length> r²;
   Length r_norm;
 
@@ -109,10 +105,6 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     static_assert(0 <= m && m <= n);
     static double const normalization_factor =
         LegendreNormalizationFactor(n, m);
-
-    auto const& x = precomputations.x;
-    auto const& y = precomputations.y;
-    auto const& z = precomputations.z;
 
     auto const& r² = precomputations.r²;
     auto const& r_norm = precomputations.r_norm;
@@ -291,10 +283,6 @@ Acceleration(OblateBody<Frame> const& body,
 
   Precomputations<size> precomputations;
 
-  auto& x = precomputations.x;
-  auto& y = precomputations.y;
-  auto& z = precomputations.z;
-
   auto& r_norm = precomputations.r_norm;
 
   auto& cos_β = precomputations.cos_β;
@@ -317,9 +305,9 @@ Acceleration(OblateBody<Frame> const& body,
   auto& cos = precomputations.cos;
   auto& sin = precomputations.sin;
 
-  x = r_surface.coordinates().x;
-  y = r_surface.coordinates().y;
-  z = r_surface.coordinates().z;
+  Length const x = r_surface.coordinates().x;
+  Length const y = r_surface.coordinates().y;
+  Length const z = r_surface.coordinates().z;
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
