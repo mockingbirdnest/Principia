@@ -108,13 +108,13 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     static double const normalization_factor =
         LegendreNormalizationFactor(n, m);
 
-    auto const& cos_β = precomputations.cos_β;
-    auto const& sin_β = precomputations.sin_β;
+    double const cos_β = precomputations.cos_β;
+    double const sin_β = precomputations.sin_β;
 
     auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-    auto const& ℜ = precomputations.ℜ[n];
+    Inverse<Length> const ℜ = precomputations.ℜ[n];
     auto const& grad_ℜ = precomputations.grad_ℜ;
 
     auto& cos_mλ = precomputations.cos_mλ[m];
@@ -123,8 +123,8 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     auto& cos_β_to_the_m = precomputations.cos_β_to_the_m[m];
 
     auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
-    auto const& cos = precomputations.cos;
-    auto const& sin = precomputations.sin;
+    auto const& cos = *precomputations.cos;
+    auto const& sin = *precomputations.sin;
 
     // The caller ensures that we process n and m by increasing values.  Thus,
     // only the last value of m needs to be initialized for a given value of n.
@@ -204,8 +204,8 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
           m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m];
     }
 
-    double const Cnm = (*cos)[n][m];
-    double const Snm = (*sin)[n][m];
+    double const Cnm = cos[n][m];
+    double const Snm = sin[n][m];
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
     Vector<ReducedAcceleration, SurfaceFrame> const 𝔅𝔏_grad_ℜ =
