@@ -203,25 +203,27 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
       grad_𝔅_polynomials -=
           m * sin_β * cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m];
     }
-    Vector<Inverse<Length>, SurfaceFrame> const grad_𝔅 =
-        grad_𝔅_polynomials * grad_𝔅_vector;
 
     double const Cnm = (*cos)[n][m];
     double const Snm = (*sin)[n][m];
     double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
 
-    Vector<Inverse<Length>, SurfaceFrame> 𝔅_grad_𝔏;
+    Vector<ReducedAcceleration, SurfaceFrame> const 𝔅𝔏_grad_ℜ =
+        (𝔅 * 𝔏) * grad_ℜ;
+    Vector<ReducedAcceleration, SurfaceFrame> const ℜ𝔏_grad_𝔅 =
+        (ℜ * 𝔏 * grad_𝔅_polynomials) * grad_𝔅_vector;
+    Vector<ReducedAcceleration, SurfaceFrame> grad_ℜ𝔅𝔏 =
+        𝔅𝔏_grad_ℜ + ℜ𝔏_grad_𝔅;
     if constexpr (m > 0) {
-      // This is not exactly grad_𝔏: we omit the cos_β numerator to remove a
-      // singularity.
-      Vector<Inverse<Length>, SurfaceFrame> const grad_𝔏 =
-          m * (Snm * cos_mλ - Cnm * sin_mλ) * grad_𝔏_vector;
       // Compensate a cos_β to remove a singularity when cos_β == 0.
-      𝔅_grad_𝔏 += cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m] * grad_𝔏;
+      Vector<ReducedAcceleration, SurfaceFrame> const ℜ𝔅_grad_𝔏 =
+          (ℜ *
+           cos_β_to_the_m_minus_1 * DmPn_of_sin_β[n][m] *  // 𝔅/cos_β
+           m * (Snm * cos_mλ - Cnm * sin_mλ)) * grad_𝔏_vector;  // grad_𝔏*cos_β
+      grad_ℜ𝔅𝔏 += ℜ𝔅_grad_𝔏;
     }
 
-    return normalization_factor *
-           (grad_ℜ * 𝔅 * 𝔏 + ℜ * grad_𝔅 * 𝔏 + ℜ * 𝔅_grad_𝔏);
+    return normalization_factor * grad_ℜ𝔅𝔏;
   }
 }
 
@@ -254,7 +256,7 @@ Acceleration(Vector<Inverse<Length>, SurfaceFrame> const& r_over_r²,
       auto const& ℜh2 = precomputations.ℜ[h2];
       ℜ = ℜh1 * ℜh2 * r_norm;
     }
-    grad_ℜ = -(n + 1) * ℜ * r_over_r²;
+    grad_ℜ = (-(n + 1) * ℜ) * r_over_r²;
 
     // Force the evaluation by increasing order using an initializer list.
     Accelerations<size> const accelerations = {
