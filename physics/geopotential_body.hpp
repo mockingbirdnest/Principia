@@ -44,6 +44,7 @@ struct Geopotential<Frame>::Precomputations {
 
   Square<Length> r²;
   Length r_norm;
+  Vector<Inverse<Length>, SurfaceFrame> r_over_r²;
 
   double sin_β;
   double cos_β;
@@ -77,8 +78,7 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static auto Acceleration(Displacement<SurfaceFrame> const& r_surface,
-                           Precomputations<size>& precomputations)
+  static auto Acceleration(Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, SurfaceFrame>;
 };
 
@@ -231,16 +231,15 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
-Acceleration(Displacement<SurfaceFrame> const& r_surface,
-             Precomputations<size>& precomputations)
+Acceleration(Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, SurfaceFrame> {
   if constexpr (degree < 2) {
     return {};
   } else {
     constexpr int n = degree;
 
-    auto const& r² = precomputations.r²;
     auto const& r_norm = precomputations.r_norm;
+    auto const& r_over_r² = precomputations.r_over_r²;
 
     auto& ℜ = precomputations.ℜ[n];
     auto& grad_ℜ = precomputations.grad_ℜ;
@@ -258,7 +257,7 @@ Acceleration(Displacement<SurfaceFrame> const& r_surface,
       auto const& ℜh2 = precomputations.ℜ[h2];
       ℜ = ℜh1 * ℜh2 * r_norm;
     }
-    grad_ℜ = -(n + 1) * r_surface * ℜ / r²;
+    grad_ℜ = -(n + 1) * ℜ * r_over_r²;
 
     // Force the evaluation by increasing order using an initializer list.
     Accelerations<size> const accelerations = {
@@ -288,6 +287,7 @@ Acceleration(OblateBody<Frame> const& body,
   auto& sin = precomputations.sin;
 
   auto& r_norm = precomputations.r_norm;
+  auto& r_over_r² = precomputations.r_over_r²;
 
   auto& cos_β = precomputations.cos_β;
   auto& sin_β = precomputations.sin_β;
@@ -317,6 +317,8 @@ Acceleration(OblateBody<Frame> const& body,
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
+  r_over_r² = r_surface / r²;
+  Inverse<Length> const one_over_r_norm = 1 / r_norm;
 
   Square<Length> const x²_plus_y² = x * x + y * y;
   Length const r_equatorial = Sqrt(x²_plus_y²);
@@ -324,19 +326,20 @@ Acceleration(OblateBody<Frame> const& body,
   double cos_λ = 1;
   double sin_λ = 0;
   if (r_equatorial > Length{}) {
-    cos_λ = x / r_equatorial;
-    sin_λ = y / r_equatorial;
+    Inverse<Length> const one_over_r_equatorial = 1 / r_equatorial;
+    cos_λ = x * one_over_r_equatorial;
+    sin_λ = y * one_over_r_equatorial;
   }
 
-  sin_β = z / r_norm;
-  cos_β = r_equatorial / r_norm;
+  sin_β = z * one_over_r_norm;
+  cos_β = r_equatorial * one_over_r_norm;
 
   grad_𝔅_vector = UnitVector<SurfaceFrame>({-sin_β * cos_λ,
                                             -sin_β * sin_λ,
-                                            cos_β}) / r_norm;
+                                            cos_β}) * one_over_r_norm;
   grad_𝔏_vector = UnitVector<SurfaceFrame>({-sin_λ,
                                             cos_λ,
-                                            0}) / r_norm;
+                                            0}) * one_over_r_norm;
 
   ℜ1 = body.reference_radius() / r²;
 
@@ -357,7 +360,7 @@ Acceleration(OblateBody<Frame> const& body,
       DegreeNAllOrders<size,
                        degrees,
                        std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(r_surface, precomputations)...};
+          Acceleration(precomputations)...};
 
   return from_surface_frame((accelerations[degrees] + ...));
 }
