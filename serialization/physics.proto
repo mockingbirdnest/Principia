@@ -182,13 +182,15 @@ message OblateBody {
       repeated GeopotentialColumn column = 2;
     }
     repeated GeopotentialRow row = 1;
+    // This field makes it possible to easily limit the degree without altering
+    // the model.
+    optional int32 max_degree = 2;
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {
     // Unnormalized Degree2SphericalHarmonicCoefficient.
     Quantity pre_diophantos_j2 = 1;
-    double j2 = 2;                  // Unnormalized.
-    Geopotential geopotential = 3;  // Normalized.
+    Geopotential geopotential = 2;  // Normalized.
   }
 }
 

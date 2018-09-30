@@ -17,6 +17,7 @@
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
+    <ClCompile Include="geopotential.cpp" />
     <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="newhall.cpp" />

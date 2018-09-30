@@ -1,38 +1,65 @@
 ﻿
 #include "physics/body.hpp"
 
+#include "astronomy/epoch.hpp"
+#include "astronomy/frames.hpp"
+#include "astronomy/time_scales.hpp"
 #include "geometry/named_quantities.hpp"
+#include "geometry/r3_element.hpp"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/symmetric_linear_multistep_integrator.hpp"
+#include "numerics/legendre.hpp"
+#include "numerics/root_finders.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/massless_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "physics/rotating_body.hpp"
+#include "physics/solar_system.hpp"
 #include "quantities/si.hpp"
 #include "serialization/geometry.pb.h"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 
 namespace principia {
 namespace physics {
 namespace internal_body {
 
+using astronomy::ICRS;
+using astronomy::operator""_UTC;
+using astronomy::J2000;
+using geometry::AngleBetween;
 using geometry::AngularVelocity;
+using geometry::Bivector;
+using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Normalize;
+using geometry::OrientedAngleBetween;
+using geometry::Position;
 using geometry::RadiusLatitudeLongitude;
+using geometry::SphericalCoordinates;
 using geometry::Vector;
+using integrators::SymmetricLinearMultistepIntegrator;
+using integrators::methods::QuinlanTremaine1990Order12;
+using numerics::Bisect;
+using numerics::LegendreNormalizationFactor;
 using quantities::Angle;
 using quantities::AngularFrequency;
 using quantities::Degree2SphericalHarmonicCoefficient;
 using quantities::GravitationalParameter;
 using quantities::Length;
 using quantities::SIUnit;
+using quantities::si::Day;
 using quantities::si::Degree;
+using quantities::si::Hour;
 using quantities::si::Metre;
+using quantities::si::Milli;
+using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
 using testing_utilities::AlmostEquals;
+using testing_utilities::IsNear;
 using ::testing::IsNull;
 using ::testing::NotNull;
 
@@ -227,7 +254,9 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
       message.massive_body().GetExtension(
                   serialization::RotatingBody::extension).
                       GetExtension(serialization::OblateBody::extension);
-  EXPECT_EQ(6, oblate_body_extension.j2());
+  EXPECT_EQ(-6,
+            oblate_body_extension.geopotential().row(2).column(0).cos() *
+                LegendreNormalizationFactor(2, 0));
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =
@@ -317,6 +346,77 @@ TEST_F(BodyTest, AllFrames) {
                    serialization::Frame::THROUGH>();
   TestRotatingBody<serialization::Frame::TestTag, serialization::Frame::TO>();
 }
+
+#if !defined(_DEBUG)
+
+// Check that the rotation of the Earth gives the right solar noon.
+TEST_F(BodyTest, SolarNoon) {
+  struct SurfaceFrame;
+  SolarSystem<ICRS> solar_system_j2000(
+      SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+      SOLUTION_DIR / "astronomy" /
+          "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto const ephemeris = solar_system_j2000.MakeEphemeris(
+      /*fitting_tolerance=*/5 * Milli(Metre),
+      Ephemeris<ICRS>::FixedStepParameters(
+          SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
+                                             Position<ICRS>>(),
+          /*step=*/10 * Minute));
+  ephemeris->Prolong("2010-10-01T12:00:00"_UTC);
+
+  auto const earth = solar_system_j2000.rotating_body(*ephemeris, "Earth");
+  auto const sun = solar_system_j2000.rotating_body(*ephemeris, "Sun");
+
+  SphericalCoordinates<double> greenwich;
+  greenwich.radius = 1;
+  greenwich.latitude = 51.4826 * Degree;
+  greenwich.longitude = -0.0077 * Degree;
+  SphericalCoordinates<double> istanbul;
+  istanbul.radius = 1;
+  istanbul.latitude = 41.0082 * Degree;
+  istanbul.longitude = 28.9784 * Degree;
+
+  Vector<double, SurfaceFrame> location;
+
+  auto solar_noon = [earth, &ephemeris, &location, sun](Instant const& t) {
+    Bivector<double, SurfaceFrame> const z({0, 0, 1});
+
+    auto const earth_trajectory = ephemeris->trajectory(earth);
+    auto const sun_trajectory = ephemeris->trajectory(sun);
+    auto const from_surface_frame = earth->FromSurfaceFrame<SurfaceFrame>(t);
+    auto const earth_centre = earth_trajectory->EvaluatePosition(t);
+    auto const sun_centre = sun_trajectory->EvaluatePosition(t);
+    auto const earth_sun = sun_centre - earth_centre;
+    return OrientedAngleBetween(
+        earth_sun, from_surface_frame(location), from_surface_frame(z));
+  };
+
+  location = Vector<double, SurfaceFrame>(greenwich.ToCartesian());
+  auto solar_noon_greenwich = Bisect(solar_noon,
+                                     "2000-01-02T08:00:00"_UTC,
+                                     "2000-01-02T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_greenwich - "2000-01-02T12:04:00"_UTC,
+              IsNear(-15 * Milli(Second)));
+  solar_noon_greenwich = Bisect(solar_noon,
+                                "2010-09-30T08:00:00"_UTC,
+                                "2010-09-30T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_greenwich - "2010-09-30T11:51:00"_UTC,
+              IsNear(-58 * Second));
+
+  location = Vector<double, SurfaceFrame>(istanbul.ToCartesian());
+  auto solar_noon_istanbul = Bisect(solar_noon,
+                                    "2000-01-02T08:00:00"_UTC,
+                                    "2000-01-02T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_istanbul - "2000-01-02T10:08:00"_UTC,
+              IsNear(1.05 * Second));
+  solar_noon_istanbul = Bisect(solar_noon,
+                               "2010-09-30T08:00:00"_UTC,
+                               "2010-09-30T16:00:00"_UTC);
+  EXPECT_THAT(solar_noon_istanbul - "2010-09-30T09:55:00"_UTC,
+              IsNear(-53 * Second));
+}
+
+#endif
 
 }  // namespace internal_body
 }  // namespace physics

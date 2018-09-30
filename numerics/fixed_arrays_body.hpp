@@ -96,6 +96,10 @@ FixedVector<Scalar, size_>::operator std::vector<Scalar>() const {
 }
 
 template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix()
+    : data_{} {}
+
+template<typename Scalar, int rows, int columns>
 constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(
     std::array<Scalar, rows * columns> const& data)
     : data_(data) {}
@@ -120,6 +124,17 @@ FixedMatrix<Scalar, rows, columns>::operator=(
   CHECK_EQ(rows * columns, right.size());
   std::copy(right.begin(), right.end(), data_.begin());
   return *this;
+}
+
+template<typename Scalar, int rows, int columns>
+Scalar* FixedMatrix<Scalar, rows, columns>::operator[](int const index) {
+  return &data_[index * columns];
+}
+
+template<typename Scalar, int rows, int columns>
+constexpr Scalar const* FixedMatrix<Scalar, rows, columns>::operator[](
+    int const index) const {
+  return &data_[index * columns];
 }
 
 template<typename Scalar, int rows, int columns>

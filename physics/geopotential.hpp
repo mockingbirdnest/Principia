@@ -39,24 +39,32 @@ class Geopotential {
   GeneralSphericalHarmonicsAcceleration(
       Instant const& t,
       Displacement<Frame> const& r,
-      Square<Length> const& r²,
-      Exponentiation<Length, -3> const& one_over_r³) const;
+      Square<Length> const& r²) const;
 
  private:
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
-  static const Vector<double, SurfaceFrame> x_;
-  static const Vector<double, SurfaceFrame> y_;
 
-  using UnitVector = Vector<double, Frame>;
+  // This is the type that we return, so better have a name for it.
+  using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
+
+  // List of reduced accelerations computed for all degrees or orders.
+  template<int size>
+  using Accelerations =
+      std::array<Vector<ReducedAcceleration, SurfaceFrame>, size>;
+
+  template<typename F>
+  using UnitVector = Vector<double, F>;
+
+  // Holds precomputed data for one evaluation of the acceleration.
+  template<int size>
+  struct Precomputations;
 
   // Helper templates for iterating over the degrees/orders of the geopotential.
-  template<int degree, int order>
+  template<int size, int degree, int order>
   struct DegreeNOrderM;
-
-  template<int degree, typename>
+  template<int size, int degree, typename>
   struct DegreeNAllOrders;
-
   template<typename>
   struct AllDegrees;
 
@@ -74,23 +82,8 @@ class Geopotential {
   // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
   // be negative.
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2ZonalAcceleration(UnitVector const& axis,
+  Degree2ZonalAcceleration(UnitVector<Frame> const& axis,
                            Displacement<Frame> const& r,
-                           Exponentiation<Length, -2> const& one_over_r²,
-                           Exponentiation<Length, -3> const& one_over_r³) const;
-
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2SectoralAcceleration(
-      UnitVector const& reference,
-      UnitVector const& bireference,
-      Displacement<Frame> const& r,
-      Exponentiation<Length, -2> const& one_over_r²,
-      Exponentiation<Length, -3> const& one_over_r³) const;
-
-  Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree3ZonalAcceleration(UnitVector const& axis,
-                           Displacement<Frame> const& r,
-                           Square<Length> const& r²,
                            Exponentiation<Length, -2> const& one_over_r²,
                            Exponentiation<Length, -3> const& one_over_r³) const;
 

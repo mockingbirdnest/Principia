@@ -51,6 +51,8 @@ class FixedVector final {
 template<typename Scalar, int rows, int columns>
 class FixedMatrix final {
  public:
+  constexpr FixedMatrix();
+
   // The |data| must be in row-major format.
   constexpr explicit FixedMatrix(
       std::array<Scalar, rows * columns> const& data);
@@ -78,6 +80,12 @@ class FixedMatrix final {
 
   template<int r>
   typename FixedMatrix::template Row<r> row() const;
+
+  // For  0 < i < rows and 0 < j < columns, the entry a_ij is accessed as
+  // |a[i][j]|.  if i and j do not satisfy these conditions, the expression
+  // |a[i][j]| is erroneous.
+  Scalar* operator[](int index);
+  constexpr Scalar const* operator[](int index) const;
 
  private:
   std::array<Scalar, rows * columns> data_;
