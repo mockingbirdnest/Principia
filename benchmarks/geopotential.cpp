@@ -8,10 +8,12 @@
 
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "astronomy/frames.hpp"
+#include "base/not_null.hpp"
 #include "benchmark/benchmark.h"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "geometry/r3_element.hpp"
+#include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/named_quantities.hpp"
@@ -24,10 +26,12 @@ namespace physics {
 
 using astronomy::ICRS;
 using astronomy::ITRS;
+using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::R3Element;
 using geometry::Vector;
+using numerics::FixedMatrix;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
 using quantities::Acceleration;
@@ -46,13 +50,39 @@ using quantities::si::Second;
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-GeneralSphericalHarmonicsAcceleration(Geopotential<Frame> const& geopotential,
-                                      Instant const& t,
-                                      Displacement<Frame> const& r) {
+GeneralSphericalHarmonicsAccelerationCpp(
+    Geopotential<Frame> const& geopotential,
+    Instant const& t,
+    Displacement<Frame> const& r) {
   auto const r² = r.Norm²();
   auto const one_over_r³ = 1.0 / (r² * r.Norm());
   return geopotential.GeneralSphericalHarmonicsAcceleration(
               t, r, r², one_over_r³);
+}
+
+// For fairness, the Fortran implementation is wrapped to have the same API as
+// the C++ one.
+template<typename Frame, int degree, int order>
+Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
+GeneralSphericalHarmonicsAccelerationF90(
+    not_null<OblateBody<Frame> const*> const body,
+    double const mu,
+    double const rbar,
+    FixedMatrix<double, degree + 1, order + 1> const& cnm,
+    FixedMatrix<double, degree + 1, order + 1> const& snm,
+    Instant const& t,
+    Displacement<Frame> const& r) {
+  struct SurfaceFrame;
+  auto const to_surface_frame = body->ToSurfaceFrame<SurfaceFrame>(t);
+
+  Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
+  auto const acceleration_surface =
+      Vector<Quotient<Acceleration, GravitationalParameter>, SurfaceFrame>(
+          SIUnit<Quotient<Acceleration, GravitationalParameter>>() *
+          astronomy::fortran_astrodynamics_toolkit::
+              ComputeGravityAccelerationLear<degree, order>(
+                  r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
+  return to_surface_frame.Inverse()(acceleration_surface);
 }
 
 OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS> const& solar_system,
@@ -104,7 +134,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
   while (state.KeepRunning()) {
     Vector<Exponentiation<Length, -2>, ICRS> acceleration;
     for (auto const& displacement : displacements) {
-      acceleration = GeneralSphericalHarmonicsAcceleration(
+      acceleration = GeneralSphericalHarmonicsAccelerationCpp(
                          geopotential, Instant(), displacement);
     }
     benchmark::DoNotOptimize(acceleration);
@@ -122,11 +152,11 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
       }                                                                    \
     }                                                                      \
     while (state.KeepRunning()) {                                          \
-      R3Element<double> acceleration;                                      \
+      Vector<Exponentiation<Length, -2>, ICRS> acceleration;               \
       for (auto const& displacement : displacements) {                     \
-        acceleration = astronomy::fortran_astrodynamics_toolkit::          \
-            ComputeGravityAccelerationLear<(d), (d)>(                      \
-                displacement.coordinates() / Metre, mu, rbar, cnm, snm);   \
+        acceleration =                                                     \
+            GeneralSphericalHarmonicsAccelerationF90<ICRS, (d), (d)>(      \
+                &earth, mu, rbar, cnm, snm, Instant(), displacement);      \
       }                                                                    \
       benchmark::DoNotOptimize(acceleration);                              \
     }                                                                      \
