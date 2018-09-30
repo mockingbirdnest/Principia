@@ -4,6 +4,8 @@
 
 #include <cmath>
 
+#include "geometry/grassmann.hpp"
+#include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre.hpp"
 #include "numerics/polynomial_evaluators.hpp"
@@ -21,6 +23,7 @@ using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
 using geometry::InnerProduct;
+using geometry::R3Element;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Inverse;
@@ -36,6 +39,9 @@ template<typename Frame>
 template<int size>
 struct Geopotential<Frame>::Precomputations {
   // These quantities are independent from n and m.
+  typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
+  typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
+
   Square<Length> r²;
   Length r_norm;
 
@@ -57,8 +63,6 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on both n and m.  Note that the zeros for m > n are
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β;
-  typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
-  typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
 };
 
 template<typename Frame>
@@ -105,9 +109,6 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     static_assert(0 <= m && m <= n);
     static double const normalization_factor =
         LegendreNormalizationFactor(n, m);
-
-    auto const& r² = precomputations.r²;
-    auto const& r_norm = precomputations.r_norm;
 
     auto const& cos_β = precomputations.cos_β;
     auto const& sin_β = precomputations.sin_β;
@@ -283,6 +284,9 @@ Acceleration(OblateBody<Frame> const& body,
 
   Precomputations<size> precomputations;
 
+  auto& cos = precomputations.cos;
+  auto& sin = precomputations.sin;
+
   auto& r_norm = precomputations.r_norm;
 
   auto& cos_β = precomputations.cos_β;
@@ -302,12 +306,14 @@ Acceleration(OblateBody<Frame> const& body,
   auto& cos_β_to_the_1 = precomputations.cos_β_to_the_m[1];
 
   auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
-  auto& cos = precomputations.cos;
-  auto& sin = precomputations.sin;
 
-  Length const x = r_surface.coordinates().x;
-  Length const y = r_surface.coordinates().y;
-  Length const z = r_surface.coordinates().z;
+  cos = &body.cos();
+  sin = &body.sin();
+
+  R3Element<Length> r_surface_coordinates = r_surface.coordinates();
+  Length const x = r_surface_coordinates.x;
+  Length const y = r_surface_coordinates.y;
+  Length const z = r_surface_coordinates.z;
 
   precomputations.r² = r²;
   r_norm = Sqrt(r²);
@@ -345,8 +351,6 @@ Acceleration(OblateBody<Frame> const& body,
   DmPn_of_sin_β[0][0] = 1;
   DmPn_of_sin_β[1][0] = sin_β;
   DmPn_of_sin_β[1][1] = 1;
-  cos = &body.cos();
-  sin = &body.sin();
 
   // Force the evaluation by increasing degree using an initializer list.
   Accelerations<size> const accelerations = {
