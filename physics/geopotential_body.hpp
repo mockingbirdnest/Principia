@@ -74,8 +74,7 @@ template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
   FORCE_INLINE(static)
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Acceleration(Displacement<Frame> const& r,
-               Precomputations<size>& precomputations);
+  Acceleration(Precomputations<size>& precomputations);
 };
 
 template<typename Frame>
@@ -102,7 +101,6 @@ template<typename Frame>
 template<int size, int degree, int order>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
-    Displacement<Frame> const& r,
     Precomputations<size>& precomputations) {
   if constexpr (degree == 2 && order == 1) {
     // Let's not forget the Legendre derivative that we would compute if we did
@@ -281,8 +279,7 @@ Acceleration(Displacement<Frame> const& r,
 
     // Force the evaluation by increasing order using an initializer list.
     Accelerations<size> const accelerations = {
-        DegreeNOrderM<size, degree, orders>::
-            Acceleration(r, precomputations)...};
+        DegreeNOrderM<size, degree, orders>::Acceleration(precomputations)...};
 
     return (accelerations[orders] + ...);
   }
