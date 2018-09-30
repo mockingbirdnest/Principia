@@ -73,7 +73,8 @@ GeneralSphericalHarmonicsAccelerationF90(
     Instant const& t,
     Displacement<Frame> const& r) {
   struct SurfaceFrame;
-  auto const to_surface_frame = body->ToSurfaceFrame<SurfaceFrame>(t);
+  auto const from_surface_frame = body->FromSurfaceFrame<SurfaceFrame>(t);
+  auto const to_surface_frame = from_surface_frame.Inverse();
 
   Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
   auto const acceleration_surface =
@@ -82,7 +83,7 @@ GeneralSphericalHarmonicsAccelerationF90(
           astronomy::fortran_astrodynamics_toolkit::
               ComputeGravityAccelerationLear<degree, order>(
                   r_surface.coordinates() / Metre, mu, rbar, cnm, snm));
-  return to_surface_frame.Inverse()(acceleration_surface);
+  return from_surface_frame(acceleration_surface);
 }
 
 OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS> const& solar_system,

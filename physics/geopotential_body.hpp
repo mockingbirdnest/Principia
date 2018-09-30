@@ -278,8 +278,8 @@ Acceleration(OblateBody<Frame> const& body,
               Square<Length> const& r²,
               Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
-  auto const to_surface_frame = body.ToSurfaceFrame<SurfaceFrame>(t);
-  auto const from_surface_frame = to_surface_frame.Inverse();
+  auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+  auto const to_surface_frame = from_surface_frame.Inverse();
   Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
 
   Precomputations<size> precomputations;
