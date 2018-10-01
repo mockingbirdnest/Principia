@@ -84,6 +84,8 @@ class GeodesyTest : public ::testing::Test {
 
 #if !defined(_DEBUG)
 
+#undef EXPECT_THAT
+#define EXPECT_THAT(a, b) {LOG(ERROR)<<#a;LOG(ERROR)<<(a);}
 TEST_F(GeodesyTest, LAGEOS2) {
   MasslessBody lageos2;
   // Initial state and expected state from the ILRS official primary analysis

@@ -1083,8 +1083,7 @@ void Ephemeris<Frame>::
                 geopotentials[b1].GeneralSphericalHarmonicsAcceleration(
                     t,
                     -Δq,
-                    Δq²,
-                    one_over_Δq³);
+                    Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
@@ -1103,8 +1102,7 @@ void Ephemeris<Frame>::
                 geopotentials[b2].GeneralSphericalHarmonicsAcceleration(
                     t,
                     Δq,
-                    Δq²,
-                    one_over_Δq³);
+                    Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
@@ -1157,8 +1155,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
               geopotentials_[b1].GeneralSphericalHarmonicsAcceleration(
                   t,
                   -Δq,
-                  Δq²,
-                  one_over_Δq³);
+                  Δq²);
 #else
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
