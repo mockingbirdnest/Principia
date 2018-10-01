@@ -44,17 +44,18 @@ class Geopotential {
  private:
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
+  static const Vector<double, SurfaceFrame> x_;
+  static const Vector<double, SurfaceFrame> y_;
 
   // This is the type that we return, so better have a name for it.
   using ReducedAcceleration = Quotient<Acceleration, GravitationalParameter>;
 
   // List of reduced accelerations computed for all degrees or orders.
   template<int size>
-  using Accelerations =
-      std::array<Vector<ReducedAcceleration, SurfaceFrame>, size>;
+  using ReducedAccelerations =
+      std::array<Vector<ReducedAcceleration, Frame>, size>;
 
-  template<typename F>
-  using UnitVector = Vector<double, F>;
+  using UnitVector = Vector<double, Frame>;
 
   // Holds precomputed data for one evaluation of the acceleration.
   template<int size>
@@ -82,7 +83,7 @@ class Geopotential {
   // https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to
   // be negative.
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-  Degree2ZonalAcceleration(UnitVector<Frame> const& axis,
+  Degree2ZonalAcceleration(UnitVector const& axis,
                            Displacement<Frame> const& r,
                            Exponentiation<Length, -2> const& one_over_r²,
                            Exponentiation<Length, -3> const& one_over_r³) const;

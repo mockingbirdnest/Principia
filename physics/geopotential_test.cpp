@@ -230,7 +230,7 @@ TEST_F(GeopotentialTest, J3) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                AlmostEquals(0.75, 2));
+                AlmostEquals(0.75, 1));
     EXPECT_THAT(acceleration.coordinates().z,
                 Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
