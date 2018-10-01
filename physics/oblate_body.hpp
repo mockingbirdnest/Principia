@@ -60,6 +60,7 @@ class OblateBody : public RotatingBody<Frame> {
     GeopotentialCoefficients cos_;
     GeopotentialCoefficients sin_;
     int degree_;
+    bool is_zonal_;
 
     template<typename F>
     friend class OblateBody;
@@ -79,6 +80,9 @@ class OblateBody : public RotatingBody<Frame> {
   GeopotentialCoefficients const& cos() const;
   GeopotentialCoefficients const& sin() const;
   int geopotential_degree() const;
+
+  // Returns true iff the geopotential only contains zonal terms.
+  bool is_zonal() const;
 
   Length const& reference_radius() const;
 

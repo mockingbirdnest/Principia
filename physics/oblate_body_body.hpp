@@ -34,7 +34,8 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
       reference_radius_(reference_radius),
       cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
-      degree_(2) {
+      degree_(2),
+      is_zonal_(true) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
   cos_[2][0] = -j2 / LegendreNormalizationFactor(2, 0);
 }
@@ -44,7 +45,8 @@ OblateBody<Frame>::Parameters::Parameters(Length const& reference_radius)
     : reference_radius_(reference_radius),
       cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
-      degree_(0) {}
+      degree_(0),
+      is_zonal_(false) {}
 
 template<typename Frame>
 typename OblateBody<Frame>::Parameters
@@ -81,6 +83,17 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
   parameters.j2_over_μ_ = -parameters.cos_[2][0] *
                           LegendreNormalizationFactor(2, 0) * reference_radius *
                           reference_radius;
+
+  // Zonalness.
+  parameters.is_zonal_ = true;
+  for (int n = 0; n <= parameters.degree_; ++n) {
+    for (int m = 1; m <= parameters.degree_; ++m) {
+      if (parameters.cos_[n][m] != 0 || parameters.sin_[n][m] != 0) {
+        parameters.is_zonal_ = false;
+        break;
+      }
+    }
+  }
 
   return parameters;
 }
@@ -134,6 +147,11 @@ OblateBody<Frame>::sin() const {
 template<typename Frame>
 int OblateBody<Frame>::geopotential_degree() const {
   return parameters_.degree_;
+}
+
+template<typename Frame>
+bool OblateBody<Frame>::is_zonal() const {
+  return parameters_.is_zonal_;
 }
 
 template<typename Frame>
