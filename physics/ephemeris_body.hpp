@@ -1080,11 +1080,10 @@ void Ephemeris<Frame>::
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect1 =
 #if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-                geopotentials[b1].SphericalHarmonicsAcceleration(
+                geopotentials[b1].GeneralSphericalHarmonicsAcceleration(
                     t,
                     -Δq,
-                    Δq²,
-                    one_over_Δq³);
+                    Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
@@ -1100,11 +1099,10 @@ void Ephemeris<Frame>::
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect2 =
 #if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-                geopotentials[b2].SphericalHarmonicsAcceleration(
+                geopotentials[b2].GeneralSphericalHarmonicsAcceleration(
                     t,
                     Δq,
-                    Δq²,
-                    one_over_Δq³);
+                    Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
@@ -1154,11 +1152,10 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
                       GravitationalParameter>, Frame> const
           degree_2_zonal_effect1 =
 #if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-              geopotentials_[b1].SphericalHarmonicsAcceleration(
+              geopotentials_[b1].GeneralSphericalHarmonicsAcceleration(
                   t,
                   -Δq,
-                  Δq²,
-                  one_over_Δq³);
+                  Δq²);
 #else
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
