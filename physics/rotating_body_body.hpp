@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rotation.hpp"
 #include "physics/oblate_body.hpp"
@@ -19,8 +20,10 @@ namespace internal_rotating_body {
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::Exp;
+using geometry::NormalizeOrZero;
 using geometry::RadiusLatitudeLongitude;
 using geometry::SphericalCoordinates;
+using geometry::Wedge;
 using quantities::SIUnit;
 using quantities::si::Radian;
 
@@ -53,7 +56,18 @@ RotatingBody<Frame>::RotatingBody(
                       parameters.declination_of_pole_,
                       parameters.right_ascension_of_pole_).ToCartesian()),
       angular_velocity_(polar_axis_.coordinates() *
-                        parameters.angular_frequency_) {}
+                        parameters.angular_frequency_) {
+  biequatorial_ = NormalizeOrZero(Vector<double, Frame>(
+      {-polar_axis_.coordinates().y,
+       polar_axis_.coordinates().x,
+       0}));
+  if (biequatorial_ == Vector<double, Frame>{}) {
+    biequatorial_ = Vector<double, Frame>({1, 0, 0});
+    equatorial_ = Bivector<double, Frame>({0, 1, 0});
+  } else {
+    equatorial_ = Wedge(polar_axis_, biequatorial_);
+  }
+}
 
 template<typename Frame>
 Length RotatingBody<Frame>::mean_radius() const {
@@ -63,6 +77,16 @@ Length RotatingBody<Frame>::mean_radius() const {
 template<typename Frame>
 Vector<double, Frame> const& RotatingBody<Frame>::polar_axis() const {
   return polar_axis_;
+}
+
+template<typename Frame>
+Vector<double, Frame> const& RotatingBody<Frame>::biequatorial() const {
+  return biequatorial_;
+}
+
+template<typename Frame>
+Bivector<double, Frame> const& RotatingBody<Frame>::equatorial() const {
+  return equatorial_;
 }
 
 template<typename Frame>

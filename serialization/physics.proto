@@ -185,6 +185,9 @@ message OblateBody {
     // This field makes it possible to easily limit the degree without altering
     // the model.
     optional int32 max_degree = 2;
+    // This field makes it possible to easily limit the model to its zonal
+    // components.
+    optional bool zonal = 3;
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {
