@@ -20,7 +20,6 @@ namespace internal_rotating_body {
 
 using base::not_null;
 using geometry::AngularVelocity;
-using geometry::Bivector;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::Instant;
@@ -76,7 +75,7 @@ class RotatingBody : public MassiveBody {
   // also in the equatorial plane of Frame.  The basis |biequatorial|,
   // |equatorial|, |polar_axis| is a direct one.
   Vector<double, Frame> const& biequatorial() const;
-  Bivector<double, Frame> const& equatorial() const;
+  Vector<double, Frame> const& equatorial() const;
 
   // Returns the right ascension passed at construction.
   Angle const& right_ascension_of_pole() const;
@@ -136,7 +135,7 @@ class RotatingBody : public MassiveBody {
   Parameters const parameters_;
   Vector<double, Frame> const polar_axis_;
   Vector<double, Frame> biequatorial_;
-  Bivector<double, Frame> equatorial_;
+  Vector<double, Frame> equatorial_;
   AngularVelocity<Frame> const angular_velocity_;
 };
 

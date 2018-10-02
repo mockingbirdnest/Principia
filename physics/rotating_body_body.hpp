@@ -17,13 +17,13 @@ namespace principia {
 namespace physics {
 namespace internal_rotating_body {
 
+using geometry::Cross;
 using geometry::DefinesFrame;
 using geometry::EulerAngles;
 using geometry::Exp;
 using geometry::NormalizeOrZero;
 using geometry::RadiusLatitudeLongitude;
 using geometry::SphericalCoordinates;
-using geometry::Wedge;
 using quantities::SIUnit;
 using quantities::si::Radian;
 
@@ -63,9 +63,13 @@ RotatingBody<Frame>::RotatingBody(
        0}));
   if (biequatorial_ == Vector<double, Frame>{}) {
     biequatorial_ = Vector<double, Frame>({1, 0, 0});
-    equatorial_ = Bivector<double, Frame>({0, 1, 0});
+    equatorial_ = Vector<double, Frame>({0, 1, 0});
   } else {
-    equatorial_ = Wedge(polar_axis_, biequatorial_);
+    // TODO(phl): It is somewhat unpleasant that we have to make this a vector
+    // when it would want to be a bivector.  The inner products in Geopotential
+    // would then yield trivectors and we are not sure what that means.
+    equatorial_ = Vector<double, Frame>(Cross(polar_axis_.coordinates(),
+                                              biequatorial_.coordinates()));
   }
 }
 
@@ -85,7 +89,7 @@ Vector<double, Frame> const& RotatingBody<Frame>::biequatorial() const {
 }
 
 template<typename Frame>
-Bivector<double, Frame> const& RotatingBody<Frame>::equatorial() const {
+Vector<double, Frame> const& RotatingBody<Frame>::equatorial() const {
   return equatorial_;
 }
 

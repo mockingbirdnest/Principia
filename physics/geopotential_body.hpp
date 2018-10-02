@@ -22,6 +22,7 @@ using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
+using geometry::Bivector;
 using geometry::InnerProduct;
 using geometry::R3Element;
 using quantities::ArcTan;
@@ -274,7 +275,6 @@ Acceleration(OblateBody<Frame> const& body,
              Square<Length> const& r²) {
   constexpr int size = sizeof...(degrees);
   const bool is_zonal = body.is_zonal();
-  auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
 
   Precomputations<size> precomputations;
 
@@ -299,9 +299,19 @@ Acceleration(OblateBody<Frame> const& body,
 
   auto& DmPn_of_sin_β = precomputations.DmPn_of_sin_β;
 
-  UnitVector const x̂ = from_surface_frame(x_);
-  UnitVector const ŷ = from_surface_frame(y_);
+  // In the zonal case the rotation of the body is of no importance, so any pair
+  // of equatorial vectors will do.
+  UnitVector x̂;
+  UnitVector ŷ;
   UnitVector const ẑ = body.polar_axis();
+  if (is_zonal) {
+    x̂ = body.biequatorial();
+    ŷ = body.equatorial();
+  } else {
+    auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+    x̂ = from_surface_frame(x_);
+    ŷ = from_surface_frame(y_);
+  }
 
   Length const x = InnerProduct(r, x̂);
   Length const y = InnerProduct(r, ŷ);
@@ -314,6 +324,8 @@ Acceleration(OblateBody<Frame> const& body,
   Square<Length> const x²_plus_y² = x * x + y * y;
   Length const r_equatorial = Sqrt(x²_plus_y²);
 
+  // TODO(phl): This is probably incorrect for celestials that don't have
+  // longitudes counted to the East.
   double cos_λ = 1;
   double sin_λ = 0;
   if (r_equatorial > Length{}) {
@@ -346,7 +358,8 @@ Acceleration(OblateBody<Frame> const& body,
   DmPn_of_sin_β[1][0] = sin_β;
   DmPn_of_sin_β[1][1] = 1;
 
-  // Force the evaluation by increasing degree using an initializer list.
+  // Force the evaluation by increasing degree using an initializer list.  In
+  // the zonal case, no point in going beyond order 0.
   ReducedAccelerations<size> accelerations;
   if (is_zonal) {
     accelerations = {
