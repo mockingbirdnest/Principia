@@ -444,10 +444,10 @@ constexpr Angle EarthRotationAngle (Instant const tt) {
       LookupInEOPC04(tt), tt, ut1_julian_day_number_minus_2451545);
   double const Tu =
       ut1_julian_day_number_minus_2451545 + ut1_julian_day_fraction;
-  // IERS Conventions (2010), equation (5.15), with 1 subtracted from the
-  // constant term to keep things closer to 0.
+  // IERS Conventions (2010), equation (5.15).
+  // TODO(egg): We should probably have a modulo 1 on the last term.
   return 2 * π * Radian *
-         (ut1_julian_day_fraction + (0.7790572732640 - 1) +
+         (ut1_julian_day_fraction + 0.7790572732640 +
           0.00273781191135448 * Tu);
 }
 

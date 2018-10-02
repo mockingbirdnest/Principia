@@ -422,24 +422,24 @@ TEST_F(TimeScalesDeathTest, JulianDateUTC) {
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {
   // Round-trip from UT1, comparing with the direct computation from UT1.
-  static_assert(EarthRotationAngle("JD2451545.0"_UT1) ==
-                    2 * π * Radian * (0.7790572732640 - 1),
-                "Angles differ");
+  static_assert(
+      EarthRotationAngle("JD2451545.0"_UT1) == 2 * π * Radian * 0.7790572732640,
+      "Angles differ");
   EXPECT_THAT(EarthRotationAngle("JD2455200.0"_UT1),
               AlmostEquals(2 * π * Radian *
                                (0.7790572732640 +
-                                0.00273781191135448 * (2455200 - 2451545) - 1),
-                           284));
+                                0.00273781191135448 * (2455200 - 2451545)),
+                           142));
   EXPECT_THAT(
       EarthRotationAngle("JD2455200.623456701388"_UT1),
       AlmostEquals(2 * π * Radian *
                        (0.623456701388 + 0.7790572732640 +
-                        0.00273781191135448 * (5200.623456701388 - 1545) - 2),
-                   269));
+                        0.00273781191135448 * (5200.623456701388 - 1545) - 1),
+                   134));
 
   // Compare with the WGCCRE 2009 elements.
   EXPECT_THAT(
-      (EarthRotationAngle(J2000) + 3 * π / 2 * Radian) - 190.147 * Degree,
+      (EarthRotationAngle(J2000) - π / 2 * Radian) - 190.147 * Degree,
       IsNear(0.0469 * Degree));
   EXPECT_THAT((EarthRotationAngle("2000-01-01T23:00:00"_TT) -
                EarthRotationAngle("2000-01-01T01:00:00"_TT)) /
