@@ -131,6 +131,20 @@ TEST_F(GeopotentialTest, J2) {
     EXPECT_THAT(acceleration.coordinates().x, Gt(0 * Pow<-2>(Metre)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
   }
+
+  // Consistency between the general implementation in the zonal case and the
+  // J2-specific one.
+  {
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
+    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 1));
+  }
 }
 
 TEST_F(GeopotentialTest, C22S22) {

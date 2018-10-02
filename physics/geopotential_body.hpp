@@ -273,6 +273,7 @@ Acceleration(OblateBody<Frame> const& body,
              Displacement<Frame> const& r,
              Square<Length> const& r²) {
   constexpr int size = sizeof...(degrees);
+  const bool is_zonal = body.is_zonal();
   auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
 
   Precomputations<size> precomputations;
@@ -346,11 +347,18 @@ Acceleration(OblateBody<Frame> const& body,
   DmPn_of_sin_β[1][1] = 1;
 
   // Force the evaluation by increasing degree using an initializer list.
-  ReducedAccelerations<size> const accelerations = {
-      DegreeNAllOrders<size,
-                       degrees,
-                       std::make_integer_sequence<int, degrees + 1>>::
-          Acceleration(r_over_r², r_norm, precomputations)...};
+  ReducedAccelerations<size> accelerations;
+  if (is_zonal) {
+    accelerations = {
+        DegreeNAllOrders<size, degrees, std::make_integer_sequence<int, 1>>::
+            Acceleration(r_over_r², r_norm, precomputations)...};
+  } else {
+    accelerations = {
+        DegreeNAllOrders<size,
+                         degrees,
+                         std::make_integer_sequence<int, degrees + 1>>::
+            Acceleration(r_over_r², r_norm, precomputations)...};
+  }
 
   return (accelerations[degrees] + ...);
 }
