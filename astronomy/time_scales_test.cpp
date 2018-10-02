@@ -3,6 +3,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/astronomy.hpp"
 #include "testing_utilities/almost_equals.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
@@ -11,7 +12,10 @@ namespace principia {
 namespace astronomy {
 namespace internal_time_scales {
 
+using quantities::astronomy::JulianYear;
 using quantities::si::Day;
+using quantities::si::Degree;
+using quantities::si::Hour;
 using quantities::si::Micro;
 using quantities::si::Milli;
 using quantities::si::Minute;
@@ -417,20 +421,36 @@ TEST_F(TimeScalesDeathTest, JulianDateUTC) {
 }
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {
+  // Round-trip from UT1, comparing with the direct computation from UT1.
   static_assert(EarthRotationAngle("JD2451545.0"_UT1) ==
                     2 * π * Radian * (0.7790572732640 - 1),
                 "Angles differ");
-  EXPECT_THAT((EarthRotationAngle("JD2455200.0"_UT1)),
+  EXPECT_THAT(EarthRotationAngle("JD2455200.0"_UT1),
               AlmostEquals(2 * π * Radian *
                                (0.7790572732640 +
                                 0.00273781191135448 * (2455200 - 2451545) - 1),
                            284));
   EXPECT_THAT(
-      (EarthRotationAngle("JD2455200.623456701388"_UT1)),
+      EarthRotationAngle("JD2455200.623456701388"_UT1),
       AlmostEquals(2 * π * Radian *
                        (0.623456701388 + 0.7790572732640 +
                         0.00273781191135448 * (5200.623456701388 - 1545) - 2),
                    269));
+
+  // Compare with the WGCCRE 2009 elements.
+  EXPECT_THAT(
+      (EarthRotationAngle(J2000) + 3 * π / 2 * Radian) - 190.147 * Degree,
+      IsNear(0.0469 * Degree));
+  EXPECT_THAT((EarthRotationAngle("2000-01-01T23:00:00"_TT) -
+               EarthRotationAngle("2000-01-01T01:00:00"_TT)) /
+                      (22 * Hour) -
+                  360.9856235 * (Degree / Day),
+              IsNear(-0.0000149 * Degree / Day));
+  EXPECT_THAT((EarthRotationAngle("2010-01-01T23:00:00"_TT) -
+               EarthRotationAngle("2010-01-01T01:00:00"_TT)) /
+                      (22 * Hour) -
+                  360.9856235 * (Degree / Day),
+              IsNear(-0.0000137 * Degree / Day));
 }
 
 }  // namespace internal_time_scales
