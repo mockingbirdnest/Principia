@@ -435,7 +435,7 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
   }
 }
 
-constexpr Angle EarthRotationAngle (Instant const tt) {
+constexpr Angle EarthRotationAngle(Instant const tt) {
   CONSTEXPR_CHECK(tt >= eop_c04.front().tt())
       << "EarthRotationAngle is not implemented before 1962.";
 

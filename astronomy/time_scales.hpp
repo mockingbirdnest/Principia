@@ -21,7 +21,7 @@ using quantities::Angle;
 // FWIW it seems that clang supports this proposal with
 // -Wno-gnu-string-literal-operator-template.
 
-constexpr Angle EarthRotationAngle (Instant const tt);
+constexpr Angle EarthRotationAngle(Instant const tt);
 
 constexpr Instant operator""_TAI(char const* str, std::size_t size);
 constexpr Instant operator""_TT(char const* str, std::size_t size);
