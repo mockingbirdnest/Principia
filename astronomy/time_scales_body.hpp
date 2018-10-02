@@ -25,6 +25,7 @@ using astronomy::date_time::operator""_Date;
 using astronomy::date_time::operator""_DateTime;
 using astronomy::date_time::operator""_Julian;
 using quantities::si::Day;
+using quantities::si::Radian;
 using quantities::si::Second;
 
 // Returns the duration between 2000-01-01T12:00:00 and |date_time| (of the same
@@ -259,6 +260,8 @@ struct EOPC04Entry final {
   constexpr quantities::Time ut1() const;
   constexpr quantities::Time ut1_minus_tai() const;
 
+  constexpr Instant tt() const;
+
   int const utc_date;
   quantities::Time const ut1_minus_utc;
 };
@@ -281,6 +284,13 @@ constexpr quantities::Time EOPC04Entry::ut1_minus_tai() const {
   return utc().date().year() >= 1972
              ? ut1_minus_utc + ModernUTCMinusTAI(utc().date())
              : ut1_minus_utc - TAIMinusStretchyUTC(utc());
+}
+
+constexpr Instant EOPC04Entry::tt() const {
+  return FromTAI(
+      utc().date().year() >= 1972
+          ? TimeSince20000101T120000Z(utc()) - ModernUTCMinusTAI(utc().date())
+          : TimeSince20000101T120000Z(utc()) + TAIMinusStretchyUTC(utc()));
 }
 
 // NOTE(egg): these have to be defined here, because they depend on internal
@@ -323,6 +333,20 @@ constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
   }
 }
 
+constexpr EOPC04Entry const* LookupTT(Instant const& tt,
+                                      EOPC04Entry const* begin,
+                                      std::ptrdiff_t const size) {
+  CONSTEXPR_CHECK(size > 0);
+  if (size == 1) {
+    CONSTEXPR_CHECK(begin->tt() <= tt);
+    return begin;
+  } else if ((begin + size / 2)->tt() <= tt) {
+    return LookupTT(tt, begin + size / 2, size - size / 2);
+  } else {
+    return LookupTT(tt, begin, size / 2);
+  }
+}
+
 constexpr ExperimentalEOPC02Entry const* LookupInExperimentalEOPC02(
     quantities::Time const& ut1) {
   return LookupUT1(ut1, &experimental_eop_c02[0], experimental_eop_c02.size());
@@ -333,7 +357,12 @@ constexpr EOPC04Entry const* LookupInEOPC04(
   return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
 }
 
-// Linear interpolation on the UT1 range [low->ut1(), (low + 1)->ut1()].
+constexpr EOPC04Entry const* LookupInEOPC04(
+    Instant const& tt) {
+  return LookupTT(tt, &eop_c04[0], eop_c04.size());
+}
+
+// Linear interpolation of TT on the UT1 range [low->ut1(), (low + 1)->ut1()].
 constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                                      quantities::Time const& ut1) {
   // TODO(egg): figure out whether using the divided difference of the
@@ -344,6 +373,28 @@ constexpr Instant InterpolatedEOPC04(EOPC04Entry const* low,
                   (ut1 - low->ut1()) *
                       ((low + 1)->ut1_minus_tai() - low->ut1_minus_tai()) /
                       ((low + 1)->ut1() - low->ut1())));
+}
+
+// UT1 Julian Day fraction in [-1/2 - ε, 1/2 + ε] where ε bounds |UT1-UTC|,
+// obtained by linear interpolation of EOP C04 on the TT range
+// [low->tt(), (low + 1)->tt()].
+// |jd_minus_2451545| is set to the integer such that the Julian UT1 date is
+// jd_minus_2451545 + 2451545 + result.
+constexpr double InterpolatedEOPC04JulianDayFraction(EOPC04Entry const* low,
+                                                     Instant const& tt,
+                                                     int& jd_minus_2451545) {
+  double const λ = (tt - low->tt()) / ((low + 1)->tt() - low->tt());
+  // The UTC MJD number for the day of the interpolation interval is
+  //   |low->utc().date().mjd()|.
+  // Up to the second-sized UT1-UTC difference, this is also the UT1 MJD number.
+  // MJD = JD - 2400000.5, so that, in the middle of the interval, where the
+  // result is 0,
+  //   JD - 2451545.0 = (MJD number + 0.5) - 51545 + 0.5
+  //                  = (MJD number) - 51545 + 1.
+  jd_minus_2451545 = low->utc().date().mjd() - 51545 + 1;
+  return (λ - 0.5) + (low->ut1_minus_utc +
+                      λ * ((low + 1)->ut1_minus_utc - low->ut1_minus_utc)) /
+                         (1 * Day);
 }
 
 // Linear interpolation on the UT1 range given by the range of MJDs
@@ -382,6 +433,22 @@ constexpr Instant FromUT1(quantities::Time const ut1) {
   } else {
     return InterpolatedEOPC04(LookupInEOPC04(ut1), ut1);
   }
+}
+
+constexpr Angle EarthRotationAngle (Instant const tt) {
+  CONSTEXPR_CHECK(tt >= eop_c04.front().tt())
+      << "EarthRotationAngle is not implemented before 1962.";
+
+  int ut1_julian_day_number_minus_2451545{};
+  double const ut1_julian_day_fraction = InterpolatedEOPC04JulianDayFraction(
+      LookupInEOPC04(tt), tt, ut1_julian_day_number_minus_2451545);
+  double const Tu =
+      ut1_julian_day_number_minus_2451545 + ut1_julian_day_fraction;
+  // IERS Conventions (2010), equation (5.15), with 1 subtracted from the
+  // constant term to keep things closer to 0.
+  return 2 * π * Radian *
+         (ut1_julian_day_fraction + (0.7790572732640 - 1) +
+          0.00273781191135448 * Tu);
 }
 
 // Conversions from |DateTime| and |JulianDate| to |Instant|.

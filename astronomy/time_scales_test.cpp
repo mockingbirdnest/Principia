@@ -416,6 +416,23 @@ TEST_F(TimeScalesDeathTest, JulianDateUTC) {
   EXPECT_DEATH("MJD55200.123"_UTC, "size > 0");
 }
 
+TEST_F(TimeScalesTest, EarthRotationAngle) {
+  static_assert(EarthRotationAngle("JD2451545.0"_UT1) ==
+                    2 * π * Radian * (0.7790572732640 - 1),
+                "Angles differ");
+  EXPECT_THAT((EarthRotationAngle("JD2455200.0"_UT1)),
+              AlmostEquals(2 * π * Radian *
+                               (0.7790572732640 +
+                                0.00273781191135448 * (2455200 - 2451545) - 1),
+                           284));
+  EXPECT_THAT(
+      (EarthRotationAngle("JD2455200.623456701388"_UT1)),
+      AlmostEquals(2 * π * Radian *
+                       (0.623456701388 + 0.7790572732640 +
+                        0.00273781191135448 * (5200.623456701388 - 1545) - 2),
+                   269));
+}
+
 }  // namespace internal_time_scales
 }  // namespace astronomy
 }  // namespace principia

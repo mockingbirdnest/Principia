@@ -10,6 +10,7 @@ namespace astronomy {
 namespace internal_time_scales {
 
 using geometry::Instant;
+using quantities::Angle;
 
 // NOTE(egg): We cannot use literal operator templates for strings, so if an
 // invalid date is given and the result does not need to be constexpr the
@@ -19,6 +20,8 @@ using geometry::Instant;
 // http://wg21.cmeerw.net/ewg/issue66.
 // FWIW it seems that clang supports this proposal with
 // -Wno-gnu-string-literal-operator-template.
+
+constexpr Angle EarthRotationAngle (Instant const tt);
 
 constexpr Instant operator""_TAI(char const* str, std::size_t size);
 constexpr Instant operator""_TT(char const* str, std::size_t size);
@@ -32,6 +35,7 @@ Instant ParseUT1(std::string const& s);
 
 }  // namespace internal_time_scales
 
+using internal_time_scales::EarthRotationAngle;
 using internal_time_scales::operator""_TAI;
 using internal_time_scales::operator""_TT;
 using internal_time_scales::operator""_UTC;
