@@ -131,6 +131,20 @@ TEST_F(GeopotentialTest, J2) {
     EXPECT_THAT(acceleration.coordinates().x, Gt(0 * Pow<-2>(Metre)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
   }
+
+  // Consistency between the general implementation in the zonal case and the
+  // J2-specific one.
+  {
+    auto const acceleration1 = SphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
+    auto const acceleration2 = GeneralSphericalHarmonicsAcceleration(
+        geopotential,
+        Instant(),
+        Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
+    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 1));
+  }
 }
 
 TEST_F(GeopotentialTest, C22S22) {
@@ -230,7 +244,7 @@ TEST_F(GeopotentialTest, J3) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                AlmostEquals(0.75, 2));
+                AlmostEquals(0.75, 1));
     EXPECT_THAT(acceleration.coordinates().z,
                 Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));
@@ -244,6 +258,7 @@ TEST_F(GeopotentialTest, TestVector) {
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto earth_message = solar_system_2000.gravity_model_message("Earth");
   earth_message.mutable_geopotential()->set_max_degree(9);
+  earth_message.mutable_geopotential()->clear_zonal();
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
   auto const earth_reference_radius =
