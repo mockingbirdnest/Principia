@@ -73,7 +73,7 @@ class RotatingBody : public MassiveBody {
 
   // Two unit vectors in the equatorial plane of the body.  |biequatorial| is
   // also in the equatorial plane of Frame.  The basis |biequatorial|,
-  // |equatorial|, |polar_axis| is a direct one.
+  // |equatorial|, |polar_axis| is direct.
   Vector<double, Frame> const& biequatorial() const;
   Vector<double, Frame> const& equatorial() const;
 
