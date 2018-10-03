@@ -917,7 +917,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
            (-3 / Sqrt(512)) * GravitationalConstant * m0 *
                Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
-              AlmostEquals(expected_acceleration2, 0, 3));
+              AlmostEquals(expected_acceleration2, 0, 6));
 
   Vector<Acceleration, ICRS> actual_acceleration3 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b3, t0_);
