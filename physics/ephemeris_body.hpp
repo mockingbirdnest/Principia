@@ -1060,9 +1060,10 @@ void Ephemeris<Frame>::
     Displacement<Frame> const Δq = position_of_b1 - positions[b2];
 
     Square<Length> const Δq² = Δq.Norm²();
-    // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
-    // non-oblate path slower.
-    Exponentiation<Length, -3> const one_over_Δq³ = Sqrt(Δq²) / (Δq² * Δq²);
+    Length const Δq_norm = Sqrt(Δq²);
+    Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
+    Exponentiation<Length, -3> const one_over_Δq³ =
+        Δq_norm * (one_over_Δq² * one_over_Δq²);
 
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
     acceleration_on_b2 += Δq * μ1_over_Δq³;
@@ -1074,7 +1075,6 @@ void Ephemeris<Frame>::
     acceleration_on_b1 -= Δq * μ2_over_Δq³;
 
     if (body1_is_oblate || body2_is_oblate) {
-      Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       if (body1_is_oblate) {
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
@@ -1083,7 +1083,9 @@ void Ephemeris<Frame>::
                 geopotentials[b1].GeneralSphericalHarmonicsAcceleration(
                     t,
                     -Δq,
-                    Δq²);
+                    Δq_norm,
+                    Δq²,
+                    one_over_Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
@@ -1102,7 +1104,9 @@ void Ephemeris<Frame>::
                 geopotentials[b2].GeneralSphericalHarmonicsAcceleration(
                     t,
                     Δq,
-                    Δq²);
+                    Δq_norm,
+                    Δq²,
+                    one_over_Δq²);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
@@ -1139,8 +1143,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Length const Δq_norm = Sqrt(Δq²);
     ok &= Δq_norm > body1_mean_radius;
 
-    // NOTE(phl): Don't try to compute one_over_Δq² here, it makes the
-    // non-oblate path slower.
+    Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
     Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
@@ -1155,7 +1158,9 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
               geopotentials_[b1].GeneralSphericalHarmonicsAcceleration(
                   t,
                   -Δq,
-                  Δq²);
+                  Δq_norm,
+                  Δq²,
+                  one_over_Δq²);
 #else
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),

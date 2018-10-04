@@ -89,7 +89,9 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   Acceleration(OblateBody<Frame> const& body,
                Instant const& t,
                Displacement<Frame> const& r,
-               Square<Length> const& r²);
+               Length const& r_norm,
+               Square<Length> const& r²,
+               Exponentiation<Length, -2> const& one_over_r²);
 };
 
 template<typename Frame>
@@ -272,7 +274,9 @@ Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 Acceleration(OblateBody<Frame> const& body,
              Instant const& t,
              Displacement<Frame> const& r,
-             Square<Length> const& r²) {
+             Length const& r_norm,
+             Square<Length> const& r²,
+             Exponentiation<Length, -2> const& one_over_r²) {
   constexpr int size = sizeof...(degrees);
   const bool is_zonal = body.is_zonal();
 
@@ -317,8 +321,7 @@ Acceleration(OblateBody<Frame> const& body,
   Length const y = InnerProduct(r, ŷ);
   Length const z = InnerProduct(r, ẑ);
 
-  auto const r_over_r² = r / r²;
-  Length const r_norm = Sqrt(r²);
+  auto const r_over_r² = r * one_over_r²;
   Inverse<Length> const one_over_r_norm = 1 / r_norm;
 
   Square<Length> const x²_plus_y² = x * x + y * y;
@@ -344,7 +347,7 @@ Acceleration(OblateBody<Frame> const& body,
                   one_over_r_norm;
   grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) * one_over_r_norm;
 
-  ℜ1 = body.reference_radius() / r²;
+  ℜ1 = body.reference_radius() * one_over_r²;
 
   cos_0λ = 1;
   sin_0λ = 0;
@@ -395,14 +398,16 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
   case (d):                                                                    \
     return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
-        *body_, t, r, r²)
+        *body_, t, r, r_norm, r², one_over_r²)
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Instant const& t,
     Displacement<Frame> const& r,
-    Square<Length> const& r²) const {
+    Length const& r_norm,
+    Square<Length> const& r²,
+    Exponentiation<Length, -2> const& one_over_r²) const {
   switch (body_->geopotential_degree()) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(2);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);

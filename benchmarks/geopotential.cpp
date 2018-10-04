@@ -43,6 +43,7 @@ using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Quotient;
 using quantities::SIUnit;
+using quantities::Sqrt;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -55,7 +56,10 @@ GeneralSphericalHarmonicsAccelerationCpp(
     Instant const& t,
     Displacement<Frame> const& r) {
   auto const r² = r.Norm²();
-  return geopotential.GeneralSphericalHarmonicsAcceleration(t, r, r²);
+  auto const r_norm = Sqrt(r²);
+  auto const one_over_r² = 1 / r²;
+  return geopotential.GeneralSphericalHarmonicsAcceleration(
+      t, r, r_norm, r², one_over_r²);
 }
 
 // For fairness, the Fortran implementation is wrapped to have the same API as
