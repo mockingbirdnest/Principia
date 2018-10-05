@@ -421,21 +421,26 @@ TEST_F(TimeScalesDeathTest, JulianDateUTC) {
 }
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {
+  double const revolutions_at_j2000_ut1 = 0.7790572732640;
+  double const excess_revolutions_per_ut1_day = 0.00273781191135448;
+
   // Round-trip from UT1, comparing with the direct computation from UT1.
-  static_assert(
-      EarthRotationAngle("JD2451545.0"_UT1) == 2 * π * Radian * 0.7790572732640,
-      "Angles differ");
-  EXPECT_THAT(EarthRotationAngle("JD2455200.0"_UT1),
-              AlmostEquals(2 * π * Radian *
-                               (0.7790572732640 +
-                                0.00273781191135448 * (2455200 - 2451545)),
-                           142));
+  static_assert(EarthRotationAngle("JD2451545.0"_UT1) ==
+                    2 * π * Radian * revolutions_at_j2000_ut1,
+                "Angles differ");
+  EXPECT_THAT(
+      EarthRotationAngle("JD2455200.0"_UT1),
+      AlmostEquals(2 * π * Radian *
+                       (revolutions_at_j2000_ut1 +
+                        excess_revolutions_per_ut1_day * (2455200 - 2451545)),
+                   142));
   EXPECT_THAT(
       EarthRotationAngle("JD2455200.623456701388"_UT1),
-      AlmostEquals(2 * π * Radian *
-                       (0.623456701388 + 0.7790572732640 +
-                        0.00273781191135448 * (5200.623456701388 - 1545) - 1),
-                   134));
+      AlmostEquals(
+          2 * π * Radian *
+              (0.623456701388 + revolutions_at_j2000_ut1 +
+               excess_revolutions_per_ut1_day * (5200.623456701388 - 1545) - 1),
+          134));
 
   // Compare with the WGCCRE 2009 elements.
   EXPECT_THAT(

@@ -334,7 +334,7 @@ constexpr EOPC04Entry const* LookupUT1(quantities::Time const& ut1,
 }
 
 constexpr EOPC04Entry const* LookupTT(Instant const& tt,
-                                      EOPC04Entry const* begin,
+                                      EOPC04Entry const* const begin,
                                       std::ptrdiff_t const size) {
   CONSTEXPR_CHECK(size > 0);
   if (size == 1) {
@@ -357,8 +357,7 @@ constexpr EOPC04Entry const* LookupInEOPC04(
   return LookupUT1(ut1, &eop_c04[0], eop_c04.size());
 }
 
-constexpr EOPC04Entry const* LookupInEOPC04(
-    Instant const& tt) {
+constexpr EOPC04Entry const* LookupInEOPC04(Instant const& tt) {
   return LookupTT(tt, &eop_c04[0], eop_c04.size());
 }
 
