@@ -55,7 +55,7 @@ template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector() : data_{} {}
 
 template<typename Scalar, int size_>
-constexpr FixedVector<Scalar, size_>::FixedVector(uninitialized_t) {}
+FixedVector<Scalar, size_>::FixedVector(uninitialized_t) {}
 
 template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector(
@@ -110,7 +110,7 @@ constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix()
     : data_{} {}
 
 template<typename Scalar, int rows, int columns>
-constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(uninitialized_t) {}
+FixedMatrix<Scalar, rows, columns>::FixedMatrix(uninitialized_t) {}
 
 template<typename Scalar, int rows, int columns>
 constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(
@@ -210,7 +210,7 @@ constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     : data_{} {}
 
 template<typename Scalar, int rows>
-constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(uninitialized_t) {}
 
 template<typename Scalar, int rows>
@@ -263,7 +263,7 @@ constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix()
     : data_{} {}
 
 template<typename Scalar, int rows>
-constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix(
+FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix(
     uninitialized_t) {}
 
 template<typename Scalar, int rows>

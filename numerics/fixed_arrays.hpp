@@ -24,7 +24,7 @@ template<typename Scalar, int size_>
 class FixedVector final {
  public:
   constexpr FixedVector();
-  constexpr explicit FixedVector(uninitialized_t);
+  explicit FixedVector(uninitialized_t);
 
   constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
   constexpr explicit FixedVector(std::array<Scalar, size_>&& data);
@@ -54,7 +54,7 @@ template<typename Scalar, int rows, int columns>
 class FixedMatrix final {
  public:
   constexpr FixedMatrix();
-  constexpr explicit FixedMatrix(uninitialized_t);
+  explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr explicit FixedMatrix(
@@ -115,7 +115,7 @@ class FixedStrictlyLowerTriangularMatrix final {
   static constexpr int dimension = rows * (rows - 1) / 2;
 
   constexpr FixedStrictlyLowerTriangularMatrix();
-  constexpr explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
+  explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr explicit FixedStrictlyLowerTriangularMatrix(
@@ -143,7 +143,7 @@ class FixedLowerTriangularMatrix final {
   static constexpr int dimension = rows * (rows + 1) / 2;
 
   constexpr FixedLowerTriangularMatrix();
-  constexpr explicit FixedLowerTriangularMatrix(uninitialized_t);
+  explicit FixedLowerTriangularMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr explicit FixedLowerTriangularMatrix(

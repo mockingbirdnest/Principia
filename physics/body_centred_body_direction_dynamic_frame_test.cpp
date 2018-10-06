@@ -468,7 +468,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, ConstructFromOneBody) {
             {big_->gravitational_parameter(),
              small_->gravitational_parameter()});
     EXPECT_THAT(barycentre.velocity().Norm(),
-                VanishesBefore(1 * Kilo(Metre) / Second, 0, 45));
+                VanishesBefore(1 * Kilo(Metre) / Second, 0, 50));
     barycentre_trajectory.Append(t0_ + t, barycentre);
   }
   BodyCentredBodyDirectionDynamicFrame<ICRS, BigSmallFrame>
