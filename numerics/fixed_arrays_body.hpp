@@ -47,6 +47,16 @@ DotProduct<ScalarLeft, ScalarRight, size, 0>::Compute(Left const& left,
   return left[0] * right[0];
 }
 
+// The |data_| member is aggregate-initialized with an empty list initializer,
+// which performs value initialization on the components.  For quantities this
+// calls the default constructor, for non-class types this does
+// zero-initialization.
+template<typename Scalar, int size_>
+constexpr FixedVector<Scalar, size_>::FixedVector() : data_{} {}
+
+template<typename Scalar, int size_>
+constexpr FixedVector<Scalar, size_>::FixedVector(uninitialized_t) {}
+
 template<typename Scalar, int size_>
 constexpr FixedVector<Scalar, size_>::FixedVector(
     std::array<Scalar, size_> const& data)
@@ -98,6 +108,9 @@ FixedVector<Scalar, size_>::operator std::vector<Scalar>() const {
 template<typename Scalar, int rows, int columns>
 constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix()
     : data_{} {}
+
+template<typename Scalar, int rows, int columns>
+constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(uninitialized_t) {}
 
 template<typename Scalar, int rows, int columns>
 constexpr FixedMatrix<Scalar, rows, columns>::FixedMatrix(
@@ -198,6 +211,10 @@ constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
 
 template<typename Scalar, int rows>
 constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
+    FixedStrictlyLowerTriangularMatrix(uninitialized_t) {}
+
+template<typename Scalar, int rows>
+constexpr FixedStrictlyLowerTriangularMatrix<Scalar, rows>::
     FixedStrictlyLowerTriangularMatrix(
         std::array<Scalar, dimension> const& data)
     : data_(data) {}
@@ -244,6 +261,10 @@ constexpr int FixedStrictlyLowerTriangularMatrix<Scalar, rows>::dimension;
 template<typename Scalar, int rows>
 constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix()
     : data_{} {}
+
+template<typename Scalar, int rows>
+constexpr FixedLowerTriangularMatrix<Scalar, rows>::FixedLowerTriangularMatrix(
+    uninitialized_t) {}
 
 template<typename Scalar, int rows>
 constexpr FixedLowerTriangularMatrix<Scalar, rows>::
