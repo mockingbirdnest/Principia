@@ -270,5 +270,26 @@ When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to sp
 \[
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
 \]
+\subsection*{Implementation considerations}
+A naïve implementation of the preceding formul{\ae} yields poor performance because of the computation of trigonometric functions, powers and polynomials.  It is advantageous
+to use simple geometric identities and recurrence formul{\ae} to avoid these computations, at the expense of a small amount of storage.  First, we note that:
+\[
+x^2 + y^2 = r^2 \cos^2 \gb
+\]
+and therefore we obtain the trigonometric functions for $\gb$:
+\[
+\begin{dcases}
+\cos \gb = \frac{\sqrt{x^2 + y^2}}{r} \\
+\sin \gb = \frac{z}{r}
+\end{dcases}
+\]
+and for $\gl$:
+\[
+\begin{dcases}
+\cos \gl = \frac{x}{\sqrt{x^2 + y^2}} \\
+\sin \gl = \frac{y}{\sqrt{x^2 + y^2}}
+\end{dcases}
+\]
+In the case where $\sqrt{x^2 + y^2}$ is $0$, any value will do for $\gl$, so we can for instance pick $\cos \gl = 1$ and $\sin \gl = 0$.
 \printbibliography
 \end{document}
