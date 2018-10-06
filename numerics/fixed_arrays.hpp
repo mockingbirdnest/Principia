@@ -171,6 +171,7 @@ using internal_fixed_arrays::FixedLowerTriangularMatrix;
 using internal_fixed_arrays::FixedMatrix;
 using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
 using internal_fixed_arrays::FixedVector;
+using internal_fixed_arrays::uninitialized;
 
 }  // namespace numerics
 }  // namespace principia

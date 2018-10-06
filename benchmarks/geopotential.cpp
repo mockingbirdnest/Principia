@@ -92,6 +92,7 @@ OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS> const& solar_system,
                                int const max_degree) {
   auto earth_message = solar_system.gravity_model_message("Earth");
   earth_message.mutable_geopotential()->set_max_degree(max_degree);
+  earth_message.mutable_geopotential()->clear_zonal();
 
   Angle const earth_right_ascension_of_pole = 0 * Degree;
   Angle const earth_declination_of_pole = 90 * Degree;

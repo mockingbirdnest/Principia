@@ -22,6 +22,7 @@ using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
+using numerics::uninitialized;
 using geometry::Bivector;
 using geometry::InnerProduct;
 using geometry::R3Element;
@@ -50,17 +51,17 @@ struct Geopotential<Frame>::Precomputations {
   Vector<Inverse<Length>, Frame> grad_𝔏_vector;
 
   // These quantities depend on n but are independent from m.
-  FixedVector<Inverse<Length>, size> ℜ;  // 0 unused.
+  FixedVector<Inverse<Length>, size> ℜ{uninitialized};  // 0 unused.
   Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
 
   // These quantities depend on m but are independent from n.
-  FixedVector<double, size> cos_mλ;
-  FixedVector<double, size> sin_mλ;
-  FixedVector<double, size> cos_β_to_the_m;
+  FixedVector<double, size> cos_mλ{uninitialized};  // 0 unused.
+  FixedVector<double, size> sin_mλ{uninitialized};  // 0 unused.
+  FixedVector<double, size> cos_β_to_the_m{uninitialized};
 
   // These quantities depend on both n and m.  Note that the zeros for m > n are
   // not stored.
-  FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β;
+  FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
 };
 
 template<typename Frame>
@@ -209,7 +210,12 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
 
     double const Cnm = cos[n][m];
     double const Snm = sin[n][m];
-    double const 𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    double 𝔏;
+    if constexpr (m == 0) {
+      𝔏 = Cnm;
+    } else {
+      𝔏 = Cnm * cos_mλ + Snm * sin_mλ;
+    }
 
     Vector<ReducedAcceleration, Frame> const 𝔅𝔏_grad_ℜ = (𝔅 * 𝔏) * grad_ℜ;
     Vector<ReducedAcceleration, Frame> const ℜ𝔏_grad_𝔅 =
@@ -293,8 +299,6 @@ Acceleration(OblateBody<Frame> const& body,
 
   auto& ℜ1 = precomputations.ℜ[1];
 
-  auto& cos_0λ = precomputations.cos_mλ[0];
-  auto& sin_0λ = precomputations.sin_mλ[0];
   auto& cos_1λ = precomputations.cos_mλ[1];
   auto& sin_1λ = precomputations.sin_mλ[1];
 
@@ -343,14 +347,12 @@ Acceleration(OblateBody<Frame> const& body,
   cos_β = r_equatorial * one_over_r_norm;
   sin_β = z * one_over_r_norm;
 
-  grad_𝔅_vector = (-sin_β * cos_λ * x̂ - sin_β * sin_λ * ŷ + cos_β * ẑ) *
+  grad_𝔅_vector = ((-sin_β * cos_λ) * x̂ - (sin_β * sin_λ) * ŷ + cos_β * ẑ) *
                   one_over_r_norm;
-  grad_𝔏_vector = (-sin_λ * x̂ + cos_λ * ŷ) * one_over_r_norm;
+  grad_𝔏_vector = (cos_λ * ŷ - sin_λ * x̂) * one_over_r_norm;
 
   ℜ1 = body.reference_radius() * one_over_r²;
 
-  cos_0λ = 1;
-  sin_0λ = 0;
   cos_1λ = cos_λ;
   sin_1λ = sin_λ;
 
