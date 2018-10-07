@@ -292,7 +292,7 @@ and for $\gl$:
 \]
 In the case where $\sqrt{x^2 + y^2}$ is $0$, any value will do for $\gl$, so we can for instance pick $\cos \gl = 1$ and $\sin \gl = 0$.
 
-The value of $\cos^m \gb$ may be computed by recurrence in a way that entails $\BigO\of{log_2 m}$ rounding errors.  If $m$ is even, we compute:
+The value of $\cos^m \gb$ may be computed by recurrence.  If $m$ is even, we have:
 \[
 \begin{dcases}
 h = \frac m 2 \\
@@ -307,11 +307,11 @@ h_2 = m - h_1 \\
 \cos^m \gb = \pa{\cos^{h_1} \gb}\pa{\cos^{h_2} \gb}
 \end{dcases}
 \]
-The value of $\cos m \gl$ and $\sin m \gl$ may similarly be computed using elementary trigonometric identities with $\BigO\of{log_2 m}$ rounding errors.  If $m$ is even, we compute:
+The value of $\cos m \gl$ and $\sin m \gl$ may similarly be computed using elementary trigonometric identities with roughly $\BigO\of {m^2}$ rounding errors.  If $m$ is even, we have:
 \[
 \begin{dcases}
 h = \frac m 2 \\
-\cos m \gl = \cos^2 h \gl - \sin^2 h \gl \\
+\cos m \gl = \pa{\cos h \gl + \sin h \gl}\pa{\cos h \gl - \sin h \gl} \\
 \sin m \gl = 2 \sin h \gl \cos h \gl
 \end{dcases}
 \]
