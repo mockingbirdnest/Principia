@@ -325,7 +325,7 @@ TEST_F(GeopotentialTest, TestVector) {
                 IsNear(1.3e-8));
   }
   EXPECT_THAT(actual_acceleration_cpp,
-              AlmostEquals(actual_acceleration_f90, 4));
+              AlmostEquals(actual_acceleration_f90, 4, 8));
 }
 
 }  // namespace internal_geopotential
