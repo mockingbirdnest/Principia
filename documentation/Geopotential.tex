@@ -241,7 +241,7 @@ For the longitudinal term we have:
 \end{pmatrix}
 \]
 \subsection*{Singularities}
-While the above formul{\ae} are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
+While the above formulæ are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
 
 There is obviously a pole when $r = 0$.  This one is not very interesting as we are never going to compute the acceleration at the centre of the celestial.
 
@@ -271,8 +271,8 @@ When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to sp
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
 \]
 \subsection*{Implementation considerations}
-A naïve implementation of the preceding formul{\ae} yields poor performance because of the computation of trigonometric functions, powers and polynomials.  It is advantageous
-to use simple geometric identities and recurrence formul{\ae} to avoid these computations, at the expense of a small amount of storage.  First, we note that:
+A naïve implementation of the preceding formulæ yields poor performance because of the computation of trigonometric functions, powers and polynomials.  It is advantageous
+to use simple geometric identities and recurrence formulæ to avoid these computations, at the expense of a small amount of storage.  First, we note that:
 \[
 x^2 + y^2 = r^2 \cos^2 \gb
 \]
