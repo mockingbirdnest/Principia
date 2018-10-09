@@ -421,8 +421,8 @@ TEST_F(TimeScalesDeathTest, JulianDateUTC) {
 }
 
 TEST_F(TimeScalesTest, EarthRotationAngle) {
-  double const revolutions_at_j2000_ut1 = 0.7790572732640;
-  double const excess_revolutions_per_ut1_day = 0.00273781191135448;
+  constexpr double revolutions_at_j2000_ut1 = 0.7790572732640;
+  constexpr double excess_revolutions_per_ut1_day = 0.00273781191135448;
 
   // Round-trip from UT1, comparing with the direct computation from UT1.
   static_assert(EarthRotationAngle("JD2451545.0"_UT1) ==

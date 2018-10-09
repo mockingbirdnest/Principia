@@ -308,7 +308,8 @@ Acceleration(OblateBody<Frame> const& body,
     x̂ = body.biequatorial();
     ŷ = body.equatorial();
   } else {
-    auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+    auto const from_surface_frame =
+      body.template FromSurfaceFrame<SurfaceFrame>(t);
     x̂ = from_surface_frame(x_);
     ŷ = from_surface_frame(y_);
   }

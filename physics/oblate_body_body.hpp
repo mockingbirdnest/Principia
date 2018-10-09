@@ -29,9 +29,9 @@ using quantities::si::Second;
 template<typename Frame>
 OblateBody<Frame>::Parameters::Parameters(double const j2,
                                           Length const& reference_radius)
-    : j2_(j2),
+    : reference_radius_(reference_radius),
+      j2_(j2),
       j2_over_μ_(j2 * reference_radius * reference_radius),
-      reference_radius_(reference_radius),
       cos_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       sin_(typename OblateBody<Frame>::GeopotentialCoefficients()),
       degree_(2),
