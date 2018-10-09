@@ -140,7 +140,7 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
         double const sin_hλ = precomputations.sin_mλ[h];
         double const cos_β_to_the_h = precomputations.cos_β_to_the_m[h];
         sin_mλ = 2 * sin_hλ * cos_hλ;
-        cos_mλ = cos_hλ * cos_hλ - sin_hλ * sin_hλ;
+        cos_mλ = (cos_hλ + sin_hλ) * (cos_hλ - sin_hλ);
         cos_β_to_the_m = cos_β_to_the_h * cos_β_to_the_h;
       } else {
         int const h1 = m / 2;

@@ -241,7 +241,7 @@ For the longitudinal term we have:
 \end{pmatrix}
 \]
 \subsection*{Singularities}
-While the above formul{\ae} are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
+While the above formulæ are all we need to compute the gradient of the geopotential, they present a number of singularities that require some care for implementation purposes.
 
 There is obviously a pole when $r = 0$.  This one is not very interesting as we are never going to compute the acceleration at the centre of the celestial.
 
@@ -270,5 +270,78 @@ When $m = 0$ this expression has a term in $\pa{\cos \gb}^{-1}$ so we need to sp
 \[
 {\mathfrak B\of \gb}{\grad \mathfrak L\of \gl}_{m = 0} = 0
 \]
+\subsection*{Implementation considerations}
+A naïve implementation of the preceding formulæ yields poor performance because of the computation of trigonometric functions, powers and polynomials.  It is advantageous
+to use simple geometric identities and recurrence formulæ to avoid these computations, at the expense of a small amount of storage.  First, we note that:
+\[
+x^2 + y^2 = r^2 \cos^2 \gb
+\]
+and therefore we obtain the trigonometric functions for $\gb$:
+\[
+\begin{dcases}
+\cos \gb = \frac{\sqrt{x^2 + y^2}}{r} \\
+\sin \gb = \frac{z}{r}
+\end{dcases}
+\]
+and for $\gl$:
+\[
+\begin{dcases}
+\cos \gl = \frac{x}{\sqrt{x^2 + y^2}} \\
+\sin \gl = \frac{y}{\sqrt{x^2 + y^2}}
+\end{dcases}
+\]
+In the case where $\sqrt{x^2 + y^2}$ is $0$, any value will do for $\gl$, so we can for instance pick $\cos \gl = 1$ and $\sin \gl = 0$.
+
+The value of $\cos^m \gb$ may be computed by recurrence with a relative error growing like $\BigO\of m$.  If $m$ is even, we have:
+\[
+\begin{dcases}
+h = \frac m 2 \\
+\cos^m \gb = \pa{\cos^h \gb}^2
+\end{dcases}
+\]
+and if $m$ is odd:
+\[
+\begin{dcases}
+h_1 = \Floor{\frac m 2} \\
+h_2 = m - h_1 \\
+\cos^m \gb = \pa{\cos^{h_1} \gb}\pa{\cos^{h_2} \gb}
+\end{dcases}
+\]
+The value of $\cos m \gl$ and $\sin m \gl$ may similarly be computed using elementary trigonometric identities with an absolute error growing like $\BigO\of {m^2}$.  If $m$ is even, we have:
+\[
+\begin{dcases}
+h = \frac m 2 \\
+\cos m \gl = \pa{\cos h \gl + \sin h \gl}\pa{\cos h \gl - \sin h \gl} \\
+\sin m \gl = 2 \sin h \gl \cos h \gl
+\end{dcases}
+\]
+and if $m$ is odd:
+\[
+\begin{dcases}
+h_1 = \Floor{\frac m 2} \\
+h_2 = m - h_1 \\
+\sin m \gl = \sin h_1 \gl \cos h_2 \gl + \cos h_1 \gl \sin h_2 \gl \\
+\cos m \gl = \cos h_1 \gl \cos h_2 \gl - \sin h_1 \gl \sin h_2 \gl
+\end{dcases}
+\]
+For the Legendre polynomials, we are looking for a recurrence relationship among terms of the form $\deriv[m]{t}{\LegendrePolynomial{n}\of t}$.  First note that these terms are $0$ when $m > n$.  We start with the recurrence defining the polynomials themselves:
+\[
+n \LegendrePolynomial{n}\of t = \pa{2 n - 1} t \LegendrePolynomial{n - 1}\of t - \pa{n - 1} \LegendrePolynomial{n - 2}\of t
+\]
+and we derive $m$ times:
+\[
+n \deriv[m]{t}{\LegendrePolynomial{n}\of t} = \pa{2 n - 1} \deriv[m]{t}{\pa{t \LegendrePolynomial{n - 1}\of t}} - \pa{n - 1} \deriv[m]{t}{\LegendrePolynomial{n - 2}\of t}
+\]
+It's easy to verify, by recurrence, that:
+\[
+\deriv[m]{t}{\pa{t \LegendrePolynomial{n}\of t}} = t \deriv[m]{t}{\LegendrePolynomial{n}\of t} + m \deriv[m - 1]{t}{\LegendrePolynomial{n}\of t}
+\]
+so we end up with:
+\[
+n \deriv[m]{t}{\LegendrePolynomial{n}\of t} =
+\pa{2 n - 1}\pa{t \deriv[m]{t}{\LegendrePolynomial{n - 1}\of t} + m \deriv[m - 1]{t}{\LegendrePolynomial{n - 1}\of t}} -
+\pa{n - 1} \deriv[m]{t}{\LegendrePolynomial{n - 2}\of t}
+\]
+This recurrence starts with ${\LegendrePolynomial{0}\of t} = 1$, ${\LegendrePolynomial{1}\of t} = t$ and ${\deriv{t}{\LegendrePolynomial{1}\of t}} = 1$.  It is similar to \cite[eqn. (12)]{Westra2017} and makes it possible to efficiently evaluate $\Evaluate{\deriv[m]{t}{\LegendrePolynomial{n}\of t}}{t = \sin \gb}$ for increasing values of $n$ and $m$.
 \printbibliography
 \end{document}
