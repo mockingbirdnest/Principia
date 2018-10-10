@@ -143,7 +143,7 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
         double const sin_hλ = precomputations.sin_mλ[h];
         double const cos_β_to_the_h = precomputations.cos_β_to_the_m[h];
         sin_mλ = 2 * sin_hλ * cos_hλ;
-        cos_mλ = cos_hλ * cos_hλ - sin_hλ * sin_hλ;
+        cos_mλ = (cos_hλ + sin_hλ) * (cos_hλ - sin_hλ);
         cos_β_to_the_m = cos_β_to_the_h * cos_β_to_the_h;
       } else {
         int const h1 = m / 2;
@@ -316,7 +316,8 @@ Acceleration(OblateBody<Frame> const& body,
     x̂ = body.biequatorial();
     ŷ = body.equatorial();
   } else {
-    auto const from_surface_frame = body.FromSurfaceFrame<SurfaceFrame>(t);
+    auto const from_surface_frame =
+      body.template FromSurfaceFrame<SurfaceFrame>(t);
     x̂ = from_surface_frame(x_);
     ŷ = from_surface_frame(y_);
   }
