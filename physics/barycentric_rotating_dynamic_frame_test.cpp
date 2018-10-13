@@ -469,7 +469,7 @@ TEST_F(BarycentricRotatingDynamicFrameTest, GeometricAcceleration) {
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
                   -2.25461792868978819e3 * Metre / Pow<2>(Second),
                   -3.47432622325080658e1 * Metre / Pow<2>(Second),
-                  -5.16651053897896801e1 * Metre / Pow<2>(Second)}), 0));
+                  -5.16651053897896801e1 * Metre / Pow<2>(Second)}), 1));
 }
 
 TEST_F(BarycentricRotatingDynamicFrameTest, Serialization) {
