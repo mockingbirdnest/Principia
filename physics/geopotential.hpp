@@ -41,7 +41,7 @@ class Geopotential {
       Displacement<Frame> const& r,
       Length const& r_norm,
       Square<Length> const& r²,
-      Exponentiation<Length, -2> const& one_over_r²) const;
+      Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
   // The frame of the surface of the celestial.

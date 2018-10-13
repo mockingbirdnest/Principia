@@ -67,7 +67,7 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
-#if defined(_DEBUG)
+#if !defined(_DEBUG)
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
 #else
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
@@ -91,8 +91,9 @@ FORCE_INLINE(inline)
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Degree2ZonalAcceleration(OblateBody<Frame> const& body,
                          Displacement<Frame> const& r,
-                         Exponentiation<Length, -2> const& one_over_r²,
+                         Square<Length> const& r²,
                          Exponentiation<Length, -3> const& one_over_r³) {
+  Exponentiation<Length, -2> const& one_over_r² = 1 / r²;
   Vector<double, Frame> const& axis = body.polar_axis();
   Length const r_axis_projection = InnerProduct(axis, r);
   auto const j2_over_r_fifth = body.j2_over_μ() * one_over_r³ * one_over_r²;
@@ -1061,9 +1062,7 @@ void Ephemeris<Frame>::
 
     Square<Length> const Δq² = Δq.Norm²();
     Length const Δq_norm = Sqrt(Δq²);
-    Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
-    Exponentiation<Length, -3> const one_over_Δq³ =
-        Δq_norm * (one_over_Δq² * one_over_Δq²);
+    Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
     acceleration_on_b2 += Δq * μ1_over_Δq³;
@@ -1085,12 +1084,12 @@ void Ephemeris<Frame>::
                     -Δq,
                     Δq_norm,
                     Δq²,
-                    one_over_Δq²);
+                    one_over_Δq³);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body1),
                     -Δq,
-                    one_over_Δq²,
+                    Δq²,
                     one_over_Δq³);
 #endif
         acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
@@ -1106,12 +1105,12 @@ void Ephemeris<Frame>::
                     Δq,
                     Δq_norm,
                     Δq²,
-                    one_over_Δq²);
+                    one_over_Δq³);
 #else
                 Degree2ZonalAcceleration<Frame>(
                     static_cast<OblateBody<Frame> const&>(body2),
                     Δq,
-                    one_over_Δq²,
+                    Δq²,
                     one_over_Δq³);
 #endif
         acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
@@ -1143,9 +1142,7 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     Length const Δq_norm = Sqrt(Δq²);
     ok &= Δq_norm > body1_mean_radius;
 
-    Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
-    Exponentiation<Length, -3> const one_over_Δq³ =
-        Δq_norm * (one_over_Δq² * one_over_Δq²);
+    Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
 
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
     accelerations[b2] += Δq * μ1_over_Δq³;
@@ -1160,12 +1157,12 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
                   -Δq,
                   Δq_norm,
                   Δq²,
-                  one_over_Δq²);
+                  one_over_Δq³);
 #else
               Degree2ZonalAcceleration<Frame>(
                   static_cast<OblateBody<Frame> const &>(body1),
                   -Δq,
-                  one_over_Δq²,
+                  Δq²,
                   one_over_Δq³);
 #endif
       accelerations[b2] += μ1 * degree_2_zonal_effect1;
