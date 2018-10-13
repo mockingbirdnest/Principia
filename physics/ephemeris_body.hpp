@@ -67,7 +67,7 @@ using ::std::placeholders::_3;
 
 Time const max_time_between_checkpoints = 180 * Day;
 
-#if !defined(_DEBUG)
+#if defined(_DEBUG)
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
 #else
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
