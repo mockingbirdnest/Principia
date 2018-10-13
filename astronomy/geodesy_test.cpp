@@ -267,16 +267,16 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              IsNear(622 * Metre));
+              IsNear(179 * Metre));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-              IsNear(10 * ArcSecond));
+              IsNear(3 * ArcSecond));
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              IsNear(24 * Metre));
+              IsNear(67 * Centi(Metre)));
 }
 
 #endif
