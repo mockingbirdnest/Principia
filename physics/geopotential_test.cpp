@@ -77,7 +77,10 @@ class GeopotentialTest : public ::testing::Test {
                                         Instant const& t,
                                         Displacement<Frame> const& r) {
     auto const r² = r.Norm²();
-    return geopotential.GeneralSphericalHarmonicsAcceleration(t, r, r²);
+    auto const r_norm = Sqrt(r²);
+    auto const one_over_r³ = r_norm / (r² * r²);
+    return geopotential.GeneralSphericalHarmonicsAcceleration(
+        t, r, r_norm, r², one_over_r³);
   }
 
   // The axis of rotation is along the z axis for ease of testing.
@@ -143,7 +146,7 @@ TEST_F(GeopotentialTest, J2) {
         geopotential,
         Instant(),
         Displacement<World>({6 * Metre, -4 * Metre, 5 * Metre}));
-    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 1));
+    EXPECT_THAT(acceleration1, AlmostEquals(acceleration2, 3));
   }
 }
 
@@ -244,7 +247,7 @@ TEST_F(GeopotentialTest, J3) {
         Instant(),
         Displacement<World>({30 * Metre, 40 * Metre, 0 * Metre}));
     EXPECT_THAT(acceleration.coordinates().x / acceleration.coordinates().y,
-                AlmostEquals(0.75, 1));
+                AlmostEquals(0.75, 0));
     EXPECT_THAT(acceleration.coordinates().z,
                 Not(VanishesBefore(1 * Pow<-2>(Metre), 0)));
     EXPECT_THAT(acceleration.coordinates().z, Lt(0 * Pow<-2>(Metre)));

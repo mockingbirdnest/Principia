@@ -14,13 +14,18 @@ namespace internal_fixed_arrays {
 using quantities::Difference;
 using quantities::Product;
 
+struct uninitialized_t {};
+constexpr uninitialized_t uninitialized;
+
 template<typename Scalar, int rows, int columns>
 class FixedMatrix;
 
 template<typename Scalar, int size_>
 class FixedVector final {
  public:
-  constexpr FixedVector() = default;
+  constexpr FixedVector();
+  explicit FixedVector(uninitialized_t);
+
   constexpr explicit FixedVector(std::array<Scalar, size_> const& data);
   constexpr explicit FixedVector(std::array<Scalar, size_>&& data);
   FixedVector(
@@ -37,10 +42,7 @@ class FixedVector final {
   static constexpr int size = size_;
 
  private:
-  // This member is aggregate-initialized with an empty list initializer, which
-  // performs value initialization on the components.  For quantities this calls
-  // the default constructor, for non-class types this does zero-initialization.
-  std::array<Scalar, size> data_{};
+  std::array<Scalar, size> data_;
 
   template<typename L, typename R, int r, int c>
   friend FixedVector<Product<L, R>, r> operator*(
@@ -52,6 +54,7 @@ template<typename Scalar, int rows, int columns>
 class FixedMatrix final {
  public:
   constexpr FixedMatrix();
+  explicit FixedMatrix(uninitialized_t);
 
   // The |data| must be in row-major format.
   constexpr explicit FixedMatrix(
@@ -112,6 +115,8 @@ class FixedStrictlyLowerTriangularMatrix final {
   static constexpr int dimension = rows * (rows - 1) / 2;
 
   constexpr FixedStrictlyLowerTriangularMatrix();
+  explicit FixedStrictlyLowerTriangularMatrix(uninitialized_t);
+
   // The |data| must be in row-major format.
   constexpr explicit FixedStrictlyLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);
@@ -138,6 +143,8 @@ class FixedLowerTriangularMatrix final {
   static constexpr int dimension = rows * (rows + 1) / 2;
 
   constexpr FixedLowerTriangularMatrix();
+  explicit FixedLowerTriangularMatrix(uninitialized_t);
+
   // The |data| must be in row-major format.
   constexpr explicit FixedLowerTriangularMatrix(
       std::array<Scalar, dimension> const& data);
@@ -164,6 +171,7 @@ using internal_fixed_arrays::FixedLowerTriangularMatrix;
 using internal_fixed_arrays::FixedMatrix;
 using internal_fixed_arrays::FixedStrictlyLowerTriangularMatrix;
 using internal_fixed_arrays::FixedVector;
+using internal_fixed_arrays::uninitialized;
 
 }  // namespace numerics
 }  // namespace principia

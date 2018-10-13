@@ -39,7 +39,9 @@ class Geopotential {
   GeneralSphericalHarmonicsAcceleration(
       Instant const& t,
       Displacement<Frame> const& r,
-      Square<Length> const& r²) const;
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Exponentiation<Length, -3> const& one_over_r³) const;
 
  private:
   // The frame of the surface of the celestial.

@@ -356,7 +356,7 @@ TEST_F(KSPResonanceTest, MSVC_ONLY_TEST(Corrected)) {
       ComputePeriods(*ephemeris,
                      ephemeris->t_max() - 2 * longest_joolian_period_);
   EXPECT_THAT(RelativeError(periods_at_long_term.at(laythe_),
-                            expected_periods_.at(laythe_)), IsNear(4.8e-3));
+                            expected_periods_.at(laythe_)), IsNear(4.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(vall_),
                             expected_periods_.at(vall_)), IsNear(5.7e-3));
   EXPECT_THAT(RelativeError(periods_at_long_term.at(tylo_),

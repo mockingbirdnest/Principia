@@ -43,6 +43,7 @@ using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Quotient;
 using quantities::SIUnit;
+using quantities::Sqrt;
 using quantities::si::Degree;
 using quantities::si::Metre;
 using quantities::si::Radian;
@@ -55,7 +56,10 @@ GeneralSphericalHarmonicsAccelerationCpp(
     Instant const& t,
     Displacement<Frame> const& r) {
   auto const r² = r.Norm²();
-  return geopotential.GeneralSphericalHarmonicsAcceleration(t, r, r²);
+  auto const r_norm = Sqrt(r²);
+  auto const one_over_r³ = r_norm / (r² * r²);
+  return geopotential.GeneralSphericalHarmonicsAcceleration(
+      t, r, r_norm, r², one_over_r³);
 }
 
 // For fairness, the Fortran implementation is wrapped to have the same API as
@@ -88,6 +92,7 @@ OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS> const& solar_system,
                                int const max_degree) {
   auto earth_message = solar_system.gravity_model_message("Earth");
   earth_message.mutable_geopotential()->set_max_degree(max_degree);
+  earth_message.mutable_geopotential()->clear_zonal();
 
   Angle const earth_right_ascension_of_pole = 0 * Degree;
   Angle const earth_declination_of_pole = 90 * Degree;
