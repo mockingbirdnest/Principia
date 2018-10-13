@@ -1144,13 +1144,13 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
     ok &= Δq_norm > body1_mean_radius;
 
     Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
-    Exponentiation<Length, -3> const one_over_Δq³ = Δq_norm / (Δq² * Δq²);
+    Exponentiation<Length, -3> const one_over_Δq³ =
+        Δq_norm * (one_over_Δq² * one_over_Δq²);
 
     auto const μ1_over_Δq³ = μ1 * one_over_Δq³;
     accelerations[b2] += Δq * μ1_over_Δq³;
 
     if (body1_is_oblate) {
-      Exponentiation<Length, -2> const one_over_Δq² = 1 / Δq²;
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           degree_2_zonal_effect1 =
