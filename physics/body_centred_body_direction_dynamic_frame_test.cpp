@@ -420,7 +420,7 @@ TEST_F(BodyCentredBodyDirectionDynamicFrameTest, GeometricAcceleration) {
               AlmostEquals(Vector<Acceleration, BigSmallFrame>({
                   -9.54502614154908457e5 * Metre / Pow<2>(Second),
                   -1.90900949256416853e6 * Metre / Pow<2>(Second),
-                  -2.86351378905829182e6 * Metre / Pow<2>(Second)}), 4));
+                  -2.86351378905829182e6 * Metre / Pow<2>(Second)}), 0));
 }
 
 TEST_F(BodyCentredBodyDirectionDynamicFrameTest, Serialization) {
