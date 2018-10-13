@@ -32,9 +32,9 @@ using Camera = Frame<serialization::Frame::TestTag,
 }  // namespace
 
 void RandomSegmentsBenchmark(
-    std::uniform_real_distribution<> const& x_distribution,
-    std::uniform_real_distribution<> const& y_distribution,
-    std::uniform_real_distribution<> const& z_distribution,
+    std::uniform_real_distribution<>& x_distribution,
+    std::uniform_real_distribution<>& y_distribution,
+    std::uniform_real_distribution<>& z_distribution,
     benchmark::State& state) {
   // The camera is on the x-axis and looks towards the positive x.
   Position<World> const camera_origin(

@@ -81,8 +81,8 @@ template<typename Value, typename Argument, int degree,
 void EvaluatePolynomialInMonomialBasis(benchmark::State& state) {
   using P = PolynomialInMonomialBasis<Value, Argument, degree, Evaluator>;
   std::mt19937_64 random(42);
-  P::Coefficients coefficients;
-  RandomTupleGenerator<P::Coefficients, 0>::Fill(coefficients, random);
+  typename P::Coefficients coefficients;
+  RandomTupleGenerator<typename P::Coefficients, 0>::Fill(coefficients, random);
   P const p(coefficients);
 
   auto const min = ValueGenerator<Argument>::Get(random);
