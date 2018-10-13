@@ -75,7 +75,8 @@ GeneralSphericalHarmonicsAccelerationF90(
     Instant const& t,
     Displacement<Frame> const& r) {
   struct SurfaceFrame;
-  auto const from_surface_frame = body->FromSurfaceFrame<SurfaceFrame>(t);
+  auto const from_surface_frame =
+      body->template FromSurfaceFrame<SurfaceFrame>(t);
   auto const to_surface_frame = from_surface_frame.Inverse();
 
   Displacement<SurfaceFrame> const r_surface = to_surface_frame(r);
@@ -126,7 +127,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
   Geopotential<ICRS> const geopotential(&earth);
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(-1e7, 1e7);
+  std::uniform_real_distribution<> distribution(-1e7, 1e7);
   std::vector<Displacement<ICRS>> displacements;
   for (int i = 0; i < 1e3; ++i) {
     displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(
@@ -181,7 +182,7 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
   double rbar = earth.reference_radius() / Metre;
 
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(-1e7, 1e7);
+  std::uniform_real_distribution<> distribution(-1e7, 1e7);
   std::vector<Displacement<ICRS>> displacements;
   for (int i = 0; i < 1e3; ++i) {
     displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(

@@ -3,6 +3,7 @@
 
 #include "numerics/fast_sin_cos_2π.hpp"
 
+#include <pmmintrin.h>
 #include <random>
 #include <vector>
 
@@ -65,7 +66,7 @@ void BM_FastSinCos2πWellPredictedLatency(benchmark::State& state) {
 
 void BM_FastSinCos2πThroughput(benchmark::State& state) {
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> const distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> distribution(-1.0, 1.0);
   std::vector<double> input;
   for (int i = 0; i < 1e3; ++i) {
     input.push_back(distribution(random));

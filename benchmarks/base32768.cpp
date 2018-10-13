@@ -8,6 +8,10 @@
 #include "base/array.hpp"
 #include "benchmark/benchmark.h"
 
+// Clang doesn't have a correct |std::array| yet, and we don't actually use this
+// code, so let's get rid of the entire body.
+#if PRINCIPIA_COMPILER_MSVC
+
 namespace principia {
 namespace base {
 
@@ -80,3 +84,5 @@ BENCHMARK(BM_Base32768Decode);
 
 }  // namespace base
 }  // namespace principia
+
+#endif

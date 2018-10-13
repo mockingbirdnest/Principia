@@ -108,7 +108,7 @@ void SolveHarmonicOscillatorAndComputeError1D(benchmark::State& state,
     solution.push_back(state);
   };
 
-  Integrator::Parameters const parameters(
+  typename Integrator::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =
@@ -167,7 +167,7 @@ void SolveHarmonicOscillatorAndComputeError3D(
     solution.push_back(state);
   };
 
-  Integrator::Parameters const parameters(
+  typename Integrator::Parameters const parameters(
       /*first_time_step=*/t_final - t_initial,
       /*safety_factor=*/0.9);
   auto const tolerance_to_error_ratio =

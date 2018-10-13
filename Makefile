@@ -7,8 +7,6 @@ UNAME_M := $(shell uname -m)
 
 CXX := clang++
 
-# TODO(egg): build benchmarks
-
 VERSION_TRANSLATION_UNIT := base/version.generated.cc
 
 PLUGIN_TRANSLATION_UNITS               := $(wildcard ksp_plugin/*.cpp)
@@ -36,8 +34,8 @@ TOOLS_BIN     := $(BIN_DIRECTORY)tools
 
 GMOCK_TRANSLATION_UNITS := \
 	$(DEP_DIR)googletest/googlemock/src/gmock-all.cc  \
-	$(DEP_DIR)googletest/googlemock/src/gmock_main.cc \
 	$(DEP_DIR)googletest/googletest/src/gtest-all.cc
+GMOCK_MAIN_TRANSLATION_UNIT := $(DEP_DIR)googletest/googlemock/src/gmock_main.cc
 
 GENERATED_PROFILES := \
 	journal/profiles.generated.h     \
@@ -103,6 +101,7 @@ LDFLAGS := $(SHARED_ARGS)
 BUILD_DIRECTORY := build/
 
 TEST_OR_MOCK_DEPENDENCIES := $(addprefix $(BUILD_DIRECTORY), $(TEST_OR_FAKE_OR_MOCK_TRANSLATION_UNITS:.cpp=.d))
+BENCHMARK_DEPENDENCIES    := $(addprefix $(BUILD_DIRECTORY), $(BENCHMARK_TRANSLATIONS_UNITS:.cpp=.d))
 TOOLS_DEPENDENCIES        := $(addprefix $(BUILD_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.d))
 LIBRARY_DEPENDENCIES      := $(addprefix $(BUILD_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.d))
 PLUGIN_DEPENDENCIES       := $(addprefix $(BUILD_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.d))
@@ -156,6 +155,8 @@ TEST_OR_FAKE_OR_MOCK_OBJECTS := $(addprefix $(OBJ_DIRECTORY), $(TEST_OR_FAKE_OR_
 LIBRARY_OBJECTS              := $(addprefix $(OBJ_DIRECTORY), $(LIBRARY_TRANSLATION_UNITS:.cpp=.o))
 PROTO_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(PROTO_TRANSLATION_UNITS:.cc=.o))
 GMOCK_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_TRANSLATION_UNITS:.cc=.o))
+GMOCK_MAIN_OBJECT            := $(addprefix $(OBJ_DIRECTORY), $(GMOCK_MAIN_TRANSLATION_UNITS:.cc=.o))
+BENCHMARK_OBJECTS            := $(addprefix $(OBJ_DIRECTORY), $(BENCHMARK_TRANSLATION_UNITS:.cpp=.o))
 TOOLS_OBJECTS                := $(addprefix $(OBJ_DIRECTORY), $(TOOLS_TRANSLATION_UNITS:.cpp=.o))
 PLUGIN_OBJECTS               := $(addprefix $(OBJ_DIRECTORY), $(PLUGIN_TRANSLATION_UNITS:.cpp=.o))
 JOURNAL_LIB_OBJECTS          := $(addprefix $(OBJ_DIRECTORY), $(JOURNAL_LIB_TRANSLATION_UNITS:.cpp=.o))
@@ -169,7 +170,11 @@ $(TEST_OR_FAKE_OR_MOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
-$(GMOCK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cc
+$(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT): $(OBJ_DIRECTORY)%.o: %.cc
+	@mkdir -p $(@D)
+	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
+
+$(BENCHMARK_OBJECTS): $(OBJ_DIRECTORY)%.o: %.cpp
 	@mkdir -p $(@D)
 	$(CXX) $(COMPILER_OPTIONS) $(TEST_INCLUDES) $< -o $@
 
@@ -227,7 +232,7 @@ $(PLUGIN_INDEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_INDEPENDENT_TEST_BINS) : $(GMOC
 # against mock objects.  The classes further up that are big enough to be mocked
 # are likely to be highly templatized, so this will probably hold for a while.
 
-$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+$(PRINCIPIA_TEST_BIN) $(PLUGIN_DEPENDENT_PACKAGE_TEST_BINS) $(PLUGIN_DEPENDENT_TEST_BINS) : $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(GMOCK_MAIN_OBJECT) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
 	@mkdir -p $(@D)
 	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
 
@@ -246,6 +251,20 @@ $(PACKAGE_TEST_TARGETS) : % : $(BIN_DIRECTORY)%
 
 test: $(PRINCIPIA_TEST_BIN)
 	@echo "Cake, and grief counseling, will be available at the conclusion of the test."
+	-$^
+
+########## Benchmarks
+
+PACKAGE_BENCHMARK_BINS := $(addprefix $(BIN_DIRECTORY), $(addsuffix benchmarks, $(sort $(dir $(BENCHMARK_TRANSLATION_UNITS)))))
+PACKAGE_BENCHMARK_TARGET := $(patsubst $(BIN_DIRECTORY)%, %, $(PACKAGE_BENCHMARK_BINS))
+
+PRINCIPIA_BENCHMARK_BIN := $(BIN_DIRECTORY)benchmark
+
+$(PRINCIPIA_BENCHMARK_BIN) : $(BENCHMARK_OBJECTS) $(FAKE_OR_MOCK_OBJECTS) $(GMOCK_OBJECTS) $(KSP_PLUGIN) $(BASE_LIB_OBJECTS) $(NUMERICS_LIB_OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(LDFLAGS) $^ $(TEST_LIBS) -lpthread -o $@
+
+benchmark: $(PRINCIPIA_BENCHMARK_BIN)
 	-$^
 
 ########## Adapter
