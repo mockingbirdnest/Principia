@@ -6,7 +6,7 @@ echo "Required runtime dependencies: libc++1"
 
 #sudo apt-get install clang git unzip wget libc++-dev binutils make automake libtool curl cmake subversion
 
-BASE_FLAGS="-fPIC -O3 -g"
+BASE_FLAGS="-fPIC -O3 -g -DNDEBUG"
 # determine platform for bitness
 
 PLATFORM=$(uname -s)
@@ -96,7 +96,6 @@ curl "https://raw.githubusercontent.com/llvm-mirror/libcxx/52f9ca28a39aa02a2e78f
 touch __undef_macros
 popd
 
-# TODO(egg): This probably needs to be compiled
 if [ ! -d "benchmark" ]; then
   git clone "https://github.com/mockingbirdnest/benchmark"
 fi
