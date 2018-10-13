@@ -55,22 +55,22 @@ using ::testing::Eq;
 class GeodesyTest : public ::testing::Test {
  protected:
   GeodesyTest()
-      : solar_system_2000_(
+      : solar_system_2010_(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
-                "sol_initial_state_jd_2451545_000000000.proto.txt"),
-        ephemeris_(solar_system_2000_.MakeEphemeris(
+                "sol_initial_state_jd_2455200_500000000.proto.txt"),
+        ephemeris_(solar_system_2010_.MakeEphemeris(
             /*fitting_tolerance=*/5 * Milli(Metre),
             Ephemeris<ICRS>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                    Position<ICRS>>(),
                 /*step=*/10 * Minute))),
         earth_(dynamic_cast_not_null<OblateBody<ICRS> const*>(
-            solar_system_2000_.massive_body(*ephemeris_, "Earth"))),
+            solar_system_2010_.massive_body(*ephemeris_, "Earth"))),
         earth_trajectory_(*ephemeris_->trajectory(earth_)),
         itrs_(ephemeris_.get(), earth_) {}
 
-  SolarSystem<ICRS> solar_system_2000_;
+  SolarSystem<ICRS> solar_system_2010_;
   not_null<std::unique_ptr<Ephemeris<ICRS>>> const ephemeris_;
   not_null<OblateBody<ICRS> const*> const earth_;
   ContinuousTrajectory<ICRS> const& earth_trajectory_;
@@ -267,16 +267,16 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              IsNear(23 * Metre));
+              IsNear(179 * Metre));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-              IsNear(388 * Milli(ArcSecond)));
+              IsNear(3 * ArcSecond));
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              IsNear(10 * Centi(Metre)));
+              IsNear(67 * Centi(Metre)));
 }
 
 #endif
