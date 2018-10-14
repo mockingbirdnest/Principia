@@ -19,7 +19,7 @@ std::uniform_int_distribution<int> distribution(0, 1e5);
 double ComsumeCpuNoLock(std::int64_t const n) {
   double result;
   {
-    base::shared_lock_guard l(lock);
+    base::shared_lock_guard<std::shared_mutex> l(lock);
     result = distribution(random);
   }
   for (int i = 0; i < n; ++i) {
@@ -29,7 +29,7 @@ double ComsumeCpuNoLock(std::int64_t const n) {
 }
 
 double ComsumeCpuSharedLock(std::int64_t const n) {
-  base::shared_lock_guard l(lock);
+  base::shared_lock_guard<std::shared_mutex> l(lock);
   double result = distribution(random);
   for (int i = 0; i < n; ++i) {
     result += std::sqrt(i);
@@ -38,7 +38,7 @@ double ComsumeCpuSharedLock(std::int64_t const n) {
 }
 
 double ComsumeCpuExclusiveLock(std::int64_t const n) {
-  std::lock_guard l(lock);
+  std::lock_guard<std::shared_mutex> l(lock);
   double result = distribution(random);
   for (int i = 0; i < n; ++i) {
     result += std::sqrt(i);
