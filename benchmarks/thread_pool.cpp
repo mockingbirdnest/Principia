@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <mutex>
 #include <random>
+#include <vector>
 
 #include "base/shared_lock_guard.hpp"
 #include "base/thread_pool.hpp"
