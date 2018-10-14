@@ -26,6 +26,7 @@
     <ClCompile Include="polynomial.cpp" />
     <ClCompile Include="quantities.cpp" />
     <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
+    <ClCompile Include="thread_pool.cpp" />
     <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>

@@ -68,6 +68,9 @@
     <ClCompile Include="geopotential.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="thread_pool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp">
