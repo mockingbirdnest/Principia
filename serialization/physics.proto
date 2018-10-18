@@ -95,6 +95,11 @@ message DynamicFrame {
 }
 
 message Ephemeris {
+  // Added in Ἐρατοσθένης.
+  message AccuracyParameters {
+    required Quantity fitting_tolerance = 1;
+    required Numerics.Mode geopotential_mode = 2;
+  }
   message AdaptiveStepParameters {
     required AdaptiveStepSizeIntegrator integrator = 1;
     required int64 max_steps = 2;
@@ -107,11 +112,14 @@ message Ephemeris {
   }
   repeated MassiveBody body = 1;
   repeated ContinuousTrajectory trajectory = 2;
-  required Quantity fitting_tolerance = 5;
+  optional AccuracyParameters accuracy_parameters = 10; // Added in Ἐρατοσθένης.
   required FixedStepParameters fixed_step_parameters = 7;
   optional Point t_max = 8;
   required IntegratorInstance instance = 9;
 
+  // Pre-Ἐρατοσθένης
+  reserved 5;
+  reserved "fitting_tolerance";
   // Pre-Cardano.
   reserved 6;
   reserved "last_state";

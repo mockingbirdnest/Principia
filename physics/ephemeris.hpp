@@ -21,6 +21,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/oblate_body.hpp"
 #include "serialization/ksp_plugin.pb.h"
+#include "serialization/numerics.pb.h"
 #include "serialization/physics.pb.h"
 
 namespace principia {
@@ -68,6 +69,26 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
+
+  class PHYSICS_DLL AccuracyParameters final {
+   public:
+    // Implicit for compatibility.
+    AccuracyParameters(Length const& fitting_tolerance);
+    AccuracyParameters(Length const& fitting_tolerance,
+                       serialization::Numerics::Mode geopotential_mode);
+
+    void WriteToMessage(
+        not_null<serialization::Ephemeris::AccuracyParameters*> const
+            message) const;
+    static AccuracyParameters ReadFromMessage(
+        serialization::Ephemeris::AccuracyParameters const& message);
+
+   private:
+    Length fitting_tolerance_;
+    serialization::Numerics::Mode geopotential_mode_ =
+        serialization::Numerics::PRECISE;
+    friend class Ephemeris<Frame>;
+  };
 
   class PHYSICS_DLL AdaptiveStepParameters final {
    public:
@@ -134,8 +155,8 @@ class Ephemeris {
   Ephemeris(std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
             std::vector<DegreesOfFreedom<Frame>> const& initial_state,
             Instant const& initial_time,
-            Length const& fitting_tolerance,
-            FixedStepParameters const& parameters);
+            AccuracyParameters const& accuracy_parameters,
+            FixedStepParameters const& fixed_step_parameters);
 
   virtual ~Ephemeris() = default;
 
@@ -385,8 +406,8 @@ class Ephemeris {
            not_null<std::unique_ptr<ContinuousTrajectory<Frame>>>>
       bodies_to_trajectories_;
 
-  FixedStepParameters const parameters_;
-  Length const fitting_tolerance_;
+  AccuracyParameters const accuracy_parameters_;
+  FixedStepParameters const fixed_step_parameters_;
   std::unique_ptr<
       typename Integrator<NewtonianMotionEquation>::Instance> instance_;
 
