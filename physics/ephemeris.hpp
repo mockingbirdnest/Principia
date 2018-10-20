@@ -73,7 +73,7 @@ class Ephemeris {
   class PHYSICS_DLL AccuracyParameters final {
    public:
     // Implicit for compatibility.
-    AccuracyParameters(Length const& fitting_tolerance);
+    AccuracyParameters(Length const& fitting_tolerance);  // NOLINT
     AccuracyParameters(Length const& fitting_tolerance,
                        serialization::Numerics::Mode geopotential_mode);
 

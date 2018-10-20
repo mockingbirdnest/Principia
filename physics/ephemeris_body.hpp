@@ -934,7 +934,7 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
   }
-  
+
   AccuracyParameters accuracy_parameters(
       pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance);
   if (!is_pre_ἐρατοσθένης) {
