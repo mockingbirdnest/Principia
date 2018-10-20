@@ -60,12 +60,16 @@ using quantities::Square;
 using quantities::Time;
 using quantities::Variation;
 using quantities::si::Day;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-Time const max_time_between_checkpoints = 180 * Day;
+constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
+    1 * Milli(Metre);
+constexpr Time max_time_between_checkpoints = 180 * Day;
 
 #if defined(_DEBUG)
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
@@ -118,8 +122,25 @@ template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance,
     serialization::Numerics::Mode const geopotential_mode)
-    : fitting_tolerance_(fitting_tolerance) 
+    : fitting_tolerance_(fitting_tolerance),
       geopotential_mode_(geopotential_mode) {}
+
+template<typename Frame>
+void Ephemeris<Frame>::AccuracyParameters::WriteToMessage(
+    not_null<serialization::Ephemeris::AccuracyParameters*> const message)
+    const {
+  fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
+  message->set_geopotential_mode(geopotential_mode_);
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::AccuracyParameters
+Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
+    serialization::Ephemeris::AccuracyParameters const& message) {
+  return AccuracyParameters(
+      Length::ReadFromMessage(message.fitting_tolerance()),
+      message.geopotential_mode());
+}
 
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
@@ -899,9 +920,8 @@ void Ephemeris<Frame>::WriteToMessage(
   }
   fixed_step_parameters_.WriteToMessage(
       message->mutable_fixed_step_parameters());
-  //TODO(phl): Change serialization.
-  accuracy_parameters_.fitting_tolerance_.WriteToMessage(
-      message->mutable_fitting_tolerance());
+  accuracy_parameters_.WriteToMessage(
+      message->mutable_accuracy_parameters());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -909,14 +929,19 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
+  bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
   }
-  auto const fitting_tolerance =
-      Length::ReadFromMessage(message.fitting_tolerance());
-
-  FixedStepParameters const parameters =
+  
+  AccuracyParameters accuracy_parameters(
+      pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance);
+  if (!is_pre_ἐρατοσθένης) {
+    accuracy_parameters =
+        AccuracyParameters::ReadFromMessage(message.accuracy_parameters());
+  }
+  FixedStepParameters const fixed_step_parameters =
       FixedStepParameters::ReadFromMessage(message.fixed_step_parameters());
 
   // Dummy initial state and time.  We'll overwrite them later.
@@ -928,8 +953,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        std::move(bodies),
                        initial_state,
                        initial_time,
-                       fitting_tolerance,
-                       parameters);
+                       accuracy_parameters,
+                       fixed_step_parameters);
 
   NewtonianMotionEquation equation;
   equation.compute_acceleration = [ephemeris = ephemeris.get()](
@@ -974,7 +999,8 @@ template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
-    : fixed_step_parameters_(integrator, 1 * Second) {}
+    : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance),
+      fixed_step_parameters_(integrator, 1 * Second) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
