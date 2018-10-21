@@ -60,12 +60,16 @@ using quantities::Square;
 using quantities::Time;
 using quantities::Variation;
 using quantities::si::Day;
+using quantities::si::Metre;
+using quantities::si::Milli;
 using quantities::si::Second;
 using ::std::placeholders::_1;
 using ::std::placeholders::_2;
 using ::std::placeholders::_3;
 
-Time const max_time_between_checkpoints = 180 * Day;
+constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance =
+    1 * Milli(Metre);
+constexpr Time max_time_between_checkpoints = 180 * Day;
 
 #if defined(_DEBUG)
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
@@ -108,6 +112,35 @@ Degree2ZonalAcceleration(OblateBody<Frame> const& body,
   return axis_effect + radial_effect;
 }
 #endif
+
+template<typename Frame>
+Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
+    Length const& fitting_tolerance)
+    : fitting_tolerance_(fitting_tolerance) {}
+
+template<typename Frame>
+Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
+    Length const& fitting_tolerance,
+    serialization::Numerics::Mode const geopotential_mode)
+    : fitting_tolerance_(fitting_tolerance),
+      geopotential_mode_(geopotential_mode) {}
+
+template<typename Frame>
+void Ephemeris<Frame>::AccuracyParameters::WriteToMessage(
+    not_null<serialization::Ephemeris::AccuracyParameters*> const message)
+    const {
+  fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
+  message->set_geopotential_mode(geopotential_mode_);
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::AccuracyParameters
+Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
+    serialization::Ephemeris::AccuracyParameters const& message) {
+  return AccuracyParameters(
+      Length::ReadFromMessage(message.fitting_tolerance()),
+      message.geopotential_mode());
+}
 
 template<typename Frame>
 Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
@@ -228,10 +261,10 @@ Ephemeris<Frame>::Ephemeris(
     std::vector<not_null<std::unique_ptr<MassiveBody const>>>&& bodies,
     std::vector<DegreesOfFreedom<Frame>> const& initial_state,
     Instant const& initial_time,
-    Length const& fitting_tolerance,
-    FixedStepParameters const& parameters)
-    : parameters_(parameters),
-      fitting_tolerance_(fitting_tolerance) {
+    AccuracyParameters const& accuracy_parameters,
+    FixedStepParameters const& fixed_step_parameters)
+    : accuracy_parameters_(accuracy_parameters),
+      fixed_step_parameters_(fixed_step_parameters) {
   CHECK(!bodies.empty());
   CHECK_EQ(bodies.size(), initial_state.size());
 
@@ -259,7 +292,8 @@ Ephemeris<Frame>::Ephemeris(
     auto const inserted = bodies_to_trajectories_.emplace(
                               body.get(),
                               std::make_unique<ContinuousTrajectory<Frame>>(
-                                  parameters_.step_, fitting_tolerance_));
+                                  fixed_step_parameters_.step_,
+                                  accuracy_parameters_.fitting_tolerance_));
     CHECK(inserted.second);
     ContinuousTrajectory<Frame>* const trajectory =
         inserted.first->second.get();
@@ -287,11 +321,11 @@ Ephemeris<Frame>::Ephemeris(
     }
   }
 
-  instance_ = parameters.integrator_->NewInstance(
+  instance_ = fixed_step_parameters_.integrator_->NewInstance(
       problem,
       /*append_state=*/std::bind(
           &Ephemeris::AppendMassiveBodiesState, this, _1),
-      parameters.step_);
+      fixed_step_parameters_.step_);
 }
 
 template<typename Frame>
@@ -341,7 +375,7 @@ template<typename Frame>
 FixedStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
 Ephemeris<Frame>::planetary_integrator() const {
-  return *parameters_.integrator_;
+  return *fixed_step_parameters_.integrator_;
 }
 
 template<typename Frame>
@@ -385,7 +419,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   Instant t_final;
   Instant const instance_time = this->instance_time();
   if (t <= instance_time) {
-    t_final = instance_time + parameters_.step_;
+    t_final = instance_time + fixed_step_parameters_.step_;
   } else {
     t_final = t;
   }
@@ -396,7 +430,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   std::lock_guard<std::shared_mutex> l(lock_);
   while (t_max_locked() < t) {
     instance_->Solve(t_final);
-    t_final += parameters_.step_;
+    t_final += fixed_step_parameters_.step_;
   }
 }
 
@@ -470,8 +504,8 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
   // contrary to |t_max()|, which is -∞ when |empty()|.
   Instant const t_final =
       std::min(std::max(instance_time() +
-                            max_ephemeris_steps * parameters_.step(),
-                        trajectory_last_time + parameters_.step()),
+                            max_ephemeris_steps * fixed_step_parameters_.step(),
+                        trajectory_last_time + fixed_step_parameters_.step()),
                t);
   Prolong(t_final);
 
@@ -580,8 +614,8 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
   // contrary to |t_max()|, which is -∞ when |empty()|.
   Instant const t_final =
       std::min(std::max(instance_time() +
-                            max_ephemeris_steps * parameters_.step(),
-                        trajectory_last_time + parameters_.step()),
+                            max_ephemeris_steps * fixed_step_parameters_.step(),
+                        trajectory_last_time + fixed_step_parameters_.step()),
                t);
   Prolong(t_final);
 
@@ -811,7 +845,9 @@ void Ephemeris<Frame>::ComputeApsides(not_null<MassiveBody const*> const body1,
   std::optional<Instant> previous_time;
   std::optional<Variation<Square<Length>>> previous_squared_distance_derivative;
 
-  for (Instant time = t_min(); time <= t_max(); time += parameters_.step()) {
+  for (Instant time = t_min();
+       time <= t_max();
+       time += fixed_step_parameters_.step()) {
     Variation<Square<Length>> const squared_distance_derivative =
         evaluate_square_distance_derivative(time);
     if (previous_squared_distance_derivative &&
@@ -882,8 +918,10 @@ void Ephemeris<Frame>::WriteToMessage(
         message->mutable_instance());
     t_max().WriteToMessage(message->mutable_t_max());
   }
-  parameters_.WriteToMessage(message->mutable_fixed_step_parameters());
-  fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
+  fixed_step_parameters_.WriteToMessage(
+      message->mutable_fixed_step_parameters());
+  accuracy_parameters_.WriteToMessage(
+      message->mutable_accuracy_parameters());
   LOG(INFO) << NAMED(message->SpaceUsed());
   LOG(INFO) << NAMED(message->ByteSize());
 }
@@ -891,14 +929,19 @@ void Ephemeris<Frame>::WriteToMessage(
 template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
     serialization::Ephemeris const& message) {
+  bool const is_pre_ἐρατοσθένης = !message.has_accuracy_parameters();
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   for (auto const& body : message.body()) {
     bodies.push_back(MassiveBody::ReadFromMessage(body));
   }
-  auto const fitting_tolerance =
-      Length::ReadFromMessage(message.fitting_tolerance());
 
-  FixedStepParameters const parameters =
+  AccuracyParameters accuracy_parameters(
+      pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance);
+  if (!is_pre_ἐρατοσθένης) {
+    accuracy_parameters =
+        AccuracyParameters::ReadFromMessage(message.accuracy_parameters());
+  }
+  FixedStepParameters const fixed_step_parameters =
       FixedStepParameters::ReadFromMessage(message.fixed_step_parameters());
 
   // Dummy initial state and time.  We'll overwrite them later.
@@ -910,8 +953,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
                        std::move(bodies),
                        initial_state,
                        initial_time,
-                       fitting_tolerance,
-                       parameters);
+                       accuracy_parameters,
+                       fixed_step_parameters);
 
   NewtonianMotionEquation equation;
   equation.compute_acceleration = [ephemeris = ephemeris.get()](
@@ -956,7 +999,8 @@ template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
-    : parameters_(integrator, 1 * Second) {}
+    : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance),
+      fixed_step_parameters_(integrator, 1 * Second) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AppendMassiveBodiesState(
