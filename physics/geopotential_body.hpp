@@ -412,13 +412,16 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   // |limiting_degree| is the first degree such that
-  // |r_norm >= degree_threshold_[limiting_degree]|, or is
-  // |degree_threshold_.size()| if |r_norm| is under all thresholds.
-  int const limiting_degree = std::lower_bound(degree_threshold_.begin(),
+  // |r_norm > degree_threshold_[limiting_degree]|, or is
+  // |degree_threshold_.size()| if |r_norm| is below all thresholds.
+  // Since |degree_threshold_[0]| and |degree_threshold_[1]| are infinite,
+  // |limiting_degree > 1|.
+  int const limiting_degree = std::upper_bound(degree_threshold_.begin(),
                                                degree_threshold_.end(),
                                                r_norm,
                                                std::greater) -
                               degree_threshold_.begin();
+  // We have |max_degree > 0|.
   int const max_degree = limiting_degree - 1;
   switch (max_degree) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(2);
@@ -430,10 +433,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(8);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(9);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(10);
-    case -1:
-    case 0:
     case 1:
-      // Note that -1 can happen only if |r_norm| is infinite.
       return Vector<Quotient<Acceleration, GravitationalParameter>, Frame>{};
     default:
       LOG(FATAL) << "Unexpected degree " << max_degree << " " << body_->name();

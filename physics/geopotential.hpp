@@ -106,6 +106,15 @@ class Geopotential {
   // (including the sectoral harmonics) is 0.  Between
   // |tesseral_threshold_ / 3| and |tesseral_threshold_|, a sigmoid is applied.
   Length tesseral_threshold_;
+
+  // |first_tesseral_degree_| is the integer n such that
+  // |degree_threshold_[n-1] >= tesseral_threshold_ > degree_threshold_[n]|,
+  // or is |degree_threshold_.size()| if
+  // |tesseral_threshold_ <= degree_threshold_[n]| for all n.
+  // Tesseral (including sectoral) harmonics of degree less than
+  // |first_tesseral_degree_| come into effect at |tesseral_threshold_|, instead
+  // of their respective |degree_threshold_|.
+  int first_tesseral_degree_;
 };
 
 }  // namespace internal_geopotential
