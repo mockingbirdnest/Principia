@@ -91,6 +91,21 @@ class Geopotential {
                            Exponentiation<Length, -3> const& one_over_r³) const;
 
   not_null<OblateBody<Frame> const*> body_;
+
+  // Beyond |degree_threshold_[n]|, the contribution from the harmonics with
+  // degree ≥n is ignored.  Between |degree_threshold / 3| and
+  // |degree_threshold|, a sigmoid is applied to the relevant terms of the
+  // potential. In particular, beyond |degree_threshold_[2]|,
+  // |GeneralSphericalHarmonicsAcceleration| returns 0.
+  // |degree_threshold_[0]| and |degree_threshold_[1]| are unused, and are
+  // infinite.
+  // The values in |degree_threshold_| are in non-strictly decreasing order.
+  std::vector<Length> degree_threshold_;
+
+  // Beyond this threshold, the contribution from the tesseral harmonics
+  // (including the sectoral harmonics) is 0.  Between
+  // |tesseral_threshold_ / 3| and |tesseral_threshold_|, a sigmoid is applied.
+  Length tesseral_threshold_;
 };
 
 }  // namespace internal_geopotential

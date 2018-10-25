@@ -285,7 +285,7 @@ Acceleration(OblateBody<Frame> const& body,
              Square<Length> const& r²,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
-  const bool is_zonal = body.is_zonal();
+  const bool is_zonal = body.is_zonal() || r_norm > tesseral_threshold_;
 
   Precomputations<size> precomputations;
 
@@ -411,7 +411,16 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Length const& r_norm,
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
-  switch (body_->geopotential_degree()) {
+  // |limiting_degree| is the first degree such that
+  // |r_norm >= degree_threshold_[limiting_degree]|, or is
+  // |degree_threshold_.size()| if |r_norm| is under all thresholds.
+  int const limiting_degree = std::lower_bound(degree_threshold_.begin(),
+                                               degree_threshold_.end(),
+                                               r_norm,
+                                               std::greater) -
+                              degree_threshold_.begin();
+  int const max_degree = limiting_degree - 1;
+  switch (max_degree) {
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(2);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(3);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(4);
@@ -421,11 +430,13 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(8);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(9);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(10);
+    case -1:
     case 0:
+    case 1:
+      // Note that -1 can happen only if |r_norm| is infinite.
       return Vector<Quotient<Acceleration, GravitationalParameter>, Frame>{};
     default:
-      LOG(FATAL) << "Unexpected degree " << body_->geopotential_degree() << " "
-                 << body_->name();
+      LOG(FATAL) << "Unexpected degree " << max_degree << " " << body_->name();
       base::noreturn();
   }
 }
