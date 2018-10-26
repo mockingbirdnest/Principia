@@ -28,6 +28,7 @@ using geometry::InnerProduct;
 using geometry::R3Element;
 using quantities::ArcTan;
 using quantities::Cos;
+using quantities::Derivative;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
@@ -77,10 +78,10 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static auto Acceleration(
-      Vector<double, Frame> const& r_normalized,
-      Square<Length> const& r²,
-      Precomputations<size>& precomputations)
+  static auto Acceleration(Vector<double, Frame> const& r_normalized,
+                           Length const& r_norm,
+                           Square<Length> const& r²,
+                           Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
@@ -240,6 +241,7 @@ template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
 Acceleration(Vector<double, Frame> const& r_normalized,
+             Length const& r_norm,
              Square<Length> const& r²,
              Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, Frame> {
@@ -264,7 +266,31 @@ Acceleration(Vector<double, Frame> const& r_normalized,
       auto const& ℜh2_over_r = precomputations.ℜ_over_r[h2];
       ℜ_over_r = ℜh1_over_r * ℜh2_over_r * r²;
     }
-    grad_ℜ = (-(n + 1) * ℜ_over_r) * r_normalized;
+    auto const ℜʹ = -(n + 1) * ℜ_over_r;
+    grad_ℜ = ℜʹ * r_normalized;
+
+    if (sizeof...(orders) == 1 || n > first_tesseral_degree_) {
+      // All orders came into effect at the same threshold, so we apply a
+      // sigmoid globally.
+      Length const s1 = degree_threshold_[n];
+      Length const s0 = 1.0 / 3.0 * degree_threshold_[n];
+      auto const& c = degree_sigmoid_coefficients_[n];
+      Derivative<double, Length> const c1 = std::get<1>(c);
+      Derivative<double, Length> const c2 = std::get<2>(c);
+      Derivative<double, Length> const c3 = std::get<3>(c);
+      auto const r³ = r² * r_norm;
+      double const c3r³ = c3 * r³;
+      double const c2r² = c2 * r²;
+      double const c1r = c1 * r_norm;
+      double const σ = c3r³ + c2r² + c1r;
+      double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+      if (r_norm > s0) {
+        ℜ_over_r *= σ;
+        // Writing this as σ′ ℜ + ℜ′ σ rather than ℜ∇σ + σℜ turns some vector
+        // operations into scalar ones.
+        grad_ℜ = (σʹr * ℜ_over_r + norm_grad_ℜ * σ) * r_normalized;
+      }
+    }
 
     // Force the evaluation by increasing order using an initializer list.
     ReducedAccelerations<size> const accelerations = {
@@ -370,13 +396,13 @@ Acceleration(OblateBody<Frame> const& body,
   if (is_zonal) {
     accelerations = {
         DegreeNAllOrders<size, degrees, std::make_integer_sequence<int, 1>>::
-            Acceleration(r_normalized, r², precomputations)...};
+            Acceleration(r_normalized, r_norm, r², precomputations)...};
   } else {
     accelerations = {
         DegreeNAllOrders<size,
                          degrees,
                          std::make_integer_sequence<int, degrees + 1>>::
-            Acceleration(r_normalized, r², precomputations)...};
+            Acceleration(r_normalized, r_norm, r², precomputations)...};
   }
 
   return (accelerations[degrees] + ...);

@@ -16,6 +16,7 @@ using geometry::Instant;
 using geometry::Vector;
 using quantities::Acceleration;
 using quantities::Angle;
+using quantities::Derivatives;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
 using quantities::Length;
@@ -102,10 +103,20 @@ class Geopotential {
   // The values in |degree_threshold_| are in non-strictly decreasing order.
   std::vector<Length> degree_threshold_;
 
+  // The coefficients of the sigmoid, in monomial basis.  A custom evaluation is
+  // performed to take advantage of precomputations.  The constant term must be
+  // 0: it is not used in the evaluation.
+  std::vector<Derivatives<double, Length, 4>> degree_sigmoid_coefficients_;
+
   // Beyond this threshold, the contribution from the tesseral harmonics
   // (including the sectoral harmonics) is 0.  Between
   // |tesseral_threshold_ / 3| and |tesseral_threshold_|, a sigmoid is applied.
   Length tesseral_threshold_;
+
+  // The coefficients of the sigmoid, in monomial basis.  A custom evaluation is
+  // performed to take advantage of precomputations.  The constant term must be
+  // 0: it is not used in the evaluation.
+  Derivatives<double, Length, 4> tesseral_sigmoid_coefficients_;
 
   // |first_tesseral_degree_| is the integer n such that
   // |degree_threshold_[n-1] >= tesseral_threshold_ > degree_threshold_[n]|,
