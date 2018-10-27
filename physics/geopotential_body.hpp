@@ -54,7 +54,6 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on n but are independent from m.
   FixedVector<Exponentiation<Length, -2>, size> ℜ_over_r{
       uninitialized};  // 0 unused.
-  Vector<Exponentiation<Length, -2>, Frame> grad_ℜ;
 
   // These quantities depend on m but are independent from n.
   FixedVector<double, size> cos_mλ{uninitialized};  // 0 unused.
@@ -64,6 +63,12 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on both n and m.  Note that the zeros for m > n are
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
+
+  // These quantities depend on n, and, for n < first_tesseral_degree_, on
+  // whether m > 0.
+  Exponentiation<Length, -2> σℜ_over_r;
+  Vector<Exponentiation<Length, -2>, Frame> grad_σℜ;
+
 };
 
 template<typename Frame>
@@ -78,7 +83,8 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static auto Acceleration(Vector<double, Frame> const& r_normalized,
+  static auto Acceleration(Geopotential<Frame> const& geopotential,
+                           Vector<double, Frame> const& r_normalized,
                            Length const& r_norm,
                            Square<Length> const& r²,
                            Precomputations<size>& precomputations)
@@ -89,7 +95,7 @@ template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
   static Vector<ReducedAcceleration, Frame>
-  Acceleration(OblateBody<Frame> const& body,
+  Acceleration(Geopotential<Frame> const& geopotential,
                Instant const& t,
                Displacement<Frame> const& r,
                Length const& r_norm,
@@ -120,8 +126,9 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     auto const& grad_𝔅_vector = precomputations.grad_𝔅_vector;
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
-    auto const ℜ_over_r = precomputations.ℜ_over_r[n];
-    auto const& grad_ℜ = precomputations.grad_ℜ;
+    // For clarity, we write ℜ for σℜ in the calculations below.
+    auto const ℜ_over_r = precomputations.σℜ_over_r;
+    auto const& grad_ℜ = precomputations.grad_σℜ;
 
     auto& cos_mλ = precomputations.cos_mλ[m];
     auto& sin_mλ = precomputations.sin_mλ[m];
@@ -240,7 +247,8 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
-Acceleration(Vector<double, Frame> const& r_normalized,
+Acceleration(Geopotential<Frame> const& geopotential,
+             Vector<double, Frame> const& r_normalized,
              Length const& r_norm,
              Square<Length> const& r²,
              Precomputations<size>& precomputations)
@@ -251,7 +259,6 @@ Acceleration(Vector<double, Frame> const& r_normalized,
     constexpr int n = degree;
 
     auto& ℜ_over_r = precomputations.ℜ_over_r[n];
-    auto& grad_ℜ = precomputations.grad_ℜ;
 
     // The caller ensures that we process n by increasing values.  Thus, we can
     // safely compute ℜ based on values for lower n's.
@@ -267,34 +274,87 @@ Acceleration(Vector<double, Frame> const& r_normalized,
       ℜ_over_r = ℜh1_over_r * ℜh2_over_r * r²;
     }
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
-    grad_ℜ = ℜʹ * r_normalized;
+    // Note that ∇ℜ = ℜʹ * r_normalized.
 
-    if (sizeof...(orders) == 1 || n > first_tesseral_degree_) {
-      // All orders came into effect at the same threshold, so we apply a
-      // sigmoid globally.
-      Length const s1 = degree_threshold_[n];
-      Length const s0 = 1.0 / 3.0 * degree_threshold_[n];
-      auto const& c = degree_sigmoid_coefficients_[n];
-      Derivative<double, Length> const c1 = std::get<1>(c);
-      Derivative<double, Length> const c2 = std::get<2>(c);
-      Derivative<double, Length> const c3 = std::get<3>(c);
-      auto const r³ = r² * r_norm;
-      double const c3r³ = c3 * r³;
-      double const c2r² = c2 * r²;
-      double const c1r = c1 * r_norm;
-      double const σ = c3r³ + c2r² + c1r;
-      double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
-      if (r_norm > s0) {
-        ℜ_over_r *= σ;
-        // Writing this as σ′ ℜ + ℜ′ σ rather than ℜ∇σ + σℜ turns some vector
+    {
+      Length const s1 = geopotential.degree_threshold_[n];
+      Length const s0 = 1.0 / 3.0 * s1;
+      if (r_norm <= s0) {
+        // Below the inner threshold, σ = 1.
+        precomputations.σℜ_over_r = ℜ_over_r;
+        precomputations.grad_σℜ = ℜʹ * r_normalized;
+      } else {
+        auto const& c = geopotential.degree_sigmoid_coefficients_[n];
+        Derivative<double, Length> const c1 = std::get<1>(c);
+        Derivative<double, Length, 2> const c2 = std::get<2>(c);
+        Derivative<double, Length, 3> const c3 = std::get<3>(c);
+        auto const r³ = r² * r_norm;
+        double const c3r³ = c3 * r³;
+        double const c2r² = c2 * r²;
+        double const c1r = c1 * r_norm;
+        double const σ = c3r³ + c2r² + c1r;
+        double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+
+        precomputations.σℜ_over_r = σ * ℜ_over_r;
+        // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
         // operations into scalar ones.
-        grad_ℜ = (σʹr * ℜ_over_r + norm_grad_ℜ * σ) * r_normalized;
+        precomputations.grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
       }
+      // If we are above the upper threshold, we should not have been called
+      // (σ = 0).
+      DCHECK_LT(r_norm, s1);
     }
 
-    // Force the evaluation by increasing order using an initializer list.
+    if (sizeof...(orders) == 1 || n >= geopotential.first_tesseral_degree_) {
+      // All orders came into effect at the same threshold, so we apply the same
+      // σ to everything.
+
+      // Force the evaluation by increasing order using an initializer list.
+      ReducedAccelerations<size> const accelerations = {
+          DegreeNOrderM<size, degree, orders>::Acceleration(
+              precomputations)...};
+
+      return (accelerations[orders] + ...);
+    }
+
+    // The degree-specific sigmoid computed above applies to the zonal term.
+
+    Vector<ReducedAcceleration, Frame> const zonal_acceleration =
+        DegreeNOrderM<size, degree, 0>::Acceleration(precomputations);
+
+    {
+      Length const s1 = geopotential.tesseral_threshold_;
+      Length const s0 = 1.0 / 3.0 * s1;
+      if (r_norm <= s0) {
+        // Below the inner threshold, σ = 1.
+        precomputations.σℜ_over_r = ℜ_over_r;
+        precomputations.grad_σℜ = ℜʹ * r_normalized;
+      } else {
+        auto const& c = geopotential.tesseral_sigmoid_coefficients_;
+        Derivative<double, Length> const c1 = std::get<1>(c);
+        Derivative<double, Length, 2> const c2 = std::get<2>(c);
+        Derivative<double, Length, 3> const c3 = std::get<3>(c);
+        auto const r³ = r² * r_norm;
+        double const c3r³ = c3 * r³;
+        double const c2r² = c2 * r²;
+        double const c1r = c1 * r_norm;
+        double const σ = c3r³ + c2r² + c1r;
+        double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+
+        precomputations.σℜ_over_r = σ * ℜ_over_r;
+        // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
+        // operations into scalar ones.
+        precomputations.grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
+      }
+      // If we are above the upper threshold, we should have been called with
+      // (orders...) = (0), since σ = 0.
+      DCHECK_LT(r_norm, s1);
+    }
+
     ReducedAccelerations<size> const accelerations = {
-        DegreeNOrderM<size, degree, orders>::Acceleration(precomputations)...};
+        (orders == 0 ? zonal_acceleration
+                     : DegreeNOrderM<size, degree, orders>::Acceleration(
+                           precomputations))...};
 
     return (accelerations[orders] + ...);
   }
@@ -304,14 +364,16 @@ template<typename Frame>
 template<int... degrees>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
 Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
-Acceleration(OblateBody<Frame> const& body,
+Acceleration(Geopotential<Frame> const& geopotential,
              Instant const& t,
              Displacement<Frame> const& r,
              Length const& r_norm,
              Square<Length> const& r²,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
-  const bool is_zonal = body.is_zonal() || r_norm > tesseral_threshold_;
+  OblateBody<Frame> const& body = *geopotential.body_;
+  const bool is_zonal =
+      body.is_zonal() || r_norm > geopotential.tesseral_threshold_;
 
   Precomputations<size> precomputations;
 
@@ -396,13 +458,15 @@ Acceleration(OblateBody<Frame> const& body,
   if (is_zonal) {
     accelerations = {
         DegreeNAllOrders<size, degrees, std::make_integer_sequence<int, 1>>::
-            Acceleration(r_normalized, r_norm, r², precomputations)...};
+            Acceleration(
+                geopotential, r_normalized, r_norm, r², precomputations)...};
   } else {
     accelerations = {
         DegreeNAllOrders<size,
                          degrees,
                          std::make_integer_sequence<int, degrees + 1>>::
-            Acceleration(r_normalized, r_norm, r², precomputations)...};
+            Acceleration(
+                geopotential, r_normalized, r_norm, r², precomputations)...};
   }
 
   return (accelerations[degrees] + ...);
@@ -427,7 +491,7 @@ Geopotential<Frame>::SphericalHarmonicsAcceleration(
 #define PRINCIPIA_CASE_SPHERICAL_HARMONICS(d)                                  \
   case (d):                                                                    \
     return AllDegrees<std::make_integer_sequence<int, (d + 1)>>::Acceleration( \
-        *body_, t, r, r_norm, r², one_over_r³)
+        *this, t, r, r_norm, r², one_over_r³)
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
@@ -445,7 +509,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
   int const limiting_degree = std::upper_bound(degree_threshold_.begin(),
                                                degree_threshold_.end(),
                                                r_norm,
-                                               std::greater) -
+                                               std::greater()) -
                               degree_threshold_.begin();
   // We have |max_degree > 0|.
   int const max_degree = limiting_degree - 1;
