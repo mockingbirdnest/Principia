@@ -242,6 +242,16 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
 }
 
 template<typename Frame>
+Geopotential<Frame>::HarmonicDamping::HarmonicDamping(
+    Length const& inner_threshold)
+    : outer_threshold(inner_threshold * 3),
+      inner_threshold(outer_threshold),
+      sigmoid_coefficients{0,
+                           9 / (4 * inner_threshold),
+                           3 / (2 * Pow<2>(inner_threshold)),
+                           1 / (4 * Pow<3>(inner_threshold))} {}
+
+template<typename Frame>
 void Geopotential<Frame>::HarmonicDamping::ComputeDampedRadialQuantities(
       Length const& r_norm,
       Square<Length> const& r²,

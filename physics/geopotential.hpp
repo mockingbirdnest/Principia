@@ -19,6 +19,7 @@ using quantities::Angle;
 using quantities::Derivatives;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
+using quantities::Infinity;
 using quantities::Inverse;
 using quantities::Length;
 using quantities::Quotient;
@@ -77,17 +78,20 @@ class Geopotential {
   // a radial multiplier on the potential:
   //   V_damped = σ(|r|) V(r).
   struct HarmonicDamping {
+    explicit HarmonicDamping() = default;
+    explicit HarmonicDamping(Length const& inner_threshold);
+  
     // Above this threshold, the contribution to the potential from this
     // harmonic is 0, i.e., σ = 0.
-    Length outer_threshold;
+    Length const outer_threshold = Infinity<Length>();
     // Below this threshold, the contribution to the potential from this
     // harmonic is undamped, σ = 1.
     // inner_threshold = outer_threshold / 3.
-    Length inner_threshold;
+    Length const inner_threshold = Infinity<Length>();
     // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
     // following coefficients in monomial basis.
     // The constant term is always 0, and is thus ignored in the evaluation.
-    Derivatives<double, Length, 4> sigmoid_coefficients;
+    Derivatives<double, Length, 4> const sigmoid_coefficients;
 
     // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
     void ComputeDampedRadialQuantities(
