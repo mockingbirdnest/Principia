@@ -242,7 +242,7 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
 }
 
 template<typename Frame>
-void Geopotential<Frame>::HarmonicDamping::SetDampedRadialQuantities(
+void Geopotential<Frame>::HarmonicDamping::ComputeDampedRadialQuantities(
       Length const& r_norm,
       Square<Length> const& r²,
       Vector<double, Frame> const& r_normalized,
@@ -252,12 +252,12 @@ void Geopotential<Frame>::HarmonicDamping::SetDampedRadialQuantities(
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
   Length const& s1 = outer_threshold;
   Length const& s0 = inner_threshold;
-  if (r <= s0) {
+  if (r_norm <= s0) {
     // Below the inner threshold, σ = 1.
     σℜ_over_r = ℜ_over_r;
     grad_σℜ = ℜʹ * r_normalized;
   } else {
-    auto const& c = sigmoid_coefficients_[n];
+    auto const& c = sigmoid_coefficients;
     Derivative<double, Length> const c1 = std::get<1>(c);
     Derivative<double, Length, 2> const c2 = std::get<2>(c);
     Derivative<double, Length, 3> const c3 = std::get<3>(c);
@@ -268,10 +268,10 @@ void Geopotential<Frame>::HarmonicDamping::SetDampedRadialQuantities(
     double const σ = c3r³ + c2r² + c1r;
     double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
 
-    precomputations.σℜ_over_r = σ * ℜ_over_r;
+    σℜ_over_r = σ * ℜ_over_r;
     // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
     // operations into scalar ones.
-    precomputations.grad_σℜ = (σ ʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
+    grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
   }
 }
 
@@ -308,34 +308,17 @@ Acceleration(Geopotential<Frame> const& geopotential,
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
     // Note that ∇ℜ = ℜʹ * r_normalized.
 
-    {
-      Length const s1 = geopotential.degree_threshold_[n];
-      Length const s0 = 1.0 / 3.0 * s1;
-      if (r_norm <= s0) {
-        // Below the inner threshold, σ = 1.
-        precomputations.σℜ_over_r = ℜ_over_r;
-        precomputations.grad_σℜ = ℜʹ * r_normalized;
-      } else {
-        auto const& c = geopotential.degree_sigmoid_coefficients_[n];
-        Derivative<double, Length> const c1 = std::get<1>(c);
-        Derivative<double, Length, 2> const c2 = std::get<2>(c);
-        Derivative<double, Length, 3> const c3 = std::get<3>(c);
-        auto const r³ = r² * r_norm;
-        double const c3r³ = c3 * r³;
-        double const c2r² = c2 * r²;
-        double const c1r = c1 * r_norm;
-        double const σ = c3r³ + c2r² + c1r;
-        double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
-
-        precomputations.σℜ_over_r = σ * ℜ_over_r;
-        // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
-        // operations into scalar ones.
-        precomputations.grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
-      }
-      // If we are above the upper threshold, we should not have been called
-      // (σ = 0).
-      DCHECK_LT(r_norm, s1);
-    }
+    geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
+        r_norm,
+        r²,
+        r_normalized,
+        ℜ_over_r,
+        ℜʹ,
+        precomputations.σℜ_over_r,
+        precomputations.grad_σℜ);
+    // If we are above the outer threshold, we should not have been called
+    // (σ = 0).
+    DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold);
 
     if (sizeof...(orders) == 1 || n >= geopotential.first_tesseral_degree_) {
       // All orders came into effect at the same threshold, so we apply the same
@@ -354,34 +337,17 @@ Acceleration(Geopotential<Frame> const& geopotential,
     Vector<ReducedAcceleration, Frame> const zonal_acceleration =
         DegreeNOrderM<size, degree, 0>::Acceleration(precomputations);
 
-    {
-      Length const s1 = geopotential.tesseral_threshold_;
-      Length const s0 = 1.0 / 3.0 * s1;
-      if (r_norm <= s0) {
-        // Below the inner threshold, σ = 1.
-        precomputations.σℜ_over_r = ℜ_over_r;
-        precomputations.grad_σℜ = ℜʹ * r_normalized;
-      } else {
-        auto const& c = geopotential.tesseral_sigmoid_coefficients_;
-        Derivative<double, Length> const c1 = std::get<1>(c);
-        Derivative<double, Length, 2> const c2 = std::get<2>(c);
-        Derivative<double, Length, 3> const c3 = std::get<3>(c);
-        auto const r³ = r² * r_norm;
-        double const c3r³ = c3 * r³;
-        double const c2r² = c2 * r²;
-        double const c1r = c1 * r_norm;
-        double const σ = c3r³ + c2r² + c1r;
-        double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
-
-        precomputations.σℜ_over_r = σ * ℜ_over_r;
-        // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
-        // operations into scalar ones.
-        precomputations.grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
-      }
-      // If we are above the upper threshold, we should have been called with
-      // (orders...) = (0), since σ = 0.
-      DCHECK_LT(r_norm, s1);
-    }
+    // If we are above the outer threshold, we should have been called with
+    // (orders...) = (0), since σ = 0.
+    DCHECK_LT(r_norm, geopotential.tesseral_damping_.outer_threshold);
+    geopotential.tesseral_damping_.ComputeDampedRadialQuantities(
+        r_norm,
+        r²,
+        r_normalized,
+        ℜ_over_r,
+        ℜʹ,
+        precomputations.σℜ_over_r,
+        precomputations.grad_σℜ);
 
     ReducedAccelerations<size> const accelerations = {
         (orders == 0 ? zonal_acceleration
@@ -404,8 +370,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
   OblateBody<Frame> const& body = *geopotential.body_;
-  const bool is_zonal =
-      body.is_zonal() || r_norm > geopotential.tesseral_threshold_;
+  const bool is_zonal = body.is_zonal() ||
+                        r_norm > geopotential.tesseral_damping_.outer_threshold;
 
   Precomputations<size> precomputations;
 
@@ -534,15 +500,17 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   // |limiting_degree| is the first degree such that
-  // |r_norm > degree_threshold_[limiting_degree]|, or is
-  // |degree_threshold_.size()| if |r_norm| is below all thresholds.
-  // Since |degree_threshold_[0]| and |degree_threshold_[1]| are infinite,
-  // |limiting_degree > 1|.
-  int const limiting_degree = std::upper_bound(degree_threshold_.begin(),
-                                               degree_threshold_.end(),
-                                               r_norm,
-                                               std::greater()) -
-                              degree_threshold_.begin();
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold|, or is
+  // |degree_damping_.size()| if |r_norm| is below all thresholds.
+  // Since |degree_damping_[0].outer_threshold| and
+  // |degree_damping_[1].outer_threshold| are infinite, |limiting_degree > 1|.
+  int const limiting_degree =
+      std::partition_point(
+          degree_damping_.begin(),
+          degree_damping_.end(),
+          [r_norm](HarmonicDamping const& degree_damping) -> bool {
+            return degree_damping.outer_threshold < r_norm;
+          }) - degree_damping_.begin();
   // We have |max_degree > 0|.
   int const max_degree = limiting_degree - 1;
   switch (max_degree) {

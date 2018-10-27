@@ -90,7 +90,7 @@ class Geopotential {
     Derivatives<double, Length, 4> sigmoid_coefficients;
 
     // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
-    void SetDampedRadialQuantities(
+    void ComputeDampedRadialQuantities(
         Length const& r_norm,
         Square<Length> const& r²,
         Vector<double, Frame> const& r_normalized,
@@ -121,38 +121,26 @@ class Geopotential {
 
   not_null<OblateBody<Frame> const*> body_;
 
-  // Beyond |degree_threshold_[n]|, the contribution from the harmonics with
-  // degree ≥n is ignored.  Between |degree_threshold / 3| and
-  // |degree_threshold|, a sigmoid is applied to the relevant terms of the
-  // potential. In particular, beyond |degree_threshold_[2]|,
-  // |GeneralSphericalHarmonicsAcceleration| returns 0.
-  // |degree_threshold_[0]| and |degree_threshold_[1]| are unused, and are
-  // infinite.
-  // The values in |degree_threshold_| are in non-strictly decreasing order.
-  std::vector<Length> degree_threshold_;
+  // The contribution from the harmonics of degree n is damped by
+  // degree_damping_[n].
+  // degree_damping_[0] and degree_damping_[1] have infinite thresholds, and are
+  // not used (this class does not compute the central force and disregards
+  // degree 1, which is equivalent to a translation of the centre of mass).
+  std::vector<HarmonicDamping> degree_damping_;
 
-  // The coefficients of the sigmoid, in monomial basis.  A custom evaluation is
-  // performed to take advantage of precomputations.  The constant term must be
-  // 0: it is not used in the evaluation.
-  std::vector<Derivatives<double, Length, 4>> degree_sigmoid_coefficients_;
-
-  // Beyond this threshold, the contribution from the tesseral harmonics
-  // (including the sectoral harmonics) is 0.  Between
-  // |tesseral_threshold_ / 3| and |tesseral_threshold_|, a sigmoid is applied.
-  Length tesseral_threshold_;
-
-  // The coefficients of the sigmoid, in monomial basis.  A custom evaluation is
-  // performed to take advantage of precomputations.  The constant term must be
-  // 0: it is not used in the evaluation.
-  Derivatives<double, Length, 4> tesseral_sigmoid_coefficients_;
+  // The contribution of low-degree tesseral (including sectoral) harmonics is
+  // damped by |tesseral_damping_|.
+  HarmonicDamping tesseral_damping_;
 
   // |first_tesseral_degree_| is the integer n such that
-  // |degree_threshold_[n-1] >= tesseral_threshold_ > degree_threshold_[n]|,
-  // or is |degree_threshold_.size()| if
+  //   degree_damping_[n-1].outer_threshold >= tesseral_damping_.outer_threshold
+  // and
+  //   tesseral_damping_.outer_threshold > degree_damping_[n].outer_threshold,
+  // or is |degree_damping_.size()| if
   // |tesseral_threshold_ <= degree_threshold_[n]| for all n.
   // Tesseral (including sectoral) harmonics of degree less than
-  // |first_tesseral_degree_| come into effect at |tesseral_threshold_|, instead
-  // of their respective |degree_threshold_|.
+  // |first_tesseral_degree_| are damped by |tesseral_damping_|, instead
+  // of their respective |degree_damping_|.
   int first_tesseral_degree_;
 };
 
