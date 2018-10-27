@@ -29,11 +29,9 @@ using geometry::R3Element;
 using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Derivative;
-using quantities::Inverse;
 using quantities::Length;
 using quantities::Pow;
 using quantities::Sqrt;
-using quantities::Square;
 using quantities::Sin;
 using quantities::SIUnit;
 
@@ -240,6 +238,40 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     }
 
     return normalization_factor * grad_ℜ𝔅𝔏;
+  }
+}
+
+template<typename Frame>
+void Geopotential<Frame>::HarmonicDamping::SetDampedRadialQuantities(
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Vector<double, Frame> const& r_normalized,
+      Inverse<Square<Length>> const& ℜ_over_r,
+      Inverse<Square<Length>> const& ℜʹ,
+      Inverse<Square<Length>>& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
+  Length const& s1 = outer_threshold;
+  Length const& s0 = inner_threshold;
+  if (r <= s0) {
+    // Below the inner threshold, σ = 1.
+    σℜ_over_r = ℜ_over_r;
+    grad_σℜ = ℜʹ * r_normalized;
+  } else {
+    auto const& c = sigmoid_coefficients_[n];
+    Derivative<double, Length> const c1 = std::get<1>(c);
+    Derivative<double, Length, 2> const c2 = std::get<2>(c);
+    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const r³ = r² * r_norm;
+    double const c3r³ = c3 * r³;
+    double const c2r² = c2 * r²;
+    double const c1r = c1 * r_norm;
+    double const σ = c3r³ + c2r² + c1r;
+    double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+
+    precomputations.σℜ_over_r = σ * ℜ_over_r;
+    // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
+    // operations into scalar ones.
+    precomputations.grad_σℜ = (σ ʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
   }
 }
 
