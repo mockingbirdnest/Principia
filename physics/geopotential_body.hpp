@@ -8,6 +8,7 @@
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
 #include "numerics/legendre.hpp"
+#include "numerics/max_abs_normalized_associated_legendre_function.mathematica.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
 #include "quantities/quantities.hpp"
@@ -22,6 +23,7 @@ using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
 using numerics::LegendrePolynomial;
+using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
 using numerics::uninitialized;
 using geometry::Bivector;
 using geometry::InnerProduct;
@@ -481,8 +483,24 @@ Acceleration(Geopotential<Frame> const& geopotential,
 }
 
 template<typename Frame>
-Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body)
-    : body_(body) {}
+Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
+                                  double const tolerance)
+    : body_(body) {
+  CHECK_GE(tolerance, 0);
+  double const& ε = tolerance;
+  for (n = 2; n <= body_->geopotential_degree(); ++n) {
+    for (m = 0; m <= n; ++m) {
+      double const max_abs_Pnm =
+          MaxAbsNormalizedAssociatedLegendreFunction[n][m];
+      double const Cnm = body->cos()[n][m];
+      double const Snm = body->sin()[n][m];
+      Length const r =
+          body->reference_radius() *
+          rootn((max_abs_Pnm * (1 + n) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
+                n);
+    }
+  }
+}
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>

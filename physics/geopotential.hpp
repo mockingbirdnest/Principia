@@ -29,7 +29,10 @@ using quantities::Square;
 template<typename Frame>
 class Geopotential {
  public:
-  explicit Geopotential(not_null<OblateBody<Frame> const*> body);
+  // Spherical harmonics will not be damped if they contribution to the radial
+  // force exceeds |tolerance| times the central force.
+  Geopotential(not_null<OblateBody<Frame> const*> body,
+               double tolerance);
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   SphericalHarmonicsAcceleration(
