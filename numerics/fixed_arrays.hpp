@@ -137,9 +137,10 @@ class FixedStrictlyLowerTriangularMatrix final {
   std::array<Scalar, dimension> data_;
 };
 
-template<typename Scalar, int rows>
+template<typename Scalar, int rows_>
 class FixedLowerTriangularMatrix final {
  public:
+  static constexpr int rows = rows_;
   static constexpr int dimension = rows * (rows + 1) / 2;
 
   constexpr FixedLowerTriangularMatrix();
