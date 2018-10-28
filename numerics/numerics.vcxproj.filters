@@ -95,6 +95,9 @@
     <ClInclude Include="combinatorics_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
@@ -140,6 +143,9 @@
       <Filter>Test Files</Filter>
     </ClCompile>
     <ClCompile Include="combinatorics_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
+    <ClCompile Include="max_abs_normalized_associated_legendre_functions_test.cc">
       <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>

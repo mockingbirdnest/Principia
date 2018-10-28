@@ -51,8 +51,8 @@ LegendrePolynomial() {
 inline double LegendreNormalizationFactor(int const degree, int const order) {
   int const n = degree;
   int const m = order;
-  return Sqrt((n + n + 1) * (2 - (m == 0 ? 1 : 0)) /
-              static_cast<double>(FallingFactorial(n + m, m + m)));
+  return Sqrt((2 * n + 1) * (2 - (m == 0 ? 1 : 0)) /
+              static_cast<double>(FallingFactorial(n + m, 2 * m)));
 }
 
 }  // namespace internal_legendre
