@@ -250,7 +250,7 @@ Geopotential<Frame>::HarmonicDamping::HarmonicDamping(
       inner_threshold(outer_threshold),
       sigmoid_coefficients{0,
                            9 / (4 * inner_threshold),
-                           3 / (2 * Pow<2>(inner_threshold)),
+                           -3 / (2 * Pow<2>(inner_threshold)),
                            1 / (4 * Pow<3>(inner_threshold))} {}
 
 template<typename Frame>
@@ -488,17 +488,37 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     : body_(body) {
   CHECK_GE(tolerance, 0);
   double const& ε = tolerance;
-  for (n = 2; n <= body_->geopotential_degree(); ++n) {
+  first_tesseral_degree_ = body_->geopotential_degree() + 1;
+  tesseral_damping_ = HarmonicDamping(Length{});
+  Length tesseral_threshold;
+  bool is_tesseral = false;
+  degree_damping_.push_back();
+  degree_damping_.push_back();
+  for (int n = 2; n <= body_->geopotential_degree(); ++n) {
+    Length degree_n_threshold = degree_damping_[n - 1].inner_threshold;
     for (m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
           MaxAbsNormalizedAssociatedLegendreFunction[n][m];
       double const Cnm = body->cos()[n][m];
       double const Snm = body->sin()[n][m];
+      // TODO(egg): write a rootn.
       Length const r =
           body->reference_radius() *
-          rootn((max_abs_Pnm * (1 + n) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
-                n);
+          std::exp(
+              (max_abs_Pnm * (1 + n) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
+              1.0 / n);
+      if (m == 0 || is_tesseral) {
+        degree_n_threshold = std::max(r, degree_n_threshold);
+        if (!is_tesseral && degree_n_threshold < tesseral_threshold) {
+          first_tesseral_degree_ = n;
+          is_tesseral = true;
+          tesseral_damping_ = HarmonicDamping(tesseral_threshold);
+        }
+      } else {
+        tesseral_threshold = std::max(r, tesseral_threshold);
+      }
     }
+    degree_damping_.push_back(HarmonicDamping(degree_n_threshold));
   }
 }
 
