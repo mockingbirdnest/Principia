@@ -25,6 +25,37 @@ using quantities::Length;
 using quantities::Quotient;
 using quantities::Square;
 
+// Specification of the damping of a spherical harmonic, acting as a radial
+// multiplier on the potential:
+//   V_damped = σ(|r|) V(r).
+struct HarmonicDamping final {
+  explicit HarmonicDamping() = default;
+  explicit HarmonicDamping(Length const& inner_threshold);
+  
+  // Above this threshold, the contribution to the potential from this
+  // harmonic is 0, i.e., σ = 0.
+  Length outer_threshold = Infinity<Length>();
+  // Below this threshold, the contribution to the potential from this
+  // harmonic is undamped, σ = 1.
+  // inner_threshold = outer_threshold / 3.
+  Length inner_threshold = Infinity<Length>();
+  // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
+  // following coefficients in monomial basis.
+  // The constant term is always 0, and is thus ignored in the evaluation.
+  Derivatives<double, Length, 4> sigmoid_coefficients;
+
+  // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
+  template<typename Frame>
+  void ComputeDampedRadialQuantities(
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Vector<double, Frame> const& r_normalized,
+      Inverse<Square<Length>> const& ℜ_over_r,
+      Inverse<Square<Length>> const& ℜʹ,
+      Inverse<Square<Length>>& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
+};
+
 // Representation of the geopotential model of an oblate body.
 template<typename Frame>
 class Geopotential {
@@ -76,36 +107,6 @@ class Geopotential {
   struct DegreeNAllOrders;
   template<typename>
   struct AllDegrees;
-
-  // Specification of the damping of a spherical harmonic, acting as
-  // a radial multiplier on the potential:
-  //   V_damped = σ(|r|) V(r).
-  struct HarmonicDamping {
-    explicit HarmonicDamping() = default;
-    explicit HarmonicDamping(Length const& inner_threshold);
-  
-    // Above this threshold, the contribution to the potential from this
-    // harmonic is 0, i.e., σ = 0.
-    Length const outer_threshold = Infinity<Length>();
-    // Below this threshold, the contribution to the potential from this
-    // harmonic is undamped, σ = 1.
-    // inner_threshold = outer_threshold / 3.
-    Length const inner_threshold = Infinity<Length>();
-    // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
-    // following coefficients in monomial basis.
-    // The constant term is always 0, and is thus ignored in the evaluation.
-    Derivatives<double, Length, 4> const sigmoid_coefficients;
-
-    // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
-    void ComputeDampedRadialQuantities(
-        Length const& r_norm,
-        Square<Length> const& r²,
-        Vector<double, Frame> const& r_normalized,
-        Inverse<Square<Length>> const& ℜ_over_r,
-        Inverse<Square<Length>> const& ℜʹ,
-        Inverse<Square<Length>>& σℜ_over_r,
-        Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
-  };
 
   // If z is a unit vector along the axis of rotation, and r a vector from the
   // center of |body_| to some point in space, the acceleration computed here

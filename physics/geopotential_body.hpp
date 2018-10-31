@@ -38,6 +38,50 @@ using quantities::Sin;
 using quantities::SIUnit;
 
 // The notation in this file follows documentation/Geopotential.pdf.
+
+inline HarmonicDamping::HarmonicDamping(
+    Length const& inner_threshold)
+    : outer_threshold(inner_threshold * 3),
+      inner_threshold(outer_threshold),
+      sigmoid_coefficients{0,
+                           9 / (4 * inner_threshold),
+                           -3 / (2 * Pow<2>(inner_threshold)),
+                           1 / (4 * Pow<3>(inner_threshold))} {}
+
+template<typename Frame>
+void HarmonicDamping::ComputeDampedRadialQuantities(
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Vector<double, Frame> const& r_normalized,
+      Inverse<Square<Length>> const& ℜ_over_r,
+      Inverse<Square<Length>> const& ℜʹ,
+      Inverse<Square<Length>>& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
+  Length const& s1 = outer_threshold;
+  Length const& s0 = inner_threshold;
+  if (r_norm <= s0) {
+    // Below the inner threshold, σ = 1.
+    σℜ_over_r = ℜ_over_r;
+    grad_σℜ = ℜʹ * r_normalized;
+  } else {
+    auto const& c = sigmoid_coefficients;
+    Derivative<double, Length> const c1 = std::get<1>(c);
+    Derivative<double, Length, 2> const c2 = std::get<2>(c);
+    Derivative<double, Length, 3> const c3 = std::get<3>(c);
+    auto const r³ = r² * r_norm;
+    double const c3r³ = c3 * r³;
+    double const c2r² = c2 * r²;
+    double const c1r = c1 * r_norm;
+    double const σ = c3r³ + c2r² + c1r;
+    double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
+
+    σℜ_over_r = σ * ℜ_over_r;
+    // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
+    // operations into scalar ones.
+    grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
+  }
+}
+
 template<typename Frame>
 template<int size>
 struct Geopotential<Frame>::Precomputations {
@@ -240,50 +284,6 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     }
 
     return normalization_factor * grad_ℜ𝔅𝔏;
-  }
-}
-
-template<typename Frame>
-Geopotential<Frame>::HarmonicDamping::HarmonicDamping(
-    Length const& inner_threshold)
-    : outer_threshold(inner_threshold * 3),
-      inner_threshold(outer_threshold),
-      sigmoid_coefficients{0,
-                           9 / (4 * inner_threshold),
-                           -3 / (2 * Pow<2>(inner_threshold)),
-                           1 / (4 * Pow<3>(inner_threshold))} {}
-
-template<typename Frame>
-void Geopotential<Frame>::HarmonicDamping::ComputeDampedRadialQuantities(
-      Length const& r_norm,
-      Square<Length> const& r²,
-      Vector<double, Frame> const& r_normalized,
-      Inverse<Square<Length>> const& ℜ_over_r,
-      Inverse<Square<Length>> const& ℜʹ,
-      Inverse<Square<Length>>& σℜ_over_r,
-      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
-  Length const& s1 = outer_threshold;
-  Length const& s0 = inner_threshold;
-  if (r_norm <= s0) {
-    // Below the inner threshold, σ = 1.
-    σℜ_over_r = ℜ_over_r;
-    grad_σℜ = ℜʹ * r_normalized;
-  } else {
-    auto const& c = sigmoid_coefficients;
-    Derivative<double, Length> const c1 = std::get<1>(c);
-    Derivative<double, Length, 2> const c2 = std::get<2>(c);
-    Derivative<double, Length, 3> const c3 = std::get<3>(c);
-    auto const r³ = r² * r_norm;
-    double const c3r³ = c3 * r³;
-    double const c2r² = c2 * r²;
-    double const c1r = c1 * r_norm;
-    double const σ = c3r³ + c2r² + c1r;
-    double const σʹr = 3 * c3r³ + 2 * c2r² + c1r;
-
-    σℜ_over_r = σ * ℜ_over_r;
-    // Writing this as σ′ℜ + ℜ′σ rather than ℜ∇σ + σ∇ℜ turns some vector
-    // operations into scalar ones.
-    grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
   }
 }
 
@@ -492,11 +492,11 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   tesseral_damping_ = HarmonicDamping(Length{});
   Length tesseral_threshold;
   bool is_tesseral = false;
-  degree_damping_.push_back();
-  degree_damping_.push_back();
+  degree_damping_.emplace_back();
+  degree_damping_.emplace_back();
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
     Length degree_n_threshold = degree_damping_[n - 1].inner_threshold;
-    for (m = 0; m <= n; ++m) {
+    for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
           MaxAbsNormalizedAssociatedLegendreFunction[n][m];
       double const Cnm = body->cos()[n][m];
@@ -504,8 +504,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
       // TODO(egg): write a rootn.
       Length const r =
           body->reference_radius() *
-          std::exp(
-              (max_abs_Pnm * (1 + n) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
+          std::pow(
+              (max_abs_Pnm * (n + 1) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
               1.0 / n);
       if (m == 0 || is_tesseral) {
         degree_n_threshold = std::max(r, degree_n_threshold);
