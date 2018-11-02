@@ -502,17 +502,18 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
       double const Cnm = body->cos()[n][m];
       double const Snm = body->sin()[n][m];
       // TODO(egg): write a rootn.
-      Length const r =
-          body->reference_radius() *
-          std::pow(
-              (max_abs_Pnm * (n + 1) * Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) / ε,
-              1.0 / n);
+      Length const r = Cnm == 0 && Snm == 0
+                           ? Length{}
+                           : body->reference_radius() *
+                                 std::pow((max_abs_Pnm * (n + 1) *
+                                           Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) /
+                                              ε,
+                                          1.0 / n);
       if (m == 0 || is_tesseral) {
         degree_n_threshold = std::max(r, degree_n_threshold);
         if (!is_tesseral && degree_n_threshold < tesseral_threshold) {
           first_tesseral_degree_ = n;
           is_tesseral = true;
-          tesseral_damping_ = HarmonicDamping(tesseral_threshold);
         }
       } else {
         tesseral_threshold = std::max(r, tesseral_threshold);
@@ -520,6 +521,7 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     }
     degree_damping_.push_back(HarmonicDamping(degree_n_threshold));
   }
+  tesseral_damping_ = HarmonicDamping(tesseral_threshold);
 }
 
 template<typename Frame>
