@@ -44,6 +44,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
 using ::testing::An;
+using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 
@@ -329,6 +330,49 @@ TEST_F(GeopotentialTest, TestVector) {
   }
   EXPECT_THAT(actual_acceleration_cpp,
               AlmostEquals(actual_acceleration_f90, 4, 8));
+}
+
+TEST_F(GeopotentialTest, HarmonicDamping) {
+  HarmonicDamping σ(1 * Metre);
+  EXPECT_THAT(σ.inner_threshold, Eq(1 * Metre));
+  EXPECT_THAT(σ.outer_threshold, Eq(3 * Metre));
+  Vector<double, World> x({1, 0, 0});
+  Inverse<Square<Length>> const ℜ_over_r = 5 / Pow<2>(Metre);
+  Inverse<Square<Length>> const ℜʹ = 17 / Pow<2>(Metre);
+  Inverse<Square<Length>> σℜ_over_r;
+  Vector<Inverse<Square<Length>>, World> grad_σℜ;
+
+  {
+    Length const r = 3 * Metre;
+    σ.ComputeDampedRadialQuantities(
+        r, r * r, x, ℜ_over_r, ℜʹ, σℜ_over_r, grad_σℜ);
+    EXPECT_THAT(σℜ_over_r, Eq(0 / Pow<2>(Metre)));
+    EXPECT_THAT(grad_σℜ.coordinates().x, Eq(0 / Pow<2>(Metre)));
+  }
+  {
+    Length const r = 2 * Metre;
+    σ.ComputeDampedRadialQuantities(
+        r, r * r, x, ℜ_over_r, ℜʹ, σℜ_over_r, grad_σℜ);
+    auto const ℜ = ℜ_over_r * r;
+    auto const σ = 0.5;
+    auto const σʹ = -3 / (4 * Metre);
+    EXPECT_THAT(σℜ_over_r, Eq(ℜ_over_r / 2));
+    EXPECT_THAT(grad_σℜ.coordinates().x, Eq(σʹ * ℜ + ℜʹ * σ));
+  }
+  {
+    Length const r = 1 * Metre;
+    σ.ComputeDampedRadialQuantities(
+        r, r * r, x, ℜ_over_r, ℜʹ, σℜ_over_r, grad_σℜ);
+    EXPECT_THAT(σℜ_over_r, Eq(ℜ_over_r));
+    EXPECT_THAT(grad_σℜ.coordinates().x, Eq(ℜʹ));
+  }
+  {
+    Length const r = 0.5 * Metre;
+    σ.ComputeDampedRadialQuantities(
+        r, r * r, x, ℜ_over_r, ℜʹ, σℜ_over_r, grad_σℜ);
+    EXPECT_THAT(σℜ_over_r, Eq(ℜ_over_r));
+    EXPECT_THAT(grad_σℜ.coordinates().x, Eq(ℜʹ));
+  }
 }
 
 }  // namespace internal_geopotential

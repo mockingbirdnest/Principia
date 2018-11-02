@@ -42,7 +42,7 @@ using quantities::SIUnit;
 inline HarmonicDamping::HarmonicDamping(
     Length const& inner_threshold)
     : outer_threshold(inner_threshold * 3),
-      inner_threshold(outer_threshold),
+      inner_threshold(inner_threshold),
       sigmoid_coefficients{0,
                            9 / (4 * inner_threshold),
                            -3 / (2 * Pow<2>(inner_threshold)),
@@ -557,7 +557,7 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
           degree_damping_.begin(),
           degree_damping_.end(),
           [r_norm](HarmonicDamping const& degree_damping) -> bool {
-            return degree_damping.outer_threshold < r_norm;
+            return r_norm < degree_damping.outer_threshold;
           }) - degree_damping_.begin();
   // We have |max_degree > 0|.
   int const max_degree = limiting_degree - 1;
