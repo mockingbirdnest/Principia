@@ -124,7 +124,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
 
   auto const earth = MakeEarthBody(solar_system_2000, max_degree);
-  Geopotential<ICRS> const geopotential(&earth);
+  Geopotential<ICRS> const geopotential(&earth, /*tolerance=0*/);
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-1e7, 1e7);
