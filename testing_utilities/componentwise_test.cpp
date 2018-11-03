@@ -13,6 +13,7 @@
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
+#include "testing_utilities/is_near.hpp"
 #include "testing_utilities/vanishes_before.hpp"
 
 namespace principia {
@@ -24,9 +25,14 @@ using geometry::Vector;
 using quantities::Action;
 using quantities::Amount;
 using quantities::Length;
+using quantities::Speed;
 using quantities::SIUnit;
 using quantities::si::Metre;
+using quantities::si::Second;
+using ::testing::AllOf;
 using ::testing::Eq;
+using ::testing::Gt;
+using ::testing::Lt;
 using ::testing::Not;
 
 namespace testing_utilities {
@@ -136,6 +142,25 @@ TEST_F(ComponentwiseTest, Describe) {
               "t2 does not vanish before 1 to within 4 to 4 ULP",
               out.str());
   }
+}
+
+TEST_F(ComponentwiseTest, Variadic) {
+  using VV = Pair<Vector<Length, World>, Vector<Speed, World>>;
+  VV vv(Vector<Length, World>({1 * Metre,
+                               2 * Metre,
+                               3 * Metre}),
+        Vector<Speed, World>({4 * Metre / Second,
+                              5 * Metre / Second,
+                              6 * Metre / Second}));
+  EXPECT_THAT(
+      vv,
+      Componentwise(Componentwise(IsNear(1 * Metre),
+                                  IsNear(2 * Metre),
+                                  AllOf(Gt(2 * Metre), Lt(4 * Metre))),
+                    Componentwise(IsNear(4 * Metre / Second),
+                                  IsNear(5 * Metre / Second),
+                                  AllOf(Gt(5 * Metre / Second),
+                                        Lt(7 * Metre / Second)))));
 }
 
 }  // namespace testing_utilities
