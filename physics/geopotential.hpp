@@ -4,7 +4,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "physics/oblate_body.hpp"
-#include "quantities/named_quantities.hpp""
+#include "quantities/named_quantities.hpp"
 #include "quantities/tuples.hpp"
 
 namespace principia {
