@@ -80,6 +80,10 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
+  std::vector<HarmonicDamping> const& degree_damping() const;
+  HarmonicDamping const& tesseral_damping() const;
+  int first_tesseral_degree() const;
+
  private:
   // The frame of the surface of the celestial.
   struct SurfaceFrame;

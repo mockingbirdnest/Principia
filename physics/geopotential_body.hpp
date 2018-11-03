@@ -495,7 +495,7 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   degree_damping_.emplace_back();
   degree_damping_.emplace_back();
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
-    Length degree_n_threshold = degree_damping_[n - 1].inner_threshold;
+    Length degree_n_threshold;
     for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
           MaxAbsNormalizedAssociatedLegendreFunction[n][m];
@@ -519,6 +519,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
         tesseral_threshold = std::max(r, tesseral_threshold);
       }
     }
+    degree_n_threshold =
+        std::min(degree_n_threshold, degree_damping_[n - 1].inner_threshold);
     degree_damping_.push_back(HarmonicDamping(degree_n_threshold));
   }
   tesseral_damping_ = HarmonicDamping(tesseral_threshold);
@@ -582,6 +584,22 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
 }
 
 #undef PRINCIPIA_CASE_SPHERICAL_HARMONICS
+
+template<typename Frame>
+std::vector<HarmonicDamping> const& Geopotential<Frame>::degree_damping()
+    const {
+  return degree_damping_;
+}
+
+template<typename Frame>
+HarmonicDamping const& Geopotential<Frame>::tesseral_damping() const {
+  return tesseral_damping_;
+}
+
+template<typename Frame>
+int Geopotential<Frame>::first_tesseral_degree() const {
+  return first_tesseral_degree_;
+}
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
