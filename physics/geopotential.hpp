@@ -28,7 +28,7 @@ using quantities::Square;
 
 // Specification of the damping of a spherical harmonic, acting as a radial
 // multiplier on the potential:
-//   V_damped = σ(|r|) V(r).
+//   V_damped = σ(‖r‖) V(r).
 struct HarmonicDamping final {
   explicit HarmonicDamping() = default;
   explicit HarmonicDamping(Length const& inner_threshold);
