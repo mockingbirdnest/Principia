@@ -24,6 +24,7 @@ namespace internal_geopotential {
 
 using astronomy::ICRS;
 using astronomy::ITRS;
+using base::make_not_null_unique;
 using geometry::Frame;
 using numerics::LegendreNormalizationFactor;
 using physics::SolarSystem;
@@ -45,6 +46,7 @@ using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
 using ::testing::An;
+using ::testing::Each;
 using ::testing::Eq;
 using ::testing::ElementsAre;
 using ::testing::Field;
@@ -398,12 +400,12 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
       /*angular_frequency=*/1e-20 * Radian / Second,
       right_ascension_of_pole_,
       declination_of_pole_);
-  OblateBody<ICRS> const earth = OblateBody<ICRS>(
+  auto earth = make_not_null_unique<OblateBody<ICRS>>(
       massive_body_parameters,
       rotating_body_parameters,
       OblateBody<ICRS>::Parameters::ReadFromMessage(
           earth_message.geopotential(), earth_reference_radius));
-  Geopotential<ICRS> const geopotential(&earth, /*tolerance=*/0x1p-24);
+  Geopotential<ICRS> geopotential(earth.get(), /*tolerance=*/0x1p-24);
 
   EXPECT_THAT(
       geopotential.degree_damping(),
@@ -421,6 +423,122 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(geopotential.tesseral_damping().inner_threshold,
               IsNear(110'000 * Kilo(Metre)));
   EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(3));
+
+  geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0);
+
+  EXPECT_THAT(
+      geopotential.degree_damping(),
+      Each(Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>()))));
+  EXPECT_THAT(geopotential.tesseral_damping().inner_threshold,
+              Eq(Infinity<Length>()));
+  EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(0));
+
+  // TODO(eggrobin): This is brittle; we should have |SolarSystem| utilities for
+  // that.
+  double const earth_c20 = earth_message.geopotential().row(0).column(0).cos();
+  earth_message.mutable_geopotential()
+      ->mutable_row(0)
+      ->mutable_column(0)
+      ->clear_cos();
+  earth = make_not_null_unique<OblateBody<ICRS>>(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<ICRS>::Parameters::ReadFromMessage(
+          earth_message.geopotential(), earth_reference_radius));
+  geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0x1p-24);
+
+  EXPECT_THAT(
+      geopotential.degree_damping(),
+      ElementsAre(
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(110'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(43'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(23'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(18'000 * Kilo(Metre)))));
+  EXPECT_THAT(geopotential.tesseral_damping().inner_threshold,
+              IsNear(110'000 * Kilo(Metre)));
+  EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(2));
+
+  earth_message.mutable_geopotential()
+      ->mutable_row(0)
+      ->mutable_column(0)
+      ->set_cos(earth_c20);
+  double const earth_c30 = earth_message.geopotential().row(1).column(0).cos();
+  earth_message.mutable_geopotential()
+      ->mutable_row(1)
+      ->mutable_column(0)
+      ->set_cos(earth_c20);
+  earth = make_not_null_unique<OblateBody<ICRS>>(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<ICRS>::Parameters::ReadFromMessage(
+          earth_message.geopotential(), earth_reference_radius));
+  geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0x1p-24);
+
+  EXPECT_THAT(
+      geopotential.degree_damping(),
+      ElementsAre(
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(1'500'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(280'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(23'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(18'000 * Kilo(Metre)))));
+  EXPECT_THAT(geopotential.tesseral_damping().inner_threshold,
+              IsNear(110'000 * Kilo(Metre)));
+  EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(4));
+
+  earth_message.mutable_geopotential()
+      ->mutable_row(1)
+      ->mutable_column(0)
+      ->set_cos(earth_c30);
+  for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+    for (auto& column : *row.mutable_column()) {
+      if (column.order() != 0) {
+        column.clear_cos();
+        column.clear_sin();
+      }
+    }
+  }
+  earth = make_not_null_unique<OblateBody<ICRS>>(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<ICRS>::Parameters::ReadFromMessage(
+          earth_message.geopotential(), earth_reference_radius));
+  geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0x1p-24);
+
+  EXPECT_THAT(
+      geopotential.degree_damping(),
+      ElementsAre(
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(1'500'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(35'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(22'000 * Kilo(Metre))),
+          Field(&HarmonicDamping::inner_threshold,
+                IsNear(12'000 * Kilo(Metre)))));
+  EXPECT_THAT(geopotential.tesseral_damping().inner_threshold, Eq(0 * Metre));
+  EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(6));
+
+  geopotential = Geopotential<ICRS>(earth.get(), /*tolerance=*/0);
+
+  EXPECT_THAT(
+      geopotential.degree_damping(),
+      Each(Field(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>()))));
+  EXPECT_THAT(geopotential.tesseral_damping().inner_threshold, Eq(0 * Metre));
+  EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(6));
 }
 
 }  // namespace internal_geopotential

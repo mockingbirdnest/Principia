@@ -145,11 +145,13 @@ class Geopotential {
   HarmonicDamping tesseral_damping_;
 
   // |first_tesseral_degree_| is the integer n such that
-  //   degree_damping_[n-1].outer_threshold >= tesseral_damping_.outer_threshold
+  //   degree_damping_[n-1].outer_threshold > tesseral_damping_.outer_threshold
   // and
-  //   tesseral_damping_.outer_threshold > degree_damping_[n].outer_threshold,
-  // or is |degree_damping_.size()| if
-  // |tesseral_threshold_ <= degree_threshold_[n]| for all n.
+  //   tesseral_damping_.outer_threshold >= degree_damping_[n].outer_threshold,
+  // or is 0 if, for all n,
+  //   degree_threshold_[n].outer_threshold <= tesseral_damping_.outer_threshold,
+  // or |degree_damping_.size()| if, for all n,
+  //   tesseral_damping_.outer_threshold < degree_threshold_[n].outer_threshold,
   // Tesseral (including sectoral) harmonics of degree less than
   // |first_tesseral_degree_| are damped by |tesseral_damping_|, instead
   // of their respective |degree_damping_|.
