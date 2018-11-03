@@ -38,7 +38,7 @@ struct HarmonicDamping final {
   Length outer_threshold = Infinity<Length>();
   // Below this threshold, the contribution to the potential from this
   // harmonic is undamped, σ = 1.
-  // inner_threshold = outer_threshold / 3.
+  // This class depends on the invariant: outer_threshold = 3 * inner_threshold.
   Length inner_threshold = Infinity<Length>();
   // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
   // following coefficients in monomial basis.
