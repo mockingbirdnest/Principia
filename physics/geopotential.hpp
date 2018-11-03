@@ -3,7 +3,7 @@
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
-#include "physics/oblate_body.hpp
+#include "physics/oblate_body.hpp"
 #include "quantities/named_quantities.hpp""
 #include "quantities/tuples.hpp"
 
