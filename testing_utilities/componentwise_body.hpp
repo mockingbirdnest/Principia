@@ -172,7 +172,8 @@ MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+void ComponentwiseMatcher2Impl<
+    physics::RelativeDegreesOfFreedom<Frame> const&>::
 DescribeTo(std::ostream* out) const {
   *out << "displacement ";
   q_matcher_.DescribeTo(out);
@@ -181,7 +182,8 @@ DescribeTo(std::ostream* out) const {
 }
 
 template<typename Frame>
-void ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+void ComponentwiseMatcher2Impl<
+    physics::RelativeDegreesOfFreedom<Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "displacement ";
   q_matcher_.DescribeNegationTo(out);
