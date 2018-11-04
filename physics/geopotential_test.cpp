@@ -546,9 +546,12 @@ TEST_F(GeopotentialTest, DampedForces) {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
-  auto earth_message = solar_system_2000.gravity_model_message("Earth");
-  earth_message.mutable_geopotential()->set_max_degree(5);
-  earth_message.mutable_geopotential()->clear_zonal();
+  auto const earth_message = [&solar_system_2000]() {
+    auto message = solar_system_2000.gravity_model_message("Earth");
+    message.mutable_geopotential()->set_max_degree(5);
+    message.mutable_geopotential()->clear_zonal();
+    return message;
+  }();
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
   auto const earth_reference_radius =
@@ -568,6 +571,9 @@ TEST_F(GeopotentialTest, DampedForces) {
           earth_message.geopotential(), earth_reference_radius));
   Geopotential<ICRS> const earth_geopotential(&earth, /*tolerance=*/0x1p-24);
 
+  // The bodies underlying the geopotentials below.
+  std::vector<not_null<std::unique_ptr<OblateBody<ICRS>>>> earths;
+
   // |geopotential_degree[n]| has the degree n terms of the geopotential, with
   // tolerance 0.
   std::array<std::optional<Geopotential<ICRS>>, 5> geopotential_degree;
@@ -575,12 +581,11 @@ TEST_F(GeopotentialTest, DampedForces) {
   std::optional<Geopotential<ICRS>> geopotential_j2;
   // |geopotential_c22_s22| has degree 2 sectoral terms with tolerance 0.
   std::optional<Geopotential<ICRS>> geopotential_c22_s22;
-  // The bodies underlying the above geopotentials.
-  std::vector<not_null<std::unique_ptr<OblateBody<ICRS>>>> earths;
 
   for (int n = 3; n <= 5; ++n) {
     auto earth_degree_n_message = earth_message;
-    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+    for (auto& row :
+         *earth_degree_n_message.mutable_geopotential()->mutable_row()) {
       if (row.degree() != n) {
         for (auto& column : *row.mutable_column()) {
           column.clear_cos();
@@ -598,7 +603,8 @@ TEST_F(GeopotentialTest, DampedForces) {
   }
   {
     auto earth_c22_s22_message = earth_message;
-    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+    for (auto& row :
+         *earth_c22_s22_message.mutable_geopotential()->mutable_row()) {
       for (auto& column : *row.mutable_column()) {
         if (column.order() == 0 || row.degree() != 2) {
           column.clear_cos();
@@ -616,7 +622,7 @@ TEST_F(GeopotentialTest, DampedForces) {
   }
   {
     auto earth_j2_message = earth_message;
-    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+    for (auto& row : *earth_j2_message.mutable_geopotential()->mutable_row()) {
       for (auto& column : *row.mutable_column()) {
         if (column.order() != 0 || row.degree() != 2) {
           column.clear_cos();
@@ -630,28 +636,52 @@ TEST_F(GeopotentialTest, DampedForces) {
         OblateBody<ICRS>::Parameters::ReadFromMessage(
             earth_j2_message.geopotential(), earth_reference_radius)));
     geopotential_j2 = Geopotential<ICRS>(earths.back().get(), /*tolerance=*/0);
-  }
+}
 
   Vector<double, ICRS> direction({1, 2, 5});
   direction = direction / direction.Norm();
 
-  auto get_acceleration =
+  auto const get_acceleration =
       [&direction](Geopotential<ICRS> const& geopotential, Length const& r) {
         return geopotential.GeneralSphericalHarmonicsAcceleration(
-            Instant(), r * direction, r, r * r, 1 / Pow<3>(r))
+            Instant(), r * direction, r, r * r, 1 / Pow<3>(r));
       };
 
+  // Above the  outer threshold for J2.
   EXPECT_THAT(
       get_acceleration(earth_geopotential, 5'000'000 * Kilo(Metre)).Norm(),
       Eq(0 / Pow<2>(Metre)));
 
-  EXPECT_THAT(
-      get_acceleration(earth_geopotential, 3'000'000 * Kilo(Metre)).Norm() /
-          get_acceleration(geopotential_j2, 3'000'000 * Kilo(Metre)),
-      IsNear(0.5));
+  {
+    // Inspect the J2 sigmoid.
+    Length const s0 = earth_geopotential.degree_damping()[2].inner_threshold();
+    Length const s1 = earth_geopotential.degree_damping()[2].outer_threshold();
+    EXPECT_THAT(s0, IsNear(1'500'000 * Kilo(Metre)));
 
+    // The radial component grows beyond the undamped one; the ratio is maximal
+    // at the geometric mean of the inner and outer thresholds.
+    EXPECT_THAT(
+        InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), direction) /
+            InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), direction),
+        AlmostEquals(1.25, 0));
+    EXPECT_THAT(
+        InnerProduct(get_acceleration(earth_geopotential, Sqrt(s0 * s1)), direction) /
+            InnerProduct(get_acceleration(*geopotential_j2, Sqrt(s0 * s1)), direction),
+        AlmostEquals(3 * Sqrt(3) / 4, 0));
+
+    // The latitudinal component remains below the undamped one (it is simply
+    // multiplied by σ, instead of involving σ′).
+    Vector<double, ICRS> const celestial_north({0, 0, 1});
+    Vector<double, ICRS> local_north = celestial_north.OrthogonalizationAgainst(direction);
+    EXPECT_THAT(
+        InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), local_north) /
+            InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), local_north),
+        AlmostEquals(0.5, 0));
+  }
+
+  // Below the inner threshold for J2, but still above all other outer thresholds.
   EXPECT_THAT(get_acceleration(earth_geopotential, 1'488'870 * Kilo(Metre)),
-              Eq(get_acceleration(geopotential_j2, 1'488'870 * Kilo(Metre))));
+              Eq(get_acceleration(*geopotential_j2, 1'488'870 * Kilo(Metre))));
 }
 
 }  // namespace internal_geopotential
