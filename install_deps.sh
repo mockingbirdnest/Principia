@@ -55,14 +55,6 @@ make -j8
 popd
 
 # googlemock/googletest don't need to be compiled
-if [ ! -d "googlemock" ]; then
-  git clone "https://github.com/mockingbirdnest/googlemock"
-fi
-pushd googlemock
-git checkout master
-git pull
-popd
-
 if [ ! -d "googletest" ]; then
   git clone "https://github.com/mockingbirdnest/googletest"
 fi
