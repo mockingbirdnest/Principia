@@ -658,16 +658,18 @@ TEST_F(GeopotentialTest, DampedForces) {
     Length const s1 = earth_geopotential.degree_damping()[2].outer_threshold();
     EXPECT_THAT(s0, IsNear(1'500'000 * Kilo(Metre)));
 
-    // The radial component grows beyond the undamped one; the ratio is maximal
-    // at the geometric mean of the inner and outer thresholds.
+    // The radial component grows beyond the undamped one.  We check the ratio
+    // at the arithmetic mean of the thresholds, and at its maximum.
     EXPECT_THAT(
         InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), direction) /
             InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), direction),
-        AlmostEquals(1.25, 0));
+        AlmostEquals(1, 0));
     EXPECT_THAT(
-        InnerProduct(get_acceleration(earth_geopotential, Sqrt(s0 * s1)), direction) /
-            InnerProduct(get_acceleration(*geopotential_j2, Sqrt(s0 * s1)), direction),
-        AlmostEquals(3 * Sqrt(3) / 4, 0));
+        InnerProduct(get_acceleration(earth_geopotential, 2 * s0 * s1 / (s0 + s1)),
+                     direction) /
+            InnerProduct(get_acceleration(*geopotential_j2, 2 * s0 * s1 / (s0 + s1)),
+                         direction),
+        AlmostEquals(1.125, 2));
 
     // The latitudinal component remains below the undamped one (it is simply
     // multiplied by σ, instead of involving σ′).
@@ -676,7 +678,7 @@ TEST_F(GeopotentialTest, DampedForces) {
     EXPECT_THAT(
         InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), local_north) /
             InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), local_north),
-        AlmostEquals(0.5, 0));
+        AlmostEquals(0.5, 2));
   }
 
   // Below the inner threshold for J2, but still above all other outer thresholds.

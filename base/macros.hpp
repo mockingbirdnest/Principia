@@ -192,7 +192,7 @@ inline void noreturn() { std::exit(0); }
 #  define UNICODE_PATH(x) u8 ## x
 #endif
 
-#define NAMED(expression) #expression << ": " << (expression)
+#define NAMED(expression) u8 ## #expression << ": " << (expression)
 
 // Needed to circumvent lint warnings in constexpr functions where CHECK_LT and
 // friends cannot be used.

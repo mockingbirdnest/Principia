@@ -64,24 +64,60 @@
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
-    <ClCompile Include="apsides_test.cpp" />
-    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp" />
-    <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp" />
-    <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp" />
-    <ClCompile Include="body_surface_dynamic_frame_test.cpp" />
-    <ClCompile Include="body_surface_frame_field_test.cpp" />
-    <ClCompile Include="body_test.cpp" />
-    <ClCompile Include="continuous_trajectory_test.cpp" />
-    <ClCompile Include="degrees_of_freedom_test.cpp" />
-    <ClCompile Include="discrete_trajectory_test.cpp" />
-    <ClCompile Include="dynamic_frame_test.cpp" />
+    <ClCompile Include="apsides_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="barycentric_rotating_dynamic_frame_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="body_centred_non_rotating_dynamic_frame_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="body_centred_body_direction_dynamic_frame_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="body_surface_dynamic_frame_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="body_surface_frame_field_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="body_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="continuous_trajectory_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="degrees_of_freedom_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="discrete_trajectory_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="dynamic_frame_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="geopotential_test.cpp" />
-    <ClCompile Include="hierarchical_system_test.cpp" />
-    <ClCompile Include="jacobi_coordinates_test.cpp" />
-    <ClCompile Include="kepler_orbit_test.cpp" />
-    <ClCompile Include="rigid_motion_test.cpp" />
-    <ClCompile Include="ephemeris_test.cpp" />
-    <ClCompile Include="forkable_test.cpp" />
-    <ClCompile Include="solar_system_test.cpp" />
+    <ClCompile Include="hierarchical_system_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jacobi_coordinates_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="kepler_orbit_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rigid_motion_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="ephemeris_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="forkable_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="solar_system_test.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
 </Project>
