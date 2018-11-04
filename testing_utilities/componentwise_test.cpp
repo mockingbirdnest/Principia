@@ -6,6 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
+#include "geometry/rp2_point.hpp"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -21,6 +22,7 @@ namespace principia {
 using geometry::Bivector;
 using geometry::Pair;
 using geometry::R3Element;
+using geometry::RP2Point;
 using geometry::Vector;
 using quantities::Action;
 using quantities::Amount;
@@ -108,11 +110,13 @@ TEST_F(ComponentwiseTest, Pair) {
 }
 
 TEST_F(ComponentwiseTest, Describe) {
+  using RP2 = RP2Point<double, World>;
+  using R3 = R3Element<double>;
   {
     std::ostringstream out;
-    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
-                                  VanishesBefore(1.0, 4),
-                                  Eq(3.5))).DescribeTo(&out);
+    Matcher<R3>(Componentwise(AlmostEquals(1.0, 2),
+                              VanishesBefore(1.0, 4),
+                              Eq(3.5))).DescribeTo(&out);
     EXPECT_EQ("x is within 2 to 2 ULPs of 1 and "
               "y vanishes before 1 to within 4 to 4 ULPs and "
               "z is equal to 3.5",
@@ -120,9 +124,9 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
-                                  VanishesBefore(1.0, 4),
-                                  Eq(3.5))).DescribeNegationTo(&out);
+    Matcher<R3>(Componentwise(AlmostEquals(1.0, 2),
+                              VanishesBefore(1.0, 4),
+                              Eq(3.5))).DescribeNegationTo(&out);
     EXPECT_EQ("x is not within 2 to 2 ULPs of 1 or "
               "y does not vanish before 1 to within 4 to 4 ULP or "
               "z isn't equal to 3.5",
@@ -130,16 +134,16 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
-                                  VanishesBefore(1.0, 4))).DescribeTo(&out);
+    Matcher<RP2>(Componentwise(AlmostEquals(1.0, 2),
+                               VanishesBefore(1.0, 4))).DescribeTo(&out);
     EXPECT_EQ("t1 is within 2 to 2 ULPs of 1 and "
               "t2 vanishes before 1 to within 4 to 4 ULPs",
               out.str());
   }
   {
     std::ostringstream out;
-    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
-                                  VanishesBefore(1.0, 4)))
+    Matcher<RP2>(Componentwise(AlmostEquals(1.0, 2),
+                               VanishesBefore(1.0, 4)))
         .DescribeNegationTo(&out);
     EXPECT_EQ("t2 is not within 2 to 2 ULPs of 1 or "
               "t2 does not vanish before 1 to within 4 to 4 ULP",
