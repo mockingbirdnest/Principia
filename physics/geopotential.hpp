@@ -1,8 +1,12 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/named_quantities.hpp"
 
@@ -14,19 +18,66 @@ using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Vector;
+using numerics::PolynomialInMonomialBasis;
 using quantities::Acceleration;
 using quantities::Angle;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
+using quantities::Infinity;
+using quantities::Inverse;
 using quantities::Length;
 using quantities::Quotient;
 using quantities::Square;
+
+// Specification of the damping of a spherical harmonic, acting as a radial
+// multiplier on the potential:
+//   V_damped = σ(‖r‖) V(r).
+class HarmonicDamping final {
+ public:
+  HarmonicDamping() = default;
+  explicit HarmonicDamping(Length const& inner_threshold);
+
+  // Above this threshold, the contribution to the potential from this
+  // harmonic is 0, i.e., σ = 0.
+  Length const& outer_threshold() const;
+  // Below this threshold, the contribution to the potential from this
+  // harmonic is undamped, σ = 1.
+  // This class depends on the invariant: outer_threshold = 3 * inner_threshold.
+  Length const& inner_threshold() const;
+
+  // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
+  template<typename Frame>
+  void ComputeDampedRadialQuantities(
+      Length const& r_norm,
+      Square<Length> const& r²,
+      Vector<double, Frame> const& r_normalized,
+      Inverse<Square<Length>> const& ℜ_over_r,
+      Inverse<Square<Length>> const& ℜʹ,
+      Inverse<Square<Length>>& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
+
+ private:
+  Length outer_threshold_ = Infinity<Length>();
+  Length inner_threshold_ = Infinity<Length>();
+
+  // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
+  // following coefficients in monomial basis.
+  // The constant term is always 0, and is thus ignored in the evaluation.
+  // TODO(phl): We have to specify an evaluator, but we do not use it; we use a
+  // custom evaluation that ignores the constant term instead.  See #1922.
+  PolynomialInMonomialBasis<
+      double, Length, 3,
+      numerics::EstrinEvaluator>::Coefficients sigmoid_coefficients_;
+};
 
 // Representation of the geopotential model of an oblate body.
 template<typename Frame>
 class Geopotential {
  public:
-  explicit Geopotential(not_null<OblateBody<Frame> const*> body);
+  // Spherical harmonics will not be damped if their contribution to the radial
+  // force exceeds |tolerance| times the central force.
+  Geopotential(not_null<OblateBody<Frame> const*> body,
+               double tolerance);
 
   Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
   SphericalHarmonicsAcceleration(
@@ -91,6 +142,28 @@ class Geopotential {
                            Exponentiation<Length, -3> const& one_over_r³) const;
 
   not_null<OblateBody<Frame> const*> body_;
+
+  // The contribution from the harmonics of degree n is damped by
+  // degree_damping_[n].
+  // degree_damping_[0] and degree_damping_[1] have infinite thresholds, and are
+  // not used (this class does not compute the central force and disregards
+  // degree 1, which is equivalent to a translation of the centre of mass).
+  std::vector<HarmonicDamping> degree_damping_;
+
+  // The contribution of low-degree tesseral (including sectoral) harmonics is
+  // damped by |tesseral_damping_|.
+  HarmonicDamping tesseral_damping_;
+
+  // |first_tesseral_degree_| is the integer n such that
+  //   degree_damping_[n-1].outer_threshold >= tesseral_damping_.outer_threshold
+  // and
+  //   tesseral_damping_.outer_threshold > degree_damping_[n].outer_threshold,
+  // or is |degree_damping_.size()| if
+  // |tesseral_threshold_ <= degree_threshold_[n]| for all n.
+  // Tesseral (including sectoral) harmonics of degree less than
+  // |first_tesseral_degree_| are damped by |tesseral_damping_|, instead
+  // of their respective |degree_damping_|.
+  int first_tesseral_degree_;
 };
 
 }  // namespace internal_geopotential

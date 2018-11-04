@@ -98,7 +98,7 @@ message Ephemeris {
   // Added in Ἐρατοσθένης.
   message AccuracyParameters {
     required Quantity fitting_tolerance = 1;
-    required Numerics.Mode geopotential_mode = 2;
+    required double geopotential_tolerance = 2;
   }
   message AdaptiveStepParameters {
     required AdaptiveStepSizeIntegrator integrator = 1;

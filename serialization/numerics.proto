@@ -42,13 +42,6 @@ message DoublePrecision {
   required Error error = 2;
 }
 
-message Numerics {
-  enum Mode {
-    FAST = 0;
-    PRECISE =1;
-  }
-}
-
 // Polynomials follow.
 
 message Polynomial {

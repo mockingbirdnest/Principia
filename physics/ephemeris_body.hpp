@@ -121,16 +121,16 @@ Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
 template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance,
-    serialization::Numerics::Mode const geopotential_mode)
+    double const geopotential_tolerance)
     : fitting_tolerance_(fitting_tolerance),
-      geopotential_mode_(geopotential_mode) {}
+      geopotential_tolerance_(geopotential_tolerance) {}
 
 template<typename Frame>
 void Ephemeris<Frame>::AccuracyParameters::WriteToMessage(
     not_null<serialization::Ephemeris::AccuracyParameters*> const message)
     const {
   fitting_tolerance_.WriteToMessage(message->mutable_fitting_tolerance());
-  message->set_geopotential_mode(geopotential_mode_);
+  message->set_geopotential_tolerance(geopotential_tolerance_);
 }
 
 template<typename Frame>
@@ -139,7 +139,7 @@ Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
     serialization::Ephemeris::AccuracyParameters const& message) {
   return AccuracyParameters(
       Length::ReadFromMessage(message.fitting_tolerance()),
-      message.geopotential_mode());
+      message.geopotential_tolerance());
 }
 
 template<typename Frame>
@@ -302,7 +302,8 @@ Ephemeris<Frame>::Ephemeris(
     if (body->is_oblate()) {
       geopotentials_.emplace(
           geopotentials_.cbegin(),
-          dynamic_cast_not_null<OblateBody<Frame> const*>(body.get()));
+          dynamic_cast_not_null<OblateBody<Frame> const*>(body.get()),
+          accuracy_parameters_.geopotential_tolerance_);
       // Inserting at the beginning of the vectors is O(N).
       bodies_.insert(bodies_.begin(), std::move(body));
       trajectories_.insert(trajectories_.begin(), trajectory);

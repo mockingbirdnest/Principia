@@ -75,7 +75,7 @@ class Ephemeris {
     // Implicit for compatibility.
     AccuracyParameters(Length const& fitting_tolerance);  // NOLINT
     AccuracyParameters(Length const& fitting_tolerance,
-                       serialization::Numerics::Mode geopotential_mode);
+                       double geopotential_tolerance);
 
     void WriteToMessage(
         not_null<serialization::Ephemeris::AccuracyParameters*> const
@@ -85,8 +85,7 @@ class Ephemeris {
 
    private:
     Length fitting_tolerance_;
-    serialization::Numerics::Mode geopotential_mode_ =
-        serialization::Numerics::PRECISE;
+    double geopotential_tolerance_ = 0;
     friend class Ephemeris<Frame>;
   };
 
