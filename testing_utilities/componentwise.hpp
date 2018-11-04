@@ -21,21 +21,20 @@ using geometry::R3Element;
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
-using ::testing::PolymorphicMatcher;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
 
-template<typename XMatcher, typename YMatcher, typename ZMatcher>
+template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 class ComponentwiseMatcher3;
 
 template<typename T1Matcher, typename T2Matcher>
-PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
+ComponentwiseMatcher2<T1Matcher, T2Matcher>
 Componentwise(T1Matcher const& t1_matcher,
               T2Matcher const& t2_matcher);
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
+ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>
 Componentwise(XMatcher const& x_matcher,
               YMatcher const& y_matcher,
               ZMatcher const& z_matcher);
@@ -84,10 +83,10 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>> final
   // Note that at this point this is only useful for vector/vector pairs as we
   // don't have matchers for |Point|.
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
-                       MatchResultListener* listener) const;
+                       MatchResultListener* listener) const override;
 
-  void DescribeTo(std::ostream* out) const;
-  void DescribeNegationTo(std::ostream* out) const;
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
 
  private:
   Matcher<T1> const t1_matcher_;
@@ -102,11 +101,11 @@ class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>> final
   ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
                             YMatcher const& y_matcher);
 
-  bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
-                       MatchResultListener* listener) const;
+  bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> actual,
+                       MatchResultListener* listener) const override;
 
-  void DescribeTo(std::ostream* out) const;
-  void DescribeNegationTo(std::ostream* out) const;
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
 
  private:
   Matcher<Scalar> const x_matcher_;
@@ -125,11 +124,11 @@ class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>> final
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
-                       MatchResultListener* listener) const;
+  bool MatchAndExplain(geometry::R3Element<Scalar> actual,
+                       MatchResultListener* listener) const override;
 
-  void DescribeTo(std::ostream* out) const;
-  void DescribeNegationTo(std::ostream* out) const;
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
 
  private:
   Matcher<Scalar> const x_matcher_;
@@ -146,11 +145,11 @@ class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>> final
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
-                       MatchResultListener* listener) const;
+  bool MatchAndExplain(geometry::Vector<Scalar, Frame> actual,
+                       MatchResultListener* listener) const override;
 
-  void DescribeTo(std::ostream* out) const;
-  void DescribeNegationTo(std::ostream* out) const;
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
 
  private:
   Matcher<Scalar> const x_matcher_;
@@ -167,11 +166,11 @@ class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>> final
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
-                       MatchResultListener* listener) const;
+  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> actual,
+                       MatchResultListener* listener) const override;
 
-  void DescribeTo(std::ostream* out) const;
-  void DescribeNegationTo(std::ostream* out) const;
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
 
  private:
   Matcher<Scalar> const x_matcher_;

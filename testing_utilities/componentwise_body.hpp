@@ -12,25 +12,22 @@ namespace testing_utilities {
 namespace internal_componentwise {
 
 using ::testing::MakeMatcher;
-using ::testing::MakePolymorphicMatcher;
 using ::testing::SafeMatcherCast;
 
 template<typename T1Matcher, typename T2Matcher>
-PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
+ComponentwiseMatcher2<T1Matcher, T2Matcher>
 Componentwise(T1Matcher const& t1_matcher,
               T2Matcher const& t2_matcher) {
-  return MakePolymorphicMatcher(
-      ComponentwiseMatcher2<T1Matcher, T2Matcher>(t1_matcher, t2_matcher));
+  return ComponentwiseMatcher2<T1Matcher, T2Matcher>(t1_matcher, t2_matcher);
 }
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
+ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>
 Componentwise(XMatcher const& x_matcher,
               YMatcher const& y_matcher,
               ZMatcher const& z_matcher) {
-  return MakePolymorphicMatcher(
-      ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>(
-          x_matcher, y_matcher, z_matcher));
+  return ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>(
+             x_matcher, y_matcher, z_matcher);
 }
 
 template<typename T1Matcher, typename T2Matcher>
@@ -116,13 +113,13 @@ ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
 
 template<typename Scalar, typename Frame>
 bool ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
-    MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
+    MatchAndExplain(geometry::RP2Point<Scalar, Frame> const actual,
                     MatchResultListener* listener) const {
-  bool const x_matches = x_matcher_.MatchAndExplain(actual.x_, listener);
+  bool const x_matches = x_matcher_.MatchAndExplain(actual.x(), listener);
   if (!x_matches) {
     *listener << " in the x coordinate; ";
   }
-  bool const y_matches = y_matcher_.MatchAndExplain(actual.y_, listener);
+  bool const y_matches = y_matcher_.MatchAndExplain(actual.y(), listener);
   if (!y_matches) {
     *listener << " in the y coordinate; ";
   }
@@ -159,7 +156,7 @@ ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::
 
 template<typename Scalar>
 bool ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::MatchAndExplain(
-    geometry::R3Element<Scalar> const& actual,
+    geometry::R3Element<Scalar> const actual,
     MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x, listener);
   if (!x_matches) {
@@ -210,7 +207,7 @@ ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::
 
 template<typename Scalar, typename Frame>
 bool ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::
-MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
+MatchAndExplain(geometry::Vector<Scalar, Frame> const actual,
                 MatchResultListener* listener) const {
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
@@ -264,7 +261,7 @@ ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::
 
 template<typename Scalar, typename Frame>
 bool ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::
-MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+MatchAndExplain(geometry::Bivector<Scalar, Frame> const actual,
                 MatchResultListener* listener) const {
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
