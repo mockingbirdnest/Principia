@@ -6,6 +6,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
 #include "numerics/polynomial.hpp"
+#include "numerics/polynomial_evaluators.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/named_quantities.hpp"
 
