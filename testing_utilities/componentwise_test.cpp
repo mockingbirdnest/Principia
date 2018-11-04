@@ -34,6 +34,7 @@ using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
 using ::testing::Not;
+using ::testing::_;
 
 namespace testing_utilities {
 
@@ -161,6 +162,35 @@ TEST_F(ComponentwiseTest, Variadic) {
                                   IsNear(5 * Metre / Second),
                                   AllOf(Gt(5 * Metre / Second),
                                         Lt(7 * Metre / Second)))));
+}
+
+TEST_F(ComponentwiseTest, Values) {
+  using VV = Pair<Vector<Length, World>, Vector<Speed, World>>;
+  VV vv(Vector<Length, World>({1 * Metre,
+                               2 * Metre,
+                               3 * Metre}),
+        Vector<Speed, World>({4 * Metre / Second,
+                              5 * Metre / Second,
+                              6 * Metre / Second}));
+  EXPECT_THAT(
+      vv,
+      Componentwise(Componentwise(1 * Metre,
+                                  2 * Metre,
+                                  3 * Metre),
+                    Componentwise(4 * Metre / Second,
+                                  5 * Metre / Second,
+                                  6 * Metre / Second)));
+}
+
+TEST_F(ComponentwiseTest, Underscore) {
+  using V = Vector<Length, World>;
+  V v = Vector<Length, World>({1e-50 * Metre,
+                               2e-50 * Metre,
+                               3 * Metre});
+  EXPECT_THAT(v,
+              Componentwise(VanishesBefore(1 * Metre, 0),
+                            VanishesBefore(1 * Metre, 0),
+                            _));
 }
 
 }  // namespace testing_utilities
