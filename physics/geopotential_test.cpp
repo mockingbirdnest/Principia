@@ -680,8 +680,11 @@ TEST_F(GeopotentialTest, DampedForces) {
   }
 
   // Below the inner threshold for J2, but still above all other outer thresholds.
-  EXPECT_THAT(get_acceleration(earth_geopotential, 1'488'870 * Kilo(Metre)),
-              Eq(get_acceleration(*geopotential_j2, 1'488'870 * Kilo(Metre))));
+  EXPECT_THAT(earth_geopotential.degree_damping()[2].inner_threshold(), Gt(1'000'000 * Kilo(Metre)));
+  EXPECT_THAT(earth_geopotential.tesseral_damping().outer_threshold(), Lt(1'000'000 * Kilo(Metre)));
+  EXPECT_THAT(earth_geopotential.degree_damping()[3].outer_threshold(), Lt(1'000'000 * Kilo(Metre)));
+  EXPECT_THAT(get_acceleration(earth_geopotential, 1'000'000 * Kilo(Metre)),
+              Eq(get_acceleration(*geopotential_j2, 1'000'000 * Kilo(Metre))));
 }
 
 }  // namespace internal_geopotential
