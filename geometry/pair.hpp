@@ -11,8 +11,8 @@ namespace principia {
 
 namespace testing_utilities {
 FORWARD_DECLARE_FROM(componentwise,
-                     TEMPLATE(typename T1Matcher, typename T2Matcher) class,
-                     ComponentwiseMatcher2);
+                     TEMPLATE(typename PairType) class,
+                     ComponentwiseMatcher2Impl);
 }  // namespace testing_utilities
 
 namespace geometry {
@@ -120,8 +120,9 @@ class Pair {
   friend struct base::Mappable;
 
   // This is needed for testing.
-  template<typename T1Matcher, typename T2Matcher>
-  friend class testing_utilities::ComponentwiseMatcher2;
+  template<typename PairType>
+  friend class testing_utilities::internal_componentwise::
+      ComponentwiseMatcher2Impl;
 
   template<typename U1, typename U2>
   friend typename vector_of<Pair<U1, U2>>::type operator-(
