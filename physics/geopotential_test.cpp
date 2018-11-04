@@ -770,6 +770,12 @@ TEST_F(GeopotentialTest, DampedForces) {
                                           (s0 + s1) / 2),
         AlmostEquals(0.5, 2130));
   }
+
+  // The outer threshold for degree 5 is above the inner threshold for degree 3,
+  // so degrees 4 and above have mixed sigmoids, which are tricky to test.
+    EXPECT_THAT(
+        earth_geopotential.degree_damping()[5].outer_threshold(),
+        Gt(earth_geopotential.degree_damping()[3].inner_threshold()));
 }
 
 }  // namespace internal_geopotential
