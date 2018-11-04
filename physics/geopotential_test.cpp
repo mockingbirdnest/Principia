@@ -646,6 +646,27 @@ TEST_F(GeopotentialTest, DampedForces) {
         return geopotential.GeneralSphericalHarmonicsAcceleration(
             Instant(), r * direction, r, r * r, 1 / Pow<3>(r));
       };
+  auto const get_radial_acceleration =
+      [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential, Length const& r) {
+        Vector<double, ICRS> const down = -direction;
+        return InnerProduct(get_acceleration(geopotential, r), down);
+      };
+  auto const get_latitudinal_acceleration =
+      [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential,
+                                      Length const& r) {
+        Vector<double, ICRS> const celestial_north({0, 0, 1});
+        Vector<double, ICRS> local_north =
+            celestial_north.OrthogonalizationAgainst(direction);
+        return InnerProduct(get_acceleration(geopotential, r), local_north);
+      };
+  auto const get_longitudinal_acceleration =
+      [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential,
+                                      Length const& r) {
+        Vector<double, ICRS> const down = -direction;
+        Bivector<double, ICRS> const north({0, 0, 1});
+        Vector<double, ICRS> local_east = down * north;
+        return InnerProduct(get_acceleration(geopotential, r), local_east);
+      };
 
   // Above the  outer threshold for J2.
   EXPECT_THAT(
@@ -661,23 +682,19 @@ TEST_F(GeopotentialTest, DampedForces) {
     // The radial component grows beyond the undamped one.  We check the ratio
     // at the arithmetic mean of the thresholds, and at its maximum.
     EXPECT_THAT(
-        InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), direction) /
-            InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), direction),
+        get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) /
+            get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2),
         AlmostEquals(1, 0));
     EXPECT_THAT(
-        InnerProduct(get_acceleration(earth_geopotential, 2 * s0 * s1 / (s0 + s1)),
-                     direction) /
-            InnerProduct(get_acceleration(*geopotential_j2, 2 * s0 * s1 / (s0 + s1)),
-                         direction),
+        get_radial_acceleration(earth_geopotential, 2 * s0 * s1 / (s0 + s1)) /
+            get_radial_acceleration(*geopotential_j2, 2 * s0 * s1 / (s0 + s1)),
         AlmostEquals(1.125, 2));
 
     // The latitudinal component remains below the undamped one (it is simply
     // multiplied by σ, instead of involving σ′).
-    Vector<double, ICRS> const celestial_north({0, 0, 1});
-    Vector<double, ICRS> local_north = celestial_north.OrthogonalizationAgainst(direction);
     EXPECT_THAT(
-        InnerProduct(get_acceleration(earth_geopotential, (s0 + s1) / 2), local_north) /
-            InnerProduct(get_acceleration(*geopotential_j2, (s0 + s1) / 2), local_north),
+        get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
+            get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2),
         AlmostEquals(0.5, 2));
   }
 
@@ -687,6 +704,35 @@ TEST_F(GeopotentialTest, DampedForces) {
   EXPECT_THAT(earth_geopotential.degree_damping()[3].outer_threshold(), Lt(1'000'000 * Kilo(Metre)));
   EXPECT_THAT(get_acceleration(earth_geopotential, 1'000'000 * Kilo(Metre)),
               Eq(get_acceleration(*geopotential_j2, 1'000'000 * Kilo(Metre))));
+
+  {
+    // Inspect the C22 and S22 sigmoid.
+    Length const s0 = earth_geopotential.tesseral_damping().inner_threshold();
+    Length const s1 = earth_geopotential.tesseral_damping().outer_threshold();
+    EXPECT_THAT(s0, IsNear(101'000 * Kilo(Metre)));
+
+    // Although this sigmoid overlaps with the degree 3 one, the midpoint still
+    // lies above the outer threshold for degree 3.
+    EXPECT_THAT(s0,
+                Lt(earth_geopotential.degree_damping()[3].outer_threshold()));
+    EXPECT_THAT((s0 + s1) / 2,
+                Gt(earth_geopotential.degree_damping()[3].outer_threshold()));
+
+    EXPECT_THAT(
+        (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
+         get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
+            get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
+        AlmostEquals(1, 0));
+    EXPECT_THAT(
+        (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
+         get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
+            get_latitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
+        AlmostEquals(0.5, 2));
+    EXPECT_THAT(
+        get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
+            get_longitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
+        AlmostEquals(0.5, 2));
+  }
 }
 
 }  // namespace internal_geopotential
