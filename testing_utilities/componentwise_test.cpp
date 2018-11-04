@@ -33,6 +33,7 @@ using ::testing::AllOf;
 using ::testing::Eq;
 using ::testing::Gt;
 using ::testing::Lt;
+using ::testing::Matcher;
 using ::testing::Not;
 using ::testing::_;
 
@@ -91,8 +92,8 @@ TEST_F(ComponentwiseTest, Pair) {
                           Eq(3.5 * SIUnit<Action>())),
                       AlmostEquals(
                           Vector<Amount, World>({1.0 * SIUnit<Amount>(),
-                                                  2.0 *  SIUnit<Amount>(),
-                                                  3.5 *  SIUnit<Amount>()}),
+                                                 2.0 *  SIUnit<Amount>(),
+                                                 3.5 *  SIUnit<Amount>()}),
                           225180)));
   EXPECT_THAT(vv, Not(Componentwise(
                       Componentwise(
@@ -101,17 +102,17 @@ TEST_F(ComponentwiseTest, Pair) {
                           Eq(2.5 * SIUnit<Action>())),
                       AlmostEquals(
                           Vector<Amount, World>({1.0 * SIUnit<Amount>(),
-                                                  2.0 *  SIUnit<Amount>(),
-                                                  3.5 *  SIUnit<Amount>()}),
+                                                 2.0 *  SIUnit<Amount>(),
+                                                 3.5 *  SIUnit<Amount>()}),
                           2))));
 }
 
 TEST_F(ComponentwiseTest, Describe) {
   {
     std::ostringstream out;
-    Componentwise(AlmostEquals(1.0, 2),
-                  VanishesBefore(1.0, 4),
-                  Eq(3.5)).impl().DescribeTo(&out);
+    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
+                                  VanishesBefore(1.0, 4),
+                                  Eq(3.5))).DescribeTo(&out);
     EXPECT_EQ("x is within 2 to 2 ULPs of 1 and "
               "y vanishes before 1 to within 4 to 4 ULPs and "
               "z is equal to 3.5",
@@ -119,9 +120,9 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Componentwise(AlmostEquals(1.0, 2),
-                  VanishesBefore(1.0, 4),
-                  Eq(3.5)).impl().DescribeNegationTo(&out);
+    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
+                                  VanishesBefore(1.0, 4),
+                                  Eq(3.5))).DescribeNegationTo(&out);
     EXPECT_EQ("x is not within 2 to 2 ULPs of 1 or "
               "y does not vanish before 1 to within 4 to 4 ULP or "
               "z isn't equal to 3.5",
@@ -129,16 +130,17 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Componentwise(AlmostEquals(1.0, 2),
-                  VanishesBefore(1.0, 4)).impl().DescribeTo(&out);
+    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
+                                  VanishesBefore(1.0, 4))).DescribeTo(&out);
     EXPECT_EQ("t1 is within 2 to 2 ULPs of 1 and "
               "t2 vanishes before 1 to within 4 to 4 ULPs",
               out.str());
   }
   {
     std::ostringstream out;
-    Componentwise(AlmostEquals(1.0, 2),
-                  VanishesBefore(1.0, 4)).impl().DescribeNegationTo(&out);
+    Matcher<double>(Componentwise(AlmostEquals(1.0, 2),
+                                  VanishesBefore(1.0, 4)))
+        .DescribeNegationTo(&out);
     EXPECT_EQ("t2 is not within 2 to 2 ULPs of 1 or "
               "t2 does not vanish before 1 to within 4 to 4 ULP",
               out.str());

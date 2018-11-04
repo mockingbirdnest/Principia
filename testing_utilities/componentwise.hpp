@@ -20,6 +20,8 @@ namespace internal_componentwise {
 using geometry::R3Element;
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
+using ::testing::MatchResultListener;
+using ::testing::PolymorphicMatcher;
 
 template<typename T1Matcher, typename T2Matcher>
 class ComponentwiseMatcher2;
@@ -28,12 +30,12 @@ template<typename XMatcher, typename YMatcher, typename ZMatcher>
 class ComponentwiseMatcher3;
 
 template<typename T1Matcher, typename T2Matcher>
-testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
+PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
 Componentwise(T1Matcher const& t1_matcher,
               T2Matcher const& t2_matcher);
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-testing::PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
+PolymorphicMatcher<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
 Componentwise(XMatcher const& x_matcher,
               YMatcher const& y_matcher,
               ZMatcher const& z_matcher);
@@ -82,7 +84,7 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>> final
   // Note that at this point this is only useful for vector/vector pairs as we
   // don't have matchers for |Point|.
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
-                       testing::MatchResultListener* listener) const;
+                       MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
   void DescribeNegationTo(std::ostream* out) const;
@@ -101,7 +103,7 @@ class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>> final
                             YMatcher const& y_matcher);
 
   bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
-                       testing::MatchResultListener* listener) const;
+                       MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
   void DescribeNegationTo(std::ostream* out) const;
@@ -124,7 +126,7 @@ class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>> final
                             ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
-                       testing::MatchResultListener* listener) const;
+                       MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
   void DescribeNegationTo(std::ostream* out) const;
@@ -145,7 +147,7 @@ class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>> final
                             ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
-                       testing::MatchResultListener* listener) const;
+                       MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
   void DescribeNegationTo(std::ostream* out) const;
@@ -166,7 +168,7 @@ class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>> final
                             ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
-                       testing::MatchResultListener* listener) const;
+                       MatchResultListener* listener) const;
 
   void DescribeTo(std::ostream* out) const;
   void DescribeNegationTo(std::ostream* out) const;
