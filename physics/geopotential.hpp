@@ -65,7 +65,7 @@ class HarmonicDamping final {
   // TODO(phl): We have to specify an evaluator, but we do not use it; we use a
   // custom evaluation that ignores the constant term instead.  See #1922.
   PolynomialInMonomialBasis<
-      double, Length, 4,
+      double, Length, 3,
       numerics::EstrinEvaluator>::Coefficients sigmoid_coefficients_;
 };
 
