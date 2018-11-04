@@ -7,17 +7,22 @@
 #include <string>
 
 #include "geometry/grassmann.hpp"
+#include "geometry/named_quantities.hpp"
 #include "geometry/pair.hpp"
 #include "geometry/r3_element.hpp"
 #include "geometry/rp2_point.hpp"
 #include "gmock/gmock.h"
+#include "physics/degrees_of_freedom.hpp"
 #include "quantities/quantities.hpp"
 
 namespace principia {
 namespace testing_utilities {
 namespace internal_componentwise {
 
+using geometry::Displacement;
+using geometry::Position;
 using geometry::R3Element;
+using geometry::Velocity;
 using ::testing::Matcher;
 using ::testing::MatcherInterface;
 using ::testing::MatchResultListener;
@@ -80,8 +85,6 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&> final
   ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
                             T2Matcher const& t2_matcher);
 
-  // Note that at this point this is only useful for vector/vector pairs as we
-  // don't have matchers for |Point|.
   bool MatchAndExplain(geometry::Pair<T1, T2> const& actual,
                        MatchResultListener* listener) const override;
 
@@ -91,6 +94,45 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&> final
  private:
   Matcher<T1> const t1_matcher_;
   Matcher<T2> const t2_matcher_;
+};
+
+template<typename Frame>
+class ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&> final
+    : public MatcherInterface<physics::DegreesOfFreedom<Frame> const&> {
+ public:
+  template<typename QMatcher, typename PMatcher>
+  ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
+                            PMatcher const& p_matcher);
+
+  bool MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
+                       MatchResultListener* listener) const override;
+
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
+
+ private:
+  Matcher<Position<Frame>> const q_matcher_;
+  Matcher<Velocity<Frame>> const p_matcher_;
+};
+
+template<typename Frame>
+class ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>
+    final
+    : public MatcherInterface<physics::RelativeDegreesOfFreedom<Frame> const&> {
+ public:
+  template<typename QMatcher, typename PMatcher>
+  ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
+                            PMatcher const& p_matcher);
+
+  bool MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
+                       MatchResultListener* listener) const override;
+
+  void DescribeTo(std::ostream* out) const override;
+  void DescribeNegationTo(std::ostream* out) const override;
+
+ private:
+  Matcher<Displacement<Frame>> const q_matcher_;
+  Matcher<Velocity<Frame>> const p_matcher_;
 };
 
 template<typename Scalar, typename Frame>

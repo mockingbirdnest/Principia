@@ -102,6 +102,93 @@ DescribeNegationTo(std::ostream* out) const {
   t2_matcher_.DescribeNegationTo(out);
 }
 
+template<typename Frame>
+template<typename QMatcher, typename PMatcher>
+ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
+                          PMatcher const& p_matcher)
+    : q_matcher_(SafeMatcherCast<Position<Frame>>(q_matcher)),
+      p_matcher_(SafeMatcherCast<Velocity<Frame>>(p_matcher)) {}
+
+template<typename Frame>
+bool ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+MatchAndExplain(physics::DegreesOfFreedom<Frame> const& actual,
+                MatchResultListener* listener) const {
+  bool const q_matches =
+      q_matcher_.MatchAndExplain(actual.position(), listener);
+  if (!q_matches) {
+    *listener << " in the position; ";
+  }
+  bool const p_matches =
+      p_matcher_.MatchAndExplain(actual.velocity(), listener);
+  if (!p_matches) {
+    *listener << " in the velocity; ";
+  }
+  return q_matches && p_matches;
+}
+
+template<typename Frame>
+void ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+DescribeTo(std::ostream* out) const {
+  *out << "position ";
+  q_matcher_.DescribeTo(out);
+  *out << " and velocity ";
+  p_matcher_.DescribeTo(out);
+}
+
+template<typename Frame>
+void ComponentwiseMatcher2Impl<physics::DegreesOfFreedom<Frame> const&>::
+DescribeNegationTo(std::ostream* out) const {
+  *out << "position ";
+  q_matcher_.DescribeNegationTo(out);
+  *out << " or velocity ";
+  p_matcher_.DescribeNegationTo(out);
+}
+
+template<typename Frame>
+template<typename QMatcher, typename PMatcher>
+ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+ComponentwiseMatcher2Impl(QMatcher const& q_matcher,
+                          PMatcher const& p_matcher)
+    : q_matcher_(SafeMatcherCast<Displacement<Frame>>(q_matcher)),
+      p_matcher_(SafeMatcherCast<Velocity<Frame>>(p_matcher)) {}
+
+template<typename Frame>
+bool
+ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+MatchAndExplain(physics::RelativeDegreesOfFreedom<Frame> const& actual,
+                MatchResultListener* listener) const {
+  bool const q_matches =
+      q_matcher_.MatchAndExplain(actual.displacement(), listener);
+  if (!q_matches) {
+    *listener << " in the displacement; ";
+  }
+  bool const p_matches =
+      p_matcher_.MatchAndExplain(actual.velocity(), listener);
+  if (!p_matches) {
+    *listener << " in the velocity; ";
+  }
+  return q_matches && p_matches;
+}
+
+template<typename Frame>
+void ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+DescribeTo(std::ostream* out) const {
+  *out << "displacement ";
+  q_matcher_.DescribeTo(out);
+  *out << " and velocity ";
+  p_matcher_.DescribeTo(out);
+}
+
+template<typename Frame>
+void ComponentwiseMatcher2Impl<physics::RelativeDegreesOfFreedom<Frame> const&>::
+DescribeNegationTo(std::ostream* out) const {
+  *out << "displacement ";
+  q_matcher_.DescribeNegationTo(out);
+  *out << " or velocity ";
+  p_matcher_.DescribeNegationTo(out);
+}
+
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher>
 ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
