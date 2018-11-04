@@ -27,8 +27,9 @@ using ::testing::Matcher;
 // type of the matcher depends on whether it is polymorphic, monomorphic or
 // some other internal helper.  We obtain |T| by peeling away the layers of
 // templates around it.
-// TODO(phl): This is horribly complicated.  One day I'll understand how the
-// matchers work.
+// TODO(phl): This is horribly complicated.  It is also very brittle as it
+// depends on the exact structure of templates used in gmock-matchers.h.  One
+// day I'll understand how the matchers work.
 
 template<typename T>
 struct MatcherParameterType : not_constructible {
@@ -45,6 +46,24 @@ struct MatcherParameterType<U<T1, T2>> : not_constructible {
   // TODO(phl): Why T1?
   using type = typename MatcherParameterType<T1>::type;
 };
+
+#if PRINCIPIA_COMPILER_MSVC
+template<
+  template<template<typename...> class, typename, typename...> class U,
+  template<typename> class V, typename T1, typename... T2>
+struct MatcherParameterType<U<V, T1, T2...>> : not_constructible {
+  // TODO(phl): Why T1?
+  using type = typename MatcherParameterType<V<T1>>::type;
+};
+#elif PRINCIPIA_COMPILER_CLANG
+template<
+  template<typename> class V, typename T1, typename... T2>
+struct MatcherParameterType<
+    ::testing::internal::VariadicMatcher<V, T1, T2...>> : not_constructible {
+  // TODO(phl): Why T1?
+  using type = typename MatcherParameterType<V<T1>>::type;
+};
+#endif
 
 // |type| must be a type for which we implement MatchAndExplain.  We don't care
 // which one exactly, since |MatcherParameterType| is only used for describing
