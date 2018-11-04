@@ -39,17 +39,8 @@ class HarmonicDamping final {
   Length const& outer_threshold() const;
   // Below this threshold, the contribution to the potential from this
   // harmonic is undamped, σ = 1.
-<<<<<<< HEAD
-  // inner_threshold = outer_threshold / 3.
-  Length const& inner_threshold() const;
-=======
   // This class depends on the invariant: outer_threshold = 3 * inner_threshold.
-  Length inner_threshold = Infinity<Length>();
-  // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
-  // following coefficients in monomial basis.
-  // The constant term is always 0, and is thus ignored in the evaluation.
-  Derivatives<double, Length, 4> sigmoid_coefficients;
->>>>>>> ef693a4c2917f9b031bc4affc95838ba9b8bf1b8
+  Length const& inner_threshold() const;
 
   // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
   template<typename Frame>

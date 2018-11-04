@@ -558,10 +558,10 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   // |limiting_degree| is the first degree such that
-  // |r_norm >= degree_damping_[limiting_degree].outer_threshold|, or is
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
   // |degree_damping_.size()| if |r_norm| is below all thresholds.
-  // Since |degree_damping_[0].outer_threshold| and
-  // |degree_damping_[1].outer_threshold| are infinite, |limiting_degree > 1|.
+  // Since |degree_damping_[0].outer_threshold()| and
+  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
   int const limiting_degree =
       std::partition_point(
           degree_damping_.begin(),
