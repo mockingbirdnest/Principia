@@ -52,20 +52,20 @@ class ComponentwiseMatcher2 final {
   T2Matcher const t2_matcher_;
 };
 
-template<typename XMatcher, typename YMatcher, typename ZMatcher>
+template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 class ComponentwiseMatcher3 final {
  public:
-  ComponentwiseMatcher3(XMatcher const& x_matcher,
-                        YMatcher const& y_matcher,
-                        ZMatcher const& z_matcher);
+  ComponentwiseMatcher3(T1Matcher const& t1_matcher,
+                        T2Matcher const& t2_matcher,
+                        T3Matcher const& t3_matcher);
 
   template <typename TripleType>
   operator Matcher<TripleType> () const;
 
  private:
-  XMatcher const x_matcher_;
-  YMatcher const y_matcher_;
-  ZMatcher const z_matcher_;
+  T1Matcher const t1_matcher_;
+  T2Matcher const t2_matcher_;
+  T3Matcher const t3_matcher_;
 };
 
 template<typename PairType>
@@ -76,8 +76,8 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>> final
     : public MatcherInterface<geometry::Pair<T1, T2>> {
  public:
   template<typename T1Matcher, typename T2Matcher>
-  ComponentwiseMatcher2(T1Matcher const& t1_matcher,
-                        T2Matcher const& t2_matcher);
+  ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
+                            T2Matcher const& t2_matcher);
 
   // Note that at this point this is only useful for vector/vector pairs as we
   // don't have matchers for |Point|.
@@ -97,8 +97,8 @@ class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>> final
     : public MatcherInterface<geometry::RP2Point<Scalar, Frame>> {
  public:
   template<typename XMatcher, typename YMatcher>
-  ComponentwiseMatcher2(T1Matcher const& x_matcher,
-                        T2Matcher const& x_matcher);
+  ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
+                            YMatcher const& y_matcher);
 
   bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
@@ -107,8 +107,8 @@ class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>> final
   void DescribeNegationTo(std::ostream* out) const;
 
  private:
-  Matcher<Scalar> const t1_matcher_;
-  Matcher<Scalar> const t2_matcher_;
+  Matcher<Scalar> const x_matcher_;
+  Matcher<Scalar> const y_matcher_;
 };
 
 template<typename TripleType>
@@ -119,9 +119,9 @@ class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>> final
     : public MatcherInterface<geometry::R3Element<Scalar>> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
-  ComponentwiseMatcher3(XMatcher const& x_matcher,
-                        YMatcher const& y_matcher,
-                        ZMatcher const& z_matcher);
+  ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                            YMatcher const& y_matcher,
+                            ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
                        testing::MatchResultListener* listener) const;
@@ -140,9 +140,9 @@ class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>> final
     : public MatcherInterface<geometry::Vector<Scalar, Frame>> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
-  ComponentwiseMatcher3(XMatcher const& x_matcher,
-                        YMatcher const& y_matcher,
-                        ZMatcher const& z_matcher);
+  ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                            YMatcher const& y_matcher,
+                            ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;
@@ -161,9 +161,9 @@ class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>> final
     : public MatcherInterface<geometry::Bivector<Scalar, Frame>> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
-  ComponentwiseMatcher3(XMatcher const& x_matcher,
-                        YMatcher const& y_matcher,
-                        ZMatcher const& z_matcher);
+  ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                            YMatcher const& y_matcher,
+                            ZMatcher const& z_matcher);
 
   bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
                        testing::MatchResultListener* listener) const;

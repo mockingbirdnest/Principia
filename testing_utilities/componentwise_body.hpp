@@ -17,64 +17,8 @@ namespace internal_componentwise {
 using base::not_constructible;
 using geometry::Point;
 using quantities::Quantity;
-using ::testing::Matcher;
-
-// In order to call |Describe...To| on the various matchers we need to convert
-// them to some |Matcher<T>|.  However, it is quite difficult to figure out
-// what |T| is because the class |ComponentwiseMatcher| and the factory
-// |Componentwise| cannot take it as a parameter (the template deduction would
-// fail and the usages would get very ugly).  To make things worse, the actual
-// type of the matcher depends on whether it is polymorphic, monomorphic or
-// some other internal helper.  We obtain |T| by peeling away the layers of
-// templates around it.
-// TODO(phl): This is horribly complicated.  It is also very brittle as it
-// depends on the exact structure of templates used in gmock-matchers.h.  One
-// day I'll understand how the matchers work.
-
-template<typename T>
-struct MatcherParameterType : not_constructible {
-  using type = T;
-};
-
-template<typename T, template<typename> class U>
-struct MatcherParameterType<U<T>> : not_constructible {
-  using type = typename MatcherParameterType<T>::type;
-};
-
-template<typename T1, typename T2, template<typename, typename> class U>
-struct MatcherParameterType<U<T1, T2>> : not_constructible {
-  // TODO(phl): Why T1?
-  using type = typename MatcherParameterType<T1>::type;
-};
-
-template<
-  template<template<typename...> class, typename, typename...> class U,
-  template<typename> class V, typename T1, typename... T2>
-struct MatcherParameterType<U<V, T1, T2...>> : not_constructible {
-  // TODO(phl): Why T1?
-  using type = typename MatcherParameterType<V<T1>>::type;
-};
-
-// |type| must be a type for which we implement MatchAndExplain.  We don't care
-// which one exactly, since |MatcherParameterType| is only used for describing
-// the matchers.  So we pick the simplest, |R3Element|.
-template<typename XMatcher, typename YMatcher, typename ZMatcher>
-struct MatcherParameterType<ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>>
-    : not_constructible {
-  using type =
-      geometry::R3Element<typename MatcherParameterType<XMatcher>::type>;
-};
-
-// And now the cases that we *don't* want to peel away.  Yes, this smells a bit.
-template<typename T>
-struct MatcherParameterType<Point<T>> : not_constructible {
-  using type = Point<T>;
-};
-
-template<typename T>
-struct MatcherParameterType<Quantity<T>> : not_constructible {
-  using type = Quantity<T>;
-};
+using ::testing::MakeMatcher;
+using ::testing::SafeMatcherCast;
 
 template<typename T1Matcher, typename T2Matcher>
 testing::PolymorphicMatcher<ComponentwiseMatcher2<T1Matcher, T2Matcher>>
@@ -100,6 +44,72 @@ ComponentwiseMatcher2<T1Matcher, T2Matcher>::ComponentwiseMatcher2(
     T2Matcher const& t2_matcher)
     : t1_matcher_(t1_matcher),
       t2_matcher_(t2_matcher) {}
+
+template<typename T1Matcher, typename T2Matcher>
+template<typename PairType>
+ComponentwiseMatcher2<T1Matcher, T2Matcher>::operator Matcher<PairType>()
+    const {
+  return MakeMatcher(
+      new ComponentwiseMatcher2Impl<PairType>(t1_matcher_, t2_matcher_));
+}
+
+template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
+ComponentwiseMatcher3<T1Matcher, T2Matcher, T3Matcher>::ComponentwiseMatcher3(
+    T1Matcher const& t1_matcher,
+    T2Matcher const& t2_matcher,
+    T3Matcher const& t3_matcher)
+    : t1_matcher_(t1_matcher),
+      t2_matcher_(t2_matcher),
+      t3_matcher_(t3_matcher) {}
+
+template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
+template<typename TripleType>
+ComponentwiseMatcher3<T1Matcher, T2Matcher, T3Matcher>::
+operator Matcher<TripleType>() const {
+  return MakeMatcher(new ComponentwiseMatcher3Impl<TripleType>(
+      t1_matcher_, t2_matcher_, t3_matcher_));
+}
+
+template<typename T1, typename T2>
+template<typename T1Matcher, typename T2Matcher>
+ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::ComponentwiseMatcher2Impl(
+    T1Matcher const& t1_matcher,
+    T2Matcher const& t2_matcher)
+    : t1_matcher_(SafeMatcherCast<T1>(t1_matcher)),
+      t2_matcher_(SafeMatcherCast<T2>(t2_matcher)) {}
+
+template<typename T1, typename T2>
+bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::MatchAndExplain(
+    geometry::Pair<T1, T2> const& actual,
+    testing::MatchResultListener* listener) const {
+  bool const t1_matches = t1_matcher_.MatchAndExplain(actual.t1_, listener);
+  if (!t1_matches) {
+    *listener << " in the first element; ";
+  }
+  bool const t2_matches = t2_matcher_.MatchAndExplain(actual.t2_, listener);
+  if (!t2_matches) {
+    *listener << " in the second element; ";
+  }
+  return t1_matches && t2_matches;
+}
+
+template<typename T1, typename T2>
+void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeTo(
+    std::ostream* out) const {
+  *out << "first element ";
+  t1_matcher_.DescribeTo(out);
+  *out << " and second element ";
+  t2_matcher_.DescribeTo(out);
+}
+
+template<typename T1, typename T2>
+void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeNegationTo(
+    std::ostream* out) const {
+  *out << "first element ";
+  t1_matcher_.DescribeNegationTo(out);
+  *out << " or second element ";
+  t2_matcher_.DescribeNegationTo(out);
+}
 
 template<typename T1Matcher, typename T2Matcher>
 template<typename T1, typename T2>
@@ -158,15 +168,6 @@ void ComponentwiseMatcher2<T1Matcher, T2Matcher>::DescribeNegationTo(
   Matcher<typename MatcherParameterType<T2Matcher>::type>(
       t2_matcher_).DescribeNegationTo(out);
 }
-
-template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3<XMatcher, YMatcher, ZMatcher>::ComponentwiseMatcher3(
-    XMatcher const& x_matcher,
-    YMatcher const& y_matcher,
-    ZMatcher const& z_matcher)
-    : x_matcher_(x_matcher),
-      y_matcher_(y_matcher),
-      z_matcher_(z_matcher) {}
 
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
 template<typename Scalar>
