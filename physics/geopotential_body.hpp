@@ -40,14 +40,21 @@ using quantities::SIUnit;
 
 // The notation in this file follows documentation/Geopotential.pdf.
 
-inline HarmonicDamping::HarmonicDamping(
-    Length const& inner_threshold)
-    : outer_threshold(inner_threshold * 3),
-      inner_threshold(inner_threshold),
-      sigmoid_coefficients{0,
-                           9 / (4 * inner_threshold),
-                           -3 / (2 * Pow<2>(inner_threshold)),
-                           1 / (4 * Pow<3>(inner_threshold))} {}
+inline HarmonicDamping::HarmonicDamping(Length const& inner_threshold)
+    : outer_threshold_(inner_threshold * 3),
+      inner_threshold_(inner_threshold),
+      sigmoid_coefficients_{0,
+                            9 / (4 * inner_threshold),
+                            -3 / (2 * Pow<2>(inner_threshold)),
+                            1 / (4 * Pow<3>(inner_threshold))} {}
+
+inline Length const& HarmonicDamping::outer_threshold() const {
+  return outer_threshold_;
+}
+
+inline Length const& HarmonicDamping::inner_threshold() const {
+  return inner_threshold_;
+}
 
 template<typename Frame>
 void HarmonicDamping::ComputeDampedRadialQuantities(
@@ -58,14 +65,14 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
       Inverse<Square<Length>> const& ℜʹ,
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
-  Length const& s1 = outer_threshold;
-  Length const& s0 = inner_threshold;
+  Length const& s1 = outer_threshold_;
+  Length const& s0 = inner_threshold_;
   if (r_norm <= s0) {
     // Below the inner threshold, σ = 1.
     σℜ_over_r = ℜ_over_r;
     grad_σℜ = ℜʹ * r_normalized;
   } else {
-    auto const& c = sigmoid_coefficients;
+    auto const& c = sigmoid_coefficients_;
     Derivative<double, Length> const c1 = std::get<1>(c);
     Derivative<double, Length, 2> const c2 = std::get<2>(c);
     Derivative<double, Length, 3> const c3 = std::get<3>(c);
@@ -331,7 +338,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
         precomputations.grad_σℜ);
     // If we are above the outer threshold, we should not have been called
     // (σ = 0).
-    DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold);
+    DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
     if (sizeof...(orders) == 1 || n >= geopotential.first_tesseral_degree_) {
       // All orders came into effect at the same threshold, so we apply the same
@@ -352,7 +359,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
     // If we are above the outer threshold, we should have been called with
     // (orders...) = (0), since σ = 0.
-    DCHECK_LT(r_norm, geopotential.tesseral_damping_.outer_threshold);
+    DCHECK_LT(r_norm, geopotential.tesseral_damping_.outer_threshold());
     geopotential.tesseral_damping_.ComputeDampedRadialQuantities(
         r_norm,
         r²,
@@ -383,8 +390,9 @@ Acceleration(Geopotential<Frame> const& geopotential,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
   OblateBody<Frame> const& body = *geopotential.body_;
-  const bool is_zonal = body.is_zonal() ||
-                        r_norm > geopotential.tesseral_damping_.outer_threshold;
+  const bool is_zonal =
+      body.is_zonal() ||
+      r_norm > geopotential.tesseral_damping_.outer_threshold();
 
   Precomputations<size> precomputations;
 
@@ -568,16 +576,16 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
   // |limiting_degree| is the first degree such that
-  // |r_norm >= degree_damping_[limiting_degree].outer_threshold|, or is
+  // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
   // |degree_damping_.size()| if |r_norm| is below all thresholds.
-  // Since |degree_damping_[0].outer_threshold| and
-  // |degree_damping_[1].outer_threshold| are infinite, |limiting_degree > 1|.
+  // Since |degree_damping_[0].outer_threshold()| and
+  // |degree_damping_[1].outer_threshold()| are infinite, |limiting_degree > 1|.
   int const limiting_degree =
       std::partition_point(
           degree_damping_.begin(),
           degree_damping_.end(),
           [r_norm](HarmonicDamping const& degree_damping) -> bool {
-            return r_norm < degree_damping.outer_threshold;
+            return r_norm < degree_damping.outer_threshold();
           }) - degree_damping_.begin();
   // We have |max_degree > 0|.
   int const max_degree = limiting_degree - 1;
