@@ -541,6 +541,119 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(6));
 }
 
+TEST_F(GeopotentialTest, DampedForces) {
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+  auto earth_message = solar_system_2000.gravity_model_message("Earth");
+  earth_message.mutable_geopotential()->set_max_degree(5);
+  earth_message.mutable_geopotential()->clear_zonal();
+
+  auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
+  auto const earth_reference_radius =
+      ParseQuantity<Length>(earth_message.reference_radius());
+  MassiveBody::Parameters const massive_body_parameters(earth_μ);
+  RotatingBody<ICRS>::Parameters rotating_body_parameters(
+      /*mean_radius=*/solar_system_2000.mean_radius("Earth"),
+      /*reference_angle=*/0 * Radian,
+      /*reference_instant=*/Instant(),
+      /*angular_frequency=*/1e-20 * Radian / Second,
+      right_ascension_of_pole_,
+      declination_of_pole_);
+  OblateBody<ICRS> const earth(
+      massive_body_parameters,
+      rotating_body_parameters,
+      OblateBody<ICRS>::Parameters::ReadFromMessage(
+          earth_message.geopotential(), earth_reference_radius));
+  Geopotential<ICRS> const earth_geopotential(&earth, /*tolerance=*/0x1p-24);
+
+  // |geopotential_degree[n]| has the degree n terms of the geopotential, with
+  // tolerance 0.
+  std::array<std::optional<Geopotential<ICRS>>, 5> geopotential_degree;
+  // |geopotential_j2| has the degree 2 zonal term term with tolerance 0.
+  std::optional<Geopotential<ICRS>> geopotential_j2;
+  // |geopotential_c22_s22| has degree 2 sectoral terms with tolerance 0.
+  std::optional<Geopotential<ICRS>> geopotential_c22_s22;
+  // The bodies underlying the above geopotentials.
+  std::vector<not_null<std::unique_ptr<OblateBody<ICRS>>>> earths;
+
+  for (int n = 3; n <= 5; ++n) {
+    auto earth_degree_n_message = earth_message;
+    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+      if (row.degree() != n) {
+        for (auto& column : *row.mutable_column()) {
+          column.clear_cos();
+          column.clear_sin();
+        }
+      }
+    }
+    earths.push_back(make_not_null_unique<OblateBody<ICRS>>(
+        massive_body_parameters,
+        rotating_body_parameters,
+        OblateBody<ICRS>::Parameters::ReadFromMessage(
+            earth_degree_n_message.geopotential(), earth_reference_radius)));
+    geopotential_degree[n] =
+        Geopotential<ICRS>(earths.back().get(), /*tolerance=*/0);
+  }
+  {
+    auto earth_c22_s22_message = earth_message;
+    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+      for (auto& column : *row.mutable_column()) {
+        if (column.order() == 0 || row.degree() != 2) {
+          column.clear_cos();
+          column.clear_sin();
+        }
+      }
+    }
+    earths.push_back(make_not_null_unique<OblateBody<ICRS>>(
+        massive_body_parameters,
+        rotating_body_parameters,
+        OblateBody<ICRS>::Parameters::ReadFromMessage(
+            earth_c22_s22_message.geopotential(), earth_reference_radius)));
+    geopotential_c22_s22 =
+        Geopotential<ICRS>(earths.back().get(), /*tolerance=*/0);
+  }
+  {
+    auto earth_j2_message = earth_message;
+    for (auto& row : *earth_message.mutable_geopotential()->mutable_row()) {
+      for (auto& column : *row.mutable_column()) {
+        if (column.order() != 0 || row.degree() != 2) {
+          column.clear_cos();
+          column.clear_sin();
+        }
+      }
+    }
+    earths.push_back(make_not_null_unique<OblateBody<ICRS>>(
+        massive_body_parameters,
+        rotating_body_parameters,
+        OblateBody<ICRS>::Parameters::ReadFromMessage(
+            earth_j2_message.geopotential(), earth_reference_radius)));
+    geopotential_j2 = Geopotential<ICRS>(earths.back().get(), /*tolerance=*/0);
+  }
+
+  Vector<double, ICRS> direction({1, 2, 5});
+  direction = direction / direction.Norm();
+
+  auto get_acceleration =
+      [&direction](Geopotential<ICRS> const& geopotential, Length const& r) {
+        return geopotential.GeneralSphericalHarmonicsAcceleration(
+            Instant(), r * direction, r, r * r, 1 / Pow<3>(r))
+      };
+
+  EXPECT_THAT(
+      get_acceleration(earth_geopotential, 5'000'000 * Kilo(Metre)).Norm(),
+      Eq(0 / Pow<2>(Metre)));
+
+  EXPECT_THAT(
+      get_acceleration(earth_geopotential, 3'000'000 * Kilo(Metre)).Norm() /
+          get_acceleration(geopotential_j2, 3'000'000 * Kilo(Metre)),
+      IsNear(0.5));
+
+  EXPECT_THAT(get_acceleration(earth_geopotential, 1'488'870 * Kilo(Metre)),
+              Eq(get_acceleration(geopotential_j2, 1'488'870 * Kilo(Metre))));
+}
+
 }  // namespace internal_geopotential
 }  // namespace physics
 }  // namespace principia
