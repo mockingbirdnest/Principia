@@ -1,11 +1,13 @@
 ﻿#pragma once
 
+#include <vector>
+
 #include "base/not_null.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
+#include "numerics/polynomial.hpp"
 #include "physics/oblate_body.hpp"
 #include "quantities/named_quantities.hpp"
-#include "quantities/tuples.hpp"
 
 namespace principia {
 namespace physics {
@@ -15,9 +17,9 @@ using base::not_null;
 using geometry::Displacement;
 using geometry::Instant;
 using geometry::Vector;
+using numerics::PolynomialInMonomialBasis;
 using quantities::Acceleration;
 using quantities::Angle;
-using quantities::Derivatives;
 using quantities::Exponentiation;
 using quantities::GravitationalParameter;
 using quantities::Infinity;
@@ -33,7 +35,7 @@ class HarmonicDamping final {
  public:
   HarmonicDamping() = default;
   explicit HarmonicDamping(Length const& inner_threshold);
-  
+
   // Above this threshold, the contribution to the potential from this
   // harmonic is 0, i.e., σ = 0.
   Length const& outer_threshold() const;
@@ -60,7 +62,11 @@ class HarmonicDamping final {
   // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
   // following coefficients in monomial basis.
   // The constant term is always 0, and is thus ignored in the evaluation.
-  Derivatives<double, Length, 4> sigmoid_coefficients_;
+  // TODO(phl): We have to specify an evaluator, but we do not use it; we use a
+  // custom evaluation that ignores the constant term instead.  See #1922.
+  PolynomialInMonomialBasis<
+      double, Length, 4,
+      numerics::EstrinEvaluator>::Coefficients sigmoid_coefficients_;
 };
 
 // Representation of the geopotential model of an oblate body.

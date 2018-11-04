@@ -2,6 +2,7 @@
 
 #include "physics/geopotential.hpp"
 
+#include <algorithm>
 #include <cmath>
 
 #include "geometry/grassmann.hpp"
@@ -119,7 +120,6 @@ struct Geopotential<Frame>::Precomputations {
   // whether m > 0.
   Exponentiation<Length, -2> σℜ_over_r;
   Vector<Exponentiation<Length, -2>, Frame> grad_σℜ;
-
 };
 
 template<typename Frame>
