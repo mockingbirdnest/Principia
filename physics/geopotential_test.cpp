@@ -576,7 +576,7 @@ TEST_F(GeopotentialTest, DampedForces) {
 
   // |geopotential_degree[n]| has the degree n terms of the geopotential, with
   // tolerance 0.
-  std::array<std::optional<Geopotential<ICRS>>, 5> geopotential_degree;
+  std::array<std::optional<Geopotential<ICRS>>, 6> geopotential_degree;
   // |geopotential_j2| has the degree 2 zonal term term with tolerance 0.
   std::optional<Geopotential<ICRS>> geopotential_j2;
   // |geopotential_c22_s22| has degree 2 sectoral terms with tolerance 0.
