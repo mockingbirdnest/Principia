@@ -29,21 +29,18 @@ using quantities::Square;
 // Specification of the damping of a spherical harmonic, acting as a radial
 // multiplier on the potential:
 //   V_damped = σ(|r|) V(r).
-struct HarmonicDamping final {
-  explicit HarmonicDamping() = default;
+class HarmonicDamping final {
+ public:
+  HarmonicDamping() = default;
   explicit HarmonicDamping(Length const& inner_threshold);
   
   // Above this threshold, the contribution to the potential from this
   // harmonic is 0, i.e., σ = 0.
-  Length outer_threshold = Infinity<Length>();
+  Length const& outer_threshold() const;
   // Below this threshold, the contribution to the potential from this
   // harmonic is undamped, σ = 1.
   // inner_threshold = outer_threshold / 3.
-  Length inner_threshold = Infinity<Length>();
-  // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
-  // following coefficients in monomial basis.
-  // The constant term is always 0, and is thus ignored in the evaluation.
-  Derivatives<double, Length, 4> sigmoid_coefficients;
+  Length const& inner_threshold() const;
 
   // Sets σℜ_over_r and grad_σℜ according to σ as defined by |*this|.
   template<typename Frame>
@@ -55,13 +52,22 @@ struct HarmonicDamping final {
       Inverse<Square<Length>> const& ℜʹ,
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const;
+
+ private:
+  Length outer_threshold_ = Infinity<Length>();
+  Length inner_threshold_ = Infinity<Length>();
+
+  // For r in [outer_threshold, inner_threshold], σ is a polynomial with the
+  // following coefficients in monomial basis.
+  // The constant term is always 0, and is thus ignored in the evaluation.
+  Derivatives<double, Length, 4> sigmoid_coefficients_;
 };
 
 // Representation of the geopotential model of an oblate body.
 template<typename Frame>
 class Geopotential {
  public:
-  // Spherical harmonics will not be damped if they contribution to the radial
+  // Spherical harmonics will not be damped if their contribution to the radial
   // force exceeds |tolerance| times the central force.
   Geopotential(not_null<OblateBody<Frame> const*> body,
                double tolerance);

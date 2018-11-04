@@ -334,8 +334,8 @@ TEST_F(GeopotentialTest, TestVector) {
 
 TEST_F(GeopotentialTest, HarmonicDamping) {
   HarmonicDamping σ(1 * Metre);
-  EXPECT_THAT(σ.inner_threshold, Eq(1 * Metre));
-  EXPECT_THAT(σ.outer_threshold, Eq(3 * Metre));
+  EXPECT_THAT(σ.inner_threshold(), Eq(1 * Metre));
+  EXPECT_THAT(σ.outer_threshold(), Eq(3 * Metre));
   Vector<double, World> x({1, 0, 0});
   Inverse<Square<Length>> const ℜ_over_r = 5 / Pow<2>(Metre);
   Inverse<Square<Length>> const ℜʹ = 17 / Pow<2>(Metre);
