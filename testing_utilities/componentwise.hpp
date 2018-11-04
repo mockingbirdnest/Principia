@@ -73,8 +73,8 @@ template<typename PairType>
 class ComponentwiseMatcher2Impl;
 
 template<typename T1, typename T2>
-class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>> final
-    : public MatcherInterface<geometry::Pair<T1, T2>> {
+class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&> final
+    : public MatcherInterface<geometry::Pair<T1, T2> const&> {
  public:
   template<typename T1Matcher, typename T2Matcher>
   ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
@@ -94,14 +94,14 @@ class ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>> final
 };
 
 template<typename Scalar, typename Frame>
-class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>> final
-    : public MatcherInterface<geometry::RP2Point<Scalar, Frame>> {
+class ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&> final
+    : public MatcherInterface<geometry::RP2Point<Scalar, Frame> const&> {
  public:
   template<typename XMatcher, typename YMatcher>
   ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
                             YMatcher const& y_matcher);
 
-  bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> actual,
+  bool MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;
@@ -116,15 +116,15 @@ template<typename TripleType>
 class ComponentwiseMatcher3Impl;
 
 template<typename Scalar>
-class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>> final
-    : public MatcherInterface<geometry::R3Element<Scalar>> {
+class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&> final
+    : public MatcherInterface<geometry::R3Element<Scalar> const&> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
   ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::R3Element<Scalar> actual,
+  bool MatchAndExplain(geometry::R3Element<Scalar> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;
@@ -137,15 +137,15 @@ class ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>> final
 };
 
 template<typename Scalar, typename Frame>
-class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>> final
-    : public MatcherInterface<geometry::Vector<Scalar, Frame>> {
+class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&> final
+    : public MatcherInterface<geometry::Vector<Scalar, Frame> const&> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
   ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::Vector<Scalar, Frame> actual,
+  bool MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;
@@ -158,15 +158,15 @@ class ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>> final
 };
 
 template<typename Scalar, typename Frame>
-class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>> final
-    : public MatcherInterface<geometry::Bivector<Scalar, Frame>> {
+class ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&> final
+    : public MatcherInterface<geometry::Bivector<Scalar, Frame> const&> {
  public:
   template<typename XMatcher, typename YMatcher, typename ZMatcher>
   ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
                             YMatcher const& y_matcher,
                             ZMatcher const& z_matcher);
 
-  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> actual,
+  bool MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
                        MatchResultListener* listener) const override;
 
   void DescribeTo(std::ostream* out) const override;

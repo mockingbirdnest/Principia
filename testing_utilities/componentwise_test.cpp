@@ -114,7 +114,7 @@ TEST_F(ComponentwiseTest, Describe) {
   using R3 = R3Element<double>;
   {
     std::ostringstream out;
-    Matcher<R3>(Componentwise(AlmostEquals(1.0, 2),
+    Matcher<R3 const&>(Componentwise(AlmostEquals(1.0, 2),
                               VanishesBefore(1.0, 4),
                               Eq(3.5))).DescribeTo(&out);
     EXPECT_EQ("x is within 2 to 2 ULPs of 1 and "
@@ -124,7 +124,7 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Matcher<R3>(Componentwise(AlmostEquals(1.0, 2),
+    Matcher<R3 const&>(Componentwise(AlmostEquals(1.0, 2),
                               VanishesBefore(1.0, 4),
                               Eq(3.5))).DescribeNegationTo(&out);
     EXPECT_EQ("x is not within 2 to 2 ULPs of 1 or "
@@ -134,7 +134,7 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Matcher<RP2>(Componentwise(AlmostEquals(1.0, 2),
+    Matcher<RP2 const&>(Componentwise(AlmostEquals(1.0, 2),
                                VanishesBefore(1.0, 4))).DescribeTo(&out);
     EXPECT_EQ("t1 is within 2 to 2 ULPs of 1 and "
               "t2 vanishes before 1 to within 4 to 4 ULPs",
@@ -142,7 +142,7 @@ TEST_F(ComponentwiseTest, Describe) {
   }
   {
     std::ostringstream out;
-    Matcher<RP2>(Componentwise(AlmostEquals(1.0, 2),
+    Matcher<RP2 const&>(Componentwise(AlmostEquals(1.0, 2),
                                VanishesBefore(1.0, 4)))
         .DescribeNegationTo(&out);
     EXPECT_EQ("t2 is not within 2 to 2 ULPs of 1 or "

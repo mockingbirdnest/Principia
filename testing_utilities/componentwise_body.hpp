@@ -11,7 +11,6 @@ namespace principia {
 namespace testing_utilities {
 namespace internal_componentwise {
 
-using ::testing::MakeMatcher;
 using ::testing::SafeMatcherCast;
 
 template<typename T1Matcher, typename T2Matcher>
@@ -41,8 +40,8 @@ template<typename T1Matcher, typename T2Matcher>
 template<typename PairType>
 ComponentwiseMatcher2<T1Matcher, T2Matcher>::operator Matcher<PairType>()
     const {
-  return MakeMatcher(
-      new ComponentwiseMatcher2Impl<PairType>(t1_matcher_, t2_matcher_));
+  return Matcher<PairType>(
+      new ComponentwiseMatcher2Impl<PairType const&>(t1_matcher_, t2_matcher_));
 }
 
 template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
@@ -58,20 +57,20 @@ template<typename T1Matcher, typename T2Matcher, typename T3Matcher>
 template<typename TripleType>
 ComponentwiseMatcher3<T1Matcher, T2Matcher, T3Matcher>::
 operator Matcher<TripleType>() const {
-  return MakeMatcher(new ComponentwiseMatcher3Impl<TripleType>(
+  return Matcher<TripleType>(new ComponentwiseMatcher3Impl<TripleType const&>(
       t1_matcher_, t2_matcher_, t3_matcher_));
 }
 
 template<typename T1, typename T2>
 template<typename T1Matcher, typename T2Matcher>
-ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::ComponentwiseMatcher2Impl(
-    T1Matcher const& t1_matcher,
-    T2Matcher const& t2_matcher)
+ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::
+ComponentwiseMatcher2Impl(T1Matcher const& t1_matcher,
+                          T2Matcher const& t2_matcher)
     : t1_matcher_(SafeMatcherCast<T1>(t1_matcher)),
       t2_matcher_(SafeMatcherCast<T2>(t2_matcher)) {}
 
 template<typename T1, typename T2>
-bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::MatchAndExplain(
+bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::MatchAndExplain(
     geometry::Pair<T1, T2> const& actual,
     MatchResultListener* listener) const {
   bool const t1_matches = t1_matcher_.MatchAndExplain(actual.t1_, listener);
@@ -86,7 +85,7 @@ bool ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::MatchAndExplain(
 }
 
 template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeTo(
+void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::DescribeTo(
     std::ostream* out) const {
   *out << "first element ";
   t1_matcher_.DescribeTo(out);
@@ -95,8 +94,8 @@ void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeTo(
 }
 
 template<typename T1, typename T2>
-void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeNegationTo(
-    std::ostream* out) const {
+void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2> const&>::
+DescribeNegationTo(std::ostream* out) const {
   *out << "first element ";
   t1_matcher_.DescribeNegationTo(out);
   *out << " or second element ";
@@ -105,16 +104,16 @@ void ComponentwiseMatcher2Impl<geometry::Pair<T1, T2>>::DescribeNegationTo(
 
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher>
-ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
-    ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
-                              YMatcher const& y_matcher)
+ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+ComponentwiseMatcher2Impl(XMatcher const& x_matcher,
+                          YMatcher const& y_matcher)
     : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
       y_matcher_(SafeMatcherCast<Scalar>(y_matcher)) {}
 
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
-    MatchAndExplain(geometry::RP2Point<Scalar, Frame> const actual,
-                    MatchResultListener* listener) const {
+bool ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+MatchAndExplain(geometry::RP2Point<Scalar, Frame> const& actual,
+                MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x(), listener);
   if (!x_matches) {
     *listener << " in the x coordinate; ";
@@ -127,8 +126,8 @@ bool ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::DescribeTo(
-    std::ostream* out) const {
+void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
+DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
   *out << " and y ";
@@ -136,7 +135,7 @@ void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::DescribeTo(
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame>>::
+void ComponentwiseMatcher2Impl<geometry::RP2Point<Scalar, Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
@@ -146,18 +145,18 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::
-    ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
-                              YMatcher const& y_matcher,
-                              ZMatcher const& z_matcher)
+ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                          YMatcher const& y_matcher,
+                          ZMatcher const& z_matcher)
     : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
       y_matcher_(SafeMatcherCast<Scalar>(y_matcher)),
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
 template<typename Scalar>
-bool ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::MatchAndExplain(
-    geometry::R3Element<Scalar> const actual,
-    MatchResultListener* listener) const {
+bool ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+MatchAndExplain(geometry::R3Element<Scalar> const& actual,
+                MatchResultListener* listener) const {
   bool const x_matches = x_matcher_.MatchAndExplain(actual.x, listener);
   if (!x_matches) {
     *listener << " in the x coordinate; ";
@@ -174,8 +173,8 @@ bool ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::MatchAndExplain(
 }
 
 template<typename Scalar>
-void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::DescribeTo(
-    std::ostream* out) const {
+void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
+DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
   *out << " and y ";
@@ -185,61 +184,7 @@ void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::DescribeTo(
 }
 
 template<typename Scalar>
-void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar>>::DescribeNegationTo(
-    std::ostream* out) const {
-  *out << "x ";
-  x_matcher_.DescribeNegationTo(out);
-  *out << " or y ";
-  y_matcher_.DescribeNegationTo(out);
-  *out << " or z ";
-  z_matcher_.DescribeNegationTo(out);
-}
-
-template<typename Scalar, typename Frame>
-template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::
-    ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
-                              YMatcher const& y_matcher,
-                              ZMatcher const& z_matcher)
-    : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
-      y_matcher_(SafeMatcherCast<Scalar>(y_matcher)),
-      z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
-
-template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::
-MatchAndExplain(geometry::Vector<Scalar, Frame> const actual,
-                MatchResultListener* listener) const {
-  bool const x_matches =
-      x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
-  if (!x_matches) {
-    *listener << " in the x coordinate; ";
-  }
-  bool const y_matches =
-      y_matcher_.MatchAndExplain(actual.coordinates().y, listener);
-  if (!y_matches) {
-    *listener << " in the y coordinate; ";
-  }
-  bool const z_matches =
-      z_matcher_.MatchAndExplain(actual.coordinates().z, listener);
-  if (!z_matches) {
-    *listener << " in the z coordinate; ";
-  }
-  return x_matches && y_matches && z_matches;
-}
-
-template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::DescribeTo(
-    std::ostream* out) const {
-  *out << "x ";
-  x_matcher_.DescribeTo(out);
-  *out << " and y ";
-  y_matcher_.DescribeTo(out);
-  *out << " and z ";
-  z_matcher_.DescribeTo(out);
-}
-
-template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame>>::
+void ComponentwiseMatcher3Impl<geometry::R3Element<Scalar> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
@@ -251,17 +196,17 @@ DescribeNegationTo(std::ostream* out) const {
 
 template<typename Scalar, typename Frame>
 template<typename XMatcher, typename YMatcher, typename ZMatcher>
-ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::
-    ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
-                              YMatcher const& y_matcher,
-                              ZMatcher const& z_matcher)
+ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                          YMatcher const& y_matcher,
+                          ZMatcher const& z_matcher)
     : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
       y_matcher_(SafeMatcherCast<Scalar>(y_matcher)),
       z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
 
 template<typename Scalar, typename Frame>
-bool ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::
-MatchAndExplain(geometry::Bivector<Scalar, Frame> const actual,
+bool ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+MatchAndExplain(geometry::Vector<Scalar, Frame> const& actual,
                 MatchResultListener* listener) const {
   bool const x_matches =
       x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
@@ -282,8 +227,8 @@ MatchAndExplain(geometry::Bivector<Scalar, Frame> const actual,
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::DescribeTo(
-    std::ostream* out) const {
+void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+DescribeTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeTo(out);
   *out << " and y ";
@@ -293,7 +238,61 @@ void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::DescribeTo(
 }
 
 template<typename Scalar, typename Frame>
-void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame>>::
+void ComponentwiseMatcher3Impl<geometry::Vector<Scalar, Frame> const&>::
+DescribeNegationTo(std::ostream* out) const {
+  *out << "x ";
+  x_matcher_.DescribeNegationTo(out);
+  *out << " or y ";
+  y_matcher_.DescribeNegationTo(out);
+  *out << " or z ";
+  z_matcher_.DescribeNegationTo(out);
+}
+
+template<typename Scalar, typename Frame>
+template<typename XMatcher, typename YMatcher, typename ZMatcher>
+ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+ComponentwiseMatcher3Impl(XMatcher const& x_matcher,
+                          YMatcher const& y_matcher,
+                          ZMatcher const& z_matcher)
+    : x_matcher_(SafeMatcherCast<Scalar>(x_matcher)),
+      y_matcher_(SafeMatcherCast<Scalar>(y_matcher)),
+      z_matcher_(SafeMatcherCast<Scalar>(z_matcher)) {}
+
+template<typename Scalar, typename Frame>
+bool ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+MatchAndExplain(geometry::Bivector<Scalar, Frame> const& actual,
+                MatchResultListener* listener) const {
+  bool const x_matches =
+      x_matcher_.MatchAndExplain(actual.coordinates().x, listener);
+  if (!x_matches) {
+    *listener << " in the x coordinate; ";
+  }
+  bool const y_matches =
+      y_matcher_.MatchAndExplain(actual.coordinates().y, listener);
+  if (!y_matches) {
+    *listener << " in the y coordinate; ";
+  }
+  bool const z_matches =
+      z_matcher_.MatchAndExplain(actual.coordinates().z, listener);
+  if (!z_matches) {
+    *listener << " in the z coordinate; ";
+  }
+  return x_matches && y_matches && z_matches;
+}
+
+template<typename Scalar, typename Frame>
+void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
+DescribeTo(std::ostream* out) const {
+  *out << "x ";
+  x_matcher_.DescribeTo(out);
+  *out << " and y ";
+  y_matcher_.DescribeTo(out);
+  *out << " and z ";
+  z_matcher_.DescribeTo(out);
+}
+
+template<typename Scalar, typename Frame>
+void ComponentwiseMatcher3Impl<geometry::Bivector<Scalar, Frame> const&>::
 DescribeNegationTo(std::ostream* out) const {
   *out << "x ";
   x_matcher_.DescribeNegationTo(out);
