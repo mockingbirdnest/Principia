@@ -45,6 +45,7 @@ using testing_utilities::Componentwise;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
 using testing_utilities::VanishesBefore;
+using ::testing::AllOf;
 using ::testing::An;
 using ::testing::Each;
 using ::testing::Eq;
@@ -582,15 +583,12 @@ TEST_F(GeopotentialTest, DampedForces) {
   // |geopotential_c22_s22| has degree 2 sectoral terms with tolerance 0.
   std::optional<Geopotential<ICRS>> geopotential_c22_s22;
 
-  for (int n = 3; n <= 5; ++n) {
+  for (int n = 2; n <= 5; ++n) {
     auto earth_degree_n_message = earth_message;
     for (auto& row :
          *earth_degree_n_message.mutable_geopotential()->mutable_row()) {
       if (row.degree() != n) {
-        for (auto& column : *row.mutable_column()) {
-          column.clear_cos();
-          column.clear_sin();
-        }
+        row.clear_column();
       }
     }
     earths.push_back(make_not_null_unique<OblateBody<ICRS>>(
@@ -722,16 +720,55 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(1, 0));
+        AlmostEquals(1, 212));
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_latitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 2));
+        AlmostEquals(0.5, 1773));
     EXPECT_THAT(
         get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
             get_longitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 2));
+        AlmostEquals(0.5, 103));
+  }
+
+  {
+    // Inspect the degree 3 sigmoid.
+    Length const s0 = earth_geopotential.degree_damping()[3].inner_threshold();
+    Length const s1 = earth_geopotential.degree_damping()[3].outer_threshold();
+    EXPECT_THAT(s0, IsNear(43'000 * Kilo(Metre)));
+
+    // Although this sigmoid overlaps with the degree 3 and tesseral ones, the
+    // midpoint still lies above the outer threshold for degree 3, and below the
+    // inner tesseral threshold.
+    EXPECT_THAT(s0,
+                Lt(earth_geopotential.degree_damping()[4].outer_threshold()));
+    EXPECT_THAT(s1, Gt(earth_geopotential.tesseral_damping().inner_threshold()));
+    EXPECT_THAT(
+        (s0 + s1) / 2,
+        AllOf(Gt(earth_geopotential.degree_damping()[4].outer_threshold()),
+              Lt(earth_geopotential.tesseral_damping().inner_threshold())));
+
+    // Note that the radial acceleration ratio at the midpoint is 7/8 rather
+    // than 1, as it depends on the degree: it is (4 + n) / (2n + 2).
+    EXPECT_THAT(
+        (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
+         get_radial_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
+            get_radial_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
+        AlmostEquals(0.875, 278));
+
+    EXPECT_THAT(
+        (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
+         get_latitudinal_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
+            get_latitudinal_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
+        AlmostEquals(0.5, 26512));
+    EXPECT_THAT(
+        (get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
+         get_longitudinal_acceleration(*geopotential_degree[2],
+                                       (s0 + s1) / 2)) /
+            get_longitudinal_acceleration(*geopotential_degree[3],
+                                          (s0 + s1) / 2),
+        AlmostEquals(0.5, 2130));
   }
 }
 
