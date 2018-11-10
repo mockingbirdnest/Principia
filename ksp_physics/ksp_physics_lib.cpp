@@ -5,7 +5,6 @@
 
 #include "ksp_physics/ksp_physics_lib.hpp"
 
-#define NOGDI
 #include <windows.h>
 #include <psapi.h>
 

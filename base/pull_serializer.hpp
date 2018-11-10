@@ -8,6 +8,7 @@
 #include <queue>
 #include <thread>
 
+#include "absl/base/thread_annotations.h"
 #include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
