@@ -510,14 +510,15 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     int n;
     int m;
   };
-
-  std::priority_queue<
-      Threshold, std::vector<Threshold>,
-      [](Threshold const& left, Threshold const& right) -> bool {
-        return left.r < right.r ||
-                (left.r == right.r &&
-                 (left.m < right.m || (left.m == right.m && left.n < right.n)));
-      }> harmonic_thresholds;
+  // If |after(left, right)|, |left| is popped after |right| in the
+  // |priority_queue|.
+  auto const after = [](Threshold const& left, Threshold const& right) -> bool {
+    return left.r < right.r ||
+           (left.r == right.r &&
+            (left.m < right.m || (left.m == right.m && left.n < right.n)));
+  };
+  std::priority_queue<Threshold, std::vector<Threshold>, decltype(after)>
+      harmonic_thresholds(after);
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
     for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
