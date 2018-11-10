@@ -10,6 +10,7 @@
 #include <thread>
 #include <vector>
 
+#include "absl/base/thread_annotations.h"
 #include "base/macros.hpp"
 #include "base/monostable.hpp"
 #include "base/not_null.hpp"
