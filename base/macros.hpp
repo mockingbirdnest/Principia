@@ -172,15 +172,12 @@ inline void noreturn() { std::exit(0); }
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
 #  define EXCLUDES(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
-#  define GUARDED_BY(...) \
-       THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(__VA_ARGS__))
 #  define REQUIRES(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
 #  define REQUIRES_SHARED(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
 #else
 #  define EXCLUDES(x)
-#  define GUARDED_BY(x)
 #  define REQUIRES(x)
 #  define REQUIRES_SHARED(x)
 #endif

@@ -99,7 +99,7 @@
         -Xclang --system-header-prefix=gmock/
       </AdditionalOptions>
       <PreprocessorDefinitions Condition="!$(PrincipiaCompilerClangLLVM)">
-        _ENABLE_EXTENDED_ALIGNED_STORAGE;%(PreprocessorDefinitions)
+        _ENABLE_EXTENDED_ALIGNED_STORAGE;NOGDI;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
@@ -146,6 +146,8 @@
   <Import Project="$(SolutionDir)google_glog.props" />
   <Import Project="$(SolutionDir)..\Google\gipfeli\msvc\portability_macros.props" />
   <Import Project="$(SolutionDir)google_gipfeli.props" />
+  <Import Project="$(SolutionDir)..\Google\abseil-cpp\msvc\portability_macros.props" />
+  <Import Project="$(SolutionDir)google_abseil-cpp.props" />
   <Import Project="$(SolutionDir)generate_version_translation_unit.props" />
 
   <ImportGroup Condition="$(ProjectName) == benchmarks or
