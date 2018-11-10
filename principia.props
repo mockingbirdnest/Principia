@@ -99,7 +99,7 @@
         -Xclang --system-header-prefix=gmock/
       </AdditionalOptions>
       <PreprocessorDefinitions Condition="!$(PrincipiaCompilerClangLLVM)">
-        _ENABLE_EXTENDED_ALIGNED_STORAGE;NOGDI;%(PreprocessorDefinitions)
+        _ENABLE_EXTENDED_ALIGNED_STORAGE;NOGDI;NOMINMAX;%(PreprocessorDefinitions)
       </PreprocessorDefinitions>
       <TreatWarningAsError Condition="!$(PrincipiaCompilerClangLLVM)">true</TreatWarningAsError>
       <SDLCheck>true</SDLCheck>
