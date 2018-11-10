@@ -410,16 +410,18 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(
       geopotential.degree_damping(),
       ElementsAre(
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(1'500'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(43'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(23'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(18'000 * Kilo(Metre)))));
+          /*0=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*1=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*2=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(1'500'000 * Kilo(Metre))),
+          /*3=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(43'000 * Kilo(Metre))),
+          /*4=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(23'000 * Kilo(Metre))),
+          /*5=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(18'000 * Kilo(Metre)))));
   EXPECT_THAT(geopotential.tesseral_damping().inner_threshold(),
               IsNear(110'000 * Kilo(Metre)));
   EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(3));
@@ -450,16 +452,18 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(
       geopotential.degree_damping(),
       ElementsAre(
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(110'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(43'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(23'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(18'000 * Kilo(Metre)))));
+          /*0=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*1=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*2=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(110'000 * Kilo(Metre))),
+          /*3=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(43'000 * Kilo(Metre))),
+          /*4=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(23'000 * Kilo(Metre))),
+          /*5=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(18'000 * Kilo(Metre)))));
   EXPECT_THAT(geopotential.tesseral_damping().inner_threshold(),
               IsNear(110'000 * Kilo(Metre)));
   EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(2));
@@ -521,16 +525,18 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
   EXPECT_THAT(
       geopotential.degree_damping(),
       ElementsAre(
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold, Eq(Infinity<Length>())),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(1'500'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(35'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(22'000 * Kilo(Metre))),
-          Property(&HarmonicDamping::inner_threshold,
-                   IsNear(12'000 * Kilo(Metre)))));
+          /*0=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*1=*/Property(&HarmonicDamping::inner_threshold,
+                         Eq(Infinity<Length>())),
+          /*2=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(1'500'000 * Kilo(Metre))),
+          /*3=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(35'000 * Kilo(Metre))),
+          /*4=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(22'000 * Kilo(Metre))),
+          /*5=*/Property(&HarmonicDamping::inner_threshold,
+                         IsNear(12'000 * Kilo(Metre)))));
   EXPECT_THAT(geopotential.tesseral_damping().inner_threshold(), Eq(0 * Metre));
   EXPECT_THAT(geopotential.first_tesseral_degree(), Eq(6));
 
