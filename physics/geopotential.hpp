@@ -94,6 +94,10 @@ class Geopotential {
       Square<Length> const& r²,
       Exponentiation<Length, -3> const& one_over_r³) const;
 
+  std::vector<HarmonicDamping> const& degree_damping() const;
+  HarmonicDamping const& tesseral_damping() const;
+  int first_tesseral_degree() const;
+
  private:
   // The frame of the surface of the celestial.
   struct SurfaceFrame;
@@ -155,11 +159,12 @@ class Geopotential {
   HarmonicDamping tesseral_damping_;
 
   // |first_tesseral_degree_| is the integer n such that
-  //   degree_damping_[n-1].outer_threshold >= tesseral_damping_.outer_threshold
-  // and
-  //   tesseral_damping_.outer_threshold > degree_damping_[n].outer_threshold,
-  // or is |degree_damping_.size()| if
-  // |tesseral_threshold_ <= degree_threshold_[n]| for all n.
+  //   degree_damping_[n - 1] ≻ tesseral_damping_ ≽ degree_damping_[n],
+  // or is 0 if
+  //   ∀n, degree_threshold_[n] ≼ tesseral_damping_,
+  // or |degree_damping_.size()| if
+  //   ∀n, tesseral_damping_ ≺ degree_threshold_[n],
+  // where the operators (≻, ≽, ≼, ≺) denote ordering of the thresholds.
   // Tesseral (including sectoral) harmonics of degree less than
   // |first_tesseral_degree_| are damped by |tesseral_damping_|, instead
   // of their respective |degree_damping_|.

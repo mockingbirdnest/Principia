@@ -4,6 +4,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <queue>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -496,14 +498,28 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     : body_(body) {
   CHECK_GE(tolerance, 0);
   double const& ε = tolerance;
-  first_tesseral_degree_ = body_->geopotential_degree() + 1;
-  tesseral_damping_ = HarmonicDamping(Length{});
-  Length tesseral_threshold;
-  bool is_tesseral = false;
-  degree_damping_.emplace_back();
-  degree_damping_.emplace_back();
+
+  // Thresholds for individual harmonics, with lexicographic (threshold, order,
+  // degree) comparison.
+  // Note that the order of the fields is (degree, order) as usual; comparison
+  // is order-first in the priority queue so as to put the
+  // first_tesseral_degree_ as early as possible in cases of ties (mostly 0
+  // tolerances, leading to infinite thresholds).
+  struct Threshold {
+    Length r;
+    int n;
+    int m;
+  };
+  // If |after(left, right)|, |left| is popped after |right| in the
+  // |priority_queue|.
+  auto const after = [](Threshold const& left, Threshold const& right) -> bool {
+    return left.r < right.r ||
+           (left.r == right.r &&
+            (left.m < right.m || (left.m == right.m && left.n < right.n)));
+  };
+  std::priority_queue<Threshold, std::vector<Threshold>, decltype(after)>
+      harmonic_thresholds(after);
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
-    Length degree_n_threshold = degree_damping_[n - 1].inner_threshold();
     for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
           MaxAbsNormalizedAssociatedLegendreFunction[n][m];
@@ -517,19 +533,26 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
                                            Sqrt(Pow<2>(Cnm) + Pow<2>(Snm))) /
                                               ε,
                                           1.0 / n);
-      if (m == 0 || is_tesseral) {
-        degree_n_threshold = std::max(r, degree_n_threshold);
-        if (!is_tesseral && degree_n_threshold < tesseral_threshold) {
-          first_tesseral_degree_ = n;
-          is_tesseral = true;
-        }
-      } else {
-        tesseral_threshold = std::max(r, tesseral_threshold);
-      }
+      harmonic_thresholds.push({r, n, m});
     }
-    degree_damping_.push_back(HarmonicDamping(degree_n_threshold));
   }
-  tesseral_damping_ = HarmonicDamping(tesseral_threshold);
+
+  harmonic_thresholds.push({Infinity<Length>(), 0, 0});
+  harmonic_thresholds.push({Infinity<Length>(), 1, 0});
+
+  bool tesseral = false;
+  while (!harmonic_thresholds.empty()) {
+    auto const& threshold = harmonic_thresholds.top();
+    if (!tesseral && threshold.m > 0) {
+      tesseral = true;
+      first_tesseral_degree_ = degree_damping_.size();
+      tesseral_damping_ = HarmonicDamping(threshold.r);
+    }
+    while (threshold.n >= degree_damping_.size()) {
+      degree_damping_.emplace_back(threshold.r);
+    }
+    harmonic_thresholds.pop();
+  }
 }
 
 template<typename Frame>
@@ -590,6 +613,22 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
 }
 
 #undef PRINCIPIA_CASE_SPHERICAL_HARMONICS
+
+template<typename Frame>
+std::vector<HarmonicDamping> const& Geopotential<Frame>::degree_damping()
+    const {
+  return degree_damping_;
+}
+
+template<typename Frame>
+HarmonicDamping const& Geopotential<Frame>::tesseral_damping() const {
+  return tesseral_damping_;
+}
+
+template<typename Frame>
+int Geopotential<Frame>::first_tesseral_degree() const {
+  return first_tesseral_degree_;
+}
 
 template<typename Frame>
 Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
