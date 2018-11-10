@@ -1,6 +1,8 @@
 ﻿
 #include "physics/geopotential.hpp"
 
+#include <vector>
+
 #include "astronomy/fortran_astrodynamics_toolkit.hpp"
 #include "astronomy/frames.hpp"
 #include "geometry/frame.hpp"
@@ -653,7 +655,8 @@ TEST_F(GeopotentialTest, DampedForces) {
             Instant(), r * direction, r, r * r, 1 / Pow<3>(r));
       };
   auto const get_radial_acceleration =
-      [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential, Length const& r) {
+      [&direction, &get_acceleration](Geopotential<ICRS> const& geopotential,
+                                      Length const& r) {
         Vector<double, ICRS> const down = -direction;
         return InnerProduct(get_acceleration(geopotential, r), down);
       };
@@ -704,10 +707,14 @@ TEST_F(GeopotentialTest, DampedForces) {
         AlmostEquals(0.5, 2));
   }
 
-  // Below the inner threshold for J2, but still above all other outer thresholds.
-  EXPECT_THAT(earth_geopotential.degree_damping()[2].inner_threshold(), Gt(1'000'000 * Kilo(Metre)));
-  EXPECT_THAT(earth_geopotential.tesseral_damping().outer_threshold(), Lt(1'000'000 * Kilo(Metre)));
-  EXPECT_THAT(earth_geopotential.degree_damping()[3].outer_threshold(), Lt(1'000'000 * Kilo(Metre)));
+  // Below the inner threshold for J2, but still above all other outer
+  // thresholds.
+  EXPECT_THAT(earth_geopotential.degree_damping()[2].inner_threshold(),
+              Gt(1'000'000 * Kilo(Metre)));
+  EXPECT_THAT(earth_geopotential.tesseral_damping().outer_threshold(),
+              Lt(1'000'000 * Kilo(Metre)));
+  EXPECT_THAT(earth_geopotential.degree_damping()[3].outer_threshold(),
+              Lt(1'000'000 * Kilo(Metre)));
   EXPECT_THAT(get_acceleration(earth_geopotential, 1'000'000 * Kilo(Metre)),
               Eq(get_acceleration(*geopotential_j2, 1'000'000 * Kilo(Metre))));
 
@@ -751,7 +758,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     // inner tesseral threshold.
     EXPECT_THAT(s0,
                 Lt(earth_geopotential.degree_damping()[4].outer_threshold()));
-    EXPECT_THAT(s1, Gt(earth_geopotential.tesseral_damping().inner_threshold()));
+    EXPECT_THAT(s1,
+                Gt(earth_geopotential.tesseral_damping().inner_threshold()));
     EXPECT_THAT(
         (s0 + s1) / 2,
         AllOf(Gt(earth_geopotential.degree_damping()[4].outer_threshold()),
@@ -768,7 +776,8 @@ TEST_F(GeopotentialTest, DampedForces) {
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
-            get_latitudinal_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
+            get_latitudinal_acceleration(*geopotential_degree[3],
+                                         (s0 + s1) / 2),
         AlmostEquals(0.5, 26512));
     EXPECT_THAT(
         (get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
