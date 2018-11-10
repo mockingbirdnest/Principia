@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 #include <queue>
+#include <vector>
 
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
@@ -501,20 +502,23 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   // Thresholds for individual harmonics, with lexicographic (threshold, order,
   // degree) comparison.
   // Note that the order of the fields is (degree, order) as usual; comparison
-  // is order-first so as to put the first_tesseral_degree_ as early as possible
-  // in cases of ties (mostly 0 tolerances, leading to infinite thresholds).
+  // is order-first in the priority queue so as to put the
+  // first_tesseral_degree_ as early as possible in cases of ties (mostly 0
+  // tolerances, leading to infinite thresholds).
   struct Threshold {
     Length r;
     int n;
     int m;
-
-    bool operator<(Threshold const& other) const {
-      return r < other.r ||
-             (r == other.r && (m < other.m || (m == other.m && n < other.n)));
-    }
   };
-
-  std::priority_queue<Threshold> harmonic_thresholds;
+  // If |after(left, right)|, |left| is popped after |right| in the
+  // |priority_queue|.
+  auto const after = [](Threshold const& left, Threshold const& right) -> bool {
+    return left.r < right.r ||
+           (left.r == right.r &&
+            (left.m < right.m || (left.m == right.m && left.n < right.n)));
+  };
+  std::priority_queue<Threshold, std::vector<Threshold>, decltype(after)>
+      harmonic_thresholds(after);
   for (int n = 2; n <= body_->geopotential_degree(); ++n) {
     for (int m = 0; m <= n; ++m) {
       double const max_abs_Pnm =
@@ -537,7 +541,7 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   harmonic_thresholds.push({Infinity<Length>(), 1, 0});
 
   bool tesseral = false;
-  for (; !harmonic_thresholds.empty(); harmonic_thresholds.pop()) {
+  while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
     if (!tesseral && threshold.m > 0) {
       tesseral = true;
@@ -547,6 +551,7 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
     while (threshold.n >= degree_damping_.size()) {
       degree_damping_.emplace_back(threshold.r);
     }
+    harmonic_thresholds.pop();
   }
 }
 
