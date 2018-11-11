@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/shared_lock_guard.hpp"
 #include "base/status.hpp"
@@ -383,7 +384,7 @@ class Ephemeris {
   // Guards |instance_|, |trajectories_|, and |bodies_to_trajectories_| during
   // integration.  Note that the thread-safety annotations are incomplete
   // because we do not attempt to protect all the operations, only integration.
-  mutable std::shared_mutex lock_;
+  mutable absl::Mutex lock_;
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;

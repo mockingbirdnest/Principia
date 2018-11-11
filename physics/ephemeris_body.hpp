@@ -343,7 +343,7 @@ not_null<ContinuousTrajectory<Frame> const*> Ephemeris<Frame>::trajectory(
 
 template<typename Frame>
 bool Ephemeris<Frame>::empty() const {
-  shared_lock_guard<std::shared_mutex> l(lock_);
+  absl::ReaderMutexLock l(&lock_);
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
     if (trajectory->empty()) {
@@ -355,7 +355,7 @@ bool Ephemeris<Frame>::empty() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_min() const {
-  shared_lock_guard<std::shared_mutex> l(lock_);
+  absl::ReaderMutexLock l(&lock_);
   Instant t_min = bodies_to_trajectories_.begin()->second->t_min();
   for (auto const& pair : bodies_to_trajectories_) {
     auto const& trajectory = pair.second;
@@ -368,7 +368,7 @@ Instant Ephemeris<Frame>::t_min() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::t_max() const {
-  shared_lock_guard<std::shared_mutex> l(lock_);
+  absl::ReaderMutexLock l(&lock_);
   return t_max_locked();
 }
 
@@ -428,7 +428,7 @@ void Ephemeris<Frame>::Prolong(Instant const& t) {
   // Perform the integration.  Note that we may have to iterate until |t_max()|
   // actually reaches |t| because the last series may not be fully determined
   // after the first integration.
-  std::lock_guard<std::shared_mutex> l(lock_);
+  absl::MutexLock l(&lock_);
   while (t_max_locked() < t) {
     instance_->Solve(t_final);
     t_final += fixed_step_parameters_.step_;
@@ -1075,7 +1075,7 @@ Instant Ephemeris<Frame>::t_max_locked() const {
 
 template<typename Frame>
 Instant Ephemeris<Frame>::instance_time() const {
-  shared_lock_guard<std::shared_mutex> l(lock_);
+  absl::ReaderMutexLock l(&lock_);
   return instance_->time().value;
 }
 
@@ -1270,7 +1270,7 @@ bool Ephemeris<Frame>::ComputeMasslessBodiesGravitationalAccelerations(
   accelerations.assign(accelerations.size(), Vector<Acceleration, Frame>());
   bool ok = true;
 
-  shared_lock_guard<std::shared_mutex> l(lock_);
+  absl::ReaderMutexLock l(&lock_);
   for (std::size_t b1 = 0; b1 < number_of_oblate_bodies_; ++b1) {
     MassiveBody const& body1 = *bodies_[b1];
     ok &= ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies<
