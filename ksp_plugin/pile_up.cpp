@@ -40,7 +40,7 @@ PileUp::PileUp(
     Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
-    : lock_(make_not_null_unique<std::mutex>()),
+    : lock_(make_not_null_unique<absl::Mutex>()),
       parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
@@ -124,7 +124,7 @@ void PileUp::NudgeParts() const {
 }
 
 Status PileUp::DeformAndAdvanceTime(Instant const& t) {
-  std::lock_guard<std::mutex> l(*lock_);
+  absl::MutexLock l(lock_.get());
   Status status;
   if (psychohistory_->last().time() < t) {
     DeformPileUpIfNeeded();
@@ -260,7 +260,7 @@ PileUp::PileUp(
     DiscreteTrajectory<Barycentric>* const psychohistory,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     std::function<void()> deletion_callback)
-    : lock_(make_not_null_unique<std::mutex>()),
+    : lock_(make_not_null_unique<absl::Mutex>()),
       parts_(std::move(parts)),
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),

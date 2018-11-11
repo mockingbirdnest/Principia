@@ -5,8 +5,8 @@
 #include <future>
 #include <list>
 #include <map>
-#include <mutex>
 
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -137,7 +137,7 @@ class PileUp {
   void AppendToPart(DiscreteTrajectory<Barycentric>::Iterator it) const;
 
   // Wrapped in a |unique_ptr| to be moveable.
-  not_null<std::unique_ptr<std::mutex>> lock_;
+  not_null<std::unique_ptr<absl::Mutex>> lock_;
 
   std::list<not_null<Part*>> parts_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;

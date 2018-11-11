@@ -4,13 +4,12 @@
 #include <functional>
 #include <queue>
 #include <memory>
-#include <mutex>
 #include <optional>
-#include <shared_mutex>
 #include <thread>
 #include <vector>
 
 #include "absl/base/thread_annotations.h"
+#include "absl/synchronization/mutex.h"
 #include "base/macros.hpp"
 #include "base/monostable.hpp"
 #include "base/not_null.hpp"
@@ -68,13 +67,9 @@ class Bundle final {
   bool DeadlineExceeded();
 
   // |status_lock_| should not be held when locking |lock_|.
-  std::mutex lock_;
-  // Notified once when a task is available for execution.  Notified to all
-  // waiting workers when either |wait_on_empty_| is flopped or |status_| is set
-  // to an error.
-  // Workers wait on this when no |tasks_| are available.
-  std::condition_variable tasks_not_empty_or_terminate_;
-  std::shared_mutex status_lock_;
+  absl::Mutex lock_;
+  absl::Mutex status_lock_;
+
   // If |!status_.ok()|, currently-running tasks should cooperatively abort, and
   // workers will terminate without considering queued tasks.  Set by |Abort|,
   // accessed by |Aborting|, returned by |Join|.

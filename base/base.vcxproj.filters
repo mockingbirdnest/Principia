@@ -131,12 +131,6 @@
     <ClInclude Include="thread_pool_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="shared_lock_guard.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="shared_lock_guard_body.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="ranges.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "glog/logging.h"
 #include "gmock/gmock.h"
 
@@ -23,12 +24,12 @@ class ThreadPoolTest : public ::testing::Test {
 TEST_F(ThreadPoolTest, ParallelExecution) {
   static constexpr int number_of_calls = 1'000'000;
 
-  std::mutex lock;
+  absl::Mutex lock;
   std::vector<std::int64_t> numbers;
   std::vector<std::future<void>> futures;
   for (std::int64_t i = 0; i < number_of_calls; ++i) {
     futures.push_back(pool_.Add([i, &lock, &numbers]() {
-      std::lock_guard<std::mutex> l(lock);
+      absl::MutexLock l(&lock);
       numbers.push_back(i);
     }));
   }

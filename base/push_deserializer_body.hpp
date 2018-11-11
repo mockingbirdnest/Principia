@@ -120,7 +120,7 @@ inline void PushDeserializer::Start(
     CHECK(decoder.ConsumedEntireMessage());
 
     // Run any remainining chunk callback.
-    std::unique_lock<std::mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     CHECK_EQ(1, done_.size());
     auto const done_front = done_.front();
     if (done_front != nullptr) {
@@ -161,16 +161,18 @@ inline void PushDeserializer::Push(Array<std::uint8_t> const bytes,
   do {
     {
       is_last = current.size <= queued_chunk_size;
-      std::unique_lock<std::mutex> l(lock_);
-      queue_has_room_.wait(l, [this]() {
+      absl::MutexLock l(&lock_);
+
+      auto const queue_has_room = [this]() {
         return queue_.size() < static_cast<std::size_t>(number_of_chunks_);
-      });
+      };
+      lock_.Await(absl::Condition(&queue_has_room));
+
       queue_.emplace(current.data,
                      std::min(current.size,
                               static_cast<std::int64_t>(queued_chunk_size)));
       done_.emplace(is_last ? std::move(done) : nullptr);
     }
-    queue_has_elements_.notify_all();
     current.data = &current.data[queued_chunk_size];
     current.size -= queued_chunk_size;
   } while (!is_last);
@@ -186,8 +188,11 @@ inline void PushDeserializer::Push(UniqueArray<std::uint8_t> bytes) {
 inline Array<std::uint8_t> PushDeserializer::Pull() {
   Array<std::uint8_t> result;
   {
-    std::unique_lock<std::mutex> l(lock_);
-    queue_has_elements_.wait(l, [this]() { return !queue_.empty(); });
+    absl::MutexLock l(&lock_);
+
+    auto const queue_has_elements =  [this]() { return !queue_.empty(); };
+    lock_.Await(absl::Condition(&queue_has_elements));
+
     // The front of |done_| is the callback for the |Array<std::uint8_t>| object
     // that was just processed.  Run it now.
     CHECK(!done_.empty());
@@ -209,7 +214,6 @@ inline Array<std::uint8_t> PushDeserializer::Pull() {
     }
     queue_.pop();
   }
-  queue_has_room_.notify_all();
   return result;
 }
 
