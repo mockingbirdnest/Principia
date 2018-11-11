@@ -6,21 +6,21 @@
 #include <random>
 #include <vector>
 
-#include "base/shared_lock_guard.hpp"
+#include "absl/synchronization/mutex.h"
 #include "base/thread_pool.hpp"
 #include "benchmark/benchmark.h"
 
 namespace principia {
 namespace base {
 
-std::shared_mutex lock;
+absl::Mutex lock;
 std::mt19937_64 random(42);
 std::uniform_int_distribution<int> distribution(0, 1e5);
 
 double ComsumeCpuNoLock(std::int64_t const n) {
   double result;
   {
-    base::shared_lock_guard<std::shared_mutex> l(lock);
+    absl::ReaderMutexLock l(&lock);
     result = distribution(random);
   }
   for (int i = 0; i < n; ++i) {
@@ -30,7 +30,7 @@ double ComsumeCpuNoLock(std::int64_t const n) {
 }
 
 double ComsumeCpuSharedLock(std::int64_t const n) {
-  base::shared_lock_guard<std::shared_mutex> l(lock);
+  absl::ReaderMutexLock l(&lock);
   double result = distribution(random);
   for (int i = 0; i < n; ++i) {
     result += std::sqrt(i);
@@ -39,7 +39,7 @@ double ComsumeCpuSharedLock(std::int64_t const n) {
 }
 
 double ComsumeCpuExclusiveLock(std::int64_t const n) {
-  std::lock_guard<std::shared_mutex> l(lock);
+  absl::MutexLock l(&lock);
   double result = distribution(random);
   for (int i = 0; i < n; ++i) {
     result += std::sqrt(i);
