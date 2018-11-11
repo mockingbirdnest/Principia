@@ -14,7 +14,6 @@
 #include "base/macros.hpp"
 #include "base/map_util.hpp"
 #include "base/not_null.hpp"
-#include "base/shared_lock_guard.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "integrators/integrators.hpp"
@@ -35,7 +34,6 @@ using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::make_not_null_unique;
-using base::shared_lock_guard;
 using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::InnerProduct;

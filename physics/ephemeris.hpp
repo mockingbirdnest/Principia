@@ -9,7 +9,6 @@
 
 #include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/shared_lock_guard.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
