@@ -477,8 +477,7 @@ void SolarSystem<Frame>::LimitOblatenessToDegree(std::string const& name,
       }
       break;
     case serialization::GravityModel::Body::OBLATENESS_NOT_SET:
-      LOG(FATAL) << body->DebugString();
-      base::noreturn();
+      break;
   }
 }
 
