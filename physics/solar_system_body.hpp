@@ -480,7 +480,7 @@ void SolarSystem<Frame>::LimitOblatenessToDegree(std::string const& name,
       LOG(FATAL) << body->DebugString();
       base::noreturn();
   }
-} 
+}
 
 template<typename Frame>
 void SolarSystem<Frame>::LimitOblatenessToZonal(std::string const& name) {
