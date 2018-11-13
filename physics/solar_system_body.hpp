@@ -518,16 +518,6 @@ void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   LOG(FATAL) << name << " does not exist";
 }
 
-template<typename Frame>
-void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
-  auto const it = gravity_model_map_.find(name);
-  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
-  serialization::GravityModel::Body* body = it->second;
-  body->clear_reference_radius();
-  body->clear_j2();
-  body->clear_geopotential();
-}
-
 #define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \
   if (elements.field) {                                       \
     body_elements->set_##field(DebugString(*elements.field)); \

@@ -116,8 +116,8 @@ class EphemerisTest : public testing::TestWithParam<FixedStepSizeIntegrator<
       Position<ICRS>& centre_of_mass,
       Time& period) {
     // Make the bodies non-oblate so that the system can be computed explicitly.
-    solar_system_.RemoveOblateness("Earth");
-    solar_system_.RemoveOblateness("Moon");
+    solar_system_.LimitOblatenessToDegree("Earth", /*max_degree=*/0);
+    solar_system_.LimitOblatenessToDegree("Moon", /*max_degree=*/0);
     serialization::GravityModel::Body const earth_gravity_model =
         solar_system_.gravity_model_message("Earth");
     serialization::GravityModel::Body const moon_gravity_model =
