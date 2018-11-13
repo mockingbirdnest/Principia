@@ -459,12 +459,13 @@ void SolarSystem<Frame>::LimitOblatenessToDegree(std::string const& name,
       for (int i = 0; i < body->geopotential().row_size();) {
         auto const& row = body->geopotential().row(i);
         if (row.degree() > max_degree) {
-          body->mutable_geopotential()->DeleteSubrange(i, /*num=*/1);
+          body->mutable_geopotential()->mutable_row()->DeleteSubrange(
+              /*start=*/i, /*num=*/1);
         } else {
           ++i;
         }
       }
-      if (body->geopotential().empty()) {
+      if (body->geopotential().row().empty()) {
         body->clear_geopotential();
         body->clear_reference_radius();
       }
