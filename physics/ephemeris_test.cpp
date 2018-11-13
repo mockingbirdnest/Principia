@@ -688,6 +688,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
 
+  solar_system_.LimitOblatenessToDegree("Earth", /*max_degree=*/2);
+  solar_system_.LimitOblatenessToZonal("Earth");
   auto earth = SolarSystem<ICRS>::MakeMassiveBody(
       solar_system_.gravity_model_message("Earth"));
   Velocity<ICRS> const v;

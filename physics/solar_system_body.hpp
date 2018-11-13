@@ -487,11 +487,12 @@ void SolarSystem<Frame>::LimitOblatenessToZonal(std::string const& name) {
   CHECK(it != gravity_model_map_.end()) << name << " does not exist";
   serialization::GravityModel::Body* body = it->second;
   if (body->has_geopotential()) {
-    for (auto* const row : body->geopotential().mutable_row()) {
+    for (int i = 0; i < body->geopotential().row_size(); ++i) {
+      auto* const row = body->mutable_geopotential()->mutable_row(i);
       std::optional<double> cos;
-      for (auto* const column : row->mutable_column()) {
-        if (order == 0) {
-          cos = column->cos();
+      for (auto const& column : row->column()) {
+        if (column.order() == 0) {
+          cos = column.cos();
           break;
         }
       }
