@@ -120,6 +120,8 @@ class SolarSystem final {
       const;
 
   // Utilities for patching the internal protocol buffers after initialization.
+  void LimitOblatenessToDegree(std::string const& name, int max_degree);
+  void LimitOblatenessToZonal(std::string const& name);
   void RemoveMassiveBody(std::string const& name);
   void RemoveOblateness(std::string const& name);
   void ReplaceElements(std::string const& name,
