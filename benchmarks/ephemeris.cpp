@@ -88,7 +88,8 @@ using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
                   Instant const& t,
                   Ephemeris<Barycentric>& ephemeris);
 
-Length FittingTolerance(int const scale) {
+typename Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
+    int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
 }
 
@@ -123,7 +124,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
     astronomy::StabilizeKSP(*at_origin);
     Instant const final_time = at_origin->epoch() + 100 * JulianYear;
     auto const ephemeris = at_origin->MakeEphemeris(
-        FittingTolerance(state.range_x()),
+        MakeAccuracyParameters(state.range_x()),
         Ephemeris<Barycentric>::FixedStepParameters(
             SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                   Position<Barycentric>>(),
@@ -154,9 +155,9 @@ void EphemerisSolarSystemBenchmark(SolarSystemFactory::Accuracy const accuracy,
 
     auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
     Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
-    auto const ephemeris =
-        at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
-                                           EphemerisParameters());
+    auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
+                               MakeAccuracyParameters(state.range_x()),
+                               EphemerisParameters());
 
     state.ResumeTiming();
     ephemeris->Prolong(final_time);
@@ -187,9 +188,9 @@ void EphemerisL4ProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   Instant const final_time = at_спутник_1_launch->epoch() +
                              integration_duration;
 
-  auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
-                                         EphemerisParameters());
+  auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
+                             MakeAccuracyParameters(state.range_x()),
+                             EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -291,9 +292,9 @@ void EphemerisLEOProbeBenchmark(SolarSystemFactory::Accuracy const accuracy,
   auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
   Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
 
-  auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(FittingTolerance(state.range_x()),
-                                         EphemerisParameters());
+  auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
+                             MakeAccuracyParameters(state.range_x()),
+                             EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
