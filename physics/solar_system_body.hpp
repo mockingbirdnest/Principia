@@ -185,13 +185,14 @@ SolarSystem<Frame>& SolarSystem<Frame>::operator=(const SolarSystem& other) {
 
 template<typename Frame>
 not_null<std::unique_ptr<Ephemeris<Frame>>> SolarSystem<Frame>::MakeEphemeris(
-    Length const& fitting_tolerance,
-    typename Ephemeris<Frame>::FixedStepParameters const& parameters) const {
+    typename Ephemeris<Frame>::AccuracyParameters const& accuracy_parameters,
+    typename Ephemeris<Frame>::FixedStepParameters const& fixed_step_parameters)
+    const {
   return make_not_null_unique<Ephemeris<Frame>>(MakeAllMassiveBodies(),
                                                 MakeAllDegreesOfFreedom(),
                                                 epoch_,
-                                                fitting_tolerance,
-                                                parameters);
+                                                accuracy_parameters,
+                                                fixed_step_parameters);
 }
 
 template<typename Frame>
