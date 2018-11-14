@@ -389,8 +389,6 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto earth_message = solar_system_2000.gravity_model_message("Earth");
-  earth_message.mutable_geopotential()->set_max_degree(5);
-  earth_message.mutable_geopotential()->clear_zonal();
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
   auto const earth_reference_radius =
@@ -677,7 +675,7 @@ TEST_F(GeopotentialTest, DampedForces) {
         return InnerProduct(get_acceleration(geopotential, r), local_east);
       };
 
-  // Above the  outer threshold for J2.
+  // Above the outer threshold for J2.
   EXPECT_THAT(
       get_acceleration(earth_geopotential, 5'000'000 * Kilo(Metre)).Norm(),
       Eq(0 / Pow<2>(Metre)));
@@ -687,6 +685,7 @@ TEST_F(GeopotentialTest, DampedForces) {
     Length const s0 = earth_geopotential.degree_damping()[2].inner_threshold();
     Length const s1 = earth_geopotential.degree_damping()[2].outer_threshold();
     EXPECT_THAT(s0, IsNear(1'500'000 * Kilo(Metre)));
+    EXPECT_THAT(s1, IsNear(4'500'000 * Kilo(Metre)));
 
     // The radial component grows beyond the undamped one.  We check the ratio
     // at the arithmetic mean of the thresholds, and at its maximum.
@@ -723,6 +722,7 @@ TEST_F(GeopotentialTest, DampedForces) {
     Length const s0 = earth_geopotential.tesseral_damping().inner_threshold();
     Length const s1 = earth_geopotential.tesseral_damping().outer_threshold();
     EXPECT_THAT(s0, IsNear(101'000 * Kilo(Metre)));
+    EXPECT_THAT(s1, IsNear(303'000 * Kilo(Metre)));
 
     // Although this sigmoid overlaps with the degree 3 one, the midpoint still
     // lies above the outer threshold for degree 3.
@@ -752,6 +752,7 @@ TEST_F(GeopotentialTest, DampedForces) {
     Length const s0 = earth_geopotential.degree_damping()[3].inner_threshold();
     Length const s1 = earth_geopotential.degree_damping()[3].outer_threshold();
     EXPECT_THAT(s0, IsNear(43'000 * Kilo(Metre)));
+    EXPECT_THAT(s0, IsNear(129'000 * Kilo(Metre)));
 
     // Although this sigmoid overlaps with the degree 3 and tesseral ones, the
     // midpoint still lies above the outer threshold for degree 3, and below the
@@ -790,9 +791,8 @@ TEST_F(GeopotentialTest, DampedForces) {
 
   // The outer threshold for degree 5 is above the inner threshold for degree 3,
   // so degrees 4 and above have mixed sigmoids, which are tricky to test.
-    EXPECT_THAT(
-        earth_geopotential.degree_damping()[5].outer_threshold(),
-        Gt(earth_geopotential.degree_damping()[3].inner_threshold()));
+  EXPECT_THAT(earth_geopotential.degree_damping()[5].outer_threshold(),
+              Gt(earth_geopotential.degree_damping()[3].inner_threshold()));
 }
 
 }  // namespace internal_geopotential
