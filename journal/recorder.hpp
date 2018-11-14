@@ -3,8 +3,8 @@
 
 #include <filesystem>
 #include <fstream>
-#include <mutex>
 
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
 #include "serialization/journal.pb.h"
 
@@ -29,7 +29,7 @@ class Recorder final {
  private:
   void WriteLocked(serialization::Method const& method);
 
-  std::mutex lock_;
+  absl::Mutex lock_;
   std::ofstream stream_;
 
   static thread_local Recorder* active_recorder_;

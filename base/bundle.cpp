@@ -22,15 +22,14 @@ Bundle::Bundle(int const workers)
 
 Status Bundle::Join() {
   {
-    std::unique_lock<std::mutex> lock(lock_);
+    absl::MutexLock lock(&lock_);
     CHECK(wait_on_empty_);
     wait_on_empty_.Flop();
   }
-  tasks_not_empty_or_terminate_.notify_all();
   for (auto& thread : workers_) {
     thread.join();
   }
-  std::shared_lock<std::shared_mutex> status_lock(status_lock_);
+  absl::ReaderMutexLock status_lock(&status_lock_);
   return status_;
 }
 
@@ -40,7 +39,7 @@ Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
 
 Status Bundle::JoinBefore(std::chrono::steady_clock::time_point t) {
   {
-    std::unique_lock<std::shared_mutex> status_lock(status_lock_);
+    absl::MutexLock status_lock(&status_lock_);
     deadline_ = t;
   }
   return Join();
@@ -48,14 +47,13 @@ Status Bundle::JoinBefore(std::chrono::steady_clock::time_point t) {
 
 void Bundle::Add(Task task) {
   {
-    std::unique_lock<std::mutex> lock(lock_);
+    absl::MutexLock lock(&lock_);
     CHECK(wait_on_empty_);
     if (workers_.size() < max_workers_) {
       workers_.emplace_back(&Bundle::Toil, this);
     }
     tasks_.emplace(task);
   }
-  tasks_not_empty_or_terminate_.notify_one();
 }
 
 void Bundle::Toil() {
@@ -63,12 +61,13 @@ void Bundle::Toil() {
   AbortRequested = std::bind(&Bundle::BundleShouldAbort, this);
   for (;;) {
     {
-      std::unique_lock<std::mutex> lock(lock_);
-      tasks_not_empty_or_terminate_.wait(
-          lock,
-          [this] {
-            return !tasks_.empty() || !wait_on_empty_ || Aborting();
-          });
+      absl::MutexLock lock(&lock_);
+
+      auto const tasks_not_empty_or_terminate = [this]() {
+        return !tasks_.empty() || !wait_on_empty_ || Aborting();
+      };
+      lock_.Await(absl::Condition(&tasks_not_empty_or_terminate));
+
       // The call to |BundleShouldAbort| checks for deadline expiry and master
       // abort.
       if (tasks_.empty() || BundleShouldAbort()) {
@@ -105,23 +104,22 @@ bool Bundle::BundleShouldAbort() {
 }
 
 void Bundle::Abort(Status const status) {
-  std::unique_lock<std::shared_mutex> status_lock(status_lock_);
+  absl::MutexLock status_lock(&status_lock_);
   CHECK(!status.ok());
   if (!status_.ok()) {
     // Already aborting.
     return;
   }
   status_ = status;
-  tasks_not_empty_or_terminate_.notify_all();
 }
 
 bool Bundle::Aborting() {
-  std::shared_lock<std::shared_mutex> status_lock(status_lock_);
+  absl::ReaderMutexLock status_lock(&status_lock_);
   return !status_.ok();
 }
 
 bool Bundle::DeadlineExceeded() {
-  std::shared_lock<std::shared_mutex> status_lock(status_lock_);
+  absl::ReaderMutexLock status_lock(&status_lock_);
   return deadline_ && std::chrono::steady_clock::now() > *deadline_;
 }
 

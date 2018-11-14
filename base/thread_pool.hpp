@@ -1,12 +1,13 @@
 #pragma once
 
-#include <condition_variable>
 #include <deque>
 #include <functional>
 #include <future>
 #include <list>
-#include <mutex>
 #include <thread>
+
+#include "absl/base/thread_annotations.h"
+#include "absl/synchronization/mutex.h"
 
 namespace principia {
 namespace base {
@@ -38,10 +39,9 @@ class ThreadPool final {
   // execute it, and set its result in the promise.
   void DequeueCallAndExecute();
 
-  std::mutex lock_;
-  bool shutdown_ = false;
-  std::deque<Call> calls_;
-  std::condition_variable has_calls_or_shutdown_;
+  absl::Mutex lock_;
+  bool shutdown_ GUARDED_BY(lock_) = false;
+  std::deque<Call> calls_ GUARDED_BY(lock_);
 
   std::list<std::thread> threads_;
 };

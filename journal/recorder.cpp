@@ -26,13 +26,13 @@ Recorder::~Recorder() {
 }
 
 void Recorder::WriteAtConstruction(serialization::Method const& method) {
-  lock_.lock();
+  lock_.Lock();
   WriteLocked(method);
 }
 
 void Recorder::WriteAtDestruction(serialization::Method const& method) {
   WriteLocked(method);
-  lock_.unlock();
+  lock_.Unlock();
 }
 
 void Recorder::Activate(base::not_null<Recorder*> const journal) {

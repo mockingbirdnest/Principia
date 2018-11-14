@@ -268,9 +268,8 @@ TEST_F(GeopotentialTest, TestVector) {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000.LimitOblatenessToDegree("Earth", /*max_degree=*/9);
   auto earth_message = solar_system_2000.gravity_model_message("Earth");
-  earth_message.mutable_geopotential()->set_max_degree(9);
-  earth_message.mutable_geopotential()->clear_zonal();
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
   auto const earth_reference_radius =
@@ -388,6 +387,7 @@ TEST_F(GeopotentialTest, ThresholdComputation) {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
+  solar_system_2000.LimitOblatenessToDegree("Earth", /*max_degree=*/5);
   auto earth_message = solar_system_2000.gravity_model_message("Earth");
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
