@@ -190,14 +190,10 @@ message OblateBody {
       repeated GeopotentialColumn column = 2;
     }
     repeated GeopotentialRow row = 1;
-    // TODO(phl): replace the following two fields by |SolarSystem|-level
-    // utilities.
-    // This field makes it possible to easily limit the degree without altering
-    // the model.
-    optional int32 max_degree = 2;
-    // This field makes it possible to easily limit the model to its zonal
-    // components.
-    optional bool zonal = 3;
+
+    // Pre-Erdős.
+    reserved 2, 3;
+    reserved "max_degree", "zonal";
   }
   optional Quantity reference_radius = 4;
   oneof oblateness {

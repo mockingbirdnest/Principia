@@ -449,6 +449,64 @@ SolarSystem<Frame>::MakeHierarchicalSystem() const {
 }
 
 template<typename Frame>
+void SolarSystem<Frame>::LimitOblatenessToDegree(std::string const& name,
+                                                 int const max_degree) {
+  auto const it = gravity_model_map_.find(name);
+  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
+  serialization::GravityModel::Body* body = it->second;
+  switch (body->oblateness_case()) {
+    case serialization::GravityModel::Body::kGeopotential:
+      for (int i = 0; i < body->geopotential().row_size();) {
+        auto const& row = body->geopotential().row(i);
+        if (row.degree() > max_degree) {
+          body->mutable_geopotential()->mutable_row()->DeleteSubrange(
+              /*start=*/i, /*num=*/1);
+        } else {
+          ++i;
+        }
+      }
+      if (body->geopotential().row().empty()) {
+        body->clear_geopotential();
+        body->clear_reference_radius();
+      }
+      break;
+    case serialization::GravityModel::Body::kJ2:
+      if (max_degree < 2) {
+        body->clear_j2();
+        body->clear_reference_radius();
+      }
+      break;
+    case serialization::GravityModel::Body::OBLATENESS_NOT_SET:
+      break;
+  }
+}
+
+template<typename Frame>
+void SolarSystem<Frame>::LimitOblatenessToZonal(std::string const& name) {
+  auto const it = gravity_model_map_.find(name);
+  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
+  serialization::GravityModel::Body* body = it->second;
+  if (body->has_geopotential()) {
+    for (int i = 0; i < body->geopotential().row_size(); ++i) {
+      auto* const row = body->mutable_geopotential()->mutable_row(i);
+      std::optional<double> cos;
+      for (auto const& column : row->column()) {
+        if (column.order() == 0) {
+          cos = column.cos();
+          break;
+        }
+      }
+      if (cos.has_value()) {
+        row->clear_column();
+        auto* const column = row->add_column();
+        column->set_order(0);
+        column->set_cos(cos.value());
+      }
+    }
+  }
+}
+
+template<typename Frame>
 void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
   for (int i = 0; i < names_.size(); ++i) {
     if (names_[i] == name) {
@@ -459,16 +517,6 @@ void SolarSystem<Frame>::RemoveMassiveBody(std::string const& name) {
     }
   }
   LOG(FATAL) << name << " does not exist";
-}
-
-template<typename Frame>
-void SolarSystem<Frame>::RemoveOblateness(std::string const& name) {
-  auto const it = gravity_model_map_.find(name);
-  CHECK(it != gravity_model_map_.end()) << name << " does not exist";
-  serialization::GravityModel::Body* body = it->second;
-  body->clear_reference_radius();
-  body->clear_j2();
-  body->clear_geopotential();
 }
 
 #define PRINCIPIA_SET_FIELD_FROM_OPTIONAL(field)                \

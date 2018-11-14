@@ -73,10 +73,6 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
     }
   }
   parameters.degree_ = *degrees_seen.crbegin();
-  if (message.has_max_degree()) {
-    CHECK_LE(message.max_degree(), parameters.degree_);
-    parameters.degree_ = message.max_degree();
-  }
 
   // Unnormalization.
   parameters.j2_ = -parameters.cos_[2][0] * LegendreNormalizationFactor(2, 0);
@@ -86,13 +82,11 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
 
   // Zonalness.
   parameters.is_zonal_ = true;
-  if (!message.zonal()) {
-    for (int n = 0; n <= parameters.degree_; ++n) {
-      for (int m = 1; m <= parameters.degree_; ++m) {
-        if (parameters.cos_[n][m] != 0 || parameters.sin_[n][m] != 0) {
-          parameters.is_zonal_ = false;
-          break;
-        }
+  for (int n = 0; n <= parameters.degree_; ++n) {
+    for (int m = 1; m <= parameters.degree_; ++m) {
+      if (parameters.cos_[n][m] != 0 || parameters.sin_[n][m] != 0) {
+        parameters.is_zonal_ = false;
+        break;
       }
     }
   }
