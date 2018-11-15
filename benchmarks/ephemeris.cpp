@@ -88,8 +88,7 @@ using Flow = void(not_null<DiscreteTrajectory<Barycentric>*> const trajectory,
                   Instant const& t,
                   Ephemeris<Barycentric>& ephemeris);
 
-typename Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
-    int const scale) {
+Length FittingTolerance(int const scale) {
   return 5 * std::pow(10.0, scale) * Metre;
 }
 
@@ -124,7 +123,7 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
     astronomy::StabilizeKSP(*at_origin);
     Instant const final_time = at_origin->epoch() + 100 * JulianYear;
     auto const ephemeris = at_origin->MakeEphemeris(
-        MakeAccuracyParameters(state.range(0)),
+        FittingTolerance(state.range(0)),
         Ephemeris<Barycentric>::FixedStepParameters(
             SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                   Position<Barycentric>>(),
@@ -155,9 +154,12 @@ void BM_EphemerisSolarSystem(benchmark::State& state) {
 
     auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
     Instant const final_time = at_спутник_1_launch->epoch() + 100 * JulianYear;
-    auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
-                               MakeAccuracyParameters(state.range(0)),
-                               EphemerisParameters());
+    auto const ephemeris =
+        at_спутник_1_launch->MakeEphemeris(
+            SolarSystemFactory::MakeAccuracyParameters<Barycentric>(
+                FittingTolerance(state.range(0)),
+                accuracy),
+            EphemerisParameters());
 
     state.ResumeTiming();
     ephemeris->Prolong(final_time);
@@ -185,9 +187,12 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
   auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
   Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
 
-  auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
-                             MakeAccuracyParameters(state.range(0)),
-                             EphemerisParameters());
+  auto const ephemeris =
+      at_спутник_1_launch->MakeEphemeris(
+          SolarSystemFactory::MakeAccuracyParameters<Barycentric>(
+              FittingTolerance(state.range(0)),
+              accuracy),
+          EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -246,7 +251,7 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
 void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
   auto const at_спутник_1_launch =
       SolarSystemAtСпутник1Launch(
-          SolarSystemFactory::Accuracy::AllBodiesAndOblateness);
+          SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness);
   Instant const epoch = at_спутник_1_launch->epoch();
   auto const ephemeris =
       at_спутник_1_launch->MakeEphemeris(1 * Milli(Metre),
@@ -331,9 +336,12 @@ void EphemerisL4ProbeBenchmark(Time const integration_duration,
   Instant const final_time = at_спутник_1_launch->epoch() +
                              integration_duration;
 
-  auto const ephemeris = at_спутник_1_launch->MakeEphemeris(
-                             MakeAccuracyParameters(state.range(0)),
-                             EphemerisParameters());
+  auto const ephemeris =
+      at_спутник_1_launch->MakeEphemeris(
+          SolarSystemFactory::MakeAccuracyParameters<Barycentric>(
+              FittingTolerance(state.range(0)),
+              accuracy),
+          EphemerisParameters());
 
   ephemeris->Prolong(final_time);
 
@@ -508,7 +516,10 @@ BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
                    SolarSystemFactory::Accuracy::MinorAndMajorBodies)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
-                   SolarSystemFactory::Accuracy::AllBodiesAndOblateness)
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisSolarSystem,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
                    SolarSystemFactory::Accuracy::MajorBodiesOnly,
@@ -519,7 +530,11 @@ BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
                    &FlowEphemerisWithAdaptiveStep)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
-                   SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
+                   &FlowEphemerisWithAdaptiveStep)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisL4Probe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
                    &FlowEphemerisWithAdaptiveStep)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
@@ -547,15 +562,27 @@ BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    &FlowEphemerisWithFixedStepSRKN)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
-                   SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithAdaptiveStep)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
-                   SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
                    &FlowEphemerisWithFixedStepSLMS)
     ->Arg(-3);
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
-                   SolarSystemFactory::Accuracy::AllBodiesAndOblateness,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
+                   &FlowEphemerisWithFixedStepSRKN)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
+                   &FlowEphemerisWithAdaptiveStep)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
                    &FlowEphemerisWithFixedStepSRKN)
     ->Arg(-3);
 
