@@ -555,12 +555,7 @@ TEST_F(GeopotentialTest, DampedForces) {
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
-  auto const earth_message = [&solar_system_2000]() {
-    auto message = solar_system_2000.gravity_model_message("Earth");
-    message.mutable_geopotential()->set_max_degree(5);
-    message.mutable_geopotential()->clear_zonal();
-    return message;
-  }();
+  auto const earth_message = solar_system_2000.gravity_model_message("Earth");
 
   auto const earth_μ = solar_system_2000.gravitational_parameter("Earth");
   auto const earth_reference_radius =
