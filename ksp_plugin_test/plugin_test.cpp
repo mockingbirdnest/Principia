@@ -32,6 +32,7 @@
 #include "physics/massive_body.hpp"
 #include "physics/mock_dynamic_frame.hpp"
 #include "physics/mock_ephemeris.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -85,7 +86,7 @@ using quantities::Length;
 using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Sqrt;
-using quantities::si::AstronomicalUnit;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;

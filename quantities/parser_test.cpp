@@ -5,6 +5,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "quantities/astronomy.hpp"
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/almost_equals.hpp"
@@ -15,7 +16,7 @@ using testing_utilities::AlmostEquals;
 
 namespace quantities {
 
-using si::AstronomicalUnit;
+using astronomy::AstronomicalUnit;
 using si::Day;
 using si::Degree;
 using si::Kilo;

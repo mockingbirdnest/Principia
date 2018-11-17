@@ -18,8 +18,8 @@ namespace internal_kepler_orbit {
 using astronomy::ICRS;
 using astronomy::J2000;
 using astronomy::operator""_TT;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::astronomy::JulianYear;
-using quantities::si::AstronomicalUnit;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Metre;

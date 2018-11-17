@@ -60,11 +60,11 @@ using quantities::Mass;
 using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Sqrt;
+using quantities::astronomy::AstronomicalUnit;
+using quantities::astronomy::EarthEquatorialRadius;
 using quantities::astronomy::JulianYear;
-using quantities::astronomy::LunarDistance;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
-using quantities::si::AstronomicalUnit;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -479,11 +479,12 @@ TEST_P(EphemerisTest, EarthProbe) {
   // The solution is a line, so the rounding errors dominate.  Different
   // libms result in different errors and thus different numbers of steps.
   EXPECT_THAT(probe_positions.size(),
-              AnyOf(Eq(410),    // MSVC Release
-                    Eq(421),    // MSVC Debug
+              AnyOf(Eq(358),    // MSVC Release/0
+                    Eq(420),    // MSVC Debug
+                    Eq(421),    // MSVC Release/1
                     Eq(446)));  // Clang Linux
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 222, 259));
+              AlmostEquals(1.00 * period * v_probe, 220, 259));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 
@@ -818,7 +819,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
-  Length const radius = 1 * LunarDistance;
+  Length const radius = 1 * EarthEquatorialRadius;
 
   Mass const m0 = 1 * SolarMass;
   Mass const m1 = 2 * SolarMass;

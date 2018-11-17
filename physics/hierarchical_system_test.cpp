@@ -86,10 +86,10 @@ TEST_F(HierarchicalSystemTest, HierarchicalSystem) {
                    return (dof.position() - Frame::origin).coordinates().x;
                  });
   EXPECT_THAT(x_positions,
-              ElementsAre(AlmostEquals(-1.5 * Metre, 1),
-                          AlmostEquals(-0.5 * Metre, 2),
-                          1.5 * Metre,
-                          0.5 * Metre));
+              ElementsAre(AlmostEquals(-1.5 * Metre, 0),
+                          AlmostEquals(-0.5 * Metre, 0),
+                          AlmostEquals(1.5 * Metre, 2),
+                          AlmostEquals(0.5 * Metre, 3)));
 }
 
 TEST_F(HierarchicalSystemTest, FromMeanMotions) {

@@ -34,10 +34,10 @@ using quantities::Sin;
 using quantities::Speed;
 using quantities::Sqrt;
 using quantities::Time;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::astronomy::JulianYear;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
-using quantities::si::AstronomicalUnit;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Milli;
@@ -119,7 +119,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Instant const time = it.time();
     all_apsides.emplace(time, it.degrees_of_freedom());
     if (previous_time) {
-      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2079));
+      EXPECT_THAT(time - *previous_time, AlmostEquals(T, 118, 2792));
     }
     previous_time = time;
   }
@@ -143,7 +143,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Position<World> const position = pair.second.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 3567));
+                  AlmostEquals(0.5 * T, 103, 3820));
       EXPECT_THAT((position - *previous_position).Norm(),
                   AlmostEquals(2.0 * a, 0, 176));
     }

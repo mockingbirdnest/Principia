@@ -10,27 +10,35 @@ namespace principia {
 namespace quantities {
 namespace constants {
 
-constexpr Speed SpeedOfLight = 299792458 * (si::Metre / si::Second);
-constexpr Permeability VacuumPermeability =
-    4e-7 * π * si::Steradian * si::Henry / si::Metre;
-constexpr Permittivity VacuumPermittivity =
-    1 / (VacuumPermeability * Pow<2>(SpeedOfLight));
-// We use the 2010 CODATA recommended values.  We do not support uncertainties.
-constexpr AngularMomentum ReducedPlanckConstant =
-    1.054571726e-34 * si::Joule * si::Second * si::Radian;
+// Defining constants for the SI, by resolution A of the 26th meeting of the
+// CGPM.
+constexpr Speed SpeedOfLight = 299'792'458 * (si::Metre / si::Second);
+constexpr Action PlanckConstant = 6.626'070'15e-34 * si::Joule * si::Second;
+constexpr Charge ElementaryCharge = 1.602'176'634e-19 * si::Coulomb;
+constexpr Entropy BoltzmannConstant =  1.380'649e-23 * (si::Joule / si::Kelvin);
+constexpr Inverse<Amount> AvogadroConstant = 6.022'140'76e23 * (1 / si::Mole);
+
+// We use the 2014 CODATA recommended values.  We do not support uncertainties.
+constexpr double FineStructureConstant = 7.297'352'5664e-3;
 constexpr Quotient<GravitationalParameter, Mass> GravitationalConstant =
-    6.67384e-11 * si::Newton * Pow<2>(si::Metre) / Pow<2>(si::Kilogram);
-constexpr Entropy BoltzmannConstant = 1.3806488e-23 * (si::Joule / si::Kelvin);
-constexpr Inverse<Amount> AvogadroConstant = 6.02214129 * (1 / si::Mole);
+    6.674'08e-11 * si::Newton * Pow<2>(si::Metre) / Pow<2>(si::Kilogram);
 
-constexpr Mass   ElectronMass     = 9.10938291e-31 * si::Kilogram;
-constexpr Mass   ProtonMass       = 1.672621777e-27 * si::Kilogram;
-constexpr Charge ElementaryCharge = si::ElectronVolt / si::Volt;
-
-constexpr double FineStructureConstant = 7.2973525698e-3;
+constexpr Mass ElectronMass = 9.109'382'91e-31 * si::Kilogram;
+constexpr Mass ProtonMass   = 1.672'621'777e-27 * si::Kilogram;
 
 constexpr Acceleration StandardGravity =
     9.80665 * si::Metre / Pow<2>(si::Second);
+
+constexpr Permeability VacuumPermeability =
+    2 * FineStructureConstant * PlanckConstant * si::Steradian /
+    (Pow<2>(ElementaryCharge) * SpeedOfLight);
+constexpr Permittivity VacuumPermittivity =
+    Pow<2>(ElementaryCharge) /
+    (2 * FineStructureConstant * PlanckConstant * SpeedOfLight * si::Steradian);
+
+// Units derived from the defining constants.
+constexpr Energy ElectronVolt = ElementaryCharge * si::Volt;
+constexpr Mass Dalton         = (si::Gram / si::Mole) / AvogadroConstant;
 
 }  // namespace constants
 }  // namespace quantities

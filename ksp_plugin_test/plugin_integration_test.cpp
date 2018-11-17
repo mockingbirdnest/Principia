@@ -16,6 +16,7 @@
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "physics/massive_body.hpp"
+#include "quantities/astronomy.hpp"
 #include "testing_utilities/is_near.hpp"
 #include "testing_utilities/numerics.hpp"
 #include "testing_utilities/solar_system_factory.hpp"
@@ -48,6 +49,7 @@ using quantities::Sin;
 using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Sqrt;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Hour;
@@ -55,7 +57,6 @@ using quantities::si::Kilo;
 using quantities::si::Kilogram;
 using quantities::si::Minute;
 using quantities::si::Radian;
-using quantities::si::AstronomicalUnit;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
 using testing_utilities::RelativeError;
