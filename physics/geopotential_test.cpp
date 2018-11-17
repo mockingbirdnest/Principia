@@ -747,7 +747,7 @@ TEST_F(GeopotentialTest, DampedForces) {
     Length const s0 = earth_geopotential.degree_damping()[3].inner_threshold();
     Length const s1 = earth_geopotential.degree_damping()[3].outer_threshold();
     EXPECT_THAT(s0, IsNear(43'000 * Kilo(Metre)));
-    EXPECT_THAT(s0, IsNear(129'000 * Kilo(Metre)));
+    EXPECT_THAT(s1, IsNear(129'000 * Kilo(Metre)));
 
     // Although this sigmoid overlaps with the degree 3 and tesseral ones, the
     // midpoint still lies above the outer threshold for degree 3, and below the
