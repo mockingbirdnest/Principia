@@ -126,6 +126,9 @@ using MagneticFluxDensity = Quotient<MagneticFlux, Area>;
 using Inductance          = Quotient<MagneticFlux, Current>;
 using ElectricField       = Quotient<Force, Charge>;
 
+// The angular element for permittivity comes from the integral form of Gauss's
+// law: the surface integral includes a solid angle of one Steradian, the volume
+// integral has no angle whatsoever, the permittivity compensates.
 using Permeability = Product<Quotient<Inductance, Length>, SolidAngle>;
 using Permittivity = Quotient<Quotient<Capacitance, Length>, SolidAngle>;
 

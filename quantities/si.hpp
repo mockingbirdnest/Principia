@@ -93,9 +93,6 @@ constexpr Volume Litre     = 1e-3 * Metre * Metre * Metre;
 constexpr Mass   Tonne     = 1e3 * Kilogram;
 
 // Non-SI units whose values must be obtained experimentally
-// From the BIPM's SI brochure 8, section 4.1, table 7,
-// Units accepted for use with the SI.
-constexpr Energy ElectronVolt     = 1.602176565e-19 * Joule;
 constexpr Mass   Dalton           = 1.660538921e-27 * Kilogram;
 constexpr Length AstronomicalUnit = 149597870700 * si::Metre;
 
