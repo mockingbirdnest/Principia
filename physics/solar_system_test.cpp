@@ -85,7 +85,7 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
                                                 Position<ICRS>>(),
           /*step=*/1 * Second));
   auto const earth = solar_system.massive_body(*ephemeris, "Earth");
-  EXPECT_LT(RelativeError(5.97258 * Yotta(Kilogram), earth->mass()), 6e-9);
+  EXPECT_LT(RelativeError(5.9723653 * Yotta(Kilogram), earth->mass()), 7e-9);
   auto const& earth_trajectory = solar_system.trajectory(*ephemeris, "Earth");
   EXPECT_TRUE(earth_trajectory.empty());
   EXPECT_EQ("Earth", earth->name());
@@ -137,7 +137,7 @@ TEST_F(SolarSystemTest, KSPSystem) {
                                                 Position<KSP>>(),
           /*step=*/1 * Second));
   auto const kerbin = solar_system.massive_body(*ephemeris, "Kerbin");
-  EXPECT_LT(RelativeError(52.917061 * Zetta(Kilogram), kerbin->mass()), 6e-9);
+  EXPECT_LT(RelativeError(52.915158 * Zetta(Kilogram), kerbin->mass()), 7e-9);
   auto const& kerbin_trajectory =
       solar_system.trajectory(*ephemeris, "Kerbin");
   EXPECT_TRUE(kerbin_trajectory.empty());

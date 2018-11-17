@@ -64,7 +64,8 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
   EXPECT_EQ(3 * Kilogram, system.System().mass());
   EXPECT_THAT(
       x_positions(system),
-      ElementsAre(-1.0 / 3.0 * Metre, AlmostEquals(2.0 / 3.0 * Metre, 1)));
+      ElementsAre(AlmostEquals(-1.0 / 3.0 * Metre, 1),
+                  AlmostEquals(2.0 / 3.0 * Metre, 0)));
 
   elements.semimajor_axis = 5.0 / 3.0 * Metre;
   system.Add(m2_, elements);
@@ -79,9 +80,9 @@ TEST_F(JacobiCoordinatesTest, Jacobi) {
   // 2  1  2  .  .  .  .  1
   //       ^ barycentre
   EXPECT_THAT(x_positions(system),
-              ElementsAre(AlmostEquals(-2 * Metre, 1),
-                          AlmostEquals(-1 * Metre, 2),
-                          VanishesBefore(1 * Metre, 1),
+              ElementsAre(AlmostEquals(-2 * Metre, 0),
+                          AlmostEquals(-1 * Metre, 0),
+                          VanishesBefore(1 * Metre, 0),
                           5 * Metre));
 }
 
