@@ -92,10 +92,6 @@ constexpr Area   Hectare   = 1e4 * Metre * Metre;
 constexpr Volume Litre     = 1e-3 * Metre * Metre * Metre;
 constexpr Mass   Tonne     = 1e3 * Kilogram;
 
-// Non-SI units whose values must be obtained experimentally
-constexpr Mass   Dalton           = 1.660538921e-27 * Kilogram;
-constexpr Length AstronomicalUnit = 149597870700 * si::Metre;
-
 }  // namespace si
 }  // namespace quantities
 }  // namespace principia

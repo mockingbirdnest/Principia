@@ -5,6 +5,7 @@
 
 #include <array>
 #include <string>
+
 #include "quantities/astronomy.hpp"
 #include "quantities/dimensions.hpp"
 #include "quantities/named_quantities.hpp"
@@ -119,7 +120,7 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == u8"R☉") {
     return Unit(astronomy::SolarEquatorialRadius);
   } else if (s == "au") {
-    return Unit(si::AstronomicalUnit);
+    return Unit(astronomy::AstronomicalUnit);
   // Units of mass.
   } else if (s == "kg") {
     return Unit(si::Kilogram);

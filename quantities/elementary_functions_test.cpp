@@ -19,6 +19,7 @@
 namespace principia {
 namespace quantities {
 
+using astronomy::AstronomicalUnit;
 using astronomy::EarthMass;
 using astronomy::JulianYear;
 using astronomy::JupiterMass;
@@ -32,7 +33,6 @@ using constants::StandardGravity;
 using constants::VacuumPermeability;
 using constants::VacuumPermittivity;
 using si::Ampere;
-using si::AstronomicalUnit;
 using si::Coulomb;
 using si::Day;
 using si::Degree;

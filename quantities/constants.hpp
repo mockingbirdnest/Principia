@@ -10,7 +10,8 @@ namespace principia {
 namespace quantities {
 namespace constants {
 
-// Resolution A of the 26th meeting of the CGPM.
+// Defining constants for the SI, by resolution A of the 26th meeting of the
+// CGPM.
 constexpr Speed SpeedOfLight = 299'792'458 * (si::Metre / si::Second);
 constexpr Action PlanckConstant = 6.626'070'15e-34 * si::Joule * si::Second;
 constexpr Charge ElementaryCharge = 1.602'176'634e-19 * si::Coulomb;
@@ -25,6 +26,9 @@ constexpr Quotient<GravitationalParameter, Mass> GravitationalConstant =
 constexpr Mass ElectronMass = 9.109'382'91e-31 * si::Kilogram;
 constexpr Mass ProtonMass   = 1.672'621'777e-27 * si::Kilogram;
 
+constexpr Acceleration StandardGravity =
+    9.80665 * si::Metre / Pow<2>(si::Second);
+
 constexpr Permeability VacuumPermeability =
     2 * FineStructureConstant * PlanckConstant * si::Steradian /
     (Pow<2>(ElementaryCharge) * SpeedOfLight);
@@ -32,8 +36,9 @@ constexpr Permittivity VacuumPermittivity =
     Pow<2>(ElementaryCharge) /
     (2 * FineStructureConstant * PlanckConstant * SpeedOfLight * si::Steradian);
 
-constexpr Acceleration StandardGravity =
-    9.80665 * si::Metre / Pow<2>(si::Second);
+// Units derived from the defining constants.
+constexpr Energy ElectronVolt = ElementaryCharge * si::Volt;
+constexpr Mass Dalton         = (si::Gram / si::Mole) / AvogadroConstant;
 
 }  // namespace constants
 }  // namespace quantities

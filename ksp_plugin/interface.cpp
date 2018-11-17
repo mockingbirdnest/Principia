@@ -37,6 +37,7 @@
 #include "ksp_plugin/part.hpp"
 #include "physics/kepler_orbit.hpp"
 #include "physics/solar_system.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/parser.hpp"
 #include "quantities/quantities.hpp"
 #include "serialization/astronomy.pb.h"
@@ -84,7 +85,7 @@ using quantities::ParseQuantity;
 using quantities::Pow;
 using quantities::Speed;
 using quantities::Time;
-using quantities::si::AstronomicalUnit;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;

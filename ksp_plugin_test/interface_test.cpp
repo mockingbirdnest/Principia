@@ -23,6 +23,7 @@
 #include "ksp_plugin_test/mock_renderer.hpp"
 #include "ksp_plugin_test/mock_vessel.hpp"
 #include "physics/mock_dynamic_frame.hpp"
+#include "quantities/astronomy.hpp"
 #include "quantities/constants.hpp"
 #include "quantities/si.hpp"
 #include "testing_utilities/actions.hpp"
@@ -77,7 +78,7 @@ using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::constants::StandardGravity;
-using quantities::si::AstronomicalUnit;
+using quantities::astronomy::AstronomicalUnit;
 using quantities::si::Day;
 using quantities::si::Degree;
 using quantities::si::Kilo;
