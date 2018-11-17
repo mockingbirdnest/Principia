@@ -61,8 +61,8 @@ using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
+using quantities::astronomy::EarthEquatorialRadius;
 using quantities::astronomy::JulianYear;
-using quantities::astronomy::LunarDistance;
 using quantities::astronomy::SolarMass;
 using quantities::constants::GravitationalConstant;
 using quantities::si::Hour;
@@ -819,7 +819,7 @@ TEST_P(EphemerisTest, CollisionDetection) {
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
-  Length const radius = 1 * LunarDistance;
+  Length const radius = 1 * EarthEquatorialRadius;
 
   Mass const m0 = 1 * SolarMass;
   Mass const m1 = 2 * SolarMass;

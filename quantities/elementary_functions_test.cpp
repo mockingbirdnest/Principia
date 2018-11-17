@@ -24,7 +24,6 @@ using astronomy::EarthMass;
 using astronomy::JulianYear;
 using astronomy::JupiterMass;
 using astronomy::LightYear;
-using astronomy::LunarDistance;
 using astronomy::Parsec;
 using astronomy::SolarMass;
 using constants::GravitationalConstant;
@@ -36,6 +35,7 @@ using si::Ampere;
 using si::Coulomb;
 using si::Day;
 using si::Degree;
+using si::Kilo;
 using si::Kilogram;
 using si::Mega;
 using si::Metre;
@@ -95,6 +95,7 @@ TEST_F(ElementaryFunctionsTest, DimensionlessExponentiation) {
 #pragma warning(disable: 4566)
 
 TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
+  Length const lunar_distance = 384402 * Kilo(Metre);
   // By definition.
   EXPECT_THAT(1 / Pow<2>(SpeedOfLight),
               AlmostEquals(VacuumPermittivity * VacuumPermeability, 1));
@@ -109,7 +110,7 @@ TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
   // The Keplerian approximation for the mass of the Earth
   // is pretty bad, but the error is still only 1%.
   EXPECT_THAT(RelativeError(
-                  4 * Pow<2>(π) * Pow<3>(LunarDistance) /
+                  4 * Pow<2>(π) * Pow<3>(lunar_distance) /
                       (GravitationalConstant * Pow<2>(27.321582 * Day)),
                   EarthMass),
               Lt(1e-2));
