@@ -65,6 +65,7 @@
   <!--Common options.-->
   <PropertyGroup>
     <CharacterSet>Unicode</CharacterSet>
+    <!--Can't use <LinkIncremental>true</LinkIncremental> due to profiling.-->
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -244,7 +245,4 @@
 
   <!--This import must be at the end.-->
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <PropertyGroup>
-    <LinkIncremental>true</LinkIncremental>
-  </PropertyGroup>
 </Project>
