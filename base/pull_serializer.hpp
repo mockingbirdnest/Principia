@@ -2,12 +2,12 @@
 #pragma once
 
 #include <cstdint>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
 #include <queue>
 #include <thread>
 
+#include "absl/base/thread_annotations.h"
+#include "absl/synchronization/mutex.h"
 #include "base/array.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
@@ -123,10 +123,7 @@ class PullSerializer final {
   // The thread doing the actual serialization.
   std::unique_ptr<std::thread> thread_;
 
-  // Synchronization objects for the |queue_|.
-  std::mutex lock_;
-  std::condition_variable queue_has_room_;
-  std::condition_variable queue_has_elements_;
+  absl::Mutex lock_;
 
   // The |queue_| contains the |Array<std::uint8_t>| objects filled by |Push|
   // and not yet consumed by |Pull|.  If a |Array<std::uint8_t>| object has been

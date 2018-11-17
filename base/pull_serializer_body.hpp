@@ -114,7 +114,7 @@ inline void PullSerializer::Start(
     // knows that this is the end.
     Array<std::uint8_t> bytes;
     {
-      std::unique_lock<std::mutex> l(lock_);
+      absl::MutexLock l(&lock_);
       CHECK(!free_.empty());
       bytes = Array<std::uint8_t>(free_.front(), 0);
     }
@@ -125,17 +125,19 @@ inline void PullSerializer::Start(
 inline Array<std::uint8_t> PullSerializer::Pull() {
   Array<std::uint8_t> result;
   {
-    std::unique_lock<std::mutex> l(lock_);
+    absl::MutexLock l(&lock_);
+
     // The element at the front of the queue is the one that was last returned
     // by |Pull| and must be dropped and freed.
-    queue_has_elements_.wait(l, [this]() { return queue_.size() > 1; });
+    auto const queue_has_elements = [this]() { return queue_.size() > 1; };
+    lock_.Await(absl::Condition(&queue_has_elements));
+
     CHECK_LE(2, queue_.size());
     free_.push(queue_.front().data);
     queue_.pop();
     result = queue_.front();
     CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
-  queue_has_room_.notify_all();
   return result;
 }
 
@@ -145,7 +147,7 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
   if (bytes.size > 0 && compressor_ != nullptr) {
     Array<std::uint8_t> compressed_bytes;
     {
-      std::unique_lock<std::mutex> l(lock_);
+      absl::MutexLock l(&lock_);
       CHECK_LE(1 + number_of_compression_chunks_, free_.size());
       free_.pop();
       compressed_bytes =
@@ -158,19 +160,22 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
     ArraySink<std::uint8_t> sink(compressed_bytes);
     compressor_->CompressStream(&source, &sink);
     {
-      std::unique_lock<std::mutex> l(lock_);
+      absl::MutexLock l(&lock_);
       bytes = sink.array();
     }
   }
   {
-    std::unique_lock<std::mutex> l(lock_);
-    queue_has_room_.wait(l, [this]() {
+    absl::MutexLock l(&lock_);
+
+    auto const queue_has_room = [this]() {
       // -1 here is because we want to ensure that there is an entry in the
       // free list, in addition to |result| and to
       // |number_of_compression_chunks_| (if present).
       return queue_.size() < static_cast<std::size_t>(number_of_chunks_) -
                                  number_of_compression_chunks_ - 1;
-    });
+    };
+    lock_.Await(absl::Condition(&queue_has_room));
+
     queue_.emplace(bytes.data, bytes.size);
     CHECK_LE(2 + number_of_compression_chunks_, free_.size());
     CHECK_EQ(free_.front(), bytes.data);
@@ -178,7 +183,6 @@ inline Array<std::uint8_t> PullSerializer::Push(Array<std::uint8_t> bytes) {
     result = Array<std::uint8_t>(free_.front(), chunk_size_);
     CHECK_EQ(number_of_chunks_, queue_.size() + free_.size());
   }
-  queue_has_elements_.notify_all();
   return result;
 }
 

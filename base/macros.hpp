@@ -70,26 +70,22 @@ char const* const Architecture = "x86-64";
 #error "Have you tried a Cray-1?"
 #endif
 
-#if defined(CDECL)
-#  error "CDECL already defined"
-#else
 // Architecture macros from http://goo.gl/ZypnO8.
 // We use cdecl on x86, the calling convention is unambiguous on x86-64.
-#  if ARCH_CPU_X86
-#    if PRINCIPIA_COMPILER_CLANG ||  \
-        PRINCIPIA_COMPILER_MSVC ||   \
-        PRINCIPIA_COMPILER_CLANG_CL
-#      define CDECL __cdecl
-#    elif PRINCIPIA_COMPILER_ICC || PRINCIPIA_COMPILER_GCC
-#      define CDECL __attribute__((cdecl))
-#    else
-#      error "Get a real compiler!"
-#    endif
-#  elif ARCH_CPU_X86_64
-#    define CDECL
+#if ARCH_CPU_X86
+#  if PRINCIPIA_COMPILER_CLANG ||  \
+      PRINCIPIA_COMPILER_MSVC ||   \
+      PRINCIPIA_COMPILER_CLANG_CL
+#    define CDECL __cdecl
+#  elif PRINCIPIA_COMPILER_ICC || PRINCIPIA_COMPILER_GCC
+#    define CDECL __attribute__((cdecl))
 #  else
-#    error "Have you tried a Cray-1?"
+#    error "Get a real compiler!"
 #  endif
+#elif ARCH_CPU_X86_64
+#  define CDECL
+#else
+#  error "Have you tried a Cray-1?"
 #endif
 
 // DLL-exported functions for interfacing with Platform Invocation Services.
@@ -172,15 +168,12 @@ inline void noreturn() { std::exit(0); }
 #  define THREAD_ANNOTATION_ATTRIBUTE__(x) __attribute__((x))
 #  define EXCLUDES(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(locks_excluded(__VA_ARGS__))
-#  define GUARDED_BY(...) \
-       THREAD_ANNOTATION_ATTRIBUTE__(guarded_by(__VA_ARGS__))
 #  define REQUIRES(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(requires_capability(__VA_ARGS__))
 #  define REQUIRES_SHARED(...) \
        THREAD_ANNOTATION_ATTRIBUTE__(requires_shared_capability(__VA_ARGS__))
 #else
 #  define EXCLUDES(x)
-#  define GUARDED_BY(x)
 #  define REQUIRES(x)
 #  define REQUIRES_SHARED(x)
 #endif

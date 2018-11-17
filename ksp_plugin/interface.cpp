@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 #if OS_WIN
-#define NOGDI
-#define NOMINMAX
 #include <windows.h>
 #include <psapi.h>
 #endif

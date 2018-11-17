@@ -85,7 +85,7 @@ void SolarSystemFactory::AdjustAccuracy(
     solar_system.RemoveMassiveBody(body_to_remove);
   }
   for (std::string const& body_to_spherify : bodies_to_spherify) {
-    solar_system.RemoveOblateness(body_to_spherify);
+    solar_system.LimitOblatenessToDegree(body_to_spherify, /*max_degree=*/0);
   }
 }
 

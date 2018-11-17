@@ -89,11 +89,10 @@ GeneralSphericalHarmonicsAccelerationF90(
   return from_surface_frame(acceleration_surface);
 }
 
-OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS> const& solar_system,
+OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS>& solar_system,
                                int const max_degree) {
+  solar_system.LimitOblatenessToDegree("Earth", max_degree);
   auto earth_message = solar_system.gravity_model_message("Earth");
-  earth_message.mutable_geopotential()->set_max_degree(max_degree);
-  earth_message.mutable_geopotential()->clear_zonal();
 
   Angle const earth_right_ascension_of_pole = 0 * Degree;
   Angle const earth_declination_of_pole = 90 * Degree;
@@ -124,7 +123,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
                 "sol_initial_state_jd_2451545_000000000.proto.txt");
 
   auto const earth = MakeEarthBody(solar_system_2000, max_degree);
-  Geopotential<ICRS> const geopotential(&earth);
+  Geopotential<ICRS> const geopotential(&earth, /*tolerance=*/0);
 
   std::mt19937_64 random(42);
   std::uniform_real_distribution<> distribution(-1e7, 1e7);

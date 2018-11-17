@@ -34,10 +34,9 @@ ThreadPool<T>::ThreadPool(std::int64_t const pool_size) {
 template<typename T>
 ThreadPool<T>::~ThreadPool() {
   {
-    std::lock_guard<std::mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     shutdown_ = true;
   }
-  has_calls_or_shutdown_.notify_all();
   for (auto& thread : threads_) {
     thread.join();
   }
@@ -47,11 +46,10 @@ template<typename T>
 std::future<T> ThreadPool<T>::Add(std::function<T()> function) {
   std::future<T> result;
   {
-    std::lock_guard<std::mutex> l(lock_);
+    absl::MutexLock l(&lock_);
     calls_.push_back({std::move(function), std::promise<T>()});
     result = calls_.back().promise.get_future();
   }
-  has_calls_or_shutdown_.notify_one();
   return result;
 }
 
@@ -63,11 +61,13 @@ void ThreadPool<T>::DequeueCallAndExecute() {
     // Wait until either the queue contains an element or this class is shutting
     // down.
     {
-      std::unique_lock<std::mutex> l(lock_);
-      has_calls_or_shutdown_.wait(l,
-                                  [this] {
-                                      return shutdown_ || !calls_.empty();
-                                  });
+      absl::MutexLock l(&lock_);
+
+      auto const has_calls_or_shutdown = [this] {
+        return shutdown_ || !calls_.empty();
+      };
+      lock_.Await(absl::Condition(&has_calls_or_shutdown));
+
       if (shutdown_) {
         break;
       }

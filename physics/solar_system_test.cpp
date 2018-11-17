@@ -161,7 +161,7 @@ TEST_F(SolarSystemTest, Clear) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2433282_500000000.proto.txt");
   solar_system.RemoveMassiveBody("Io");
-  solar_system.RemoveOblateness("Sun");
+  solar_system.LimitOblatenessToDegree("Sun", /*max_degree=*/0);
   EXPECT_THAT(solar_system.names(),
               ElementsAreArray({"Ariel",
                                 "Callisto",

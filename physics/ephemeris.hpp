@@ -7,8 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "absl/synchronization/mutex.h"
 #include "base/not_null.hpp"
-#include "base/shared_lock_guard.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
 #include "geometry/named_quantities.hpp"
@@ -75,7 +75,7 @@ class Ephemeris {
     // Implicit for compatibility.
     AccuracyParameters(Length const& fitting_tolerance);  // NOLINT
     AccuracyParameters(Length const& fitting_tolerance,
-                       serialization::Numerics::Mode geopotential_mode);
+                       double geopotential_tolerance);
 
     void WriteToMessage(
         not_null<serialization::Ephemeris::AccuracyParameters*> const
@@ -85,8 +85,7 @@ class Ephemeris {
 
    private:
     Length fitting_tolerance_;
-    serialization::Numerics::Mode geopotential_mode_ =
-        serialization::Numerics::PRECISE;
+    double geopotential_tolerance_ = 0;
     friend class Ephemeris<Frame>;
   };
 
@@ -384,7 +383,7 @@ class Ephemeris {
   // Guards |instance_|, |trajectories_|, and |bodies_to_trajectories_| during
   // integration.  Note that the thread-safety annotations are incomplete
   // because we do not attempt to protect all the operations, only integration.
-  mutable std::shared_mutex lock_;
+  mutable absl::Mutex lock_;
 
   // The bodies in the order in which they were given at construction.
   std::vector<not_null<MassiveBody const*>> unowned_bodies_;

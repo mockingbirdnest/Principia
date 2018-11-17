@@ -58,14 +58,20 @@ ifeq ($(UNAME_S),Darwin)
     PLUGIN_DIRECTORY      := $(FINAL_PRODUCTS_DIR)GameData/Principia/MacOS64/
 endif
 
-TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a
-LIBS          := $(DEP_DIR)/protobuf/src/.libs/libprotobuf.a \
-	$(DEP_DIR)/gipfeli/libgipfeli.a \
-	$(DEP_DIR)/glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+TEST_LIBS     := $(DEP_DIR)benchmark/src/libbenchmark.a $(DEP_DIR)protobuf/src/.libs/libprotobuf.a
+LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
+	$(DEP_DIR)gipfeli/libgipfeli.a \
+	$(DEP_DIR)abseil-cpp/absl/synchronization/libabsl_synchronization.a \
+	$(DEP_DIR)abseil-cpp/absl/time/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
+	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
+	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
-INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)compatibility/filesystem -I$(DEP_DIR)gipfeli/include
+INCLUDES      := -I. -I$(DEP_DIR)glog/src -I$(DEP_DIR)protobuf/src -I$(DEP_DIR)compatibility/filesystem \
+	-I$(DEP_DIR)gipfeli/include -I$(DEP_DIR)abseil-cpp
 SHARED_ARGS   := \
 	-std=c++1z -stdlib=libc++ -O3 -g                           \
 	-fPIC -fexceptions -ferror-limit=1 -fno-omit-frame-pointer \
