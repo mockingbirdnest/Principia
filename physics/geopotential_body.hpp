@@ -92,12 +92,8 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
 }
 
 template<typename Frame>
+template<int size>
 struct Geopotential<Frame>::Precomputations {
-  // Allocate the maximum size to cover all possible degrees.  Making |size| a
-  // template parameters of this class would be possible, but it would greatly
-  // increase the number of instances of DegreeNOrderM and friends.
-  static constexpr int size = OblateBody<Frame>::max_geopotential_degree + 1;
-
   // These quantities are independent from n and m.
   typename OblateBody<Frame>::GeopotentialCoefficients const* cos;
   typename OblateBody<Frame>::GeopotentialCoefficients const* sin;
@@ -128,21 +124,21 @@ struct Geopotential<Frame>::Precomputations {
 };
 
 template<typename Frame>
-template<int degree, int order>
+template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  FORCE_INLINE(static)/*static inline*/ auto Acceleration(Precomputations& precomputations)
+  FORCE_INLINE(static) auto Acceleration(Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
-template<int degree, int... orders>
+template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
-DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
+DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
   static inline auto Acceleration(Geopotential<Frame> const& geopotential,
                                   Vector<double, Frame> const& r_normalized,
                                   Length const& r_norm,
                                   Square<Length> const& r²,
-                                  Precomputations& precomputations)
+                                  Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
@@ -159,9 +155,9 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 };
 
 template<typename Frame>
-template<int degree, int order>
-auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
-    Precomputations& precomputations)
+template<int size, int degree, int order>
+auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
+    Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, Frame> {
   if constexpr (degree == 2 && order == 1) {
     // Let's not forget the Legendre derivative that we would compute if we did
@@ -299,20 +295,19 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
 }
 
 template<typename Frame>
-template<int degree, int... orders>
+template<int size, int degree, int... orders>
 auto Geopotential<Frame>::
-DegreeNAllOrders<degree, std::integer_sequence<int, orders...>>::
+DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>>::
 Acceleration(Geopotential<Frame> const& geopotential,
              Vector<double, Frame> const& r_normalized,
              Length const& r_norm,
              Square<Length> const& r²,
-             Precomputations& precomputations)
+             Precomputations<size>& precomputations)
     -> Vector<ReducedAcceleration, Frame> {
   if constexpr (degree < 2) {
     return {};
   } else {
     constexpr int n = degree;
-    constexpr int size = sizeof...(orders);
 
     auto& ℜ_over_r = precomputations.ℜ_over_r[n];
 
@@ -344,13 +339,13 @@ Acceleration(Geopotential<Frame> const& geopotential,
     // (σ = 0).
     DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
-    if (size == 1 || n >= geopotential.first_tesseral_degree_) {
+    if (sizeof...(orders) == 1 || n >= geopotential.first_tesseral_degree_) {
       // All orders came into effect at the same threshold, so we apply the same
       // σ to everything.
 
       // Force the evaluation by increasing order using an initializer list.
       ReducedAccelerations<size> const accelerations = {
-          DegreeNOrderM<degree, orders>::Acceleration(
+          DegreeNOrderM<size, degree, orders>::Acceleration(
               precomputations)...};
 
       return (accelerations[orders] + ...);
@@ -359,7 +354,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
     // The degree-specific sigmoid computed above applies to the zonal term.
 
     Vector<ReducedAcceleration, Frame> const zonal_acceleration =
-        DegreeNOrderM<degree, 0>::Acceleration(precomputations);
+        DegreeNOrderM<size, degree, 0>::Acceleration(precomputations);
 
     // If we are above the outer threshold, we should have been called with
     // (orders...) = (0), since σ = 0.
@@ -375,7 +370,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
     ReducedAccelerations<size> const accelerations = {
         (orders == 0 ? zonal_acceleration
-                     : DegreeNOrderM<degree, orders>::Acceleration(
+                     : DegreeNOrderM<size, degree, orders>::Acceleration(
                            precomputations))...};
 
     return (accelerations[orders] + ...);
@@ -398,7 +393,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
       body.is_zonal() ||
       r_norm > geopotential.tesseral_damping_.outer_threshold();
 
-  Precomputations precomputations;
+  Precomputations<size> precomputations;
 
   auto& cos = precomputations.cos;
   auto& sin = precomputations.sin;
@@ -480,12 +475,13 @@ Acceleration(Geopotential<Frame> const& geopotential,
   ReducedAccelerations<size> accelerations;
   if (is_zonal) {
     accelerations = {
-        DegreeNAllOrders<degrees, std::make_integer_sequence<int, 1>>::
+        DegreeNAllOrders<size, degrees, std::make_integer_sequence<int, 1>>::
             Acceleration(
                 geopotential, r_normalized, r_norm, r², precomputations)...};
   } else {
     accelerations = {
-        DegreeNAllOrders<degrees,
+        DegreeNAllOrders<size,
+                         degrees,
                          std::make_integer_sequence<int, degrees + 1>>::
             Acceleration(
                 geopotential, r_normalized, r_norm, r², precomputations)...};
