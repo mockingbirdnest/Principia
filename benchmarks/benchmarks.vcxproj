@@ -9,55 +9,25 @@
   <Import Project="$(SolutionDir)principia.props" />
   <ItemGroup>
     <ClCompile Include="..\base\status.cpp" />
-    <ClCompile Include="..\ksp_plugin\planetarium.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
-    <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="base32768.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="dynamic_frame.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
+    <ClCompile Include="base32768.cpp" />
+    <ClCompile Include="dynamic_frame.cpp" />
+    <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
     <ClCompile Include="ephemeris.cpp" />
-    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
     <ClCompile Include="geopotential.cpp" />
-    <ClCompile Include="hexadecimal.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="newhall.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="perspective.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="planetarium_plot_methods.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="polynomial.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="quantities.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="thread_pool.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="чебышёв_series.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="newhall.cpp" />
+    <ClCompile Include="perspective.cpp" />
+    <ClCompile Include="planetarium_plot_methods.cpp" />
+    <ClCompile Include="polynomial.cpp" />
+    <ClCompile Include="quantities.cpp" />
+    <ClCompile Include="symplectic_runge_kutta_nyström_integrator.cpp" />
+    <ClCompile Include="thread_pool.cpp" />
+    <ClCompile Include="чебышёв_series.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="quantities.hpp" />
