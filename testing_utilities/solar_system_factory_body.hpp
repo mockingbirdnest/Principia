@@ -23,7 +23,8 @@ void SolarSystemFactory::AdjustAccuracy(
   std::set<std::string> existing;
   std::set<std::string> oblate;
   switch (accuracy) {
-    case SolarSystemFactory::Accuracy::AllBodiesAndOblateness:
+    case SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness:
+    case SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness:
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Sun));
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Jupiter));
       oblate.insert(SolarSystemFactory::name(SolarSystemFactory::Saturn));
@@ -87,6 +88,26 @@ void SolarSystemFactory::AdjustAccuracy(
   for (std::string const& body_to_spherify : bodies_to_spherify) {
     solar_system.LimitOblatenessToDegree(body_to_spherify, /*max_degree=*/0);
   }
+}
+
+template<typename Frame>
+typename Ephemeris<Frame>::AccuracyParameters
+SolarSystemFactory::MakeAccuracyParameters(Length const& fitting_tolerance,
+                                           Accuracy const accuracy) {
+  switch (accuracy) {
+    case Accuracy::MajorBodiesOnly:
+    case Accuracy::MinorAndMajorBodies:
+    case Accuracy::AllBodiesAndDampedOblateness:
+      return typename Ephemeris<Frame>::AccuracyParameters(
+          fitting_tolerance,
+          /*geopotential_tolerance=*/0x1.0p-24);
+    case Accuracy::AllBodiesAndFullOblateness:
+      return typename Ephemeris<Frame>::AccuracyParameters(
+          fitting_tolerance,
+          /*geopotential_tolerance=*/0.0);
+  }
+  LOG(FATAL) << "Bad accuracy";
+  base::noreturn();
 }
 
 inline not_null<std::unique_ptr<SolarSystem<ICRS>>>

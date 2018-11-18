@@ -12,6 +12,7 @@
 #include "geometry/rotation.hpp"
 #include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
+#include "physics/ephemeris.hpp"
 #include "physics/massive_body.hpp"
 #include "physics/solar_system.hpp"
 #include "quantities/quantities.hpp"
@@ -25,7 +26,9 @@ namespace internal_solar_system_factory {
 using astronomy::ICRS;
 using base::not_constructible;
 using base::not_null;
+using physics::Ephemeris;
 using physics::SolarSystem;
+using quantities::Length;
 
 // A helper class for constructing physics::SolarSystem objects for testing.
 // TODO(egg): should this be a namespace instead?  It contains only static
@@ -80,13 +83,20 @@ class SolarSystemFactory : not_constructible {
     MajorBodiesOnly,
     // Same as above, with some smaller satellites of the main planets.
     MinorAndMajorBodies,
-    // Same as above, with oblateness.
-    AllBodiesAndOblateness,
+    // Same as above, with damped oblateness.
+    AllBodiesAndDampedOblateness,
+    // Same as above, without damping.
+    AllBodiesAndFullOblateness,
   };
 
   template<typename Frame>
   static void AdjustAccuracy(Accuracy const accuracy,
                              SolarSystem<Frame>& solar_system);
+
+  template<typename Frame>
+  static typename Ephemeris<Frame>::AccuracyParameters MakeAccuracyParameters(
+      Length const& fitting_tolerance,
+      Accuracy const accuracy);
 
   // A solar system at the time of the launch of Простейший Спутник-1.
   static not_null<std::unique_ptr<SolarSystem<ICRS>>>

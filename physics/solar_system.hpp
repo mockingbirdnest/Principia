@@ -49,8 +49,9 @@ class SolarSystem final {
   // The bodies and initial state are constructed from the data passed to
   // |Initialize|.
   not_null<std::unique_ptr<Ephemeris<Frame>>> MakeEphemeris(
-      Length const& fitting_tolerance,
-      typename Ephemeris<Frame>::FixedStepParameters const& parameters) const;
+      typename Ephemeris<Frame>::AccuracyParameters const& accuracy_parameters,
+      typename Ephemeris<Frame>::FixedStepParameters const&
+          fixed_step_parameters) const;
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>>
   MakeAllMassiveBodies() const;

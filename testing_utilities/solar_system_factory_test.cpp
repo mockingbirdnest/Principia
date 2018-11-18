@@ -41,6 +41,7 @@ using quantities::si::Radian;
 using ::testing::ElementsAreArray;
 using ::testing::Lt;
 using ::testing::Ge;
+using ::testing::UnorderedElementsAreArray;
 
 namespace testing_utilities {
 
@@ -170,6 +171,11 @@ TEST_F(SolarSystemFactoryTest, Name) {
       "Charon", "Ariel", "Umbriel", "Dione", "Ceres", "Tethys", "Vesta",
       "Enceladus", "Miranda", "Mimas", "Phobos", "Deimos"};
   EXPECT_THAT(names, ElementsAreArray(expected_names));
+
+  // Check that the enum is complete.
+  auto const solar_system = SolarSystemFactory::AtСпутник1Launch(
+      SolarSystemFactory::Accuracy::MinorAndMajorBodies);
+  EXPECT_THAT(solar_system->names(), UnorderedElementsAreArray(expected_names));
 }
 
 TEST_F(SolarSystemFactoryTest, Parent) {
