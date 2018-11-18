@@ -118,8 +118,7 @@ struct Geopotential<Frame>::Precomputations {
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
 
-  // These quantities depend on n, and, for n < first_tesseral_degree_, on
-  // whether m > 0.
+  // These quantities depend on n.
   Exponentiation<Length, -2> σℜ_over_r;
   Vector<Exponentiation<Length, -2>, Frame> grad_σℜ;
 };
@@ -341,39 +340,10 @@ Acceleration(Geopotential<Frame> const& geopotential,
     // (σ = 0).
     DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
-    if (sizeof...(orders) == 1 || n >= geopotential.first_tesseral_degree_) {
-      // All orders came into effect at the same threshold, so we apply the same
-      // σ to everything.
-
-      // Force the evaluation by increasing order using an initializer list.
-      ReducedAccelerations<size> const accelerations = {
-          DegreeNOrderM<size, degree, orders>::Acceleration(
-              precomputations)...};
-
-      return (accelerations[orders] + ...);
-    }
-
-    // The degree-specific sigmoid computed above applies to the zonal term.
-
-    Vector<ReducedAcceleration, Frame> const zonal_acceleration =
-        DegreeNOrderM<size, degree, 0>::Acceleration(precomputations);
-
-    // If we are above the outer threshold, we should have been called with
-    // (orders...) = (0), since σ = 0.
-    DCHECK_LT(r_norm, geopotential.tesseral_damping_.outer_threshold());
-    geopotential.tesseral_damping_.ComputeDampedRadialQuantities(
-        r_norm,
-        r²,
-        r_normalized,
-        ℜ_over_r,
-        ℜʹ,
-        precomputations.σℜ_over_r,
-        precomputations.grad_σℜ);
-
+    // Force the evaluation by increasing order using an initializer list.
     ReducedAccelerations<size> const accelerations = {
-        (orders == 0 ? zonal_acceleration
-                     : DegreeNOrderM<size, degree, orders>::Acceleration(
-                           precomputations))...};
+        DegreeNOrderM<size, degree, orders>::Acceleration(
+            precomputations)...};
 
     return (accelerations[orders] + ...);
   }
@@ -391,9 +361,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
   OblateBody<Frame> const& body = *geopotential.body_;
-  const bool is_zonal =
-      body.is_zonal() ||
-      r_norm > geopotential.tesseral_damping_.outer_threshold();
+  const bool is_zonal = body.is_zonal();
 
   Precomputations<size> precomputations;
 
@@ -502,9 +470,7 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   // Thresholds for individual harmonics, with lexicographic (threshold, order,
   // degree) comparison.
   // Note that the order of the fields is (degree, order) as usual; comparison
-  // is order-first in the priority queue so as to put the
-  // first_tesseral_degree_ as early as possible in cases of ties (mostly 0
-  // tolerances, leading to infinite thresholds).
+  // is order-first in the priority queue.
   struct Threshold {
     Length r;
     int n;
@@ -540,14 +506,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
   harmonic_thresholds.push({Infinity<Length>(), 0, 0});
   harmonic_thresholds.push({Infinity<Length>(), 1, 0});
 
-  bool tesseral = false;
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
-    if (!tesseral && threshold.m > 0) {
-      tesseral = true;
-      first_tesseral_degree_ = degree_damping_.size();
-      tesseral_damping_ = HarmonicDamping(threshold.r);
-    }
     while (threshold.n >= degree_damping_.size()) {
       degree_damping_.emplace_back(threshold.r);
     }
@@ -618,16 +578,6 @@ template<typename Frame>
 std::vector<HarmonicDamping> const& Geopotential<Frame>::degree_damping()
     const {
   return degree_damping_;
-}
-
-template<typename Frame>
-HarmonicDamping const& Geopotential<Frame>::tesseral_damping() const {
-  return tesseral_damping_;
-}
-
-template<typename Frame>
-int Geopotential<Frame>::first_tesseral_degree() const {
-  return first_tesseral_degree_;
 }
 
 template<typename Frame>
