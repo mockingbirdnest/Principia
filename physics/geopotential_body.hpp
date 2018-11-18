@@ -66,7 +66,6 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
       Inverse<Square<Length>> const& ℜʹ,
       Inverse<Square<Length>>& σℜ_over_r,
       Vector<Inverse<Square<Length>>, Frame>& grad_σℜ) const {
-#if 1
   Length const& s1 = outer_threshold_;
   Length const& s0 = inner_threshold_;
   if (r_norm <= s0) {
@@ -90,10 +89,6 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
     // operations into scalar ones.
     grad_σℜ = (σʹr * ℜ_over_r + ℜʹ * σ) * r_normalized;
   }
-#else
-    σℜ_over_r = ℜ_over_r;
-    grad_σℜ = ℜʹ * r_normalized;
-#endif
 }
 
 template<typename Frame>
@@ -177,7 +172,7 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     constexpr int n = degree;
     constexpr int m = order;
     static_assert(0 <= m && m <= n);
-    static double const normalization_factor =
+    constexpr double normalization_factor =
         LegendreNormalizationFactor[n][m];
 
     double const cos_β = precomputations.cos_β;
@@ -337,7 +332,6 @@ Acceleration(Geopotential<Frame> const& geopotential,
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
     // Note that ∇ℜ = ℜʹ * r_normalized.
 
-#if 1
     geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
         r_norm,
         r²,
@@ -349,10 +343,6 @@ Acceleration(Geopotential<Frame> const& geopotential,
     // If we are above the outer threshold, we should not have been called
     // (σ = 0).
     DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
-#else
-    precomputations.σℜ_over_r = ℜ_over_r;
-    precomputations.grad_σℜ = ℜʹ * r_normalized;
-#endif
 
     if (size == 1 || n >= geopotential.first_tesseral_degree_) {
       // All orders came into effect at the same threshold, so we apply the same
@@ -373,7 +363,6 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
     // If we are above the outer threshold, we should have been called with
     // (orders...) = (0), since σ = 0.
-#if 1
     DCHECK_LT(r_norm, geopotential.tesseral_damping_.outer_threshold());
     geopotential.tesseral_damping_.ComputeDampedRadialQuantities(
         r_norm,
@@ -383,10 +372,6 @@ Acceleration(Geopotential<Frame> const& geopotential,
         ℜʹ,
         precomputations.σℜ_over_r,
         precomputations.grad_σℜ);
-#else
-    precomputations.σℜ_over_r = ℜ_over_r;
-    precomputations.grad_σℜ = ℜʹ * r_normalized;
-#endif
 
     ReducedAccelerations<size> const accelerations = {
         (orders == 0 ? zonal_acceleration
