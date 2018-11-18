@@ -4,7 +4,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "numerics/combinatorics.hpp"
-#include "numerics/legendre.hpp"
+#include "numerics/legendre_normalization_factor.mathematica.h"
 #include "testing_utilities/almost_equals.hpp"
 
 namespace principia {
