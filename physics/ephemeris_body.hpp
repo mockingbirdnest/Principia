@@ -72,7 +72,7 @@ constexpr Time max_time_between_checkpoints = 180 * Day;
 #if defined(_DEBUG)
 # define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
 #else
-# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
+# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
 #endif
 
 #if !PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
