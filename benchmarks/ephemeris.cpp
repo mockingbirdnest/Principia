@@ -242,10 +242,80 @@ void BM_EphemerisLEOProbe(benchmark::State& state) {
   ss << steps;
   state.SetLabel(ss.str() + " steps, " +
                  quantities::DebugString(sun_error / AstronomicalUnit) +
-                 " ua, " +
+                 " au, " +
                  quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
                                          NauticalMile) +
                  " nmi");
+}
+
+template<SolarSystemFactory::Accuracy accuracy, Flow* flow>
+void BM_EphemerisTranslunarSpaceProbe(benchmark::State& state) {
+  Length sun_error;
+  Length earth_error;
+  int steps;
+
+  auto const at_спутник_1_launch = SolarSystemAtСпутник1Launch(accuracy);
+  Instant const final_time = at_спутник_1_launch->epoch() + 1 * JulianYear;
+
+  auto const ephemeris =
+      at_спутник_1_launch->MakeEphemeris(
+          SolarSystemFactory::MakeAccuracyParameters<Barycentric>(
+              FittingTolerance(state.range(0)),
+              accuracy),
+          EphemerisParameters());
+
+  ephemeris->Prolong(final_time);
+
+  while (state.KeepRunning()) {
+    state.PauseTiming();
+    // A probe orbiting the Earth beyond the orbit of the Moon.
+    MasslessBody probe;
+    DiscreteTrajectory<Barycentric> trajectory;
+    DegreesOfFreedom<Barycentric> const earth_degrees_of_freedom =
+        at_спутник_1_launch->degrees_of_freedom(
+            SolarSystemFactory::name(SolarSystemFactory::Earth));
+    Displacement<Barycentric> const earth_probe_displacement(
+        {6371 * Kilo(Metre) + 500'000 * Kilo(Metre), 0 * Metre, 0 * Metre});
+    Speed const earth_probe_speed =
+        Sqrt(at_спутник_1_launch->gravitational_parameter(
+                 SolarSystemFactory::name(SolarSystemFactory::Earth)) /
+                     earth_probe_displacement.Norm());
+    Velocity<Barycentric> const earth_probe_velocity(
+        {0 * Metre / Second, earth_probe_speed, 0 * Metre / Second});
+    trajectory.Append(at_спутник_1_launch->epoch(),
+                      DegreesOfFreedom<Barycentric>(
+                          earth_degrees_of_freedom.position() +
+                              earth_probe_displacement,
+                          earth_degrees_of_freedom.velocity() +
+                              earth_probe_velocity));
+
+    state.ResumeTiming();
+    flow(&trajectory, final_time, *ephemeris);
+    state.PauseTiming();
+
+    sun_error = (at_спутник_1_launch->trajectory(
+                     *ephemeris,
+                     SolarSystemFactory::name(SolarSystemFactory::Sun)).
+                         EvaluatePosition(final_time) -
+                 trajectory.last().degrees_of_freedom().position()).
+                     Norm();
+    earth_error = (at_спутник_1_launch->trajectory(
+                       *ephemeris,
+                       SolarSystemFactory::name(SolarSystemFactory::Earth)).
+                           EvaluatePosition(final_time) -
+                   trajectory.last().degrees_of_freedom().position()).
+                       Norm();
+    steps = trajectory.Size();
+    state.ResumeTiming();
+  }
+  std::stringstream ss;
+  ss << steps;
+  state.SetLabel(ss.str() + " steps, " +
+                 quantities::DebugString(sun_error / AstronomicalUnit) +
+                 " au, " +
+                 quantities::DebugString((earth_error - 6371 * Kilo(Metre)) /
+                                         Kilo(Metre)) +
+                 " km");
 }
 
 void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
@@ -441,6 +511,12 @@ void BM_EphemerisL4Probe(benchmark::State& state) {
       /*integration_duration=*/100 * JulianYear, state);
 }
 
+template<SolarSystemFactory::Accuracy accuracy, Flow* flow>
+void BM_EphemerisL4Probe1Year(benchmark::State& state) {
+  EphemerisL4ProbeBenchmark<accuracy, flow>(
+      /*integration_duration=*/1 * JulianYear, state);
+}
+
 template<Flow* flow>
 void BM_EphemerisFittingTolerance(benchmark::State& state) {
   EphemerisL4ProbeBenchmark<SolarSystemFactory::Accuracy::MajorBodiesOnly,
@@ -584,6 +660,38 @@ BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
 BENCHMARK_TEMPLATE(BM_EphemerisLEOProbe,
                    SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
                    &FlowEphemerisWithFixedStepSRKN)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
+                   SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
+                   SolarSystemFactory::Accuracy::MinorAndMajorBodies,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisTranslunarSpaceProbe,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
+                   SolarSystemFactory::Accuracy::MajorBodiesOnly,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
+                   SolarSystemFactory::Accuracy::MinorAndMajorBodies,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
+                   SolarSystemFactory::Accuracy::AllBodiesAndDampedOblateness,
+                   &FlowEphemerisWithFixedStepSLMS)
+    ->Arg(-3);
+BENCHMARK_TEMPLATE(BM_EphemerisL4Probe1Year,
+                   SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness,
+                   &FlowEphemerisWithFixedStepSLMS)
     ->Arg(-3);
 
 BENCHMARK_TEMPLATE(BM_EphemerisFittingTolerance, &FlowEphemerisWithAdaptiveStep)
