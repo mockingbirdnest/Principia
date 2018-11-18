@@ -151,8 +151,8 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
     numerics::FixedMatrix<double, (d) + 1, (d) + 1> snm;                   \
     for (int n = 0; n <= (d); ++n) {                                       \
       for (int m = 0; m <= n; ++m) {                                       \
-        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor(n, m); \
-        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor(n, m); \
+        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor[n][m]; \
+        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m]; \
       }                                                                    \
     }                                                                      \
     while (state.KeepRunning()) {                                          \

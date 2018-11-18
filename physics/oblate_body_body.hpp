@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "astronomy/epoch.hpp"
-#include "numerics/legendre.hpp"
+#include "numerics/legendre_normalization_factor.mathematica.h"
 #include "quantities/constants.hpp"
 #include "quantities/quantities.hpp"
 #include "quantities/si.hpp"
@@ -37,7 +37,7 @@ OblateBody<Frame>::Parameters::Parameters(double const j2,
       degree_(2),
       is_zonal_(true) {
   CHECK_LT(0.0, j2) << "Oblate body must have positive j2";
-  cos_[2][0] = -j2 / LegendreNormalizationFactor(2, 0);
+  cos_[2][0] = -j2 / LegendreNormalizationFactor[2][0];
 }
 
 template<typename Frame>
@@ -75,9 +75,9 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
   parameters.degree_ = *degrees_seen.crbegin();
 
   // Unnormalization.
-  parameters.j2_ = -parameters.cos_[2][0] * LegendreNormalizationFactor(2, 0);
+  parameters.j2_ = -parameters.cos_[2][0] * LegendreNormalizationFactor[2][0];
   parameters.j2_over_μ_ = -parameters.cos_[2][0] *
-                          LegendreNormalizationFactor(2, 0) * reference_radius *
+                          LegendreNormalizationFactor[2][0] * reference_radius *
                           reference_radius;
 
   // Zonalness.

@@ -166,12 +166,12 @@ TEST_F(GeopotentialTest, C22S22) {
     degree2->set_degree(2);
     auto* const order0 = degree2->add_column();
     order0->set_order(0);
-    order0->set_cos(-6 / LegendreNormalizationFactor(2, 0));
+    order0->set_cos(-6 / LegendreNormalizationFactor[2][0]);
     order0->set_sin(0);
     auto* const order2 = degree2->add_column();
     order2->set_order(2);
-    order2->set_cos(10 / LegendreNormalizationFactor(2, 2));
-    order2->set_sin(-13 / LegendreNormalizationFactor(2, 2));
+    order2->set_cos(10 / LegendreNormalizationFactor[2][2]);
+    order2->set_sin(-13 / LegendreNormalizationFactor[2][2]);
   }
   OblateBody<World> const body =
       OblateBody<World>(massive_body_parameters_,
@@ -214,19 +214,19 @@ TEST_F(GeopotentialTest, J3) {
     degree2->set_degree(2);
     auto* const order0 = degree2->add_column();
     order0->set_order(0);
-    order0->set_cos(-6 / LegendreNormalizationFactor(2, 0));
+    order0->set_cos(-6 / LegendreNormalizationFactor[2][0]);
     order0->set_sin(0);
     auto* const order2 = degree2->add_column();
     order2->set_order(2);
-    order2->set_cos(1e-20 / LegendreNormalizationFactor(2, 2));
-    order2->set_sin(1e-20 / LegendreNormalizationFactor(2, 2));
+    order2->set_cos(1e-20 / LegendreNormalizationFactor[2][2]);
+    order2->set_sin(1e-20 / LegendreNormalizationFactor[2][2]);
   }
   {
     auto* const degree3 = message.add_row();
     degree3->set_degree(3);
     auto* const order0 = degree3->add_column();
     order0->set_order(0);
-    order0->set_cos(5 / LegendreNormalizationFactor(3, 0));
+    order0->set_cos(5 / LegendreNormalizationFactor[3][0]);
   }
   OblateBody<World> const body =
       OblateBody<World>(massive_body_parameters_,
@@ -323,8 +323,8 @@ TEST_F(GeopotentialTest, TestVector) {
     numerics::FixedMatrix<double, 10, 10> snm;
     for (int n = 0; n <= 9; ++n) {
       for (int m = 0; m <= n; ++m) {
-        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor(n, m);
-        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor(n, m);
+        cnm[n][m] = earth.cos()[n][m] * LegendreNormalizationFactor[n][m];
+        snm[n][m] = earth.sin()[n][m] * LegendreNormalizationFactor[n][m];
       }
     }
     actual_acceleration_f90 = Vector<Acceleration, ITRS>(
