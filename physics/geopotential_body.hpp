@@ -508,6 +508,8 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
 
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
+    // Make the thresholds monotonic, using the degree n threshold for all
+    // degrees k < n that would otherwise have a lower threshold.
     while (threshold.n >= degree_damping_.size()) {
       degree_damping_.emplace_back(threshold.r);
     }
