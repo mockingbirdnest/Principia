@@ -83,7 +83,7 @@ OblateBody<Frame>::Parameters::ReadFromMessage(
   // Zonalness.
   parameters.is_zonal_ = true;
   for (int n = 0; n <= parameters.degree_; ++n) {
-    for (int m = 1; m <= parameters.degree_; ++m) {
+    for (int m = 1; m <= n; ++m) {
       if (parameters.cos_[n][m] != 0 || parameters.sin_[n][m] != 0) {
         parameters.is_zonal_ = false;
         break;
