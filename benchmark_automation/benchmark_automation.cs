@@ -61,7 +61,13 @@ class BenchmarkAutomation {
           };
           process.Start();
           while (!process.StandardOutput.EndOfStream) {
-            String line = process.StandardOutput.ReadLine();
+            // A comma followed by a space or a line break occurs for a
+            // templated benchmark that has more than one parameter.  Remove the
+            // space or line break as it would confuse word splitting.
+            String line = process.StandardOutput.ReadLine().
+                              Replace(", ",",").
+                              Replace(",\n", ",").
+                              Replace(",\r\n", ",");
             String[] words =
                 line.Split(separator : new Char[]{' '},
                            options   : StringSplitOptions.RemoveEmptyEntries);
