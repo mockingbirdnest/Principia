@@ -115,13 +115,12 @@ class Geopotential {
   using UnitVector = Vector<double, Frame>;
 
   // Holds precomputed data for one evaluation of the acceleration.
-  template<int size>
   struct Precomputations;
 
   // Helper templates for iterating over the degrees/orders of the geopotential.
-  template<int size, int degree, int order>
+  template<int degree, int order>
   struct DegreeNOrderM;
-  template<int size, int degree, typename>
+  template<int degree, typename>
   struct DegreeNAllOrders;
   template<typename>
   struct AllDegrees;
