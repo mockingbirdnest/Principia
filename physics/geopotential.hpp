@@ -95,6 +95,7 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
   std::vector<HarmonicDamping> const& degree_damping() const;
+  HarmonicDamping const& sectoral_damping() const;
 
  private:
   // The frame of the surface of the celestial.
@@ -151,6 +152,13 @@ class Geopotential {
   // not used (this class does not compute the central force and disregards
   // degree 1, which is equivalent to a translation of the centre of mass).
   std::vector<HarmonicDamping> degree_damping_;
+
+  // The contribution of the degree 2 sectoral harmonics is damped by
+  // |sectoral_damping_|; |degree_damping_[2]| affects only J2.
+  // The monotonicity relation
+  //   degree_damping[2] ≼ sectoral_damping_ ≼ degree_damping[3]
+  // holds, where ≼ denotes the ordering of the thresholds.
+  HarmonicDamping sectoral_damping_;
 };
 
 }  // namespace internal_geopotential
