@@ -118,7 +118,7 @@ struct Geopotential<Frame>::Precomputations {
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
 
-  // These quantities depend on n.
+  // These quantities depend on n, and, for n = 2, on m.
   Exponentiation<Length, -2> σℜ_over_r;
   Vector<Exponentiation<Length, -2>, Frame> grad_σℜ;
 };
@@ -328,24 +328,56 @@ Acceleration(Geopotential<Frame> const& geopotential,
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
     // Note that ∇ℜ = ℜʹ * r_normalized.
 
-    geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
-        r_norm,
-        r²,
-        r_normalized,
-        ℜ_over_r,
-        ℜʹ,
-        precomputations.σℜ_over_r,
-        precomputations.grad_σℜ);
-    // If we are above the outer threshold, we should not have been called
-    // (σ = 0).
-    DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
+    if constexpr (n == 2 && sizeof...(orders) > 1) {
+      geopotential.degree_damping_[2].ComputeDampedRadialQuantities(
+          r_norm,
+          r²,
+          r_normalized,
+          ℜ_over_r,
+          ℜʹ,
+          precomputations.σℜ_over_r,
+          precomputations.grad_σℜ);
+      // If we are above the outer threshold, we should not have been called
+      // (σ = 0).
+      DCHECK_LT(r_norm, geopotential.degree_damping_[2].outer_threshold());
+      Vector<ReducedAcceleration, Frame> const j2_acceleration =
+          DegreeNOrderM<size, 2, 0>::Acceleration(precomputations);
+      geopotential.sectoral_damping_.ComputeDampedRadialQuantities(
+          r_norm,
+          r²,
+          r_normalized,
+          ℜ_over_r,
+          ℜʹ,
+          precomputations.σℜ_over_r,
+          precomputations.grad_σℜ);
+      // If we are above the outer threshold, we should have been called with
+      // (orders...) = (0).
+      DCHECK_LT(r_norm, geopotential.sectoral_damping_.outer_threshold());
+      // Perform the precomputations for order 1 (but the result is known to be
+      // 0, so don't bother adding it).
+      DegreeNOrderM<size, 2, 1>::Acceleration(precomputations);
+      Vector<ReducedAcceleration, Frame> const c22_s22_acceleration =
+          DegreeNOrderM<size, 2, 2>::Acceleration(precomputations);
+      return j2_acceleration + c22_s22_acceleration;
+    } else {
+      geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
+          r_norm,
+          r²,
+          r_normalized,
+          ℜ_over_r,
+          ℜʹ, precomputations.σℜ_over_r, precomputations.grad_σℜ);
+      // If we are above the outer threshold, we should not have been called
+      // (σ = 0).
+      DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
-    // Force the evaluation by increasing order using an initializer list.
-    ReducedAccelerations<size> const accelerations = {
-        DegreeNOrderM<size, degree, orders>::Acceleration(
-            precomputations)...};
+      // Force the evaluation by increasing order using an initializer list.
+      // TODO(egg): This should be sizeof...(orders), not size!!
+      ReducedAccelerations<size> const accelerations = {
+          DegreeNOrderM<size, degree, orders>::Acceleration(
+              precomputations)...};
 
-    return (accelerations[orders] + ...);
+      return (accelerations[orders] + ...);
+    }
   }
 }
 
@@ -361,7 +393,9 @@ Acceleration(Geopotential<Frame> const& geopotential,
              Exponentiation<Length, -3> const& one_over_r³) {
   constexpr int size = sizeof...(degrees);
   OblateBody<Frame> const& body = *geopotential.body_;
-  const bool is_zonal = body.is_zonal();
+  const bool is_zonal =
+      body.is_zonal() ||
+      r_norm > geopotential.sectoral_damping_.outer_threshold();
 
   Precomputations<size> precomputations;
 
@@ -508,6 +542,15 @@ Geopotential<Frame>::Geopotential(not_null<OblateBody<Frame> const*> body,
 
   while (!harmonic_thresholds.empty()) {
     auto const& threshold = harmonic_thresholds.top();
+    if (threshold.n == 2 && threshold.m == 2) {
+      if (degree_damping_.size() > 3) {
+        // Enforce the monotonicity relation for sectoral damping.
+        sectoral_damping_ =
+            HarmonicDamping(degree_damping_[3].inner_threshold());
+      } else {
+        sectoral_damping_ = HarmonicDamping(threshold.r);
+      }
+    }
     // Make the thresholds monotonic, using the degree n threshold for all
     // degrees k < n that would otherwise have a lower threshold.
     while (threshold.n >= degree_damping_.size()) {
@@ -580,6 +623,11 @@ template<typename Frame>
 std::vector<HarmonicDamping> const& Geopotential<Frame>::degree_damping()
     const {
   return degree_damping_;
+}
+
+template<typename Frame>
+HarmonicDamping const& Geopotential<Frame>::sectoral_damping() const {
+  return sectoral_damping_;
 }
 
 template<typename Frame>
