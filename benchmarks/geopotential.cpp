@@ -45,6 +45,7 @@ using quantities::Quotient;
 using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::si::Degree;
+using quantities::si::Kilo;
 using quantities::si::Metre;
 using quantities::si::Radian;
 using quantities::si::Second;
@@ -115,7 +116,7 @@ OblateBody<ICRS> MakeEarthBody(SolarSystem<ICRS>& solar_system,
 }
 
 void BM_ComputeGeopotentialCpp(benchmark::State& state) {
-  int const max_degree = state.range_x();
+  int const max_degree = state.range(0);
 
   SolarSystem<ICRS> solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -133,6 +134,40 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
         Displacement<ITRS>({distribution(random) * Metre,
                             distribution(random) * Metre,
                             distribution(random) * Metre})));
+  }
+
+  while (state.KeepRunning()) {
+    Vector<Exponentiation<Length, -2>, ICRS> acceleration;
+    for (auto const& displacement : displacements) {
+      acceleration = GeneralSphericalHarmonicsAccelerationCpp(
+                         geopotential, Instant(), displacement);
+    }
+    benchmark::DoNotOptimize(acceleration);
+  }
+}
+
+void BM_ComputeGeopotentialDistance(benchmark::State& state) {
+  // Check the performance around this distance.  May be used to tell apart the
+  // various contributions.
+  double const distance_in_kilometres = state.range(0);
+
+  SolarSystem<ICRS> solar_system_2000(
+            SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
+            SOLUTION_DIR / "astronomy" /
+                "sol_initial_state_jd_2451545_000000000.proto.txt");
+
+  auto const earth = MakeEarthBody(solar_system_2000, /*max_degree=*/10);
+  Geopotential<ICRS> const geopotential(&earth, /*tolerance=*/0x1.0p-24);
+
+  std::mt19937_64 random(42);
+  std::uniform_real_distribution<> distribution(0.9 * distance_in_kilometres,
+                                                1.1 * distance_in_kilometres);
+  std::vector<Displacement<ICRS>> displacements;
+  for (int i = 0; i < 1e3; ++i) {
+    displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(
+        Displacement<ITRS>({distribution(random) * Kilo(Metre),
+                            distribution(random) * Kilo(Metre),
+                            distribution(random) * Kilo(Metre)})));
   }
 
   while (state.KeepRunning()) {
@@ -168,7 +203,7 @@ void BM_ComputeGeopotentialCpp(benchmark::State& state) {
   }
 
 void BM_ComputeGeopotentialF90(benchmark::State& state) {
-  int const max_degree = state.range_x();
+  int const max_degree = state.range(0);
 
   SolarSystem<ICRS> solar_system_2000(
             SOLUTION_DIR / "astronomy" / "sol_gravity_model.proto.txt",
@@ -207,6 +242,10 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
 
 BENCHMARK(BM_ComputeGeopotentialCpp)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
 BENCHMARK(BM_ComputeGeopotentialF90)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
+BENCHMARK(BM_ComputeGeopotentialDistance)
+    ->Arg(80'000)      // C₂₂, S₂₂, J₂.
+    ->Arg(500'000)     // J₂.
+    ->Arg(5'000'000);  // Central
 
 }  // namespace physics
 }  // namespace principia
