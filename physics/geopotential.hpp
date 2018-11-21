@@ -154,7 +154,7 @@ class Geopotential {
   std::vector<HarmonicDamping> degree_damping_;
 
   // The contribution of the degree 2 sectoral harmonics is damped by
-  // |order_damping_|; |degree_damping_[2]| affects only J2.
+  // |sectoral_damping_|; |degree_damping_[2]| affects only J2.
   // The monotonicity relation
   //   degree_damping[2] ≼ sectoral_damping_ ≼ degree_damping[3]
   // holds, where ≼ denotes the ordering of the thresholds.

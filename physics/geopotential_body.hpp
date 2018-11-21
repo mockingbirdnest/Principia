@@ -350,8 +350,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
           ℜʹ,
           precomputations.σℜ_over_r,
           precomputations.grad_σℜ);
-        // If we are above the outer threshold, we should have been called with
-        // (orders...) = (0).
+      // If we are above the outer threshold, we should have been called with
+      // (orders...) = (0).
       DCHECK_LT(r_norm, geopotential.sectoral_damping_.outer_threshold());
       // Perform the precomputations for order 1 (but the result is known to be
       // 0, so don't bother adding it).
