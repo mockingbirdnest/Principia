@@ -159,15 +159,21 @@ void BM_ComputeGeopotentialDistance(benchmark::State& state) {
   auto const earth = MakeEarthBody(solar_system_2000, /*max_degree=*/10);
   Geopotential<ICRS> const geopotential(&earth, /*tolerance=*/0x1.0p-24);
 
+  // Generate points in a spherical shell.
   std::mt19937_64 random(42);
-  std::uniform_real_distribution<> distribution(0.9 * distance_in_kilometres,
+  std::uniform_real_distribution<> distribution(0 * distance_in_kilometres,
                                                 1.1 * distance_in_kilometres);
   std::vector<Displacement<ICRS>> displacements;
-  for (int i = 0; i < 1e3; ++i) {
-    displacements.push_back(earth.FromSurfaceFrame<ITRS>(Instant())(
-        Displacement<ITRS>({distribution(random) * Kilo(Metre),
-                            distribution(random) * Kilo(Metre),
-                            distribution(random) * Kilo(Metre)})));
+  for (int i = 0; i < 1e3;) {
+    Displacement<ITRS> const displacement({distribution(random) * Kilo(Metre),
+                                           distribution(random) * Kilo(Metre),
+                                           distribution(random) * Kilo(Metre)});
+    if (displacement.Norm() > 0.9 * distance_in_kilometres * Kilo(Metre) &&
+        displacement.Norm() < 1.1 * distance_in_kilometres * Kilo(Metre)) {
+      displacements.push_back(
+          earth.FromSurfaceFrame<ITRS>(Instant())(displacement));
+      ++i;
+    }
   }
 
   while (state.KeepRunning()) {
