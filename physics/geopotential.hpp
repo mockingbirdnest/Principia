@@ -95,8 +95,7 @@ class Geopotential {
       Exponentiation<Length, -3> const& one_over_r³) const;
 
   std::vector<HarmonicDamping> const& degree_damping() const;
-  HarmonicDamping const& tesseral_damping() const;
-  int first_tesseral_degree() const;
+  HarmonicDamping const& sectoral_damping() const;
 
  private:
   // The frame of the surface of the celestial.
@@ -153,21 +152,12 @@ class Geopotential {
   // degree 1, which is equivalent to a translation of the centre of mass).
   std::vector<HarmonicDamping> degree_damping_;
 
-  // The contribution of low-degree tesseral (including sectoral) harmonics is
-  // damped by |tesseral_damping_|.
-  HarmonicDamping tesseral_damping_;
-
-  // |first_tesseral_degree_| is the integer n such that
-  //   degree_damping_[n - 1] ≻ tesseral_damping_ ≽ degree_damping_[n],
-  // or is 0 if
-  //   ∀n, degree_threshold_[n] ≼ tesseral_damping_,
-  // or |degree_damping_.size()| if
-  //   ∀n, tesseral_damping_ ≺ degree_threshold_[n],
-  // where the operators (≻, ≽, ≼, ≺) denote ordering of the thresholds.
-  // Tesseral (including sectoral) harmonics of degree less than
-  // |first_tesseral_degree_| are damped by |tesseral_damping_|, instead
-  // of their respective |degree_damping_|.
-  int first_tesseral_degree_;
+  // The contribution of the degree 2 sectoral harmonics is damped by
+  // |sectoral_damping_|; |degree_damping_[2]| affects only J2.
+  // The monotonicity relation
+  //   degree_damping[2] ≼ sectoral_damping_ ≼ degree_damping[3]
+  // holds, where ≼ denotes the ordering of the thresholds.
+  HarmonicDamping sectoral_damping_;
 };
 
 }  // namespace internal_geopotential

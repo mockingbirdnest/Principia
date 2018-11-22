@@ -1,12 +1,5 @@
 ﻿
 // .\Release\x64\benchmarks.exe --benchmark_repetitions=10 --benchmark_min_time=2 --benchmark_filter=Newhall  // NOLINT(whitespace/line_length)
-// Benchmarking on 1 X 3310 MHz CPU
-// 2015/05/24-13:16:32
-// Benchmark                    Time(ns)    CPU(ns) Iterations
-// -----------------------------------------------------------
-// BM_NewhallApproximation/4         589        562    2000000
-// BM_NewhallApproximation/8         657        624    2000000
-// BM_NewhallApproximation/16        754        741    2000000
 
 #include <memory>
 #include <random>
@@ -106,27 +99,26 @@ using ResultMonomialDouble =
 using ResultMonomialDisplacement =
     not_null<std::unique_ptr<Polynomial<Displacement<ICRS>, Instant>>>;
 
-BENCHMARK_TEMPLATE2(
+BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDouble,
     ResultЧебышёвDouble,
     &NewhallApproximationInЧебышёвBasis<double>)
     ->Arg(4)->Arg(8)->Arg(16);
-BENCHMARK_TEMPLATE2(
+BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDisplacement,
     ResultЧебышёвDisplacement,
     &NewhallApproximationInЧебышёвBasis<Displacement<ICRS>>)
     ->Arg(4)->Arg(8)->Arg(16);
-// No space or line break in the second argument, that confuses automation.
-BENCHMARK_TEMPLATE2(
+BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDouble,
     ResultMonomialDouble,
-    (&NewhallApproximationInMonomialBasis<double,EstrinEvaluator>))  // NOLINT
+    (&NewhallApproximationInMonomialBasis<double, EstrinEvaluator>))
     ->Arg(4)->Arg(8)->Arg(16);
-// No space or line break in the second argument, that confuses automation.
-BENCHMARK_TEMPLATE2(
+BENCHMARK_TEMPLATE(
     BM_NewhallApproximationDisplacement,
     ResultMonomialDisplacement,
-    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>,EstrinEvaluator>))  // NOLINT
+    (&NewhallApproximationInMonomialBasis<Displacement<ICRS>,
+                                          EstrinEvaluator>))
     ->Arg(4)->Arg(8)->Arg(16);
 
 }  // namespace numerics
