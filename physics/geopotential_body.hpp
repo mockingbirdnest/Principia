@@ -344,7 +344,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
       // (σ = 0).
       DCHECK_LT(r_norm, geopotential.degree_damping_[2].outer_threshold());
       Vector<ReducedAcceleration, Frame> const j2_acceleration =
-          DegreeNOrderM<size, 2, 0>::Acceleration(precomputations);
+          DegreeNOrderM<2, 0>::Acceleration(precomputations);
       geopotential.sectoral_damping_.ComputeDampedRadialQuantities(
           r_norm,
           r²,
@@ -358,9 +358,9 @@ Acceleration(Geopotential<Frame> const& geopotential,
       DCHECK_LT(r_norm, geopotential.sectoral_damping_.outer_threshold());
       // Perform the precomputations for order 1 (but the result is known to be
       // 0, so don't bother adding it).
-      DegreeNOrderM<size, 2, 1>::Acceleration(precomputations);
+      DegreeNOrderM<2, 1>::Acceleration(precomputations);
       Vector<ReducedAcceleration, Frame> const c22_s22_acceleration =
-          DegreeNOrderM<size, 2, 2>::Acceleration(precomputations);
+          DegreeNOrderM<2, 2>::Acceleration(precomputations);
       return j2_acceleration + c22_s22_acceleration;
     } else {
       geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
@@ -375,8 +375,7 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
       // Force the evaluation by increasing order using an initializer list.
       ReducedAccelerations<size> const accelerations = {
-          DegreeNOrderM<size, degree, orders>::Acceleration(
-              precomputations)...};
+          DegreeNOrderM<degree, orders>::Acceleration(precomputations)...};
 
       return (accelerations[orders] + ...);
     }
