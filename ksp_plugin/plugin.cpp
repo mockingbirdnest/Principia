@@ -158,9 +158,11 @@ void Plugin::InsertCelestialJacobiKeplerian(
 }
 
 void Plugin::InitializeEphemerisParameters(
-    Ephemeris<Barycentric>::FixedStepParameters const& parameters) {
+    Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
+    Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters) {
   CHECK(initializing_);
-  ephemeris_parameters_ = parameters;
+  ephemeris_accuracy_parameters_ = accuracy_parameters;
+  ephemeris_fixed_step_parameters_ = fixed_step_parameters;
 }
 
 void Plugin::InitializeHistoryParameters(
@@ -217,9 +219,11 @@ void Plugin::EndInitialization() {
   }
 
   // Construct the ephemeris.
-  ephemeris_ = solar_system.MakeEphemeris(
-      default_ephemeris_fitting_tolerance,
-      ephemeris_parameters_.value_or(DefaultEphemerisParameters()));
+  ephemeris_ =
+      solar_system.MakeEphemeris(ephemeris_accuracy_parameters_.value_or(
+                                     DefaultEphemerisAccuracyParameters()),
+                                 ephemeris_fixed_step_parameters_.value_or(
+                                     DefaultEphemerisFixedStepParameters()));
 
   // Construct the celestials using the bodies from the ephemeris.
   for (std::string const& name : solar_system.names()) {

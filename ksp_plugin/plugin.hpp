@@ -124,7 +124,8 @@ class Plugin {
       serialization::InitialState::Keplerian::Body const& initial_state);
 
   virtual void InitializeEphemerisParameters(
-      Ephemeris<Barycentric>::FixedStepParameters const& parameters);
+      Ephemeris<Barycentric>::AccuracyParameters const& accuracy_parameters,
+      Ephemeris<Barycentric>::FixedStepParameters const& fixed_step_parameters);
   virtual void InitializeHistoryParameters(
       Ephemeris<Barycentric>::FixedStepParameters const& parameters);
   virtual void InitializePsychohistoryParameters(
@@ -482,8 +483,10 @@ class Plugin {
   // object.  The other parameters must be persisted to create new vessels.
   // Since this is not persisted directly, it is optional so that it can be null
   // in a deserialized object.
+  std::optional<Ephemeris<Barycentric>::AccuracyParameters>
+      ephemeris_accuracy_parameters_;
   std::optional<Ephemeris<Barycentric>::FixedStepParameters>
-      ephemeris_parameters_;
+      ephemeris_fixed_step_parameters_;
 
   GUIDToOwnedVessel vessels_;
   // For each part, the vessel that this part belongs to. The part is guaranteed
