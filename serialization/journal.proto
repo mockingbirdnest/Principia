@@ -55,6 +55,11 @@ message Burn {
   required bool is_inertially_fixed = 6;
 }
 
+message ConfigurationAccuracyParameters {
+  required string fitting_tolerance = 1;
+  required double geopotential_tolerance = 2;
+}
+
 message ConfigurationFixedStepParameters {
   // Must be the name of one of the values of FixedStepSizeIntegrator.Kind.
   required string fixed_step_size_integrator = 1;
@@ -968,7 +973,8 @@ message InitializeEphemerisParameters {
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin", (is_subject) = true];
-    required ConfigurationFixedStepParameters parameters = 2;
+    required ConfigurationAccuracyParameters accuracy_parameters = 2;
+    required ConfigurationFixedStepParameters fixed_step_parameters = 3;
   }
   optional In in = 1;
 }
