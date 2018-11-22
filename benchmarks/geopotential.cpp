@@ -249,7 +249,7 @@ void BM_ComputeGeopotentialF90(benchmark::State& state) {
 BENCHMARK(BM_ComputeGeopotentialCpp)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
 BENCHMARK(BM_ComputeGeopotentialF90)->Arg(2)->Arg(3)->Arg(5)->Arg(10);
 BENCHMARK(BM_ComputeGeopotentialDistance)
-    ->Arg(80'000)      // C₂₂, S₂₂, J₂.
+    ->Arg(150'000)     // C₂₂, S₂₂, J₂.
     ->Arg(500'000)     // J₂.
     ->Arg(5'000'000);  // Central
 
