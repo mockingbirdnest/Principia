@@ -72,5 +72,8 @@
     <None Include="solar_systems_convergence.wl">
       <Filter>Scripts</Filter>
     </None>
+    <None Include="associated_legendre_function.wl">
+      <Filter>Scripts</Filter>
+    </None>
   </ItemGroup>
 </Project>

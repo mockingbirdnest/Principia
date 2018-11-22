@@ -21,6 +21,7 @@
     <ClInclude Include="hermite3_body.hpp" />
     <ClInclude Include="legendre.hpp" />
     <ClInclude Include="legendre_body.hpp" />
+    <ClInclude Include="legendre_normalization_factor.mathematica.h" />
     <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h" />
     <ClInclude Include="newhall.hpp" />
     <ClInclude Include="newhall.mathematica.h" />

@@ -10,7 +10,7 @@
 #include "geometry/grassmann.hpp"
 #include "geometry/r3_element.hpp"
 #include "numerics/fixed_arrays.hpp"
-#include "numerics/legendre.hpp"
+#include "numerics/legendre_normalization_factor.mathematica.h"
 #include "numerics/max_abs_normalized_associated_legendre_function.mathematica.h"
 #include "numerics/polynomial_evaluators.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -25,7 +25,6 @@ using numerics::FixedLowerTriangularMatrix;
 using numerics::FixedVector;
 using numerics::HornerEvaluator;
 using numerics::LegendreNormalizationFactor;
-using numerics::LegendrePolynomial;
 using numerics::MaxAbsNormalizedAssociatedLegendreFunction;
 using numerics::uninitialized;
 using geometry::Bivector;
@@ -126,8 +125,7 @@ struct Geopotential<Frame>::Precomputations {
 template<typename Frame>
 template<int size, int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  FORCE_INLINE(static)
-  auto Acceleration(Precomputations<size>& precomputations)
+  FORCE_INLINE(static) auto Acceleration(Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
@@ -135,24 +133,24 @@ template<typename Frame>
 template<int size, int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<size, degree, std::integer_sequence<int, orders...>> {
-  static auto Acceleration(Geopotential<Frame> const& geopotential,
-                           Vector<double, Frame> const& r_normalized,
-                           Length const& r_norm,
-                           Square<Length> const& r²,
-                           Precomputations<size>& precomputations)
+  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
+                                  Vector<double, Frame> const& r_normalized,
+                                  Length const& r_norm,
+                                  Square<Length> const& r²,
+                                  Precomputations<size>& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static Vector<ReducedAcceleration, Frame>
-  Acceleration(Geopotential<Frame> const& geopotential,
-               Instant const& t,
-               Displacement<Frame> const& r,
-               Length const& r_norm,
-               Square<Length> const& r²,
-               Exponentiation<Length, -3> const& one_over_r³);
+  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
+                                  Instant const& t,
+                                  Displacement<Frame> const& r,
+                                  Length const& r_norm,
+                                  Square<Length> const& r²,
+                                  Exponentiation<Length, -3> const& one_over_r³)
+      -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
@@ -169,8 +167,8 @@ auto Geopotential<Frame>::DegreeNOrderM<size, degree, order>::Acceleration(
     constexpr int n = degree;
     constexpr int m = order;
     static_assert(0 <= m && m <= n);
-    static double const normalization_factor =
-        LegendreNormalizationFactor(n, m);
+    constexpr double normalization_factor =
+        LegendreNormalizationFactor[n][m];
 
     double const cos_β = precomputations.cos_β;
     double const sin_β = precomputations.sin_β;
@@ -383,14 +381,14 @@ Acceleration(Geopotential<Frame> const& geopotential,
 
 template<typename Frame>
 template<int... degrees>
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
+auto Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>>::
 Acceleration(Geopotential<Frame> const& geopotential,
              Instant const& t,
              Displacement<Frame> const& r,
              Length const& r_norm,
              Square<Length> const& r²,
-             Exponentiation<Length, -3> const& one_over_r³) {
+             Exponentiation<Length, -3> const& one_over_r³)
+    -> Vector<ReducedAcceleration, Frame> {
   constexpr int size = sizeof...(degrees);
   OblateBody<Frame> const& body = *geopotential.body_;
   const bool is_zonal =

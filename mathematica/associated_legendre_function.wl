@@ -62,3 +62,32 @@ maxPnrm,{2}]<>"}}};
 }  // namespace principia
 ",
 "text"]
+
+
+Export[
+"..\\numerics\\legendre_normalization_factor.mathematica.h",
+"
+#pragma once
+
+#include \"numerics/fixed_arrays.hpp\"
+
+namespace principia {
+namespace numerics {
+
+// Multiplying a normalized Cnm or Snm coefficient by this factor yields an
+// unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
+// this factor yields a normalized coefficient.
+constexpr FixedLowerTriangularMatrix<double, "<>ToString[21]<>">
+LegendreNormalizationFactor{{{
+"<>Flatten[
+ Table[
+  Table[
+   "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>
+       decimalFloatLiteral[N[NormalizationFactor[n,m],46]]<>",\n",
+   {m,0,n}],
+  {n,0,20}]]<>"}}};
+
+}  // namespace numerics
+}  // namespace principia
+",
+"text"]

@@ -23,6 +23,7 @@
     <ClInclude Include="mathematica_body.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="associated_legendre_function.wl" />
     <None Include="generate_graphs.wl" />
     <None Include="navball.wl" />
     <None Include="integration.wl" />
