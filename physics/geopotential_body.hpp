@@ -94,7 +94,7 @@ void HarmonicDamping::ComputeDampedRadialQuantities(
 template<typename Frame>
 struct Geopotential<Frame>::Precomputations {
   // Allocate the maximum size to cover all possible degrees.  Making |size| a
-  // template parameters of this class would be possible, but it would greatly
+  // template parameter of this class would be possible, but it would greatly
   // increase the number of instances of DegreeNOrderM and friends.
   static constexpr int size = OblateBody<Frame>::max_geopotential_degree + 1;
 
@@ -120,10 +120,6 @@ struct Geopotential<Frame>::Precomputations {
   // These quantities depend on both n and m.  Note that the zeros for m > n are
   // not stored.
   FixedLowerTriangularMatrix<double, size> DmPn_of_sin_β{uninitialized};
-
-  // These quantities depend on n, and, for n = 2, on m.
-  Exponentiation<Length, -2> σℜ_over_r;
-  Vector<Exponentiation<Length, -2>, Frame> grad_σℜ;
 };
 
 template<typename Frame>
