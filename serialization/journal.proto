@@ -57,7 +57,7 @@ message Burn {
 
 message ConfigurationAccuracyParameters {
   required string fitting_tolerance = 1;
-  required double geopotential_tolerance = 2;
+  required string geopotential_tolerance = 2;
 }
 
 message ConfigurationFixedStepParameters {

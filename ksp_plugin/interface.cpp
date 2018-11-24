@@ -114,7 +114,7 @@ Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
     ConfigurationAccuracyParameters const& parameters) {
   return Ephemeris<Barycentric>::AccuracyParameters(
       ParseQuantity<Length>(parameters.fitting_tolerance),
-      parameters.geopotential_tolerance);
+      ParseQuantity<double>(parameters.geopotential_tolerance));
 }
 
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(

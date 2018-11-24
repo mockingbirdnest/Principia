@@ -240,6 +240,10 @@ void GenerateConfiguration(std::string const& game_epoch,
             ephemeris.integrator()) << "\n";
   numerics_blueprint_cfg << "    integration_step_size = " << ephemeris.step()
                          << "\n";
+  numerics_blueprint_cfg << "    fitting_tolerance = "
+      << ephemeris.fitting_tolerance() << "\n";
+  numerics_blueprint_cfg << "    geopotential_tolerance = "
+      << ephemeris.geopotential_tolerance() << "\n";
   numerics_blueprint_cfg << "  }\n";
 
   numerics_blueprint_cfg << "  history {\n";
