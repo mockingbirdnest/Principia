@@ -129,7 +129,10 @@ struct Geopotential<Frame>::Precomputations {
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  FORCE_INLINE(static) auto Acceleration(Precomputations& precomputations)
+  FORCE_INLINE(static)
+  auto Acceleration(Inverse<Square<Length>> const& σℜ_over_r,
+                    Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
+                    Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
@@ -160,6 +163,8 @@ struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
 template<typename Frame>
 template<int degree, int order>
 auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
+    Inverse<Square<Length>> const& σℜ_over_r,
+    Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
     Precomputations& precomputations)
     -> Vector<ReducedAcceleration, Frame> {
   if constexpr (degree == 2 && order == 1) {
@@ -181,8 +186,8 @@ auto Geopotential<Frame>::DegreeNOrderM<degree, order>::Acceleration(
     auto const& grad_𝔏_vector = precomputations.grad_𝔏_vector;
 
     // For clarity, we write ℜ for σℜ in the calculations below.
-    auto const ℜ_over_r = precomputations.σℜ_over_r;
-    auto const& grad_ℜ = precomputations.grad_σℜ;
+    auto const& ℜ_over_r = σℜ_over_r;
+    auto const& grad_ℜ = grad_σℜ;
 
     auto& cos_mλ = precomputations.cos_mλ[m];
     auto& sin_mλ = precomputations.sin_mλ[m];
@@ -331,6 +336,8 @@ Acceleration(Geopotential<Frame> const& geopotential,
     auto const ℜʹ = -(n + 1) * ℜ_over_r;
     // Note that ∇ℜ = ℜʹ * r_normalized.
 
+    Inverse<Square<Length>> σℜ_over_r;
+    Vector<Inverse<Square<Length>>, Frame> grad_σℜ;
     if constexpr (n == 2 && size > 1) {
       geopotential.degree_damping_[2].ComputeDampedRadialQuantities(
           r_norm,
@@ -338,29 +345,32 @@ Acceleration(Geopotential<Frame> const& geopotential,
           r_normalized,
           ℜ_over_r,
           ℜʹ,
-          precomputations.σℜ_over_r,
-          precomputations.grad_σℜ);
+          σℜ_over_r,
+          grad_σℜ);
       // If we are above the outer threshold, we should not have been called
       // (σ = 0).
       DCHECK_LT(r_norm, geopotential.degree_damping_[2].outer_threshold());
       Vector<ReducedAcceleration, Frame> const j2_acceleration =
-          DegreeNOrderM<2, 0>::Acceleration(precomputations);
+          DegreeNOrderM<2, 0>::Acceleration(
+              σℜ_over_r, grad_σℜ, precomputations);
       geopotential.sectoral_damping_.ComputeDampedRadialQuantities(
           r_norm,
           r²,
           r_normalized,
           ℜ_over_r,
           ℜʹ,
-          precomputations.σℜ_over_r,
-          precomputations.grad_σℜ);
+          σℜ_over_r,
+          grad_σℜ);
       // If we are above the outer threshold, we should have been called with
       // (orders...) = (0).
       DCHECK_LT(r_norm, geopotential.sectoral_damping_.outer_threshold());
       // Perform the precomputations for order 1 (but the result is known to be
       // 0, so don't bother adding it).
-      DegreeNOrderM<2, 1>::Acceleration(precomputations);
+      DegreeNOrderM<2, 1>::Acceleration(
+          σℜ_over_r, grad_σℜ, precomputations);
       Vector<ReducedAcceleration, Frame> const c22_s22_acceleration =
-          DegreeNOrderM<2, 2>::Acceleration(precomputations);
+          DegreeNOrderM<2, 2>::Acceleration(
+              σℜ_over_r, grad_σℜ, precomputations);
       return j2_acceleration + c22_s22_acceleration;
     } else {
       geopotential.degree_damping_[n].ComputeDampedRadialQuantities(
@@ -368,14 +378,17 @@ Acceleration(Geopotential<Frame> const& geopotential,
           r²,
           r_normalized,
           ℜ_over_r,
-          ℜʹ, precomputations.σℜ_over_r, precomputations.grad_σℜ);
+          ℜʹ,
+          σℜ_over_r,
+          grad_σℜ);
       // If we are above the outer threshold, we should not have been called
       // (σ = 0).
       DCHECK_LT(r_norm, geopotential.degree_damping_[n].outer_threshold());
 
       // Force the evaluation by increasing order using an initializer list.
       ReducedAccelerations<size> const accelerations = {
-          DegreeNOrderM<degree, orders>::Acceleration(precomputations)...};
+          DegreeNOrderM<degree, orders>::Acceleration(
+              σℜ_over_r, grad_σℜ, precomputations)...};
 
       return (accelerations[orders] + ...);
     }
