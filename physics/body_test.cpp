@@ -256,7 +256,7 @@ TEST_F(BodyTest, OblateSerializationSuccess) {
                       GetExtension(serialization::OblateBody::extension);
   EXPECT_EQ(-6,
             oblate_body_extension.geopotential().row(2).column(0).cos() *
-                LegendreNormalizationFactor(2, 0));
+                LegendreNormalizationFactor[2][0]);
 
   // Dispatching from |MassiveBody|.
   not_null<std::unique_ptr<MassiveBody const>> const massive_body =

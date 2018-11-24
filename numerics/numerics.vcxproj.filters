@@ -98,6 +98,9 @@
     <ClInclude Include="max_abs_normalized_associated_legendre_function.mathematica.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="legendre_normalization_factor.mathematica.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="чебышёв_series_test.cpp">
