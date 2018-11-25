@@ -99,6 +99,7 @@
     <Compile Include="burn_editor.cs" />
     <Compile Include="compatibility_extensions.cs" />
     <Compile Include="config_node_extensions.cs" />
+    <Compile Include="config_node_parsers.cs" />
     <Compile Include="culture.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
