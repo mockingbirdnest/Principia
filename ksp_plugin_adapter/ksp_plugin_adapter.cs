@@ -2383,50 +2383,34 @@ public partial class PrincipiaPluginAdapter
   private static void InitializeIntegrators(
       IntPtr plugin,
       ConfigNode numerics_blueprint) {
-   if (numerics_blueprint == null) {
-     return;
-   }
-   var ephemeris_parameters =
-       numerics_blueprint.GetAtMostOneNode("ephemeris");
-   if (ephemeris_parameters != null) {
-     plugin.InitializeEphemerisParameters(
-         new ConfigurationAccuracyParameters{
-             fitting_tolerance = ephemeris_parameters.GetUniqueValue(
-                                     "fitting_tolerance"),
-             geopotential_tolerance = ephemeris_parameters.GetUniqueValue(
-                                          "geopotential_tolerance")},
-         new ConfigurationFixedStepParameters{
-             fixed_step_size_integrator = ephemeris_parameters.GetUniqueValue(
-                                              "fixed_step_size_integrator"),
-             integration_step_size = ephemeris_parameters.GetUniqueValue(
-                                         "integration_step_size")});
-   }
+    if (numerics_blueprint == null) {
+      return;
+    }
+    var ephemeris_parameters =
+        numerics_blueprint.GetAtMostOneNode("ephemeris");
+    if (ephemeris_parameters != null) {
+      plugin.InitializeEphemerisParameters(
+          ConfigNodeParsers.NewConfigurationAccuracyParameters(
+              ephemeris_parameters),
+          ConfigNodeParsers.NewConfigurationFixedStepParameters(
+              ephemeris_parameters));
+    }
 
-   var history_parameters =
-       numerics_blueprint.GetAtMostOneNode("history");
-   if (history_parameters != null) {
-     plugin.InitializeHistoryParameters(new ConfigurationFixedStepParameters{
-         fixed_step_size_integrator =
-             history_parameters.GetUniqueValue("fixed_step_size_integrator"),
-         integration_step_size =
-             history_parameters.GetUniqueValue("integration_step_size")});
-   }
+    var history_parameters =
+        numerics_blueprint.GetAtMostOneNode("history");
+    if (history_parameters != null) {
+      plugin.InitializeHistoryParameters(
+          ConfigNodeParsers.NewConfigurationFixedStepParameters(
+              history_parameters));
+    }
 
-   var psychohistory_parameters =
-       numerics_blueprint.GetAtMostOneNode("psychohistory");
-   if (psychohistory_parameters != null) {
-     plugin.InitializePsychohistoryParameters(
-         new ConfigurationAdaptiveStepParameters{
-             adaptive_step_size_integrator =
-                 psychohistory_parameters.GetUniqueValue(
-                     "adaptive_step_size_integrator"),
-             length_integration_tolerance =
-                 psychohistory_parameters.GetUniqueValue(
-                     "length_integration_tolerance"),
-             speed_integration_tolerance =
-                 psychohistory_parameters.GetUniqueValue(
-                     "speed_integration_tolerance")});
-   }
+    var psychohistory_parameters =
+        numerics_blueprint.GetAtMostOneNode("psychohistory");
+    if (psychohistory_parameters != null) {
+      plugin.InitializePsychohistoryParameters(
+          ConfigNodeParsers.NewConfigurationAdaptiveStepParameters(
+              psychohistory_parameters));
+    }
   }
 
   private void ResetPlugin() {
@@ -2475,26 +2459,9 @@ public partial class PrincipiaPluginAdapter
         int? parent_index = body.orbit?.referenceBody.flightGlobalsIndex;
         // GetUniqueValue resp. GetAtMostOneValue corresponding to required
         // resp. optional in principia.serialization.GravityModel.Body.
-        var body_parameters = new BodyParameters{
-            name = body.name,
-            gravitational_parameter =
-                body_gravity_model.GetUniqueValue("gravitational_parameter"),
-            reference_instant       =
-                body_gravity_model.GetAtMostOneValue("reference_instant"),
-            mean_radius             =
-                body_gravity_model.GetAtMostOneValue("mean_radius"),
-            axis_right_ascension    =
-                body_gravity_model.GetAtMostOneValue("axis_right_ascension"),
-            axis_declination        =
-                body_gravity_model.GetAtMostOneValue("axis_declination"),
-            reference_angle         =
-                body_gravity_model.GetAtMostOneValue("reference_angle"),
-            angular_frequency       =
-                body_gravity_model.GetAtMostOneValue("angular_frequency"),
-            j2                      =
-                body_gravity_model.GetAtMostOneValue("j2"),
-            reference_radius        =
-                body_gravity_model.GetAtMostOneValue("reference_radius")};
+        var body_parameters =
+            ConfigNodeParsers.NewCartesianBodyParameters(body,
+                                                         body_gravity_model);
         // GetUniqueValue since these are all required fields in
         // principia.serialization.InitialState.Cartesian.Body.
         plugin_.InsertCelestialAbsoluteCartesian(
@@ -2527,35 +2494,9 @@ public partial class PrincipiaPluginAdapter
           Log.Info("using custom gravity model");
         }
         Orbit orbit = unmodified_orbits_.GetValueOrNull(body);
-        var body_parameters = new BodyParameters{
-            name = body.name,
-            gravitational_parameter =
-                body_gravity_model?.GetAtMostOneValue("gravitational_parameter")
-                     ?? (body.gravParameter + " m^3/s^2"),
-            // The origin of rotation in KSP is the x of Barycentric, rather
-            // than the y axis as is the case for Earth, so the right
-            // ascension is -90 deg.
-            reference_instant    = 
-                body_gravity_model?.GetAtMostOneValue("reference_instant")
-                    ?? "JD2451545.0",
-            mean_radius          =
-                body_gravity_model?.GetAtMostOneValue("mean_radius")
-                    ?? (body.Radius + " m"),
-            axis_right_ascension =
-                body_gravity_model?.GetAtMostOneValue("axis_right_ascension")
-                    ?? "-90 deg",
-            axis_declination     =
-                body_gravity_model?.GetAtMostOneValue("axis_declination")
-                    ?? "90 deg",
-            reference_angle      =
-                body_gravity_model?.GetAtMostOneValue("reference_angle")
-                    ?? (body.initialRotation.ToString() + " deg"),
-            angular_frequency    =
-                body_gravity_model?.GetAtMostOneValue("angular_frequency")
-                    ??  (body.angularV.ToString() + " rad/s"),
-            j2                   = body_gravity_model?.GetAtMostOneValue("j2"),
-            reference_radius     =
-                body_gravity_model?.GetAtMostOneValue("reference_radius")};
+        var body_parameters =
+            ConfigNodeParsers.NewKeplerianBodyParameters(body,
+                                                         body_gravity_model);
         plugin_.InsertCelestialJacobiKeplerian(
             celestial_index             : body.flightGlobalsIndex,
             parent_index                :
