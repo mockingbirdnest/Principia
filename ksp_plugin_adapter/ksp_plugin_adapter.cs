@@ -2389,11 +2389,17 @@ public partial class PrincipiaPluginAdapter
    var ephemeris_parameters =
        numerics_blueprint.GetAtMostOneNode("ephemeris");
    if (ephemeris_parameters != null) {
-     plugin.InitializeEphemerisParameters(new ConfigurationFixedStepParameters{
-         fixed_step_size_integrator =
-             ephemeris_parameters.GetUniqueValue("fixed_step_size_integrator"),
-         integration_step_size =
-             ephemeris_parameters.GetUniqueValue("integration_step_size")});
+     plugin.InitializeEphemerisParameters(
+         new ConfigurationAccuracyParameters{
+             fitting_tolerance = ephemeris_parameters.GetUniqueValue(
+                                     "fitting_tolerance"),
+             geopotential_tolerance = ephemeris_parameters.GetUniqueValue(
+                                          "geopotential_tolerance")},
+         new ConfigurationFixedStepParameters{
+             fixed_step_size_integrator = ephemeris_parameters.GetUniqueValue(
+                                              "fixed_step_size_integrator"),
+             integration_step_size = ephemeris_parameters.GetUniqueValue(
+                                         "integration_step_size")});
    }
 
    var history_parameters =

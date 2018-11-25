@@ -110,6 +110,13 @@ static not_null<Arena*> arena = []() {
   return new Arena(options);
 }();
 
+Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
+    ConfigurationAccuracyParameters const& parameters) {
+  return Ephemeris<Barycentric>::AccuracyParameters(
+      ParseQuantity<Length>(parameters.fitting_tolerance),
+      ParseQuantity<double>(parameters.geopotential_tolerance));
+}
+
 Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
     ConfigurationFixedStepParameters const& parameters) {
   return Ephemeris<Barycentric>::FixedStepParameters(
@@ -569,11 +576,14 @@ void principia__InitGoogleLogging() {
 
 void principia__InitializeEphemerisParameters(
     Plugin* const plugin,
-    ConfigurationFixedStepParameters const parameters) {
+    ConfigurationAccuracyParameters const accuracy_parameters,
+    ConfigurationFixedStepParameters const fixed_step_parameters) {
   journal::Method<journal::InitializeEphemerisParameters> m(
-      {plugin, parameters});
+      {plugin, accuracy_parameters, fixed_step_parameters});
   CHECK_NOTNULL(plugin);
-  plugin->InitializeEphemerisParameters(MakeFixedStepParameters(parameters));
+  plugin->InitializeEphemerisParameters(
+      MakeAccuracyParameters(accuracy_parameters),
+      MakeFixedStepParameters(fixed_step_parameters));
   return m.Return();
 }
 

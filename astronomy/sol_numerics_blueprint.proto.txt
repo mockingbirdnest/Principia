@@ -1,7 +1,9 @@
 numerics_blueprint {
   ephemeris {
-    integrator : QUINLAN_TREMAINE_1990_ORDER_12
-    step       : "10 min"
+    integrator             : QUINLAN_TREMAINE_1990_ORDER_12
+    step                   : "10 min"
+    fitting_tolerance      : "1 mm"
+    geopotential_tolerance : "0x1.0p-24"
   }
   history {
     integrator : QUINLAN_1999_ORDER_8A

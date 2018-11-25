@@ -88,6 +88,8 @@ message NumericsBlueprint {
   message Ephemeris {
     required FixedStepSizeIntegrator.Kind integrator = 1;
     required string step = 2;
+    required string fitting_tolerance = 3;
+    required string geopotential_tolerance = 4;
   }
   message History {
     required FixedStepSizeIntegrator.Kind integrator = 1;

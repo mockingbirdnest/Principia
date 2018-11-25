@@ -23,7 +23,15 @@ using integrators::methods::Quinlan1999Order8A;
 using quantities::si::Minute;
 using quantities::si::Second;
 
-Ephemeris<Barycentric>::FixedStepParameters DefaultEphemerisParameters() {
+Ephemeris<Barycentric>::AccuracyParameters
+DefaultEphemerisAccuracyParameters() {
+  return Ephemeris<Barycentric>::AccuracyParameters(
+      /*fitting_tolerance=*/1 * Milli(Metre),
+      /*geopotential_tolerance*/ 0x1.0p-24);
+}
+
+Ephemeris<Barycentric>::FixedStepParameters
+DefaultEphemerisFixedStepParameters() {
   return Ephemeris<Barycentric>::FixedStepParameters(
       SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                             Position<Barycentric>>(),
