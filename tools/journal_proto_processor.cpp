@@ -217,14 +217,25 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                field_cxx_serializer_fn_[descriptor]("*"+ descriptor_name) +
                ";\n  }\n";
       };
+  std::string const storage_name = descriptor->name() + "_storage";
+  field_cxx_deserialization_storage_name_[descriptor] = storage_name;
   field_cxx_deserializer_fn_[descriptor] =
-      [](std::string const& expr) -> std::vector<std::string> {
-        return {"&" + expr + "[0]", expr + ".size()"};
+      [message_type_name, storage_name](
+          std::string const& expr) -> std::vector<std::string> {
+        // Yes, this lambda generates a lambda.
+        return {"[&" + storage_name +
+                "](::google::protobuf::RepeatedPtrField<serialization::" +
+                message_type_name + "> const& messages) {\n"
+                "            for (auto const& message : messages) {\n" +
+                "              " + storage_name +
+                ".push_back(Deserialize" + message_type_name + "(message));\n" +
+                "            }\n"
+                "            return &" + storage_name + "[0];\n" +
+                "          }(" + expr + ")",
+                expr + ".size()"}; 
       };
   field_cxx_deserialization_storage_type_[descriptor] =
-      "std::vector<std::string>";
-  field_cxx_deserialization_storage_name_[descriptor] =
-      descriptor->name() + "_storage";
+      "std::vector<" + message_type_name + ">";
   field_cxx_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
@@ -299,6 +310,7 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
         return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
       };
+  //TODO(phl):factor
   const std::string deserialization_storage_arguments =
       cxx_deserialization_storage_arguments_[message_type];
   field_cxx_deserializer_fn_[descriptor] =
