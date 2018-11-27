@@ -59,6 +59,7 @@ class JournalProtoProcessor final {
   void ProcessRequiredInt64Field(FieldDescriptor const* descriptor);
   void ProcessRequiredUint32Field(FieldDescriptor const* descriptor);
 
+  void ProcessSingleMessageField(FieldDescriptor const* descriptor);
   void ProcessSingleStringField(FieldDescriptor const* descriptor);
 
   void ProcessOptionalField(FieldDescriptor const* descriptor);

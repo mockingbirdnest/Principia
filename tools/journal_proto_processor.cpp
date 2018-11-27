@@ -303,26 +303,7 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
       /*cs_boxed_type=*/"Boxed" + message_type_name,
       /*cs_unboxed_type=*/message_type_name,
       /*cxx_type=*/message_type_name);
-
-  field_cxx_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& prefix,
-                         std::string const& expr) {
-        return "  *" + prefix + "mutable_" + descriptor->name() +
-               "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
-      };
-  //TODO(phl):factor
-  const std::string deserialization_storage_arguments =
-      cxx_deserialization_storage_arguments_[message_type];
-  field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name, deserialization_storage_arguments](
-          std::string const& expr) -> std::vector<std::string> {
-        return {"Deserialize" + message_type_name + "(" + expr +
-                deserialization_storage_arguments + ")"};
-  };
-  field_cxx_serializer_fn_[descriptor] =
-      [message_type_name](std::string const& expr) {
-        return "Serialize" + message_type_name + "(" + expr + ")";
-      };
+  ProcessSingleMessageField(descriptor);
 }
 
 void JournalProtoProcessor::ProcessRequiredFixed32Field(
@@ -457,25 +438,7 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   std::string const& message_type_name = message_type->name();
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
-
-  field_cxx_assignment_fn_[descriptor] =
-      [this, descriptor](std::string const& prefix,
-                         std::string const& expr) {
-        return "  *" + prefix + "mutable_" + descriptor->name() +
-               "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
-      };
-  const std::string deserialization_storage_arguments =
-      cxx_deserialization_storage_arguments_[message_type];
-  field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name, deserialization_storage_arguments](
-          std::string const& expr) -> std::vector<std::string> {
-        return {"Deserialize" + message_type_name + "(" + expr +
-                deserialization_storage_arguments + ")"};
-      };
-  field_cxx_serializer_fn_[descriptor] =
-      [message_type_name](std::string const& expr) {
-        return "Serialize" + message_type_name + "(" + expr + ")";
-      };
+  ProcessSingleMessageField(descriptor);
 }
 
 void JournalProtoProcessor::ProcessRequiredBoolField(
@@ -541,6 +504,31 @@ void JournalProtoProcessor::ProcessRequiredUint32Field(
     FieldDescriptor const* descriptor) {
   field_cs_type_[descriptor] = "uint";
   field_cxx_type_[descriptor] = "uint32_t";
+}
+
+void JournalProtoProcessor::ProcessSingleMessageField(
+    FieldDescriptor const* descriptor) {
+  Descriptor const* message_type = descriptor->message_type();
+  std::string const& message_type_name = message_type->name();
+
+  field_cxx_assignment_fn_[descriptor] =
+      [this, descriptor](std::string const& prefix,
+                         std::string const& expr) {
+        return "  *" + prefix + "mutable_" + descriptor->name() +
+               "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
+      };
+  const std::string deserialization_storage_arguments =
+      cxx_deserialization_storage_arguments_[message_type];
+  field_cxx_deserializer_fn_[descriptor] =
+      [message_type_name, deserialization_storage_arguments](
+          std::string const& expr) -> std::vector<std::string> {
+        return {"Deserialize" + message_type_name + "(" + expr +
+                deserialization_storage_arguments + ")"};
+      };
+  field_cxx_serializer_fn_[descriptor] =
+      [message_type_name](std::string const& expr) {
+        return "Serialize" + message_type_name + "(" + expr + ")";
+      };
 }
 
 void JournalProtoProcessor::ProcessSingleStringField(
