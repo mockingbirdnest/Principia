@@ -276,6 +276,21 @@ class JournalProtoProcessor final {
   // A code snippet for the declaration of a nested In or Out struct or a Return
   // typedef.  The key is a descriptor for an In, Out or Return message.
   std::map<Descriptor const*, std::string> cxx_nested_type_declaration_;
+
+
+
+
+  // If a field requires deserialization storage, the C++ type for that storage.
+  std::map<FieldDescriptor const*, std::string>
+      field_cxx_deserialization_storage_name_;
+  std::map<FieldDescriptor const*, std::string>
+      field_cxx_deserialization_storage_type_;
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_arguments_;
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_declarations_;
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_parameters_;
 };
 
 }  // namespace internal_journal_proto_processor

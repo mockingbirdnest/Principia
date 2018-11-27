@@ -221,6 +221,10 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
       [](std::string const& expr) -> std::vector<std::string> {
         return {"&" + expr + "[0]", expr + ".size()"};
       };
+  field_cxx_deserialization_storage_type_[descriptor] =
+      "std::vector<std::string>";
+  field_cxx_deserialization_storage_name_[descriptor] =
+      descriptor->name() + "_storage";
   field_cxx_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
@@ -281,7 +285,8 @@ void JournalProtoProcessor::ProcessOptionalInt32Field(
 
 void JournalProtoProcessor::ProcessOptionalMessageField(
     FieldDescriptor const* descriptor) {
-  std::string const& message_type_name = descriptor->message_type()->name();
+  Descriptor const* message_type = descriptor->message_type();
+  std::string const& message_type_name = message_type->name();
   ProcessOptionalNonStringField(
       descriptor,
       /*cs_boxed_type=*/"Boxed" + message_type_name,
@@ -294,10 +299,14 @@ void JournalProtoProcessor::ProcessOptionalMessageField(
         return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
       };
+  const std::string deserialization_storage_arguments =
+      cxx_deserialization_storage_arguments_[message_type];
   field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name](std::string const& expr) -> std::vector<std::string> {
-        return {"Deserialize" + message_type_name + "(" + expr + ")"};
-      };
+      [message_type_name, deserialization_storage_arguments](
+          std::string const& expr) -> std::vector<std::string> {
+        return {"Deserialize" + message_type_name + "(" + expr +
+                deserialization_storage_arguments + ")"};
+  };
   field_cxx_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
         return "Serialize" + message_type_name + "(" + expr + ")";
@@ -432,7 +441,8 @@ void JournalProtoProcessor::ProcessRequiredFixed64Field(
 
 void JournalProtoProcessor::ProcessRequiredMessageField(
     FieldDescriptor const* descriptor) {
-  std::string const& message_type_name = descriptor->message_type()->name();
+  Descriptor const* message_type = descriptor->message_type();
+  std::string const& message_type_name = message_type->name();
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
 
@@ -442,9 +452,13 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
         return "  *" + prefix + "mutable_" + descriptor->name() +
                "() = " + field_cxx_serializer_fn_[descriptor](expr) + ";\n";
       };
+  const std::string deserialization_storage_arguments =
+      cxx_deserialization_storage_arguments_[message_type];
   field_cxx_deserializer_fn_[descriptor] =
-      [message_type_name](std::string const& expr) -> std::vector<std::string> {
-        return {"Deserialize" + message_type_name + "(" + expr + ")"};
+      [message_type_name, deserialization_storage_arguments](
+          std::string const& expr) -> std::vector<std::string> {
+        return {"Deserialize" + message_type_name + "(" + expr +
+                deserialization_storage_arguments + ")"};
       };
   field_cxx_serializer_fn_[descriptor] =
       [message_type_name](std::string const& expr) {
@@ -796,6 +810,12 @@ void JournalProtoProcessor::ProcessInOut(
             "  " + field_cxx_type_[field_descriptor] + " " +
             run_local_variable + ";\n";
       } else {
+        Descriptor const* field_message_type = field_descriptor->message_type();
+        if (Contains(cxx_deserialization_storage_declarations_,
+                     field_message_type)) {
+          cxx_run_body_prolog_[descriptor] +=
+              cxx_deserialization_storage_declarations_[field_message_type];
+        }
         cxx_run_body_prolog_[descriptor] +=
             "  auto " + run_local_variable + " = " +
             field_cxx_optional_pointer_fn_[field_descriptor](
@@ -891,9 +911,6 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
   std::string const& name = descriptor->name();
   std::string const& parameter_name = ToLower(name);
 
-  cxx_deserialize_definition_[descriptor] =
-      name + " Deserialize" + name + "(serialization::" + name + " const& " +
-      parameter_name + ") {\n  return {";
   cxx_serialize_definition_[descriptor] =
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
@@ -910,12 +927,29 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
     std::string const& field_descriptor_name = field_descriptor->name();
     ProcessField(field_descriptor);
 
+    // If the field needs extra storage for deserialization, generate it now.
+    if (Contains(field_cxx_deserialization_storage_name_, field_descriptor)) {
+      cxx_deserialization_storage_arguments_[descriptor] +=
+          ", " + field_cxx_deserialization_storage_name_[field_descriptor];
+      cxx_deserialization_storage_declarations_[descriptor] +=
+          "  " + field_cxx_deserialization_storage_type_[field_descriptor] +
+          " " + field_cxx_deserialization_storage_name_[field_descriptor] +
+          ";\n";
+      cxx_deserialization_storage_parameters_[descriptor] +=
+          ", " +
+          field_cxx_deserialization_storage_type_[field_descriptor] + "& " +
+          field_cxx_deserialization_storage_name_[field_descriptor];
+    }
+
     std::string const deserialize_field_checker =
         parameter_name + ".has_" + field_descriptor_name + "()";
     std::string const deserialize_field_getter =
         parameter_name + "." + field_descriptor_name + "()";
     std::string const serialize_member_name =
         parameter_name + "." + field_descriptor_name;
+
+    // There may be several expressions to deserialize a field because of the
+    // size.
     std::vector<std::string> deserialize_fields =
         field_cxx_deserializer_fn_[field_descriptor](deserialize_field_getter);
     for (std::string const& deserialize_field : deserialize_fields) {
@@ -961,10 +995,15 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "  int " + size_member_name_[field_descriptor] + ";\n";
     }
   }
+  cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
+
+  cxx_deserialize_definition_[descriptor] =
+      name + " Deserialize" + name + "(serialization::" + name + " const& " +
+      parameter_name + cxx_deserialization_storage_parameters_[descriptor] +
+      ") {\n  return {";
   cxx_deserialize_definition_[descriptor] +=
       Join(deserialized_expressions, /*joiner=*/",\n          ") +  // NOLINT
       "};\n}\n\n";
-  cxx_serialize_definition_[descriptor] += "  return m;\n}\n\n";
 
   cs_interface_type_declaration_[descriptor] += "}\n\n";
   cxx_interface_type_declaration_[descriptor] +=
