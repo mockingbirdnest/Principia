@@ -139,9 +139,10 @@ class JournalProtoProcessor final {
   // field (typically something like |message.in().bar()|) and returns an
   // expression for the deserialized form of |expr| suitable for storing in a
   // local variable (typically a call to some Deserialize function, but other
-  // transformations are possible).
+  // transformations are possible).  Deals with passing address and size for
+  // fields that have a size member.
   std::map<FieldDescriptor const*,
-           std::function<std::string(std::string const& expr)>>
+           std::function<std::vector<std::string>(std::string const& expr)>>
       field_cxx_deserializer_fn_;
 
   // For all fields, a lambda that takes an expression for a struct member and
