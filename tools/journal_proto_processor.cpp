@@ -1003,6 +1003,8 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
+      cs_interface_type_declaration_[descriptor] +=
+          "  public int " + size_member_name_[field_descriptor] + ";\n";
       cxx_interface_type_declaration_[descriptor] +=
           "  int " + size_member_name_[field_descriptor] + ";\n";
     }
