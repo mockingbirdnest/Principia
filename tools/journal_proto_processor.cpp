@@ -232,7 +232,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
                 "            }\n"
                 "            return &" + storage_name + "[0];\n" +
                 "          }(" + expr + ")",
-                expr + ".size()"}; 
+                expr + ".size()"};
       };
   field_cxx_deserialization_storage_type_[descriptor] =
       "std::vector<" + message_type_name + ">";
