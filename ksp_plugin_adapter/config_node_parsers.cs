@@ -10,6 +10,7 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
+    BodyGeopotentialElement[] geopotential = GetBodyGeopotentialElements(node);
     return new BodyParameters{
         name = body.name,
         gravitational_parameter =
@@ -26,10 +27,12 @@ internal static class ConfigNodeParsers {
             node.GetAtMostOneValue("reference_angle"),
         angular_frequency       =
             node.GetAtMostOneValue("angular_frequency"),
+        reference_radius        =
+            node.GetAtMostOneValue("reference_radius"),
         j2                      =
             node.GetAtMostOneValue("j2"),
-        reference_radius        =
-            node.GetAtMostOneValue("reference_radius")};
+        geopotential            = geopotential,
+        geopotential_size       = geopotential.Length};
   }
 
   public static ConfigurationAccuracyParameters
@@ -63,6 +66,7 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
+    BodyGeopotentialElement[] geopotential = GetBodyGeopotentialElements(node);
     return new BodyParameters{
         name = body.name,
         gravitational_parameter =
@@ -89,10 +93,41 @@ internal static class ConfigNodeParsers {
         angular_frequency    =
             node?.GetAtMostOneValue("angular_frequency")
                 ??  (body.angularV.ToString() + " rad/s"),
+        reference_radius     =
+            node?.GetAtMostOneValue("reference_radius"),
         j2                   =
             node?.GetAtMostOneValue("j2"),
-        reference_radius     =
-            node?.GetAtMostOneValue("reference_radius")};
+        geopotential            = geopotential,
+        geopotential_size       = geopotential.Length};
+  }
+
+  private static BodyGeopotentialElement[] GetBodyGeopotentialElements(
+      ConfigNode node) {
+    ConfigNode[] geopotential_rows = node.GetNodes("geopotential_row");
+    if (geopotential_rows.Length == 0) {
+      return null;
+    }
+    List<BodyGeopotentialElement> elements =
+        new List<BodyGeopotentialElement>();
+    foreach (ConfigNode geopotential_row in geopotential_rows) {
+      Int32 degree = Int32.Parse(geopotential_row.GetUniqueValue("degree"));
+      ConfigNode[] geopotential_columns = node.GetNodes("geopotential_column");
+      foreach (ConfigNode geopotential_column in geopotential_columns) {
+        Int32 order = Int32.Parse(geopotential_column.GetUniqueValue("order"));
+        String cos = geopotential_column.GetUniqueValue("cos");
+        String sin = geopotential_column.GetUniqueValue("sin");
+        elements.Add(new BodyGeopotentialElement{degree = degree,
+                                                 order = order,
+                                                 cos = cos,
+                                                 sin = sin});
+      }
+    }
+    BodyGeopotentialElement[] result =
+        new BodyGeopotentialElement[elements.Count];
+    for (int i = 0; i < elements.Count; ++i) {
+      result[i] = elements[i];
+    }
+    return result;
   }
 
 }
