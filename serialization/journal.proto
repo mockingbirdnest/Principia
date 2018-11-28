@@ -34,8 +34,8 @@ message AdaptiveStepParameters {
 }
 
 message BodyGeopotentialElement {
-  required int32 degree = 1;
-  required int32 order = 2;
+  required string degree = 1;
+  required string order = 2;
   required string cos = 3;
   required string sin = 4;
 }
