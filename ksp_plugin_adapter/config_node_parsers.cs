@@ -32,7 +32,7 @@ internal static class ConfigNodeParsers {
         j2                      =
             node.GetAtMostOneValue("j2"),
         geopotential            = geopotential,
-        geopotential_size       = geopotential.Length};
+        geopotential_size       = geopotential?.Length ?? 0};
   }
 
   public static ConfigurationAccuracyParameters
@@ -98,7 +98,7 @@ internal static class ConfigNodeParsers {
         j2                   =
             node?.GetAtMostOneValue("j2"),
         geopotential            = geopotential,
-        geopotential_size       = geopotential.Length};
+        geopotential_size       = geopotential?.Length ?? 0};
   }
 
   private static BodyGeopotentialElement[] GetBodyGeopotentialElements(
