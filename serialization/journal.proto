@@ -49,8 +49,8 @@ message BodyParameters {
   optional string axis_declination = 4;
   optional string reference_angle = 8;
   optional string angular_frequency = 9;
-  optional string j2 = 5;  // No parsing in C#.
   optional string reference_radius = 6;
+  optional string j2 = 5;  // No parsing in C#.
   repeated BodyGeopotentialElement geopotential = 11
       [(size) = "geopotential_size"];
 }
