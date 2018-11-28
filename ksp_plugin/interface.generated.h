@@ -35,6 +35,16 @@ static_assert(std::is_pod<AdaptiveStepParameters>::value,
               "AdaptiveStepParameters is used for interfacing");
 
 extern "C"
+struct BodyGeopotentialCoefficient {
+  int degree;
+  int order;
+  double value;
+};
+
+static_assert(std::is_pod<BodyGeopotentialCoefficient>::value,
+              "BodyGeopotentialCoefficient is used for interfacing");
+
+extern "C"
 struct BodyParameters {
   char const* name;
   char const* gravitational_parameter;
@@ -46,6 +56,10 @@ struct BodyParameters {
   char const* angular_frequency;
   char const* j2;
   char const* reference_radius;
+  BodyGeopotentialCoefficient const* geopotential_cos;
+  int geopotential_cos_size;
+  BodyGeopotentialCoefficient const* geopotential_sin;
+  int geopotential_sin_size;
 };
 
 static_assert(std::is_pod<BodyParameters>::value,

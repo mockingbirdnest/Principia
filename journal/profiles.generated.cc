@@ -24,7 +24,13 @@ AdaptiveStepParameters DeserializeAdaptiveStepParameters(serialization::Adaptive
           adaptive_step_parameters.speed_integration_tolerance()};
 }
 
-BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& body_parameters) {
+BodyGeopotentialCoefficient DeserializeBodyGeopotentialCoefficient(serialization::BodyGeopotentialCoefficient const& body_geopotential_coefficient) {
+  return {body_geopotential_coefficient.degree(),
+          body_geopotential_coefficient.order(),
+          body_geopotential_coefficient.value()};
+}
+
+BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& body_parameters, std::vector<BodyGeopotentialCoefficient>& geopotential_cos_storage, std::vector<BodyGeopotentialCoefficient>& geopotential_sin_storage) {
   return {body_parameters.name().c_str(),
           body_parameters.gravitational_parameter().c_str(),
           body_parameters.has_reference_instant() ? body_parameters.reference_instant().c_str() : nullptr,
@@ -34,7 +40,21 @@ BodyParameters DeserializeBodyParameters(serialization::BodyParameters const& bo
           body_parameters.has_reference_angle() ? body_parameters.reference_angle().c_str() : nullptr,
           body_parameters.has_angular_frequency() ? body_parameters.angular_frequency().c_str() : nullptr,
           body_parameters.has_j2() ? body_parameters.j2().c_str() : nullptr,
-          body_parameters.has_reference_radius() ? body_parameters.reference_radius().c_str() : nullptr};
+          body_parameters.has_reference_radius() ? body_parameters.reference_radius().c_str() : nullptr,
+          [&geopotential_cos_storage](::google::protobuf::RepeatedPtrField<serialization::BodyGeopotentialCoefficient> const& messages) {
+            for (auto const& message : messages) {
+              geopotential_cos_storage.push_back(DeserializeBodyGeopotentialCoefficient(message));
+            }
+            return &geopotential_cos_storage[0];
+          }(body_parameters.geopotential_cos()),
+          body_parameters.geopotential_cos().size(),
+          [&geopotential_sin_storage](::google::protobuf::RepeatedPtrField<serialization::BodyGeopotentialCoefficient> const& messages) {
+            for (auto const& message : messages) {
+              geopotential_sin_storage.push_back(DeserializeBodyGeopotentialCoefficient(message));
+            }
+            return &geopotential_sin_storage[0];
+          }(body_parameters.geopotential_sin()),
+          body_parameters.geopotential_sin().size()};
 }
 
 Burn DeserializeBurn(serialization::Burn const& burn) {
@@ -144,6 +164,14 @@ serialization::AdaptiveStepParameters SerializeAdaptiveStepParameters(AdaptiveSt
   return m;
 }
 
+serialization::BodyGeopotentialCoefficient SerializeBodyGeopotentialCoefficient(BodyGeopotentialCoefficient const& body_geopotential_coefficient) {
+  serialization::BodyGeopotentialCoefficient m;
+  m.set_degree(body_geopotential_coefficient.degree);
+  m.set_order(body_geopotential_coefficient.order);
+  m.set_value(body_geopotential_coefficient.value);
+  return m;
+}
+
 serialization::BodyParameters SerializeBodyParameters(BodyParameters const& body_parameters) {
   serialization::BodyParameters m;
   m.set_name(body_parameters.name);
@@ -171,6 +199,12 @@ serialization::BodyParameters SerializeBodyParameters(BodyParameters const& body
   }
   if (body_parameters.reference_radius != nullptr) {
     m.set_reference_radius(body_parameters.reference_radius);
+  }
+  for (BodyGeopotentialCoefficient const* geopotential_cos = body_parameters.geopotential_cos; geopotential_cos < body_parameters.geopotential_cos + body_parameters.geopotential_cos_size; ++geopotential_cos) {
+    *m.add_geopotential_cos() = SerializeBodyGeopotentialCoefficient(*geopotential_cos);
+  }
+  for (BodyGeopotentialCoefficient const* geopotential_sin = body_parameters.geopotential_sin; geopotential_sin < body_parameters.geopotential_sin + body_parameters.geopotential_sin_size; ++geopotential_sin) {
+    *m.add_geopotential_sin() = SerializeBodyGeopotentialCoefficient(*geopotential_sin);
   }
   return m;
 }
@@ -1278,7 +1312,9 @@ void InsertCelestialAbsoluteCartesian::Run(Message const& message, Player::Point
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
   auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
-  auto body_parameters = DeserializeBodyParameters(in.body_parameters());
+  std::vector<BodyGeopotentialCoefficient> geopotential_cos_storage;
+  std::vector<BodyGeopotentialCoefficient> geopotential_sin_storage;
+  auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_cos_storage, geopotential_sin_storage);
   auto x = in.x().c_str();
   auto y = in.y().c_str();
   auto z = in.z().c_str();
@@ -1306,7 +1342,9 @@ void InsertCelestialJacobiKeplerian::Run(Message const& message, Player::Pointer
   auto plugin = DeserializePointer<Plugin*>(pointer_map, in.plugin());
   auto celestial_index = in.celestial_index();
   auto parent_index = in.has_parent_index() ? std::make_unique<int const>(in.parent_index()) : nullptr;
-  auto body_parameters = DeserializeBodyParameters(in.body_parameters());
+  std::vector<BodyGeopotentialCoefficient> geopotential_cos_storage;
+  std::vector<BodyGeopotentialCoefficient> geopotential_sin_storage;
+  auto body_parameters = DeserializeBodyParameters(in.body_parameters(), geopotential_cos_storage, geopotential_sin_storage);
   auto keplerian_elements = in.has_keplerian_elements() ? std::make_unique<KeplerianElements const>(DeserializeKeplerianElements(in.keplerian_elements())) : nullptr;
   interface::principia__InsertCelestialJacobiKeplerian(plugin, celestial_index, parent_index.get(), body_parameters, keplerian_elements.get());
 }

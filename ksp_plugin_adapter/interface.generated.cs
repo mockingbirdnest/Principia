@@ -32,6 +32,13 @@ internal partial struct AdaptiveStepParameters {
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal partial struct BodyGeopotentialCoefficient {
+  public int degree;
+  public int order;
+  public double value;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal partial struct BodyParameters {
   public String name;
   public String gravitational_parameter;
@@ -43,6 +50,10 @@ internal partial struct BodyParameters {
   public String angular_frequency;
   public String j2;
   public String reference_radius;
+  public BodyGeopotentialCoefficient[] geopotential_cos;
+  public int geopotential_cos_size;
+  public BodyGeopotentialCoefficient[] geopotential_sin;
+  public int geopotential_sin_size;
 }
 
 [StructLayout(LayoutKind.Sequential)]
