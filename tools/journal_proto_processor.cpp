@@ -198,6 +198,19 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   field_cs_type_[descriptor] = message_type_name + "[]";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
+  field_cs_private_type_[descriptor] = field_cs_type_[descriptor];
+  field_cs_private_getter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(2, identifiers.size());  // Array, size.
+        return "get { return " + identifiers[0] + "; }";
+      };
+  field_cs_private_setter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(2, identifiers.size());  // Array, size.
+        return "set { " + identifiers[0] + " = value; " + 
+                          identifiers[1] + " = value?.Length ?? 0; }";
+      };
+
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
         return {"&" + identifier + "[0]", identifier + ".size()"};
@@ -446,6 +459,17 @@ void JournalProtoProcessor::ProcessRequiredBoolField(
   field_cs_type_[descriptor] = "bool";
   field_cs_marshal_[descriptor] = "MarshalAs(UnmanagedType.I1)";
   field_cs_private_type_[descriptor] = "Byte";
+  field_cs_private_getter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "get { return " + identifiers[0] + " != (Byte)0; }";
+      };
+  field_cs_private_setter_fn_[descriptor] =
+      [](std::vector<std::string> const& identifiers) {
+        CHECK_EQ(1, identifiers.size());
+        return "set { " + identifiers[0] + " = value ? (Byte)1 : (Byte)0; }";
+      };
+
   field_cxx_type_[descriptor] = descriptor->cpp_type_name();
 }
 
@@ -973,26 +997,32 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + ";\n";
     } else {
+      std::string const field_private_member_name = field_descriptor_name + "_";
+      std::vector<std::string> fn_arguments = {field_private_member_name};
       cs_interface_type_declaration_[descriptor] +=
           "  private " + field_cs_private_type_[field_descriptor] + " " +
-          field_descriptor_name + "_;\n" +
+          field_private_member_name + ";\n";
+      if (Contains(size_member_name_, field_descriptor)) {
+        cs_interface_type_declaration_[descriptor] +=
+            "  private int " + size_member_name_[field_descriptor] + "_;\n";
+        fn_arguments.push_back(size_member_name_[field_descriptor] + "_");
+      }
+      cs_interface_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + " {\n" +
-          "    get { return " + field_descriptor_name + "_ != " +
-          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
-          "    set { " + field_descriptor_name + "_ = value ? " +
-          "(" + field_cs_private_type_[field_descriptor] + ")1 : " +
-          "(" + field_cs_private_type_[field_descriptor] + ")0; }\n" +
+          "    " + field_cs_private_getter_fn_[field_descriptor](fn_arguments) +
+          "\n" +
+          "    " + field_cs_private_setter_fn_[field_descriptor](fn_arguments) +
+          "\n" +
           "  }\n";
     }
     cxx_interface_type_declaration_[descriptor] +=
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
 
-    // If this field has a size, generate it now.
+    // If this field has a size, generate it now.  In the C# case the field is
+    // private so we go through the code above.
     if (Contains(size_member_name_, field_descriptor)) {
-      cs_interface_type_declaration_[descriptor] +=
-          "  public int " + size_member_name_[field_descriptor] + ";\n";
       cxx_interface_type_declaration_[descriptor] +=
           "  int " + size_member_name_[field_descriptor] + ";\n";
     }
