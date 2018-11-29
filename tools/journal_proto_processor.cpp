@@ -207,7 +207,7 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   field_cs_private_setter_fn_[descriptor] =
       [](std::vector<std::string> const& identifiers) {
         CHECK_EQ(2, identifiers.size());  // Array, size.
-        return "set { " + identifiers[0] + " = value; " + 
+        return "set { " + identifiers[0] + " = value; " +
                           identifiers[1] + " = value?.Length ?? 0; }";
       };
 
