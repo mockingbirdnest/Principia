@@ -8,6 +8,8 @@
 
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
+#include "base/fingerprint2011.hpp"
+#include "base/serialization.hpp"
 #include "geometry/named_quantities.hpp"
 #include "glog/logging.h"
 #include "physics/degrees_of_freedom.hpp"
@@ -23,6 +25,8 @@ namespace principia {
 
 using astronomy::ICRS;
 using astronomy::J2000;
+using base::Fingerprint2011;
+using base::SerializeAsBytes;
 using physics::DegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::DebugString;
@@ -92,6 +96,9 @@ void GenerateConfiguration(std::string const& game_epoch,
   for (std::string const& name : solar_system.names()) {
     serialization::GravityModel::Body const& body =
         solar_system.gravity_model_message(name);
+    LOG(INFO) << "Fingerprint " << std::setw(16) << std::hex << std::uppercase
+              << Fingerprint2011(SerializeAsBytes(body).get())
+              << " for " << name;
     gravity_model_cfg << "  body {\n";
     gravity_model_cfg << "    name                    = "
                       << (star.has_value() && name == star->name() ? "Sun"
