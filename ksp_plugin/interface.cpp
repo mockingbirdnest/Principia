@@ -222,8 +222,7 @@ serialization::GravityModel::Body MakeGravityModel(
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
-  if (body_parameters.geopotential != nullptr) {
-    CHECK_LT(0, body_parameters.geopotential_size);
+  if (body_parameters.geopotential_size > 0) {
     *gravity_model.mutable_geopotential() =
         MakeGeopotential(body_parameters.geopotential,
                          body_parameters.geopotential_size);
