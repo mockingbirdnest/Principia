@@ -69,48 +69,6 @@ constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance
     1 * Milli(Metre);
 constexpr Time max_time_between_checkpoints = 180 * Day;
 
-#if defined(_DEBUG)
-# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 1
-#else
-# define PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL 0
-#endif
-
-#if !PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
-// If j is a unit vector along the axis of rotation, and r a vector from the
-// center of |body| to some point in space, the acceleration computed here is:
-//
-//   -(J₂ / (μ ‖r‖⁵)) (3 j (r.j) + r (3 - 15 (r.j)² / ‖r‖²) / 2)
-//
-// Where ‖r‖ is the norm of r and r.j is the inner product.  It is the
-// additional acceleration exerted by the oblateness of |body| on a point at
-// position r.  J₂, J̃₂ and J̄₂ are normally positive and C̃₂₀ and C̄₂₀ negative
-// because the planets are oblate, not prolate.  Note that this follows IERS
-// Technical Note 36 and it differs from
-// https://en.wikipedia.org/wiki/Geopotential_model which seems to want J̃₂ to be
-// negative.
-template<typename Frame>
-FORCE_INLINE(inline)
-Vector<Quotient<Acceleration, GravitationalParameter>, Frame>
-Degree2ZonalAcceleration(OblateBody<Frame> const& body,
-                         Displacement<Frame> const& r,
-                         Square<Length> const& r²,
-                         Exponentiation<Length, -3> const& one_over_r³) {
-  Exponentiation<Length, -2> const& one_over_r² = 1 / r²;
-  Vector<double, Frame> const& axis = body.polar_axis();
-  Length const r_axis_projection = InnerProduct(axis, r);
-  auto const j2_over_r_fifth = body.j2_over_μ() * one_over_r³ * one_over_r²;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const axis_effect =
-      (-3 * j2_over_r_fifth * r_axis_projection) * axis;
-  Vector<Quotient<Acceleration,
-                  GravitationalParameter>, Frame> const radial_effect =
-      (j2_over_r_fifth *
-           (-1.5 +
-            7.5 * r_axis_projection * r_axis_projection * one_over_r²)) * r;
-  return axis_effect + radial_effect;
-}
-#endif
-
 template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance)
@@ -1121,20 +1079,12 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect1 =
-#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
                 geopotentials[b1].GeneralSphericalHarmonicsAcceleration(
                     t,
                     -Δq,
                     Δq_norm,
                     Δq²,
                     one_over_Δq³);
-#else
-                Degree2ZonalAcceleration<Frame>(
-                    static_cast<OblateBody<Frame> const&>(body1),
-                    -Δq,
-                    Δq²,
-                    one_over_Δq³);
-#endif
         acceleration_on_b1 -= μ2 * degree_2_zonal_effect1;
         acceleration_on_b2 += μ1 * degree_2_zonal_effect1;
       }
@@ -1142,20 +1092,12 @@ void Ephemeris<Frame>::
         Vector<Quotient<Acceleration,
                         GravitationalParameter>, Frame> const
             degree_2_zonal_effect2 =
-#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
                 geopotentials[b2].GeneralSphericalHarmonicsAcceleration(
                     t,
                     Δq,
                     Δq_norm,
                     Δq²,
                     one_over_Δq³);
-#else
-                Degree2ZonalAcceleration<Frame>(
-                    static_cast<OblateBody<Frame> const&>(body2),
-                    Δq,
-                    Δq²,
-                    one_over_Δq³);
-#endif
         acceleration_on_b1 += μ2 * degree_2_zonal_effect2;
         acceleration_on_b2 -= μ1 * degree_2_zonal_effect2;
       }
@@ -1194,20 +1136,12 @@ ComputeGravitationalAccelerationByMassiveBodyOnMasslessBodies(
       Vector<Quotient<Acceleration,
                       GravitationalParameter>, Frame> const
           degree_2_zonal_effect1 =
-#if PRINCIPIA_USE_EXTENDED_GEOPOTENTIAL
               geopotentials_[b1].GeneralSphericalHarmonicsAcceleration(
                   t,
                   -Δq,
                   Δq_norm,
                   Δq²,
                   one_over_Δq³);
-#else
-              Degree2ZonalAcceleration<Frame>(
-                  static_cast<OblateBody<Frame> const &>(body1),
-                  -Δq,
-                  Δq²,
-                  one_over_Δq³);
-#endif
       accelerations[b2] += μ1 * degree_2_zonal_effect1;
     }
   }
