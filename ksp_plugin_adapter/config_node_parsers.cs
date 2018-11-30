@@ -10,7 +10,6 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewCartesianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
-    BodyGeopotentialElement[] geopotential = GetBodyGeopotentialElements(node);
     return new BodyParameters{
         name = body.name,
         gravitational_parameter =
@@ -31,8 +30,8 @@ internal static class ConfigNodeParsers {
             node.GetAtMostOneValue("reference_radius"),
         j2                      =
             node.GetAtMostOneValue("j2"),
-        geopotential            = geopotential,
-        geopotential_size       = geopotential?.Length ?? 0};
+        geopotential            =
+            GetBodyGeopotentialElements(node)};
   }
 
   public static ConfigurationAccuracyParameters
@@ -66,7 +65,6 @@ internal static class ConfigNodeParsers {
 
   public static BodyParameters NewKeplerianBodyParameters(CelestialBody body,
                                                           ConfigNode node) {
-    BodyGeopotentialElement[] geopotential = GetBodyGeopotentialElements(node);
     return new BodyParameters{
         name = body.name,
         gravitational_parameter =
@@ -97,8 +95,8 @@ internal static class ConfigNodeParsers {
             node?.GetAtMostOneValue("reference_radius"),
         j2                   =
             node?.GetAtMostOneValue("j2"),
-        geopotential            = geopotential,
-        geopotential_size       = geopotential?.Length ?? 0};
+        geopotential            =
+            GetBodyGeopotentialElements(node)};
   }
 
   private static BodyGeopotentialElement[] GetBodyGeopotentialElements(
