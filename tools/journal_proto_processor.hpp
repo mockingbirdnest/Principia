@@ -201,12 +201,32 @@ class JournalProtoProcessor final {
            std::function<std::string(std::string const& expr)>>
       field_cxx_serializer_fn_;
 
+  // For fields that are implemented using private members, a lambda that takes
+  // the names of the members and returns the C# implementation of the getter
+  // and setter.  Note that there can be several members, eg because of the
+  // size member.
+  std::map<FieldDescriptor const*,
+           std::function<
+              std::string(std::vector<std::string> const& identifiers)>>
+      field_cs_private_getter_fn_;
+  std::map<FieldDescriptor const*,
+           std::function<
+              std::string(std::vector<std::string> const& identifiers)>>
+      field_cs_private_setter_fn_;
+
   // The C# attribute for marshalling a field.
   std::map<FieldDescriptor const*, std::string> field_cs_marshal_;
 
   // The C# type for a field, suitable for use in a private member when the
   // actual data cannot be exposed directly (think bool).
   std::map<FieldDescriptor const*, std::string> field_cs_private_type_;
+
+  // For fields that require deserialization storage, the C++ type and name of
+  // the storage object.
+  std::map<FieldDescriptor const*, std::string>
+      field_cxx_deserialization_storage_name_;
+  std::map<FieldDescriptor const*, std::string>
+      field_cxx_deserialization_storage_type_;
 
   // The C#/C++ type for a field, suitable for use in a member or parameter
   // declaration, in a typedef, etc.
@@ -245,6 +265,21 @@ class JournalProtoProcessor final {
   std::map<Descriptor const*, std::string> cxx_deserialize_definition_;
   std::map<Descriptor const*, std::string> cxx_serialize_definition_;
 
+  // For interchange messages that require deserialization storage, the
+  // arguments for the storage in the call to the Deserialize function.
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_arguments_;
+
+  // For interchange messages that require deserialization storage, the
+  // declaration of the storage in the caller of the Deserialize function.
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_declarations_;
+
+  // For interchange messages that require deserialization storage, the
+  // parameters for the storage in the Deserialize function.
+  std::map<Descriptor const*, std::string>
+      cxx_deserialization_storage_parameters_;
+
   // The statements to be included in the body of the Play function.
   std::map<Descriptor const*, std::string> cxx_play_statement_;
 
@@ -277,21 +312,6 @@ class JournalProtoProcessor final {
   // A code snippet for the declaration of a nested In or Out struct or a Return
   // typedef.  The key is a descriptor for an In, Out or Return message.
   std::map<Descriptor const*, std::string> cxx_nested_type_declaration_;
-
-
-
-
-  // If a field requires deserialization storage, the C++ type for that storage.
-  std::map<FieldDescriptor const*, std::string>
-      field_cxx_deserialization_storage_name_;
-  std::map<FieldDescriptor const*, std::string>
-      field_cxx_deserialization_storage_type_;
-  std::map<Descriptor const*, std::string>
-      cxx_deserialization_storage_arguments_;
-  std::map<Descriptor const*, std::string>
-      cxx_deserialization_storage_declarations_;
-  std::map<Descriptor const*, std::string>
-      cxx_deserialization_storage_parameters_;
 };
 
 }  // namespace internal_journal_proto_processor
