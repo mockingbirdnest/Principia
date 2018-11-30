@@ -21,12 +21,14 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
+#include "base/fingerprint2011.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
 #include "base/not_null.hpp"
 #include "base/optional_logging.hpp"
 #include "base/pull_serializer.hpp"
 #include "base/push_deserializer.hpp"
+#include "base/serialization.hpp"
 #include "base/version.hpp"
 #include "gipfeli/gipfeli.h"
 #include "google/protobuf/arena.h"
@@ -51,11 +53,13 @@ using astronomy::J2000;
 using astronomy::ParseTT;
 using base::Array;
 using base::check_not_null;
+using base::Fingerprint2011;
 using base::HexadecimalDecode;
 using base::HexadecimalEncode;
 using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
+using base::SerializeAsBytes;
 using base::UniqueArray;
 using geometry::Displacement;
 using geometry::RadiusLatitudeLongitude;
@@ -224,6 +228,9 @@ serialization::GravityModel::Body MakeGravityModel(
         MakeGeopotential(body_parameters.geopotential,
                          body_parameters.geopotential_size);
   }
+  LOG(INFO) << "Fingerprint " << std::setw(16) << std::hex << std::uppercase
+            << Fingerprint2011(SerializeAsBytes(gravity_model).get())
+            << " for " << gravity_model.name();
   return gravity_model;
 }
 
