@@ -26,10 +26,12 @@ internal static class ConfigNodeParsers {
             node.GetAtMostOneValue("reference_angle"),
         angular_frequency       =
             node.GetAtMostOneValue("angular_frequency"),
+        reference_radius        =
+            node.GetAtMostOneValue("reference_radius"),
         j2                      =
             node.GetAtMostOneValue("j2"),
-        reference_radius        =
-            node.GetAtMostOneValue("reference_radius")};
+        geopotential            =
+            GetBodyGeopotentialElements(node).ToArray()};
   }
 
   public static ConfigurationAccuracyParameters
@@ -89,10 +91,33 @@ internal static class ConfigNodeParsers {
         angular_frequency    =
             node?.GetAtMostOneValue("angular_frequency")
                 ??  (body.angularV.ToString() + " rad/s"),
+        reference_radius     =
+            node?.GetAtMostOneValue("reference_radius"),
         j2                   =
             node?.GetAtMostOneValue("j2"),
-        reference_radius     =
-            node?.GetAtMostOneValue("reference_radius")};
+        geopotential            =
+            GetBodyGeopotentialElements(node).ToArray()};
+  }
+
+  private static List<BodyGeopotentialElement> GetBodyGeopotentialElements(
+      ConfigNode node) {
+    ConfigNode[] geopotential_rows = node.GetNodes("geopotential_row");
+    List<BodyGeopotentialElement> elements =
+        new List<BodyGeopotentialElement>();
+    foreach (ConfigNode geopotential_row in geopotential_rows) {
+      String degree = geopotential_row.GetUniqueValue("degree");
+      ConfigNode[] geopotential_columns = node.GetNodes("geopotential_column");
+      foreach (ConfigNode geopotential_column in geopotential_columns) {
+        String order = geopotential_column.GetUniqueValue("order");
+        String cos = geopotential_column.GetUniqueValue("cos");
+        String sin = geopotential_column.GetUniqueValue("sin");
+        elements.Add(new BodyGeopotentialElement{degree = degree,
+                                                 order = order,
+                                                 cos = cos,
+                                                 sin = sin});
+      }
+    }
+    return elements;
   }
 
 }

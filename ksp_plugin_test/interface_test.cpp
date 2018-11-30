@@ -283,8 +283,8 @@ TEST_F(InterfaceTest, InsertMassiveCelestialAbsoluteCartesian) {
       /*axis_declination=*/"90 deg",
       /*reference_angle=*/"0 deg",
       /*angular_velocity=*/"1 rad/s",
-      /*j2=*/nullptr,
-      /*reference_radius=*/nullptr};
+      /*reference_radius=*/nullptr,
+      /*j2=*/nullptr};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,
@@ -301,15 +301,15 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
   serialization::GravityModel::Body gravity_model;
   CHECK(google::protobuf::TextFormat::ParseFromString(
       u8R"(name                    : "that is called Brian"
-         gravitational_parameter : "1.2345e6  km^3 / s^2"
-         reference_instant       : "JD2452545"
-         mean_radius             : "666 km"
-         axis_right_ascension    : "42 deg"
-         axis_declination        : "8°"
-         reference_angle         : "2 rad"
-         angular_frequency       : "0.3 rad / d"
-         j2                      : 123e-6
-         reference_radius        : "1000 km")",
+           gravitational_parameter : "1.2345e6  km^3 / s^2"
+           reference_instant       : "JD2452545"
+           mean_radius             : "666 km"
+           axis_right_ascension    : "42 deg"
+           axis_declination        : "8°"
+           reference_angle         : "2 rad"
+           angular_frequency       : "0.3 rad / d"
+           reference_radius        : "1000 km"
+           j2                      : 123e-6)",
       &gravity_model));
   serialization::InitialState::Cartesian::Body initial_state;
   CHECK(google::protobuf::TextFormat::ParseFromString(
@@ -336,8 +336,75 @@ TEST_F(InterfaceTest, InsertOblateCelestialAbsoluteCartesian) {
                                           u8"8°",
                                           "2 rad",
                                           "0.3 rad / d",
-                                          "123e-6",
-                                          "1000 km"};
+                                          "1000 km",
+                                          "123e-6"};
+  principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
+                                              celestial_index,
+                                              &parent_index,
+                                              body_parameters,
+                                              "0 m",
+                                              "23.456e-7 km",
+                                              "-1 au",
+                                              "1 au / d",
+                                              "  1 km/s",
+                                              "1  m / s");
+}
+
+TEST_F(InterfaceTest, InsertGeopotentialCelestialAbsoluteCartesian) {
+  serialization::GravityModel::Body gravity_model;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      u8R"(name                    : "that is called Brian"
+           gravitational_parameter : "1.2345e6  km^3 / s^2"
+           reference_instant       : "JD2452545"
+           mean_radius             : "666 km"
+           axis_right_ascension    : "42 deg"
+           axis_declination        : "8°"
+           reference_angle         : "2 rad"
+           angular_frequency       : "0.3 rad / d"
+           reference_radius        : "1000 km"
+           geopotential            : {
+             row {
+               degree : 2,
+               column {order: 0, cos: 123e-6, sin: 456e-6}
+             }
+             row {
+               degree : 3,
+               column {order: 0, cos: 123e-7, sin: -456e-7}
+             }
+           })",
+      &gravity_model));
+  serialization::InitialState::Cartesian::Body initial_state;
+  CHECK(google::protobuf::TextFormat::ParseFromString(
+      R"(name : "that is called Brian"
+         x    : "0 m",
+         y    : "23.456e-7 km"
+         z    : "-1 au"
+         vx   : "1 au / d"
+         vy   : "  1 km/s"
+         vz   : "1  m / s")",
+      &initial_state));
+  EXPECT_CALL(*plugin_,
+              InsertCelestialAbsoluteCartesian(
+                  celestial_index,
+                  std::make_optional(parent_index),
+                  EqualsProto(gravity_model),
+                  EqualsProto(initial_state)));
+
+  BodyGeopotentialElement j2 = {"2", "0", "123e-6", "456e-6"};
+  BodyGeopotentialElement j3 = {"3", "0", "123e-7", "-456e-7"};
+  BodyGeopotentialElement j[] = {j2, j3};
+  BodyParameters const body_parameters = {"that is called Brian",
+                                          "1.2345e6  km^3 / s^2",
+                                          "JD2452545",
+                                          "666 km",
+                                          "42 deg",
+                                          u8"8°",
+                                          "2 rad",
+                                          "0.3 rad / d",
+                                          "1000 km",
+                                          /*j2=*/nullptr,
+                                          j,
+                                          2};
   principia__InsertCelestialAbsoluteCartesian(plugin_.get(),
                                               celestial_index,
                                               &parent_index,

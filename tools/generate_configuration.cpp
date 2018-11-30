@@ -137,16 +137,37 @@ void GenerateConfiguration(std::string const& game_epoch,
       gravity_model_cfg << "    angular_frequency       = "
                         << body.angular_frequency() << "\n";
     }
-    if (body.has_j2()) {
-      gravity_model_cfg << "    j2                      = "
-                        << std::scientific
-                        << std::setprecision(
-                               std::numeric_limits<double>::max_digits10)
-                        << body.j2() << "\n";
-    }
     if (body.has_reference_radius()) {
       gravity_model_cfg << "    reference_radius        = "
                         << NormalizeLength(body.reference_radius()) << "\n";
+    }
+    switch (body.oblateness_case()) {
+      case serialization::GravityModel::Body::kJ2:
+        gravity_model_cfg << "    j2                      = "
+                          << std::scientific
+                          << std::setprecision(
+                                 std::numeric_limits<double>::max_digits10)
+                          << body.j2() << "\n";
+        break;
+      case serialization::GravityModel::Body::kGeopotential:
+        for (auto const& row : body.geopotential().row()) {
+          gravity_model_cfg << "    geopotential_row {\n"
+                            << "      degree = " << row.degree() << "\n";
+          for (auto const& column : row.column()) {
+            gravity_model_cfg << "      geopotential_column {\n"
+                              << "        order = " << column.order() << "\n"
+                              << std::scientific
+                              << std::setprecision(
+                                     std::numeric_limits<double>::max_digits10)
+                              << "        cos   = " << column.cos() << "\n"
+                              << "        sin   = " << column.sin() << "\n"
+                              << "      }\n";
+          }
+          gravity_model_cfg << "    }\n";
+        }
+        break;
+      case serialization::GravityModel::Body::OBLATENESS_NOT_SET:
+        break;
     }
     gravity_model_cfg << "  }\n";
   }

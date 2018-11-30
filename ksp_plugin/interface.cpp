@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <iomanip>
 #include <limits>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -117,15 +118,6 @@ Ephemeris<Barycentric>::AccuracyParameters MakeAccuracyParameters(
       ParseQuantity<double>(parameters.geopotential_tolerance));
 }
 
-Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
-    ConfigurationFixedStepParameters const& parameters) {
-  return Ephemeris<Barycentric>::FixedStepParameters(
-      ParseFixedStepSizeIntegrator<
-          Ephemeris<Barycentric>::NewtonianMotionEquation>(
-          parameters.fixed_step_size_integrator),
-      ParseQuantity<Time>(parameters.integration_step_size));
-}
-
 Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
     ConfigurationAdaptiveStepParameters const& parameters) {
   // It is erroneous for a psychohistory integration to fail, so the |max_steps|
@@ -137,6 +129,42 @@ Ephemeris<Barycentric>::AdaptiveStepParameters MakeAdaptiveStepParameters(
       /*max_steps=*/std::numeric_limits<std::int64_t>::max(),
       ParseQuantity<Length>(parameters.length_integration_tolerance),
       ParseQuantity<Speed>(parameters.speed_integration_tolerance));
+}
+
+Ephemeris<Barycentric>::FixedStepParameters MakeFixedStepParameters(
+    ConfigurationFixedStepParameters const& parameters) {
+  return Ephemeris<Barycentric>::FixedStepParameters(
+      ParseFixedStepSizeIntegrator<
+          Ephemeris<Barycentric>::NewtonianMotionEquation>(
+          parameters.fixed_step_size_integrator),
+      ParseQuantity<Time>(parameters.integration_step_size));
+}
+
+serialization::OblateBody::Geopotential MakeGeopotential(
+    BodyGeopotentialElement const* const geopotential,
+    int const geopotential_size) {
+  // Make sure that we generate at most one row per degree.
+  std::map<int, serialization::OblateBody::Geopotential::GeopotentialRow> rows;
+  for (int i = 0; i < geopotential_size; ++i) {
+    BodyGeopotentialElement const& element = geopotential[i];
+    int const degree = std::stoi(element.degree);
+    int const order = std::stoi(element.order);
+    double const cos = ParseQuantity<double>(element.cos);
+    double const sin = ParseQuantity<double>(element.sin);
+    serialization::OblateBody::Geopotential::GeopotentialRow::GeopotentialColumn
+        column;
+    column.set_order(order);
+    column.set_cos(cos);
+    column.set_sin(sin);
+    *rows[degree].add_column() = column;
+    rows[degree].set_degree(degree);
+  }
+
+  serialization::OblateBody::Geopotential result;
+  for (auto const& pair : rows) {
+    *result.add_row() = pair.second;
+  }
+  return result;
 }
 
 serialization::GravityModel::Body MakeGravityModel(
@@ -184,11 +212,16 @@ serialization::GravityModel::Body MakeGravityModel(
     gravity_model.set_angular_frequency(
         body_parameters.angular_frequency);
   }
+  if (body_parameters.reference_radius != nullptr) {
+    gravity_model.set_reference_radius(body_parameters.reference_radius);
+  }
   if (body_parameters.j2 != nullptr) {
     gravity_model.set_j2(ParseQuantity<double>(body_parameters.j2));
   }
-  if (body_parameters.reference_radius != nullptr) {
-    gravity_model.set_reference_radius(body_parameters.reference_radius);
+  if (body_parameters.geopotential_size > 0) {
+    *gravity_model.mutable_geopotential() =
+        MakeGeopotential(body_parameters.geopotential,
+                         body_parameters.geopotential_size);
   }
   return gravity_model;
 }
