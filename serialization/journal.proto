@@ -33,6 +33,12 @@ message AdaptiveStepParameters {
   required double speed_integration_tolerance = 3;
 }
 
+message BodyGeopotentialCoefficient {
+  required int32 degree = 1;
+  required int32 order = 2;
+  required double value = 3;
+}
+
 message BodyParameters {
   required string name = 10;
   required string gravitational_parameter = 1;
@@ -44,6 +50,10 @@ message BodyParameters {
   optional string angular_frequency = 9;
   optional string j2 = 5;  // No parsing in C#.
   optional string reference_radius = 6;
+  repeated BodyGeopotentialCoefficient geopotential_cos = 11
+      [(size) = "geopotential_cos_size"];
+  repeated BodyGeopotentialCoefficient geopotential_sin = 12
+      [(size) = "geopotential_sin_size"];
 }
 
 message Burn {

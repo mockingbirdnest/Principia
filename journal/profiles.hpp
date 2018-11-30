@@ -16,6 +16,7 @@ using base::not_null;
 using base::PullSerializer;
 using base::PushDeserializer;
 using interface::AdaptiveStepParameters;
+using interface::BodyGeopotentialCoefficient;
 using interface::BodyParameters;
 using interface::Burn;
 using interface::ConfigurationAccuracyParameters;
