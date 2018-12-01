@@ -2369,8 +2369,7 @@ public partial class PrincipiaPluginAdapter
 
   private void UpdateRenderingFrame(
       NavigationFrameParameters frame_parameters) {
-    IntPtr new_plotting_frame = plugin_.NewNavigationFrame(frame_parameters);
-    plugin_.SetPlottingFrame(ref new_plotting_frame);
+    plugin_.SetPlottingFrame(frame_parameters);
     var frame_type =
         (ReferenceFrameSelector.FrameType)frame_parameters.extension;
     if (frame_type != ReferenceFrameSelector.FrameType.BODY_SURFACE) {

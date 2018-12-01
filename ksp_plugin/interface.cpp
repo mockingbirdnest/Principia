@@ -842,15 +842,6 @@ WXYZ principia__NavballOrientation(
           FromXYZ<Position<World>>(ship_world_position)).quaternion()));
 }
 
-// Calls |plugin| to create a |NavigationFrame| using the given |parameters|.
-NavigationFrame* principia__NewNavigationFrame(
-    Plugin const* const plugin,
-    NavigationFrameParameters const parameters) {
-  journal::Method<journal::NewNavigationFrame> m({plugin, parameters});
-  CHECK_NOTNULL(plugin);
-  return m.Return(NewNavigationFrame(*plugin, parameters).release());
-}
-
 // Returns a pointer to a plugin constructed with the arguments given.
 // The caller takes ownership of the result.
 Plugin* principia__NewPlugin(char const* const game_epoch,

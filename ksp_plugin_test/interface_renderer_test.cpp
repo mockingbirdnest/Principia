@@ -73,15 +73,11 @@ TEST_F(InterfaceRendererTest, SetPlottingFrame) {
       unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
   EXPECT_CALL(*const_plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), parameters);
 }
 
 TEST_F(InterfaceRendererTest, Frenet) {
@@ -98,15 +94,11 @@ TEST_F(InterfaceRendererTest, Frenet) {
       unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), parameters);
 
   {
     auto const tangent = Vector<double, World>({4, 5, 6});

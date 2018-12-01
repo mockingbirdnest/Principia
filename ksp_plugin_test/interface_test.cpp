@@ -534,13 +534,14 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
       celestial_index,
       parent_index};
 
+  MockRenderer renderer;
+  EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
+
   EXPECT_CALL(
       *plugin_,
       FillBarycentricRotatingNavigationFrame(celestial_index, parent_index, _))
       .WillOnce(FillUniquePtr<2>(mock_navigation_frame));
-  std::unique_ptr<NavigationFrame> navigation_frame(
-      principia__NewNavigationFrame(plugin_.get(), parameters));
-  EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
+  principia__SetPlottingFrame(plugin_.get(), parameters);
 
   parameters.extension =
       serialization::BodyCentredNonRotatingDynamicFrame::kExtensionFieldNumber;
@@ -549,10 +550,7 @@ TEST_F(InterfaceTest, NewNavigationFrame) {
   EXPECT_CALL(*plugin_,
               FillBodyCentredNonRotatingNavigationFrame(celestial_index, _))
       .WillOnce(FillUniquePtr<1>(mock_navigation_frame));
-  navigation_frame.release();
-  navigation_frame.reset(
-      principia__NewNavigationFrame(plugin_.get(), parameters));
-  EXPECT_EQ(mock_navigation_frame, navigation_frame.get());
+  principia__SetPlottingFrame(plugin_.get(), parameters);
 }
 
 TEST_F(InterfaceTest, NavballOrientation) {
@@ -569,15 +567,11 @@ TEST_F(InterfaceTest, NavballOrientation) {
       unused,
       celestial_index,
       parent_index};
-  NavigationFrame* navigation_frame =
-      principia__NewNavigationFrame(plugin_.get(), parameters);
-  EXPECT_EQ(mock_navigation_frame, navigation_frame);
 
   MockRenderer renderer;
   EXPECT_CALL(*plugin_, renderer()).WillRepeatedly(ReturnRef(renderer));
-  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*navigation_frame)));
-  principia__SetPlottingFrame(plugin_.get(), &navigation_frame);
-  EXPECT_THAT(navigation_frame, IsNull());
+  EXPECT_CALL(renderer, SetPlottingFrameConstRef(Ref(*mock_navigation_frame)));
+  principia__SetPlottingFrame(plugin_.get(), parameters);
 
   Position<World> sun_position =
       World::origin + Displacement<World>(
