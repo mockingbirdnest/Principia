@@ -109,14 +109,13 @@ void principia__RenderedPredictionNodes(Plugin const* const plugin,
   return m.Return();
 }
 
-// |navigation_frame| must not be null.  No transfer of ownership of
-// |*navigation_frame|, takes ownership of |**navigation_frame|, nulls
-// |*navigation_frame|.
+// Calls |plugin| to create a |NavigationFrame| using the given |parameters|,
+// sets it as the current plotting frame.
 void principia__SetPlottingFrame(Plugin* const plugin,
-                                 NavigationFrame** const navigation_frame) {
-  journal::Method<journal::SetPlottingFrame> m({plugin, navigation_frame},
-                                               {navigation_frame});
-  GetRenderer(plugin).SetPlottingFrame(TakeOwnership(navigation_frame));
+                                 NavigationFrameParameters const parameters) {
+  journal::Method<journal::SetPlottingFrame> m({plugin, parameters});
+  auto navigation_frame = NewNavigationFrame(*plugin, parameters);
+  GetRenderer(plugin).SetPlottingFrame(std::move(navigation_frame));
   return m.Return();
 }
 
