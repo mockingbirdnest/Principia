@@ -195,9 +195,9 @@ TEST_F(МолнияOrbitTest, Satellite) {
   Angle const ΔΩ_per_period = -2.0 * π * Radian * earth_body->j2_over_μ() /
                               (semilatus_rectum * semilatus_rectum) *
                               (3.0 / 2.0) * Cos(initial_elements.inclination);
-  EXPECT_LT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
-                          actual_precession_speed),
-            IsNear(0.076));
+  EXPECT_THAT(RelativeError(ΔΩ_per_period / (sidereal_day / 2.0),
+                            actual_precession_speed),
+              IsNear(0.076));
 
   file << mathematica::Assign("ppaDisplacements",
                               mma_displacements);
