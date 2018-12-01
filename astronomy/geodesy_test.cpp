@@ -216,16 +216,16 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(primary_actual_final_dof.position(),
                             expected_final_dof.position()),
-              IsNear(570 * Kilo(Metre)));
+              IsNear(191 * Kilo(Metre)));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(primary_actual_final_dof.position() - ITRS::origin,
                            expected_final_dof.position() - ITRS::origin),
-              IsNear(2 * Degree + 41 * ArcMinute));
+              IsNear(53 * ArcMinute));
   // Radial error at the geocentre.
   EXPECT_THAT(
       AbsoluteError((primary_actual_final_dof.position() - ITRS::origin).Norm(),
                     (expected_final_dof.position() - ITRS::origin).Norm()),
-      IsNear(270 * Metre));
+      IsNear(894 * Metre));
 
   // Errors in orbital elements.
   KeplerianElements<ICRS> const expected_elements =
@@ -245,38 +245,38 @@ TEST_F(GeodesyTest, LAGEOS2) {
 
   EXPECT_THAT(AbsoluteError(*actual_elements.periapsis_distance,
                             *expected_elements.periapsis_distance),
-              IsNear(2 * Kilo(Metre)));
+              IsNear(42 * Metre));
   EXPECT_THAT(AbsoluteError(*actual_elements.apoapsis_distance,
                             *expected_elements.apoapsis_distance),
-              IsNear(2 * Kilo(Metre)));
+              IsNear(9.5 * Metre));
   EXPECT_THAT(AbsoluteError(actual_elements.longitude_of_ascending_node,
                             expected_elements.longitude_of_ascending_node),
-              IsNear(4 * ArcMinute + 40 * ArcSecond));
+              IsNear(17 * ArcSecond));
   EXPECT_THAT(AbsoluteError(actual_elements.inclination,
                             expected_elements.inclination),
-              IsNear(1.2 * ArcSecond));
+              IsNear(1.1 * ArcSecond));
   EXPECT_THAT(AbsoluteError(*actual_elements.argument_of_periapsis,
                             *expected_elements.argument_of_periapsis),
-              IsNear(15 * ArcMinute + 57 * ArcSecond));
+              IsNear(3 * ArcMinute + 37 * ArcSecond));
   EXPECT_THAT(AbsoluteError(*actual_elements.mean_anomaly,
                             *expected_elements.mean_anomaly),
-              IsNear(2 * Degree + 31 * ArcMinute));
+              IsNear(58 * ArcMinute));
 
   // Error arising from uncertainty in the initial state, estimated as the
   // difference between the primary and secondary ILRS products.
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              IsNear(179 * Metre));
+              IsNear(28 * Metre));
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-              IsNear(3 * ArcSecond));
+              IsNear(0.47 * ArcSecond));
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              IsNear(67 * Centi(Metre)));
+              IsNear(11 * Centi(Metre)));
 }
 
 #endif
