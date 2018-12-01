@@ -50,6 +50,7 @@ using quantities::si::Minute;
 using quantities::si::Second;
 using testing_utilities::AbsoluteError;
 using testing_utilities::IsNear;
+using ::testing::AnyOf;
 using ::testing::Eq;
 
 class GeodesyTest : public ::testing::Test {
@@ -267,16 +268,19 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              IsNear(28 * Metre));
+              AnyOf(IsNear(28 * Metre),    // No FMA.
+                    IsNear(10 * Metre)));  // FMA.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
-              IsNear(0.47 * ArcSecond));
+              AnyOf(IsNear(0.47 * ArcSecond),    // No FMA.
+                    IsNear(0.17 * ArcSecond)));  // FMA.
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
-              IsNear(11 * Centi(Metre)));
+              AnyOf(IsNear(11 * Centi(Metre)),     // No FMA.
+                    IsNear(1.7 * Centi(Metre))));  // FMA.
 }
 
 #endif
