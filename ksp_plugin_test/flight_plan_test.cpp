@@ -109,9 +109,9 @@ class FlightPlanTest : public testing::Test {
             EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
                 Fine1987RKNG34,
                 Position<Barycentric>>(),
-            /*max_steps=*/1,
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second));
+            /*max_steps=*/1000,
+            /*length_integration_tolerance=*/1 * Milli(Metre),
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
   }
 
   Burn MakeTangentBurn(Force const& thrust,
