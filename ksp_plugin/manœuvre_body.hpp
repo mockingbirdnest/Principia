@@ -238,8 +238,6 @@ Manœuvre<InertialFrame, Frame>::ComputeFrenetFrame(
       frame_->ToThisFrameAtTime(t);
   RigidMotion<Frame, InertialFrame> const from_frame_at_t =
       to_frame_at_t.Inverse();
-  // TODO(phl): Why |orthogonal_map| and not |rotation|?  Do we ever go through
-  // the looking glass?
   return from_frame_at_t.orthogonal_map() *
          frame_->FrenetFrame(t, to_frame_at_t(degrees_of_freedom)).Forget();
 }
