@@ -42,18 +42,16 @@ namespace integrators {
 namespace internal_integrators {
 
 template<typename ODE, typename Method, bool first_same_as_last>
-class SprkAsSrknDeserializer;
+struct SprkAsSrknDeserializer;
 
 template<typename ODE, typename Method>
-class SprkAsSrknDeserializer<ODE, Method, false> {
- public:
+struct SprkAsSrknDeserializer<ODE, Method, false> {
   static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 };
 
 template<typename ODE, typename Method>
-class SprkAsSrknDeserializer<ODE, Method, true> {
- public:
+struct SprkAsSrknDeserializer<ODE, Method, true> {
   static FixedStepSizeIntegrator<ODE> const& ReadFromMessage(
       serialization::FixedStepSizeIntegrator const& message);
 };
@@ -88,6 +86,71 @@ SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
     case serialization::FixedStepSizeIntegrator::BA:
     default:
       LOG(FATAL) << message.DebugString();
+      base::noreturn();
+  }
+}
+
+template<typename RightHandSideComputation>
+struct AdaptiveStepSizeIntegratorDeserializer;
+
+template<typename Position, typename Acceleration>
+struct AdaptiveStepSizeIntegratorDeserializer<
+    std::function<Status(Instant const& t,
+                         std::vector<Position> const& positions,
+                         std::vector<Acceleration>& accelerations)>> {
+  template<typename Integrator>
+  static Integrator const& ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegrator const& message);
+};
+
+template<typename Position, typename Velocity, typename Acceleration>
+struct AdaptiveStepSizeIntegratorDeserializer<
+    std::function<Status(Instant const& t,
+                         std::vector<Position> const& positions,
+                         std::vector<Velocity> const& velocities,
+                         std::vector<Acceleration>& accelerations)>> {
+  template<typename Integrator>
+  static Integrator const& ReadFromMessage(
+      serialization::AdaptiveStepSizeIntegrator const& message);
+};
+
+template<typename Position, typename Acceleration>
+template<typename Integrator>
+Integrator const& AdaptiveStepSizeIntegratorDeserializer<
+    std::function<Status(Instant const& t,
+                         std::vector<Position> const& positions,
+                         std::vector<Acceleration>& accelerations)>>::
+ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
+  using ASSI = serialization::AdaptiveStepSizeIntegrator;
+  switch (message.kind()) {
+    case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
+      return EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::DormandالمكاوىPrince1986RKN434FM, Position>();
+    case ASSI::FINE_1987_RKNG_34:
+      return EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          methods::Fine1987RKNG34, Position>();
+    default:
+      LOG(FATAL) << message.kind();
+      base::noreturn();
+  }
+}
+
+template<typename Position, typename Velocity, typename Acceleration>
+template<typename Integrator>
+Integrator const& AdaptiveStepSizeIntegratorDeserializer<
+    std::function<Status(Instant const& t,
+                         std::vector<Position> const& positions,
+                         std::vector<Velocity> const& velocities,
+                         std::vector<Acceleration>& accelerations)>>::
+ReadFromMessage(serialization::AdaptiveStepSizeIntegrator const& message) {
+  using ASSI = serialization::AdaptiveStepSizeIntegrator;
+  switch (message.kind()) {
+    case ASSI::FINE_1987_RKNG_34:
+      return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+          methods::Fine1987RKNG34, Position>();
+    case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
+    default:
+      LOG(FATAL) << message.kind();
       base::noreturn();
   }
 }
@@ -379,20 +442,9 @@ template<typename ODE_>
 AdaptiveStepSizeIntegrator<ODE_> const&
 AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
-  using ASSI = serialization::AdaptiveStepSizeIntegrator;
-  switch (message.kind()) {
-    case ASSI::DORMAND_ELMIKKAWY_PRINCE_1986_RKN_434FM:
-      return EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          methods::DormandالمكاوىPrince1986RKN434FM,
-          typename ODE::Position>();
-    case ASSI::FINE_1987_RKNG_34:
-      return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-          methods::Fine1987RKNG34,
-          typename ODE::Position>();
-    default :
-      LOG(FATAL) << message.kind();
-      base::noreturn();
-  }
+  return AdaptiveStepSizeIntegratorDeserializer<
+      typename ODE_::RightHandSideComputation>::
+      ReadFromMessage<AdaptiveStepSizeIntegrator<ODE_>>(message);
 }
 
 template<typename Equation>
