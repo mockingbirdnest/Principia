@@ -116,8 +116,7 @@ Ephemeris<Frame>::AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
 
 template<typename Frame>
 template<typename ODE>
-AdaptiveStepSizeIntegrator<
-    typename Ephemeris<Frame>::NewtonianMotionEquation> const&
+AdaptiveStepSizeIntegrator<ODE> const&
 Ephemeris<Frame>::AdaptiveStepParameters<ODE>::integrator() const {
   return *integrator_;
 }
@@ -183,8 +182,7 @@ typename Ephemeris<Frame>::AdaptiveStepParameters<ODE>
 Ephemeris<Frame>::AdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
   return AdaptiveStepParameters(
-      AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
-          message.integrator()),
+      AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
       message.max_steps(),
       Length::ReadFromMessage(message.length_integration_tolerance()),
       Speed::ReadFromMessage(message.speed_integration_tolerance()));

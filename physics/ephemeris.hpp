@@ -103,8 +103,7 @@ class Ephemeris {
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
 
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
-    integrator() const;
+    AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
     std::int64_t max_steps() const;
     Length length_integration_tolerance() const;
     Speed speed_integration_tolerance() const;
