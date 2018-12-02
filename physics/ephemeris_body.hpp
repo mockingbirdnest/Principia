@@ -588,7 +588,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
           return Status(Error::OUT_OF_RANGE, "Collision detected");
         }
         accelerations[0] +=
-            intrinsic_acceleration(t, positions[0], velocities[0]);
+            intrinsic_acceleration(t, {positions[0], velocities[0]});
         return Status::OK;
       };
 

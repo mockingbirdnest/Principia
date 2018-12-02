@@ -4,6 +4,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 
 #include <cmath>
+#include <functional>
 
 #include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -17,6 +18,7 @@ using geometry::Rotation;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
+using std::placeholders::_1;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(
@@ -152,9 +154,39 @@ void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
 }
 
 template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
+  return is_inertially_fixed_;
+}
+
+template<typename InertialFrame, typename Frame>
 Vector<double, InertialFrame>
     Manœuvre<InertialFrame, Frame>::InertialDirection() const {
+  CHECK(is_inertially_fixed_);
   return FrenetFrame()(direction_);
+}
+
+template<typename InertialFrame, typename Frame>
+typename Ephemeris<InertialFrame>::IntrinsicAcceleration
+Manœuvre<InertialFrame, Frame>::InertialIntrinsicAcceleration() const {
+  CHECK(is_inertially_fixed_);
+  return std::bind(
+      &Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration,
+      this,
+      _1,
+      /*direction=*/InertialDirection());
+}
+
+template<typename InertialFrame, typename Frame>
+typename Ephemeris<InertialFrame>::GeneralIntrinsicAcceleration
+Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
+  CHECK(!is_inertially_fixed_);
+  return [this](Instant const& t,
+                DegreesOfFreedom<InertialFrame> const& degrees_of_freedom)
+             -> Vector<Acceleration, InertialFrame> {
+    return ComputeIntrinsicAcceleration(
+        t,
+        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(direction_));
+  };
 }
 
 template<typename InertialFrame, typename Frame>
@@ -164,34 +196,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory_->Find(initial_time());
   CHECK(it != coasting_trajectory_->End());
-  RigidMotion<InertialFrame, Frame> const to_frame_at_initial_time =
-      frame_->ToThisFrameAtTime(initial_time());
-  OrthogonalMap<Frame, InertialFrame> const from_frame_at_initial_time =
-      to_frame_at_initial_time.orthogonal_map().Inverse();
-  Rotation<Frenet<Frame>, Frame> const from_frenet_frame = frame_->FrenetFrame(
-      initial_time(),
-      to_frame_at_initial_time(it.degrees_of_freedom()));
-  return from_frame_at_initial_time * from_frenet_frame.Forget();
-}
-
-template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
-  return is_inertially_fixed_;
-}
-
-template<typename InertialFrame, typename Frame>
-typename Ephemeris<InertialFrame>::IntrinsicAcceleration
-    Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
-  Vector<double, InertialFrame> const inertial_direction = InertialDirection();
-  return [this, inertial_direction](
-             Instant const& time) -> Vector<Acceleration, InertialFrame> {
-    if (time >= initial_time() && time <= final_time()) {
-      return inertial_direction * thrust_ /
-             (initial_mass_ - (time - initial_time()) * mass_flow());
-    } else {
-      return Vector<Acceleration, InertialFrame>();
-    }
-  };
+  return ComputeFrenetFrame(initial_time(), it.degrees_of_freedom());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -222,6 +227,32 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;
+}
+
+template<typename InertialFrame, typename Frame>
+OrthogonalMap<Frenet<Frame>, InertialFrame>
+Manœuvre<InertialFrame, Frame>::ComputeFrenetFrame(
+    Instant const& t,
+    DegreesOfFreedom<InertialFrame> const& degrees_of_freedom) const {
+  RigidMotion<InertialFrame, Frame> const to_frame_at_t =
+      frame_->ToThisFrameAtTime(t);
+  RigidMotion<Frame, InertialFrame> const from_frame_at_t =
+      to_frame_at_t.Inverse();
+  return from_frame_at_t.orthogonal_map() *
+         frame_->FrenetFrame(t, to_frame_at_t(degrees_of_freedom)).Forget();
+}
+
+template<typename InertialFrame, typename Frame>
+Vector<Acceleration, InertialFrame>
+Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
+    Instant const& t,
+    Vector<double, InertialFrame> const& direction) const {
+  if (t >= initial_time() && t <= final_time()) {
+    return direction * thrust_ /
+           (initial_mass_ - (t - initial_time()) * mass_flow());
+  } else {
+    return Vector<Acceleration, InertialFrame>();
+  }
 }
 
 }  // namespace internal_manœuvre
