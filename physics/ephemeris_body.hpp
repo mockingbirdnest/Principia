@@ -152,7 +152,7 @@ template<typename ODE>
 typename Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>
 Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
-  return AdaptiveStepParameters(
+  return ODEAdaptiveStepParameters(
       AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
       message.max_steps(),
       Length::ReadFromMessage(message.length_integration_tolerance()),
