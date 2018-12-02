@@ -385,7 +385,11 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
       return EmbeddedExplicitRungeKuttaNyströmIntegrator<
           methods::DormandالمكاوىPrince1986RKN434FM,
           typename ODE::Position>();
-    default:
+    case ASSI::FINE_1987_RKNG_34:
+      return EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+          methods::Fine1987RKNG34,
+          typename ODE::Position>();
+    default :
       LOG(FATAL) << message.kind();
       base::noreturn();
   }
