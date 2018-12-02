@@ -21,8 +21,6 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
-using ::std::placeholders::_1;
-using ::std::placeholders::_2;
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
