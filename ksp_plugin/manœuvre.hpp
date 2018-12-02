@@ -111,14 +111,18 @@ class Manœuvre {
   // manœuvre must be inertially fixed.
   virtual Vector<double, InertialFrame> InertialDirection() const;
 
-  // Frenet frame at the beginning of the manœuvre.
-  virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
-
   // Intensity, timing and coasting trajectory must have been set.  The result
   // is valid until |*this| is destroyed.  This manœuvre must be inertially
   // fixed.
   typename Ephemeris<InertialFrame>::IntrinsicAcceleration
-  IntrinsicAcceleration() const;
+  InertialIntrinsicAcceleration() const;
+
+  // Same as above for a manœuvre that is not inertially fixed.
+  typename Ephemeris<InertialFrame>::GeneralIntrinsicAcceleration
+  FrenetIntrinsicAcceleration() const;
+
+  // Frenet frame at the beginning of the manœuvre.
+  virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
 
   // Intensity and timing must have been set.  |coasting_trajectory| is neither
   // written nor read.

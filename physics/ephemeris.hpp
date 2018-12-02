@@ -16,6 +16,7 @@
 #include "integrators/integrators.hpp"
 #include "integrators/ordinary_differential_equations.hpp"
 #include "physics/continuous_trajectory.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/geopotential.hpp"
 #include "physics/massive_body.hpp"
@@ -33,7 +34,6 @@ using base::Status;
 using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
-using geometry::Velocity;
 using integrators::AdaptiveStepSizeIntegrator;
 using integrators::FixedStepSizeIntegrator;
 using integrators::Integrator;
@@ -59,8 +59,7 @@ class Ephemeris {
   using GeneralIntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(
           Instant const& time,
-          Position<Frame> const& position,
-          Velocity<Frame> const& velocity)>;
+          DegreesOfFreedom<Frame> const& degrees_of_freedom)>;
   using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
   static IntrinsicAccelerations const NoIntrinsicAccelerations;
   static std::int64_t constexpr unlimited_max_ephemeris_steps =

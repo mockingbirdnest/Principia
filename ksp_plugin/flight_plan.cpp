@@ -21,6 +21,8 @@ using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
+using ::std::placeholders::_1;
+using ::std::placeholders::_2;
 
 FlightPlan::FlightPlan(
     Mass const& initial_mass,
@@ -313,45 +315,27 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
   } else if (manœuvre.initial_time() < manœuvre.final_time()) {
     if (manœuvre.is_inertially_fixed()) {
       bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStep(segments_.back(),
-                                           manœuvre.IntrinsicAcceleration(),
-                                           manœuvre.final_time(),
-                                           adaptive_step_parameters_,
-                                           max_ephemeris_steps_per_frame,
-                                           /*last_point_only=*/false).ok();
-      if (!reached_desired_final_time) {
-        anomalous_segments_ = 1;
-      }
-    } else {
-      // TODO(egg): move this to the Manœuvre class.
-      auto const intrinsic_acceleration =
-          [&manœuvre](Instant const& time,
-                      Position<Barycentric> const& position,
-                      Velocity<Barycentric> const& velocity)
-          -> Vector<Acceleration, Barycentric> {
-        auto const to_manœuvre_frame =
-            manœuvre.frame()->ToThisFrameAtTime(time);
-        auto const from_manœuvre_frame = to_manœuvre_frame.Inverse();
-        Vector<double, Barycentric> const direction =
-            from_manœuvre_frame.orthogonal_map()(manœuvre.frame()->FrenetFrame(
-                time,
-                to_manœuvre_frame({position, velocity}))(manœuvre.direction()));
-        return direction *
-               (manœuvre.thrust() /
-                (manœuvre.initial_mass() -
-                 (time - manœuvre.initial_time()) * manœuvre.mass_flow()));
-      };
-      bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStepGeneralized(
+          ephemeris_->FlowWithAdaptiveStep(
               segments_.back(),
-              intrinsic_acceleration,
+              manœuvre.InertialIntrinsicAcceleration(),
               manœuvre.final_time(),
               adaptive_step_parameters_,
               max_ephemeris_steps_per_frame,
               /*last_point_only=*/false).ok();
       if (!reached_desired_final_time) {
         anomalous_segments_ = 1;
-        return;
+      }
+    } else {
+      bool const reached_desired_final_time =
+          ephemeris_->FlowWithAdaptiveStepGeneralized(
+              segments_.back(),
+              manœuvre.FrenetIntrinsicAcceleration(),
+              manœuvre.final_time(),
+              adaptive_step_parameters_,
+              max_ephemeris_steps_per_frame,
+              /*last_point_only=*/false).ok();
+      if (!reached_desired_final_time) {
+        anomalous_segments_ = 1;
       }
     }
   }

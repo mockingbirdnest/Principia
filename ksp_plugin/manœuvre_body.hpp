@@ -166,6 +166,30 @@ Vector<double, InertialFrame>
 }
 
 template<typename InertialFrame, typename Frame>
+typename Ephemeris<InertialFrame>::IntrinsicAcceleration
+Manœuvre<InertialFrame, Frame>::InertialIntrinsicAcceleration() const {
+  CHECK(is_inertially_fixed_);
+  return std::bind(
+      &Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration,
+      this,
+      _1,
+      /*direction=*/InertialDirection());
+}
+
+template<typename InertialFrame, typename Frame>
+typename Ephemeris<InertialFrame>::GeneralIntrinsicAcceleration
+Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
+  CHECK(!is_inertially_fixed_);
+  return [this](Instant const& t,
+                DegreesOfFreedom<InertialFrame> const& degrees_of_freedom)
+             -> Vector<Acceleration, InertialFrame> {
+    return ComputeIntrinsicAcceleration(
+        t,
+        /*direction=*/ComputeFrenetFrame(t, degrees_of_freedom)(direction_));
+  };
+}
+
+template<typename InertialFrame, typename Frame>
 OrthogonalMap<Frenet<Frame>, InertialFrame>
     Manœuvre<InertialFrame, Frame>::FrenetFrame() const {
   CHECK_NOTNULL(coasting_trajectory_);
@@ -173,17 +197,6 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
       coasting_trajectory_->Find(initial_time());
   CHECK(it != coasting_trajectory_->End());
   return ComputeFrenetFrame(initial_time(), it.degrees_of_freedom());
-}
-
-template<typename InertialFrame, typename Frame>
-typename Ephemeris<InertialFrame>::IntrinsicAcceleration
-Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
-  CHECK(is_inertially_fixed_);
-  return std::bind(
-      &Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration,
-      this,
-      _1,
-      /*direction=*/InertialDirection());
 }
 
 template<typename InertialFrame, typename Frame>
