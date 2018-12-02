@@ -1155,13 +1155,6 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
                                           append_state,
                                           tolerance_to_error_ratio,
                                           integrator_parameters);
-  ////auto const instance =
-  ////    EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-  ////        Fine1987RKNG34, Position<Frame>>().NewInstance(
-  ////            problem,
-  ////            append_state,
-  ////            tolerance_to_error_ratio,
-  ////            integrator_parameters);
   auto status = instance->Solve(t_final);
 
   // We probably don't care if the vessel gets too close to the singularity, as

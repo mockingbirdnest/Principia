@@ -6,6 +6,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
@@ -26,9 +27,11 @@ using geometry::Barycentre;
 using geometry::Displacement;
 using geometry::Position;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::Fine1987RKNG34;
 using integrators::methods::QuinlanTremaine1990Order12;
 using physics::BodyCentredNonRotatingDynamicFrame;
 using physics::DegreesOfFreedom;
@@ -96,12 +99,19 @@ class FlightPlanTest : public testing::Test {
         /*final_time=*/t0_ + 1.5 * Second,
         ephemeris_.get(),
         Ephemeris<Barycentric>::AdaptiveStepParameters(
-          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
                 DormandالمكاوىPrince1986RKN434FM,
                 Position<Barycentric>>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
-            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
+            /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Position<Barycentric>>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second));
   }
 
   Burn MakeTangentBurn(Force const& thrust,
@@ -176,12 +186,19 @@ TEST_F(FlightPlanTest, Singular) {
       /*final_time=*/singularity + 100 * Second,
       ephemeris_.get(),
       Ephemeris<Barycentric>::AdaptiveStepParameters(
-        EmbeddedExplicitRungeKuttaNyströmIntegrator<
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
               DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
-          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second));
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Position<Barycentric>>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second));
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->GetSegment(0, begin, end);

@@ -4,6 +4,7 @@
 #include <optional>
 #include <vector>
 
+#include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
 #include "testing_utilities/make_not_null.hpp"
@@ -16,8 +17,10 @@ using base::make_not_null_unique;
 using geometry::Position;
 using geometry::Vector;
 using geometry::Velocity;
+using integrators::EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator;
 using integrators::EmbeddedExplicitRungeKuttaNyströmIntegrator;
 using integrators::methods::DormandالمكاوىPrince1986RKN434FM;
+using integrators::methods::Fine1987RKNG34;
 using quantities::Acceleration;
 using quantities::si::Metre;
 using quantities::si::Second;
@@ -29,14 +32,18 @@ FlightPlan::FlightPlan(
     Instant const& desired_final_time,
     not_null<Ephemeris<Barycentric>*> const ephemeris,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters)
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        generalized_adaptive_step_parameters)
     : initial_mass_(initial_mass),
       initial_time_(initial_time),
       initial_degrees_of_freedom_(initial_degrees_of_freedom),
       desired_final_time_(desired_final_time),
       root_(make_not_null_unique<DiscreteTrajectory<Barycentric>>()),
       ephemeris_(ephemeris),
-      adaptive_step_parameters_(adaptive_step_parameters) {
+      adaptive_step_parameters_(adaptive_step_parameters),
+      generalized_adaptive_step_parameters_(
+          generalized_adaptive_step_parameters){
   CHECK(desired_final_time_ >= initial_time_);
 
   // Set the (single) point of the root.
@@ -220,6 +227,8 @@ void FlightPlan::WriteToMessage(
   desired_final_time_.WriteToMessage(message->mutable_desired_final_time());
   adaptive_step_parameters_.WriteToMessage(
       message->mutable_adaptive_step_parameters());
+  generalized_adaptive_step_parameters_.WriteToMessage(
+      message->mutable_generalized_adaptive_step_parameters());
   for (auto const& manœuvre : manœuvres_) {
     manœuvre.WriteToMessage(message->add_manoeuvre());
   }
@@ -228,15 +237,33 @@ void FlightPlan::WriteToMessage(
 std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
     serialization::FlightPlan const& message,
     not_null<Ephemeris<Barycentric>*> const ephemeris) {
-  std::unique_ptr<Ephemeris<Barycentric>::AdaptiveStepParameters>
-      adaptive_step_parameters;
   Instant initial_time = Instant::ReadFromMessage(message.initial_time());
   std::unique_ptr<DegreesOfFreedom<Barycentric>> initial_degrees_of_freedom;
   CHECK(message.has_adaptive_step_parameters());
-  adaptive_step_parameters =
+  auto const adaptive_step_parameters =
       std::make_unique<Ephemeris<Barycentric>::AdaptiveStepParameters>(
           Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
               message.adaptive_step_parameters()));
+
+  bool const is_pre_erdős = !message.has_generalized_adaptive_step_parameters();
+  std::unique_ptr<Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+      generalized_adaptive_step_parameters;
+  if (is_pre_erdős) {
+    generalized_adaptive_step_parameters = std::make_unique<
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
+        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+            Fine1987RKNG34,
+            Position<Barycentric>>(),
+        /*max_steps=*/1,
+        /*length_integration_tolerance=*/1 * Metre,
+        /*speed_integration_tolerance=*/1 * Metre / Second);
+  } else {
+    generalized_adaptive_step_parameters = std::make_unique<
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
+        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
+            ReadFromMessage(message.generalized_adaptive_step_parameters()));
+  }
+
   initial_degrees_of_freedom =
       std::make_unique<DegreesOfFreedom<Barycentric>>(
           DegreesOfFreedom<Barycentric>::ReadFromMessage(
@@ -248,7 +275,8 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
       *initial_degrees_of_freedom,
       Instant::ReadFromMessage(message.desired_final_time()),
       ephemeris,
-      *adaptive_step_parameters);
+      *adaptive_step_parameters,
+      *generalized_adaptive_step_parameters);
 
   for (int i = 0; i < message.manoeuvre_size(); ++i) {
     auto const& manoeuvre = message.manoeuvre(i);
@@ -273,7 +301,14 @@ FlightPlan::FlightPlan()
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second) {}
+          /*speed_integration_tolerance=*/1 * Metre / Second),
+      generalized_adaptive_step_parameters_(
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
+              Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second){}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
@@ -329,7 +364,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
               segments_.back(),
               manœuvre.FrenetIntrinsicAcceleration(),
               manœuvre.final_time(),
-              adaptive_step_parameters_,
+              generalized_adaptive_step_parameters_,
               max_ephemeris_steps_per_frame,
               /*last_point_only=*/false).ok();
       if (!reached_desired_final_time) {
