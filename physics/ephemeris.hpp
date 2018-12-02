@@ -53,51 +53,13 @@ template<typename Frame>
 class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
- public:
-  using IntrinsicAcceleration =
-      std::function<Vector<Acceleration, Frame>(Instant const& time)>;
-  static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
-  using GeneralIntrinsicAcceleration =
-      std::function<Vector<Acceleration, Frame>(
-          Instant const& time,
-          DegreesOfFreedom<Frame> const& degrees_of_freedom)>;
-  using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
-  static IntrinsicAccelerations const NoIntrinsicAccelerations;
-  static std::int64_t constexpr unlimited_max_ephemeris_steps =
-      std::numeric_limits<std::int64_t>::max();
-
-  // The equation describing the motion of the |bodies_|.
-  using NewtonianMotionEquation =
-      SpecialSecondOrderDifferentialEquation<Position<Frame>>;
-  using GeneralizedNewtonianMotionEquation =
-      ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
-
-  class PHYSICS_DLL AccuracyParameters final {
-   public:
-    // Implicit for compatibility.
-    AccuracyParameters(Length const& fitting_tolerance);  // NOLINT
-    AccuracyParameters(Length const& fitting_tolerance,
-                       double geopotential_tolerance);
-
-    void WriteToMessage(
-        not_null<serialization::Ephemeris::AccuracyParameters*> const
-            message) const;
-    static AccuracyParameters ReadFromMessage(
-        serialization::Ephemeris::AccuracyParameters const& message);
-
-   private:
-    Length fitting_tolerance_;
-    double geopotential_tolerance_ = 0;
-    friend class Ephemeris<Frame>;
-  };
-
   template<typename ODE>
-  class PHYSICS_DLL AdaptiveStepParameters final {
+  class ODEAdaptiveStepParameters final {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
     // limited to |max_steps|.
-    AdaptiveStepParameters(
+    ODEAdaptiveStepParameters(
         AdaptiveStepSizeIntegrator<ODE> const& integrator,
         std::int64_t max_steps,
         Length const& length_integration_tolerance,
@@ -117,7 +79,7 @@ class Ephemeris {
     void WriteToMessage(
         not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
             message) const;
-    static AdaptiveStepParameters ReadFromMessage(
+    static ODEAdaptiveStepParameters ReadFromMessage(
         serialization::Ephemeris::AdaptiveStepParameters const& message);
 
    private:
@@ -126,6 +88,49 @@ class Ephemeris {
     std::int64_t max_steps_;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
+    friend class Ephemeris<Frame>;
+  };
+
+ public:
+  using IntrinsicAcceleration =
+      std::function<Vector<Acceleration, Frame>(Instant const& time)>;
+  static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
+  using GeneralIntrinsicAcceleration =
+      std::function<Vector<Acceleration, Frame>(
+          Instant const& time,
+          DegreesOfFreedom<Frame> const& degrees_of_freedom)>;
+  using IntrinsicAccelerations = std::vector<IntrinsicAcceleration>;
+  static IntrinsicAccelerations const NoIntrinsicAccelerations;
+  static std::int64_t constexpr unlimited_max_ephemeris_steps =
+      std::numeric_limits<std::int64_t>::max();
+
+  // The equations describing the motion of the |bodies_|.
+  using NewtonianMotionEquation =
+      SpecialSecondOrderDifferentialEquation<Position<Frame>>;
+  using GeneralizedNewtonianMotionEquation =
+      ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
+
+  using AdaptiveStepParameters =
+      ODEAdaptiveStepParameters<NewtonianMotionEquation>;
+  using GeneralizedAdaptiveStepParameters =
+      ODEAdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
+
+  class PHYSICS_DLL AccuracyParameters final {
+   public:
+    // Implicit for compatibility.
+    AccuracyParameters(Length const& fitting_tolerance);  // NOLINT
+    AccuracyParameters(Length const& fitting_tolerance,
+                       double geopotential_tolerance);
+
+    void WriteToMessage(
+        not_null<serialization::Ephemeris::AccuracyParameters*> const
+            message) const;
+    static AccuracyParameters ReadFromMessage(
+        serialization::Ephemeris::AccuracyParameters const& message);
+
+   private:
+    Length fitting_tolerance_;
+    double geopotential_tolerance_ = 0;
     friend class Ephemeris<Frame>;
   };
 
@@ -207,7 +212,7 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters<NewtonianMotionEquation> const& parameters,
+      AdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
@@ -224,8 +229,7 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       GeneralIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters<GeneralizedNewtonianMotionEquation> const&
-          parameters,
+      GeneralizedAdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
@@ -371,7 +375,7 @@ class Ephemeris {
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      AdaptiveStepParameters<ODE> const& parameters,
+      ODEAdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 

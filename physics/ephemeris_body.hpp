@@ -70,6 +70,96 @@ constexpr Length pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance
 constexpr Time max_time_between_checkpoints = 180 * Day;
 
 template<typename Frame>
+template<typename ODE>
+Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ODEAdaptiveStepParameters(
+    AdaptiveStepSizeIntegrator<ODE> const& integrator,
+    std::int64_t const max_steps,
+    Length const& length_integration_tolerance,
+    Speed const& speed_integration_tolerance)
+    : integrator_(&integrator),
+      max_steps_(max_steps),
+      length_integration_tolerance_(length_integration_tolerance),
+      speed_integration_tolerance_(speed_integration_tolerance) {
+  CHECK_LT(0, max_steps_);
+  CHECK_LT(Length(), length_integration_tolerance_);
+  CHECK_LT(Speed(), speed_integration_tolerance_);
+}
+
+template<typename Frame>
+template<typename ODE>
+AdaptiveStepSizeIntegrator<ODE> const&
+Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::integrator() const {
+  return *integrator_;
+}
+
+template<typename Frame>
+template<typename ODE>
+std::int64_t Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::max_steps() const {
+  return max_steps_;
+}
+
+template<typename Frame>
+template<typename ODE>
+Length Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+length_integration_tolerance() const {
+  return length_integration_tolerance_;
+}
+
+template<typename Frame>
+template<typename ODE>
+Speed Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+speed_integration_tolerance() const {
+  return speed_integration_tolerance_;
+}
+
+template<typename Frame>
+template<typename ODE>
+void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::set_max_steps(
+    std::int64_t const max_steps) {
+  CHECK_LT(0, max_steps);
+  max_steps_ = max_steps;
+}
+
+template<typename Frame>
+template<typename ODE>
+void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+set_length_integration_tolerance(Length const& length_integration_tolerance) {
+  length_integration_tolerance_ = length_integration_tolerance;
+}
+
+template<typename Frame>
+template<typename ODE>
+void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::
+set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
+  speed_integration_tolerance_ = speed_integration_tolerance;
+}
+
+template<typename Frame>
+template<typename ODE>
+void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::WriteToMessage(
+    not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
+    const {
+  integrator_->WriteToMessage(message->mutable_integrator());
+  message->set_max_steps(max_steps_);
+  length_integration_tolerance_.WriteToMessage(
+      message->mutable_length_integration_tolerance());
+  speed_integration_tolerance_.WriteToMessage(
+      message->mutable_speed_integration_tolerance());
+}
+
+template<typename Frame>
+template<typename ODE>
+typename Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>
+Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ReadFromMessage(
+    serialization::Ephemeris::AdaptiveStepParameters const& message) {
+  return AdaptiveStepParameters(
+      AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
+      message.max_steps(),
+      Length::ReadFromMessage(message.length_integration_tolerance()),
+      Speed::ReadFromMessage(message.speed_integration_tolerance()));
+}
+
+template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance)
     : fitting_tolerance_(fitting_tolerance) {}
@@ -96,96 +186,6 @@ Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
   return AccuracyParameters(
       Length::ReadFromMessage(message.fitting_tolerance()),
       message.geopotential_tolerance());
-}
-
-template<typename Frame>
-template<typename ODE>
-Ephemeris<Frame>::AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
-    AdaptiveStepSizeIntegrator<ODE> const& integrator,
-    std::int64_t const max_steps,
-    Length const& length_integration_tolerance,
-    Speed const& speed_integration_tolerance)
-    : integrator_(&integrator),
-      max_steps_(max_steps),
-      length_integration_tolerance_(length_integration_tolerance),
-      speed_integration_tolerance_(speed_integration_tolerance) {
-  CHECK_LT(0, max_steps_);
-  CHECK_LT(Length(), length_integration_tolerance_);
-  CHECK_LT(Speed(), speed_integration_tolerance_);
-}
-
-template<typename Frame>
-template<typename ODE>
-AdaptiveStepSizeIntegrator<ODE> const&
-Ephemeris<Frame>::AdaptiveStepParameters<ODE>::integrator() const {
-  return *integrator_;
-}
-
-template<typename Frame>
-template<typename ODE>
-std::int64_t Ephemeris<Frame>::AdaptiveStepParameters<ODE>::max_steps() const {
-  return max_steps_;
-}
-
-template<typename Frame>
-template<typename ODE>
-Length Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
-length_integration_tolerance() const {
-  return length_integration_tolerance_;
-}
-
-template<typename Frame>
-template<typename ODE>
-Speed Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
-speed_integration_tolerance() const {
-  return speed_integration_tolerance_;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::set_max_steps(
-    std::int64_t const max_steps) {
-  CHECK_LT(0, max_steps);
-  max_steps_ = max_steps;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
-set_length_integration_tolerance(Length const& length_integration_tolerance) {
-  length_integration_tolerance_ = length_integration_tolerance;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
-set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
-  speed_integration_tolerance_ = speed_integration_tolerance;
-}
-
-template<typename Frame>
-template<typename ODE>
-void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::WriteToMessage(
-    not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
-    const {
-  integrator_->WriteToMessage(message->mutable_integrator());
-  message->set_max_steps(max_steps_);
-  length_integration_tolerance_.WriteToMessage(
-      message->mutable_length_integration_tolerance());
-  speed_integration_tolerance_.WriteToMessage(
-      message->mutable_speed_integration_tolerance());
-}
-
-template<typename Frame>
-template<typename ODE>
-typename Ephemeris<Frame>::AdaptiveStepParameters<ODE>
-Ephemeris<Frame>::AdaptiveStepParameters<ODE>::ReadFromMessage(
-    serialization::Ephemeris::AdaptiveStepParameters const& message) {
-  return AdaptiveStepParameters(
-      AdaptiveStepSizeIntegrator<ODE>::ReadFromMessage(message.integrator()),
-      message.max_steps(),
-      Length::ReadFromMessage(message.length_integration_tolerance()),
-      Speed::ReadFromMessage(message.speed_integration_tolerance()));
 }
 
 template<typename Frame>
@@ -457,7 +457,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
-    AdaptiveStepParameters<NewtonianMotionEquation> const& parameters,
+    AdaptiveStepParameters const& parameters,
     std::int64_t const max_ephemeris_steps,
     bool const last_point_only) {
   auto compute_acceleration = [this, &intrinsic_acceleration](
@@ -490,8 +490,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
     not_null<DiscreteTrajectory<Frame>*> trajectory,
     GeneralIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
-    AdaptiveStepParameters<GeneralizedNewtonianMotionEquation> const&
-        parameters,
+    GeneralizedAdaptiveStepParameters const& parameters,
     std::int64_t max_ephemeris_steps,
     bool last_point_only) {
   auto compute_acceleration =
@@ -1095,7 +1094,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      AdaptiveStepParameters<ODE> const& parameters,
+      ODEAdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();
