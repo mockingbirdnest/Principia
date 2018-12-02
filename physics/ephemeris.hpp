@@ -363,14 +363,14 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       EXCLUDES(lock_);
 
-  // Same as above, but the massless bodies have intrinsic accelerations.
-  // |intrinsic_accelerations| may be empty.  Returns false iff a collision
-  // occurred, i.e., the massless body is inside one of the |bodies_|.
-  bool ComputeMasslessBodiesTotalAccelerations(
-      std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
+  template<typename ODE>
+  Status FlowODEWithAdaptiveStep(
+      typename ODE::RightHandSideComputation compute_acceleration,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      AdaptiveStepParameters const& parameters,
+      std::int64_t max_ephemeris_steps,
+      bool last_point_only);
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(
