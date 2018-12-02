@@ -52,7 +52,7 @@ class MockEphemeris : public Ephemeris<Frame> {
       Status(not_null<DiscreteTrajectory<Frame>*> trajectory,
              IntrinsicAcceleration intrinsic_acceleration,
              Instant const& t,
-             AdaptiveStepParameters const& parameters,
+             AdaptiveStepParameters<NewtonianMotionEquation> const& parameters,
              std::int64_t max_ephemeris_steps,
              bool last_point_only));
   MOCK_METHOD2_T(

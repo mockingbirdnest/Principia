@@ -99,8 +99,9 @@ Ephemeris<Frame>::AccuracyParameters::ReadFromMessage(
 }
 
 template<typename Frame>
-Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+template<typename ODE>
+Ephemeris<Frame>::AdaptiveStepParameters<ODE>::AdaptiveStepParameters(
+    AdaptiveStepSizeIntegrator<ODE> const& integrator,
     std::int64_t const max_steps,
     Length const& length_integration_tolerance,
     Speed const& speed_integration_tolerance)
@@ -114,50 +115,58 @@ Ephemeris<Frame>::AdaptiveStepParameters::AdaptiveStepParameters(
 }
 
 template<typename Frame>
+template<typename ODE>
 AdaptiveStepSizeIntegrator<
     typename Ephemeris<Frame>::NewtonianMotionEquation> const&
-Ephemeris<Frame>::AdaptiveStepParameters::integrator() const {
+Ephemeris<Frame>::AdaptiveStepParameters<ODE>::integrator() const {
   return *integrator_;
 }
 
 template<typename Frame>
-std::int64_t Ephemeris<Frame>::AdaptiveStepParameters::max_steps() const {
+template<typename ODE>
+std::int64_t Ephemeris<Frame>::AdaptiveStepParameters<ODE>::max_steps() const {
   return max_steps_;
 }
 
 template<typename Frame>
-Length Ephemeris<Frame>::AdaptiveStepParameters::length_integration_tolerance()
-    const {
+template<typename ODE>
+Length Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
+length_integration_tolerance() const {
   return length_integration_tolerance_;
 }
 
 template<typename Frame>
-Speed Ephemeris<Frame>::AdaptiveStepParameters::speed_integration_tolerance()
-    const {
+template<typename ODE>
+Speed Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
+speed_integration_tolerance() const {
   return speed_integration_tolerance_;
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::set_max_steps(
+template<typename ODE>
+void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::set_max_steps(
     std::int64_t const max_steps) {
   CHECK_LT(0, max_steps);
   max_steps_ = max_steps;
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::set_length_integration_tolerance(
-    Length const& length_integration_tolerance) {
+template<typename ODE>
+void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
+set_length_integration_tolerance(Length const& length_integration_tolerance) {
   length_integration_tolerance_ = length_integration_tolerance;
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::set_speed_integration_tolerance(
-    Speed const& speed_integration_tolerance) {
+template<typename ODE>
+void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::
+set_speed_integration_tolerance(Speed const& speed_integration_tolerance) {
   speed_integration_tolerance_ = speed_integration_tolerance;
 }
 
 template<typename Frame>
-void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
+template<typename ODE>
+void Ephemeris<Frame>::AdaptiveStepParameters<ODE>::WriteToMessage(
     not_null<serialization::Ephemeris::AdaptiveStepParameters*> const message)
     const {
   integrator_->WriteToMessage(message->mutable_integrator());
@@ -169,8 +178,9 @@ void Ephemeris<Frame>::AdaptiveStepParameters::WriteToMessage(
 }
 
 template<typename Frame>
-typename Ephemeris<Frame>::AdaptiveStepParameters
-Ephemeris<Frame>::AdaptiveStepParameters::ReadFromMessage(
+template<typename ODE>
+typename Ephemeris<Frame>::AdaptiveStepParameters<ODE>
+Ephemeris<Frame>::AdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
   return AdaptiveStepParameters(
       AdaptiveStepSizeIntegrator<NewtonianMotionEquation>::ReadFromMessage(
@@ -449,7 +459,7 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> const trajectory,
     IntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
-    AdaptiveStepParameters const& parameters,
+    AdaptiveStepParameters<NewtonianMotionEquation> const& parameters,
     std::int64_t const max_ephemeris_steps,
     bool const last_point_only) {
   auto compute_acceleration = [this, &intrinsic_acceleration](
@@ -479,12 +489,13 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 
 template<typename Frame>
 Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
-      not_null<DiscreteTrajectory<Frame>*> trajectory,
-      GeneralIntrinsicAcceleration intrinsic_acceleration,
-      Instant const& t,
-      AdaptiveStepParameters const& parameters,
-      std::int64_t max_ephemeris_steps,
-      bool last_point_only) {
+    not_null<DiscreteTrajectory<Frame>*> trajectory,
+    GeneralIntrinsicAcceleration intrinsic_acceleration,
+    Instant const& t,
+    AdaptiveStepParameters<GeneralizedNewtonianMotionEquation> const&
+        parameters,
+    std::int64_t max_ephemeris_steps,
+    bool last_point_only) {
   auto compute_acceleration =
       [this, &intrinsic_acceleration](
           Instant const& t,
@@ -502,14 +513,13 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
         }
       };
 
-  return FlowODEWithAdaptiveStep<
-             ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>>(
-                 std::move(compute_acceleration),
-                 trajectory,
-                 t,
-                 parameters,
-                 max_ephemeris_steps,
-                 last_point_only);
+  return FlowODEWithAdaptiveStep<GeneralizedNewtonianMotionEquation>(
+             std::move(compute_acceleration),
+             trajectory,
+             t,
+             parameters,
+             max_ephemeris_steps,
+             last_point_only);
 }
 
 template<typename Frame>
@@ -1087,7 +1097,7 @@ Status Ephemeris<Frame>::FlowODEWithAdaptiveStep(
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      AdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only) {
   Instant const& trajectory_last_time = trajectory->last().time();

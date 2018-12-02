@@ -35,6 +35,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
+using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
@@ -68,6 +69,8 @@ class Ephemeris {
   // The equation describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
+  using GeneralizedNewtonianMotionEquation =
+      ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
 
   class PHYSICS_DLL AccuracyParameters final {
    public:
@@ -88,13 +91,14 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
+  template<typename ODE>
   class PHYSICS_DLL AdaptiveStepParameters final {
    public:
     // The |length_| and |speed_integration_tolerance|s are used to compute the
     // |tolerance_to_error_ratio| for step size control.  The number of steps is
     // limited to |max_steps|.
     AdaptiveStepParameters(
-        AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
+        AdaptiveStepSizeIntegrator<ODE> const& integrator,
         std::int64_t max_steps,
         Length const& length_integration_tolerance,
         Speed const& speed_integration_tolerance);
@@ -119,8 +123,7 @@ class Ephemeris {
 
    private:
     // This will refer to a static object returned by a factory.
-    not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
-        integrator_;
+    not_null<AdaptiveStepSizeIntegrator<ODE> const*> integrator_;
     std::int64_t max_steps_;
     Length length_integration_tolerance_;
     Speed speed_integration_tolerance_;
@@ -205,7 +208,7 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       IntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      AdaptiveStepParameters<NewtonianMotionEquation> const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
@@ -222,7 +225,8 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       GeneralIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      AdaptiveStepParameters<GeneralizedNewtonianMotionEquation> const&
+          parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
@@ -368,7 +372,7 @@ class Ephemeris {
       typename ODE::RightHandSideComputation compute_acceleration,
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      AdaptiveStepParameters<ODE> const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
