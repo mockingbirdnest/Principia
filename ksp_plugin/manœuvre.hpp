@@ -23,6 +23,7 @@ using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Ephemeris;
 using physics::Frenet;
+using quantities::Acceleration;
 using quantities::Force;
 using quantities::Mass;
 using quantities::SpecificImpulse;
@@ -94,24 +95,26 @@ class Manœuvre {
   bool FitsBetween(Instant const& begin, Instant const& end) const;
 
   // Sets the trajectory at the end of which the mannœuvre takes place.  Must
-  // be called before any of the functions below.  |coasting_trajectory| must
-  // have a point at |initial_time()|.
+  // be called before any of the functions below.  |trajectory| must have a
+  // point at |initial_time()|.
   void set_coasting_trajectory(
       not_null<DiscreteTrajectory<InertialFrame> const*> trajectory);
-
-  // Intensity, timing and coasting trajectory must have been set.
-  virtual Vector<double, InertialFrame> InertialDirection() const;
-
-  // Frenet frame at the beginning of the manœuvre.
-  virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
 
   // If true, the direction of the burn remains fixed in a nonrotating frame.
   // Otherwise, the direction of the burn remains fixed in the Frenet frame of
   // the trajectory.
   bool is_inertially_fixed() const;
 
+  // Intensity, timing and coasting trajectory must have been set.  This
+  // manœuvre must be inertially fixed.
+  virtual Vector<double, InertialFrame> InertialDirection() const;
+
+  // Frenet frame at the beginning of the manœuvre.
+  virtual OrthogonalMap<Frenet<Frame>, InertialFrame> FrenetFrame() const;
+
   // Intensity, timing and coasting trajectory must have been set.  The result
-  // is valid until |*this| is destroyed.
+  // is valid until |*this| is destroyed.  This manœuvre must be inertially
+  // fixed.
   typename Ephemeris<InertialFrame>::IntrinsicAcceleration
   IntrinsicAcceleration() const;
 
@@ -123,6 +126,13 @@ class Manœuvre {
       not_null<Ephemeris<InertialFrame>*> ephemeris);
 
  private:
+  // Computes the acceleration at |t|, assuming that it happens in the given
+  // |direction|.
+  Vector<Acceleration, InertialFrame>
+  ComputeIntrinsicAcceleration(
+      Instant const& t,
+      Vector<double, InertialFrame> const& direction) const;
+
   Force const thrust_;
   Mass const initial_mass_;
   SpecificImpulse const specific_impulse_;

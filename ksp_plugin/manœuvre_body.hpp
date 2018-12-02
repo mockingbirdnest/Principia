@@ -4,6 +4,7 @@
 #include "ksp_plugin/manœuvre.hpp"
 
 #include <cmath>
+#include <functional>
 
 #include "base/not_null.hpp"
 #include "quantities/elementary_functions.hpp"
@@ -17,6 +18,7 @@ using geometry::Rotation;
 using physics::RigidMotion;
 using quantities::Acceleration;
 using quantities::Sqrt;
+using std::placeholders::_1;
 
 template<typename InertialFrame, typename Frame>
 Manœuvre<InertialFrame, Frame>::Manœuvre(
@@ -152,8 +154,14 @@ void Manœuvre<InertialFrame, Frame>::set_coasting_trajectory(
 }
 
 template<typename InertialFrame, typename Frame>
+bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
+  return is_inertially_fixed_;
+}
+
+template<typename InertialFrame, typename Frame>
 Vector<double, InertialFrame>
     Manœuvre<InertialFrame, Frame>::InertialDirection() const {
+  CHECK(is_inertially_fixed_);
   return FrenetFrame()(direction_);
 }
 
@@ -175,23 +183,14 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
 }
 
 template<typename InertialFrame, typename Frame>
-bool Manœuvre<InertialFrame, Frame>::is_inertially_fixed() const {
-  return is_inertially_fixed_;
-}
-
-template<typename InertialFrame, typename Frame>
 typename Ephemeris<InertialFrame>::IntrinsicAcceleration
-    Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
-  Vector<double, InertialFrame> const inertial_direction = InertialDirection();
-  return [this, inertial_direction](
-             Instant const& time) -> Vector<Acceleration, InertialFrame> {
-    if (time >= initial_time() && time <= final_time()) {
-      return inertial_direction * thrust_ /
-             (initial_mass_ - (time - initial_time()) * mass_flow());
-    } else {
-      return Vector<Acceleration, InertialFrame>();
-    }
-  };
+Manœuvre<InertialFrame, Frame>::IntrinsicAcceleration() const {
+  CHECK(is_inertially_fixed_);
+  return std::bind(
+      &Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration,
+      this,
+      _1,
+      /*direction=*/InertialDirection());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -222,6 +221,19 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;
+}
+
+template<typename InertialFrame, typename Frame>
+Vector<Acceleration, InertialFrame>
+Manœuvre<InertialFrame, Frame>::ComputeIntrinsicAcceleration(
+    Instant const& t,
+    Vector<double, InertialFrame> const& direction) const {
+  if (t >= initial_time() && t <= final_time()) {
+    return direction * thrust_ /
+           (initial_mass_ - (t - initial_time()) * mass_flow());
+  } else {
+    return Vector<Acceleration, InertialFrame>();
+  }
 }
 
 }  // namespace internal_manœuvre
