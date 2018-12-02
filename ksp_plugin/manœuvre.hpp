@@ -5,6 +5,7 @@
 
 #include "geometry/named_quantities.hpp"
 #include "geometry/orthogonal_map.hpp"
+#include "physics/degrees_of_freedom.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/dynamic_frame.hpp"
 #include "physics/ephemeris.hpp"
@@ -19,6 +20,7 @@ using base::not_null;
 using geometry::Instant;
 using geometry::OrthogonalMap;
 using geometry::Vector;
+using physics::DegreesOfFreedom;
 using physics::DiscreteTrajectory;
 using physics::DynamicFrame;
 using physics::Ephemeris;
@@ -126,8 +128,15 @@ class Manœuvre {
       not_null<Ephemeris<InertialFrame>*> ephemeris);
 
  private:
-  // Computes the acceleration at |t|, assuming that it happens in the given
-  // |direction|.
+  // Computes the Frenet frame at instant |t|, assuming that the motion has the
+  // given |position| and |velocity|.
+  OrthogonalMap<Frenet<Frame>, InertialFrame>
+  ComputeFrenetFrame(
+      Instant const& t,
+      DegreesOfFreedom<InertialFrame> const& degrees_of_freedom) const;
+
+  // Computes the acceleration at instant |t|, assuming that it happens in the
+  // given |direction|.
   Vector<Acceleration, InertialFrame>
   ComputeIntrinsicAcceleration(
       Instant const& t,

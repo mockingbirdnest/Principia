@@ -172,14 +172,7 @@ OrthogonalMap<Frenet<Frame>, InertialFrame>
   typename DiscreteTrajectory<InertialFrame>::Iterator const it =
       coasting_trajectory_->Find(initial_time());
   CHECK(it != coasting_trajectory_->End());
-  RigidMotion<InertialFrame, Frame> const to_frame_at_initial_time =
-      frame_->ToThisFrameAtTime(initial_time());
-  OrthogonalMap<Frame, InertialFrame> const from_frame_at_initial_time =
-      to_frame_at_initial_time.orthogonal_map().Inverse();
-  Rotation<Frenet<Frame>, Frame> const from_frenet_frame = frame_->FrenetFrame(
-      initial_time(),
-      to_frame_at_initial_time(it.degrees_of_freedom()));
-  return from_frame_at_initial_time * from_frenet_frame.Forget();
+  return ComputeFrenetFrame(initial_time(), it.degrees_of_freedom());
 }
 
 template<typename InertialFrame, typename Frame>
@@ -221,6 +214,21 @@ Manœuvre<InertialFrame, Frame> Manœuvre<InertialFrame, Frame>::ReadFromMessage
   manœuvre.set_duration(Time::ReadFromMessage(message.duration()));
   manœuvre.set_initial_time(Instant::ReadFromMessage(message.initial_time()));
   return manœuvre;
+}
+
+template<typename InertialFrame, typename Frame>
+OrthogonalMap<Frenet<Frame>, InertialFrame>
+Manœuvre<InertialFrame, Frame>::ComputeFrenetFrame(
+    Instant const& t,
+    DegreesOfFreedom<InertialFrame> const& degrees_of_freedom) const {
+  RigidMotion<InertialFrame, Frame> const to_frame_at_t =
+      frame_->ToThisFrameAtTime(t);
+  RigidMotion<Frame, InertialFrame> const from_frame_at_t =
+      to_frame_at_t.Inverse();
+  // TODO(phl): Why |orthogonal_map| and not |rotation|?  Do we ever go through
+  // the looking glass?
+  return from_frame_at_t.orthogonal_map() *
+         frame_->FrenetFrame(t, to_frame_at_t(degrees_of_freedom)).Forget();
 }
 
 template<typename InertialFrame, typename Frame>
