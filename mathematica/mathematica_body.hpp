@@ -87,7 +87,7 @@ inline std::string ToMathematica(double const& real) {
   } else {
     std::string s = DebugString(real);
     s.replace(s.find("e"), 1, "*^");
-    return Apply("SetPrecision", {s, "MachinePrecision"});
+    return Apply("SetPrecision", {s, "$MachinePrecision"});
   }
 }
 
@@ -120,7 +120,7 @@ std::string ToMathematica(Quantity<D> const& quantity) {
   std::string const units = Escape(s.substr(split, s.size()));
   return Apply(
       "SetPrecision",
-      {Apply("Quantity", {number, units}), "MachinePrecision"});
+      {Apply("Quantity", {number, units}), "$MachinePrecision"});
 }
 
 template<typename S, typename F>
