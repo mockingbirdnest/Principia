@@ -1906,6 +1906,8 @@ extend google.protobuf.FieldOptions {
 }
 
 extend google.protobuf.MessageOptions {
+  // For an interchange message that is used as an in parameters, specifies the
+  // custom marshaler to use.
   optional string in_custom_marshaler = 50011;
   // If set, the body of the Run method is wrapped into an #ifdef for the given
   // symbol.  Useful for selectively skipping replay of some methods.

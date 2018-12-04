@@ -652,7 +652,7 @@ void principia__InsertCelestialAbsoluteCartesian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
-    BodyParameters const body_parameters,
+    BodyParameters const& body_parameters,
     char const* const x,
     char const* const y,
     char const* const z,
@@ -688,7 +688,7 @@ void principia__InsertCelestialJacobiKeplerian(
     Plugin* const plugin,
     int const celestial_index,
     int const* const parent_index,
-    BodyParameters const body_parameters,
+    BodyParameters const& body_parameters,
     KeplerianElements const* const keplerian_elements) {
   journal::Method<journal::InsertCelestialJacobiKeplerian> m(
       {plugin,
