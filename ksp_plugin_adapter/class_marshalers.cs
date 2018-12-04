@@ -3,10 +3,13 @@ using System.Runtime.InteropServices;
 
 namespace principia {
 namespace ksp_plugin_adapter {
+
 internal static partial class Interface {
+
   static IntPtr At(this IntPtr pointer, Int64 offset) {
     return new IntPtr(pointer.ToInt64() + offset);
   }
+
   internal class InBodyParametersMarshaler : ICustomMarshaler {
 
     [StructLayout(LayoutKind.Sequential)]
@@ -24,6 +27,7 @@ internal static partial class Interface {
       public IntPtr geopotential;
       public int geopotential_size;
     }
+
     public static ICustomMarshaler GetInstance(String s) {
       return instance_;
     }
@@ -43,17 +47,17 @@ internal static partial class Interface {
 
     public IntPtr MarshalManagedToNative(object managed_object) {
       var parameters = managed_object as BodyParameters;
-      var representation = new BodyParametersRepresentation {
-          angular_frequency=parameters.angular_frequency,
-          axis_declination=parameters.axis_declination,
-          axis_right_ascension=parameters.axis_right_ascension,
-          gravitational_parameter=parameters.gravitational_parameter,
-          j2=parameters.j2,
-          mean_radius=parameters.mean_radius,
-          name=parameters.name,
-          reference_angle=parameters.reference_angle,
-          reference_instant=parameters.reference_instant,
-          reference_radius=parameters.reference_radius};
+      var representation = new BodyParametersRepresentation{
+          angular_frequency       = parameters.angular_frequency,
+          axis_declination        = parameters.axis_declination,
+          axis_right_ascension    = parameters.axis_right_ascension,
+          gravitational_parameter = parameters.gravitational_parameter,
+          j2                      = parameters.j2,
+          mean_radius             = parameters.mean_radius,
+          name                    = parameters.name,
+          reference_angle         = parameters.reference_angle,
+          reference_instant       = parameters.reference_instant,
+          reference_radius        = parameters.reference_radius};
       representation.geopotential_size = parameters.geopotential.Length;
       if (parameters.geopotential.Length == 0) {
         representation.geopotential = IntPtr.Zero;
@@ -64,12 +68,12 @@ internal static partial class Interface {
         for (int i = 0; i < parameters.geopotential.Length; ++i) {
           Marshal.StructureToPtr(
               parameters.geopotential[i],
-              representation.geopotential.At(i * sizeof_element), false);
+              representation.geopotential.At(i * sizeof_element),
+              fDeleteOld: false);
         }
       }
       IntPtr buffer = Marshal.AllocHGlobal(Marshal.SizeOf(representation));
-      Marshal.StructureToPtr(representation, buffer, false);
-      Console.WriteLine("Allocated " + buffer.ToInt64().ToString("X"));
+      Marshal.StructureToPtr(representation, buffer, fDeleteOld: false);
       return buffer;
     }
 
@@ -80,6 +84,7 @@ internal static partial class Interface {
     public void CleanUpManagedData(object managed_data) {
       throw Log.Fatal("InBodyParametersMarshaler.CleanUpManagedData");
     }
+
     int ICustomMarshaler.GetNativeDataSize() {
       return -1;
     }
