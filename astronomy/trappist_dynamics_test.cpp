@@ -261,7 +261,7 @@ Population::Population(Genome const& luca,
 void Population::ComputeAllFitnesses() {
   // The fitness computation is expensive, do it in parallel on all genomes.
   {
-    Bundle bundle(std::thread::hardware_concurrency());
+    Bundle bundle(2 * std::thread::hardware_concurrency());
 
     fitnesses_.resize(current_.size(), 0.0);
     traces_.resize(current_.size(), "");
@@ -532,7 +532,7 @@ std::vector<double> EvaluatePopulation(
     std::vector<std::string>& info) {
   std::vector<double> log_pdf(population.size());
   info.resize(population.size());
-  Bundle bundle(std::thread::hardware_concurrency());
+  Bundle bundle(2 * std::thread::hardware_concurrency());
   for (int i = 0; i < population.size(); ++i) {
     auto const& parameters = population[i];
     bundle.Add([&compute_log_pdf, i, &log_pdf, &parameters, &info]() {
