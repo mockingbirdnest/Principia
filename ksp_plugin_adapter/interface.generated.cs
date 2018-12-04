@@ -39,8 +39,7 @@ internal partial struct BodyGeopotentialElement {
   public String sin;
 }
 
-[StructLayout(LayoutKind.Sequential)]
-internal partial struct BodyParameters {
+internal partial class BodyParameters {
   public String name;
   public String gravitational_parameter;
   public String reference_instant;
@@ -51,12 +50,7 @@ internal partial struct BodyParameters {
   public String angular_frequency;
   public String reference_radius;
   public String j2;
-  private BodyGeopotentialElement[] geopotential_;
-  private int geopotential_size_;
-  public BodyGeopotentialElement[] geopotential {
-    get { return geopotential_; }
-    set { geopotential_ = value; geopotential_size_ = value?.Length ?? 0; }
-  }
+  public BodyGeopotentialElement[] geopotential;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -593,7 +587,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InBodyParametersMarshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String x,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String y,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InUTF8Marshaler))] String z,
@@ -608,7 +602,7 @@ internal static partial class Interface {
       this IntPtr plugin,
       int celestial_index,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<int>))] BoxedInt32 parent_index,
-      BodyParameters body_parameters,
+      [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(InBodyParametersMarshaler))] BodyParameters body_parameters,
       [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(OptionalMarshaler<KeplerianElements>))] BoxedKeplerianElements keplerian_elements);
 
   [DllImport(dllName           : dll_path,
