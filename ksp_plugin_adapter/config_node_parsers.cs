@@ -106,7 +106,8 @@ internal static class ConfigNodeParsers {
         new List<BodyGeopotentialElement>();
     foreach (ConfigNode geopotential_row in geopotential_rows) {
       String degree = geopotential_row.GetUniqueValue("degree");
-      ConfigNode[] geopotential_columns = node.GetNodes("geopotential_column");
+      ConfigNode[] geopotential_columns =
+          geopotential_row.GetNodes("geopotential_column");
       foreach (ConfigNode geopotential_column in geopotential_columns) {
         String order = geopotential_column.GetUniqueValue("order");
         String cos = geopotential_column.GetUniqueValue("cos");
