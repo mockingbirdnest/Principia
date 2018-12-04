@@ -438,6 +438,21 @@ void JournalProtoProcessor::ProcessRequiredMessageField(
   std::string const& message_type_name = message_type->name();
   field_cs_type_[descriptor] = message_type_name;
   field_cxx_type_[descriptor] = message_type_name;
+
+  MessageOptions const& message_options = message_type->options();
+  if (Contains(in_, descriptor) &&
+      message_options.HasExtension(
+          journal::serialization::in_custom_marshaler)) {
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(" +
+        message_options.GetExtension(
+            journal::serialization::in_custom_marshaler) + "))";
+    field_cxx_mode_fn_[descriptor] =
+        [](std::string const& type) {
+          return type + " const&";
+        };
+  }
+
   ProcessSingleMessageField(descriptor);
 }
 
@@ -521,16 +536,6 @@ void JournalProtoProcessor::ProcessSingleMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
   std::string const& message_type_name = message_type->name();
-
-  MessageOptions const& message_options = message_type->options();
-  if (Contains(in_, descriptor) &&
-      message_options.HasExtension(
-          journal::serialization::in_custom_marshaler)) {
-    field_cs_marshal_[descriptor] =
-        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(" +
-        message_options.GetExtension(
-            journal::serialization::in_custom_marshaler) + "))";
-  }
 
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix,
@@ -704,7 +709,7 @@ void JournalProtoProcessor::ProcessRequiredField(
     }
     field_cxx_mode_fn_[descriptor] =
         [](std::string const& type) {
-          return type + "*";
+          return type + "* const";
         };
   }
 }
@@ -736,7 +741,7 @@ void JournalProtoProcessor::ProcessField(FieldDescriptor const* descriptor) {
       };
   field_cxx_mode_fn_[descriptor] =
       [](std::string const& type) {
-        return type;
+        return type + " const";
       };
   field_cxx_optional_assignment_fn_[descriptor] =
       [](std::string const& expr, std::string const& stmt) {
@@ -869,12 +874,12 @@ void JournalProtoProcessor::ProcessInOut(
       cxx_interface_parameters_[descriptor].push_back(
           field_cxx_mode_fn_[field_descriptor](
               field_cxx_type_[field_descriptor]) +
-          " const " + field_descriptor_name);
+          " " + field_descriptor_name);
     }
     cxx_nested_type_declaration_[descriptor] +=
         "    " + field_cxx_mode_fn_[field_descriptor](
                      field_cxx_type_[field_descriptor]) +
-        " const " + field_descriptor_name + ";\n";
+        " " + field_descriptor_name + ";\n";
 
     // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
