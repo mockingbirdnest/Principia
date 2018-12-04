@@ -962,11 +962,13 @@ class TrappistDynamicsTest : public ::testing::Test {
                 SOLUTION_DIR / "astronomy" /
                     "trappist_initial_state_jd_2457000_000000000.proto.txt"),
         ephemeris_(system_.MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
+            Ephemeris<Sky>::AccuracyParameters(
+                /*fitting_tolerance=*/1 * Milli(Metre),
+                /*geopotential_tolerance=*/0x1.0p-24),
             Ephemeris<Sky>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                                    Position<Sky>>(),
-                /*step=*/0.07 * Day))) {}
+                /*step=*/30 * Minute))) {}
 
   static Transits ComputeTransits(Ephemeris<Sky> const& ephemeris,
                                   not_null<MassiveBody const*> const star,
