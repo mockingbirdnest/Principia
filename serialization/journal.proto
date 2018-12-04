@@ -41,7 +41,7 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
-  option (in_custom_marshaler) = "InBodyParametersMarshaler";
+  option (in_custom_marshaler) = "Object";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
