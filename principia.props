@@ -17,6 +17,8 @@
   </ItemGroup>
   
   <!--Microsoft C++ stuff.-->
+  <!--14.16 causes an unknown compiler error in manœuvre_test.cpp:107, specifically "EXPECT_EQ(e_y, manœuvre.direction());"-->
+  <Import Project="$(SolutionDir)\Microsoft.VCToolsVersion.14.15.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
 
   <!--Definitions.-->
