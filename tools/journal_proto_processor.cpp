@@ -198,19 +198,6 @@ void JournalProtoProcessor::ProcessRepeatedMessageField(
   field_cs_type_[descriptor] = message_type_name + "[]";
   field_cxx_type_[descriptor] = message_type_name + " const*";
 
-  field_cs_private_type_[descriptor] = field_cs_type_[descriptor];
-  field_cs_private_getter_fn_[descriptor] =
-      [](std::vector<std::string> const& identifiers) {
-        CHECK_EQ(2, identifiers.size());  // Array, size.
-        return "get { return " + identifiers[0] + "; }";
-      };
-  field_cs_private_setter_fn_[descriptor] =
-      [](std::vector<std::string> const& identifiers) {
-        CHECK_EQ(2, identifiers.size());  // Array, size.
-        return "set { " + identifiers[0] + " = value; " +
-                          identifiers[1] + " = value?.Length ?? 0; }";
-      };
-
   field_cxx_arguments_fn_[descriptor] =
       [](std::string const& identifier) -> std::vector<std::string> {
         return {"&" + identifier + "[0]", identifier + ".size()"};
@@ -534,6 +521,16 @@ void JournalProtoProcessor::ProcessSingleMessageField(
     FieldDescriptor const* descriptor) {
   Descriptor const* message_type = descriptor->message_type();
   std::string const& message_type_name = message_type->name();
+
+  MessageOptions const& message_options = message_type->options();
+  if (Contains(in_, descriptor) &&
+      message_options.HasExtension(
+          journal::serialization::in_custom_marshaler)) {
+    field_cs_marshal_[descriptor] =
+        "MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(" +
+        message_options.GetExtension(
+            journal::serialization::in_custom_marshaler) + "))";
+  }
 
   field_cxx_assignment_fn_[descriptor] =
       [this, descriptor](std::string const& prefix,
@@ -939,9 +936,15 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       "serialization::" + name + " Serialize" + name + "(" + name + " const& " +
       parameter_name + ") {\n  serialization::" + name + " m;\n";
 
-  cs_interface_type_declaration_[descriptor] =
-      "[StructLayout(LayoutKind.Sequential)]\ninternal partial struct " + name +
-      " {\n";
+  MessageOptions const& options = descriptor->options();
+  if (options.HasExtension(journal::serialization::in_custom_marshaler)) {
+    cs_interface_type_declaration_[descriptor] =
+        "internal partial class " + name + " {\n";
+  } else {
+    cs_interface_type_declaration_[descriptor] =
+        "[StructLayout(LayoutKind.Sequential)]\ninternal partial struct " +
+        name + " {\n";
+  }
   cxx_interface_type_declaration_[descriptor] =
       "extern \"C\"\nstruct " + name + " {\n";
 
@@ -1002,11 +1005,6 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
       cs_interface_type_declaration_[descriptor] +=
           "  private " + field_cs_private_type_[field_descriptor] + " " +
           field_private_member_name + ";\n";
-      if (Contains(size_member_name_, field_descriptor)) {
-        cs_interface_type_declaration_[descriptor] +=
-            "  private int " + size_member_name_[field_descriptor] + "_;\n";
-        fn_arguments.push_back(size_member_name_[field_descriptor] + "_");
-      }
       cs_interface_type_declaration_[descriptor] +=
           "  public " + field_cs_type_[field_descriptor] + " " +
           field_descriptor_name + " {\n" +
@@ -1020,8 +1018,7 @@ void JournalProtoProcessor::ProcessInterchangeMessage(
         "  " + field_cxx_type_[field_descriptor] + " " + field_descriptor_name +
         ";\n";
 
-    // If this field has a size, generate it now.  In the C# case the field is
-    // private so we go through the code above.
+    // If this field has a size, generate it now.
     if (Contains(size_member_name_, field_descriptor)) {
       cxx_interface_type_declaration_[descriptor] +=
           "  int " + size_member_name_[field_descriptor] + ";\n";
