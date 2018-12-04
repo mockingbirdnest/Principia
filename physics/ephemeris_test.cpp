@@ -482,9 +482,9 @@ TEST_P(EphemerisTest, EarthProbe) {
               AnyOf(Eq(358),    // MSVC Release/0
                     Eq(420),    // MSVC Debug
                     Eq(421),    // MSVC Release/1
-                    Eq(446)));  // Clang Linux
+                    Eq(366)));  // Clang Linux
   EXPECT_THAT(probe_positions.back().coordinates().x,
-              AlmostEquals(1.00 * period * v_probe, 220, 259));
+              AlmostEquals(1.00 * period * v_probe, 220, 266));
   EXPECT_THAT(probe_positions.back().coordinates().y,
               Eq(q_probe));
 

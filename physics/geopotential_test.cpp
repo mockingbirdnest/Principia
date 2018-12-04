@@ -726,16 +726,16 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(1, 212));
+        AlmostEquals(1, 210, 212));
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_j2, (s0 + s1) / 2)) /
             get_latitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 1773));
+        AlmostEquals(0.5, 920, 1773));
     EXPECT_THAT(
         get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) /
             get_longitudinal_acceleration(*geopotential_c22_s22, (s0 + s1) / 2),
-        AlmostEquals(0.5, 103));
+        AlmostEquals(0.5, 103, 114));
   }
 
   {
@@ -763,21 +763,21 @@ TEST_F(GeopotentialTest, DampedForces) {
         (get_radial_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_radial_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
             get_radial_acceleration(*geopotential_degree[3], (s0 + s1) / 2),
-        AlmostEquals(0.875, 278));
+        AlmostEquals(0.875, 277, 278));
 
     EXPECT_THAT(
         (get_latitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_latitudinal_acceleration(*geopotential_degree[2], (s0 + s1) / 2)) /
             get_latitudinal_acceleration(*geopotential_degree[3],
                                          (s0 + s1) / 2),
-        AlmostEquals(0.5, 26512));
+        AlmostEquals(0.5, 26512, 46843));
     EXPECT_THAT(
         (get_longitudinal_acceleration(earth_geopotential, (s0 + s1) / 2) -
          get_longitudinal_acceleration(*geopotential_degree[2],
                                        (s0 + s1) / 2)) /
             get_longitudinal_acceleration(*geopotential_degree[3],
                                           (s0 + s1) / 2),
-        AlmostEquals(0.5, 2130));
+        AlmostEquals(0.5, 342, 2130));
   }
 
   // The outer threshold for degree 5 is above the inner threshold for degree 3,
