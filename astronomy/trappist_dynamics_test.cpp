@@ -31,8 +31,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
-#if !OS_MACOSX  // No Bundle for old Macs.
-
 namespace principia {
 
 using base::Bundle;
@@ -1394,5 +1392,3 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
 
 }  // namespace astronomy
 }  // namespace principia
-
-#endif  // !OS_MACOSX
