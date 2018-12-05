@@ -41,7 +41,7 @@
   <!--Compiler.-->
   <PropertyGroup>
     <PlatformToolset>v141</PlatformToolset>
-    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">LLVM-vs2014</PlatformToolset>
+    <PlatformToolset Condition="$(PrincipiaCompilerClangLLVM)">llvm</PlatformToolset>
   </PropertyGroup>
 
   <!--Target.-->
