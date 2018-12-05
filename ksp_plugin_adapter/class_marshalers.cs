@@ -58,8 +58,8 @@ internal static partial class Interface {
           reference_angle         = parameters.reference_angle,
           reference_instant       = parameters.reference_instant,
           reference_radius        = parameters.reference_radius};
-      representation.geopotential_size = parameters.geopotential.Length;
-      if (parameters.geopotential.Length == 0) {
+      representation.geopotential_size = parameters.geopotential?.Length ?? 0;
+      if (representation.geopotential_size == 0) {
         representation.geopotential = IntPtr.Zero;
       } else {
         int sizeof_element = Marshal.SizeOf(typeof(BodyGeopotentialElement));
