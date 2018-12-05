@@ -76,7 +76,10 @@ class Base32768Test : public testing::Test {
 using Base32768DeathTest = Base32768Test;
 
 // No tests because of a bug in 15.8 preview 3.
-#if !PRINCIPIA_COMPILER_MSVC || !(_MSC_FULL_VER == 191526608)
+#if !PRINCIPIA_COMPILER_MSVC || \
+    !(_MSC_FULL_VER == 191526608 || \
+      _MSC_FULL_VER == 191526731 || \
+      _MSC_FULL_VER == 191627024)
 TEST_F(Base32768Test, EncodeMultipleOf15Bits) {
   // First 15 bytes of the MD5 of the empty string.
   Array<std::uint8_t const> const binary("\xd4\x1d\x8c\xd9\x8f\x00\xb2\x04"
