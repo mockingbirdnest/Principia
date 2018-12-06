@@ -4,6 +4,7 @@
 #include "integrators/integrators.hpp"
 
 #include <limits>
+#include <vector>
 #include <string>
 
 #include "base/macros.hpp"
