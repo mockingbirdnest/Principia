@@ -127,6 +127,8 @@ class Ephemeris {
     friend class Ephemeris<Frame>;
   };
 
+  using GeneralizedAdaptiveStepParameters = AdaptiveStepParameters;
+
   class PHYSICS_DLL FixedStepParameters final {
    public:
     FixedStepParameters(
@@ -222,7 +224,7 @@ class Ephemeris {
       not_null<DiscreteTrajectory<Frame>*> trajectory,
       GeneralIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      GeneralizedAdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
