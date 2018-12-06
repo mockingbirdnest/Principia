@@ -66,7 +66,7 @@ LIBS          := $(DEP_DIR)protobuf/src/.libs/libprotobuf.a \
 	$(DEP_DIR)abseil-cpp/absl/debugging/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/numeric/libabsl_*.a \
 	$(DEP_DIR)abseil-cpp/absl/base/libabsl_*.a \
-	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi
+	$(DEP_DIR)glog/.libs/libglog.a -lpthread -lc++ -lc++abi -lunwind
 TEST_INCLUDES := \
 	-I$(DEP_DIR)googletest/googlemock/include -I$(DEP_DIR)googletest/googletest/include \
 	-I$(DEP_DIR)googletest/googlemock/ -I$(DEP_DIR)googletest/googletest/ -I$(DEP_DIR)benchmark/include
