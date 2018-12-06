@@ -91,6 +91,9 @@ SprkAsSrknDeserializer<ODE, Method, true>::ReadFromMessage(
   }
 }
 
+// The parameters of the |RightHandSideComputation| determines the type of the
+// integrator when the method may be used for several kinds of integrators
+// (this may not hold in general as we add more integrators).
 template<typename RightHandSideComputation>
 struct AdaptiveStepSizeIntegratorDeserializer;
 
