@@ -79,11 +79,12 @@ internal static class Loader {
 
   private static bool IsVCRedistInstalled() {
     // NOTE(phl): This GUID is specific to:
-    //   Microsoft Visual C++ 2017 Redistributable (x64) - 14.11.25325
+    //   Microsoft Visual C++ 2017 Redistributable (x64) - 14.16.27012
     // It will need to be updated when new versions of Visual C++
     // Redistributable are released by Microsoft.
     RegistryKey key = Registry.LocalMachine.OpenSubKey(
-         @"Software\Classes\Installer\Dependencies\,,amd64,14.0,bundle",
+         @"Software\Classes\Installer\Dependencies\" +
+         @"VC,redist.x64,amd64,14.16,bundle",
          writable : false);
     if (key == null) {
       return false;
@@ -91,7 +92,7 @@ internal static class Loader {
       string version = (string)key.GetValue("Version");
       // NOTE(phl): This string needs to be updated when new versions of Visual
       // C++ Redistributable are released by Microsoft.
-      return version != null && version == "14.11.25325.0";
+      return version != null && version == "14.16.27012.6";
     }
   }
 
