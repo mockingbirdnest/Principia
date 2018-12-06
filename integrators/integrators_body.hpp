@@ -448,7 +448,7 @@ AdaptiveStepSizeIntegrator<ODE_>::ReadFromMessage(
     serialization::AdaptiveStepSizeIntegrator const& message) {
   return AdaptiveStepSizeIntegratorDeserializer<
       typename ODE_::RightHandSideComputation>::
-      ReadFromMessage<AdaptiveStepSizeIntegrator<ODE_>>(message);
+      template ReadFromMessage<AdaptiveStepSizeIntegrator<ODE_>>(message);
 }
 
 template<typename Equation>
