@@ -30,7 +30,7 @@ clang-tidy --version
 git clone https://github.com/mockingbirdnest/Principia.git principia
 chown -R vagrant:vagrant principia KSP
 cd principia
-if [ -d deps ]; then echo "Dependencies already installed, remove deps/ to reinstall."; else ./install_deps.sh; fi
+if [ -d deps ]; then echo "Dependencies already exist, remove deps/ to rebuild."; else ./build_deps.sh; fi
 SCRIPT
 
     ubuntu.vm.provision "shell", inline: script
