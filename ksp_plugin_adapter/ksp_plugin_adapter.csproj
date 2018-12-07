@@ -106,6 +106,7 @@
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaller.cs" />
     <Compile Include="flight_planner.cs" />
+    <Compile Include="gui_planner.cs" />
     <Compile Include="gui_settings.cs" />
     <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
