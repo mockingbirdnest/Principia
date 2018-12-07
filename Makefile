@@ -282,7 +282,7 @@ benchmark: $(PRINCIPIA_BENCHMARK_BIN)
 
 ########## Adapter
 
-$(ADAPTER): $(GENERATED_PROFILES)
+$(ADAPTER): $(GENERATED_PROFILES) ksp_plugin_adapter/*.cs
 	$(MDTOOL) build -c:$(ADAPTER_CONFIGURATION) ksp_plugin_adapter/ksp_plugin_adapter.csproj
 
 ######### Distribution
