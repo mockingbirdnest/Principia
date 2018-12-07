@@ -43,7 +43,7 @@ FlightPlan::FlightPlan(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       generalized_adaptive_step_parameters_(
-          generalized_adaptive_step_parameters){
+          generalized_adaptive_step_parameters) {
   CHECK(desired_final_time_ >= initial_time_);
 
   // Set the (single) point of the root.
@@ -309,7 +309,7 @@ FlightPlan::FlightPlan()
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second){}
+          /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));
