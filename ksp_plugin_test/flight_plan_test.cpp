@@ -106,8 +106,8 @@ class FlightPlanTest : public testing::Test {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-            EmbeddedExplicitRungeKuttaNyströmIntegrator<
-                DormandالمكاوىPrince1986RKN434FM,
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
                 Position<Barycentric>>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
@@ -193,12 +193,12 @@ TEST_F(FlightPlanTest, Singular) {
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
       Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-          EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandالمكاوىPrince1986RKN434FM,
-                Position<Barycentric>>(),
-            /*max_steps=*/1,
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second));
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
+              Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Metre,
+          /*speed_integration_tolerance=*/1 * Metre / Second));
   DiscreteTrajectory<Barycentric>::Iterator begin;
   DiscreteTrajectory<Barycentric>::Iterator end;
   flight_plan_->GetSegment(0, begin, end);

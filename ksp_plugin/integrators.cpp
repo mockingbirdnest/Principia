@@ -44,8 +44,8 @@ DefaultEphemerisFixedStepParameters() {
 Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
 DefaultBurnParameters() {
   return Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandالمكاوىPrince1986RKN434FM,
+      EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+          Fine1987RKNG34,
           Position<Barycentric>>(),
       /*max_steps=*/1000,
       /*length_integration_tolerance=*/1 * Metre,

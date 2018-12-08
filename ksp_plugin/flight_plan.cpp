@@ -252,12 +252,12 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   if (is_pre_εὔδοξος) {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
-        EmbeddedExplicitRungeKuttaNyströmIntegrator<
-            DormandالمكاوىPrince1986RKN434FM,
-            Position<Barycentric>>(),
-        /*max_steps=*/1,
-        /*length_integration_tolerance=*/1 * Metre,
-        /*speed_integration_tolerance=*/1 * Metre / Second);
+            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+                Fine1987RKNG34,
+                Position<Barycentric>>(),
+            /*max_steps=*/1,
+            /*length_integration_tolerance=*/1 * Metre,
+            /*speed_integration_tolerance=*/1 * Metre / Second);
   } else {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
@@ -304,8 +304,8 @@ FlightPlan::FlightPlan()
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
       generalized_adaptive_step_parameters_(
-          EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandالمكاوىPrince1986RKN434FM,
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
@@ -361,7 +361,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
       }
     } else {
       bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStepGeneralized(
+          ephemeris_->FlowWithAdaptiveStep(
               segments_.back(),
               manœuvre.FrenetIntrinsicAcceleration(),
               manœuvre.final_time(),
