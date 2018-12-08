@@ -36,12 +36,19 @@ namespace ksp_plugin_adapter {
         private const float button_height = 25.0f;
         private const string magic_maneuver_string = "Delete me please";
 
+        private const string velocity_tangent_string = "<color=#ffff00ff>Δv tangent</color>";
+        private const string velocity_normal_string = "<color=#00ffffff>Δv normal</color>";
+        private const string velocity_binormal_string = "<color=#ff00ffff>Δv binormal</color>";
+        private const float velocity_name_string_length = 75f;
+        private const string velocity_value_string = "{0:E3} m/s";
+        private const float velocity_value_string_length = 90f;
+
         private bool planner_window_visible = false;
 
-        private DialogGUIVerticalLayout execution_page;
-        private DialogGUIVerticalLayout planning_page;
-        private DialogGUIVerticalLayout settings_page;
-        private DialogGUIVerticalLayout planner_box;
+        private DialogGUIBase execution_page;
+        private DialogGUIBase planning_page;
+        private DialogGUIBase settings_page;
+        private DialogGUIBase planner_box;
         private MultiOptionDialog multi_page_planner;
         private PopupDialog popup_dialog;
 
@@ -110,8 +117,8 @@ namespace ksp_plugin_adapter {
         private DialogGUIBase AddVelocityTangentToManeuver()
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                new DialogGUILabel("<color=#ffff00ff>Δv tangent</color>", 75f),
-                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_tangent); }, 90f),
+                new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
                 new DialogGUIButton("-1000", () => { delta_velocity_tangent -= 1000.0; }, false),
                 new DialogGUIButton("-100", () => { delta_velocity_tangent -= 100.0; }, false),
                 new DialogGUIButton("-10", () => { delta_velocity_tangent -= 10.0; }, false),
@@ -128,8 +135,8 @@ namespace ksp_plugin_adapter {
         private DialogGUIBase AddVelocityNormalToManeuver()
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                new DialogGUILabel("<color=#00ffffff>Δv normal</color>", 75f),
-                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_normal); }, 90f),
+                new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
                 new DialogGUIButton("-1000", () => { delta_velocity_normal -= 1000.0; }, false),
                 new DialogGUIButton("-100", () => { delta_velocity_normal -= 100.0; }, false),
                 new DialogGUIButton("-10", () => { delta_velocity_normal -= 10.0; }, false),
@@ -146,8 +153,8 @@ namespace ksp_plugin_adapter {
         private DialogGUIBase AddVelocityBinormalToManeuver()
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                new DialogGUILabel("<color=#ff00ffff>Δv binormal</color>", 75f),
-                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_binormal); }, 90f),
+                new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
                 new DialogGUIButton("-1000", () => { delta_velocity_binormal -= 1000.0; }, false),
                 new DialogGUIButton("-100", () => { delta_velocity_binormal -= 100.0; }, false),
                 new DialogGUIButton("-10", () => { delta_velocity_binormal -= 10.0; }, false),
@@ -161,26 +168,79 @@ namespace ksp_plugin_adapter {
                 new DialogGUIButton("+1000", () => { delta_velocity_binormal += 1000.0; }, false));
         }
 
+        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal)
+        {
+            return new DialogGUIHorizontalLayout(
+                new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
+                new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
+                new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length));
+        }
+
         private void OnButtonClick_AddManeuver()
         {
             List<DialogGUIBase> rows = planning_page.children;
+            // If needed make the maneuver non-mutable
+            int pre_number_of_rows = rows.Count;
+            DeleteLastManeuver(planning_page);
+            int post_number_of_row = rows.Count;
+
+            if (pre_number_of_rows > post_number_of_row)
+            {
+                DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(delta_velocity_tangent, delta_velocity_normal, delta_velocity_binormal);
+                AddManouver(planning_page, maneuver_non_mutable);
+            }
+
             DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 AddVelocityTangentToManeuver(),
                 AddVelocityNormalToManeuver(),
                 AddVelocityBinormalToManeuver()
             );
+            AddManouver(planning_page, maneuver);
+        }
+
+        private void OnButtonClick_DeleteManeuver()
+        {
+            DeleteLastManeuver(planning_page);
+
+            List<DialogGUIBase> rows = planning_page.children;
+            // If needed make the new last maneuver mutable
+            int pre_number_of_rows = rows.Count;
+            DeleteLastManeuver(planning_page);
+            int post_number_of_row = rows.Count;
+
+            // TODO: in the future we have to be sure to sync in the correct values for this maneuver, right now it takes over the deleted
+            // maneuvers values
+            if (pre_number_of_rows > post_number_of_row)
+            {
+                DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                    AddVelocityTangentToManeuver(),
+                    AddVelocityNormalToManeuver(),
+                    AddVelocityBinormalToManeuver()
+                );
+                AddManouver(planning_page, maneuver);
+            }
+        }
+
+        private void AddManouver(DialogGUIBase parent, DialogGUIBase maneuver)
+        {
+            List<DialogGUIBase> rows = parent.children;
             maneuver.SetOptionText(magic_maneuver_string);
             rows.Add(maneuver);
             ForceGUIUpdate(planning_page, maneuver);
         }
 
-        private void OnButtonClick_DeleteManeuver()
+        private void DeleteLastManeuver(DialogGUIBase parent)
         {
-            List<DialogGUIBase> rows = planning_page.children;
-            DialogGUIBase child = rows.ElementAt(rows.Count - 1);
-            if (child.OptionText == magic_maneuver_string) {
-                rows.RemoveAt(rows.Count - 1);
-                child.uiItem.gameObject.DestroyGameObjectImmediate(); // ensure memory gets freed
+            List<DialogGUIBase> rows = parent.children;
+            if (rows.Count > 0) {
+                DialogGUIBase child = rows.ElementAt(rows.Count - 1);
+                if (child.OptionText == magic_maneuver_string) {
+                    rows.RemoveAt(rows.Count - 1);
+                    child.uiItem.gameObject.DestroyGameObjectImmediate(); // ensure memory gets freed
+                }
             }
         }
 
@@ -198,8 +258,7 @@ namespace ksp_plugin_adapter {
             planning_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIButton("Add Maneuver", OnButtonClick_AddManeuver, button_width, button_height, false),
-                    new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false)
-                )
+                    new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false))
             );
 
             settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
