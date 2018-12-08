@@ -94,7 +94,8 @@ Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::integrator() const {
 
 template<typename Frame>
 template<typename ODE>
-std::int64_t Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::max_steps() const {
+std::int64_t Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::max_steps()
+    const {
   return max_steps_;
 }
 
