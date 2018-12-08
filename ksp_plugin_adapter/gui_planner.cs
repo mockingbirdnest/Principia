@@ -47,7 +47,7 @@ namespace ksp_plugin_adapter {
         private const float time_name_string_length = 10f;
         private const string delta_time_name_string = "<color=#ffffffff>Δt</color>";
         private const float delta_time_name_string_length = 20f;
-        private const float time_value_string_length_two_lines = 65f;
+        private const float time_value_string_length_two_lines = 70f;
         private const float time_value_string_length_single_line = 130f;
 
         // Fixed reference frame as opposed to a frenet frame that moves with the object
@@ -194,10 +194,8 @@ namespace ksp_plugin_adapter {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(time_name_string, time_name_string_length),
                 new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(Planetarium.GetUniversalTime() + delta_time)); }, time_value_string_length_two_lines),
-                new DialogGUIButton("-100D", () => { delta_time -= 100*24*3600; }, false),
-                new DialogGUIButton("-10D", () => { delta_time -= 10*24*3600; }, false),
-                new DialogGUIButton("-1D", () => { delta_time -= 1*24*3600; }, false),
-                new DialogGUIButton("-6H", () => { delta_time -= 6*3600; }, false),
+                // User needs to move forward in time in big steps, but backwards is only
+                // for finetuning where a burn needs to be, hence the assymetric number of buttons
                 new DialogGUIButton("-1H", () => { delta_time -= 1*3600; }, false),
                 new DialogGUIButton("-10M", () => { delta_time -= 10*60; }, false),
                 new DialogGUIButton("-1M", () => { delta_time -= 1*60; }, false),
@@ -240,22 +238,25 @@ namespace ksp_plugin_adapter {
 
         private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal, double absolute_time, bool inertially_fixed, BurnMode burn_mode)
         {
-            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
-                new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
-                new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
-                new DialogGUILabel(time_name_string, time_name_string_length),
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time)); }, time_value_string_length_single_line),
-                new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
-                // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
-                // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line),
-                new DialogGUILabel(inertially_fixed ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
-                new DialogGUILabel(() => { return burn_mode.ToString(); }, burn_mode_string_length)
-                );
+            return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
+                    new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
+                    new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length)
+                ),
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUILabel(time_name_string, time_name_string_length),
+                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time)); }, time_value_string_length_single_line),
+                    new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
+                    // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
+                    // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
+                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line),
+                    new DialogGUILabel(inertially_fixed ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
+                    new DialogGUILabel(() => { return burn_mode.ToString(); }, burn_mode_string_length)
+                ));
         }
 
         private DialogGUIBase CreateMutableManeuver()
@@ -371,7 +372,7 @@ namespace ksp_plugin_adapter {
                 "",
                 "Principia Planner",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 950.0f, 50.0f), // for reasons beyond me we have to get the width correct ourselves
+                new Rect(0.5f, 0.5f, 700.0f, 50.0f), // for reasons beyond me we have to get the width correct ourselves
                 new DialogGUIBase[]
                 {
                     // buttons to select page
