@@ -486,9 +486,9 @@ Status Ephemeris<Frame>::FlowWithAdaptiveStep(
 }
 
 template<typename Frame>
-Status Ephemeris<Frame>::FlowWithAdaptiveStepGeneralized(
+Status Ephemeris<Frame>::FlowWithAdaptiveStep(
     not_null<DiscreteTrajectory<Frame>*> trajectory,
-    GeneralIntrinsicAcceleration intrinsic_acceleration,
+    GeneralizedIntrinsicAcceleration intrinsic_acceleration,
     Instant const& t,
     GeneralizedAdaptiveStepParameters const& parameters,
     std::int64_t max_ephemeris_steps,

@@ -721,9 +721,9 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       &trajectory,
       Ephemeris<ICRS>::NoIntrinsicAcceleration,
       t0_ + duration,
-      Ephemeris<ICRS>::AdaptiveStepParameters(
-          EmbeddedExplicitRungeKuttaNyströmIntegrator<
-              DormandالمكاوىPrince1986RKN434FM,
+      Ephemeris<ICRS>::GeneralizedAdaptiveStepParameters(
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
               Position<ICRS>>(),
           max_steps,
           1e-9 * Metre,

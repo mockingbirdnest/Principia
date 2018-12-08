@@ -361,7 +361,7 @@ void FlightPlan::BurnLastSegment(NavigationManœuvre const& manœuvre) {
       }
     } else {
       bool const reached_desired_final_time =
-          ephemeris_->FlowWithAdaptiveStepGeneralized(
+          ephemeris_->FlowWithAdaptiveStep(
               segments_.back(),
               manœuvre.FrenetIntrinsicAcceleration(),
               manœuvre.final_time(),

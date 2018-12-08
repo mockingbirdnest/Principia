@@ -95,7 +95,7 @@ class Ephemeris {
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
-  using GeneralIntrinsicAcceleration =
+  using GeneralizedIntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(
           Instant const& time,
           DegreesOfFreedom<Frame> const& degrees_of_freedom)>;
@@ -216,18 +216,10 @@ class Ephemeris {
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
-  // Integrates, until exactly |t| (except for timeouts or singularities), the
-  // |trajectory| followed by a massless body in the gravitational potential
-  // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
-  // |last_point_only| is true, only the last point is appended to the
-  // trajectory.  Returns OK if and only if |*trajectory| was integrated until
-  // |t|.
-  // TODO(phl): the |parameters| are used, but |parameters.integrator_| is
-  // ignored and a hard-coded RKNG is used instead.
-  virtual Status FlowWithAdaptiveStepGeneralized(
+  // Same as above, but uses a generalized integrator.
+  virtual Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
-      GeneralIntrinsicAcceleration intrinsic_acceleration,
+      GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
       GeneralizedAdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
@@ -370,6 +362,7 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       EXCLUDES(lock_);
 
+  // Flows the given ODE with an adaptive step integrator.
   template<typename ODE>
   Status FlowODEWithAdaptiveStep(
       typename ODE::RightHandSideComputation compute_acceleration,
