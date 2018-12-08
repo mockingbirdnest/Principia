@@ -424,6 +424,13 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
+              Position<Barycentric>>(),
+          /*max_steps=*/1,
+          /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 
   EXPECT_EQ(5, flight_plan_->number_of_segments());
@@ -438,6 +445,13 @@ TEST_F(FlightPlanTest, SetAdaptiveStepParameter) {
               DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/10000,
+          /*length_integration_tolerance=*/1 * Milli(Metre),
+          /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
+              Fine1987RKNG34,
+              Position<Barycentric>>(),
+          /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second)));
 

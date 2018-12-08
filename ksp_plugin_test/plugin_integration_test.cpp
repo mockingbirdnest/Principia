@@ -700,14 +700,6 @@ TEST_F(PluginIntegrationTest, Prediction) {
 
   plugin.renderer().SetPlottingFrame(
       plugin.NewBodyCentredNonRotatingNavigationFrame(celestial));
-  Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters(
-      EmbeddedExplicitRungeKuttaNyströmIntegrator<
-          DormandالمكاوىPrince1986RKN434FM,
-          Position<Barycentric>>(),
-      /*max_steps=*/14,
-      /*length_integration_tolerance=*/1 * Milli(Metre),
-      /*speed_integration_tolerance=*/1 * Milli(Metre) / Second);
-  plugin.SetPredictionAdaptiveStepParameters(adaptive_step_parameters);
   plugin.AdvanceTime(Instant() + 1e-10 * Second, 0 * Radian);
   plugin.UpdatePrediction(vessel_guid);
   auto const& prediction =

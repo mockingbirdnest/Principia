@@ -176,8 +176,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       /*speed_integration_tolerance=*/333 * Metre / Second);
   EXPECT_CALL(flight_plan, adaptive_step_parameters())
       .WillOnce(ReturnRef(adaptive_step_parameters));
-  AdaptiveStepParameters expected_adaptive_step_parameters = {
+  FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
       /*integrator_kind=*/1,
+      /*generalized_integrator_kind=*/2,
       /*max_step=*/111,
       /*length_integration_tolerance=*/222,
       /*speed_integration_tolerance=*/333};
