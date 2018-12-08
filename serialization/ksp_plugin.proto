@@ -103,7 +103,6 @@ message Plugin {
   required Ephemeris ephemeris = 7;
   required Ephemeris.FixedStepParameters history_parameters = 12;
   required Ephemeris.AdaptiveStepParameters psychohistory_parameters = 13;
-  required Ephemeris.AdaptiveStepParameters prediction_parameters = 14;
   required Quantity planetarium_rotation = 4;
   required Point game_epoch = 15;
   required Point current_time = 5;
@@ -121,6 +120,9 @@ message Plugin {
   // Pre-Bourbaki.
   reserved 2;
   reserved "/*celestial*/";
+  // Pre-Erdos.
+  reserved 14;
+  reserved "prediction_parameters";
 }
 
 // Added in Cauchy.

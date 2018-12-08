@@ -108,7 +108,6 @@ Plugin::Plugin(std::string const& game_epoch,
                Angle const& planetarium_rotation)
     : history_parameters_(DefaultHistoryParameters()),
       psychohistory_parameters_(DefaultPsychohistoryParameters()),
-      prediction_parameters_(DefaultPredictionParameters()),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()),
       planetarium_rotation_(planetarium_rotation),
@@ -374,12 +373,13 @@ void Plugin::InsertOrKeepVessel(GUID const& vessel_guid,
   auto it = vessels_.find(vessel_guid);
   if (it == vessels_.end()) {
     std::tie(it, inserted) =
-        vessels_.emplace(vessel_guid,
-                         make_not_null_unique<Vessel>(vessel_guid,
-                                                      vessel_name,
-                                                      parent,
-                                                      ephemeris_.get(),
-                                                      prediction_parameters_));
+        vessels_.emplace(
+            vessel_guid,
+            make_not_null_unique<Vessel>(vessel_guid,
+                                        vessel_name,
+                                        parent,
+                                        ephemeris_.get(),
+                                        DefaultPredictionParameters()));
   } else {
     inserted = false;
   }
@@ -855,7 +855,7 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
   FindOrDie(vessels_, vessel_guid)->CreateFlightPlan(
       final_time,
       initial_mass,
-      prediction_parameters_,
+      DefaultPredictionParameters(),
       DefaultBurnParameters());
 }
 
@@ -938,16 +938,6 @@ void Plugin::ComputeAndRenderNodes(
                    descending_trajectory.End(),
                    sun_world_position,
                    PlanetariumRotation());
-}
-
-void Plugin::SetPredictionAdaptiveStepParameters(
-    Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        prediction_adaptive_step_parameters) {
-  prediction_parameters_ = prediction_adaptive_step_parameters;
-  for (auto const& pair : vessels_) {
-    not_null<std::unique_ptr<Vessel>> const& vessel = pair.second;
-    vessel->set_prediction_adaptive_step_parameters(prediction_parameters_);
-  }
 }
 
 bool Plugin::HasCelestial(Index const index) const {
@@ -1252,8 +1242,6 @@ void Plugin::WriteToMessage(
   history_parameters_.WriteToMessage(message->mutable_history_parameters());
   psychohistory_parameters_.WriteToMessage(
       message->mutable_psychohistory_parameters());
-  prediction_parameters_.WriteToMessage(
-      message->mutable_prediction_parameters());
 
   planetarium_rotation_.WriteToMessage(message->mutable_planetarium_rotation());
   game_epoch_.WriteToMessage(message->mutable_game_epoch());
@@ -1277,13 +1265,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
   auto const psychohistory_parameters =
       Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
           message.psychohistory_parameters());
-  auto const prediction_parameters =
-      Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
-          message.prediction_parameters());
   not_null<std::unique_ptr<Plugin>> plugin =
       std::unique_ptr<Plugin>(new Plugin(history_parameters,
-                                         psychohistory_parameters,
-                                         prediction_parameters));
+                                         psychohistory_parameters));
 
   plugin->ephemeris_ =
       Ephemeris<Barycentric>::ReadFromMessage(message.ephemeris());
@@ -1396,11 +1380,9 @@ not_null<std::unique_ptr<Plugin>> Plugin::ReadFromMessage(
 Plugin::Plugin(
     Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        psychohistory_parameters,
-    Ephemeris<Barycentric>::AdaptiveStepParameters const& prediction_parameters)
+        psychohistory_parameters)
     : history_parameters_(history_parameters),
       psychohistory_parameters_(psychohistory_parameters),
-      prediction_parameters_(prediction_parameters),
       vessel_thread_pool_(
           /*pool_size=*/2 * std::thread::hardware_concurrency()) {}
 
