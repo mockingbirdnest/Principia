@@ -102,7 +102,6 @@ message NavigationManoeuvre {
   required double final_time = 6;
   required double time_of_half_delta_v = 7;
   required double time_to_half_delta_v = 8;
-  required XYZ inertial_direction = 9;
 }
 
 // Frenet trihedron at the beginning of the manœuvre.

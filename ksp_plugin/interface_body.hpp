@@ -144,8 +144,7 @@ inline bool operator==(NavigationManoeuvre const& left,
          NaNIndependentEq(left.time_of_half_delta_v,
                           right.time_of_half_delta_v) &&
          NaNIndependentEq(left.time_to_half_delta_v,
-                          right.time_to_half_delta_v) &&
-         left.inertial_direction == right.inertial_direction;
+                          right.time_to_half_delta_v);
 }
 
 inline bool operator==(NavigationManoeuvreFrenetTrihedron const& left,

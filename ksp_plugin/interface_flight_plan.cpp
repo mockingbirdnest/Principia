@@ -165,12 +165,6 @@ NavigationManoeuvre ToInterfaceNavigationManoeuvre(
   result.final_time = ToGameTime(plugin, manœuvre.final_time());
   result.time_of_half_delta_v = ToGameTime(plugin, manœuvre.time_of_half_Δv());
   result.time_to_half_delta_v = manœuvre.time_to_half_Δv() / Second;
-  Vector<double, Barycentric> const barycentric_inertial_direction =
-      manœuvre.InertialDirection();
-  Vector<double, World> const world_inertial_direction =
-      plugin.renderer().BarycentricToWorld(plugin.PlanetariumRotation())(
-          barycentric_inertial_direction);
-  result.inertial_direction = ToXYZ(world_inertial_direction);
   return result;
 }
 

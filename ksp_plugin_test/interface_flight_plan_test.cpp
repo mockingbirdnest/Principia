@@ -263,9 +263,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
-  EXPECT_EQ(40, navigation_manoeuvre.inertial_direction.x);
-  EXPECT_EQ(50, navigation_manoeuvre.inertial_direction.y);
-  EXPECT_EQ(60, navigation_manoeuvre.inertial_direction.z);
 
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
