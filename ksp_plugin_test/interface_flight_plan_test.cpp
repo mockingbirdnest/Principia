@@ -149,15 +149,27 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_CALL(
       flight_plan,
-      SetAdaptiveStepParameters(AllOf(
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
-                   11),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       length_integration_tolerance,
-                   22 * Metre),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       speed_integration_tolerance,
-                   33 * Metre / Second))))
+      SetAdaptiveStepParameters(
+          AllOf(Property(
+                    &Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
+                    11),
+                Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                             length_integration_tolerance,
+                         22 * Metre),
+                Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                             speed_integration_tolerance,
+                         33 * Metre / Second)),
+          AllOf(Property(&Ephemeris<Barycentric>::
+                             GeneralizedAdaptiveStepParameters::max_steps,
+                         11),
+                Property(
+                    &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
+                        length_integration_tolerance,
+                    22 * Metre),
+                Property(
+                    &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
+                        speed_integration_tolerance,
+                    33 * Metre / Second))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
@@ -248,12 +260,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(navigation_manœuvre, InertialDirection())
-      .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
   EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
-  EXPECT_CALL(renderer, BarycentricToWorldSun(_))
-      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
       principia__FlightPlanGetManoeuvre(plugin_.get(),
                                         vessel_guid,
