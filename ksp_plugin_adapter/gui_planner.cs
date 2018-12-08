@@ -61,6 +61,16 @@ namespace ksp_plugin_adapter {
         private const float burn_mode_prefix_string_length = 50f;
         private const float burn_mode_string_length = 50f;
 
+        private const string burn_delta_velocity_prefix_string = "<color=#ffffffff>Burn Δv: </color>";
+        private const float burn_delta_velocity_prefix_string_length = 40f;
+        private const string burn_delta_velocity_string = "{0:E3} m/s";
+        private const float burn_delta_velocity_string_length = 90f;
+
+        private const string burn_time_prefix_string = "<color=#ffffffff>Burn Δt: </color>";
+        private const float burn_time_prefix_string_length = 40f;
+        private const string burn_time_string = "{0:E3} s";
+        private const float burn_time_string_length = 80f;
+
         private bool planner_window_visible = false;
 
         private DialogGUIBase execution_page;
@@ -131,6 +141,11 @@ namespace ksp_plugin_adapter {
         private double delta_velocity_binormal = 0.0;
         private double delta_time = 0.0;
         private bool inertially_fixed = false;
+        // Note that due to burns not being infinitely powerful
+        // at t=0, it is better not to assume an exact relationship
+        // between this deltaV, and the other 3 deltaV values
+        private double delta_velocity_burn = 0.0;
+        private double burn_time = 0.0;
 
         // The following 3 functions may look like code duplication, the reason they exists is because C#
         // does not allow constructing lambda expressions with reference variables
@@ -236,7 +251,8 @@ namespace ksp_plugin_adapter {
             else { burn_mode = BurnMode.Engine; }
         }
 
-        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal, double absolute_time, bool inertially_fixed, BurnMode burn_mode)
+        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal,
+                                                       double absolute_time, bool inertially_fixed, BurnMode burn_mode, double delta_velocity_burn, double burn_time)
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
@@ -245,7 +261,8 @@ namespace ksp_plugin_adapter {
                     new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
                     new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
                     new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
-                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length)
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
+                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, delta_velocity_burn); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 ),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel(time_name_string, time_name_string_length),
@@ -255,10 +272,12 @@ namespace ksp_plugin_adapter {
                     // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
                     new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line),
                     new DialogGUILabel(inertially_fixed ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
-                    new DialogGUILabel(() => { return burn_mode.ToString(); }, burn_mode_string_length)
-                ));
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, burn_time); }, burn_time_prefix_string_length + burn_time_string_length)
+                ),
+                new DialogGUISpace(5.0f));
         }
-
+        
         private DialogGUIBase CreateMutableManeuver()
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
@@ -269,7 +288,9 @@ namespace ksp_plugin_adapter {
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIToggle(inertially_fixed, inertially_fixed_burn_frame_string, (value) => { inertially_fixed = value; }, inertially_fixed_burn_frame_string_length),
                     new DialogGUISlider(GetBurnMode, 0f, 2f, true, -1, -1, SetBurnMode),
-                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length)
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, delta_velocity_burn); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length),
+                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, burn_time); }, burn_time_prefix_string_length + burn_time_string_length)
                 )
             );
         }
@@ -289,7 +310,9 @@ namespace ksp_plugin_adapter {
                                                                               delta_velocity_binormal,
                                                                               Planetarium.GetUniversalTime() + delta_time, // from now on the absolute time should be frozen
                                                                               inertially_fixed,
-                                                                              burn_mode);
+                                                                              burn_mode,
+                                                                              delta_velocity_burn,
+                                                                              burn_time);
                 AddManouver(planning_page, maneuver_non_mutable);
             }
 
