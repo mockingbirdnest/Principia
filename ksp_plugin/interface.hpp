@@ -3,6 +3,7 @@
 
 #include <typeindex>
 #include <type_traits>
+#include <utility>
 
 #include "base/not_null.hpp"
 #include "base/macros.hpp"

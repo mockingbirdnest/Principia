@@ -120,7 +120,7 @@ message Plugin {
   // Pre-Bourbaki.
   reserved 2;
   reserved "/*celestial*/";
-  // Pre-Erdos.
+  // Pre-Erdős.
   reserved 14;
   reserved "prediction_parameters";
 }
