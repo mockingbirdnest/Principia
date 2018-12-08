@@ -101,11 +101,73 @@ namespace ksp_plugin_adapter {
         //
         // Planning page support code
         //
+        private double delta_velocity_tangent = 0.0f;
+        private double delta_velocity_normal = 0.0f;
+        private double delta_velocity_binormal = 0.0f;
+
+        // The following 3 functions may look like code duplication, the reason they exists is because C#
+        // does not allow constructing lambda expressions with reference variables
+        private DialogGUIBase AddVelocityTangentToManeuver()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel("<color=#ffff00ff>Δv tangent</color>", 75f),
+                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_tangent); }, 90f),
+                new DialogGUIButton("-1000", () => { delta_velocity_tangent -= 1000.0; }, false),
+                new DialogGUIButton("-100", () => { delta_velocity_tangent -= 100.0; }, false),
+                new DialogGUIButton("-10", () => { delta_velocity_tangent -= 10.0; }, false),
+                new DialogGUIButton("-1", () => { delta_velocity_tangent -= 1.0; }, false),
+                new DialogGUIButton("-0.1", () => { delta_velocity_tangent -= 0.1; }, false),
+                new DialogGUIButton("0", () => { delta_velocity_tangent = 0.0; }, false),
+                new DialogGUIButton("+0.1", () => { delta_velocity_tangent += 0.1; }, false),
+                new DialogGUIButton("+1", () => { delta_velocity_tangent += 1.0; }, false),
+                new DialogGUIButton("+10", () => { delta_velocity_tangent += 10.0; }, false),
+                new DialogGUIButton("+100", () => { delta_velocity_tangent += 100.0; }, false),
+                new DialogGUIButton("+1000", () => { delta_velocity_tangent += 1000.0; }, false));
+        }
+
+        private DialogGUIBase AddVelocityNormalToManeuver()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel("<color=#00ffffff>Δv normal</color>", 75f),
+                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_normal); }, 90f),
+                new DialogGUIButton("-1000", () => { delta_velocity_normal -= 1000.0; }, false),
+                new DialogGUIButton("-100", () => { delta_velocity_normal -= 100.0; }, false),
+                new DialogGUIButton("-10", () => { delta_velocity_normal -= 10.0; }, false),
+                new DialogGUIButton("-1", () => { delta_velocity_normal -= 1.0; }, false),
+                new DialogGUIButton("-0.1", () => { delta_velocity_normal -= 0.1; }, false),
+                new DialogGUIButton("0", () => { delta_velocity_normal = 0.0; }, false),
+                new DialogGUIButton("+0.1", () => { delta_velocity_normal += 0.1; }, false),
+                new DialogGUIButton("+1", () => { delta_velocity_normal += 1.0; }, false),
+                new DialogGUIButton("+10", () => { delta_velocity_normal += 10.0; }, false),
+                new DialogGUIButton("+100", () => { delta_velocity_normal += 100.0; }, false),
+                new DialogGUIButton("+1000", () => { delta_velocity_normal += 1000.0; }, false));
+        }
+
+        private DialogGUIBase AddVelocityBinormalToManeuver()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel("<color=#ff00ffff>Δv binormal</color>", 75f),
+                new DialogGUILabel(() => { return string.Format("{0:E3} m/s", delta_velocity_binormal); }, 90f),
+                new DialogGUIButton("-1000", () => { delta_velocity_binormal -= 1000.0; }, false),
+                new DialogGUIButton("-100", () => { delta_velocity_binormal -= 100.0; }, false),
+                new DialogGUIButton("-10", () => { delta_velocity_binormal -= 10.0; }, false),
+                new DialogGUIButton("-1", () => { delta_velocity_binormal -= 1.0; }, false),
+                new DialogGUIButton("-0.1", () => { delta_velocity_binormal -= 0.1; }, false),
+                new DialogGUIButton("0", () => { delta_velocity_binormal = 0.0; }, false),
+                new DialogGUIButton("+0.1", () => { delta_velocity_binormal += 0.1; }, false),
+                new DialogGUIButton("+1", () => { delta_velocity_binormal += 1.0; }, false),
+                new DialogGUIButton("+10", () => { delta_velocity_binormal += 10.0; }, false),
+                new DialogGUIButton("+100", () => { delta_velocity_binormal += 100.0; }, false),
+                new DialogGUIButton("+1000", () => { delta_velocity_binormal += 1000.0; }, false));
+        }
+
         private void OnButtonClick_AddManeuver()
         {
             List<DialogGUIBase> rows = planning_page.children;
             DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUILabel("testing 102")
+                AddVelocityTangentToManeuver(),
+                AddVelocityNormalToManeuver(),
+                AddVelocityBinormalToManeuver()
             );
             maneuver.SetOptionText(magic_maneuver_string);
             rows.Add(maneuver);
@@ -122,6 +184,9 @@ namespace ksp_plugin_adapter {
             }
         }
 
+        //
+        // GUI initialization
+        //
         private void InitializePlannerGUI()
         {
             execution_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
@@ -151,7 +216,7 @@ namespace ksp_plugin_adapter {
                 "",
                 "Principia Planner",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 450.0f, 50.0f),
+                new Rect(0.5f, 0.5f, 650.0f, 50.0f),
                 new DialogGUIBase[]
                 {
                     // buttons to select page
