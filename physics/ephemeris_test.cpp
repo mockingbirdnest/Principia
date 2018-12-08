@@ -61,10 +61,10 @@ using quantities::Pow;
 using quantities::SIUnit;
 using quantities::Sqrt;
 using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::EarthEquatorialRadius;
 using quantities::astronomy::JulianYear;
-using quantities::astronomy::SolarMass;
-using quantities::constants::GravitationalConstant;
+using quantities::astronomy::SolarGravitationalParameter;
+using quantities::astronomy::TerrestrialEquatorialRadius;
+using quantities::astronomy::TerrestrialPolarRadius;
 using quantities::si::Hour;
 using quantities::si::Kilo;
 using quantities::si::Kilogram;
@@ -88,7 +88,6 @@ using ::testing::Ref;
 
 namespace {
 
-Length constexpr earth_polar_radius = 6356.8 * Kilo(Metre);
 int constexpr max_steps = 1e6;
 char constexpr big_name[] = "Big";
 char constexpr small_name[] = "Small";
@@ -714,7 +713,7 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
   trajectory.Append(t0_,
                     DegreesOfFreedom<ICRS>(
                         earth_position + Vector<Length, ICRS>(
-                            {0 * Metre, 0 * Metre, earth_polar_radius}),
+                            {0 * Metre, 0 * Metre, TerrestrialPolarRadius}),
                         earth_velocity));
 
   ephemeris.FlowWithAdaptiveStep(
@@ -819,25 +818,25 @@ TEST_P(EphemerisTest, CollisionDetection) {
 TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Time const duration = 1 * Second;
   double const j2 = 1e6;
-  Length const radius = 1 * EarthEquatorialRadius;
+  Length const radius = 1 * TerrestrialEquatorialRadius;
 
-  Mass const m0 = 1 * SolarMass;
-  Mass const m1 = 2 * SolarMass;
-  Mass const m2 = 3 * SolarMass;
-  Mass const m3 = 4 * SolarMass;
+  auto const μ0 = 1 * SolarGravitationalParameter;
+  auto const μ1 = 2 * SolarGravitationalParameter;
+  auto const μ2 = 3 * SolarGravitationalParameter;
+  auto const μ3 = 4 * SolarGravitationalParameter;
 
-  auto const b0 = new OblateBody<ICRS>(
-      m0,
-      RotatingBody<ICRS>::Parameters(1 * Metre,
-                                                 1 * Radian,
-                                                 t0_,
-                                                 4 * Radian / Second,
-                                                 0 * Radian,
-                                                 π / 2 * Radian),
-      OblateBody<ICRS>::Parameters(j2, radius));
-  auto const b1 = new MassiveBody(m1);
-  auto const b2 = new MassiveBody(m2);
-  auto const b3 = new MassiveBody(m3);
+  auto const b0 =
+      new OblateBody<ICRS>(μ0,
+                           RotatingBody<ICRS>::Parameters(1 * Metre,
+                                                          1 * Radian,
+                                                          t0_,
+                                                          4 * Radian / Second,
+                                                          0 * Radian,
+                                                          π / 2 * Radian),
+                           OblateBody<ICRS>::Parameters(j2, radius));
+  auto const b1 = new MassiveBody(μ1);
+  auto const b2 = new MassiveBody(μ2);
+  auto const b3 = new MassiveBody(μ3);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
   std::vector<DegreesOfFreedom<ICRS>> initial_state;
@@ -881,27 +880,26 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Vector<Acceleration, ICRS> actual_acceleration0 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b0, t0_);
   Vector<Acceleration, ICRS> expected_acceleration0 =
-      GravitationalConstant * (m1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
-                               m2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
-                               m3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
+      (μ1 * (q1 - q0) / Pow<3>((q1 - q0).Norm()) +
+       μ2 * (q2 - q0) / Pow<3>((q2 - q0).Norm()) +
+       μ3 * (q3 - q0) / Pow<3>((q3 - q0).Norm())) +
       Vector<Acceleration, ICRS>(
-          {(1.5 * m1 - (9 / Sqrt(512)) * m2) * GravitationalConstant *
-               Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
+          {(1.5 * μ1 - (9 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
+               Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
-           (-3 * m3 + (3 / Sqrt(512)) * m2) * GravitationalConstant *
-               Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
+           (-3 * μ3 + (3 / Sqrt(512)) * μ2) * Pow<2>(radius) * j2 /
+               Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration0,
               AlmostEquals(expected_acceleration0, 0, 6));
 
   Vector<Acceleration, ICRS> actual_acceleration1 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b1, t0_);
   Vector<Acceleration, ICRS> expected_acceleration1 =
-      GravitationalConstant * (m0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
-                               m2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
-                               m3 * (q3 - q1) / Pow<3>((q3 - q1).Norm())) +
+      μ0 * (q0 - q1) / Pow<3>((q0 - q1).Norm()) +
+      μ2 * (q2 - q1) / Pow<3>((q2 - q1).Norm()) +
+      μ3 * (q3 - q1) / Pow<3>((q3 - q1).Norm()) +
       Vector<Acceleration, ICRS>(
-          {-1.5 * GravitationalConstant * m0 * Pow<2>(radius) * j2 /
-               Pow<4>((q0 - q1).Norm()),
+          {-1.5 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
            0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>()});
   EXPECT_THAT(actual_acceleration1,
@@ -910,29 +908,27 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
   Vector<Acceleration, ICRS> actual_acceleration2 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b2, t0_);
   Vector<Acceleration, ICRS> expected_acceleration2 =
-      GravitationalConstant * (m0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
-                               m1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
-                               m3 * (q3 - q2) / Pow<3>((q3 - q2).Norm())) +
-      Vector<Acceleration, ICRS>(
-          {(9 / Sqrt(512)) * GravitationalConstant * m0 *
-               Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm()),
-           0 * SIUnit<Acceleration>(),
-           (-3 / Sqrt(512)) * GravitationalConstant * m0 *
-               Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
+      μ0 * (q0 - q2) / Pow<3>((q0 - q2).Norm()) +
+      μ1 * (q1 - q2) / Pow<3>((q1 - q2).Norm()) +
+      μ3 * (q3 - q2) / Pow<3>((q3 - q2).Norm()) +
+      Vector<Acceleration, ICRS>({(9 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
+                                      Pow<4>((q0 - q1).Norm()),
+                                  0 * SIUnit<Acceleration>(),
+                                  (-3 / Sqrt(512)) * μ0 * Pow<2>(radius) * j2 /
+                                      Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration2,
               AlmostEquals(expected_acceleration2, 0, 6));
 
   Vector<Acceleration, ICRS> actual_acceleration3 =
       ephemeris.ComputeGravitationalAccelerationOnMassiveBody(b3, t0_);
   Vector<Acceleration, ICRS> expected_acceleration3 =
-      GravitationalConstant * (m0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
-                               m1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
-                               m2 * (q2 - q3) / Pow<3>((q2 - q3).Norm())) +
+      μ0 * (q0 - q3) / Pow<3>((q0 - q3).Norm()) +
+      μ1 * (q1 - q3) / Pow<3>((q1 - q3).Norm()) +
+      μ2 * (q2 - q3) / Pow<3>((q2 - q3).Norm()) +
       Vector<Acceleration, ICRS>(
           {0 * SIUnit<Acceleration>(),
            0 * SIUnit<Acceleration>(),
-           3 * GravitationalConstant * m0 * Pow<2>(radius) * j2 /
-               Pow<4>((q0 - q1).Norm())});
+           3 * μ0 * Pow<2>(radius) * j2 / Pow<4>((q0 - q1).Norm())});
   EXPECT_THAT(actual_acceleration3,
               AlmostEquals(expected_acceleration3, 0, 4));
 }

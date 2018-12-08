@@ -116,7 +116,7 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == "km") {
     return Unit(si::Kilo(si::Metre));
   } else if (s == u8"R🜨") {
-    return Unit(astronomy::EarthEquatorialRadius);
+    return Unit(astronomy::TerrestrialEquatorialRadius);
   } else if (s == u8"R☉") {
     return Unit(astronomy::SolarRadius);
   } else if (s == "au") {
@@ -124,10 +124,6 @@ inline Unit ParseUnit(std::string const& s) {
   // Units of mass.
   } else if (s == "kg") {
     return Unit(si::Kilogram);
-  } else if (s == u8"M🜨") {
-    return Unit(astronomy::EarthMass);
-  } else if (s == u8"M☉") {
-    return Unit(astronomy::SolarMass);
   // Units of time.
   } else if (s == "ms") {
     return Unit(si::Milli(si::Second));
@@ -139,6 +135,11 @@ inline Unit ParseUnit(std::string const& s) {
     return Unit(si::Hour);
   } else if (s == "d") {
     return Unit(si::Day);
+  // Units of gravitational parameter.
+  } else if (s == u8"GM🜨") {
+    return Unit(astronomy::TerrestrialGravitationalParameter);
+  } else if (s == u8"GM☉") {
+    return Unit(astronomy::SolarGravitationalParameter);
   // Units of power.
   } else if (s == "W") {
     return Unit(si::Watt);

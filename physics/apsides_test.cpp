@@ -36,8 +36,7 @@ using quantities::Sqrt;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
 using quantities::astronomy::JulianYear;
-using quantities::astronomy::SolarMass;
-using quantities::constants::GravitationalConstant;
+using quantities::astronomy::SolarGravitationalParameter;
 using quantities::si::Degree;
 using quantities::si::Kilo;
 using quantities::si::Milli;
@@ -58,7 +57,7 @@ class ApsidesTest : public ::testing::Test {
 
 TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
   Instant const t0;
-  GravitationalParameter const μ = GravitationalConstant * SolarMass;
+  GravitationalParameter const μ = SolarGravitationalParameter;
   auto const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
@@ -154,7 +153,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
 
 TEST_F(ApsidesTest, ComputeNodes) {
   Instant const t0;
-  GravitationalParameter const μ = GravitationalConstant * SolarMass;
+  GravitationalParameter const μ = SolarGravitationalParameter;
   auto const b = new MassiveBody(μ);
 
   std::vector<not_null<std::unique_ptr<MassiveBody const>>> bodies;
