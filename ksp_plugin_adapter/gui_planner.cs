@@ -38,7 +38,10 @@ namespace ksp_plugin_adapter {
 
         private bool planner_window_visible = false;
 
-        private DialogGUIVerticalLayout planner_page;
+        private DialogGUIVerticalLayout execution_page;
+        private DialogGUIVerticalLayout planning_page;
+        private DialogGUIVerticalLayout settings_page;
+        private DialogGUIVerticalLayout planner_box;
         private MultiOptionDialog multi_page_planner;
         private PopupDialog popup_dialog;
 
@@ -55,6 +58,15 @@ namespace ksp_plugin_adapter {
             GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
         }
 
+        //
+        // Generic redrawing code
+        //
+        private void ClearPlannnerBox()
+        {
+            planner_box.children[0].uiItem.gameObject.DestroyGameObjectImmediate();
+            planner_box.children.Clear();
+        }
+
         private void ForceGUIUpdate(DialogGUIBase parent, DialogGUIBase child)
         {
             Stack<Transform> stack = new Stack<Transform>(); // some data on hierarchy of the GUI components
@@ -62,20 +74,47 @@ namespace ksp_plugin_adapter {
             child.Create(ref stack, HighLogic.UISkin); // required to force the GUI creation
         }
 
+        //
+        // Updating to another settings page
+        //
+        private void OnButtonClick_Execution()
+        {
+            ClearPlannnerBox();
+            planner_box.children.Add(execution_page);
+            ForceGUIUpdate(planner_box, execution_page);
+        }
+
+        private void OnButtonClick_Planning()
+        {
+            ClearPlannnerBox();
+            planner_box.children.Add(planning_page);
+            ForceGUIUpdate(planner_box, planning_page);
+        }
+
+        private void OnButtonClick_Settings()
+        {
+            ClearPlannnerBox();
+            planner_box.children.Add(settings_page);
+            ForceGUIUpdate(planner_box, settings_page);
+        }
+
+        //
+        // Planning page support code
+        //
         private void OnButtonClick_AddManeuver()
         {
-            List<DialogGUIBase> rows = planner_page.children;
+            List<DialogGUIBase> rows = planning_page.children;
             DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUILabel("testing 102")
             );
             maneuver.SetOptionText(magic_maneuver_string);
             rows.Add(maneuver);
-            ForceGUIUpdate(planner_page, maneuver);
+            ForceGUIUpdate(planning_page, maneuver);
         }
 
         private void OnButtonClick_DeleteManeuver()
         {
-            List<DialogGUIBase> rows = planner_page.children;
+            List<DialogGUIBase> rows = planning_page.children;
             DialogGUIBase child = rows.ElementAt(rows.Count - 1);
             if (child.OptionText == magic_maneuver_string) {
                 rows.RemoveAt(rows.Count - 1);
@@ -85,12 +124,27 @@ namespace ksp_plugin_adapter {
 
         private void InitializePlannerGUI()
         {
-            planner_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+            execution_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUILabel("testing 103")
+                )
+            );
+
+            planning_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIButton("Add Maneuver", OnButtonClick_AddManeuver, button_width, button_height, false),
                     new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false)
                 )
             );
+
+            settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUILabel("testing 104")
+                )
+            );
+
+            // Do not use a DialogGUIBox for this, it will not respect automatic resizing
+            planner_box = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter, execution_page);
 
             multi_page_planner = new MultiOptionDialog(
                 "PrincipiaPlannerGUI",
@@ -100,8 +154,13 @@ namespace ksp_plugin_adapter {
                 new Rect(0.5f, 0.5f, 450.0f, 50.0f),
                 new DialogGUIBase[]
                 {
-                    // page that contains the actual content
-                    planner_page
+                    // buttons to select page
+                    new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                        new DialogGUIButton("Execution", OnButtonClick_Execution, button_width, button_height, false),
+                        new DialogGUIButton("Planning", OnButtonClick_Planning, button_width, button_height, false),
+                        new DialogGUIButton("Settings", OnButtonClick_Settings, button_width, button_height, false)),
+                    // box that contains the actual content
+                    planner_box
                 });
         }
 
@@ -192,8 +251,8 @@ namespace ksp_plugin_adapter {
         // Might be because the previous objects haven't gone through the garbage collector yet
         public void OnDestroy()
         {
-          GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
-          GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
+            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
         }
     }
 }  // namespace ksp_plugin_adapter

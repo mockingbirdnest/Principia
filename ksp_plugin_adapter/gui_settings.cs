@@ -40,7 +40,7 @@ namespace ksp_plugin_adapter {
         private DialogGUIVerticalLayout plotting_frame_page;
         private DialogGUIVerticalLayout logging_settings_page;
 
-        private DialogGUIBox settings_box;
+        private DialogGUIVerticalLayout settings_box;
         private MultiOptionDialog multi_page_settings;
         private PopupDialog popup_dialog;
 
@@ -49,7 +49,7 @@ namespace ksp_plugin_adapter {
         //
         // Generic redrawing code
         //
-        private void ClearSettingsPage()
+        private void ClearSettingsBox()
         {
             settings_box.children[0].uiItem.gameObject.DestroyGameObjectImmediate();
             settings_box.children.Clear();
@@ -67,21 +67,21 @@ namespace ksp_plugin_adapter {
         //
         private void OnButtonClick_MainSettings()
         {
-            ClearSettingsPage();
+            ClearSettingsBox();
             settings_box.children.Add(main_settings_page);
             ForceGUIUpdate();
         }
 
         private void OnButtonClick_PlottingFrameSettings()
         {
-            ClearSettingsPage();
+            ClearSettingsBox();
             settings_box.children.Add(plotting_frame_page);
             ForceGUIUpdate();
         }
         
         private void OnButtonClick_LoggingSettings()
         {
-            ClearSettingsPage();
+            ClearSettingsBox();
             settings_box.children.Add(logging_settings_page);
             ForceGUIUpdate();
         }
@@ -200,7 +200,8 @@ namespace ksp_plugin_adapter {
                 new DialogGUILabel("testing 789")
             );
 
-            settings_box = new DialogGUIBox(null, -1, -1, () => true, main_settings_page);
+            // Do not use a DialogGUIBox for this, it will not respect automatic resizing
+            settings_box = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter, main_settings_page);
 
             multi_page_settings = new MultiOptionDialog(
                 "PrincipiaSettingsGUI",
@@ -307,8 +308,8 @@ namespace ksp_plugin_adapter {
         // Might be because the previous objects haven't gone through the garbage collector yet
         public void OnDestroy()
         {
-          GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
-          GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
+            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
         }
     }
 }  // namespace ksp_plugin_adapter
