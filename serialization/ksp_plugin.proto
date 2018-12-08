@@ -22,8 +22,8 @@ message FlightPlan {
   required Point desired_final_time = 3;
   repeated Manoeuvre manoeuvre = 8;
   required Ephemeris.AdaptiveStepParameters adaptive_step_parameters = 11;
-  required Ephemeris.AdaptiveStepParameters
-      generalized_adaptive_step_parameters = 13;
+  optional Ephemeris.AdaptiveStepParameters
+      generalized_adaptive_step_parameters = 13;  // Added in Erdős.
 
   // Pre-Cardano.
   reserved 4, 5, 6, 7;

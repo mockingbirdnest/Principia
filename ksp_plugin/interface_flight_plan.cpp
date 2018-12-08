@@ -210,14 +210,17 @@ bool principia__FlightPlanExists(
   return m.Return(plugin->GetVessel(vessel_guid)->has_flight_plan());
 }
 
-AdaptiveStepParameters principia__FlightPlanGetAdaptiveStepParameters(
+FlightPlanAdaptiveStepParameters
+principia__FlightPlanGetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid) {
   journal::Method<journal::FlightPlanGetAdaptiveStepParameters> m(
       {plugin, vessel_guid});
   CHECK_NOTNULL(plugin);
-  return m.Return(ToAdaptiveStepParameters(
-      GetFlightPlan(*plugin, vessel_guid).adaptive_step_parameters()));
+  auto const& flight_plan = GetFlightPlan(*plugin, vessel_guid);
+  return m.Return(ToFlightPlanAdaptiveStepParameters(
+                      flight_plan.adaptive_step_parameters(),
+                      flight_plan.generalized_adaptive_step_parameters()));
 }
 
 double principia__FlightPlanGetActualFinalTime(Plugin const* const plugin,
@@ -456,14 +459,16 @@ bool principia__FlightPlanReplaceLast(Plugin const* const plugin,
 bool principia__FlightPlanSetAdaptiveStepParameters(
     Plugin const* const plugin,
     char const* const vessel_guid,
-    AdaptiveStepParameters const adaptive_step_parameters) {
+    FlightPlanAdaptiveStepParameters const
+        flight_plan_adaptive_step_parameters) {
   journal::Method<journal::FlightPlanSetAdaptiveStepParameters> m(
-      {plugin, vessel_guid, adaptive_step_parameters});
+      {plugin, vessel_guid, flight_plan_adaptive_step_parameters});
   CHECK_NOTNULL(plugin);
+  auto const parameters = FromFlightPlanAdaptiveStepParameters(
+      flight_plan_adaptive_step_parameters);
   return m.Return(
-      GetFlightPlan(*plugin, vessel_guid).
-          SetAdaptiveStepParameters(
-              FromAdaptiveStepParameters(adaptive_step_parameters)));
+    GetFlightPlan(*plugin, vessel_guid).
+        SetAdaptiveStepParameters(parameters.first, parameters.second));
 }
 
 bool principia__FlightPlanSetDesiredFinalTime(Plugin const* const plugin,

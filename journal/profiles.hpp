@@ -22,6 +22,7 @@ using interface::Burn;
 using interface::ConfigurationAccuracyParameters;
 using interface::ConfigurationAdaptiveStepParameters;
 using interface::ConfigurationFixedStepParameters;
+using interface::FlightPlanAdaptiveStepParameters;
 using interface::KeplerianElements;
 using interface::Iterator;
 using interface::NavigationFrameParameters;

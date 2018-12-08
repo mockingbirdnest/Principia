@@ -123,6 +123,18 @@ inline bool operator==(Burn const& left, Burn const& right) {
          left.delta_v == right.delta_v;
 }
 
+inline bool operator==(FlightPlanAdaptiveStepParameters const& left,
+                       FlightPlanAdaptiveStepParameters const& right) {
+  return left.integrator_kind == right.integrator_kind &&
+         left.generalized_integrator_kind ==
+             right.generalized_integrator_kind &&
+         left.max_steps == right.max_steps &&
+         NaNIndependentEq(left.length_integration_tolerance,
+                          right.length_integration_tolerance) &&
+         NaNIndependentEq(left.speed_integration_tolerance,
+                          right.speed_integration_tolerance);
+}
+
 inline bool operator==(NavigationFrameParameters const& left,
                        NavigationFrameParameters const& right) {
   return left.extension == right.extension &&
@@ -196,6 +208,49 @@ FromAdaptiveStepParameters(
       adaptive_step_parameters.speed_integration_tolerance * (Metre / Second));
 }
 
+inline std::pair<
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters,
+    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
+                                         flight_plan_adaptive_step_parameters) {
+  serialization::AdaptiveStepSizeIntegrator message1;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_IsValid(
+      flight_plan_adaptive_step_parameters.integrator_kind));
+  message1.set_kind(
+      static_cast<serialization::AdaptiveStepSizeIntegrator::Kind>(
+          flight_plan_adaptive_step_parameters.integrator_kind));
+
+  serialization::AdaptiveStepSizeIntegrator message2;
+  CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_IsValid(
+      flight_plan_adaptive_step_parameters.generalized_integrator_kind));
+  message1.set_kind(
+      static_cast<serialization::AdaptiveStepSizeIntegrator::Kind>(
+          flight_plan_adaptive_step_parameters.generalized_integrator_kind));
+
+  auto const max_steps = flight_plan_adaptive_step_parameters.max_steps;
+  auto const length_integration_tolerance =
+      flight_plan_adaptive_step_parameters.length_integration_tolerance * Metre;
+  auto const speed_integration_tolerance =
+      flight_plan_adaptive_step_parameters.speed_integration_tolerance *
+      (Metre / Second);
+
+  auto const adaptive_step_parameters =
+      Ephemeris<Barycentric>::AdaptiveStepParameters(
+          AdaptiveStepSizeIntegrator<Ephemeris<Barycentric>::
+              NewtonianMotionEquation>::ReadFromMessage(message1),
+          max_steps,
+          length_integration_tolerance,
+          speed_integration_tolerance);
+  auto const generalized_adaptive_step_parameters =
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+          AdaptiveStepSizeIntegrator<Ephemeris<Barycentric>::
+              GeneralizedNewtonianMotionEquation>::ReadFromMessage(message2),
+          max_steps,
+          length_integration_tolerance,
+          speed_integration_tolerance);
+  return {adaptive_step_parameters, generalized_adaptive_step_parameters};
+}
+
 template<>
 inline DegreesOfFreedom<World> FromQP(QP const& qp) {
   return QPConverter<DegreesOfFreedom<World>>::FromQP(qp);
@@ -232,6 +287,24 @@ inline AdaptiveStepParameters ToAdaptiveStepParameters(
   serialization::AdaptiveStepSizeIntegrator message;
   adaptive_step_parameters.integrator().WriteToMessage(&message);
   return {message.kind(),
+          adaptive_step_parameters.max_steps(),
+          adaptive_step_parameters.length_integration_tolerance() / Metre,
+          adaptive_step_parameters.speed_integration_tolerance() /
+              (Metre / Second)};
+}
+
+inline FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        generalized_adaptive_step_parameters) {
+  serialization::AdaptiveStepSizeIntegrator message1;
+  adaptive_step_parameters.integrator().WriteToMessage(&message1);
+  serialization::AdaptiveStepSizeIntegrator message2;
+  generalized_adaptive_step_parameters.integrator().WriteToMessage(&message2);
+  // TODO(phl): Should we CHECK that the fields are consistent?
+  return {message1.kind(),
+          message2.kind(),
           adaptive_step_parameters.max_steps(),
           adaptive_step_parameters.length_integration_tolerance() / Metre,
           adaptive_step_parameters.speed_integration_tolerance() /
