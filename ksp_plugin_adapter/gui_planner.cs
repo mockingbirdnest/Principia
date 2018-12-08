@@ -39,16 +39,27 @@ namespace ksp_plugin_adapter {
         private const string velocity_tangent_string = "<color=#ffff00ff>Δv tangent</color>";
         private const string velocity_normal_string = "<color=#00ffffff>Δv normal</color>";
         private const string velocity_binormal_string = "<color=#ff00ffff>Δv binormal</color>";
-        private const float velocity_name_string_length = 75f;
+        private const float velocity_name_string_length = 60f;
         private const string velocity_value_string = "{0:E3} m/s";
         private const float velocity_value_string_length = 90f;
 
-        private const string time_name_string = "<color=#ffffffff>time</color>";
-        private const float time_name_string_length = 30f;
+        private const string time_name_string = "<color=#ffffffff>t</color>";
+        private const float time_name_string_length = 10f;
         private const string delta_time_name_string = "<color=#ffffffff>Δt</color>";
         private const float delta_time_name_string_length = 20f;
         private const float time_value_string_length_two_lines = 65f;
         private const float time_value_string_length_single_line = 130f;
+
+        // Fixed reference frame as opposed to a frenet frame that moves with the object
+        private const string inertially_fixed_burn_frame_string = "<color=#ffffffff>Inertially fixed</color>";
+        private const float inertially_fixed_burn_frame_string_length = 70f;
+        private const string inertial_frame_string = "<color=#ffffffff>Inertial frame</color>";
+        private const string frenet_frame_string = "<color=#ffffffff>Frenet frame</color>";
+        private const float inertial_or_frenet_frame_string_length = 80f;
+
+        private const string burn_mode_prefix_string = "<color=#ffffffff>Burn mode: </color>";
+        private const float burn_mode_prefix_string_length = 50f;
+        private const float burn_mode_string_length = 50f;
 
         private bool planner_window_visible = false;
 
@@ -119,6 +130,7 @@ namespace ksp_plugin_adapter {
         private double delta_velocity_normal = 0.0;
         private double delta_velocity_binormal = 0.0;
         private double delta_time = 0.0;
+        private bool inertially_fixed = false;
 
         // The following 3 functions may look like code duplication, the reason they exists is because C#
         // does not allow constructing lambda expressions with reference variables
@@ -203,9 +215,32 @@ namespace ksp_plugin_adapter {
                 new DialogGUIButton("+100D", () => { delta_time += 100*24*3600; }, false));
         }
 
-        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal, double absolute_time)
+        enum BurnMode {Engine, RCS, Instant};
+        BurnMode burn_mode = BurnMode.Engine;
+
+        private float GetBurnMode()
         {
-            return new DialogGUIHorizontalLayout(
+            switch (burn_mode) {
+                case BurnMode.Engine:
+                    return 0f;
+                case BurnMode.RCS:
+                    return 1f;
+                case BurnMode.Instant:
+                default:
+                    return 2f;
+            }
+        }
+
+        private void SetBurnMode(float value)
+        {
+            if (value > 1.5f) { burn_mode = BurnMode.Instant; }
+            else if (value > 0.5f) { burn_mode = BurnMode.RCS; }
+            else { burn_mode = BurnMode.Engine; }
+        }
+
+        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal, double absolute_time, bool inertially_fixed, BurnMode burn_mode)
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
                 new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
                 new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
@@ -217,7 +252,25 @@ namespace ksp_plugin_adapter {
                 new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
                 // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
                 // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line));
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line),
+                new DialogGUILabel(inertially_fixed ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
+                new DialogGUILabel(() => { return burn_mode.ToString(); }, burn_mode_string_length)
+                );
+        }
+
+        private DialogGUIBase CreateMutableManeuver()
+        {
+            return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                AddVelocityTangentToManeuver(),
+                AddVelocityNormalToManeuver(),
+                AddVelocityBinormalToManeuver(),
+                AddDeltaTimeToManeuver(),
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUIToggle(inertially_fixed, inertially_fixed_burn_frame_string, (value) => { inertially_fixed = value; }, inertially_fixed_burn_frame_string_length),
+                    new DialogGUISlider(GetBurnMode, 0f, 2f, true, -1, -1, SetBurnMode),
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length)
+                )
+            );
         }
 
         private void OnButtonClick_AddManeuver()
@@ -233,7 +286,9 @@ namespace ksp_plugin_adapter {
                 DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(delta_velocity_tangent,
                                                                               delta_velocity_normal, 
                                                                               delta_velocity_binormal,
-                                                                              Planetarium.GetUniversalTime() + delta_time); // from now on the absolute time should be frozen
+                                                                              Planetarium.GetUniversalTime() + delta_time, // from now on the absolute time should be frozen
+                                                                              inertially_fixed,
+                                                                              burn_mode);
                 AddManouver(planning_page, maneuver_non_mutable);
             }
 
@@ -242,12 +297,7 @@ namespace ksp_plugin_adapter {
             delta_velocity_normal = 0.0;
             delta_velocity_binormal = 0.0;
 
-            DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                AddVelocityTangentToManeuver(),
-                AddVelocityNormalToManeuver(),
-                AddVelocityBinormalToManeuver(),
-                AddDeltaTimeToManeuver()
-            );
+            DialogGUIBase maneuver = CreateMutableManeuver();
             AddManouver(planning_page, maneuver);
         }
 
@@ -265,12 +315,7 @@ namespace ksp_plugin_adapter {
             // maneuvers values
             if (pre_number_of_rows > post_number_of_row)
             {
-                DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                    AddVelocityTangentToManeuver(),
-                    AddVelocityNormalToManeuver(),
-                    AddVelocityBinormalToManeuver(),
-                    AddDeltaTimeToManeuver()
-                );
+                DialogGUIBase maneuver = CreateMutableManeuver();
                 AddManouver(planning_page, maneuver);
             }
         }
@@ -300,33 +345,33 @@ namespace ksp_plugin_adapter {
         //
         private void InitializePlannerGUI()
         {
-            execution_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+            execution_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel("testing 103")
                 )
             );
 
-            planning_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+            planning_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIButton("Add Maneuver", OnButtonClick_AddManeuver, button_width, button_height, false),
                     new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false))
             );
 
-            settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+            settings_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel("testing 104")
                 )
             );
 
             // Do not use a DialogGUIBox for this, it will not respect automatic resizing
-            planner_box = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter, execution_page);
+            planner_box = new DialogGUIHorizontalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter, execution_page);
 
             multi_page_planner = new MultiOptionDialog(
                 "PrincipiaPlannerGUI",
                 "",
                 "Principia Planner",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 900.0f, 50.0f),
+                new Rect(0.5f, 0.5f, 950.0f, 50.0f), // for reasons beyond me we have to get the width correct ourselves
                 new DialogGUIBase[]
                 {
                     // buttons to select page
