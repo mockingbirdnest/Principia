@@ -43,7 +43,7 @@ FlightPlan::FlightPlan(
       ephemeris_(ephemeris),
       adaptive_step_parameters_(adaptive_step_parameters),
       generalized_adaptive_step_parameters_(
-          generalized_adaptive_step_parameters){
+          generalized_adaptive_step_parameters) {
   CHECK(desired_final_time_ >= initial_time_);
 
   // Set the (single) point of the root.
@@ -245,14 +245,15 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
           Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
               message.adaptive_step_parameters()));
 
-  bool const is_pre_erdős = !message.has_generalized_adaptive_step_parameters();
+  bool const is_pre_εὔδοξος =
+      !message.has_generalized_adaptive_step_parameters();
   std::unique_ptr<Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
       generalized_adaptive_step_parameters;
-  if (is_pre_erdős) {
+  if (is_pre_εὔδοξος) {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
-        EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-            Fine1987RKNG34,
+        EmbeddedExplicitRungeKuttaNyströmIntegrator<
+            DormandالمكاوىPrince1986RKN434FM,
             Position<Barycentric>>(),
         /*max_steps=*/1,
         /*length_integration_tolerance=*/1 * Metre,
@@ -303,12 +304,12 @@ FlightPlan::FlightPlan()
           /*length_integration_tolerance=*/1 * Metre,
           /*speed_integration_tolerance=*/1 * Metre / Second),
       generalized_adaptive_step_parameters_(
-          EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-              Fine1987RKNG34,
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandالمكاوىPrince1986RKN434FM,
               Position<Barycentric>>(),
           /*max_steps=*/1,
           /*length_integration_tolerance=*/1 * Metre,
-          /*speed_integration_tolerance=*/1 * Metre / Second){}
+          /*speed_integration_tolerance=*/1 * Metre / Second) {}
 
 void FlightPlan::Append(NavigationManœuvre manœuvre) {
   manœuvres_.emplace_back(std::move(manœuvre));

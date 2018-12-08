@@ -106,8 +106,8 @@ class FlightPlanTest : public testing::Test {
             /*length_integration_tolerance=*/1 * Milli(Metre),
             /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-                Fine1987RKNG34,
+            EmbeddedExplicitRungeKuttaNyströmIntegrator<
+                DormandالمكاوىPrince1986RKN434FM,
                 Position<Barycentric>>(),
             /*max_steps=*/1000,
             /*length_integration_tolerance=*/1 * Milli(Metre),
@@ -192,9 +192,9 @@ TEST_F(FlightPlanTest, Singular) {
           /*max_steps=*/1000,
           /*length_integration_tolerance=*/1 * Milli(Metre),
           /*speed_integration_tolerance=*/1 * Milli(Metre) / Second),
-        Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
-            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-                Fine1987RKNG34,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters(
+          EmbeddedExplicitRungeKuttaNyströmIntegrator<
+              DormandالمكاوىPrince1986RKN434FM,
                 Position<Barycentric>>(),
             /*max_steps=*/1,
             /*length_integration_tolerance=*/1 * Metre,

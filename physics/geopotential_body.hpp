@@ -34,6 +34,7 @@ using quantities::ArcTan;
 using quantities::Cos;
 using quantities::Derivative;
 using quantities::Length;
+using quantities::NaN;
 using quantities::Pow;
 using quantities::Sqrt;
 using quantities::Sin;
@@ -594,6 +595,11 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     Length const& r_norm,
     Square<Length> const& r²,
     Exponentiation<Length, -3> const& one_over_r³) const {
+  if (r_norm != r_norm) {
+    // Short-circuit NaN, to avoid having to deal with an unordered
+    // |r_norm| when finding the partition point below.
+    return NaN<ReducedAcceleration>() * Vector<double, Frame>{};
+  }
   // |limiting_degree| is the first degree such that
   // |r_norm >= degree_damping_[limiting_degree].outer_threshold()|, or is
   // |degree_damping_.size()| if |r_norm| is below all thresholds.
