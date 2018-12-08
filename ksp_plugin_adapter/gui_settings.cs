@@ -138,9 +138,12 @@ namespace ksp_plugin_adapter {
         public SettingsGUI()
         {
             InitializeSettingsGUI();
+        }
 
-            GameEvents.onGUIApplicationLauncherReady.Add(onAppLauncherReady);
-            GameEvents.onGUIApplicationLauncherDestroyed.Add(onAppLauncherDestroyed);
+        public void Awake()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
         }
         
         private void InitializeSettingsGUI()
@@ -285,20 +288,27 @@ namespace ksp_plugin_adapter {
                       texture         : toolbar_button_texture);
             }
         }
-        private void onAppLauncherReady() {
-            InitializeToolbarIcon();
+
+        private void TerminateToolbarIcon(GameScenes scenes) {
+            if (toolbar_button != null) {
+                KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(toolbar_button);
+                toolbar_button = null;
+            }
         }
-        
-        private void onAppLauncherDestroyed() {
-            KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(toolbar_button);
-            toolbar_button = null;
-        }
-        
+
         public void Start()
         {
             if (settings_window_visible) {
                 ShowSettingsWindow();
             }
+        }
+
+        // If we don't remove our event subscriptions we end up getting a growing amount of toolbar icons
+        // Might be because the previous objects haven't gone through the garbage collector yet
+        public void OnDestroy()
+        {
+          GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
+          GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
         }
     }
 }  // namespace ksp_plugin_adapter
