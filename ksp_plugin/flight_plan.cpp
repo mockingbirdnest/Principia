@@ -7,6 +7,7 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
@@ -264,12 +265,7 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
   if (is_pre_erdős) {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
-            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-                Fine1987RKNG34,
-                Position<Barycentric>>(),
-            /*max_steps=*/1,
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second);
+        DefaultBurnParameters());
   } else {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
