@@ -325,7 +325,8 @@ TEST_F(VesselTest, FlightPlan) {
       .WillOnce(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
-                           DefaultPredictionParameters());
+                           DefaultPredictionParameters(),
+                           DefaultBurnParameters());
   EXPECT_TRUE(vessel_.has_flight_plan());
   EXPECT_EQ(0, vessel_.flight_plan().number_of_manœuvres());
   EXPECT_EQ(1, vessel_.flight_plan().number_of_segments());
@@ -345,7 +346,8 @@ TEST_F(VesselTest, SerializationSuccess) {
       .WillRepeatedly(Return(Status::OK));
   vessel_.CreateFlightPlan(astronomy::J2000 + 3.0 * Second,
                            10 * Kilogram,
-                           DefaultPredictionParameters());
+                           DefaultPredictionParameters(),
+                           DefaultBurnParameters());
 
   vessel_.WriteToMessage(&message,
                          serialization_index_for_pile_up.AsStdFunction());

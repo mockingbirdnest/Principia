@@ -44,7 +44,9 @@ class FlightPlan {
              Instant const& desired_final_time,
              not_null<Ephemeris<Barycentric>*> ephemeris,
              Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                 adaptive_step_parameters);
+                 adaptive_step_parameters,
+             Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+                 generalized_adaptive_step_parameters);
   virtual ~FlightPlan() = default;
 
   virtual Instant initial_time() const;
@@ -172,6 +174,8 @@ class FlightPlan {
   std::vector<NavigationManœuvre> manœuvres_;
   not_null<Ephemeris<Barycentric>*> ephemeris_;
   Ephemeris<Barycentric>::AdaptiveStepParameters adaptive_step_parameters_;
+  Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+      generalized_adaptive_step_parameters_;
   // The last |anomalous_segments_| of |segments_| are anomalous, i.e. they
   // either end prematurely or follow an anomalous segment; in the latter case
   // they are empty.

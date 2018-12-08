@@ -850,10 +850,13 @@ void Plugin::CreateFlightPlan(GUID const& vessel_guid,
                               Instant const& final_time,
                               Mass const& initial_mass) const {
   CHECK(!initializing_);
+  // TODO(phl): Serialize the burn parameters.  We should also probably
+  // distinguish the coast parameters from the prediction parameters.
   FindOrDie(vessels_, vessel_guid)->CreateFlightPlan(
       final_time,
       initial_mass,
-      prediction_parameters_);
+      prediction_parameters_,
+      DefaultBurnParameters());
 }
 
 void Plugin::ComputeAndRenderApsides(
