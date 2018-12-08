@@ -1,5 +1,7 @@
 # Principia
 
+![⚠️](https://placehold.it/10/f00000/000000&text=%20) _If you downloaded Erdős before December 8, 18:30 UTC, you probably have a buggy version (see [#2014](https://github.com/mockingbirdnest/Principia/issues/2014) and [#2020](https://github.com/mockingbirdnest/Principia/issues/2020)).  Please download it again.  If you have the correct version, the version string in the Principia UI says 2018120707-Erdős-0-g3e2334a95bcfc6869b5464ecda5ae48b5412dba0.  We apologize for the inconvenience._ ![⚠️](https://placehold.it/10/f00000/000000&text=%20)
+
 **[Erdős](https://github.com/mockingbirdnest/Principia/wiki/Change-Log#erd%C5%91s), the December version of Principia, is available, with support for complex geopotentials and performance improvements on macOS.  Download it [here for 1.3.1](https://goo.gl/DVwn66), and [here for 1.4.x and 1.5.1](https://goo.gl/NYaiPd).  We also have an updated version of the “Trappist-1 for Principia” mini-mod [here](https://goo.gl/g57iea).**
 
 Principia is a mod for Kerbal Space Program (KSP) which implements N-body and extended body gravitation.  Instead of being within the sphere of influence of a single celestial body at any point in time, your vessels are influenced by all the celestials.  This makes it possible to implement missions that are more complex and more realistic than in the stock game, especially if used in conjunction with a mod like RealSolarSystem which has real-life celestials.
