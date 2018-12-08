@@ -36,6 +36,17 @@ namespace ksp_plugin_adapter {
         private const float button_height = 25.0f;
         private const string magic_maneuver_string = "Delete me please";
 
+        //
+        // Definitions to support the execution page
+        //
+        private const string show_on_navball_string = "<color=#ffffffff>Show on navball</color>";
+        private const float show_on_navball_string_length = 70f;
+        private const string ignition_delta_time_name_string = "<color=#ffffffff>Ignition Δt: </color>";
+        private const float ignition_delta_time_name_string_length = 60f;
+        
+        //
+        // Definitions to support the planner page
+        //
         private const string velocity_tangent_string = "<color=#ffff00ff>Δv tangent</color>";
         private const string velocity_normal_string = "<color=#00ffffff>Δv normal</color>";
         private const string velocity_binormal_string = "<color=#ff00ffff>Δv binormal</color>";
@@ -131,6 +142,18 @@ namespace ksp_plugin_adapter {
             ClearPlannnerBox();
             planner_box.children.Add(settings_page);
             ForceGUIUpdate(planner_box, settings_page);
+        }
+
+        //
+        // Execution page support code
+        //
+        private bool show_on_navball = false;
+        private double ignition_delta_time = 0.0;
+        private double ignition_delta_velocity = 0.0; // by definition this only talks about the "ignition_delta_time" burn
+
+        private void OnButtonClick_WarpToManeuver()
+        {
+            // TODO: implement actual behavior
         }
 
         //
@@ -315,7 +338,7 @@ namespace ksp_plugin_adapter {
                                                                               burn_time);
                 AddManouver(planning_page, maneuver_non_mutable);
             }
-
+            
             // New manouver should start with a zero manouver (i.e. no delta velocity used)
             delta_velocity_tangent = 0.0;
             delta_velocity_normal = 0.0;
@@ -371,14 +394,21 @@ namespace ksp_plugin_adapter {
         {
             execution_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUILabel("testing 103")
+                    new DialogGUIToggle(show_on_navball, show_on_navball_string, (value) => { show_on_navball = value; }, show_on_navball_string_length),
+                    new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false)
+                ),
+                // TODO: will ignition time be delta based or absolute based?
+                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    new DialogGUILabel(() => { return ignition_delta_time_name_string + FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(ignition_delta_time)); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, ignition_delta_velocity); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 )
             );
 
             planning_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIButton("Add Maneuver", OnButtonClick_AddManeuver, button_width, button_height, false),
-                    new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false))
+                    new DialogGUIButton("Delete Maneuver", OnButtonClick_DeleteManeuver, button_width, button_height, false)
+                )
             );
 
             settings_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
