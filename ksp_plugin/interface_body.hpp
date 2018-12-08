@@ -223,7 +223,7 @@ FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
   serialization::AdaptiveStepSizeIntegrator message2;
   CHECK(serialization::AdaptiveStepSizeIntegrator::Kind_IsValid(
       flight_plan_adaptive_step_parameters.generalized_integrator_kind));
-  message1.set_kind(
+  message2.set_kind(
       static_cast<serialization::AdaptiveStepSizeIntegrator::Kind>(
           flight_plan_adaptive_step_parameters.generalized_integrator_kind));
 

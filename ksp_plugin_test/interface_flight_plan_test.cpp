@@ -163,6 +163,7 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
                   plugin_.get(),
                   vessel_guid,
                   {/*integrator_kind=*/1,
+                   /*generalized_integrator_kind=*/2,
                    /*max_step=*/11,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
