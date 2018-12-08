@@ -82,13 +82,17 @@ class FlightPlan {
 
   virtual Ephemeris<Barycentric>::AdaptiveStepParameters const&
   adaptive_step_parameters() const;
+  virtual Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+  generalized_adaptive_step_parameters() const;
 
   // Sets the parameters used to compute the trajectories.  The trajectories are
   // recomputed.  Returns false (and doesn't change this object) if the
   // parameters would make it impossible to recompute the trajectories.
   virtual bool SetAdaptiveStepParameters(
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          adaptive_step_parameters);
+          adaptive_step_parameters,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+          generalized_adaptive_step_parameters);
 
   // Returns the number of trajectory segments in this object.
   virtual int number_of_segments() const;

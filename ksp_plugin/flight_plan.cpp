@@ -7,6 +7,7 @@
 #include "integrators/embedded_explicit_generalized_runge_kutta_nyström_integrator.hpp"
 #include "integrators/embedded_explicit_runge_kutta_nyström_integrator.hpp"
 #include "integrators/methods.hpp"
+#include "ksp_plugin/integrators.hpp"
 #include "testing_utilities/make_not_null.hpp"
 
 namespace principia {
@@ -181,16 +182,28 @@ FlightPlan::adaptive_step_parameters() const {
   return adaptive_step_parameters_;
 }
 
+Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+FlightPlan::generalized_adaptive_step_parameters() const {
+  return generalized_adaptive_step_parameters_;
+}
+
 bool FlightPlan::SetAdaptiveStepParameters(
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        adaptive_step_parameters) {
+        adaptive_step_parameters,
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        generalized_adaptive_step_parameters) {
   auto const original_adaptive_step_parameters = adaptive_step_parameters_;
+  auto const original_generalized_adaptive_step_parameters =
+      generalized_adaptive_step_parameters_;
   adaptive_step_parameters_ = adaptive_step_parameters;
+  generalized_adaptive_step_parameters_ = generalized_adaptive_step_parameters;
   if (RecomputeSegments()) {
     return true;
   } else {
     // If the recomputation fails, leave this place as clean as we found it.
     adaptive_step_parameters_ = original_adaptive_step_parameters;
+    generalized_adaptive_step_parameters_ =
+        original_generalized_adaptive_step_parameters;
     CHECK(RecomputeSegments());
     return false;
   }
@@ -245,19 +258,14 @@ std::unique_ptr<FlightPlan> FlightPlan::ReadFromMessage(
           Ephemeris<Barycentric>::AdaptiveStepParameters::ReadFromMessage(
               message.adaptive_step_parameters()));
 
-  bool const is_pre_εὔδοξος =
+  bool const is_pre_erdős =
       !message.has_generalized_adaptive_step_parameters();
   std::unique_ptr<Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
       generalized_adaptive_step_parameters;
-  if (is_pre_εὔδοξος) {
+  if (is_pre_erdős) {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
-            EmbeddedExplicitGeneralizedRungeKuttaNyströmIntegrator<
-                Fine1987RKNG34,
-                Position<Barycentric>>(),
-            /*max_steps=*/1,
-            /*length_integration_tolerance=*/1 * Metre,
-            /*speed_integration_tolerance=*/1 * Metre / Second);
+        DefaultBurnParameters());
   } else {
     generalized_adaptive_step_parameters = std::make_unique<
         Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>(
