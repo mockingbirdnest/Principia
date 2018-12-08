@@ -43,6 +43,13 @@ namespace ksp_plugin_adapter {
         private const string velocity_value_string = "{0:E3} m/s";
         private const float velocity_value_string_length = 90f;
 
+        private const string time_name_string = "<color=#ffffffff>time</color>";
+        private const float time_name_string_length = 30f;
+        private const string delta_time_name_string = "<color=#ffffffff>Δt</color>";
+        private const float delta_time_name_string_length = 20f;
+        private const float time_value_string_length_two_lines = 65f;
+        private const float time_value_string_length_single_line = 130f;
+
         private bool planner_window_visible = false;
 
         private DialogGUIBase execution_page;
@@ -108,9 +115,10 @@ namespace ksp_plugin_adapter {
         //
         // Planning page support code
         //
-        private double delta_velocity_tangent = 0.0f;
-        private double delta_velocity_normal = 0.0f;
-        private double delta_velocity_binormal = 0.0f;
+        private double delta_velocity_tangent = 0.0;
+        private double delta_velocity_normal = 0.0;
+        private double delta_velocity_binormal = 0.0;
+        private double delta_time = 0.0;
 
         // The following 3 functions may look like code duplication, the reason they exists is because C#
         // does not allow constructing lambda expressions with reference variables
@@ -167,8 +175,35 @@ namespace ksp_plugin_adapter {
                 new DialogGUIButton("+100", () => { delta_velocity_binormal += 100.0; }, false),
                 new DialogGUIButton("+1000", () => { delta_velocity_binormal += 1000.0; }, false));
         }
+        
+        // TODO: check out how to deal with 6 hour days (Kerbin) vs 24 hour days (Earth)
+        private DialogGUIBase AddDeltaTimeToManeuver()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel(time_name_string, time_name_string_length),
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(Planetarium.GetUniversalTime() + delta_time)); }, time_value_string_length_two_lines),
+                new DialogGUIButton("-100D", () => { delta_time -= 100*24*3600; }, false),
+                new DialogGUIButton("-10D", () => { delta_time -= 10*24*3600; }, false),
+                new DialogGUIButton("-1D", () => { delta_time -= 1*24*3600; }, false),
+                new DialogGUIButton("-6H", () => { delta_time -= 6*3600; }, false),
+                new DialogGUIButton("-1H", () => { delta_time -= 1*3600; }, false),
+                new DialogGUIButton("-10M", () => { delta_time -= 10*60; }, false),
+                new DialogGUIButton("-1M", () => { delta_time -= 1*60; }, false),
+                new DialogGUIButton("-10S", () => { delta_time -= 10; }, false),
+                new DialogGUIButton("-1S", () => { delta_time -= 1; }, false),
+                new DialogGUIButton("0", () => { delta_time = 0; }, false),
+                new DialogGUIButton("+1S", () => { delta_time += 1; }, false),
+                new DialogGUIButton("+10S", () => { delta_time += 10; }, false),
+                new DialogGUIButton("+1M", () => { delta_time += 1*60; }, false),
+                new DialogGUIButton("+10M", () => { delta_time += 10*60; }, false),
+                new DialogGUIButton("+1H", () => { delta_time += 1*3600; }, false),
+                new DialogGUIButton("+6H", () => { delta_time += 6*3600; }, false),
+                new DialogGUIButton("+1D", () => { delta_time += 1*24*3600; }, false),
+                new DialogGUIButton("+10D", () => { delta_time += 10*24*3600; }, false),
+                new DialogGUIButton("+100D", () => { delta_time += 100*24*3600; }, false));
+        }
 
-        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal)
+        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal, double absolute_time)
         {
             return new DialogGUIHorizontalLayout(
                 new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
@@ -176,7 +211,13 @@ namespace ksp_plugin_adapter {
                 new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
                 new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
                 new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length));
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
+                new DialogGUILabel(time_name_string, time_name_string_length),
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time)); }, time_value_string_length_single_line),
+                new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
+                // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
+                // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line));
         }
 
         private void OnButtonClick_AddManeuver()
@@ -189,14 +230,23 @@ namespace ksp_plugin_adapter {
 
             if (pre_number_of_rows > post_number_of_row)
             {
-                DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(delta_velocity_tangent, delta_velocity_normal, delta_velocity_binormal);
+                DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(delta_velocity_tangent,
+                                                                              delta_velocity_normal, 
+                                                                              delta_velocity_binormal,
+                                                                              Planetarium.GetUniversalTime() + delta_time); // from now on the absolute time should be frozen
                 AddManouver(planning_page, maneuver_non_mutable);
             }
+
+            // New manouver should start with a zero manouver (i.e. no delta velocity used)
+            delta_velocity_tangent = 0.0;
+            delta_velocity_normal = 0.0;
+            delta_velocity_binormal = 0.0;
 
             DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 AddVelocityTangentToManeuver(),
                 AddVelocityNormalToManeuver(),
-                AddVelocityBinormalToManeuver()
+                AddVelocityBinormalToManeuver(),
+                AddDeltaTimeToManeuver()
             );
             AddManouver(planning_page, maneuver);
         }
@@ -218,7 +268,8 @@ namespace ksp_plugin_adapter {
                 DialogGUIVerticalLayout maneuver = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                     AddVelocityTangentToManeuver(),
                     AddVelocityNormalToManeuver(),
-                    AddVelocityBinormalToManeuver()
+                    AddVelocityBinormalToManeuver(),
+                    AddDeltaTimeToManeuver()
                 );
                 AddManouver(planning_page, maneuver);
             }
@@ -275,7 +326,7 @@ namespace ksp_plugin_adapter {
                 "",
                 "Principia Planner",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 650.0f, 50.0f),
+                new Rect(0.5f, 0.5f, 900.0f, 50.0f),
                 new DialogGUIBase[]
                 {
                     // buttons to select page
