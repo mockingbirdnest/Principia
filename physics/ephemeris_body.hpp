@@ -150,7 +150,7 @@ void Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::WriteToMessage(
 
 template<typename Frame>
 template<typename ODE>
-typename Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>
+typename Ephemeris<Frame>::template ODEAdaptiveStepParameters<ODE>
 Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ReadFromMessage(
     serialization::Ephemeris::AdaptiveStepParameters const& message) {
   return ODEAdaptiveStepParameters(
