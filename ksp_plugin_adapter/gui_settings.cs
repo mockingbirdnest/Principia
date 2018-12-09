@@ -35,11 +35,30 @@ namespace ksp_plugin_adapter {
         private const float button_width = 50.0f;
         private const float button_height = 25.0f;
 
+        // Plotting frame defines
         private const string plotting_frame_body_name_string = "<color=#ffffffff>Selected celestial body for plotting frame: </color>";
         private const float plotting_frame_body_name_string_length = 200f;
         private const float plotting_frame_body_value_string_length = 60f;
 
         private const float plotting_frame_string_length = 300f;
+
+        // Logging settings defines
+        private const string verbose_level_name_string = "<color=#ffffffff>Verbose level: </color>";
+        private const float verbose_level_name_string_length = 60f;
+        private const float verbose_level_value_string_length = 60f;
+
+        private const string log_level_name_string = "<color=#ffffffff>Log level: </color>";
+        private const string stderr_level_name_string = "<color=#ffffffff>Stderr level: </color>";
+        private const string flush_level_name_string = "<color=#ffffffff>Flush level: </color>";
+        private const float log_level_name_string_length = 60f;
+        private const float log_level_value_string_length = 60f;
+
+        private const string record_journal_at_next_startup_name_string = "<color=#ffffffff>Record journal (enabling requires restart)</color>";
+        private const float record_journal_at_next_startup_name_string_length = 350f;
+
+        private const string record_journal_in_progress_name_string = "Journaling is ON";
+        private const string record_journal_not_in_progress_name_string = "Journaling is OFF";
+        private const float record_journal_in_progress_name_string_length = 100f;
 
         bool settings_window_visible = false;
 
@@ -287,11 +306,52 @@ namespace ksp_plugin_adapter {
                 new DialogGUILabel(GetFrameTypeString, plotting_frame_string_length),
                 new DialogGUISlider(GetFrameType, 0f, 3f, true, -1, -1, SetFrameType),
                 // there will be too many celestial bodies, putting them inside something that can scroll vertically
-                new DialogGUIScrollList(new Vector2(400f, 500f), false, true, celestial_body_list)
+                new DialogGUIScrollList(new Vector2(450f, 500f), false, true, celestial_body_list)
             );
             return gui;
         }
-        
+
+        //
+        // Support code for logging settings
+        //
+        private int verbose_level = 0;
+        private int supressed_logging_level = 0;
+        private int stderr_logging_level = 0;
+        private int flush_logging_level = 0;
+        private bool record_journal_at_next_startup = false;
+        private bool record_journal_in_progress = false;
+
+        private float GetVerboseLevel() { return (float)verbose_level; }
+        private void SetVerboseLevel(float value) { verbose_level = (int)value; }
+
+        private float GetLogLevel() { return supressed_logging_level; }
+        private void SetLogLevel(float value) { supressed_logging_level = (int)value; }
+        private float GetStderrLevel() { return stderr_logging_level; }
+        private void SetStderrLevel(float value) { stderr_logging_level = (int)value; }
+        private float GetFlushLevel() { return flush_logging_level; }
+        private void SetFlushLevel(float value) { flush_logging_level = (int)value; }
+
+        private DialogGUIBase AddLoggingSettingsUI()
+        {
+            return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetVerboseLevel, 0f, 4f, true, -1, -1, SetVerboseLevel),
+                    new DialogGUILabel(() => { return verbose_level_name_string + verbose_level; }, verbose_level_name_string_length + verbose_level_value_string_length)),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetLogLevel, 0f, 3f, true, -1, -1, SetLogLevel),
+                    new DialogGUILabel(() => { return log_level_name_string + Log.severity_names[supressed_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetStderrLevel, 0f, 3f, true, -1, -1, SetStderrLevel),
+                    new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[stderr_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetFlushLevel, 0f, 3f, true, -1, -1, SetFlushLevel),
+                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[flush_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUIToggle(record_journal_at_next_startup, record_journal_at_next_startup_name_string, (value) => { record_journal_at_next_startup = value; }, record_journal_at_next_startup_name_string_length),
+                    new DialogGUILabel(() => { if (record_journal_in_progress) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
+            );
+        }
+
         private void InitializeSettingsGUI()
         {
             main_settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
@@ -340,19 +400,17 @@ namespace ksp_plugin_adapter {
                 new DialogGUISpace(100.0f)
             );
             plotting_frame_page = AddPlottingFrameSelectionUI();
-            logging_settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUILabel("testing 789")
-            );
+            logging_settings_page = AddLoggingSettingsUI();
 
             // Do not use a DialogGUIBox for this, it will not respect automatic resizing
-            settings_box = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter, main_settings_page);
+            settings_box = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter, main_settings_page);
 
             multi_page_settings = new MultiOptionDialog(
                 "PrincipiaSettingsGUI",
                 "",
                 "Principia Settings",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 450.0f, 450.0f),
+                new Rect(0.5f, 0.5f, 500.0f, 50.0f),
                 new DialogGUIBase[]
                 {
                     // buttons to select page
