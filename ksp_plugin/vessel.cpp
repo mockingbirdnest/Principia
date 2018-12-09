@@ -222,7 +222,9 @@ void Vessel::CreateFlightPlan(
     Instant const& final_time,
     Mass const& initial_mass,
     Ephemeris<Barycentric>::AdaptiveStepParameters const&
-        flight_plan_adaptive_step_parameters) {
+        flight_plan_adaptive_step_parameters,
+    Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        flight_plan_generalized_adaptive_step_parameters) {
   auto const history_last = history_->last();
   flight_plan_ = std::make_unique<FlightPlan>(
       initial_mass,
@@ -230,7 +232,8 @@ void Vessel::CreateFlightPlan(
       /*initial_degrees_of_freedom=*/history_last.degrees_of_freedom(),
       final_time,
       ephemeris_,
-      flight_plan_adaptive_step_parameters);
+      flight_plan_adaptive_step_parameters,
+      flight_plan_generalized_adaptive_step_parameters);
 }
 
 void Vessel::DeleteFlightPlan() {

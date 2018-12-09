@@ -137,7 +137,9 @@ class Vessel {
       Instant const& final_time,
       Mass const& initial_mass,
       Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          flight_plan_adaptive_step_parameters);
+          flight_plan_adaptive_step_parameters,
+      Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+          flight_plan_generalized_adaptive_step_parameters);
 
   // Deletes the |flight_plan_|.  Performs no action unless |has_flight_plan()|.
   virtual void DeleteFlightPlan();

@@ -353,10 +353,6 @@ class Plugin {
       std::unique_ptr<DiscreteTrajectory<World>>& ascending,
       std::unique_ptr<DiscreteTrajectory<World>>& descending) const;
 
-  virtual void SetPredictionAdaptiveStepParameters(
-      Ephemeris<Barycentric>::AdaptiveStepParameters const&
-          prediction_adaptive_step_parameters);
-
   virtual bool HasCelestial(Index index) const;
   virtual Celestial const& GetCelestial(Index index) const;
 
@@ -435,9 +431,7 @@ class Plugin {
   // This constructor should only be used during deserialization.
   Plugin(Ephemeris<Barycentric>::FixedStepParameters const& history_parameters,
          Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             psychohistory_parameters,
-         Ephemeris<Barycentric>::AdaptiveStepParameters const&
-             prediction_parameters);
+             psychohistory_parameters);
 
   void InitializeIndices(
       std::string const& name,
@@ -500,7 +494,6 @@ class Plugin {
   // The parameters for computing the various trajectories.
   Ephemeris<Barycentric>::FixedStepParameters history_parameters_;
   Ephemeris<Barycentric>::AdaptiveStepParameters psychohistory_parameters_;
-  Ephemeris<Barycentric>::AdaptiveStepParameters prediction_parameters_;
 
   // The thread pool for advancing vessels.
   ThreadPool<Status> vessel_thread_pool_;

@@ -177,7 +177,7 @@ Manœuvre<InertialFrame, Frame>::InertialIntrinsicAcceleration() const {
 }
 
 template<typename InertialFrame, typename Frame>
-typename Ephemeris<InertialFrame>::GeneralIntrinsicAcceleration
+typename Ephemeris<InertialFrame>::GeneralizedIntrinsicAcceleration
 Manœuvre<InertialFrame, Frame>::FrenetIntrinsicAcceleration() const {
   CHECK(!is_inertially_fixed_);
   return [this](Instant const& t,

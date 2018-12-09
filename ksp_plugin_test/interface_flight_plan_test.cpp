@@ -149,20 +149,33 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
 
   EXPECT_CALL(
       flight_plan,
-      SetAdaptiveStepParameters(AllOf(
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
-                   11),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       length_integration_tolerance,
-                   22 * Metre),
-          Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
-                       speed_integration_tolerance,
-                   33 * Metre / Second))))
+      SetAdaptiveStepParameters(
+          AllOf(Property(
+                    &Ephemeris<Barycentric>::AdaptiveStepParameters::max_steps,
+                    11),
+                Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                             length_integration_tolerance,
+                         22 * Metre),
+                Property(&Ephemeris<Barycentric>::AdaptiveStepParameters::
+                             speed_integration_tolerance,
+                         33 * Metre / Second)),
+          AllOf(Property(&Ephemeris<Barycentric>::
+                             GeneralizedAdaptiveStepParameters::max_steps,
+                         11),
+                Property(
+                    &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
+                        length_integration_tolerance,
+                    22 * Metre),
+                Property(
+                    &Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters::
+                        speed_integration_tolerance,
+                    33 * Metre / Second))))
       .WillOnce(Return(true));
   EXPECT_TRUE(principia__FlightPlanSetAdaptiveStepParameters(
                   plugin_.get(),
                   vessel_guid,
                   {/*integrator_kind=*/1,
+                   /*generalized_integrator_kind=*/2,
                    /*max_step=*/11,
                    /*length_integration_tolerance=*/22,
                    /*speed_integration_tolerance=*/33}));
@@ -176,8 +189,9 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       /*speed_integration_tolerance=*/333 * Metre / Second);
   EXPECT_CALL(flight_plan, adaptive_step_parameters())
       .WillOnce(ReturnRef(adaptive_step_parameters));
-  AdaptiveStepParameters expected_adaptive_step_parameters = {
+  FlightPlanAdaptiveStepParameters expected_adaptive_step_parameters = {
       /*integrator_kind=*/1,
+      /*generalized_integrator_kind=*/2,
       /*max_step=*/111,
       /*length_integration_tolerance=*/222,
       /*speed_integration_tolerance=*/333};
@@ -246,12 +260,8 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
       .WillRepeatedly(ReturnRef(identity));
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));
-  EXPECT_CALL(navigation_manœuvre, InertialDirection())
-      .WillOnce(Return(Vector<double, Barycentric>({40, 50, 60})));
   EXPECT_CALL(*plugin_, CelestialIndexOfBody(Ref(centre)))
       .WillOnce(Return(celestial_index));
-  EXPECT_CALL(renderer, BarycentricToWorldSun(_))
-      .WillOnce(Return(OrthogonalMap<Barycentric, WorldSun>::Identity()));
   auto const navigation_manoeuvre =
       principia__FlightPlanGetManoeuvre(plugin_.get(),
                                         vessel_guid,
@@ -263,9 +273,6 @@ TEST_F(InterfaceFlightPlanTest, FlightPlan) {
   EXPECT_EQ(20, navigation_manoeuvre.initial_mass_in_tonnes);
   EXPECT_THAT(navigation_manoeuvre.burn.specific_impulse_in_seconds_g0,
               AlmostEquals(30, 1));
-  EXPECT_EQ(40, navigation_manoeuvre.inertial_direction.x);
-  EXPECT_EQ(50, navigation_manoeuvre.inertial_direction.y);
-  EXPECT_EQ(60, navigation_manoeuvre.inertial_direction.z);
 
   EXPECT_CALL(flight_plan, GetManœuvre(3))
       .WillOnce(ReturnRef(navigation_manœuvre));

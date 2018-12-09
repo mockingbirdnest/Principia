@@ -30,9 +30,12 @@ class MockFlightPlan : public FlightPlan {
 
   MOCK_CONST_METHOD0(adaptive_step_parameters,
                      Ephemeris<Barycentric>::AdaptiveStepParameters const&());
-  MOCK_METHOD1(SetAdaptiveStepParameters,
-               bool(Ephemeris<Barycentric>::AdaptiveStepParameters const&
-                        adaptive_step_parameters));
+  MOCK_METHOD2(
+      SetAdaptiveStepParameters,
+      bool(Ephemeris<Barycentric>::AdaptiveStepParameters const&
+               adaptive_step_parameters,
+           Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+               generalized_adaptive_step_parameters));
 
   MOCK_METHOD2(SetTolerances,
                void(Length const& length_integration_tolerance,

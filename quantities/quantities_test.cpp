@@ -16,13 +16,13 @@
 namespace principia {
 namespace quantities {
 
-using astronomy::EarthMass;
+using astronomy::JovianGravitationalParameter;
 using astronomy::JulianYear;
-using astronomy::JupiterMass;
 using astronomy::LightYear;
 using astronomy::Parsec;
-using astronomy::SolarMass;
+using astronomy::TerrestrialGravitationalParameter;
 using constants::ElectronMass;
+using constants::ProtonMass;
 using constants::SpeedOfLight;
 using si::Ampere;
 using si::Candela;
@@ -49,7 +49,8 @@ class QuantitiesTest : public testing::Test {};
 using QuantitiesDeathTest = QuantitiesTest;
 
 TEST_F(QuantitiesTest, DimensionfulComparisons) {
-  testing_utilities::TestOrder(EarthMass, JupiterMass);
+  testing_utilities::TestOrder(TerrestrialGravitationalParameter,
+                               JovianGravitationalParameter);
   testing_utilities::TestOrder(LightYear, Parsec);
   testing_utilities::TestOrder(-SpeedOfLight, SpeedOfLight);
   testing_utilities::TestOrder(SpeedOfLight * Day, LightYear);
@@ -61,8 +62,8 @@ TEST_F(QuantitiesTest, DimensionlfulOperations) {
       -340.29 * Metre / Second, 0.0, 1.0, -2 * π, 1729.0, 0, 2);
   // Dimensionful multiplication is a tensor product, see [Tao 2012].
   testing_utilities::TestBilinearMap(
-      std::multiplies<>(), SolarMass,
-      ElectronMass, SpeedOfLight, 1 * Furlong / JulianYear, -e, 0, 2);
+      std::multiplies<>(), ProtonMass, ElectronMass, SpeedOfLight,
+      1 * Furlong / JulianYear, -e, 0, 2);
 }
 
 // The Greek letters cause a warning when stringified by the macros, because
