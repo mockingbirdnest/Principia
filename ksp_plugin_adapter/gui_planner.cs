@@ -96,8 +96,9 @@ namespace ksp_plugin_adapter {
         private const string tolerance_value_string = "{0:E3} m";
         private const float tolerance_value_string_length = 60f;
 
-
         private bool planner_window_visible = false;
+        private float x_pos = 0.95f;
+        private float y_pos = 0.05f;
 
         private DialogGUIBase execution_page;
         private DialogGUIBase planning_page;
@@ -500,7 +501,7 @@ namespace ksp_plugin_adapter {
                 "",
                 "Principia Planner",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 700.0f, 50.0f), // for reasons beyond me we have to get the width correct ourselves
+                new Rect(x_pos, y_pos, 700.0f, 50.0f), // for reasons beyond me we have to get the width correct ourselves
                 new DialogGUIBase[]
                 {
                     // buttons to select page
@@ -554,7 +555,7 @@ namespace ksp_plugin_adapter {
         private void ShowPlannerWindow()
         {
             planner_window_visible = true;
-            popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), 
+            popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(x_pos, y_pos), new Vector2(x_pos, y_pos),
                                                         multi_page_planner, true, HighLogic.UISkin, false);
         }
 

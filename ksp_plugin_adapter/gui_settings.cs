@@ -61,6 +61,8 @@ namespace ksp_plugin_adapter {
         private const float record_journal_in_progress_name_string_length = 100f;
 
         bool settings_window_visible = false;
+        private float x_pos = 0.95f;
+        private float y_pos = 0.90f;
 
         private DialogGUIBase main_settings_page;
         private DialogGUIBase plotting_frame_page;
@@ -364,7 +366,7 @@ namespace ksp_plugin_adapter {
                 "",
                 "Principia Settings",
                 HighLogic.UISkin,
-                new Rect(0.5f, 0.5f, 500.0f, 50.0f),
+                new Rect(x_pos, y_pos, 500.0f, 50.0f),
                 new DialogGUIBase[]
                 {
                     // buttons to select page
@@ -418,7 +420,7 @@ namespace ksp_plugin_adapter {
         private void ShowSettingsWindow()
         {
             settings_window_visible = true;
-            popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), 
+            popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(x_pos, y_pos), new Vector2(x_pos, y_pos),
                                                         multi_page_settings, true, HighLogic.UISkin, false);
         }
 
