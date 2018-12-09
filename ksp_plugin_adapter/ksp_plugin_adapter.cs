@@ -1014,7 +1014,7 @@ public partial class PrincipiaPluginAdapter
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
       plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
-                                       history_lengths_[history_length_index_]);
+                                       DataModel.GetHistoryLength());
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 

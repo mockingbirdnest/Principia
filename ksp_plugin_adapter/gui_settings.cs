@@ -1,5 +1,5 @@
 /*
- * Copyright© (c) 2018 Maarten Maathuis, (aka madman2003).
+ * CopyrightÂ© (c) 2018 Maarten Maathuis, (aka madman2003).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,17 @@ namespace ksp_plugin_adapter {
         private PopupDialog popup_dialog;
 
         private KSP.UI.Screens.ApplicationLauncherButton toolbar_button;
+
+        public SettingsGUI()
+        {
+            InitializeSettingsGUI();
+        }
+
+        public void Awake()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
+        }
 
         //
         // Generic redrawing code
@@ -163,21 +174,6 @@ namespace ksp_plugin_adapter {
         }
 
         //
-        // History length
-        //
-        private int history_magnitude = 20; // (1 << index) is the history time in seconds, with the exception of 30, which is +infinity
-        private float GetHistoryMagnitude() { return (float)history_magnitude; }
-        private void SetHistoryMagnitude(float value) { history_magnitude = (int)value; }
-        private double GetHistoryLength()
-        {
-            if (history_magnitude == 30) {
-                return double.PositiveInfinity;
-            } else {
-                return (1 << history_magnitude);
-            }
-        }
-
-        //
         // Prediction
         //
         private int prediction_tolerance_magnitude = -2;
@@ -198,16 +194,48 @@ namespace ksp_plugin_adapter {
         private void SetPatchedConics(bool value) { display_patched_conics = value; }
         private bool GetSolarFlare() { return display_solar_flare; }
         private void SetSolarFlare(bool value) { display_solar_flare = value; }
-
-        public SettingsGUI()
+        
+        private DialogGUIBase AddMainSettingsUI()
         {
-            InitializeSettingsGUI();
-        }
-
-        public void Awake()
-        {
-            GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
-            GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
+            return new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                // Version
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
+                    new DialogGUILabel("Version: " + GetVersion())
+                ),
+                // History length
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
+                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataModel.GetHistoryLength()) + " s"; })
+                ),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(DataModel.GetHistoryMagnitude, 10f, 30f, true, -1, -1, DataModel.SetHistoryMagnitude)
+                ),
+                // Prediction settings
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
+                    new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
+                ),
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
+                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", GetPredictionTolerance()) + " m"; })
+                ),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, SetPredictionToleranceMagnitude)
+                ),
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
+                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", GetPredictionStep()); })
+                ),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUISlider(GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, SetPredictionStepMagnitude)
+                ),
+                // KSP settings
+                new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
+                    new DialogGUILabel("<color=#ffffffff>KSP settings</color>")
+                ),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUIToggle(GetPatchedConics, "Display patched conics (not intended for flight planning)", SetPatchedConics)
+                ),
+                new DialogGUIHorizontalLayout(
+                    new DialogGUIToggle(GetSolarFlare, "Enable system-star lens flare", SetSolarFlare)
+                )
+            );
         }
 
         //
@@ -349,49 +377,6 @@ namespace ksp_plugin_adapter {
                 new DialogGUIHorizontalLayout(
                     new DialogGUIToggle(record_journal_at_next_startup, record_journal_at_next_startup_name_string, (value) => { record_journal_at_next_startup = value; }, record_journal_at_next_startup_name_string_length),
                     new DialogGUILabel(() => { if (record_journal_in_progress) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
-            );
-        }
-
-        private DialogGUIBase AddMainSettingsUI()
-        {
-            return new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                // Version
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel("Version: " + GetVersion())
-                ),
-                // History length
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", GetHistoryLength()) + " s"; })
-                ),
-                new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetHistoryMagnitude, 10f, 30f, true, -1, -1, SetHistoryMagnitude)
-                ),
-                // Prediction settings
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
-                    new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
-                ),
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", GetPredictionTolerance()) + " m"; })
-                ),
-                new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, SetPredictionToleranceMagnitude)
-                ),
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", GetPredictionStep()); })
-                ),
-                new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, SetPredictionStepMagnitude)
-                ),
-                // KSP settings
-                new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
-                    new DialogGUILabel("<color=#ffffffff>KSP settings</color>")
-                ),
-                new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(GetPatchedConics, "Display patched conics (not intended for flight planning)", SetPatchedConics)
-                ),
-                new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(GetSolarFlare, "Enable system-star lens flare", SetSolarFlare)
-                )
             );
         }
 

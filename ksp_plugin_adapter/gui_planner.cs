@@ -1,5 +1,5 @@
 /*
- * Copyright© (c) 2018 Maarten Maathuis, (aka madman2003).
+ * CopyrightÂ© (c) 2018 Maarten Maathuis, (aka madman2003).
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
