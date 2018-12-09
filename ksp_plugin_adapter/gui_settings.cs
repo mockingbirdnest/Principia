@@ -29,7 +29,7 @@ using UnityEngine.UI;
 namespace principia {
 namespace ksp_plugin_adapter {
 
-    [KSPAddon(KSPAddon.Startup.FlightAndKSC, false)]
+    [KSPAddon(KSPAddon.Startup.AllGameScenes, false)]
     public sealed class SettingsGUI: MonoBehaviour
     {
         private const float button_width = 50.0f;
@@ -172,28 +172,6 @@ namespace ksp_plugin_adapter {
                                     version: out version);
             return version;
         }
-
-        //
-        // Prediction
-        //
-        private int prediction_tolerance_magnitude = -2;
-        private int prediction_step_magnitude = 8;
-        private float GetPredictionToleranceMagnitude() { return (float)prediction_tolerance_magnitude; }
-        private void SetPredictionToleranceMagnitude(float value) { prediction_tolerance_magnitude = (int)value; }
-        private double GetPredictionTolerance() { return 10^prediction_tolerance_magnitude; }
-        private float GetPredictionStepMagnitude() { return (float)prediction_step_magnitude; }
-        private void SetPredictionStepMagnitude(float value) { prediction_step_magnitude = (int)value; }
-        private double GetPredictionStep() { return (1 << prediction_step_magnitude); }
-
-        //
-        // KSP settings
-        //
-        private bool display_patched_conics = false;
-        private bool display_solar_flare = false;
-        private bool GetPatchedConics() { return display_patched_conics; }
-        private void SetPatchedConics(bool value) { display_patched_conics = value; }
-        private bool GetSolarFlare() { return display_solar_flare; }
-        private void SetSolarFlare(bool value) { display_solar_flare = value; }
         
         private DialogGUIBase AddMainSettingsUI()
         {
@@ -214,26 +192,26 @@ namespace ksp_plugin_adapter {
                     new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", GetPredictionTolerance()) + " m"; })
+                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataModel.GetPredictionTolerance()) + " m"; })
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, SetPredictionToleranceMagnitude)
+                    new DialogGUISlider(DataModel.GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, DataModel.SetPredictionToleranceMagnitude)
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", GetPredictionStep()); })
+                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataModel.GetPredictionStep()); })
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, SetPredictionStepMagnitude)
+                    new DialogGUISlider(DataModel.GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, DataModel.SetPredictionStepMagnitude)
                 ),
                 // KSP settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
                     new DialogGUILabel("<color=#ffffffff>KSP settings</color>")
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(GetPatchedConics, "Display patched conics (not intended for flight planning)", SetPatchedConics)
+                    new DialogGUIToggle(DataModel.GetPatchedConicsEnabled, "Display patched conics (not intended for flight planning)", DataModel.SetPatchedConicsEnabled)
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(GetSolarFlare, "Enable system-star lens flare", SetSolarFlare)
+                    new DialogGUIToggle(DataModel.GetSolarFlareEnabled, "Enable system-star lens flare", DataModel.SetSolarFlareEnabled)
                 )
             );
         }

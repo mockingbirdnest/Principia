@@ -353,13 +353,11 @@ public partial class PrincipiaPluginAdapter
       adaptive_step_parameters =
           new AdaptiveStepParameters {
             integrator_kind = adaptive_step_parameters.integrator_kind,
-            max_steps = (Int64)prediction_steps_[prediction_steps_index_],
+            max_steps = (Int64)DataModel.GetPredictionStep(),
             length_integration_tolerance =
-                prediction_length_tolerances_[
-                    prediction_length_tolerance_index_],
+                DataModel.GetPredictionTolerance(),
             speed_integration_tolerance =
-                prediction_length_tolerances_[
-                    prediction_length_tolerance_index_]};
+                DataModel.GetPredictionTolerance()};
       plugin_.VesselSetPredictionAdaptiveStepParameters(
           main_vessel.id.ToString(), adaptive_step_parameters);
       plugin_.UpdatePrediction(main_vessel.id.ToString());
@@ -1617,7 +1615,7 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (display_patched_conics_ || !is_manageable(vessel)) {
+    if (DataModel.GetPatchedConicsEnabled() || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
@@ -2215,11 +2213,11 @@ public partial class PrincipiaPluginAdapter
 
   private void KSPFeatures() {
     display_patched_conics_ = UnityEngine.GUILayout.Toggle(
-        value : display_patched_conics_,
+        value : false, /* Sun.Instance.sunFlare.enabled */
         text  : "Display patched conics (do not use for flight planning!)");
-    Sun.Instance.sunFlare.enabled =
-        UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
-                                     text  : "Enable Sun lens flare");
+    //Sun.Instance.sunFlare.enabled =
+    //    UnityEngine.GUILayout.Toggle(value : Sun.Instance.sunFlare.enabled,
+    //                                 text  : "Enable Sun lens flare");
     if (MapView.MapIsEnabled &&
         FlightGlobals.ActiveVessel?.orbitTargeter != null) {
       using (new HorizontalLayout()) {
