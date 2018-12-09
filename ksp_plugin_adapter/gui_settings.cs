@@ -219,27 +219,17 @@ namespace ksp_plugin_adapter {
         //
         // Support code for the plotting frame selection
         //
-        private string selected_celestial_body = FlightGlobals.GetHomeBodyName();
-        // I suspect the hardcoded numbers are to allow the C++ code to understand this as well
-        private enum FrameType {
-            BARYCENTRIC_ROTATING = 6001,
-            BODY_CENTRED_NON_ROTATING = 6000,
-            BODY_CENTRED_PARENT_DIRECTION = 6002,
-            BODY_SURFACE = 6003
-        }
-        private FrameType reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
-
         private float GetFrameType()
         {
-            switch (reference_frame)
+            switch (DataModel.GetReferenceFrame())
             {
-                case FrameType.BODY_SURFACE:
+                case DataModel.FrameType.BODY_SURFACE:
                     return 0f;
-                case FrameType.BODY_CENTRED_NON_ROTATING:
+                case DataModel.FrameType.BODY_CENTRED_NON_ROTATING:
                     return 1f;
-                case FrameType.BARYCENTRIC_ROTATING:
+                case DataModel.FrameType.BARYCENTRIC_ROTATING:
                     return 2f;
-                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                case DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION:
                 default:
                     return 3f;
             }
@@ -247,45 +237,47 @@ namespace ksp_plugin_adapter {
 
         private void SetFrameType(float value)
         {
+            DataModel.FrameType reference_frame;
             if (value > 2.5f) {
-                reference_frame = FrameType.BODY_CENTRED_PARENT_DIRECTION;
+                reference_frame = DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION;
             } else if (value > 1.5f) {
-                reference_frame = FrameType.BARYCENTRIC_ROTATING;
+                reference_frame = DataModel.FrameType.BARYCENTRIC_ROTATING;
             } else if (value > 0.5f) {
-                reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+                reference_frame = DataModel.FrameType.BODY_CENTRED_NON_ROTATING;
             } else {
-                reference_frame = FrameType.BODY_SURFACE;
+                reference_frame = DataModel.FrameType.BODY_SURFACE;
             }
+            DataModel.SetReferenceFrame(reference_frame);
         }
 
         private string GetFrameTypeString()
         {
-            CelestialBody parent = FlightGlobals.GetBodyByName(selected_celestial_body).referenceBody;
-            string parent_body_name = parent.name; // Note: reference body of root is root itself
-            switch (reference_frame)
+            CelestialBody selected_celestial_body = DataModel.GetSelectedCelestialBody();
+            CelestialBody parent = selected_celestial_body.referenceBody;
+            switch (DataModel.GetReferenceFrame())
             {
-                case FrameType.BODY_SURFACE:
-                    return string.Format("Reference frame fixing the surface of {0}", selected_celestial_body);
-                case FrameType.BODY_CENTRED_NON_ROTATING:
-                    return string.Format("Non-rotating reference frame fixing the center of {0}", selected_celestial_body);
-                case FrameType.BARYCENTRIC_ROTATING:
-                    return string.Format("Reference frame fixing the barycenter of {0} and {1}, the plane which they move about the barycenter, and the line between them", selected_celestial_body, parent_body_name);
-                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                case DataModel.FrameType.BODY_SURFACE:
+                    return string.Format("Reference frame fixing the surface of {0}", selected_celestial_body.name);
+                case DataModel.FrameType.BODY_CENTRED_NON_ROTATING:
+                    return string.Format("Non-rotating reference frame fixing the center of {0}", selected_celestial_body.name);
+                case DataModel.FrameType.BARYCENTRIC_ROTATING:
+                    return string.Format("Reference frame fixing the barycenter of {0} and {1}, the plane which they move about the barycenter, and the line between them", selected_celestial_body.name, parent.name);
+                case DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION:
                 default:
-                    return string.Format("Reference frame fixing the center of {0}, the plane of its orbit around {1}, and the line between them", selected_celestial_body, parent_body_name);
+                    return string.Format("Reference frame fixing the center of {0}, the plane of its orbit around {1}, and the line between them", selected_celestial_body.name, parent.name);
             }
         }
 
         private void AddOrbitingBodies(CelestialBody body, ref DialogGUILayoutBase gui, string parent_name)
         {
             if (parent_name != null) {
-                gui.children.Add(new DialogGUIButton(body.name + String.Format(" (Parent body: {0})", parent_name), () => { selected_celestial_body = body.name; }, false));
+                gui.children.Add(new DialogGUIButton(body.name + String.Format(" (Parent body: {0})", parent_name), () => { DataModel.SetSelectedCelestialBody(body); }, false));
             } else {
-                gui.children.Add(new DialogGUIButton(body.name, () => { selected_celestial_body = body.name; }, false));
+                gui.children.Add(new DialogGUIButton(body.name, () => { DataModel.SetSelectedCelestialBody(body); }, false));
             }
             foreach (CelestialBody child_body in body.orbitingBodies)
             {
-                AddOrbitingBodies(child_body, ref gui, body.name); // add some visual cues that suggest indenting
+                AddOrbitingBodies(child_body, ref gui, body.name);
             }
         }
 
@@ -308,7 +300,7 @@ namespace ksp_plugin_adapter {
             AddOrbitingBodies(root_body, ref celestial_body_list, null);
 
             DialogGUILayoutBase gui = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUILabel(() => { return plotting_frame_body_name_string + selected_celestial_body; }, plotting_frame_body_name_string_length + plotting_frame_body_value_string_length),
+                new DialogGUILabel(() => { return plotting_frame_body_name_string + DataModel.GetSelectedCelestialBody().name; }, plotting_frame_body_name_string_length + plotting_frame_body_value_string_length),
                 new DialogGUILabel(GetFrameTypeString, plotting_frame_string_length),
                 new DialogGUISlider(GetFrameType, 0f, 3f, true, -1, -1, SetFrameType),
                 // there will be too many celestial bodies, putting them inside something that can scroll vertically

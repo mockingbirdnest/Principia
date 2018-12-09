@@ -634,8 +634,9 @@ public partial class PrincipiaPluginAdapter
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
                                      plugin_,
-                                     UpdateRenderingFrame,
+                                     UpdateRenderingFrameDummy,
                                      "Plotting frame"));
+      DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
       flight_planner_.reset(new FlightPlanner(this, plugin_));
@@ -1002,7 +1003,8 @@ public partial class PrincipiaPluginAdapter
     if (must_set_plotting_frame_ && FlightGlobals.currentMainBody != null) {
       must_set_plotting_frame_ = false;
       plotting_frame_selector_.reset(new ReferenceFrameSelector(
-          this, plugin_, UpdateRenderingFrame, "Plotting frame"));
+          this, plugin_, UpdateRenderingFrameDummy, "Plotting frame"));
+      DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
       previous_display_mode_ = null;
     }
 
@@ -2365,6 +2367,10 @@ public partial class PrincipiaPluginAdapter
     main_window_rectangle_.width = 0.0f;
   }
 
+  private void UpdateRenderingFrameDummy(
+      NavigationFrameParameters frame_parameters) {
+  }
+
   private void UpdateRenderingFrame(
       NavigationFrameParameters frame_parameters) {
     plugin_.SetPlottingFrame(frame_parameters);
@@ -2514,8 +2520,9 @@ public partial class PrincipiaPluginAdapter
     plotting_frame_selector_.reset(
         new ReferenceFrameSelector(this,
                                    plugin_,
-                                   UpdateRenderingFrame,
+                                   UpdateRenderingFrameDummy,
                                    "Plotting frame"));
+    DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
   } catch (Exception e) {

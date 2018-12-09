@@ -71,7 +71,90 @@ namespace ksp_plugin_adapter {
         // For legacy reasons this setting is directly configured on an KSP object
         public static bool GetSolarFlareEnabled() { return Sun.Instance.sunFlare.enabled; }
         public static void SetSolarFlareEnabled(bool value) { Sun.Instance.sunFlare.enabled = value; }
+
+        //
+        // Reference frame settings
+        //
+        private static CelestialBody selected_celestial_body = FlightGlobals.GetHomeBody();
+        // I suspect the hardcoded numbers are to allow the C++ code to understand this as well
+        public enum FrameType {
+            BARYCENTRIC_ROTATING = 6001,
+            BODY_CENTRED_NON_ROTATING = 6000,
+            BODY_CENTRED_PARENT_DIRECTION = 6002,
+            BODY_SURFACE = 6003
+        }
+        private static FrameType reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+        // internal is inherited from NavigationFrameParameters
+        internal delegate void NavigationFrameParametersCallback(NavigationFrameParameters frame_parameters);
+        private static NavigationFrameParametersCallback on_update_celestial_body_or_reference_frame;
+
+        public static CelestialBody GetSelectedCelestialBody() { return selected_celestial_body; }
+        public static void SetSelectedCelestialBody(CelestialBody value)
+        {
+            CelestialBody prev = selected_celestial_body;
+            selected_celestial_body = value;
+            if (prev != selected_celestial_body)
+            {
+                UpdatePluginWithCelestialBodyAndReferenceFrame();
+            }
+        }
+        public static FrameType GetReferenceFrame() { return reference_frame; }
+        public static void SetReferenceFrame(FrameType value)
+        {
+            FrameType prev = reference_frame;
+            reference_frame = value;
+            // We cannot support frames that require 2 bodies, if we selected the root body
+            // (and thus only have 1 body to work with)
+            if (selected_celestial_body.is_root() &&
+               (reference_frame == FrameType.BARYCENTRIC_ROTATING ||
+                reference_frame == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
+                reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+            }
+            if (prev != reference_frame)
+            {
+                UpdatePluginWithCelestialBodyAndReferenceFrame();
+            }
+        }
+
+        // internal is inherited from NavigationFrameParameters
+        internal static void InitializeSelectedCelestialBodyAndReferenceFrame(NavigationFrameParametersCallback callback)
+        {
+            on_update_celestial_body_or_reference_frame = callback;
+            reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+            selected_celestial_body = FlightGlobals.currentMainBody ?? FlightGlobals.GetHomeBody();
+        }
         
+        private static NavigationFrameParameters GenerateNavigationFrameParameters()
+        {
+            switch (reference_frame) {
+                case FrameType.BODY_CENTRED_NON_ROTATING:
+                case FrameType.BODY_SURFACE:
+                    return new NavigationFrameParameters{
+                        extension = (int)reference_frame,
+                        centre_index = selected_celestial_body.flightGlobalsIndex};
+                case FrameType.BARYCENTRIC_ROTATING:
+                    return new NavigationFrameParameters{
+                        extension = (int)reference_frame,
+                        primary_index = selected_celestial_body.referenceBody.flightGlobalsIndex,
+                        secondary_index = selected_celestial_body.flightGlobalsIndex};
+                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                    // We put the primary body as secondary, because the one we want fixed
+                    // is the secondary body (which means it has to be the primary in the
+                    // terminology of |BodyCentredBodyDirection|).
+                    return new NavigationFrameParameters{
+                        extension = (int)reference_frame,
+                        primary_index = selected_celestial_body.flightGlobalsIndex,
+                        secondary_index = selected_celestial_body.referenceBody.flightGlobalsIndex};
+                default:
+                    throw Log.Fatal("Unexpected reference_frame " + reference_frame.ToString());
+            }
+        }
+
+        private static void UpdatePluginWithCelestialBodyAndReferenceFrame()
+        {
+            NavigationFrameParameters frame_parameters = GenerateNavigationFrameParameters();
+            on_update_celestial_body_or_reference_frame(frame_parameters);
+        }
     }
 }  // namespace ksp_plugin_adapter
 }  // namespace principia
