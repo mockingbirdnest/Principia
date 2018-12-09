@@ -352,14 +352,13 @@ namespace ksp_plugin_adapter {
             );
         }
 
-        private void InitializeSettingsGUI()
+        private DialogGUIBase AddMainSettingsUI()
         {
-            main_settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+            return new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 // Version
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel("Version: " + GetVersion())
                 ),
-                new DialogGUISpace(20.0f),
                 // History length
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", GetHistoryLength()) + " s"; })
@@ -367,12 +366,10 @@ namespace ksp_plugin_adapter {
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetHistoryMagnitude, 10f, 30f, true, -1, -1, SetHistoryMagnitude)
                 ),
-                new DialogGUISpace(20.0f),
                 // Prediction settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
-                    new DialogGUILabel("Prediction settings")
+                    new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
                 ),
-                new DialogGUISpace(10.0f),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", GetPredictionTolerance()) + " m"; })
                 ),
@@ -385,20 +382,22 @@ namespace ksp_plugin_adapter {
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, SetPredictionStepMagnitude)
                 ),
-                new DialogGUISpace(20.0f),
                 // KSP settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
-                    new DialogGUILabel("KSP settings")
+                    new DialogGUILabel("<color=#ffffffff>KSP settings</color>")
                 ),
-                new DialogGUISpace(10.0f),
                 new DialogGUIHorizontalLayout(
                     new DialogGUIToggle(GetPatchedConics, "Display patched conics (not intended for flight planning)", SetPatchedConics)
                 ),
                 new DialogGUIHorizontalLayout(
                     new DialogGUIToggle(GetSolarFlare, "Enable system-star lens flare", SetSolarFlare)
-                ),
-                new DialogGUISpace(100.0f)
+                )
             );
+        }
+
+        private void InitializeSettingsGUI()
+        {
+            main_settings_page = AddMainSettingsUI();
             plotting_frame_page = AddPlottingFrameSelectionUI();
             logging_settings_page = AddLoggingSettingsUI();
 
