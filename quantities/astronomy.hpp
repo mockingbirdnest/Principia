@@ -34,7 +34,7 @@ constexpr Irradiance  TotalSolarIrradiance      = 1361 * (si::Watt /
 constexpr Power       SolarLuminosity           = 3.828e26 * si::Watt;
 constexpr Temperature SolarEffectiveTemperature = 5772 * si::Kelvin;
 constexpr GravitationalParameter SolarGravitationalParameter =
-    1.327'124'4e20 * (Pow<3>(Metre) / Pow<2>(Second));
+    1.327'124'4e20 * (Pow<3>(si::Metre) / Pow<2>(si::Second));
 
 // Planetary conversion constants.
 // “If equatorial vs. polar radius is not explicitly specified, it should be
