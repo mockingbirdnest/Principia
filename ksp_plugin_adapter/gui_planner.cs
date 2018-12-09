@@ -82,6 +82,21 @@ namespace ksp_plugin_adapter {
         private const string burn_time_string = "{0:E3} s";
         private const float burn_time_string_length = 80f;
 
+        //
+        // Defintions to support the settings page
+        //
+        private const string plan_length_time_name_string = "<color=#ffffffff>Plan length Δt: </color>";
+        private const float plan_length_time_name_string_length = 80f;
+        private const string max_steps_per_segment_name_string = "<color=#ffffffff>Max steps per segment: </color>";
+        private const float max_steps_per_segment_name_string_length = 140f;
+        private const string max_steps_per_segment_value_string = "{0}";
+        private const float max_steps_per_segment_value_string_length = 30f;
+        private const string tolerance_name_string = "<color=#ffffffff>Tolerance: </color>";
+        private const float tolerance_name_string_length = 50f;
+        private const string tolerance_value_string = "{0:E3} m";
+        private const float tolerance_value_string_length = 60f;
+
+
         private bool planner_window_visible = false;
 
         private DialogGUIBase execution_page;
@@ -388,6 +403,66 @@ namespace ksp_plugin_adapter {
         }
 
         //
+        // Settings page support code
+        //
+        double plan_length_time = 0.0;
+        int max_steps_per_segment = 0;
+        double tolerance = 0.0;
+
+        private DialogGUIBase AddFlightPlanLength()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel(plan_length_time_name_string, plan_length_time_name_string_length),
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(plan_length_time)); }, time_value_string_length_single_line),
+                new DialogGUIButton("-1H", () => { plan_length_time -= 1*3600; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("-10M", () => { plan_length_time -= 10*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("-1M", () => { plan_length_time -= 1*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("-10S", () => { plan_length_time -= 10; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("-1S", () => { plan_length_time -= 1; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("0", () => { plan_length_time = 0; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("+1S", () => { plan_length_time += 1; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("+10S", () => { plan_length_time += 10; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("+1M", () => { plan_length_time += 1*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("+10M", () => { plan_length_time += 10*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
+                new DialogGUIButton("+1H", () => { plan_length_time += 1*3600; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false)
+            );
+        }
+
+        private DialogGUIBase AddMaxStepsPerSegment()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel(max_steps_per_segment_name_string, max_steps_per_segment_name_string_length),
+                new DialogGUILabel(() => { return string.Format(max_steps_per_segment_value_string, max_steps_per_segment); }, max_steps_per_segment_value_string_length),
+                new DialogGUIButton("-1000", () => { max_steps_per_segment -= 1000; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("-100", () => { max_steps_per_segment -= 100; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("-10", () => { max_steps_per_segment -= 10; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("-1", () => { max_steps_per_segment -= 1; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("0", () => { max_steps_per_segment = 0; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("+1", () => { max_steps_per_segment += 1; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("+10", () => { max_steps_per_segment += 10; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("+100", () => { max_steps_per_segment += 100; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
+                new DialogGUIButton("+1000", () => { max_steps_per_segment += 1000; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false)
+            );
+        }
+
+        private DialogGUIBase AddTolerance()
+        {
+            return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                new DialogGUILabel(tolerance_name_string, tolerance_name_string_length),
+                new DialogGUILabel(() => { return string.Format(tolerance_value_string, tolerance); }, tolerance_value_string_length),
+                new DialogGUIButton("-10", () => { tolerance -= 10; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("-1", () => { tolerance -= 1; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("-0.1", () => { tolerance -= 0.1; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("-0.01", () => { tolerance -= 0.01; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("0", () => { tolerance = 0.0; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("+0.01", () => { tolerance += 0.01; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("+0.1", () => { tolerance += 0.1; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("+1", () => { tolerance += 1; if (tolerance < 0.0) tolerance = 0.0; }, false),
+                new DialogGUIButton("+10", () => { tolerance += 10; if (tolerance < 0.0) tolerance = 0.0; }, false)
+            );
+        }
+
+        //
         // GUI initialization
         //
         private void InitializePlannerGUI()
@@ -412,9 +487,9 @@ namespace ksp_plugin_adapter {
             );
 
             settings_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUILabel("testing 104")
-                )
+                    AddFlightPlanLength(),
+                    AddMaxStepsPerSegment(),
+                    AddTolerance()
             );
 
             // Do not use a DialogGUIBox for this, it will not respect automatic resizing
