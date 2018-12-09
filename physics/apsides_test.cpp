@@ -142,7 +142,7 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
     Position<World> const position = pair.second.position();
     if (previous_time) {
       EXPECT_THAT(time - *previous_time,
-                  AlmostEquals(0.5 * T, 103, 3820));
+                  AlmostEquals(0.5 * T, 103, 4936));
       EXPECT_THAT((position - *previous_position).Norm(),
                   AlmostEquals(2.0 * a, 0, 176));
     }
@@ -216,7 +216,7 @@ TEST_F(ApsidesTest, ComputeNodes) {
                     .coordinates()
                     .ToSpherical()
                     .longitude,
-                AlmostEquals(elements.longitude_of_ascending_node, 0, 100));
+                AlmostEquals(elements.longitude_of_ascending_node, 0, 104));
     if (previous_time) {
       EXPECT_THAT(time - *previous_time, AlmostEquals(*elements.period, 0, 20));
     }

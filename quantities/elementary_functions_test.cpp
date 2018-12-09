@@ -114,7 +114,7 @@ TEST_F(ElementaryFunctionsTest, PhysicalConstants) {
               Lt(1e-2));
   EXPECT_THAT(RelativeError(1 * SolarGravitationalParameter,
                             1047 * JovianGravitationalParameter),
-              Lt(4e-4));
+              Lt(6e-4));
   // Delambre & Méchain.
   EXPECT_THAT(RelativeError(TerrestrialGravitationalParameter /
                                 Pow<2>(40 * Mega(Metre) / (2 * π)),
