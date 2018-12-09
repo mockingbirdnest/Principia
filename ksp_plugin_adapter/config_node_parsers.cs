@@ -31,7 +31,7 @@ internal static class ConfigNodeParsers {
         j2                      =
             node.GetAtMostOneValue("j2"),
         geopotential            =
-            GetBodyGeopotentialElements(node).ToArray()};
+            node.GetBodyGeopotentialElements().ToArray()};
   }
 
   public static ConfigurationAccuracyParameters
@@ -96,17 +96,18 @@ internal static class ConfigNodeParsers {
         j2                   =
             node?.GetAtMostOneValue("j2"),
         geopotential            =
-            GetBodyGeopotentialElements(node).ToArray()};
+            node?.GetBodyGeopotentialElements()?.ToArray()};
   }
 
   private static List<BodyGeopotentialElement> GetBodyGeopotentialElements(
-      ConfigNode node) {
+      this ConfigNode node) {
     ConfigNode[] geopotential_rows = node.GetNodes("geopotential_row");
     List<BodyGeopotentialElement> elements =
         new List<BodyGeopotentialElement>();
     foreach (ConfigNode geopotential_row in geopotential_rows) {
       String degree = geopotential_row.GetUniqueValue("degree");
-      ConfigNode[] geopotential_columns = node.GetNodes("geopotential_column");
+      ConfigNode[] geopotential_columns =
+          geopotential_row.GetNodes("geopotential_column");
       foreach (ConfigNode geopotential_column in geopotential_columns) {
         String order = geopotential_column.GetUniqueValue("order");
         String cos = geopotential_column.GetUniqueValue("cos");

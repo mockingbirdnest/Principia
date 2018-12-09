@@ -118,7 +118,7 @@ class Manœuvre {
   InertialIntrinsicAcceleration() const;
 
   // Same as above for a manœuvre that is not inertially fixed.
-  typename Ephemeris<InertialFrame>::GeneralIntrinsicAcceleration
+  typename Ephemeris<InertialFrame>::GeneralizedIntrinsicAcceleration
   FrenetIntrinsicAcceleration() const;
 
   // Frenet frame at the beginning of the manœuvre.

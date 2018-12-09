@@ -15,8 +15,6 @@
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 
-#if !OS_MACOSX
-
 namespace principia {
 namespace base {
 
@@ -91,5 +89,3 @@ class Bundle final {
 
 }  // namespace base
 }  // namespace principia
-
-#endif

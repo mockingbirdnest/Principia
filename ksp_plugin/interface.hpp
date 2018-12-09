@@ -3,6 +3,7 @@
 
 #include <typeindex>
 #include <type_traits>
+#include <utility>
 
 #include "base/not_null.hpp"
 #include "base/macros.hpp"
@@ -74,6 +75,8 @@ void CDECL principia__InitGoogleLogging();
 bool operator==(AdaptiveStepParameters const& left,
                 AdaptiveStepParameters const& right);
 bool operator==(Burn const& left, Burn const& right);
+bool operator==(FlightPlanAdaptiveStepParameters const& left,
+                FlightPlanAdaptiveStepParameters const& right);
 bool operator==(NavigationFrameParameters const& left,
                 NavigationFrameParameters const& right);
 bool operator==(NavigationManoeuvre const& left,
@@ -90,6 +93,10 @@ bool operator==(XYZ const& left, XYZ const& right);
 physics::Ephemeris<Barycentric>::AdaptiveStepParameters
 FromAdaptiveStepParameters(
     AdaptiveStepParameters const& adaptive_step_parameters);
+std::pair<physics::Ephemeris<Barycentric>::AdaptiveStepParameters,
+          physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters>
+FromFlightPlanAdaptiveStepParameters(FlightPlanAdaptiveStepParameters const&
+                                         flight_plan_adaptive_step_parameters);
 
 template<typename T>
 T FromQP(QP const& qp);
@@ -114,6 +121,11 @@ FromXYZ<Velocity<Frenet<NavigationFrame>>>(XYZ const& xyz);
 AdaptiveStepParameters ToAdaptiveStepParameters(
     physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
         adaptive_step_parameters);
+FlightPlanAdaptiveStepParameters ToFlightPlanAdaptiveStepParameters(
+    physics::Ephemeris<Barycentric>::AdaptiveStepParameters const&
+        adaptive_step_parameters,
+    physics::Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters const&
+        generalized_adaptive_step_parameters);
 
 KeplerianElements ToKeplerianElements(
     physics::KeplerianElements<Barycentric> const& keplerian_elements);

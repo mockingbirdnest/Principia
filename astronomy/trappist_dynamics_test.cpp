@@ -32,8 +32,6 @@
 #include "quantities/named_quantities.hpp"
 #include "quantities/si.hpp"
 
-#if !OS_MACOSX  // No Bundle for old Macs.
-
 namespace principia {
 
 using base::Bundle;
@@ -1177,7 +1175,7 @@ TEST_F(TrappistDynamicsTest, MathematicaTransits) {
 
   std::string info;
   double const χ² = Transitsχ²(observations, computations, info);
-  CHECK_LT(χ², 480.0);
+  CHECK_LT(χ², 482.0);
   CHECK_GT(χ², 470.0);
   LOG(ERROR) << u8"χ²: " << χ² << " " << info;
 }
@@ -1397,5 +1395,3 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
 
 }  // namespace astronomy
 }  // namespace principia
-
-#endif  // !OS_MACOSX

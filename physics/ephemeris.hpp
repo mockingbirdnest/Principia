@@ -35,6 +35,7 @@ using geometry::Instant;
 using geometry::Position;
 using geometry::Vector;
 using integrators::AdaptiveStepSizeIntegrator;
+using integrators::ExplicitSecondOrderOrdinaryDifferentialEquation;
 using integrators::FixedStepSizeIntegrator;
 using integrators::Integrator;
 using integrators::IntegrationProblem;
@@ -52,11 +53,49 @@ template<typename Frame>
 class Ephemeris {
   static_assert(Frame::is_inertial, "Frame must be inertial");
 
+  template<typename ODE>
+  class ODEAdaptiveStepParameters final {
+   public:
+    // The |length_| and |speed_integration_tolerance|s are used to compute the
+    // |tolerance_to_error_ratio| for step size control.  The number of steps is
+    // limited to |max_steps|.
+    ODEAdaptiveStepParameters(
+        AdaptiveStepSizeIntegrator<ODE> const& integrator,
+        std::int64_t max_steps,
+        Length const& length_integration_tolerance,
+        Speed const& speed_integration_tolerance);
+
+    AdaptiveStepSizeIntegrator<ODE> const& integrator() const;
+    std::int64_t max_steps() const;
+    Length length_integration_tolerance() const;
+    Speed speed_integration_tolerance() const;
+
+    void set_max_steps(std::int64_t max_steps);
+    void set_length_integration_tolerance(
+        Length const& length_integration_tolerance);
+    void set_speed_integration_tolerance(
+        Speed const& speed_integration_tolerance);
+
+    void WriteToMessage(
+        not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
+            message) const;
+    static ODEAdaptiveStepParameters ReadFromMessage(
+        serialization::Ephemeris::AdaptiveStepParameters const& message);
+
+   private:
+    // This will refer to a static object returned by a factory.
+    not_null<AdaptiveStepSizeIntegrator<ODE> const*> integrator_;
+    std::int64_t max_steps_;
+    Length length_integration_tolerance_;
+    Speed speed_integration_tolerance_;
+    friend class Ephemeris<Frame>;
+  };
+
  public:
   using IntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(Instant const& time)>;
   static std::nullptr_t constexpr NoIntrinsicAcceleration = nullptr;
-  using GeneralIntrinsicAcceleration =
+  using GeneralizedIntrinsicAcceleration =
       std::function<Vector<Acceleration, Frame>(
           Instant const& time,
           DegreesOfFreedom<Frame> const& degrees_of_freedom)>;
@@ -65,9 +104,16 @@ class Ephemeris {
   static std::int64_t constexpr unlimited_max_ephemeris_steps =
       std::numeric_limits<std::int64_t>::max();
 
-  // The equation describing the motion of the |bodies_|.
+  // The equations describing the motion of the |bodies_|.
   using NewtonianMotionEquation =
       SpecialSecondOrderDifferentialEquation<Position<Frame>>;
+  using GeneralizedNewtonianMotionEquation =
+      ExplicitSecondOrderOrdinaryDifferentialEquation<Position<Frame>>;
+
+  using AdaptiveStepParameters =
+      ODEAdaptiveStepParameters<NewtonianMotionEquation>;
+  using GeneralizedAdaptiveStepParameters =
+      ODEAdaptiveStepParameters<GeneralizedNewtonianMotionEquation>;
 
   class PHYSICS_DLL AccuracyParameters final {
    public:
@@ -85,45 +131,6 @@ class Ephemeris {
    private:
     Length fitting_tolerance_;
     double geopotential_tolerance_ = 0;
-    friend class Ephemeris<Frame>;
-  };
-
-  class PHYSICS_DLL AdaptiveStepParameters final {
-   public:
-    // The |length_| and |speed_integration_tolerance|s are used to compute the
-    // |tolerance_to_error_ratio| for step size control.  The number of steps is
-    // limited to |max_steps|.
-    AdaptiveStepParameters(
-        AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const& integrator,
-        std::int64_t max_steps,
-        Length const& length_integration_tolerance,
-        Speed const& speed_integration_tolerance);
-
-    AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const&
-    integrator() const;
-    std::int64_t max_steps() const;
-    Length length_integration_tolerance() const;
-    Speed speed_integration_tolerance() const;
-
-    void set_max_steps(std::int64_t max_steps);
-    void set_length_integration_tolerance(
-        Length const& length_integration_tolerance);
-    void set_speed_integration_tolerance(
-        Speed const& speed_integration_tolerance);
-
-    void WriteToMessage(
-        not_null<serialization::Ephemeris::AdaptiveStepParameters*> const
-            message) const;
-    static AdaptiveStepParameters ReadFromMessage(
-        serialization::Ephemeris::AdaptiveStepParameters const& message);
-
-   private:
-    // This will refer to a static object returned by a factory.
-    not_null<AdaptiveStepSizeIntegrator<NewtonianMotionEquation> const*>
-        integrator_;
-    std::int64_t max_steps_;
-    Length length_integration_tolerance_;
-    Speed speed_integration_tolerance_;
     friend class Ephemeris<Frame>;
   };
 
@@ -209,20 +216,12 @@ class Ephemeris {
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
-  // Integrates, until exactly |t| (except for timeouts or singularities), the
-  // |trajectory| followed by a massless body in the gravitational potential
-  // described by |*this|.  If |t > t_max()|, calls |Prolong(t)| beforehand.
-  // Prolongs the ephemeris by at most |max_ephemeris_steps|.  If
-  // |last_point_only| is true, only the last point is appended to the
-  // trajectory.  Returns OK if and only if |*trajectory| was integrated until
-  // |t|.
-  // TODO(phl): the |parameters| are used, but |parameters.integrator_| is
-  // ignored and a hard-coded RKNG is used instead.
-  virtual Status FlowWithAdaptiveStepGeneralized(
+  // Same as above, but uses a generalized integrator.
+  virtual Status FlowWithAdaptiveStep(
       not_null<DiscreteTrajectory<Frame>*> trajectory,
-      GeneralIntrinsicAcceleration intrinsic_acceleration,
+      GeneralizedIntrinsicAcceleration intrinsic_acceleration,
       Instant const& t,
-      AdaptiveStepParameters const& parameters,
+      GeneralizedAdaptiveStepParameters const& parameters,
       std::int64_t max_ephemeris_steps,
       bool last_point_only);
 
@@ -363,14 +362,15 @@ class Ephemeris {
       std::vector<Vector<Acceleration, Frame>>& accelerations) const
       EXCLUDES(lock_);
 
-  // Same as above, but the massless bodies have intrinsic accelerations.
-  // |intrinsic_accelerations| may be empty.  Returns false iff a collision
-  // occurred, i.e., the massless body is inside one of the |bodies_|.
-  bool ComputeMasslessBodiesTotalAccelerations(
-      std::vector<IntrinsicAcceleration> const& intrinsic_accelerations,
+  // Flows the given ODE with an adaptive step integrator.
+  template<typename ODE>
+  Status FlowODEWithAdaptiveStep(
+      typename ODE::RightHandSideComputation compute_acceleration,
+      not_null<DiscreteTrajectory<Frame>*> trajectory,
       Instant const& t,
-      std::vector<Position<Frame>> const& positions,
-      std::vector<Vector<Acceleration, Frame>>& accelerations) const;
+      ODEAdaptiveStepParameters<ODE> const& parameters,
+      std::int64_t max_ephemeris_steps,
+      bool last_point_only);
 
   // Computes an estimate of the ratio |tolerance / error|.
   static double ToleranceToErrorRatio(

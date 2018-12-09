@@ -19,12 +19,15 @@ Ephemeris<Barycentric>::AccuracyParameters
 DefaultEphemerisAccuracyParameters();
 Ephemeris<Barycentric>::FixedStepParameters
 DefaultEphemerisFixedStepParameters();
+Ephemeris<Barycentric>::GeneralizedAdaptiveStepParameters
+DefaultBurnParameters();
 Ephemeris<Barycentric>::FixedStepParameters DefaultHistoryParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPredictionParameters();
 Ephemeris<Barycentric>::AdaptiveStepParameters DefaultPsychohistoryParameters();
 
 }  // namespace internal_integrators
 
+using internal_integrators::DefaultBurnParameters;
 using internal_integrators::DefaultEphemerisAccuracyParameters;
 using internal_integrators::DefaultEphemerisFixedStepParameters;
 using internal_integrators::DefaultHistoryParameters;

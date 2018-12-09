@@ -52,7 +52,6 @@ using quantities::SIUnit;
 using quantities::Speed;
 using quantities::Time;
 using quantities::astronomy::AstronomicalUnit;
-using quantities::astronomy::EarthMass;
 using quantities::astronomy::JulianYear;
 using quantities::si::Kilo;
 using quantities::si::Metre;

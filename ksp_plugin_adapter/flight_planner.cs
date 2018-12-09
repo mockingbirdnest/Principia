@@ -121,7 +121,7 @@ class FlightPlanner : WindowRenderer {
                             actual_final_time -
                             plugin_.FlightPlanGetInitialTime(vessel_guid))));
 
-          AdaptiveStepParameters parameters =
+          FlightPlanAdaptiveStepParameters parameters =
               plugin_.FlightPlanGetAdaptiveStepParameters(vessel_guid);
 
           using (new HorizontalLayout()) {

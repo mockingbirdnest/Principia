@@ -26,6 +26,12 @@ PHYSICS_DLL_TEMPLATE_CLASS internal_continuous_trajectory::ContinuousTrajectory<
     ksp_plugin::Barycentric>;
 PHYSICS_DLL_TEMPLATE_CLASS
     internal_ephemeris::Ephemeris<ksp_plugin::Barycentric>;
+PHYSICS_DLL_TEMPLATE_CLASS
+    internal_ephemeris::Ephemeris<
+        ksp_plugin::Barycentric>::AdaptiveStepParameters;
+PHYSICS_DLL_TEMPLATE_CLASS
+    internal_ephemeris::Ephemeris<
+        ksp_plugin::Barycentric>::GeneralizedAdaptiveStepParameters;
 
 // For the plugin tests.
 // TODO(egg): ifdef this out for the actual plugin.

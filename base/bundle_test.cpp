@@ -8,8 +8,6 @@
 #include "gmock/gmock.h"
 #include "testing_utilities/matchers.hpp"
 
-#if !OS_MACOSX
-
 namespace principia {
 
 using ::testing::Eq;
@@ -154,5 +152,3 @@ TEST_F(BundleTest, DISABLED_NonCooperativeDeadline) {
 
 }  // namespace base
 }  // namespace principia
-
-#endif

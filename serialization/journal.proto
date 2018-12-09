@@ -41,6 +41,7 @@ message BodyGeopotentialElement {
 }
 
 message BodyParameters {
+  option (in_custom_marshaler) = "InBodyParametersMarshaler";
   required string name = 10;
   required string gravitational_parameter = 1;
   optional string reference_instant = 7;
@@ -82,6 +83,15 @@ message ConfigurationAdaptiveStepParameters {
   required string speed_integration_tolerance = 3;
 }
 
+message FlightPlanAdaptiveStepParameters {
+  // Corresponds to AdaptiveStepSizeIntegrator.Kind.
+  required int64 integrator_kind = 4;
+  required int64 generalized_integrator_kind = 5;
+  required int64 max_steps = 1;
+  required double length_integration_tolerance = 2;
+  required double speed_integration_tolerance = 3;
+}
+
 message KeplerianElements {
   required double eccentricity = 1;
   required double semimajor_axis = 2 [default = nan];  // Optional.
@@ -101,7 +111,6 @@ message NavigationManoeuvre {
   required double final_time = 6;
   required double time_of_half_delta_v = 7;
   required double time_to_half_delta_v = 8;
-  required XYZ inertial_direction = 9;
 }
 
 // Frenet trihedron at the beginning of the manœuvre.
@@ -510,7 +519,7 @@ message FlightPlanGetAdaptiveStepParameters {
     required string vessel_guid = 2;
   }
   message Return {
-    required AdaptiveStepParameters result = 1;
+    required FlightPlanAdaptiveStepParameters result = 1;
   }
   optional In in = 1;
   optional Return return = 3;
@@ -769,7 +778,8 @@ message FlightPlanSetAdaptiveStepParameters {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
                                  (is_subject) = true];
     required string vessel_guid = 2;
-    required AdaptiveStepParameters adaptive_step_parameters = 3;
+    required FlightPlanAdaptiveStepParameters
+        flight_plan_adaptive_step_parameters = 3;
   }
   message Return {
     required bool result = 1;
@@ -1905,7 +1915,10 @@ extend google.protobuf.FieldOptions {
 }
 
 extend google.protobuf.MessageOptions {
+  // For an interchange message that is used as an in parameters, specifies the
+  // custom marshaler to use.
+  optional string in_custom_marshaler = 50011;
   // If set, the body of the Run method is wrapped into an #ifdef for the given
   // symbol.  Useful for selectively skipping replay of some methods.
-  optional string run_conditional_compilation_symbol = 50008;
+  optional string run_conditional_compilation_symbol = 50010;
 }
