@@ -10,7 +10,7 @@ gravity_model {
   # for life?", Vida et al., 2017.
   body {
     name                 : "Trappist-1"
-    mass                 : "0.0890 M☉"
+    mass                 : "0.0890 GM☉"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.1210 R☉"
     axis_right_ascension : "-89.9408 deg"
@@ -32,7 +32,7 @@ gravity_model {
   # Earth) and σ = 1.
   body {
     name                 : "Trappist-1b"
-    mass                 : "1.017 M🜨"
+    mass                 : "1.017 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.01 R🜨"
     axis_right_ascension : "-89.9077 deg"
@@ -44,7 +44,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1c"
-    mass                 : "1.156 M🜨"
+    mass                 : "1.156 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.06 R🜨"
     axis_right_ascension : "-89.9829 deg"
@@ -56,7 +56,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1d"
-    mass                 : "0.297 M🜨"
+    mass                 : "0.297 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.784 R🜨"
     axis_right_ascension : "-90.0387 deg"
@@ -68,7 +68,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1e"
-    mass                 : "0.772 M🜨"
+    mass                 : "0.772 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.910 R🜨"
     axis_right_ascension : "-89.9999 deg"
@@ -80,7 +80,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1f"
-    mass                 : "0.934 M🜨"
+    mass                 : "0.934 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.046 R🜨"
     axis_right_ascension : "-89.9582 deg"
@@ -92,7 +92,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1g"
-    mass                 : "1.148 M🜨"
+    mass                 : "1.148 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "1.148 R🜨"
     axis_right_ascension : "-89.9896 deg"
@@ -104,7 +104,7 @@ gravity_model {
   }
   body {
     name                 : "Trappist-1h"
-    mass                 : "0.331 M🜨"
+    mass                 : "0.331 GM🜨"
     reference_instant    : "JD2457000.000000000"
     mean_radius          : "0.773 R🜨"
     axis_right_ascension : "-89.8993 deg"

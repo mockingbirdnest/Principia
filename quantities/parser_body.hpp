@@ -136,9 +136,9 @@ inline Unit ParseUnit(std::string const& s) {
   } else if (s == "d") {
     return Unit(si::Day);
   // Units of gravitational parameter.
-  } else if (s == u8"GM🜨") {
+  } else if (s == u8"GGM🜨") {
     return Unit(astronomy::TerrestrialGravitationalParameter);
-  } else if (s == u8"GM☉") {
+  } else if (s == u8"GGM☉") {
     return Unit(astronomy::SolarGravitationalParameter);
   // Units of power.
   } else if (s == "W") {
