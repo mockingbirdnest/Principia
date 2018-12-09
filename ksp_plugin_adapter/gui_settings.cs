@@ -24,6 +24,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -34,13 +35,19 @@ namespace ksp_plugin_adapter {
         private const float button_width = 50.0f;
         private const float button_height = 25.0f;
 
+        private const string plotting_frame_body_name_string = "<color=#ffffffff>Selected celestial body for plotting frame: </color>";
+        private const float plotting_frame_body_name_string_length = 200f;
+        private const float plotting_frame_body_value_string_length = 60f;
+
+        private const float plotting_frame_string_length = 300f;
+
         bool settings_window_visible = false;
 
-        private DialogGUIVerticalLayout main_settings_page;
-        private DialogGUIVerticalLayout plotting_frame_page;
-        private DialogGUIVerticalLayout logging_settings_page;
+        private DialogGUIBase main_settings_page;
+        private DialogGUIBase plotting_frame_page;
+        private DialogGUIBase logging_settings_page;
 
-        private DialogGUIVerticalLayout settings_box;
+        private DialogGUIBase settings_box;
         private MultiOptionDialog multi_page_settings;
         private PopupDialog popup_dialog;
 
@@ -51,8 +58,9 @@ namespace ksp_plugin_adapter {
         //
         private void ClearSettingsBox()
         {
-            settings_box.children[0].uiItem.gameObject.DestroyGameObjectImmediate();
-            settings_box.children.Clear();
+            DialogGUIBase child = settings_box.children[0];
+            settings_box.children.RemoveAt(0);
+            child.uiItem.gameObject.DestroyGameObjectImmediate();
         }
 
         private void ForceGUIUpdate()
@@ -72,11 +80,48 @@ namespace ksp_plugin_adapter {
             ForceGUIUpdate();
         }
 
+        // In some rare cases, such as when using a scrolling layout
+        // simply re-connecting a previously rendered layout causes
+        // the layout to break. For this case we recreate the whole
+        // layout.
+        private void RecursivelyDeleteLayout(DialogGUIBase layout)
+        {
+            RecursivelyDeleteLayoutChildren(layout);
+
+            layout.uiItem.gameObject.DestroyGameObjectImmediate();
+        }
+
+        private void RecursivelyDeleteLayoutChildren(DialogGUIBase layout)
+        {
+            if (layout.children.Count < 1) {
+                return;
+            }
+            for (int i = layout.children.Count - 1; i >= 0; i--)
+            {
+                RecursivelyDeleteLayoutChildren(layout.children[i]);
+
+                DialogGUIBase child = layout.children[i];
+                layout.children.RemoveAt(i);
+                child.uiItem.gameObject.DestroyGameObjectImmediate();
+            }
+        }
+
         private void OnButtonClick_PlottingFrameSettings()
         {
+            DialogGUIBase backup_reference = plotting_frame_page;
+
             ClearSettingsBox();
+            // Force the complete re-rending of the plotting frame settings
+            // otherwise the scroll-bar breaks. And the scroll bar is a hard
+            // requirement to make the entire list fit the window.
+            plotting_frame_page = AddPlottingFrameSelectionUI();
             settings_box.children.Add(plotting_frame_page);
             ForceGUIUpdate();
+
+            // Delete old GUI elements
+            // This is done afterwards, because for reasons I do not know
+            // The new GUI must be fully updated before we can do this
+            RecursivelyDeleteLayout(backup_reference);
         }
         
         private void OnButtonClick_LoggingSettings()
@@ -145,6 +190,107 @@ namespace ksp_plugin_adapter {
             GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
             GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
         }
+
+        //
+        // Support code for the plotting frame selection
+        //
+        private string selected_celestial_body = FlightGlobals.GetHomeBodyName();
+        // I suspect the hardcoded numbers are to allow the C++ code to understand this as well
+        private enum FrameType {
+            BARYCENTRIC_ROTATING = 6001,
+            BODY_CENTRED_NON_ROTATING = 6000,
+            BODY_CENTRED_PARENT_DIRECTION = 6002,
+            BODY_SURFACE = 6003
+        }
+        private FrameType reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+
+        private float GetFrameType()
+        {
+            switch (reference_frame)
+            {
+                case FrameType.BODY_SURFACE:
+                    return 0f;
+                case FrameType.BODY_CENTRED_NON_ROTATING:
+                    return 1f;
+                case FrameType.BARYCENTRIC_ROTATING:
+                    return 2f;
+                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                default:
+                    return 3f;
+            }
+        }
+
+        private void SetFrameType(float value)
+        {
+            if (value > 2.5f) {
+                reference_frame = FrameType.BODY_CENTRED_PARENT_DIRECTION;
+            } else if (value > 1.5f) {
+                reference_frame = FrameType.BARYCENTRIC_ROTATING;
+            } else if (value > 0.5f) {
+                reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+            } else {
+                reference_frame = FrameType.BODY_SURFACE;
+            }
+        }
+
+        private string GetFrameTypeString()
+        {
+            CelestialBody parent = FlightGlobals.GetBodyByName(selected_celestial_body).referenceBody;
+            string parent_body_name = parent.name; // Note: reference body of root is root itself
+            switch (reference_frame)
+            {
+                case FrameType.BODY_SURFACE:
+                    return string.Format("Reference frame fixing the surface of {0}", selected_celestial_body);
+                case FrameType.BODY_CENTRED_NON_ROTATING:
+                    return string.Format("Non-rotating reference frame fixing the center of {0}", selected_celestial_body);
+                case FrameType.BARYCENTRIC_ROTATING:
+                    return string.Format("Reference frame fixing the barycenter of {0} and {1}, the plane which they move about the barycenter, and the line between them", selected_celestial_body, parent_body_name);
+                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                default:
+                    return string.Format("Reference frame fixing the center of {0}, the plane of its orbit around {1}, and the line between them", selected_celestial_body, parent_body_name);
+            }
+        }
+
+        private void AddOrbitingBodies(CelestialBody body, ref DialogGUILayoutBase gui, string parent_name)
+        {
+            if (parent_name != null) {
+                gui.children.Add(new DialogGUIButton(body.name + String.Format(" (Parent body: {0})", parent_name), () => { selected_celestial_body = body.name; }, false));
+            } else {
+                gui.children.Add(new DialogGUIButton(body.name, () => { selected_celestial_body = body.name; }, false));
+            }
+            foreach (CelestialBody child_body in body.orbitingBodies)
+            {
+                AddOrbitingBodies(child_body, ref gui, body.name); // add some visual cues that suggest indenting
+            }
+        }
+
+        private DialogGUIBase AddPlottingFrameSelectionUI()
+        {
+            CelestialBody root_body = null;
+            foreach (CelestialBody body in FlightGlobals.Bodies) {
+                if (FlightGlobals.GetBodyIndex(body) == 0)
+                {
+                    root_body = body; // typically the star
+                    break;
+                }
+            }
+            if (root_body == null) {
+                throw Log.Fatal("No root body of celestials could be found");
+            }
+
+            DialogGUILayoutBase celestial_body_list = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(0, 18, 0, 0) /* prevent scroll bar overlap */, TextAnchor.UpperCenter,
+                new DialogGUIContentSizer(ContentSizeFitter.FitMode.Unconstrained, ContentSizeFitter.FitMode.PreferredSize, true));
+            AddOrbitingBodies(root_body, ref celestial_body_list, null);
+
+            DialogGUILayoutBase gui = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
+                new DialogGUILabel(() => { return plotting_frame_body_name_string + selected_celestial_body; }, plotting_frame_body_name_string_length + plotting_frame_body_value_string_length),
+                new DialogGUILabel(GetFrameTypeString, plotting_frame_string_length),
+                new DialogGUISlider(GetFrameType, 0f, 3f, true, -1, -1, SetFrameType),
+                // there will be too many celestial bodies, putting them inside something that can scroll vertically
+                new DialogGUIScrollList(new Vector2(400f, 500f), false, true, celestial_body_list)
+            );
+            return gui;
+        }
         
         private void InitializeSettingsGUI()
         {
@@ -193,9 +339,7 @@ namespace ksp_plugin_adapter {
                 ),
                 new DialogGUISpace(100.0f)
             );
-            plotting_frame_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUILabel("testing 456")
-            );
+            plotting_frame_page = AddPlottingFrameSelectionUI();
             logging_settings_page = new DialogGUIVerticalLayout(false, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUILabel("testing 789")
             );
