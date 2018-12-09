@@ -27,24 +27,23 @@ constexpr Length Parsec = 648000 / π * AstronomicalUnit;
 // de propriétés solaires et planétaires" adopted at the XXIXth General Assembly
 // of the IAU in 2015.
 
+// Solar conversion constants.
 constexpr Length      SolarRadius               = 6.957e8 * si::Metre;
 constexpr Irradiance  TotalSolarIrradiance      = 1361 * (si::Watt /
                                                           Pow<2>(si::Metre));
 constexpr Power       SolarLuminosity           = 3.828e26 * si::Watt;
 constexpr Temperature SolarEffectiveTemperature = 5772 * si::Kelvin;
-
 constexpr GravitationalParameter SolarGravitationalParameter =
     1.327'124'4e20 * (Pow<3>(Metre) / Pow<2>(Second));
 
+// Planetary conversion constants.
 // “If equatorial vs. polar radius is not explicitly specified, it should be
 // understood that nominal terrestrial [or jovian] radius refers specifically to
 // [the nominal equatorial radius], following common usage.”
-
 constexpr Length TerrestrialEquatorialRadius = 6.3781e6 * si::Metre;
 constexpr Length TerrestrialPolarRadius      = 6.3568e6 * si::Metre;
 constexpr Length JovianEquatorialRadius      = 7.1492e7 * si::Metre;
 constexpr Length JovianPolarRadius           = 6.6854e7 * si::Metre;
-
 constexpr GravitationalParameter TerrestrialGravitationalParameter =
     3.986'004e14 * (Pow<3>(si::Metre) / Pow<2>(si::Second));
 constexpr GravitationalParameter JovianGravitationalParameter      =
