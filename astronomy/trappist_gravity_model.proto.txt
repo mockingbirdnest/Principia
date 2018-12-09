@@ -1,7 +1,10 @@
 gravity_model {
   solar_system_frame    : SKY
-  # Right ascensions from a normal distribution with μ=-90, σ=0.05.
-  # Declinations from a normal distribution with μ=0, σ=0.05.
+  # Right ascensions from a normal distribution with μ=-90, σ=0.05°.
+  # Declinations from a normal distribution with μ=0, σ=0.05°.
+  # This standard deviation is the mode of the polar angle scatter distribution
+  # in figure 7 of Luger, Lustig-Yaeger, and Agol (2017), Planet-Planet
+  # Occultations in TRAPPIST-1 and Other Exoplanet Systems.
 
   # Star.
   # Mass and radius from "Early 2017 observations of TRAPPIST-1 with Spitzer",
