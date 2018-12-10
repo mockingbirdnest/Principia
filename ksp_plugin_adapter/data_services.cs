@@ -230,9 +230,13 @@ namespace ksp_plugin_adapter {
         //
         // Planning settings
         //
-        private static double plan_time_length = 10*60; // TODO: is this the proper default?
-        private static int plan_max_steps_per_segment = 1000;
-        private static double plan_tolerance = 1.0;
+        public const double PLAN_TIME_LENGTH_DEFAULT = 10*60; // TODO: is this the proper default?
+        public const int PLAN_MAX_STEPS_PER_SEGMENT_DEFAULT = 1000;
+        public const double PLAN_TOLERANCE_DEFAULT = 1.0;
+
+        private static double plan_time_length = PLAN_TIME_LENGTH_DEFAULT;
+        private static int plan_max_steps_per_segment = PLAN_MAX_STEPS_PER_SEGMENT_DEFAULT;
+        private static double plan_tolerance = PLAN_TOLERANCE_DEFAULT;
 
         public static double GetPlanTimeLength() { return plan_time_length; }
         public static void SetPlanTimeLength(double value)
