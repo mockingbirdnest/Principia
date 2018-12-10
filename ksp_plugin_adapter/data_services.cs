@@ -47,6 +47,21 @@ namespace ksp_plugin_adapter {
             }
         }
 
+        private static Vessel GetVessel()
+        {
+            return FlightGlobals.ActiveVessel;
+        }
+
+        private static string GetVesselGuid()
+        {
+            return GetVessel().id.ToString();
+        }
+
+        private static bool HasFlightPlan()
+        {
+            return plugin.FlightPlanExists(GetVesselGuid());
+        }
+
         //
         // History length
         //
@@ -244,7 +259,7 @@ namespace ksp_plugin_adapter {
 
         private static void UpdateFlightPlanAdaptiveStepParameters()
         {
-            string vessel_guid = FlightGlobals.ActiveVessel.id.ToString();
+            string vessel_guid = GetVesselGuid();
             FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
             parameters.length_integration_tolerance = plan_tolerance;
             parameters.speed_integration_tolerance = plan_tolerance;
@@ -254,15 +269,28 @@ namespace ksp_plugin_adapter {
 
         private static void UpdateFlightPlanTimeLength()
         {
-            string vessel_guid = FlightGlobals.ActiveVessel.id.ToString();
+            string vessel_guid = GetVesselGuid();
             // TODO: there is also an actual final time, what to do with that beast? some feedback in the GUI needed?
             plugin.FlightPlanSetDesiredFinalTime(vessel_guid, plan_time_length + plugin.FlightPlanGetInitialTime(vessel_guid));
         }
 
+        public static void EnsureFlightPlanExists()
+        {
+            if (!HasFlightPlan())
+            {
+                plugin.FlightPlanCreate(GetVesselGuid(),
+                                        plugin.CurrentTime() + 1000,
+                                        GetVessel().GetTotalMass());
+            }
+        }
+
         private static void OnVesselChange(Vessel value)
         {
-            UpdateFlightPlanTimeLength();
-            UpdateFlightPlanAdaptiveStepParameters();
+            if (HasFlightPlan())
+            {
+                UpdateFlightPlanTimeLength();
+                UpdateFlightPlanAdaptiveStepParameters();
+            }
         }
     }
 }  // namespace ksp_plugin_adapter

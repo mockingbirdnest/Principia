@@ -552,6 +552,7 @@ namespace ksp_plugin_adapter {
         private void ShowPlannerWindow()
         {
             planner_window_visible = true;
+            DataServices.EnsureFlightPlanExists();
             popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(x_pos, y_pos), new Vector2(x_pos, y_pos),
                                                         multi_page_planner, true, HighLogic.UISkin, false);
         }
