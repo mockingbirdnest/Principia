@@ -42,7 +42,11 @@ namespace ksp_plugin_adapter {
         private const string show_on_navball_string = "<color=#ffffffff>Show on navball</color>";
         private const float show_on_navball_string_length = 70f;
         private const string ignition_delta_time_name_string = "<color=#ffffffff>Ignition Δt: </color>";
+        private const string cutoff_delta_time_name_string = "<color=#ffffffff>Cutoff Δt: </color>";
         private const float ignition_delta_time_name_string_length = 60f;
+
+        private const string total_delta_velocity_prefix_string = "<color=#ffffffff>Total Δv: </color>";
+        private const float total_delta_velocity_prefix_string_length = 60f;
         
         //
         // Definitions to support the planner page
@@ -163,13 +167,18 @@ namespace ksp_plugin_adapter {
         //
         // Execution page support code
         //
-        private bool show_on_navball = false;
-        private double ignition_delta_time = 0.0;
-        private double ignition_delta_velocity = 0.0; // by definition this only talks about the "ignition_delta_time" burn
 
         private void OnButtonClick_WarpToManeuver()
         {
-            // TODO: implement actual behavior
+            DataServices.WarpToManeuver();
+        }
+
+        private string EngineIgnitionCutoffString()
+        {
+            if (DataServices.IsEngineDeltaTimeIgnition())
+                return ignition_delta_time_name_string;
+            else
+                return cutoff_delta_time_name_string;
         }
 
         //
@@ -467,13 +476,12 @@ namespace ksp_plugin_adapter {
         {
             execution_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUIToggle(show_on_navball, show_on_navball_string, (value) => { show_on_navball = value; }, show_on_navball_string_length),
-                    new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false)
+                    new DialogGUIToggle(DataServices.GetShowOnNavball(), show_on_navball_string, (value) => { DataServices.SetShowOnNavball(value); }, show_on_navball_string_length),
+                    new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false) // TODO: not always available in career mode
                 ),
-                // TODO: will ignition time be delta based or absolute based?
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUILabel(() => { return ignition_delta_time_name_string + FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(ignition_delta_time)); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
-                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, ignition_delta_velocity); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
+                    new DialogGUILabel(() => { return EngineIgnitionCutoffString() + FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return total_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetDeltaVelocityOfAllBurns()); }, total_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 )
             );
 

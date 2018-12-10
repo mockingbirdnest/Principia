@@ -270,12 +270,12 @@ class FlightPlanner : WindowRenderer {
         // even though the flight planner is still available to plan it.
         // TODO(egg): We may want to consider setting the burn vector directly
         // rather than going through the solver.
-        if (vessel_.patchedConicSolver != null) {
+        if (vessel_.patchedConicSolver != null && false) {
           using (new HorizontalLayout()) {
             show_guidance_ =
                 UnityEngine.GUILayout.Toggle(show_guidance_, "Show on navball");
             if (UnityEngine.GUILayout.Button("Warp to manœuvre")) {
-              TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
+              //TimeWarp.fetch.WarpTo(manoeuvre.burn.initial_time - 60);
             }
           }
           XYZ guidance = plugin_.FlightPlanGetGuidance(vessel_guid, i);

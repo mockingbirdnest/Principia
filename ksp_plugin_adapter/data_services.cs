@@ -21,6 +21,7 @@
  */
 
 using System;
+using System.Linq;
 
 namespace principia {
 namespace ksp_plugin_adapter {
@@ -35,7 +36,8 @@ namespace ksp_plugin_adapter {
         // Global settings
         //
         private static IntPtr plugin;
-        private static bool events_registered;
+        private static bool events_registered = false;
+        private static ManeuverNode guidance_node;
 
         public static void SetPlugin(IntPtr value)
         {
@@ -263,19 +265,19 @@ namespace ksp_plugin_adapter {
 
         private static void UpdateFlightPlanAdaptiveStepParameters()
         {
-            string vessel_guid = GetVesselGuid();
-            FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
+            string vesselguid = GetVesselGuid();
+            FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vesselguid);
             parameters.length_integration_tolerance = plan_tolerance;
             parameters.speed_integration_tolerance = plan_tolerance;
             parameters.max_steps = plan_max_steps_per_segment;
-            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
+            plugin.FlightPlanSetAdaptiveStepParameters(vesselguid, parameters);
         }
 
         private static void UpdateFlightPlanTimeLength()
         {
-            string vessel_guid = GetVesselGuid();
+            string vesselguid = GetVesselGuid();
             // TODO: there is also an actual final time, what to do with that beast? some feedback in the GUI needed?
-            plugin.FlightPlanSetDesiredFinalTime(vessel_guid, plan_time_length + plugin.FlightPlanGetInitialTime(vessel_guid));
+            plugin.FlightPlanSetDesiredFinalTime(vesselguid, plan_time_length + plugin.FlightPlanGetInitialTime(vesselguid));
         }
 
         public static void EnsureFlightPlanExists()
@@ -295,6 +297,145 @@ namespace ksp_plugin_adapter {
                 UpdateFlightPlanTimeLength();
                 UpdateFlightPlanAdaptiveStepParameters();
             }
+        }
+
+        //
+        // Planner Execution
+        //
+        private static bool show_on_navball = false;
+
+        public static bool GetShowOnNavball() { return show_on_navball; }
+        public static void SetShowOnNavball(bool value) { show_on_navball = value; if (show_on_navball) ShowOnNavball(); else HideFromNavball(); }
+        public static double GetEngineDeltaTime()
+        {
+            int selected_maneuver;
+            NavigationManoeuvre maneuver;
+            if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
+                return 0.0;
+
+            if (plugin.CurrentTime() < maneuver.burn.initial_time)
+                return plugin.CurrentTime() - maneuver.burn.initial_time;
+            else
+                return plugin.CurrentTime() - maneuver.final_time;
+        }
+        public static bool IsEngineDeltaTimeIgnition()
+        {
+            int selected_maneuver;
+            NavigationManoeuvre maneuver;
+            if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
+                return true; // TODO: what should the default be?
+
+            if (plugin.CurrentTime() < maneuver.burn.initial_time)
+                return true;
+            else
+                return false;
+        }
+
+        public static double GetDeltaVelocityOfAllBurns()
+        {
+            string vesselguid = GetVesselGuid();
+            double total_delta_v = 0.0;
+
+            for (int index = 0; index < plugin.FlightPlanNumberOfManoeuvres(vesselguid); index++)
+            {
+                total_delta_v += ((Vector3d)plugin.FlightPlanGetManoeuvre(vesselguid, index).burn.delta_v).magnitude;
+            }
+
+            return total_delta_v;
+        }
+
+        private static bool FindUpcomingManeuver(out int index, out NavigationManoeuvre maneuver)
+        {
+            string vesselguid = GetVesselGuid();
+            int number_of_maneuvers = plugin.FlightPlanNumberOfManoeuvres(vesselguid);
+            index = 0;
+            maneuver = new NavigationManoeuvre();
+
+            if (number_of_maneuvers == 0) return false;
+
+            maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
+            while ((plugin.CurrentTime() > maneuver.final_time) && (index < number_of_maneuvers))
+            {
+                index += 1;
+                maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
+            }
+
+            // No maneuver satifies the condition
+            if (index == number_of_maneuvers)
+                return false;
+            return true;
+        }
+
+        // TODO: What are the events to update this beast?
+        private static void ShowOnNavball()
+        {
+            Vessel vessel = GetVessel();
+            string vesselguid = GetVesselGuid();
+            int selected_maneuver;
+            NavigationManoeuvre maneuver;
+
+            if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
+                return;
+
+            // In career mode, the patched conic solver may be null.  In that case
+            // we do not offer the option of showing the manoeuvre on the navball,
+            // even though the flight planner is still available to plan it.
+            // TODO(egg): We may want to consider setting the burn vector directly
+            // rather than going through the solver.
+            if (vessel.patchedConicSolver != null) {
+                XYZ guidance = plugin.FlightPlanGetGuidance(vesselguid, selected_maneuver);
+                if (!double.IsNaN(guidance.x + guidance.y + guidance.z)) {
+                    if (guidance_node == null ||
+                        !vessel.patchedConicSolver.maneuverNodes.Contains(guidance_node)) {
+                        while (vessel.patchedConicSolver.maneuverNodes.Count > 0) {
+                            vessel.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+                        }
+                    }
+                    guidance_node = vessel.patchedConicSolver.AddManeuverNode(maneuver.burn.initial_time);
+                } else if (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
+                    while (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
+                        if (vessel.patchedConicSolver.maneuverNodes.First() == guidance_node) {
+                            vessel.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+                        } else {
+                            vessel.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+                        }
+                    }
+                }
+
+                var stock_orbit = guidance_node.patch;
+                Vector3d stock_velocity_at_node_time =
+                    stock_orbit.getOrbitalVelocityAtUT(maneuver.burn.initial_time).xzy;
+                Vector3d stock_displacement_from_parent_at_node_time =
+                    stock_orbit.getRelativePositionAtUT(maneuver.burn.initial_time).xzy;
+                UnityEngine.Quaternion stock_frenet_frame_to_world =
+                    UnityEngine.Quaternion.LookRotation(
+                        stock_velocity_at_node_time,
+                        Vector3d.Cross(stock_velocity_at_node_time, stock_displacement_from_parent_at_node_time)
+                    );
+                guidance_node.DeltaV =
+                    ((Vector3d)maneuver.burn.delta_v).magnitude *
+                     (Vector3d)(UnityEngine.Quaternion.Inverse(stock_frenet_frame_to_world) *
+                     (Vector3d)guidance);
+                guidance_node.UT = maneuver.burn.initial_time;
+                vessel.patchedConicSolver.UpdateFlightPlan();
+            }
+        }
+
+        private static void HideFromNavball()
+        {
+            if (guidance_node != null) {
+                guidance_node.RemoveSelf();
+                guidance_node = null;
+            }
+        }
+
+        public static void WarpToManeuver()
+        {
+            int selected_maneuver;
+            NavigationManoeuvre maneuver;
+            if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
+                return;
+            TimeWarp.fetch.WarpTo(maneuver.burn.initial_time - 60);
         }
     }
 }  // namespace ksp_plugin_adapter
