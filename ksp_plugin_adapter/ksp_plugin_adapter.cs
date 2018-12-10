@@ -600,17 +600,11 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
-    if (must_record_journal_) {
-      journaling_ = true;
-      Log.ActivateRecorder(true);
-    }
+    DataModel.InitializeJournaling();
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
-      Log.SetBufferedLogging(buffered_logging_);
-      Log.SetSuppressedLogging(suppressed_logging_);
-      Log.SetStderrLogging(stderr_logging_);
-      Log.SetVerboseLogging(verbose_logging_);
+      DataModel.InitializeLoggingSettings();
 
       IntPtr deserializer = IntPtr.Zero;
       String[] serializations = node.GetValues(principia_serialized_plugin_);
@@ -2262,7 +2256,7 @@ public partial class PrincipiaPluginAdapter
       if (UnityEngine.GUILayout.Button(
               text    : "←",
               options : UnityEngine.GUILayout.Width(50))) {
-        Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
+        //Log.SetVerboseLogging(Math.Max(verbose_logging_ - 1, 0));
         verbose_logging_ = Log.GetVerboseLogging();
       }
       UnityEngine.GUILayout.TextArea(
@@ -2271,7 +2265,7 @@ public partial class PrincipiaPluginAdapter
       if (UnityEngine.GUILayout.Button(
               text    : "→",
               options : UnityEngine.GUILayout.Width(50))) {
-        Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
+        //Log.SetVerboseLogging(Math.Min(verbose_logging_ + 1, 4));
         verbose_logging_ = Log.GetVerboseLogging();
       }
     }
@@ -2293,19 +2287,19 @@ public partial class PrincipiaPluginAdapter
       if (UnityEngine.GUILayout.Button(
               text    : "↑",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
+        //Log.SetSuppressedLogging(Math.Max(suppressed_logging_ - 1, 0));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
       if (UnityEngine.GUILayout.Button(
               text    : "↑",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
+        //Log.SetStderrLogging(Math.Max(stderr_logging_ - 1, 0));
         stderr_logging_ = Log.GetStderrLogging();
       }
       if (UnityEngine.GUILayout.Button(
               text    : "↑",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
+        //Log.SetBufferedLogging(Math.Max(buffered_logging_ - 1, -1));
         buffered_logging_ = Log.GetBufferedLogging();
       }
     }
@@ -2333,19 +2327,19 @@ public partial class PrincipiaPluginAdapter
       if (UnityEngine.GUILayout.Button(
               text    : "↓",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
+        //Log.SetSuppressedLogging(Math.Min(suppressed_logging_ + 1, 3));
         suppressed_logging_ = Log.GetSuppressedLogging();
       }
       if (UnityEngine.GUILayout.Button(
               text    : "↓",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
+        //Log.SetStderrLogging(Math.Min(stderr_logging_ + 1, 3));
         stderr_logging_ = Log.GetStderrLogging();
       }
       if (UnityEngine.GUILayout.Button(
               text    : "↓",
               options : UnityEngine.GUILayout.Width(column_width))) {
-        Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
+        //Log.SetBufferedLogging(Math.Min(buffered_logging_ + 1, 3));
         buffered_logging_ = Log.GetBufferedLogging();
       }
     }

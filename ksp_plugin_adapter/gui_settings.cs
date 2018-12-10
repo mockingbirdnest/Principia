@@ -314,41 +314,34 @@ namespace ksp_plugin_adapter {
         //
         // Support code for logging settings
         //
-        private int verbose_level = 0;
-        private int supressed_logging_level = 0;
-        private int stderr_logging_level = 0;
-        private int flush_logging_level = 0;
-        private bool record_journal_at_next_startup = false;
-        private bool record_journal_in_progress = false;
+        private float GetVerboseLevel() { return (float)DataModel.GetVerboseLevel(); }
+        private void SetVerboseLevel(float value) { DataModel.SetVerboseLevel((int)value); }
 
-        private float GetVerboseLevel() { return (float)verbose_level; }
-        private void SetVerboseLevel(float value) { verbose_level = (int)value; }
-
-        private float GetLogLevel() { return supressed_logging_level; }
-        private void SetLogLevel(float value) { supressed_logging_level = (int)value; }
-        private float GetStderrLevel() { return stderr_logging_level; }
-        private void SetStderrLevel(float value) { stderr_logging_level = (int)value; }
-        private float GetFlushLevel() { return flush_logging_level; }
-        private void SetFlushLevel(float value) { flush_logging_level = (int)value; }
+        private float GetLogLevel() { return (float)DataModel.GetLogLevel(); }
+        private void SetLogLevel(float value) { DataModel.SetLogLevel((int)value); }
+        private float GetStderrLevel() { return (float)DataModel.GetStderrLevel(); }
+        private void SetStderrLevel(float value) { DataModel.SetStderrLevel((int)value); }
+        private float GetFlushLevel() { return (float)DataModel.GetFlushLevel(); }
+        private void SetFlushLevel(float value) { DataModel.SetFlushLevel((int)value); }
 
         private DialogGUIBase AddLoggingSettingsUI()
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetVerboseLevel, 0f, 4f, true, -1, -1, SetVerboseLevel),
-                    new DialogGUILabel(() => { return verbose_level_name_string + verbose_level; }, verbose_level_name_string_length + verbose_level_value_string_length)),
+                    new DialogGUILabel(() => { return verbose_level_name_string + DataModel.GetVerboseLevel(); }, verbose_level_name_string_length + verbose_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetLogLevel, 0f, 3f, true, -1, -1, SetLogLevel),
-                    new DialogGUILabel(() => { return log_level_name_string + Log.severity_names[supressed_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return log_level_name_string + Log.severity_names[DataModel.GetLogLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetStderrLevel, 0f, 3f, true, -1, -1, SetStderrLevel),
-                    new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[stderr_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[DataModel.GetStderrLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetFlushLevel, 0f, 3f, true, -1, -1, SetFlushLevel),
-                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[flush_logging_level]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[DataModel.GetFlushLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(record_journal_at_next_startup, record_journal_at_next_startup_name_string, (value) => { record_journal_at_next_startup = value; }, record_journal_at_next_startup_name_string_length),
-                    new DialogGUILabel(() => { if (record_journal_in_progress) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
+                    new DialogGUIToggle(DataModel.GetRecordJournalAtNextStartup(), record_journal_at_next_startup_name_string, (value) => { DataModel.SetRecordJournalAtNextStartup(value); }, record_journal_at_next_startup_name_string_length),
+                    new DialogGUILabel(() => { if (DataModel.GetRecordJournalInProgress()) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
             );
         }
 

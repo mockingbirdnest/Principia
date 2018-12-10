@@ -155,6 +155,46 @@ namespace ksp_plugin_adapter {
             NavigationFrameParameters frame_parameters = GenerateNavigationFrameParameters();
             on_update_celestial_body_or_reference_frame(frame_parameters);
         }
+
+        //
+        // Logging settings
+        //
+        private static bool record_journal_at_next_startup = false;
+        private static bool record_journal_in_progress = false;
+        private static int verbose_level = 0;
+        private static int supressed_logging_level = 0;
+        private static int stderr_logging_level = 2;
+        private static int flush_logging_level = 0;
+
+        public static bool GetRecordJournalInProgress() { return record_journal_in_progress; }
+        public static bool GetRecordJournalAtNextStartup() { return record_journal_at_next_startup; }
+        public static void SetRecordJournalAtNextStartup(bool value) { record_journal_at_next_startup = value; }
+        
+        public static void InitializeJournaling()
+        {
+            if (record_journal_at_next_startup) {
+                Log.ActivateRecorder(true);
+                record_journal_in_progress = true;
+            }
+        }
+
+        // Implicit requirement: Don't accept a log setting, until the C++ side of principia has accepted it
+        public static int GetVerboseLevel() { return verbose_level; }
+        public static void SetVerboseLevel(int value) { Log.SetVerboseLogging(value); verbose_level = Log.GetVerboseLogging(); }
+        public static int GetLogLevel() { return supressed_logging_level; }
+        public static void SetLogLevel(int value) { Log.SetSuppressedLogging(value); supressed_logging_level = Log.GetSuppressedLogging(); }
+        public static int GetStderrLevel() { return stderr_logging_level; }
+        public static void SetStderrLevel(int value) { Log.SetStderrLogging(value); stderr_logging_level = Log.GetStderrLogging(); }
+        public static int GetFlushLevel() { return flush_logging_level; }
+        public static void SetFlushLevel(int value) { Log.SetBufferedLogging(value); flush_logging_level = Log.GetBufferedLogging(); }
+
+        public static void InitializeLoggingSettings()
+        {
+            SetVerboseLevel(verbose_level);
+            SetLogLevel(supressed_logging_level);
+            SetStderrLevel(stderr_logging_level);
+            SetFlushLevel(flush_logging_level);
+        }
     }
 }  // namespace ksp_plugin_adapter
 }  // namespace principia
