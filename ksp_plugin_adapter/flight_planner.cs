@@ -106,8 +106,8 @@ class FlightPlanner : WindowRenderer {
           }
         } else {
           if (final_time_.Render(enabled: true)) {
-            plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
-                                                  final_time_.value);
+            //plugin_.FlightPlanSetDesiredFinalTime(vessel_guid,
+            //                                      final_time_.value);
             final_time_.value =
                 plugin_.FlightPlanGetDesiredFinalTime(vessel_guid);
           }
@@ -133,8 +133,8 @@ class FlightPlanner : WindowRenderer {
                 UnityEngine.GUILayout.Button("min");
               } else if (UnityEngine.GUILayout.Button("-")) {
                 parameters.max_steps /= factor;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
+                //plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                //                                            parameters);
               }
               UnityEngine.GUILayout.TextArea(parameters.max_steps.ToString(),
                                              UnityEngine.GUILayout.Width(75));
@@ -142,8 +142,8 @@ class FlightPlanner : WindowRenderer {
                 UnityEngine.GUILayout.Button("max");
               } else if (UnityEngine.GUILayout.Button("+")) {
                 parameters.max_steps *= factor;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
+                //plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                //                                            parameters);
               }
             }
             using (new HorizontalLayout()) {
@@ -154,8 +154,8 @@ class FlightPlanner : WindowRenderer {
               } else if (UnityEngine.GUILayout.Button("-")) {
                 parameters.length_integration_tolerance /= 2;
                 parameters.speed_integration_tolerance /= 2;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
+                //plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                //                                           parameters);
               }
               UnityEngine.GUILayout.TextArea(
                   parameters.length_integration_tolerance.ToString("0.0e0") +
@@ -166,8 +166,8 @@ class FlightPlanner : WindowRenderer {
               } else if (UnityEngine.GUILayout.Button("+")) {
                 parameters.length_integration_tolerance *= 2;
                 parameters.speed_integration_tolerance *= 2;
-                plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
-                                                            parameters);
+                //plugin_.FlightPlanSetAdaptiveStepParameters(vessel_guid,
+                //                                            parameters);
               }
             }
           }

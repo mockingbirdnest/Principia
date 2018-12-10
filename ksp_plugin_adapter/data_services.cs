@@ -34,6 +34,18 @@ namespace ksp_plugin_adapter {
         //
         // Global settings
         //
+        private static IntPtr plugin;
+        private static bool events_registered;
+
+        public static void SetPlugin(IntPtr value)
+        {
+            plugin = value;
+            if (!events_registered)
+            {
+                GameEvents.onVesselChange.Add(OnVesselChange);
+                events_registered = true;
+            }
+        }
 
         //
         // History length
@@ -194,6 +206,63 @@ namespace ksp_plugin_adapter {
             SetLogLevel(supressed_logging_level);
             SetStderrLevel(stderr_logging_level);
             SetFlushLevel(flush_logging_level);
+        }
+
+        //
+        // Planning
+        //
+
+        //
+        // Planning settings
+        //
+        private static double plan_time_length = 10*60; // TODO: is this the proper default?
+        private static int plan_max_steps_per_segment = 1000;
+        private static double plan_tolerance = 1.0;
+
+        public static double GetPlanTimeLength() { return plan_time_length; }
+        public static void SetPlanTimeLength(double value)
+        {
+            plan_time_length = value;
+            if (plan_time_length < 10.0) plan_time_length = 10.0;
+            UpdateFlightPlanTimeLength();
+        }
+        public static int GetPlanMaxStepsPerSegment() { return plan_max_steps_per_segment; }
+        public static void SetPlanMaxStepsPerSegment(int value)
+        {
+            plan_max_steps_per_segment = value;
+            if (plan_max_steps_per_segment < 100) plan_max_steps_per_segment = 100;
+            UpdateFlightPlanAdaptiveStepParameters();
+        }
+        public static double GetPlanTolerance() { return plan_tolerance; }
+        public static void SetPlanTolerance(double value)
+        {
+            plan_tolerance = value;
+            if (plan_tolerance < 1e-6) plan_tolerance = 1e-6;
+            if (plan_tolerance > 1e6) plan_tolerance = 1e6;
+            UpdateFlightPlanAdaptiveStepParameters();
+        }
+
+        private static void UpdateFlightPlanAdaptiveStepParameters()
+        {
+            string vessel_guid = FlightGlobals.ActiveVessel.id.ToString();
+            FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vessel_guid);
+            parameters.length_integration_tolerance = plan_tolerance;
+            parameters.speed_integration_tolerance = plan_tolerance;
+            parameters.max_steps = plan_max_steps_per_segment;
+            plugin.FlightPlanSetAdaptiveStepParameters(vessel_guid, parameters);
+        }
+
+        private static void UpdateFlightPlanTimeLength()
+        {
+            string vessel_guid = FlightGlobals.ActiveVessel.id.ToString();
+            // TODO: there is also an actual final time, what to do with that beast? some feedback in the GUI needed?
+            plugin.FlightPlanSetDesiredFinalTime(vessel_guid, plan_time_length + plugin.FlightPlanGetInitialTime(vessel_guid));
+        }
+
+        private static void OnVesselChange(Vessel value)
+        {
+            UpdateFlightPlanTimeLength();
+            UpdateFlightPlanAdaptiveStepParameters();
         }
     }
 }  // namespace ksp_plugin_adapter

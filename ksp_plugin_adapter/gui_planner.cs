@@ -406,26 +406,23 @@ namespace ksp_plugin_adapter {
         //
         // Settings page support code
         //
-        double plan_length_time = 0.0;
-        int max_steps_per_segment = 0;
-        double tolerance = 0.0;
 
         private DialogGUIBase AddFlightPlanLength()
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(plan_length_time_name_string, plan_length_time_name_string_length),
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(plan_length_time)); }, time_value_string_length_single_line),
-                new DialogGUIButton("-1H", () => { plan_length_time -= 1*3600; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("-10M", () => { plan_length_time -= 10*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("-1M", () => { plan_length_time -= 1*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("-10S", () => { plan_length_time -= 10; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("-1S", () => { plan_length_time -= 1; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("0", () => { plan_length_time = 0; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("+1S", () => { plan_length_time += 1; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("+10S", () => { plan_length_time += 10; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("+1M", () => { plan_length_time += 1*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("+10M", () => { plan_length_time += 10*60; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false),
-                new DialogGUIButton("+1H", () => { plan_length_time += 1*3600; if (plan_length_time < 0.0) plan_length_time = 0.0; }, false)
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetPlanTimeLength())); }, time_value_string_length_single_line),
+                new DialogGUIButton("-1H", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*3600); }, false),
+                new DialogGUIButton("-10M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 10*60); }, false),
+                new DialogGUIButton("-1M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*60); }, false),
+                new DialogGUIButton("-10S", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 10); }, false),
+                new DialogGUIButton("-1S", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetPlanTimeLength(0); }, false),
+                new DialogGUIButton("+1S", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() + 1); }, false),
+                new DialogGUIButton("+10S", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() + 10); }, false),
+                new DialogGUIButton("+1M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() + 1*60); }, false),
+                new DialogGUIButton("+10M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() + 10*60); }, false),
+                new DialogGUIButton("+1H", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() + 1*3600); }, false)
             );
         }
 
@@ -433,16 +430,16 @@ namespace ksp_plugin_adapter {
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(max_steps_per_segment_name_string, max_steps_per_segment_name_string_length),
-                new DialogGUILabel(() => { return string.Format(max_steps_per_segment_value_string, max_steps_per_segment); }, max_steps_per_segment_value_string_length),
-                new DialogGUIButton("-1000", () => { max_steps_per_segment -= 1000; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("-100", () => { max_steps_per_segment -= 100; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("-10", () => { max_steps_per_segment -= 10; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("-1", () => { max_steps_per_segment -= 1; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("0", () => { max_steps_per_segment = 0; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("+1", () => { max_steps_per_segment += 1; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("+10", () => { max_steps_per_segment += 10; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("+100", () => { max_steps_per_segment += 100; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false),
-                new DialogGUIButton("+1000", () => { max_steps_per_segment += 1000; if (max_steps_per_segment < 0) max_steps_per_segment = 0; }, false)
+                new DialogGUILabel(() => { return string.Format(max_steps_per_segment_value_string, DataServices.GetPlanMaxStepsPerSegment()); }, max_steps_per_segment_value_string_length),
+                new DialogGUIButton("-1000", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() - 1000); }, false),
+                new DialogGUIButton("-100", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() - 100); }, false),
+                new DialogGUIButton("-10", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() - 10); }, false),
+                new DialogGUIButton("-1", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() - 1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetPlanMaxStepsPerSegment(0); }, false),
+                new DialogGUIButton("+1", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() + 1); }, false),
+                new DialogGUIButton("+10", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() + 10); }, false),
+                new DialogGUIButton("+100", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() + 100); }, false),
+                new DialogGUIButton("+1000", () => { DataServices.SetPlanMaxStepsPerSegment(DataServices.GetPlanMaxStepsPerSegment() + 1000); }, false)
             );
         }
 
@@ -450,16 +447,16 @@ namespace ksp_plugin_adapter {
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(tolerance_name_string, tolerance_name_string_length),
-                new DialogGUILabel(() => { return string.Format(tolerance_value_string, tolerance); }, tolerance_value_string_length),
-                new DialogGUIButton("-10", () => { tolerance -= 10; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("-1", () => { tolerance -= 1; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("-0.1", () => { tolerance -= 0.1; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("-0.01", () => { tolerance -= 0.01; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("0", () => { tolerance = 0.0; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("+0.01", () => { tolerance += 0.01; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("+0.1", () => { tolerance += 0.1; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("+1", () => { tolerance += 1; if (tolerance < 0.0) tolerance = 0.0; }, false),
-                new DialogGUIButton("+10", () => { tolerance += 10; if (tolerance < 0.0) tolerance = 0.0; }, false)
+                new DialogGUILabel(() => { return string.Format(tolerance_value_string, DataServices.GetPlanTolerance()); }, tolerance_value_string_length),
+                new DialogGUIButton("-10", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() - 10); }, false),
+                new DialogGUIButton("-1", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() - 1); }, false),
+                new DialogGUIButton("-0.1", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() - 0.1); }, false),
+                new DialogGUIButton("-0.01", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() - 0.01); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetPlanTolerance(0); }, false),
+                new DialogGUIButton("+0.01", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() + 0.01); }, false),
+                new DialogGUIButton("+0.1", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() + 0.1); }, false),
+                new DialogGUIButton("+1", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() + 1); }, false),
+                new DialogGUIButton("+10", () => { DataServices.SetPlanTolerance(DataServices.GetPlanTolerance() + 10); }, false)
             );
         }
 

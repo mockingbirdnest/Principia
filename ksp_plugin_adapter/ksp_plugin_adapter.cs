@@ -633,6 +633,7 @@ public partial class PrincipiaPluginAdapter
       DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
+      DataServices.SetPlugin(plugin_);
       flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
@@ -2518,6 +2519,7 @@ public partial class PrincipiaPluginAdapter
                                    "Plotting frame"));
     DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
     must_set_plotting_frame_ = true;
+    DataServices.SetPlugin(plugin_);
     flight_planner_.reset(new FlightPlanner(this, plugin_));
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
