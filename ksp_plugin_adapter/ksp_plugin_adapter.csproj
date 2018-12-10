@@ -102,7 +102,7 @@
     <Compile Include="config_node_extensions.cs" />
     <Compile Include="config_node_parsers.cs" />
     <Compile Include="culture.cs" />
-    <Compile Include="data_model.cs" />
+    <Compile Include="data_services.cs" />
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaller.cs" />

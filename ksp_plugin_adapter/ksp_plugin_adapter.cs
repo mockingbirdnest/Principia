@@ -353,11 +353,11 @@ public partial class PrincipiaPluginAdapter
       adaptive_step_parameters =
           new AdaptiveStepParameters {
             integrator_kind = adaptive_step_parameters.integrator_kind,
-            max_steps = (Int64)DataModel.GetPredictionStep(),
+            max_steps = (Int64)DataServices.GetPredictionStep(),
             length_integration_tolerance =
-                DataModel.GetPredictionTolerance(),
+                DataServices.GetPredictionTolerance(),
             speed_integration_tolerance =
-                DataModel.GetPredictionTolerance()};
+                DataServices.GetPredictionTolerance()};
       plugin_.VesselSetPredictionAdaptiveStepParameters(
           main_vessel.id.ToString(), adaptive_step_parameters);
       plugin_.UpdatePrediction(main_vessel.id.ToString());
@@ -600,11 +600,11 @@ public partial class PrincipiaPluginAdapter
 
   public override void OnLoad(ConfigNode node) {
     base.OnLoad(node);
-    DataModel.InitializeJournaling();
+    DataServices.InitializeJournaling();
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
-      DataModel.InitializeLoggingSettings();
+      DataServices.InitializeLoggingSettings();
 
       IntPtr deserializer = IntPtr.Zero;
       String[] serializations = node.GetValues(principia_serialized_plugin_);
@@ -630,7 +630,7 @@ public partial class PrincipiaPluginAdapter
                                      plugin_,
                                      UpdateRenderingFrameDummy,
                                      "Plotting frame"));
-      DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
+      DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
       flight_planner_.reset(new FlightPlanner(this, plugin_));
@@ -998,7 +998,7 @@ public partial class PrincipiaPluginAdapter
       must_set_plotting_frame_ = false;
       plotting_frame_selector_.reset(new ReferenceFrameSelector(
           this, plugin_, UpdateRenderingFrameDummy, "Plotting frame"));
-      DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
+      DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
       previous_display_mode_ = null;
     }
 
@@ -1008,7 +1008,7 @@ public partial class PrincipiaPluginAdapter
                ?? FlightGlobals.GetHomeBody()).flightGlobalsIndex);
 
       plugin_.ForgetAllHistoriesBefore(plugin_.CurrentTime() -
-                                       DataModel.GetHistoryLength());
+                                       DataServices.GetHistoryLength());
       // TODO(egg): Set the degrees of freedom of the origin of |World| (by
       // toying with Krakensbane and FloatingOrigin) here.
 
@@ -1611,7 +1611,7 @@ public partial class PrincipiaPluginAdapter
           PatchRendering.RelativityMode.RELATIVE;
     }
 
-    if (DataModel.GetPatchedConicsEnabled() || !is_manageable(vessel)) {
+    if (DataServices.GetPatchedConicsEnabled() || !is_manageable(vessel)) {
       vessel.orbitDriver.Renderer.drawMode =
           vessel.PatchedConicsAttached
               ? OrbitRenderer.DrawMode.OFF
@@ -2516,7 +2516,7 @@ public partial class PrincipiaPluginAdapter
                                    plugin_,
                                    UpdateRenderingFrameDummy,
                                    "Plotting frame"));
-    DataModel.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
+    DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
     must_set_plotting_frame_ = true;
     flight_planner_.reset(new FlightPlanner(this, plugin_));
   } catch (Exception e) {

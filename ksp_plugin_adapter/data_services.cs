@@ -29,7 +29,7 @@ namespace ksp_plugin_adapter {
     // that actually do stuff with data, we isolate the data into a seperate class
     // It's intended to be as simple as possible, so that at any time both the GUI and control
     // developers can easily read this
-    public sealed class DataModel
+    public sealed class DataServices
     {
         //
         // Global settings

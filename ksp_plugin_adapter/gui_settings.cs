@@ -184,36 +184,36 @@ namespace ksp_plugin_adapter {
                 ),
                 // History length
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataModel.GetHistoryLength()) + " s"; })
+                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataServices.GetHistoryLength()) + " s"; })
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(DataModel.GetHistoryMagnitude, 10f, 30f, true, -1, -1, DataModel.SetHistoryMagnitude)
+                    new DialogGUISlider(DataServices.GetHistoryMagnitude, 10f, 30f, true, -1, -1, DataServices.SetHistoryMagnitude)
                 ),
                 // Prediction settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
                     new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataModel.GetPredictionTolerance()) + " m"; })
+                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataServices.GetPredictionTolerance()) + " m"; })
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(DataModel.GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, DataModel.SetPredictionToleranceMagnitude)
+                    new DialogGUISlider(DataServices.GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, DataServices.SetPredictionToleranceMagnitude)
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataModel.GetPredictionStep()); })
+                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataServices.GetPredictionStep()); })
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(DataModel.GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, DataModel.SetPredictionStepMagnitude)
+                    new DialogGUISlider(DataServices.GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, DataServices.SetPredictionStepMagnitude)
                 ),
                 // KSP settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
                     new DialogGUILabel("<color=#ffffffff>KSP settings</color>")
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(DataModel.GetPatchedConicsEnabled, "Display patched conics (not intended for flight planning)", DataModel.SetPatchedConicsEnabled)
+                    new DialogGUIToggle(DataServices.GetPatchedConicsEnabled, "Display patched conics (not intended for flight planning)", DataServices.SetPatchedConicsEnabled)
                 ),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(DataModel.GetSolarFlareEnabled, "Enable system-star lens flare", DataModel.SetSolarFlareEnabled)
+                    new DialogGUIToggle(DataServices.GetSolarFlareEnabled, "Enable system-star lens flare", DataServices.SetSolarFlareEnabled)
                 )
             );
         }
@@ -223,15 +223,15 @@ namespace ksp_plugin_adapter {
         //
         private float GetFrameType()
         {
-            switch (DataModel.GetReferenceFrame())
+            switch (DataServices.GetReferenceFrame())
             {
-                case DataModel.FrameType.BODY_SURFACE:
+                case DataServices.FrameType.BODY_SURFACE:
                     return 0f;
-                case DataModel.FrameType.BODY_CENTRED_NON_ROTATING:
+                case DataServices.FrameType.BODY_CENTRED_NON_ROTATING:
                     return 1f;
-                case DataModel.FrameType.BARYCENTRIC_ROTATING:
+                case DataServices.FrameType.BARYCENTRIC_ROTATING:
                     return 2f;
-                case DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                case DataServices.FrameType.BODY_CENTRED_PARENT_DIRECTION:
                 default:
                     return 3f;
             }
@@ -239,32 +239,32 @@ namespace ksp_plugin_adapter {
 
         private void SetFrameType(float value)
         {
-            DataModel.FrameType reference_frame;
+            DataServices.FrameType reference_frame;
             if (value > 2.5f) {
-                reference_frame = DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION;
+                reference_frame = DataServices.FrameType.BODY_CENTRED_PARENT_DIRECTION;
             } else if (value > 1.5f) {
-                reference_frame = DataModel.FrameType.BARYCENTRIC_ROTATING;
+                reference_frame = DataServices.FrameType.BARYCENTRIC_ROTATING;
             } else if (value > 0.5f) {
-                reference_frame = DataModel.FrameType.BODY_CENTRED_NON_ROTATING;
+                reference_frame = DataServices.FrameType.BODY_CENTRED_NON_ROTATING;
             } else {
-                reference_frame = DataModel.FrameType.BODY_SURFACE;
+                reference_frame = DataServices.FrameType.BODY_SURFACE;
             }
-            DataModel.SetReferenceFrame(reference_frame);
+            DataServices.SetReferenceFrame(reference_frame);
         }
 
         private string GetFrameTypeString()
         {
-            CelestialBody selected_celestial_body = DataModel.GetSelectedCelestialBody();
+            CelestialBody selected_celestial_body = DataServices.GetSelectedCelestialBody();
             CelestialBody parent = selected_celestial_body.referenceBody;
-            switch (DataModel.GetReferenceFrame())
+            switch (DataServices.GetReferenceFrame())
             {
-                case DataModel.FrameType.BODY_SURFACE:
+                case DataServices.FrameType.BODY_SURFACE:
                     return string.Format("Reference frame fixing the surface of {0}", selected_celestial_body.name);
-                case DataModel.FrameType.BODY_CENTRED_NON_ROTATING:
+                case DataServices.FrameType.BODY_CENTRED_NON_ROTATING:
                     return string.Format("Non-rotating reference frame fixing the center of {0}", selected_celestial_body.name);
-                case DataModel.FrameType.BARYCENTRIC_ROTATING:
+                case DataServices.FrameType.BARYCENTRIC_ROTATING:
                     return string.Format("Reference frame fixing the barycenter of {0} and {1}, the plane which they move about the barycenter, and the line between them", selected_celestial_body.name, parent.name);
-                case DataModel.FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                case DataServices.FrameType.BODY_CENTRED_PARENT_DIRECTION:
                 default:
                     return string.Format("Reference frame fixing the center of {0}, the plane of its orbit around {1}, and the line between them", selected_celestial_body.name, parent.name);
             }
@@ -273,9 +273,9 @@ namespace ksp_plugin_adapter {
         private void AddOrbitingBodies(CelestialBody body, ref DialogGUILayoutBase gui, string parent_name)
         {
             if (parent_name != null) {
-                gui.children.Add(new DialogGUIButton(body.name + String.Format(" (Parent body: {0})", parent_name), () => { DataModel.SetSelectedCelestialBody(body); }, false));
+                gui.children.Add(new DialogGUIButton(body.name + String.Format(" (Parent body: {0})", parent_name), () => { DataServices.SetSelectedCelestialBody(body); }, false));
             } else {
-                gui.children.Add(new DialogGUIButton(body.name, () => { DataModel.SetSelectedCelestialBody(body); }, false));
+                gui.children.Add(new DialogGUIButton(body.name, () => { DataServices.SetSelectedCelestialBody(body); }, false));
             }
             foreach (CelestialBody child_body in body.orbitingBodies)
             {
@@ -302,7 +302,7 @@ namespace ksp_plugin_adapter {
             AddOrbitingBodies(root_body, ref celestial_body_list, null);
 
             DialogGUILayoutBase gui = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
-                new DialogGUILabel(() => { return plotting_frame_body_name_string + DataModel.GetSelectedCelestialBody().name; }, plotting_frame_body_name_string_length + plotting_frame_body_value_string_length),
+                new DialogGUILabel(() => { return plotting_frame_body_name_string + DataServices.GetSelectedCelestialBody().name; }, plotting_frame_body_name_string_length + plotting_frame_body_value_string_length),
                 new DialogGUILabel(GetFrameTypeString, plotting_frame_string_length),
                 new DialogGUISlider(GetFrameType, 0f, 3f, true, -1, -1, SetFrameType),
                 // there will be too many celestial bodies, putting them inside something that can scroll vertically
@@ -314,34 +314,34 @@ namespace ksp_plugin_adapter {
         //
         // Support code for logging settings
         //
-        private float GetVerboseLevel() { return (float)DataModel.GetVerboseLevel(); }
-        private void SetVerboseLevel(float value) { DataModel.SetVerboseLevel((int)value); }
+        private float GetVerboseLevel() { return (float)DataServices.GetVerboseLevel(); }
+        private void SetVerboseLevel(float value) { DataServices.SetVerboseLevel((int)value); }
 
-        private float GetLogLevel() { return (float)DataModel.GetLogLevel(); }
-        private void SetLogLevel(float value) { DataModel.SetLogLevel((int)value); }
-        private float GetStderrLevel() { return (float)DataModel.GetStderrLevel(); }
-        private void SetStderrLevel(float value) { DataModel.SetStderrLevel((int)value); }
-        private float GetFlushLevel() { return (float)DataModel.GetFlushLevel(); }
-        private void SetFlushLevel(float value) { DataModel.SetFlushLevel((int)value); }
+        private float GetLogLevel() { return (float)DataServices.GetLogLevel(); }
+        private void SetLogLevel(float value) { DataServices.SetLogLevel((int)value); }
+        private float GetStderrLevel() { return (float)DataServices.GetStderrLevel(); }
+        private void SetStderrLevel(float value) { DataServices.SetStderrLevel((int)value); }
+        private float GetFlushLevel() { return (float)DataServices.GetFlushLevel(); }
+        private void SetFlushLevel(float value) { DataServices.SetFlushLevel((int)value); }
 
         private DialogGUIBase AddLoggingSettingsUI()
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetVerboseLevel, 0f, 4f, true, -1, -1, SetVerboseLevel),
-                    new DialogGUILabel(() => { return verbose_level_name_string + DataModel.GetVerboseLevel(); }, verbose_level_name_string_length + verbose_level_value_string_length)),
+                    new DialogGUILabel(() => { return verbose_level_name_string + DataServices.GetVerboseLevel(); }, verbose_level_name_string_length + verbose_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetLogLevel, 0f, 3f, true, -1, -1, SetLogLevel),
-                    new DialogGUILabel(() => { return log_level_name_string + Log.severity_names[DataModel.GetLogLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return log_level_name_string + Log.severity_names[DataServices.GetLogLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetStderrLevel, 0f, 3f, true, -1, -1, SetStderrLevel),
-                    new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[DataModel.GetStderrLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[DataServices.GetStderrLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUISlider(GetFlushLevel, 0f, 3f, true, -1, -1, SetFlushLevel),
-                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[DataModel.GetFlushLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[DataServices.GetFlushLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUIToggle(DataModel.GetRecordJournalAtNextStartup(), record_journal_at_next_startup_name_string, (value) => { DataModel.SetRecordJournalAtNextStartup(value); }, record_journal_at_next_startup_name_string_length),
-                    new DialogGUILabel(() => { if (DataModel.GetRecordJournalInProgress()) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
+                    new DialogGUIToggle(DataServices.GetRecordJournalAtNextStartup(), record_journal_at_next_startup_name_string, (value) => { DataServices.SetRecordJournalAtNextStartup(value); }, record_journal_at_next_startup_name_string_length),
+                    new DialogGUILabel(() => { if (DataServices.GetRecordJournalInProgress()) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))
             );
         }
 
