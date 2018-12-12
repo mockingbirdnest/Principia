@@ -271,7 +271,7 @@ namespace ksp_plugin_adapter {
                 new DialogGUIButton("-1M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1*60); }, false),
                 new DialogGUIButton("-10S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 10); }, false),
                 new DialogGUIButton("-1S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1); }, false),
-                new DialogGUIButton("0", () => { DataServices.SetManeuverDeltaTime(0); }, false),
+                new DialogGUIButton("DEF", () => { DataServices.SetManeuverDeltaTime(DataServices.DEFAULT_MANEUVER_DELTA_TIME); }, false),
                 new DialogGUIButton("+1S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 1); }, false),
                 new DialogGUIButton("+10S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 10); }, false),
                 new DialogGUIButton("+1M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 1*60); }, false),
@@ -375,19 +375,17 @@ namespace ksp_plugin_adapter {
         private void OnButtonClick_DeleteManeuver()
         {
             DeleteLastGUIManeuver(planning_page);
+            DataServices.RemoveLastManeuver();
 
+            // From here on pure-GUI adjustments
             List<DialogGUIBase> rows = planning_page.children;
             // If needed make the new last maneuver mutable
             int pre_number_of_rows = rows.Count;
             DeleteLastGUIManeuver(planning_page);
             int post_number_of_row = rows.Count;
 
-            // TODO: in the future we have to be sure to sync in the correct values for this maneuver, right now it takes over the deleted
-            // maneuvers values
             if (pre_number_of_rows > post_number_of_row)
             {
-                // TODO: Can the GUI and underlying maneuver system go out of sync?
-                DataServices.RemoveLastManeuver();
                 DialogGUIBase maneuver = CreateMutableManeuver();
                 AddGUIManouver(planning_page, maneuver);
             }

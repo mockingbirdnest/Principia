@@ -459,6 +459,7 @@ namespace ksp_plugin_adapter {
         //
         // Planner: plan
         //
+        public static double DEFAULT_MANEUVER_DELTA_TIME = 60.0;
         public enum BurnMode {Engine, RCS, Instant};
         private static List<BurnMode> burn_mode = new List<BurnMode>();
 
@@ -571,7 +572,7 @@ namespace ksp_plugin_adapter {
 
                 if (last_maneuver_index >= 0)
                 {
-                    initial_time = GetManeuverTime(last_maneuver_index) + 60;
+                    initial_time = Math.Max(plugin.CurrentTime(), GetManeuverTime(last_maneuver_index)) + 60;
                     inertially_fixed = GetManeuverIntertiallyFixed(last_maneuver_index);
                     burn_mode = GetBurnMode(last_maneuver_index);
                 }
@@ -616,7 +617,10 @@ namespace ksp_plugin_adapter {
             if (GetVessel())
             {
                 string vesselguid = GetVesselGuid();
-                plugin.FlightPlanRemoveLast(vesselguid);
+                if (GetLastManeuverIndex() >= 0)
+                {
+                    plugin.FlightPlanRemoveLast(vesselguid);
+                }
                 if (GetLastManeuverIndex() < 0)
                 {
                     plugin.FlightPlanDelete(vesselguid);
