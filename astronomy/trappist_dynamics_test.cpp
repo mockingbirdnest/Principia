@@ -1309,11 +1309,11 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
   {
-    // First, let's do 5 rounds of evolution with a population of 9 individuals
+    // First, let's do 10 rounds of evolution with a population of 9 individuals
     // based on |luca|.  The best of all of them is the Great Old One.
     std::mt19937_64 engine;
     genetics::Genome luca(elements);
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 10; ++i) {
       genetics::Population population(luca,
                                       9,
                                       /*elitism=*/true,
