@@ -1311,9 +1311,10 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   {
     // First, let's do 10 rounds of evolution with a population of 9 individuals
     // based on |luca|.  The best of all of them is the Great Old One.
-    std::mt19937_64 engine;
+    int const number_of_rounds = 10;
+    std::mt19937_64 engine(number_of_rounds);
     genetics::Genome luca(elements);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < number_of_rounds; ++i) {
       genetics::Population population(luca,
                                       9,
                                       /*elitism=*/true,
@@ -1339,9 +1340,10 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
     // Next, let's build a population of 50 minor variants of the Great Old One,
     // the Outer Gods.  Use DEMCMC to improve them.  The best of them is the
     // Blind Idiot God.
-    std::mt19937_64 engine;
+    int const number_of_variants = 50;
+    std::mt19937_64 engine(number_of_variants);
     deмcmc::Population outer_gods;
-    for (int i = 0; i < 50; ++i) {
+    for (int i = 0; i < number_of_variants; ++i) {
       outer_gods.emplace_back();
       deмcmc::SystemParameters& outer_god = outer_gods.back();
       std::normal_distribution<> angle_distribution(0.0, 0.1);
