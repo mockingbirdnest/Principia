@@ -47,6 +47,7 @@ namespace ksp_plugin_adapter {
                 GameEvents.onVesselChange.Add(OnVesselChange);
                 events_registered = true;
             }
+            InitializeLoggingSettings();
         }
 
         private static Vessel GetVessel()
@@ -193,7 +194,7 @@ namespace ksp_plugin_adapter {
         private static int verbose_level = 0;
         private static int supressed_logging_level = 0;
         private static int stderr_logging_level = 2;
-        private static int flush_logging_level = 0;
+        private static int flush_logging_level = -1;
 
         public static bool GetRecordJournalInProgress() { return record_journal_in_progress; }
         public static bool GetRecordJournalAtNextStartup() { return record_journal_at_next_startup; }
@@ -217,7 +218,7 @@ namespace ksp_plugin_adapter {
         public static int GetFlushLevel() { return flush_logging_level; }
         public static void SetFlushLevel(int value) { Log.SetBufferedLogging(value); flush_logging_level = Log.GetBufferedLogging(); }
 
-        public static void InitializeLoggingSettings()
+        private static void InitializeLoggingSettings()
         {
             SetVerboseLevel(verbose_level);
             SetLogLevel(supressed_logging_level);
@@ -230,7 +231,7 @@ namespace ksp_plugin_adapter {
         //
 
         //
-        // Planning settings
+        // Planner: settings
         //
         public const double PLAN_TIME_LENGTH_DEFAULT = 10*60; // TODO: is this the proper default?
         public const int PLAN_MAX_STEPS_PER_SEGMENT_DEFAULT = 1000;
@@ -266,18 +267,26 @@ namespace ksp_plugin_adapter {
         private static void UpdateFlightPlanAdaptiveStepParameters()
         {
             string vesselguid = GetVesselGuid();
-            FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vesselguid);
-            parameters.length_integration_tolerance = plan_tolerance;
-            parameters.speed_integration_tolerance = plan_tolerance;
-            parameters.max_steps = plan_max_steps_per_segment;
-            plugin.FlightPlanSetAdaptiveStepParameters(vesselguid, parameters);
+            if (HasFlightPlan())
+            {
+                FlightPlanAdaptiveStepParameters parameters = plugin.FlightPlanGetAdaptiveStepParameters(vesselguid);
+                parameters.length_integration_tolerance = plan_tolerance;
+                parameters.speed_integration_tolerance = plan_tolerance;
+                parameters.max_steps = plan_max_steps_per_segment;
+                plugin.FlightPlanSetAdaptiveStepParameters(vesselguid, parameters);
+            }
         }
 
         private static void UpdateFlightPlanTimeLength()
         {
             string vesselguid = GetVesselGuid();
-            // TODO: there is also an actual final time, what to do with that beast? some feedback in the GUI needed?
-            plugin.FlightPlanSetDesiredFinalTime(vesselguid, plan_time_length + plugin.FlightPlanGetInitialTime(vesselguid));
+            if (HasFlightPlan())
+            {
+                // TODO: there is also an actual final time, what to do with that beast? some feedback in the GUI needed?
+                // TODO: how frequently do we need to set this again?
+                plugin.FlightPlanSetDesiredFinalTime(vesselguid, plugin.CurrentTime() + plan_time_length);
+                plan_time_length = plugin.FlightPlanGetDesiredFinalTime(vesselguid) - plugin.CurrentTime();
+            }
         }
 
         public static void EnsureFlightPlanExists()
@@ -285,8 +294,10 @@ namespace ksp_plugin_adapter {
             if (!HasFlightPlan())
             {
                 plugin.FlightPlanCreate(GetVesselGuid(),
-                                        plugin.CurrentTime() + 1000,
+                                        plugin.CurrentTime() + plan_time_length,
                                         GetVessel().GetTotalMass());
+                UpdateFlightPlanAdaptiveStepParameters();
+                UpdateFlightPlanTimeLength();
             }
         }
 
@@ -300,7 +311,7 @@ namespace ksp_plugin_adapter {
         }
 
         //
-        // Planner Execution
+        // Planner: execution
         //
         private static bool show_on_navball = false;
 
@@ -336,9 +347,12 @@ namespace ksp_plugin_adapter {
             string vesselguid = GetVesselGuid();
             double total_delta_v = 0.0;
 
-            for (int index = 0; index < plugin.FlightPlanNumberOfManoeuvres(vesselguid); index++)
+            if (HasFlightPlan())
             {
-                total_delta_v += ((Vector3d)plugin.FlightPlanGetManoeuvre(vesselguid, index).burn.delta_v).magnitude;
+                for (int index = 0; index < plugin.FlightPlanNumberOfManoeuvres(vesselguid); index++)
+                {
+                    total_delta_v += ((Vector3d)plugin.FlightPlanGetManoeuvre(vesselguid, index).burn.delta_v).magnitude;
+                }
             }
 
             return total_delta_v;
@@ -347,23 +361,29 @@ namespace ksp_plugin_adapter {
         private static bool FindUpcomingManeuver(out int index, out NavigationManoeuvre maneuver)
         {
             string vesselguid = GetVesselGuid();
-            int number_of_maneuvers = plugin.FlightPlanNumberOfManoeuvres(vesselguid);
             index = 0;
             maneuver = new NavigationManoeuvre();
 
-            if (number_of_maneuvers == 0) return false;
-
-            maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
-            while ((plugin.CurrentTime() > maneuver.final_time) && (index < number_of_maneuvers))
+            if (HasFlightPlan())
             {
-                index += 1;
-                maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
-            }
+                int number_of_maneuvers = plugin.FlightPlanNumberOfManoeuvres(vesselguid);
 
-            // No maneuver satifies the condition
-            if (index == number_of_maneuvers)
-                return false;
-            return true;
+                if (number_of_maneuvers == 0)
+                    return false;
+
+                maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
+                while ((plugin.CurrentTime() > maneuver.final_time) && (index < number_of_maneuvers))
+                {
+                    index += 1;
+                    maneuver = plugin.FlightPlanGetManoeuvre(vesselguid, index);
+                }
+
+                // No maneuver satifies the condition
+                if (index == number_of_maneuvers)
+                    return false;
+                return true;
+            }
+            return false;
         }
 
         // TODO: What are the events to update this beast?
@@ -436,6 +456,136 @@ namespace ksp_plugin_adapter {
             if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
                 return;
             TimeWarp.fetch.WarpTo(maneuver.burn.initial_time - 60);
+        }
+
+        //
+        // Planner: plan
+        //
+        public enum BurnMode {Engine, RCS, Instant};
+        private static BurnMode burn_mode = BurnMode.Engine;
+
+        private static NavigationManoeuvre GetFlightPlanManoeuver(int index)
+        {
+            if (HasFlightPlan() && GetLastManeuverIndex() >= index)
+            {
+                return plugin.FlightPlanGetManoeuvre(GetVesselGuid(), index);
+            }
+            return new NavigationManoeuvre(); // empty placeholder until we can provide a meaningful non-zero value
+        }
+
+        public static double GetManeuverDeltaVelocityTangent(int index) { return GetFlightPlanManoeuver(index).burn.delta_v.x; }
+        public static void SetManeuverDeltaVelocityTangent(double value)
+        {
+            int last_index = GetLastManeuverIndex();
+            if (last_index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
+            last.burn.delta_v.x = value;
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+        }
+        public static double GetManeuverDeltaVelocityNormal(int index) { return GetFlightPlanManoeuver(index).burn.delta_v.y; }
+        public static void SetManeuverDeltaVelocityNormal(double value)
+        {
+            int last_index = GetLastManeuverIndex();
+            if (last_index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
+            last.burn.delta_v.y = value;
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+        }
+        public static double GetManeuverDeltaVelocityBinormal(int index) { return GetFlightPlanManoeuver(index).burn.delta_v.z; }
+        public static void SetManeuverDeltaVelocityBinormal(double value)
+        {
+            int last_index = GetLastManeuverIndex();
+            if (last_index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
+            last.burn.delta_v.z = value;
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+        }
+        public static double GetManeuverDeltaTime(int index) { return GetFlightPlanManoeuver(index).burn.initial_time - plugin.CurrentTime(); }
+        public static void SetManeuverDeltaTime(double value)
+        {
+            int last_index = GetLastManeuverIndex();
+            if (last_index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
+            last.burn.initial_time = value + plugin.CurrentTime();
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+        }
+        public static double GetManeuverTime(int index) { return GetFlightPlanManoeuver(index).burn.initial_time; }
+        public static bool GetManeuverIntertiallyFixed(int index) { return GetFlightPlanManoeuver(index).burn.is_inertially_fixed; }
+        public static void SetManeuverIntertiallyFixed(bool value)
+        {
+            int last_index = GetLastManeuverIndex();
+            if (last_index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
+            last.burn.is_inertially_fixed = value;
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+        }
+
+        public static double GetBurnDeltaVelocity(int index)
+        {
+            NavigationManoeuvre maneuver = GetFlightPlanManoeuver(index);
+            return new Vector3d{x = maneuver.burn.delta_v.x,
+                                y = maneuver.burn.delta_v.y,
+                                z = maneuver.burn.delta_v.z}.magnitude;
+        }
+        public static double GetBurnTime(int index) { return GetFlightPlanManoeuver(index).duration; }
+
+        // TODO: this needs to be hooked up to engine calculation
+        public static BurnMode GetBurnMode(int index) { return burn_mode; }
+        public static void SetBurnMode(BurnMode value) { burn_mode = value; }
+
+        public static int GetLastManeuverIndex()
+        {
+            string vesselguid = GetVesselGuid();
+            if (!HasFlightPlan())
+                return -1;
+            return plugin.FlightPlanNumberOfManoeuvres(vesselguid) - 1;
+        }
+
+        public static bool AddManeuver()
+        {
+            string vesselguid = GetVesselGuid();
+            int last_burn_index = GetLastManeuverIndex();
+            double initial_time = 0.0;
+            bool inertially_fixed = false;
+
+            EnsureFlightPlanExists();
+
+            if (last_burn_index >= 0)
+            {
+                initial_time = GetManeuverTime(last_burn_index) + 60;
+                inertially_fixed = GetManeuverIntertiallyFixed(last_burn_index);
+            }
+            else
+            {
+                initial_time = plugin.CurrentTime() + 60;
+            }
+
+            // TODO: fill in other parameters
+            Burn candidate_burn = new Burn{
+                thrust_in_kilonewtons = 10.0,
+                specific_impulse_in_seconds_g0 = 100.0,
+                frame = GenerateNavigationFrameParameters(),
+                initial_time = initial_time,
+                delta_v = new XYZ{x = 0.0,
+                                  y = 0.0,
+                                  z = 0.0},
+                is_inertially_fixed = inertially_fixed};
+            return plugin.FlightPlanAppend(vesselguid, candidate_burn);
+        }
+
+        public static void RemoveLastManeuver()
+        {
+            string vesselguid = GetVesselGuid();
+            plugin.FlightPlanRemoveLast(vesselguid);
+            if (GetLastManeuverIndex() < 0)
+            {
+                plugin.FlightPlanDelete(vesselguid);
+            }
         }
     }
 }  // namespace ksp_plugin_adapter

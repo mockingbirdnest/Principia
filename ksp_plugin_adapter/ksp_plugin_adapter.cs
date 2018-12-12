@@ -63,12 +63,12 @@ public partial class PrincipiaPluginAdapter
   private const String principia_numerics_blueprint_config_name_ =
       "principia_numerics_blueprint";
 
-  private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
+  //private KSP.UI.Screens.ApplicationLauncherButton toolbar_button_;
   private bool hide_all_gui_ = false;
 
   // "Persistant" is a KSP typo.
   [KSPField(isPersistant = true)]
-  private bool show_main_window_ = true;
+  private bool show_main_window_ = false;
   [KSPField(isPersistant = true)]
   private int main_window_x_ = UnityEngine.Screen.width / 2;
   [KSPField(isPersistant = true)]
@@ -604,7 +604,6 @@ public partial class PrincipiaPluginAdapter
     if (node.HasValue(principia_serialized_plugin_)) {
       Cleanup();
       RemoveBuggyTidalLocking();
-      DataServices.InitializeLoggingSettings();
 
       IntPtr deserializer = IntPtr.Zero;
       String[] serializations = node.GetValues(principia_serialized_plugin_);
@@ -692,7 +691,7 @@ public partial class PrincipiaPluginAdapter
       apocalypse_window_y_ = (int)apocalypse_window_rectangle_.yMin;
     }
 
-    if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
+/*    if (KSP.UI.Screens.ApplicationLauncher.Ready && toolbar_button_ == null) {
       UnityEngine.Texture toolbar_button_texture;
       LoadTextureOrDie(out toolbar_button_texture, "toolbar_button.png");
       toolbar_button_ =
@@ -706,14 +705,14 @@ public partial class PrincipiaPluginAdapter
               visibleInScenes : KSP.UI.Screens.ApplicationLauncher.AppScenes.
                                     ALWAYS,
               texture         : toolbar_button_texture);
-    }
+    }*/
     // Make sure the state of the toolbar button remains consistent with the
     // state of the window.
-    if (show_main_window_) {
+    /*if (show_main_window_) {
       toolbar_button_?.SetTrue(makeCall : false);
     } else {
       toolbar_button_?.SetFalse(makeCall : false);
-    }
+    }*/
 
     if (hide_all_gui_) {
       WindowUtilities.ClearLock(this);
@@ -1026,10 +1025,10 @@ public partial class PrincipiaPluginAdapter
       return;
     }
     Log.Info("principia.ksp_plugin_adapter.PrincipiaPluginAdapter.OnDisable()");
-    if (toolbar_button_ != null) {
-      KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
-          toolbar_button_);
-    }
+    //if (toolbar_button_ != null) {
+    //  KSP.UI.Screens.ApplicationLauncher.Instance.RemoveModApplication(
+    //      toolbar_button_);
+    //}
     WindowUtilities.ClearLock(this);
     Cleanup();
     TimingManager.FixedUpdateRemove(TimingManager.TimingStage.ObscenelyEarly,

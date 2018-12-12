@@ -324,6 +324,18 @@ namespace ksp_plugin_adapter {
         private float GetFlushLevel() { return (float)DataServices.GetFlushLevel(); }
         private void SetFlushLevel(float value) { DataServices.SetFlushLevel((int)value); }
 
+        private string GetFlushLevelString(int index)
+        {
+            if (index < 0)
+            {
+                return "ALL";
+            }
+            else
+            {
+                return Log.severity_names[index];
+            }
+        }
+
         private DialogGUIBase AddLoggingSettingsUI()
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
@@ -337,8 +349,8 @@ namespace ksp_plugin_adapter {
                     new DialogGUISlider(GetStderrLevel, 0f, 3f, true, -1, -1, SetStderrLevel),
                     new DialogGUILabel(() => { return stderr_level_name_string + Log.severity_names[DataServices.GetStderrLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
-                    new DialogGUISlider(GetFlushLevel, 0f, 3f, true, -1, -1, SetFlushLevel),
-                    new DialogGUILabel(() => { return flush_level_name_string + Log.severity_names[DataServices.GetFlushLevel()]; }, log_level_name_string_length + log_level_value_string_length)),
+                    new DialogGUISlider(GetFlushLevel, -1f, 3f, true, -1, -1, SetFlushLevel),
+                    new DialogGUILabel(() => { return flush_level_name_string + GetFlushLevelString(DataServices.GetFlushLevel()); }, log_level_name_string_length + log_level_value_string_length)),
                 new DialogGUIHorizontalLayout(
                     new DialogGUIToggle(DataServices.GetRecordJournalAtNextStartup(), record_journal_at_next_startup_name_string, (value) => { DataServices.SetRecordJournalAtNextStartup(value); }, record_journal_at_next_startup_name_string_length),
                     new DialogGUILabel(() => { if (DataServices.GetRecordJournalInProgress()) { return record_journal_in_progress_name_string; } else { return record_journal_not_in_progress_name_string; } }, record_journal_in_progress_name_string_length))

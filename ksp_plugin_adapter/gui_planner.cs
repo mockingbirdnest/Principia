@@ -122,6 +122,7 @@ namespace ksp_plugin_adapter {
         {
             GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
             GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
+            GameEvents.onVesselChange.Add(OnVesselChange);
         }
 
         //
@@ -184,109 +185,101 @@ namespace ksp_plugin_adapter {
         //
         // Planning page support code
         //
-        private double delta_velocity_tangent = 0.0;
-        private double delta_velocity_normal = 0.0;
-        private double delta_velocity_binormal = 0.0;
-        private double delta_time = 0.0;
-        private bool inertially_fixed = false;
-        // Note that due to burns not being infinitely powerful
-        // at t=0, it is better not to assume an exact relationship
-        // between this deltaV, and the other 3 deltaV values
-        private double delta_velocity_burn = 0.0;
-        private double burn_time = 0.0;
 
         // The following 3 functions may look like code duplication, the reason they exists is because C#
         // does not allow constructing lambda expressions with reference variables
         private DialogGUIBase AddVelocityTangentToManeuver()
         {
+            int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
-                new DialogGUIButton("-1000", () => { delta_velocity_tangent -= 1000.0; }, false),
-                new DialogGUIButton("-100", () => { delta_velocity_tangent -= 100.0; }, false),
-                new DialogGUIButton("-10", () => { delta_velocity_tangent -= 10.0; }, false),
-                new DialogGUIButton("-1", () => { delta_velocity_tangent -= 1.0; }, false),
-                new DialogGUIButton("-0.1", () => { delta_velocity_tangent -= 0.1; }, false),
-                new DialogGUIButton("0", () => { delta_velocity_tangent = 0.0; }, false),
-                new DialogGUIButton("+0.1", () => { delta_velocity_tangent += 0.1; }, false),
-                new DialogGUIButton("+1", () => { delta_velocity_tangent += 1.0; }, false),
-                new DialogGUIButton("+10", () => { delta_velocity_tangent += 10.0; }, false),
-                new DialogGUIButton("+100", () => { delta_velocity_tangent += 100.0; }, false),
-                new DialogGUIButton("+1000", () => { delta_velocity_tangent += 1000.0; }, false));
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityTangent(index)); }, velocity_value_string_length),
+                new DialogGUIButton("-1000", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) - 1000.0); }, false),
+                new DialogGUIButton("-100", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) - 100.0); }, false),
+                new DialogGUIButton("-10", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) - 10.0); }, false),
+                new DialogGUIButton("-1", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) - 1.0); }, false),
+                new DialogGUIButton("-0.1", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) - 0.1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetManeuverDeltaVelocityTangent(0.0); }, false),
+                new DialogGUIButton("+0.1", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) + 0.1); }, false),
+                new DialogGUIButton("+1", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) + 1.0); }, false),
+                new DialogGUIButton("+10", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) + 10.0); }, false),
+                new DialogGUIButton("+100", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) + 100.0); }, false),
+                new DialogGUIButton("+1000", () => { DataServices.SetManeuverDeltaVelocityTangent(DataServices.GetManeuverDeltaVelocityTangent(index) + 1000.0); }, false));
         }
 
         private DialogGUIBase AddVelocityNormalToManeuver()
         {
+            int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
-                new DialogGUIButton("-1000", () => { delta_velocity_normal -= 1000.0; }, false),
-                new DialogGUIButton("-100", () => { delta_velocity_normal -= 100.0; }, false),
-                new DialogGUIButton("-10", () => { delta_velocity_normal -= 10.0; }, false),
-                new DialogGUIButton("-1", () => { delta_velocity_normal -= 1.0; }, false),
-                new DialogGUIButton("-0.1", () => { delta_velocity_normal -= 0.1; }, false),
-                new DialogGUIButton("0", () => { delta_velocity_normal = 0.0; }, false),
-                new DialogGUIButton("+0.1", () => { delta_velocity_normal += 0.1; }, false),
-                new DialogGUIButton("+1", () => { delta_velocity_normal += 1.0; }, false),
-                new DialogGUIButton("+10", () => { delta_velocity_normal += 10.0; }, false),
-                new DialogGUIButton("+100", () => { delta_velocity_normal += 100.0; }, false),
-                new DialogGUIButton("+1000", () => { delta_velocity_normal += 1000.0; }, false));
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityNormal(index)); }, velocity_value_string_length),
+                new DialogGUIButton("-1000", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) - 1000.0); }, false),
+                new DialogGUIButton("-100", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) - 100.0); }, false),
+                new DialogGUIButton("-10", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) - 10.0); }, false),
+                new DialogGUIButton("-1", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) - 1.0); }, false),
+                new DialogGUIButton("-0.1", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) - 0.1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetManeuverDeltaVelocityNormal(0.0); }, false),
+                new DialogGUIButton("+0.1", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) + 0.1); }, false),
+                new DialogGUIButton("+1", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) + 1.0); }, false),
+                new DialogGUIButton("+10", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) + 10.0); }, false),
+                new DialogGUIButton("+100", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) + 100.0); }, false),
+                new DialogGUIButton("+1000", () => { DataServices.SetManeuverDeltaVelocityNormal(DataServices.GetManeuverDeltaVelocityNormal(index) + 1000.0); }, false));
         }
 
         private DialogGUIBase AddVelocityBinormalToManeuver()
         {
+            int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
-                new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
-                new DialogGUIButton("-1000", () => { delta_velocity_binormal -= 1000.0; }, false),
-                new DialogGUIButton("-100", () => { delta_velocity_binormal -= 100.0; }, false),
-                new DialogGUIButton("-10", () => { delta_velocity_binormal -= 10.0; }, false),
-                new DialogGUIButton("-1", () => { delta_velocity_binormal -= 1.0; }, false),
-                new DialogGUIButton("-0.1", () => { delta_velocity_binormal -= 0.1; }, false),
-                new DialogGUIButton("0", () => { delta_velocity_binormal = 0.0; }, false),
-                new DialogGUIButton("+0.1", () => { delta_velocity_binormal += 0.1; }, false),
-                new DialogGUIButton("+1", () => { delta_velocity_binormal += 1.0; }, false),
-                new DialogGUIButton("+10", () => { delta_velocity_binormal += 10.0; }, false),
-                new DialogGUIButton("+100", () => { delta_velocity_binormal += 100.0; }, false),
-                new DialogGUIButton("+1000", () => { delta_velocity_binormal += 1000.0; }, false));
+                new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityBinormal(index)); }, velocity_value_string_length),
+                new DialogGUIButton("-1000", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) - 1000.0); }, false),
+                new DialogGUIButton("-100", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) - 100.0); }, false),
+                new DialogGUIButton("-10", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) - 10.0); }, false),
+                new DialogGUIButton("-1", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) - 1.0); }, false),
+                new DialogGUIButton("-0.1", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) - 0.1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetManeuverDeltaVelocityBinormal(0.0); }, false),
+                new DialogGUIButton("+0.1", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) + 0.1); }, false),
+                new DialogGUIButton("+1", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) + 1.0); }, false),
+                new DialogGUIButton("+10", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) + 10.0); }, false),
+                new DialogGUIButton("+100", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) + 100.0); }, false),
+                new DialogGUIButton("+1000", () => { DataServices.SetManeuverDeltaVelocityBinormal(DataServices.GetManeuverDeltaVelocityBinormal(index) + 1000.0); }, false));
         }
         
         // TODO: check out how to deal with 6 hour days (Kerbin) vs 24 hour days (Earth)
         private DialogGUIBase AddDeltaTimeToManeuver()
         {
+            int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(time_name_string, time_name_string_length),
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(Planetarium.GetUniversalTime() + delta_time)); }, time_value_string_length_two_lines),
+                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_two_lines),
                 // User needs to move forward in time in big steps, but backwards is only
                 // for finetuning where a burn needs to be, hence the assymetric number of buttons
-                new DialogGUIButton("-1H", () => { delta_time -= 1*3600; }, false),
-                new DialogGUIButton("-10M", () => { delta_time -= 10*60; }, false),
-                new DialogGUIButton("-1M", () => { delta_time -= 1*60; }, false),
-                new DialogGUIButton("-10S", () => { delta_time -= 10; }, false),
-                new DialogGUIButton("-1S", () => { delta_time -= 1; }, false),
-                new DialogGUIButton("0", () => { delta_time = 0; }, false),
-                new DialogGUIButton("+1S", () => { delta_time += 1; }, false),
-                new DialogGUIButton("+10S", () => { delta_time += 10; }, false),
-                new DialogGUIButton("+1M", () => { delta_time += 1*60; }, false),
-                new DialogGUIButton("+10M", () => { delta_time += 10*60; }, false),
-                new DialogGUIButton("+1H", () => { delta_time += 1*3600; }, false),
-                new DialogGUIButton("+6H", () => { delta_time += 6*3600; }, false),
-                new DialogGUIButton("+1D", () => { delta_time += 1*24*3600; }, false),
-                new DialogGUIButton("+10D", () => { delta_time += 10*24*3600; }, false),
-                new DialogGUIButton("+100D", () => { delta_time += 100*24*3600; }, false));
+                new DialogGUIButton("-1H", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1*3600); }, false),
+                new DialogGUIButton("-10M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 10*60); }, false),
+                new DialogGUIButton("-1M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1*60); }, false),
+                new DialogGUIButton("-10S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 10); }, false),
+                new DialogGUIButton("-1S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1); }, false),
+                new DialogGUIButton("0", () => { DataServices.SetManeuverDeltaTime(0); }, false),
+                new DialogGUIButton("+1S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 1); }, false),
+                new DialogGUIButton("+10S", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 10); }, false),
+                new DialogGUIButton("+1M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 1*60); }, false),
+                new DialogGUIButton("+10M", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 10*60); }, false),
+                new DialogGUIButton("+1H", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 1*3600); }, false),
+                new DialogGUIButton("+6H", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 6*3600); }, false),
+                new DialogGUIButton("+1D", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 24*3600); }, false),
+                new DialogGUIButton("+10D", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 10*24*3600); }, false),
+                new DialogGUIButton("+100D", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) + 100*24*3600); }, false));
         }
-
-        enum BurnMode {Engine, RCS, Instant};
-        BurnMode burn_mode = BurnMode.Engine;
 
         private float GetBurnMode()
         {
-            switch (burn_mode) {
-                case BurnMode.Engine:
+            int index = DataServices.GetLastManeuverIndex();
+            switch (DataServices.GetBurnMode(index)) {
+                case DataServices.BurnMode.Engine:
                     return 0f;
-                case BurnMode.RCS:
+                case DataServices.BurnMode.RCS:
                     return 1f;
-                case BurnMode.Instant:
+                case DataServices.BurnMode.Instant:
                 default:
                     return 2f;
             }
@@ -294,105 +287,101 @@ namespace ksp_plugin_adapter {
 
         private void SetBurnMode(float value)
         {
-            if (value > 1.5f) { burn_mode = BurnMode.Instant; }
-            else if (value > 0.5f) { burn_mode = BurnMode.RCS; }
-            else { burn_mode = BurnMode.Engine; }
+            if (value > 1.5f) { DataServices.SetBurnMode(DataServices.BurnMode.Instant); }
+            else if (value > 0.5f) { DataServices.SetBurnMode(DataServices.BurnMode.RCS); }
+            else { DataServices.SetBurnMode(DataServices.BurnMode.Engine); }
         }
 
-        private DialogGUIBase CreateNonMutableManeuver(double delta_velocity_tangent, double delta_velocity_normal, double delta_velocity_binormal,
-                                                       double absolute_time, bool inertially_fixed, BurnMode burn_mode, double delta_velocity_burn, double burn_time)
+        private DialogGUIBase CreateNonMutableManeuver(int index)
         {
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel(velocity_tangent_string, velocity_name_string_length),
-                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_tangent); }, velocity_value_string_length),
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityTangent(index)); }, velocity_value_string_length),
                     new DialogGUILabel(velocity_normal_string, velocity_name_string_length),
-                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_normal); }, velocity_value_string_length),
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityNormal(index)); }, velocity_value_string_length),
                     new DialogGUILabel(velocity_binormal_string, velocity_name_string_length),
-                    new DialogGUILabel(() => { return string.Format(velocity_value_string, delta_velocity_binormal); }, velocity_value_string_length),
-                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, delta_velocity_burn); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
+                    new DialogGUILabel(() => { return string.Format(velocity_value_string, DataServices.GetManeuverDeltaVelocityBinormal(index)); }, velocity_value_string_length),
+                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetBurnDeltaVelocity(index)); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 ),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel(time_name_string, time_name_string_length),
-                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time)); }, time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_single_line),
                     new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
                     // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
                     // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
-                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(absolute_time - Planetarium.GetUniversalTime())); }, time_value_string_length_single_line),
-                    new DialogGUILabel(inertially_fixed ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
-                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
-                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, burn_time); }, burn_time_prefix_string_length + burn_time_string_length)
+                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverDeltaTime(index))); }, time_value_string_length_single_line),
+                    new DialogGUILabel(DataServices.GetManeuverIntertiallyFixed(index) ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnMode(index).ToString(); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, DataServices.GetBurnTime(index)); }, burn_time_prefix_string_length + burn_time_string_length)
                 ),
                 new DialogGUISpace(5.0f));
         }
         
         private DialogGUIBase CreateMutableManeuver()
         {
+            int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 AddVelocityTangentToManeuver(),
                 AddVelocityNormalToManeuver(),
                 AddVelocityBinormalToManeuver(),
                 AddDeltaTimeToManeuver(),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUIToggle(inertially_fixed, inertially_fixed_burn_frame_string, (value) => { inertially_fixed = value; }, inertially_fixed_burn_frame_string_length),
+                    new DialogGUIToggle(DataServices.GetManeuverIntertiallyFixed(index), inertially_fixed_burn_frame_string, (value) => { DataServices.SetManeuverIntertiallyFixed(value); }, inertially_fixed_burn_frame_string_length),
                     new DialogGUISlider(GetBurnMode, 0f, 2f, true, -1, -1, SetBurnMode),
-                    new DialogGUILabel(() => { return burn_mode_prefix_string + burn_mode.ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length),
-                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, delta_velocity_burn); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length),
-                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, burn_time); }, burn_time_prefix_string_length + burn_time_string_length)
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnMode(index).ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetBurnDeltaVelocity(index)); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length),
+                    new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, DataServices.GetBurnTime(index)); }, burn_time_prefix_string_length + burn_time_string_length)
                 )
             );
         }
 
         private void OnButtonClick_AddManeuver()
         {
-            List<DialogGUIBase> rows = planning_page.children;
-            // If needed make the maneuver non-mutable
-            int pre_number_of_rows = rows.Count;
-            DeleteLastManeuver(planning_page);
-            int post_number_of_row = rows.Count;
+            int burn_index_to_make_non_mutable = DataServices.GetLastManeuverIndex();
 
-            if (pre_number_of_rows > post_number_of_row)
+            if (DataServices.AddManeuver())
             {
-                DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(delta_velocity_tangent,
-                                                                              delta_velocity_normal, 
-                                                                              delta_velocity_binormal,
-                                                                              Planetarium.GetUniversalTime() + delta_time, // from now on the absolute time should be frozen
-                                                                              inertially_fixed,
-                                                                              burn_mode,
-                                                                              delta_velocity_burn,
-                                                                              burn_time);
-                AddManouver(planning_page, maneuver_non_mutable);
-            }
-            
-            // New manouver should start with a zero manouver (i.e. no delta velocity used)
-            delta_velocity_tangent = 0.0;
-            delta_velocity_normal = 0.0;
-            delta_velocity_binormal = 0.0;
+                List<DialogGUIBase> rows = planning_page.children;
 
-            DialogGUIBase maneuver = CreateMutableManeuver();
-            AddManouver(planning_page, maneuver);
+                // If needed make the maneuver non-mutable
+                int pre_number_of_rows = rows.Count;
+                DeleteLastGUIManeuver(planning_page);
+                int post_number_of_row = rows.Count;
+
+                if (pre_number_of_rows > post_number_of_row)
+                {
+                    DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(burn_index_to_make_non_mutable);
+                    AddGUIManouver(planning_page, maneuver_non_mutable);
+                }
+
+                DialogGUIBase maneuver = CreateMutableManeuver();
+                AddGUIManouver(planning_page, maneuver);
+            }
         }
 
         private void OnButtonClick_DeleteManeuver()
         {
-            DeleteLastManeuver(planning_page);
+            DeleteLastGUIManeuver(planning_page);
 
             List<DialogGUIBase> rows = planning_page.children;
             // If needed make the new last maneuver mutable
             int pre_number_of_rows = rows.Count;
-            DeleteLastManeuver(planning_page);
+            DeleteLastGUIManeuver(planning_page);
             int post_number_of_row = rows.Count;
 
             // TODO: in the future we have to be sure to sync in the correct values for this maneuver, right now it takes over the deleted
             // maneuvers values
             if (pre_number_of_rows > post_number_of_row)
             {
+                // TODO: Can the GUI and underlying maneuver system go out of sync?
+                DataServices.RemoveLastManeuver();
                 DialogGUIBase maneuver = CreateMutableManeuver();
-                AddManouver(planning_page, maneuver);
+                AddGUIManouver(planning_page, maneuver);
             }
         }
 
-        private void AddManouver(DialogGUIBase parent, DialogGUIBase maneuver)
+        private void AddGUIManouver(DialogGUIBase parent, DialogGUIBase maneuver)
         {
             List<DialogGUIBase> rows = parent.children;
             maneuver.SetOptionText(magic_maneuver_string);
@@ -400,7 +389,7 @@ namespace ksp_plugin_adapter {
             ForceGUIUpdate(planning_page, maneuver);
         }
 
-        private void DeleteLastManeuver(DialogGUIBase parent)
+        private void DeleteLastGUIManeuver(DialogGUIBase parent)
         {
             List<DialogGUIBase> rows = parent.children;
             if (rows.Count > 0) {
@@ -560,9 +549,10 @@ namespace ksp_plugin_adapter {
         private void ShowPlannerWindow()
         {
             planner_window_visible = true;
-            DataServices.EnsureFlightPlanExists();
             popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(x_pos, y_pos), new Vector2(x_pos, y_pos),
                                                         multi_page_planner, true, HighLogic.UISkin, false);
+            // Bring GUI in sync with whatever is the current vessel
+            RegenerateGUIManeuvers();
         }
 
         private void HidePlannerWindow()
@@ -571,7 +561,34 @@ namespace ksp_plugin_adapter {
             if (popup_dialog) {
                 popup_dialog.Dismiss();
             }
-        }        
+        }
+
+        private void OnVesselChange(Vessel value)
+        {
+            RegenerateGUIManeuvers();
+        }
+
+        private void RegenerateGUIManeuvers()
+        {
+            List<DialogGUIBase> rows = planning_page.children;
+            int num_rows = rows.Count;
+
+            for (int i = 0; i < num_rows; i++)
+            {
+                DeleteLastGUIManeuver(planning_page);
+            }
+
+            for (int i = 0; i < DataServices.GetLastManeuverIndex(); i++)
+            {
+                DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(i);
+                AddGUIManouver(planning_page, maneuver_non_mutable);
+            }
+            if (DataServices.GetLastManeuverIndex() >= 0)
+            {
+                DialogGUIBase maneuver = CreateMutableManeuver();
+                AddGUIManouver(planning_page, maneuver);
+            }
+        }
 
         private void InitializeToolbarIcon()
         {
