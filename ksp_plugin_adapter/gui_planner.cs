@@ -118,11 +118,20 @@ namespace ksp_plugin_adapter {
             InitializePlannerGUI();
         }
 
-        public void Awake()
+        private void Awake()
         {
             GameEvents.onGUIApplicationLauncherReady.Add(InitializeToolbarIcon);
             GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
             GameEvents.onVesselChange.Add(OnVesselChange);
+        }
+
+        // If we don't remove our event subscriptions we end up getting a growing amount of toolbar icons
+        // Might be because the previous objects haven't gone through the garbage collector yet
+        public void OnDestroy()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
+            GameEvents.onVesselChange.Remove(OnVesselChange);
         }
 
         //
@@ -137,8 +146,11 @@ namespace ksp_plugin_adapter {
         private void ForceGUIUpdate(DialogGUIBase parent, DialogGUIBase child)
         {
             Stack<Transform> stack = new Stack<Transform>(); // some data on hierarchy of the GUI components
-            stack.Push(parent.uiItem.gameObject.transform); // need the reference point of the parent GUI component for position and size
-            child.Create(ref stack, HighLogic.UISkin); // required to force the GUI creation
+            if (parent.uiItem && parent.uiItem.gameObject)
+            {
+                stack.Push(parent.uiItem.gameObject.transform); // need the reference point of the parent GUI component for position and size
+                child.Create(ref stack, HighLogic.UISkin); // required to force the GUI creation
+            }
         }
 
         //
@@ -396,7 +408,10 @@ namespace ksp_plugin_adapter {
                 DialogGUIBase child = rows.ElementAt(rows.Count - 1);
                 if (child.OptionText == magic_maneuver_string) {
                     rows.RemoveAt(rows.Count - 1);
-                    child.uiItem.gameObject.DestroyGameObjectImmediate(); // ensure memory gets freed
+                    if (child.uiItem && child.uiItem.gameObject)
+                    {
+                        child.uiItem.gameObject.DestroyGameObjectImmediate(); // ensure memory gets freed
+                    }
                 }
             }
         }
@@ -548,11 +563,14 @@ namespace ksp_plugin_adapter {
 
         private void ShowPlannerWindow()
         {
+            // Bring GUI in sync with whatever is the current vessel, before making the planner window visible
+            // This is done to avoid a race condition with the creation of the GUI game objects that we
+            // normally use to force refresh the GUI
+            RegenerateGUIManeuvers();
+
             planner_window_visible = true;
             popup_dialog = PopupDialog.SpawnPopupDialog(new Vector2(x_pos, y_pos), new Vector2(x_pos, y_pos),
                                                         multi_page_planner, true, HighLogic.UISkin, false);
-            // Bring GUI in sync with whatever is the current vessel
-            RegenerateGUIManeuvers();
         }
 
         private void HidePlannerWindow()
@@ -565,6 +583,7 @@ namespace ksp_plugin_adapter {
 
         private void OnVesselChange(Vessel value)
         {
+            DataServices.UpdateSettingsUponVesselChange();
             RegenerateGUIManeuvers();
         }
 
@@ -578,12 +597,13 @@ namespace ksp_plugin_adapter {
                 DeleteLastGUIManeuver(planning_page);
             }
 
-            for (int i = 0; i < DataServices.GetLastManeuverIndex(); i++)
+            int max_index = DataServices.GetLastManeuverIndex();
+            for (int i = 0; i < max_index; i++)
             {
                 DialogGUIBase maneuver_non_mutable = CreateNonMutableManeuver(i);
                 AddGUIManouver(planning_page, maneuver_non_mutable);
             }
-            if (DataServices.GetLastManeuverIndex() >= 0)
+            if (max_index >= 0)
             {
                 DialogGUIBase maneuver = CreateMutableManeuver();
                 AddGUIManouver(planning_page, maneuver);
@@ -618,14 +638,6 @@ namespace ksp_plugin_adapter {
             if (planner_window_visible) {
                 ShowPlannerWindow();
             }
-        }
-
-        // If we don't remove our event subscriptions we end up getting a growing amount of toolbar icons
-        // Might be because the previous objects haven't gone through the garbage collector yet
-        public void OnDestroy()
-        {
-            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
-            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
         }
     }
 }  // namespace ksp_plugin_adapter
