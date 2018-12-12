@@ -21,6 +21,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace principia {
@@ -459,7 +460,7 @@ namespace ksp_plugin_adapter {
         // Planner: plan
         //
         public enum BurnMode {Engine, RCS, Instant};
-        private static BurnMode burn_mode = BurnMode.Engine;
+        private static List<BurnMode> burn_mode = new List<BurnMode>();
 
         private static NavigationManoeuvre GetFlightPlanManoeuver(int index)
         {
@@ -531,9 +532,20 @@ namespace ksp_plugin_adapter {
         }
         public static double GetBurnTime(int index) { return GetFlightPlanManoeuver(index).duration; }
 
-        // TODO: this needs to be hooked up to engine calculation
-        public static BurnMode GetBurnMode(int index) { return burn_mode; }
-        public static void SetBurnMode(BurnMode value) { burn_mode = value; }
+        public static BurnMode GetBurnMode(int index)
+        {
+            if (index < burn_mode.Count)
+                return burn_mode[index];
+            return BurnMode.Engine;
+        }
+        public static void SetBurnMode(BurnMode value)
+        {
+            int index = GetLastManeuverIndex();
+            while (index >= burn_mode.Count) {
+                burn_mode.Add(BurnMode.Engine);
+            }
+            burn_mode[index] = value;
+        }
 
         public static int GetLastManeuverIndex()
         {
@@ -548,33 +560,53 @@ namespace ksp_plugin_adapter {
             if (GetVessel())
             {
                 string vesselguid = GetVesselGuid();
-                int last_burn_index = GetLastManeuverIndex();
+                int last_maneuver_index = GetLastManeuverIndex();
                 double initial_time = 0.0;
                 bool inertially_fixed = false;
+                EnginePerformance engine_performance;
+                BurnMode burn_mode = BurnMode.Engine;
+                bool return_value = false;
 
                 EnsureFlightPlanExists();
 
-                if (last_burn_index >= 0)
+                if (last_maneuver_index >= 0)
                 {
-                    initial_time = GetManeuverTime(last_burn_index) + 60;
-                    inertially_fixed = GetManeuverIntertiallyFixed(last_burn_index);
+                    initial_time = GetManeuverTime(last_maneuver_index) + 60;
+                    inertially_fixed = GetManeuverIntertiallyFixed(last_maneuver_index);
+                    burn_mode = GetBurnMode(last_maneuver_index);
                 }
                 else
                 {
                     initial_time = plugin.CurrentTime() + 60;
                 }
 
-                // TODO: fill in other parameters
+                switch (burn_mode)
+                {
+                    case BurnMode.Engine:
+                        engine_performance = ComputeEngineCharacteristics();
+                        break;
+                    case BurnMode.RCS:
+                        engine_performance = ComputeRCSCharacteristics();
+                        break;
+                    case BurnMode.Instant:
+                    default:
+                        engine_performance = UseTheForceLuke();
+                        break;
+                }
+
                 Burn candidate_burn = new Burn{
-                    thrust_in_kilonewtons = 10.0,
-                    specific_impulse_in_seconds_g0 = 100.0,
+                    thrust_in_kilonewtons = engine_performance.thrust_in_kilonewtons,
+                    specific_impulse_in_seconds_g0 = engine_performance.specific_impulse_in_seconds_g0,
                     frame = GenerateNavigationFrameParameters(),
                     initial_time = initial_time,
                     delta_v = new XYZ{x = 0.0,
                                       y = 0.0,
                                       z = 0.0},
                     is_inertially_fixed = inertially_fixed};
-                return plugin.FlightPlanAppend(vesselguid, candidate_burn);
+                return_value = plugin.FlightPlanAppend(vesselguid, candidate_burn);
+                // This setting is not derived from the maneuver node, so we must store it
+                SetBurnMode(burn_mode);
+                return return_value;
             }
             return false;
         }
@@ -590,6 +622,113 @@ namespace ksp_plugin_adapter {
                     plugin.FlightPlanDelete(vesselguid);
                 }
             }
+        }
+
+        //
+        // Engine performance calculations
+        //
+
+        private class EnginePerformance
+        {
+            public double thrust_in_kilonewtons;
+            public double specific_impulse_in_seconds_g0;
+        }
+
+        // TODO: if how should we inform users of fallback scenarios?
+        private static EnginePerformance ComputeEngineCharacteristics() {
+            EnginePerformance engine_performance = new EnginePerformance();
+            Vessel vessel = GetVessel();
+
+            ModuleEngines[] active_engines =
+                (from part in vessel.parts
+                select (from PartModule module in part.Modules
+                        where module is ModuleEngines &&
+                              (module as ModuleEngines).EngineIgnited
+                        select module as ModuleEngines)).SelectMany(x => x).ToArray();
+
+            Vector3d reference_direction = vessel.ReferenceTransform.up;
+            double[] thrusts =
+                (from engine in active_engines
+                 select engine.maxThrust *
+                    (from transform in engine.thrustTransforms
+                     select Math.Max(0,
+                                     Vector3d.Dot(reference_direction,
+                                                  -transform.forward))).Average()).ToArray();
+            engine_performance.thrust_in_kilonewtons = thrusts.Sum();
+
+            // This would use zip if we had 4.0 or later.  We loop for now.
+            double Σ_f_over_i_sp = 0;
+            for (int i = 0; i < active_engines.Count(); ++i) {
+                Σ_f_over_i_sp += thrusts[i] / active_engines[i].atmosphereCurve.Evaluate(0);
+            }
+            engine_performance.specific_impulse_in_seconds_g0 = engine_performance.thrust_in_kilonewtons / Σ_f_over_i_sp;
+
+            // If there are no engines, fall back onto RCS.
+            if (engine_performance.thrust_in_kilonewtons == 0) {
+                return ComputeRCSCharacteristics();
+            }
+
+            return engine_performance;
+        }
+
+        private static EnginePerformance ComputeRCSCharacteristics() {
+            EnginePerformance engine_performance = new EnginePerformance();
+            Vessel vessel = GetVessel();
+
+            ModuleRCS[] active_rcs =
+                (from part in vessel.parts
+                 select (from PartModule module in part.Modules
+                        where module is ModuleRCS &&
+                              (module as ModuleRCS).rcsEnabled
+                        select module as ModuleRCS)).SelectMany(x => x).ToArray();
+
+            Vector3d reference_direction = vessel.ReferenceTransform.up;
+            // NOTE(egg): NathanKell informs me that in >= 1.0.5, RCS has a useZaxis
+            // property, that controls whether they thrust -up or -forward.  The madness
+            // keeps piling up.
+            double[] thrusts =
+                (from engine in active_rcs
+                 select engine.thrusterPower *
+                    (from transform in engine.thrusterTransforms
+                     select Math.Max(0,
+                                     Vector3d.Dot(reference_direction,
+                                                  -transform.up))).Average()).ToArray();
+            engine_performance.thrust_in_kilonewtons = thrusts.Sum();
+
+            // This would use zip if we had 4.0 or later.  We loop for now.
+            double Σ_f_over_i_sp = 0;
+            for (int i = 0; i < active_rcs.Count(); ++i) {
+                Σ_f_over_i_sp += thrusts[i] / active_rcs[i].atmosphereCurve.Evaluate(0);
+            }
+            engine_performance.specific_impulse_in_seconds_g0 = engine_performance.thrust_in_kilonewtons / Σ_f_over_i_sp;
+
+            // If RCS provides no thrust, model a virtually instant burn.
+            if (engine_performance.thrust_in_kilonewtons == 0) {
+                return UseTheForceLuke();
+            }
+
+            return engine_performance;
+        }
+
+        private static EnginePerformance UseTheForceLuke() {
+            EnginePerformance engine_performance = new EnginePerformance();
+            Vessel vessel = GetVessel();
+
+            // The burn can last at most (9.80665 / scale) s.
+            const double scale = 1;
+            // This, together with |scale = 1|, ensures that, when |initial_time| is
+            // less than 2 ** 32 s, |Δv(initial_time + duration)| does not overflow if
+            // Δv is less than 100 km/s, and that |initial_time + duration| does not
+            // fully cancel if Δv is more than 1 mm/s.
+            // TODO(egg): Before the C* release, add a persisted flag to indicate to the
+            // user that we are not using the craft's engines (we can also use that
+            // flag to remember whether the burn was created for active engines or
+            // active RCS).
+            const double range = 1000;
+            engine_performance.thrust_in_kilonewtons = vessel.GetTotalMass() * range * scale;
+            engine_performance.specific_impulse_in_seconds_g0 = range;
+
+            return engine_performance;
         }
     }
 }  // namespace ksp_plugin_adapter
