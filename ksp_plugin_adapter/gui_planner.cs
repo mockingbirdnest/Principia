@@ -263,7 +263,7 @@ namespace ksp_plugin_adapter {
             int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(time_name_string, time_name_string_length),
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_two_lines),
+                new DialogGUILabel(() => { return FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_two_lines),
                 // User needs to move forward in time in big steps, but backwards is only
                 // for finetuning where a burn needs to be, hence the assymetric number of buttons
                 new DialogGUIButton("-1H", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1*3600); }, false),
@@ -424,7 +424,7 @@ namespace ksp_plugin_adapter {
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(plan_length_time_name_string, plan_length_time_name_string_length),
-                new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetPlanTimeLength())); }, time_value_string_length_single_line),
+                new DialogGUILabel(() => { return FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetPlanTimeLength())); }, time_value_string_length_single_line),
                 new DialogGUIButton("-1H", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*3600); }, false),
                 new DialogGUIButton("-10M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 10*60); }, false),
                 new DialogGUIButton("-1M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*60); }, false),
@@ -484,7 +484,7 @@ namespace ksp_plugin_adapter {
                     new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false) // TODO: not always available in career mode
                 ),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUILabel(() => { return EngineIgnitionCutoffString() + FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return EngineIgnitionCutoffString() + FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
                     new DialogGUILabel(() => { return total_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetDeltaVelocityOfAllBurns()); }, total_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 )
             );
@@ -638,6 +638,22 @@ namespace ksp_plugin_adapter {
             if (planner_window_visible) {
                 ShowPlannerWindow();
             }
+        }
+
+        // TODO: check if this is the correct way of printing time
+        private static string FormatPositiveTimeSpan (TimeSpan span) {
+            return (GameSettings.KERBIN_TIME
+                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
+                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
+                : span.Days.ToString("000;000") + " d " +
+                      span.Hours.ToString("00;00") + " h ") +
+            span.Minutes.ToString("00;00") + " min " +
+            (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
+            " s";
+        }
+
+        private static string FormatTimeSpan (TimeSpan span) {
+            return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
         }
     }
 }  // namespace ksp_plugin_adapter
