@@ -764,6 +764,7 @@ public partial class PrincipiaPluginAdapter
               FlightGlobals.SpeedDisplayModes.Surface &&
           active_vessel.atmDensity > 0;
       if (ferram_owns_the_speed_display) {
+        DataServices.SetSelectedCelestialBody(active_vessel.mainBody);
         DataServices.SetReferenceFrame(DataServices.FrameType.BODY_SURFACE);
       }
 

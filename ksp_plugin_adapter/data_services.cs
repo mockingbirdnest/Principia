@@ -70,7 +70,11 @@ namespace ksp_plugin_adapter {
 
         private static bool HasFlightPlan()
         {
-            return GetVessel() && plugin.FlightPlanExists(GetVesselGuid());
+            if (!GetVessel())
+                return false;
+
+            string vesselguid = GetVesselGuid();
+            return plugin.HasVessel(vesselguid) && plugin.FlightPlanExists(vesselguid);
         }
 
         //
