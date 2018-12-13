@@ -108,6 +108,22 @@ namespace ksp_plugin_adapter {
             }
             return texture;
         }
+
+        // TODO: check if this is the correct way of printing time
+        private static string FormatPositiveTimeSpan (TimeSpan span) {
+            return (GameSettings.KERBIN_TIME
+                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
+                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
+                : span.Days.ToString("000;000") + " d " +
+                      span.Hours.ToString("00;00") + " h ") +
+            span.Minutes.ToString("00;00") + " min " +
+            (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
+            " s";
+        }
+
+        public static string FormatTimeSpan (TimeSpan span) {
+            return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
+        }
     }
 }  // namespace ksp_plugin_adapter
 }  // namespace principia

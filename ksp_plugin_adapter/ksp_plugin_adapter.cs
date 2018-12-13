@@ -82,7 +82,6 @@ public partial class PrincipiaPluginAdapter
   private const int чебышёв_plotting_methods_count = 3;
 
   internal Controlled<ReferenceFrameSelector> plotting_frame_selector_;
-  private Controlled<FlightPlanner> flight_planner_;
   private MapNodePool map_node_pool_;
 
   private bool selecting_active_vessel_target_ = false;
@@ -633,7 +632,6 @@ public partial class PrincipiaPluginAdapter
       previous_display_mode_ = null;
       must_set_plotting_frame_ = true;
       DataServices.SetPlugin(plugin_);
-      flight_planner_.reset(new FlightPlanner(this, plugin_));
 
       plugin_construction_ = DateTime.Now;
     } else {
@@ -2021,7 +2019,6 @@ public partial class PrincipiaPluginAdapter
     Interface.DeletePlugin(ref plugin_);
     plotting_frame_selector_.reset();
     previous_display_mode_ = null;
-    flight_planner_.reset();
     navball_changed_ = true;
   }
 
@@ -2094,9 +2091,6 @@ public partial class PrincipiaPluginAdapter
         selecting_active_vessel_target_ = false;
       }
       ReferenceFrameSelection();
-      if (PluginRunning()) {
-        flight_planner_.get().RenderButton();
-      }
       ToggleableSection(name   : "Prediction Settings",
                         show   : ref show_prediction_settings_,
                         render : PredictionSettings);
@@ -2519,7 +2513,6 @@ public partial class PrincipiaPluginAdapter
     DataServices.InitializeSelectedCelestialBodyAndReferenceFrame(UpdateRenderingFrame);
     must_set_plotting_frame_ = true;
     DataServices.SetPlugin(plugin_);
-    flight_planner_.reset(new FlightPlanner(this, plugin_));
   } catch (Exception e) {
     Log.Fatal("Exception while resetting plugin: " + e.ToString());
   }

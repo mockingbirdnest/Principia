@@ -185,7 +185,7 @@ internal class MapNodePool {
           }
           caption.captionLine1 =
               "T" +
-              FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(
+              GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(
                   Planetarium.GetUniversalTime() - properties_[node].time));
           if (properties_[node].celestial.GetAltitude(
                   properties_[node].world_position) < 0 &&

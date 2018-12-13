@@ -253,7 +253,7 @@ namespace ksp_plugin_adapter {
             int index = DataServices.GetLastManeuverIndex();
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(time_name_string, time_name_string_length),
-                new DialogGUILabel(() => { return FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_two_lines),
+                new DialogGUILabel(() => { return GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_two_lines),
                 // User needs to move forward in time in big steps, but backwards is only
                 // for finetuning where a burn needs to be, hence the assymetric number of buttons
                 new DialogGUIButton("-1H", () => { DataServices.SetManeuverDeltaTime(DataServices.GetManeuverDeltaTime(index) - 1*3600); }, false),
@@ -308,11 +308,11 @@ namespace ksp_plugin_adapter {
                 ),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel(time_name_string, time_name_string_length),
-                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverTime(index))); }, time_value_string_length_single_line),
                     new DialogGUILabel(delta_time_name_string, delta_time_name_string_length),
                     // User should see the time relative to now, so he/she can assess (roughly) how long from now the maneuver needs to be executed
                     // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
-                    new DialogGUILabel(() => { return FlightPlanner.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverDeltaTime(index))); }, time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverDeltaTime(index))); }, time_value_string_length_single_line),
                     new DialogGUILabel(DataServices.GetManeuverIntertiallyFixed(index) ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
                     new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnMode(index).ToString(); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
                     new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, DataServices.GetBurnTime(index)); }, burn_time_prefix_string_length + burn_time_string_length)
@@ -412,7 +412,7 @@ namespace ksp_plugin_adapter {
         {
             return new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                 new DialogGUILabel(plan_length_time_name_string, plan_length_time_name_string_length),
-                new DialogGUILabel(() => { return FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetPlanTimeLength())); }, time_value_string_length_single_line),
+                new DialogGUILabel(() => { return GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetPlanTimeLength())); }, time_value_string_length_single_line),
                 new DialogGUIButton("-1H", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*3600); }, false),
                 new DialogGUIButton("-10M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 10*60); }, false),
                 new DialogGUIButton("-1M", () => { DataServices.SetPlanTimeLength(DataServices.GetPlanTimeLength() - 1*60); }, false),
@@ -472,7 +472,7 @@ namespace ksp_plugin_adapter {
                     new DialogGUIToggle(DataServices.GetShowOnNavball(), show_on_navball_string, (value) => { DataServices.SetShowOnNavball(value); }, show_on_navball_string_length),
                     new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false)),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
-                    new DialogGUILabel(() => { return EngineIgnitionCutoffString() + FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
+                    new DialogGUILabel(() => { return EngineIgnitionCutoffString() + GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
                     new DialogGUILabel(() => { return total_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetDeltaVelocityOfAllBurns()); }, total_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
                 )
             );
@@ -588,22 +588,6 @@ namespace ksp_plugin_adapter {
             if (planner_window_visible) {
                 ShowPlannerWindow();
             }
-        }
-
-        // TODO: check if this is the correct way of printing time
-        private static string FormatPositiveTimeSpan (TimeSpan span) {
-            return (GameSettings.KERBIN_TIME
-                ? (span.Days * 4 + span.Hours / 6).ToString("0000;0000") +
-                      " d6 " + (span.Hours % 6).ToString("0;0") + " h "
-                : span.Days.ToString("000;000") + " d " +
-                      span.Hours.ToString("00;00") + " h ") +
-            span.Minutes.ToString("00;00") + " min " +
-            (span.Seconds + span.Milliseconds / 1000m).ToString("00.0;00.0") +
-            " s";
-        }
-
-        private static string FormatTimeSpan (TimeSpan span) {
-            return span.Ticks.ToString("+;-") + FormatPositiveTimeSpan(span);
         }
     }
 }  // namespace ksp_plugin_adapter

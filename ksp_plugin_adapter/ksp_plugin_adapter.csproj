@@ -96,7 +96,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="boxed.cs" />
-    <Compile Include="burn_editor.cs" />
     <Compile Include="class_marshalers.cs" />
     <Compile Include="compatibility_extensions.cs" />
     <Compile Include="config_node_extensions.cs" />
@@ -106,7 +105,6 @@
     <Compile Include="differential_slider.cs" />
     <Compile Include="disposable.cs" />
     <Compile Include="disposable_marshaller.cs" />
-    <Compile Include="flight_planner.cs" />
     <Compile Include="gui_planner.cs" />
     <Compile Include="gui_settings.cs" />
     <Compile Include="gui_support.cs" />
