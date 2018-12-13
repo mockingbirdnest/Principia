@@ -143,16 +143,6 @@ namespace ksp_plugin_adapter {
             planner_box.children.Clear();
         }
 
-        private void ForceGUIUpdate(DialogGUIBase parent, DialogGUIBase child)
-        {
-            Stack<Transform> stack = new Stack<Transform>(); // some data on hierarchy of the GUI components
-            if (parent.uiItem && parent.uiItem.gameObject)
-            {
-                stack.Push(parent.uiItem.gameObject.transform); // need the reference point of the parent GUI component for position and size
-                child.Create(ref stack, HighLogic.UISkin); // required to force the GUI creation
-            }
-        }
-
         //
         // Updating to another settings page
         //
@@ -160,21 +150,21 @@ namespace ksp_plugin_adapter {
         {
             ClearPlannnerBox();
             planner_box.children.Add(execution_page);
-            ForceGUIUpdate(planner_box, execution_page);
+            GUISupport.ForceGUIUpdate(planner_box, execution_page);
         }
 
         private void OnButtonClick_Planning()
         {
             ClearPlannnerBox();
             planner_box.children.Add(planning_page);
-            ForceGUIUpdate(planner_box, planning_page);
+            GUISupport.ForceGUIUpdate(planner_box, planning_page);
         }
 
         private void OnButtonClick_Settings()
         {
             ClearPlannnerBox();
             planner_box.children.Add(settings_page);
-            ForceGUIUpdate(planner_box, settings_page);
+            GUISupport.ForceGUIUpdate(planner_box, settings_page);
         }
 
         //
@@ -396,7 +386,7 @@ namespace ksp_plugin_adapter {
             List<DialogGUIBase> rows = parent.children;
             maneuver.SetOptionText(magic_maneuver_string);
             rows.Add(maneuver);
-            ForceGUIUpdate(planning_page, maneuver);
+            GUISupport.ForceGUIUpdate(planning_page, maneuver);
         }
 
         private void DeleteLastGUIManeuver(DialogGUIBase parent)
@@ -478,9 +468,9 @@ namespace ksp_plugin_adapter {
         {
             execution_page = new DialogGUIVerticalLayout(true, true, 0, new RectOffset(), TextAnchor.UpperCenter,
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
+                    // Note: haven't figured a way to reliably detect if we can actually show on navball, so always add the UI element
                     new DialogGUIToggle(DataServices.GetShowOnNavball(), show_on_navball_string, (value) => { DataServices.SetShowOnNavball(value); }, show_on_navball_string_length),
-                    new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false) // TODO: not always available in career mode
-                ),
+                    new DialogGUIButton("Warp to Maneuver", OnButtonClick_WarpToManeuver, button_width, button_height, false)),
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUILabel(() => { return EngineIgnitionCutoffString() + FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetEngineDeltaTime())); }, ignition_delta_time_name_string_length + time_value_string_length_single_line),
                     new DialogGUILabel(() => { return total_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetDeltaVelocityOfAllBurns()); }, total_delta_velocity_prefix_string_length + burn_delta_velocity_string_length)
@@ -519,44 +509,6 @@ namespace ksp_plugin_adapter {
                     // box that contains the actual content
                     planner_box
                 });
-        }
-
-        // Returns false and nulls |texture| if the file does not exist.
-        private bool LoadTextureIfExists(out UnityEngine.Texture texture,
-                                         String path) {
-            string full_path =
-                KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
-                "GameData" + Path.DirectorySeparatorChar +
-                "Principia" + Path.DirectorySeparatorChar +
-                "assets" + Path.DirectorySeparatorChar +
-                path;
-            if (File.Exists(full_path)) {
-                var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_5_1
-                bool success = UnityEngine.ImageConversion.LoadImage(
-                    texture2d, File.ReadAllBytes(full_path));
-#elif KSP_VERSION_1_3_1
-                bool success = texture2d.LoadImage(
-                    File.ReadAllBytes(full_path));
-#endif
-                if (!success) {
-                    Log.Fatal("Failed to load texture " + full_path);
-                }
-                texture = texture2d;
-                return true;
-            } else {
-                texture = null;
-                return false;
-            }
-        }
-                
-        private UnityEngine.Texture LoadTextureOrDie(String path) {
-            UnityEngine.Texture texture;
-            bool success = LoadTextureIfExists(out texture, path);
-            if (!success) {
-                Log.Fatal("Missing texture " + path);
-            }
-            return texture;
         }
 
         private void ShowPlannerWindow()
@@ -611,7 +563,7 @@ namespace ksp_plugin_adapter {
         private void InitializeToolbarIcon()
         {
             if (toolbar_button == null) {
-                UnityEngine.Texture toolbar_button_texture = LoadTextureOrDie("toolbar_button.png");
+                UnityEngine.Texture toolbar_button_texture = GUISupport.LoadTextureOrDie("toolbar_button.png");
                 toolbar_button = KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
                       onTrue          : ShowPlannerWindow,
                       onFalse         : HidePlannerWindow,

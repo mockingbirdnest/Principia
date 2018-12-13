@@ -103,13 +103,6 @@ namespace ksp_plugin_adapter {
             child.uiItem.gameObject.DestroyGameObjectImmediate();
         }
 
-        private void ForceGUIUpdate()
-        {
-            Stack<Transform> stack = new Stack<Transform>();
-            stack.Push(settings_box.uiItem.gameObject.transform);
-            settings_box.children[0].Create(ref stack, HighLogic.UISkin);
-        }
-
         //
         // Updating to another settings page
         //
@@ -117,33 +110,7 @@ namespace ksp_plugin_adapter {
         {
             ClearSettingsBox();
             settings_box.children.Add(main_settings_page);
-            ForceGUIUpdate();
-        }
-
-        // In some rare cases, such as when using a scrolling layout
-        // simply re-connecting a previously rendered layout causes
-        // the layout to break. For this case we recreate the whole
-        // layout.
-        private void RecursivelyDeleteLayout(DialogGUIBase layout)
-        {
-            RecursivelyDeleteLayoutChildren(layout);
-
-            layout.uiItem.gameObject.DestroyGameObjectImmediate();
-        }
-
-        private void RecursivelyDeleteLayoutChildren(DialogGUIBase layout)
-        {
-            if (layout.children.Count < 1) {
-                return;
-            }
-            for (int i = layout.children.Count - 1; i >= 0; i--)
-            {
-                RecursivelyDeleteLayoutChildren(layout.children[i]);
-
-                DialogGUIBase child = layout.children[i];
-                layout.children.RemoveAt(i);
-                child.uiItem.gameObject.DestroyGameObjectImmediate();
-            }
+            GUISupport.ForceGUIUpdate(settings_box, settings_box.children[0]);
         }
 
         private void OnButtonClick_PlottingFrameSettings()
@@ -156,19 +123,19 @@ namespace ksp_plugin_adapter {
             // requirement to make the entire list fit the window.
             plotting_frame_page = AddPlottingFrameSelectionUI();
             settings_box.children.Add(plotting_frame_page);
-            ForceGUIUpdate();
+            GUISupport.ForceGUIUpdate(settings_box, settings_box.children[0]);
 
             // Delete old GUI elements
             // This is done afterwards, because for reasons I do not know
             // The new GUI must be fully updated before we can do this
-            RecursivelyDeleteLayout(backup_reference);
+            GUISupport.RecursivelyDeleteLayout(backup_reference);
         }
         
         private void OnButtonClick_LoggingSettings()
         {
             ClearSettingsBox();
             settings_box.children.Add(logging_settings_page);
-            ForceGUIUpdate();
+            GUISupport.ForceGUIUpdate(settings_box, settings_box.children[0]);
         }
         
         //
@@ -386,44 +353,6 @@ namespace ksp_plugin_adapter {
                 });
         }
 
-        // Returns false and nulls |texture| if the file does not exist.
-        private bool LoadTextureIfExists(out UnityEngine.Texture texture,
-                                         String path) {
-            string full_path =
-                KSPUtil.ApplicationRootPath + Path.DirectorySeparatorChar +
-                "GameData" + Path.DirectorySeparatorChar +
-                "Principia" + Path.DirectorySeparatorChar +
-                "assets" + Path.DirectorySeparatorChar +
-                path;
-            if (File.Exists(full_path)) {
-                var texture2d = new UnityEngine.Texture2D(2, 2);
-#if KSP_VERSION_1_5_1
-                bool success = UnityEngine.ImageConversion.LoadImage(
-                    texture2d, File.ReadAllBytes(full_path));
-#elif KSP_VERSION_1_3_1
-                bool success = texture2d.LoadImage(
-                    File.ReadAllBytes(full_path));
-#endif
-                if (!success) {
-                    Log.Fatal("Failed to load texture " + full_path);
-                }
-                texture = texture2d;
-                return true;
-            } else {
-                texture = null;
-                return false;
-            }
-        }
-                
-        private UnityEngine.Texture LoadTextureOrDie(String path) {
-            UnityEngine.Texture texture;
-            bool success = LoadTextureIfExists(out texture, path);
-            if (!success) {
-                Log.Fatal("Missing texture " + path);
-            }
-            return texture;
-        }        
-
         private void ShowSettingsWindow()
         {
             settings_window_visible = true;
@@ -442,7 +371,7 @@ namespace ksp_plugin_adapter {
         private void InitializeToolbarIcon()
         {
             if (toolbar_button == null) {
-                UnityEngine.Texture toolbar_button_texture = LoadTextureOrDie("toolbar_button.png");
+                UnityEngine.Texture toolbar_button_texture = GUISupport.LoadTextureOrDie("toolbar_button.png");
                 toolbar_button = KSP.UI.Screens.ApplicationLauncher.Instance.AddModApplication(
                       onTrue          : ShowSettingsWindow,
                       onFalse         : HideSettingsWindow,

@@ -109,6 +109,7 @@
     <Compile Include="flight_planner.cs" />
     <Compile Include="gui_planner.cs" />
     <Compile Include="gui_settings.cs" />
+    <Compile Include="gui_support.cs" />
     <Compile Include="gl_lines.cs" />
     <Compile Include="interface.generated.cs" />
     <Compile Include="ksp_plugin_adapter.cs" />

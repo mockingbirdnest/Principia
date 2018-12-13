@@ -331,8 +331,10 @@ namespace ksp_plugin_adapter {
         {
             int selected_maneuver;
             NavigationManoeuvre maneuver;
+            // People who see a fixed time of 0, are not likely to ignite engines
+            // and pretending by default to show engine cutoff time can also be confusing
             if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
-                return true; // TODO: what should the default be?
+                return true;
 
             if (plugin.CurrentTime() < maneuver.burn.initial_time)
                 return true;
@@ -384,6 +386,11 @@ namespace ksp_plugin_adapter {
             return false;
         }
 
+        private static bool PossibleToShowOnNavball(Vessel vessel)
+        {
+            return vessel && (vessel.patchedConicSolver != null);
+        }
+
         // TODO: What are the events to update this beast?
         private static void ShowOnNavball()
         {
@@ -400,7 +407,7 @@ namespace ksp_plugin_adapter {
             // even though the flight planner is still available to plan it.
             // TODO(egg): We may want to consider setting the burn vector directly
             // rather than going through the solver.
-            if (vessel.patchedConicSolver != null) {
+            if (PossibleToShowOnNavball(vessel)) {
                 XYZ guidance = plugin.FlightPlanGetGuidance(vesselguid, selected_maneuver);
                 if (!double.IsNaN(guidance.x + guidance.y + guidance.z)) {
                     if (guidance_node == null ||
