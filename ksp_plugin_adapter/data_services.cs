@@ -391,7 +391,6 @@ namespace ksp_plugin_adapter {
             return vessel && (vessel.patchedConicSolver != null);
         }
 
-        // TODO: What are the events to update this beast?
         private static void ShowOnNavball()
         {
             Vessel vessel = GetVessel();
@@ -399,7 +398,10 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre maneuver;
 
             if (!FindUpcomingManeuver(out selected_maneuver, out maneuver))
+            {
+                HideFromNavball();
                 return;
+            }
             string vesselguid = GetVesselGuid();
 
             // In career mode, the patched conic solver may be null.  In that case
@@ -415,14 +417,14 @@ namespace ksp_plugin_adapter {
                         while (vessel.patchedConicSolver.maneuverNodes.Count > 0) {
                             vessel.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
                         }
-                    }
-                    guidance_node = vessel.patchedConicSolver.AddManeuverNode(maneuver.burn.initial_time);
-                } else if (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
-                    while (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
-                        if (vessel.patchedConicSolver.maneuverNodes.First() == guidance_node) {
-                            vessel.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
-                        } else {
-                            vessel.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+                        guidance_node = vessel.patchedConicSolver.AddManeuverNode(maneuver.burn.initial_time);
+                    } else if (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
+                        while (vessel.patchedConicSolver.maneuverNodes.Count > 1) {
+                            if (vessel.patchedConicSolver.maneuverNodes.First() == guidance_node) {
+                                vessel.patchedConicSolver.maneuverNodes.Last().RemoveSelf();
+                            } else {
+                                vessel.patchedConicSolver.maneuverNodes.First().RemoveSelf();
+                            }
                         }
                     }
                 }
@@ -451,6 +453,14 @@ namespace ksp_plugin_adapter {
             if (guidance_node != null) {
                 guidance_node.RemoveSelf();
                 guidance_node = null;
+            }
+        }
+
+        private static void RefreshShowOnNavball()
+        {
+            if (show_on_navball)
+            {
+                ShowOnNavball(); // refresh
             }
         }
 
@@ -488,6 +498,7 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
             last.burn.delta_v.x = value;
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+            RefreshShowOnNavball();
         }
         public static double GetManeuverDeltaVelocityNormal(int index) { return GetFlightPlanManoeuver(index).burn.delta_v.y; }
         public static void SetManeuverDeltaVelocityNormal(double value)
@@ -498,6 +509,7 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
             last.burn.delta_v.y = value;
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+            RefreshShowOnNavball();
         }
         public static double GetManeuverDeltaVelocityBinormal(int index) { return GetFlightPlanManoeuver(index).burn.delta_v.z; }
         public static void SetManeuverDeltaVelocityBinormal(double value)
@@ -508,6 +520,7 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
             last.burn.delta_v.z = value;
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+            RefreshShowOnNavball();
         }
         public static double GetManeuverDeltaTime(int index) { return GetFlightPlanManoeuver(index).burn.initial_time - plugin.CurrentTime(); }
         public static void SetManeuverDeltaTime(double value)
@@ -518,6 +531,7 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
             last.burn.initial_time = value + plugin.CurrentTime();
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+            RefreshShowOnNavball();
         }
         public static double GetManeuverTime(int index) { return GetFlightPlanManoeuver(index).burn.initial_time; }
         public static bool GetManeuverIntertiallyFixed(int index) { return GetFlightPlanManoeuver(index).burn.is_inertially_fixed; }
@@ -529,6 +543,7 @@ namespace ksp_plugin_adapter {
             NavigationManoeuvre last = GetFlightPlanManoeuver(last_index);
             last.burn.is_inertially_fixed = value;
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+            RefreshShowOnNavball();
         }
 
         public static double GetBurnDeltaVelocity(int index)
@@ -553,6 +568,16 @@ namespace ksp_plugin_adapter {
                 burn_mode.Add(BurnMode.Engine);
             }
             burn_mode[index] = value;
+
+            if (index < 0)
+                return;
+            NavigationManoeuvre last = GetFlightPlanManoeuver(index);
+            EnginePerformance engine_performance = GetEnginePerformance(value);
+            last.burn.thrust_in_kilonewtons = engine_performance.thrust_in_kilonewtons;
+            last.burn.specific_impulse_in_seconds_g0 = engine_performance.specific_impulse_in_seconds_g0;
+            plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
+
+            RefreshShowOnNavball();
         }
 
         public static int GetLastManeuverIndex()
@@ -561,6 +586,25 @@ namespace ksp_plugin_adapter {
                 return -1;
             string vesselguid = GetVesselGuid();
             return plugin.FlightPlanNumberOfManoeuvres(vesselguid) - 1;
+        }
+
+        private static EnginePerformance GetEnginePerformance(BurnMode burn_mode)
+        {
+            EnginePerformance engine_performance;
+            switch (burn_mode)
+            {
+                case BurnMode.Engine:
+                    engine_performance = ComputeEngineCharacteristics();
+                    break;
+                case BurnMode.RCS:
+                    engine_performance = ComputeRCSCharacteristics();
+                    break;
+                case BurnMode.Instant:
+                default:
+                    engine_performance = UseTheForceLuke();
+                    break;
+            }
+            return engine_performance;
         }
 
         public static bool AddManeuver()
@@ -588,20 +632,7 @@ namespace ksp_plugin_adapter {
                     initial_time = plugin.CurrentTime() + 60;
                 }
 
-                switch (burn_mode)
-                {
-                    case BurnMode.Engine:
-                        engine_performance = ComputeEngineCharacteristics();
-                        break;
-                    case BurnMode.RCS:
-                        engine_performance = ComputeRCSCharacteristics();
-                        break;
-                    case BurnMode.Instant:
-                    default:
-                        engine_performance = UseTheForceLuke();
-                        break;
-                }
-
+                engine_performance = GetEnginePerformance(burn_mode);
                 Burn candidate_burn = new Burn{
                     thrust_in_kilonewtons = engine_performance.thrust_in_kilonewtons,
                     specific_impulse_in_seconds_g0 = engine_performance.specific_impulse_in_seconds_g0,
@@ -614,6 +645,7 @@ namespace ksp_plugin_adapter {
                 return_value = plugin.FlightPlanAppend(vesselguid, candidate_burn);
                 // This setting is not derived from the maneuver node, so we must store it
                 SetBurnMode(burn_mode);
+                RefreshShowOnNavball();
                 return return_value;
             }
             return false;
@@ -632,6 +664,7 @@ namespace ksp_plugin_adapter {
                 {
                     plugin.FlightPlanDelete(vesselguid);
                 }
+                RefreshShowOnNavball();
             }
         }
 
