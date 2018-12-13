@@ -85,6 +85,14 @@ namespace ksp_plugin_adapter {
             GameEvents.onGameSceneLoadRequested.Add(TerminateToolbarIcon);
         }
 
+        // If we don't remove our event subscriptions we end up getting a growing amount of toolbar icons
+        // Might be because the previous objects haven't gone through the garbage collector yet
+        public void OnDestroy()
+        {
+            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
+            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
+        }
+
         //
         // Generic redrawing code
         //
@@ -459,14 +467,6 @@ namespace ksp_plugin_adapter {
             if (settings_window_visible) {
                 ShowSettingsWindow();
             }
-        }
-
-        // If we don't remove our event subscriptions we end up getting a growing amount of toolbar icons
-        // Might be because the previous objects haven't gone through the garbage collector yet
-        public void OnDestroy()
-        {
-            GameEvents.onGUIApplicationLauncherReady.Remove(InitializeToolbarIcon);
-            GameEvents.onGameSceneLoadRequested.Remove(TerminateToolbarIcon);
         }
     }
 }  // namespace ksp_plugin_adapter
