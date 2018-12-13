@@ -184,9 +184,7 @@ namespace ksp_plugin_adapter {
                 ),
                 // History length
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataServices.GetHistoryLength()) + " s"; })
-                ),
-                new DialogGUIHorizontalLayout(
+                    new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataServices.GetHistoryLength()) + " s"; }),
                     new DialogGUISlider(DataServices.GetHistoryMagnitude, 10f, 30f, true, -1, -1, DataServices.SetHistoryMagnitude)
                 ),
                 // Prediction settings
@@ -194,15 +192,11 @@ namespace ksp_plugin_adapter {
                     new DialogGUILabel("<color=#ffffffff>Prediction settings</color>")
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataServices.GetPredictionTolerance()) + " m"; })
-                ),
-                new DialogGUIHorizontalLayout(
+                    new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataServices.GetPredictionTolerance()) + " m"; }),
                     new DialogGUISlider(DataServices.GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, DataServices.SetPredictionToleranceMagnitude)
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
-                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataServices.GetPredictionStep()); })
-                ),
-                new DialogGUIHorizontalLayout(
+                    new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataServices.GetPredictionStep()); }),
                     new DialogGUISlider(DataServices.GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, DataServices.SetPredictionStepMagnitude)
                 ),
                 // KSP settings
