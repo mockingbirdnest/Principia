@@ -27,6 +27,16 @@ using System.Linq;
 namespace principia {
 namespace ksp_plugin_adapter {
 
+    static class CelestialExtensions {
+        public static bool is_leaf(this CelestialBody celestial) {
+            return celestial.orbitingBodies.Count == 0;
+        }
+
+        public static bool is_root(this CelestialBody celestial) {
+            return celestial.orbit == null;
+        }
+    }
+
     // For the sake of not having to know the GUI complexity when working with the controllers
     // that actually do stuff with data, we isolate the data into a seperate class
     // It's intended to be as simple as possible, so that at any time both the GUI and control
@@ -112,6 +122,8 @@ namespace ksp_plugin_adapter {
             BODY_SURFACE = 6003
         }
         private static FrameType reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
+        private static FrameType last_non_surface_reference_frame = reference_frame;
+        private static Vessel reference_frame_target_override = null;
         // internal is inherited from NavigationFrameParameters
         internal delegate void NavigationFrameParametersCallback(NavigationFrameParameters frame_parameters);
         private static NavigationFrameParametersCallback on_update_celestial_body_or_reference_frame;
@@ -138,10 +150,26 @@ namespace ksp_plugin_adapter {
                 reference_frame == FrameType.BODY_CENTRED_PARENT_DIRECTION)) {
                 reference_frame = FrameType.BODY_CENTRED_NON_ROTATING;
             }
+            if (reference_frame != FrameType.BODY_SURFACE)
+            {
+                last_non_surface_reference_frame = reference_frame;
+            }
             if (prev != reference_frame)
             {
                 UpdatePluginWithCelestialBodyAndReferenceFrame();
             }
+        }
+        public static void SetLastNonSurfaceReferenceFrame()
+        {
+            SetReferenceFrame(last_non_surface_reference_frame);
+        }
+        public static Vessel GetReferenceFrameTargetOverride()
+        {
+            return reference_frame_target_override;
+        }
+        public static void SetReferenceFrameTargetOverride(Vessel value)
+        {
+            reference_frame_target_override = value;
         }
 
         // internal is inherited from NavigationFrameParameters
@@ -175,6 +203,50 @@ namespace ksp_plugin_adapter {
                         secondary_index = selected_celestial_body.referenceBody.flightGlobalsIndex};
                 default:
                     throw Log.Fatal("Unexpected reference_frame " + reference_frame.ToString());
+            }
+        }
+
+        public static String ReferenceFrameShortName() {
+            CelestialBody selected = GetSelectedCelestialBody();
+            if (GetReferenceFrameTargetOverride()) {
+                return "Tgt LVLH@" + selected.name[0];
+            }
+            switch (GetReferenceFrame()) {
+                case FrameType.BODY_CENTRED_NON_ROTATING:
+                    return selected.name[0] + "CI";
+                case FrameType.BARYCENTRIC_ROTATING:
+                    if (selected.is_root()) {
+                        throw Log.Fatal("Naming barycentric rotating frame of root body");
+                    } else {
+                        return selected.referenceBody.name[0] + (selected.name[0] + "B");
+                    }
+                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                    if (selected.is_root()) {
+                        throw Log.Fatal("Naming parent-direction rotating frame of root body");
+                    } else {
+                        return selected.name[0] + "C" + selected.referenceBody.name[0] + "A";
+                    }
+                case FrameType.BODY_SURFACE:
+                    return selected.name[0] + "C" + selected.name[0] + "F";
+                default:
+                    throw Log.Fatal("Unexpected type " + GetReferenceFrame().ToString());
+            }
+        }
+
+        public static CelestialBody[] ReferenceFrameFixedBodies() {
+            CelestialBody selected = GetSelectedCelestialBody();
+            if (GetReferenceFrameTargetOverride()) {
+                return new CelestialBody[]{};
+            }
+            switch (GetReferenceFrame()) {
+                case FrameType.BODY_CENTRED_NON_ROTATING:
+                case FrameType.BODY_CENTRED_PARENT_DIRECTION:
+                case FrameType.BODY_SURFACE:
+                    return new CelestialBody[]{selected};
+                case FrameType.BARYCENTRIC_ROTATING:
+                    return new CelestialBody[]{};
+                default:
+                    throw Log.Fatal("Unexpected frame_type " + GetReferenceFrame().ToString());
             }
         }
 
