@@ -280,7 +280,16 @@ namespace ksp_plugin_adapter {
 
         public static bool GetRecordJournalInProgress() { return record_journal_in_progress; }
         public static bool GetRecordJournalAtNextStartup() { return record_journal_at_next_startup; }
-        public static void SetRecordJournalAtNextStartup(bool value) { record_journal_at_next_startup = value; }
+        public static void SetRecordJournalAtNextStartup(bool value)
+        {
+            record_journal_at_next_startup = value;
+            // We can stop journaling at any time, but for consistency only start it at plugin load
+            if (!record_journal_at_next_startup && record_journal_in_progress)
+            {
+                Log.ActivateRecorder(false);
+                record_journal_in_progress = false;
+            }
+        }
         
         public static void InitializeJournaling()
         {
