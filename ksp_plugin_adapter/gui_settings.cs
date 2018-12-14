@@ -160,7 +160,7 @@ namespace ksp_plugin_adapter {
                 // History length
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel(() => { return "Maximum history length: " + string.Format("{0:E2}", DataServices.GetHistoryLength()) + " s"; }),
-                    new DialogGUISlider(DataServices.GetHistoryMagnitude, 10f, 30f, true, -1, -1, DataServices.SetHistoryMagnitude)
+                    new DialogGUISlider(DataServices.GetHistoryMagnitude, 10f, 30f, false, -1, -1, DataServices.SetHistoryMagnitude)
                 ),
                 // Prediction settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,
@@ -168,11 +168,11 @@ namespace ksp_plugin_adapter {
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel(() => { return "Tolerance: " + string.Format("{0:E2}", DataServices.GetPredictionTolerance()) + " m"; }),
-                    new DialogGUISlider(DataServices.GetPredictionToleranceMagnitude, -3f, 4f, true, -1, -1, DataServices.SetPredictionToleranceMagnitude)
+                    new DialogGUISlider(DataServices.GetPredictionToleranceMagnitude, -3f, 4f, false, -1, -1, DataServices.SetPredictionToleranceMagnitude)
                 ),
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleLeft,
                     new DialogGUILabel(() => { return "Steps: " + string.Format("{0:E2}", DataServices.GetPredictionStep()); }),
-                    new DialogGUISlider(DataServices.GetPredictionStepMagnitude, 2f, 24f, true, -1, -1, DataServices.SetPredictionStepMagnitude)
+                    new DialogGUISlider(DataServices.GetPredictionStepMagnitude, 2f, 24f, false, -1, -1, DataServices.SetPredictionStepMagnitude)
                 ),
                 // KSP settings
                 new DialogGUIHorizontalLayout(TextAnchor.MiddleCenter,

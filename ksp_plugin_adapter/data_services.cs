@@ -80,29 +80,29 @@ namespace ksp_plugin_adapter {
         //
         // History length
         //
-        private static int history_magnitude = 20; // (1 << index) is the history time in seconds, with the exception of 30, which is +infinity
-        public static float GetHistoryMagnitude() { return (float)history_magnitude; }
-        public static void SetHistoryMagnitude(float value) { history_magnitude = (int)value; }
+        private static float history_magnitude = 20; // (1 << index) is the history time in seconds, with the exception of 30, which is +infinity
+        public static float GetHistoryMagnitude() { return history_magnitude; }
+        public static void SetHistoryMagnitude(float value) { history_magnitude = value; }
         public static double GetHistoryLength()
         {
             if (history_magnitude == 30) {
                 return double.PositiveInfinity;
             } else {
-                return (1 << history_magnitude);
+                return Math.Pow(10, history_magnitude);
             }
         }
 
         //
         // Prediction
         //
-        private static int prediction_tolerance_magnitude = -2;
-        private static int prediction_step_magnitude = 8;
-        public static float GetPredictionToleranceMagnitude() { return (float)prediction_tolerance_magnitude; }
-        public static void SetPredictionToleranceMagnitude(float value) { prediction_tolerance_magnitude = (int)value; }
+        private static float prediction_tolerance_magnitude = -2;
+        private static float prediction_step_magnitude = 8;
+        public static float GetPredictionToleranceMagnitude() { return prediction_tolerance_magnitude; }
+        public static void SetPredictionToleranceMagnitude(float value) { prediction_tolerance_magnitude = value; }
         public static double GetPredictionTolerance() { return Math.Pow(10, prediction_tolerance_magnitude); }
-        public static float GetPredictionStepMagnitude() { return (float)prediction_step_magnitude; }
-        public static void SetPredictionStepMagnitude(float value) { prediction_step_magnitude = (int)value; }
-        public static int GetPredictionStep() { return (1 << prediction_step_magnitude); }
+        public static float GetPredictionStepMagnitude() { return prediction_step_magnitude; }
+        public static void SetPredictionStepMagnitude(float value) { prediction_step_magnitude = value; }
+        public static double GetPredictionStep() { return Math.Pow(10, prediction_step_magnitude); }
 
         //
         // KSP settings
