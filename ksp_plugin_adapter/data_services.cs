@@ -88,7 +88,7 @@ namespace ksp_plugin_adapter {
             if (history_magnitude == 30) {
                 return double.PositiveInfinity;
             } else {
-                return Math.Pow(10, history_magnitude);
+                return Math.Pow(2, history_magnitude);
             }
         }
 
@@ -102,7 +102,7 @@ namespace ksp_plugin_adapter {
         public static double GetPredictionTolerance() { return Math.Pow(10, prediction_tolerance_magnitude); }
         public static float GetPredictionStepMagnitude() { return prediction_step_magnitude; }
         public static void SetPredictionStepMagnitude(float value) { prediction_step_magnitude = value; }
-        public static double GetPredictionStep() { return Math.Pow(10, prediction_step_magnitude); }
+        public static double GetPredictionStep() { return Math.Pow(2, prediction_step_magnitude); }
 
         //
         // KSP settings
