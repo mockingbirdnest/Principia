@@ -554,7 +554,8 @@ namespace ksp_plugin_adapter {
         //
         public static double DEFAULT_MANEUVER_DELTA_TIME = 60.0;
         public enum BurnMode {Engine, RCS, Instant};
-        private static List<BurnMode> burn_mode = new List<BurnMode>();
+        private static List<BurnMode> desired_burn_mode = new List<BurnMode>();
+        private static List<BurnMode> actual_burn_mode = new List<BurnMode>();
 
         private static NavigationManoeuvre GetFlightPlanManoeuver(int index)
         {
@@ -631,24 +632,39 @@ namespace ksp_plugin_adapter {
         }
         public static double GetBurnTime(int index) { return GetFlightPlanManoeuver(index).duration; }
 
+        public static string GetBurnModeString(int index)
+        {
+            if (actual_burn_mode[index] == desired_burn_mode[index])
+            {
+                return actual_burn_mode[index].ToString();
+            }
+            else
+            {
+                return string.Format("<color=#ff0000ff>{0}</color>", actual_burn_mode[index].ToString());
+            }
+        }
         public static BurnMode GetBurnMode(int index)
         {
-            if (index < burn_mode.Count)
-                return burn_mode[index];
+            if (index < desired_burn_mode.Count)
+                return desired_burn_mode[index];
             return BurnMode.Engine;
         }
         public static void SetBurnMode(BurnMode value)
         {
             int index = GetLastManeuverIndex();
-            while (index >= burn_mode.Count) {
-                burn_mode.Add(BurnMode.Engine);
+            while (index >= actual_burn_mode.Count) {
+                actual_burn_mode.Add(BurnMode.Engine);
             }
-            burn_mode[index] = value;
+            while (index >= desired_burn_mode.Count) {
+                desired_burn_mode.Add(BurnMode.Engine);
+            }
+            desired_burn_mode[index] = value;
 
             if (index < 0)
                 return;
             NavigationManoeuvre last = GetFlightPlanManoeuver(index);
             EnginePerformance engine_performance = GetEnginePerformance(value);
+            actual_burn_mode[index] = engine_performance.burn_mode;
             last.burn.thrust_in_kilonewtons = engine_performance.thrust_in_kilonewtons;
             last.burn.specific_impulse_in_seconds_g0 = engine_performance.specific_impulse_in_seconds_g0;
             plugin.FlightPlanReplaceLast(GetVesselGuid(), last.burn);
@@ -662,25 +678,6 @@ namespace ksp_plugin_adapter {
                 return -1;
             string vesselguid = GetVesselGuid();
             return plugin.FlightPlanNumberOfManoeuvres(vesselguid) - 1;
-        }
-
-        private static EnginePerformance GetEnginePerformance(BurnMode burn_mode)
-        {
-            EnginePerformance engine_performance;
-            switch (burn_mode)
-            {
-                case BurnMode.Engine:
-                    engine_performance = ComputeEngineCharacteristics();
-                    break;
-                case BurnMode.RCS:
-                    engine_performance = ComputeRCSCharacteristics();
-                    break;
-                case BurnMode.Instant:
-                default:
-                    engine_performance = UseTheForceLuke();
-                    break;
-            }
-            return engine_performance;
         }
 
         public static bool AddManeuver()
@@ -752,12 +749,32 @@ namespace ksp_plugin_adapter {
         {
             public double thrust_in_kilonewtons;
             public double specific_impulse_in_seconds_g0;
+            public BurnMode burn_mode;
         }
 
-        // TODO: if how should we inform users of fallback scenarios?
+        private static EnginePerformance GetEnginePerformance(BurnMode burn_mode)
+        {
+            EnginePerformance engine_performance;
+            switch (burn_mode)
+            {
+                case BurnMode.Engine:
+                    engine_performance = ComputeEngineCharacteristics();
+                    break;
+                case BurnMode.RCS:
+                    engine_performance = ComputeRCSCharacteristics();
+                    break;
+                case BurnMode.Instant:
+                default:
+                    engine_performance = UseTheForceLuke();
+                    break;
+            }
+            return engine_performance;
+        }
+
         private static EnginePerformance ComputeEngineCharacteristics() {
             EnginePerformance engine_performance = new EnginePerformance();
             Vessel vessel = GetVessel();
+            engine_performance.burn_mode = BurnMode.Engine;
 
             ModuleEngines[] active_engines =
                 (from part in vessel.parts
@@ -794,6 +811,7 @@ namespace ksp_plugin_adapter {
         private static EnginePerformance ComputeRCSCharacteristics() {
             EnginePerformance engine_performance = new EnginePerformance();
             Vessel vessel = GetVessel();
+            engine_performance.burn_mode = BurnMode.RCS;
 
             ModuleRCS[] active_rcs =
                 (from part in vessel.parts
@@ -833,6 +851,7 @@ namespace ksp_plugin_adapter {
         private static EnginePerformance UseTheForceLuke() {
             EnginePerformance engine_performance = new EnginePerformance();
             Vessel vessel = GetVessel();
+            engine_performance.burn_mode = BurnMode.Instant;
 
             // The burn can last at most (9.80665 / scale) s.
             const double scale = 1;

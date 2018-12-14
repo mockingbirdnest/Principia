@@ -314,7 +314,7 @@ namespace ksp_plugin_adapter {
                     // Even more detailed information about this, including taking into account burn times only belong in the execution tab of the planner
                     new DialogGUILabel(() => { return GUISupport.FormatTimeSpan(TimeSpan.FromSeconds(DataServices.GetManeuverDeltaTime(index))); }, time_value_string_length_single_line),
                     new DialogGUILabel(DataServices.GetManeuverIntertiallyFixed(index) ? inertial_frame_string : frenet_frame_string, inertial_or_frenet_frame_string_length),
-                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnMode(index).ToString(); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnModeString(index); }, burn_delta_velocity_prefix_string_length + burn_mode_string_length),
                     new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, DataServices.GetBurnTime(index)); }, burn_time_prefix_string_length + burn_time_string_length)
                 ),
                 new DialogGUISpace(5.0f));
@@ -331,7 +331,7 @@ namespace ksp_plugin_adapter {
                 new DialogGUIHorizontalLayout(true, false, 0, new RectOffset(), TextAnchor.MiddleCenter,
                     new DialogGUIToggle(DataServices.GetManeuverIntertiallyFixed(index), inertially_fixed_burn_frame_string, (value) => { DataServices.SetManeuverIntertiallyFixed(value); }, inertially_fixed_burn_frame_string_length),
                     new DialogGUISlider(GetBurnMode, 0f, 2f, true, -1, -1, SetBurnMode),
-                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnMode(index).ToString(); }, burn_mode_prefix_string_length + burn_mode_string_length),
+                    new DialogGUILabel(() => { return burn_mode_prefix_string + DataServices.GetBurnModeString(index); }, burn_mode_prefix_string_length + burn_mode_string_length),
                     new DialogGUILabel(() => { return burn_delta_velocity_prefix_string + string.Format(burn_delta_velocity_string, DataServices.GetBurnDeltaVelocity(index)); }, burn_delta_velocity_prefix_string_length + burn_delta_velocity_string_length),
                     new DialogGUILabel(() => { return burn_time_prefix_string + string.Format(burn_time_string, DataServices.GetBurnTime(index)); }, burn_time_prefix_string_length + burn_time_string_length)
                 )
