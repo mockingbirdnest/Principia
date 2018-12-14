@@ -80,6 +80,7 @@ namespace ksp_plugin_adapter {
         //
         // History length
         //
+        [KSPField(isPersistant = true)]
         private static float history_magnitude = 20; // (1 << index) is the history time in seconds, with the exception of 30, which is +infinity
         public static float GetHistoryMagnitude() { return history_magnitude; }
         public static void SetHistoryMagnitude(float value) { history_magnitude = value; }
@@ -95,7 +96,9 @@ namespace ksp_plugin_adapter {
         //
         // Prediction
         //
+        [KSPField(isPersistant = true)]
         private static float prediction_tolerance_magnitude = -2;
+        [KSPField(isPersistant = true)]
         private static float prediction_step_magnitude = 8;
         public static float GetPredictionToleranceMagnitude() { return prediction_tolerance_magnitude; }
         public static void SetPredictionToleranceMagnitude(float value) { prediction_tolerance_magnitude = value; }
@@ -263,11 +266,16 @@ namespace ksp_plugin_adapter {
         //
         // Logging settings
         //
+        [KSPField(isPersistant = true)]
         private static bool record_journal_at_next_startup = false;
         private static bool record_journal_in_progress = false;
+        [KSPField(isPersistant = true)]
         private static int verbose_level = 0;
+        [KSPField(isPersistant = true)]
         private static int supressed_logging_level = 0;
+        [KSPField(isPersistant = true)]
         private static int stderr_logging_level = 2;
+        [KSPField(isPersistant = true)]
         private static int flush_logging_level = -1;
 
         public static bool GetRecordJournalInProgress() { return record_journal_in_progress; }
@@ -311,8 +319,11 @@ namespace ksp_plugin_adapter {
         public const int PLAN_MAX_STEPS_PER_SEGMENT_DEFAULT = 1000;
         public const double PLAN_TOLERANCE_DEFAULT = 1.0;
 
+        [KSPField(isPersistant = true)]
         private static double plan_time_length = PLAN_TIME_LENGTH_DEFAULT;
+        [KSPField(isPersistant = true)]
         private static int plan_max_steps_per_segment = PLAN_MAX_STEPS_PER_SEGMENT_DEFAULT;
+        [KSPField(isPersistant = true)]
         private static double plan_tolerance = PLAN_TOLERANCE_DEFAULT;
 
         public static double GetPlanTimeLength() { return plan_time_length; }
@@ -387,6 +398,7 @@ namespace ksp_plugin_adapter {
         //
         // Planner: execution
         //
+        [KSPField(isPersistant = true)]
         private static bool show_on_navball = false;
 
         public static bool GetShowOnNavball() { return show_on_navball; }
