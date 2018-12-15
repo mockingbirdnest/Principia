@@ -18,7 +18,8 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   // |input.size|.  The range
   // [&output.data[input.size << 1], &output.data[output.size][ is left
   // unmodified.
-  void Encode(Array<std::uint8_t const> input, Array<char> output) override;
+  void Encode(Array<std::uint8_t const> input,
+              Array<char> output) override;
 
   // Same as above but the storage is allocated by the callee.  If
   // |null_terminated| is true a null byte is appended to the encoded form.
@@ -33,7 +34,8 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   // in particular, |input.data == output.data| is valid.  |output.size| must be
   // at least |input.size / 2|.  The range
   // [&output[input.size / 2], &output[output.size][ is left unmodified.
-  void Decode(Array<char const> input, Array<std::uint8_t> output) override;
+  void Decode(Array<char const> input,
+              Array<std::uint8_t> output) override;
 
   // Same as above but the storage is allocated by the callee.
   UniqueArray<std::uint8_t> Decode(Array<char const> input) override;

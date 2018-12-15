@@ -22,7 +22,6 @@
 
 namespace principia {
 namespace base {
-
 namespace internal_base32768 {
 
 // Ceiling log2 of n.  8 -> 3, 7 -> 2.
@@ -202,8 +201,9 @@ constexpr std::int64_t bytes_per_code_point =
 static_assert(bytes_per_code_point == 3,
               "End of input padding below won't be correct");
 
-void Base32768Encode(Array<std::uint8_t const> input,
-                     Array<char16_t> output) {
+template<bool null_terminated>
+void Base32768Encoder<null_terminated>::Encode(Array<std::uint8_t const> input,
+                                               Array<char16_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK(input.size == 0 || output.data != nullptr);
 
@@ -253,26 +253,38 @@ void Base32768Encode(Array<std::uint8_t const> input,
     input_bit_index %= bits_per_byte;
     ++output.data;
   }
-}
-UniqueArray<char16_t> Base32768Encode(Array<std::uint8_t const> input,
-                                      bool const null_terminated) {
-  base::UniqueArray<char16_t> output(Base32768EncodedLength(input) +
-                                     (null_terminated ? 1 : 0));
-  if (output.size > 0) {
-    base::Base32768Encode(input, output.get());
-  }
+
   if (null_terminated) {
-    output.data[output.size - 1] = 0;
+    output.data[0] = 0;
+  }
+}
+
+template<bool null_terminated>
+UniqueArray<char16_t> Base32768Encoder<null_terminated>::Encode(
+    Array<std::uint8_t const> input) {
+  UniqueArray<char16_t> output(EncodedLength(input));
+  if (output.size > 0) {
+    Encode(input, output.get());
   }
   return output;
 }
 
-std::int64_t Base32768EncodedLength(Array<std::uint8_t const> const input) {
-  return (input.size * bits_per_byte + bits_per_code_point - 1) /
-         bits_per_code_point;
+template<bool null_terminated>
+std::int64_t Base32768Encoder<null_terminated>::EncodedLength(
+    Array<std::uint8_t const> const input) {
+  std::int64_t const nonterminated_length =
+      (input.size * bits_per_byte + bits_per_code_point - 1) /
+      bits_per_code_point;
+  if constexpr (null_terminated) {
+    return nonterminated_length + 1;
+  } else {
+    return nonterminated_length;
+  }
 }
 
-void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
+template<bool null_terminated>
+void Base32768Encoder<null_terminated>::Decode(Array<char16_t const> input,
+                                               Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK(input.size == 0 || output.data != nullptr);
 
@@ -315,15 +327,19 @@ void Base32768Decode(Array<char16_t const> input, Array<std::uint8_t> output) {
   }
 }
 
-UniqueArray<std::uint8_t> Base32768Decode(Array<char16_t const> input) {
-  UniqueArray<std::uint8_t> output(Base32768DecodedLength(input));
+template<bool null_terminated>
+UniqueArray<std::uint8_t> Base32768Encoder<null_terminated>::Decode(
+    Array<char16_t const> input) {
+  UniqueArray<std::uint8_t> output(DecodedLength(input));
   if (output.size > 0) {
-    Base32768Decode(input, output.get());
+    Decode(input, output.get());
   }
   return output;
 }
 
-std::int64_t Base32768DecodedLength(Array<char16_t const> const input) {
+template<bool null_terminated>
+std::int64_t Base32768Encoder<null_terminated>::DecodedLength(
+    Array<char16_t const> const input) {
   // In order to decide how many bytes the input will decode to, we need to
   // figure out if the last code point encodes 7 bits or 15 bits.
   std::int64_t encoded_bits;
