@@ -15,19 +15,19 @@ namespace internal_base32768 {
 template<bool null_terminated>
 class Base32768Encoder : public Encoder<char16_t, null_terminated> {
  public:
-  inline void Encode(Array<std::uint8_t const> input,
-                     Array<char16_t> output) override;
+  void Encode(Array<std::uint8_t const> input,
+              Array<char16_t> output) override;
 
-  inline UniqueArray<char16_t> Encode(Array<std::uint8_t const> input) override;
+  UniqueArray<char16_t> Encode(Array<std::uint8_t const> input) override;
 
-  inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
+  std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
-  inline void Decode(Array<char16_t const> input,
-                     Array<std::uint8_t> output) override;
+  void Decode(Array<char16_t const> input,
+              Array<std::uint8_t> output) override;
 
-  inline UniqueArray<std::uint8_t> Decode(Array<char16_t const> input) override;
+  UniqueArray<std::uint8_t> Decode(Array<char16_t const> input) override;
 
-  inline std::int64_t DecodedLength(Array<char16_t const> input) override;
+  std::int64_t DecodedLength(Array<char16_t const> input) override;
 };
 
 }  // namespace internal_base32768

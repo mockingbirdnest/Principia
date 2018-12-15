@@ -14,28 +14,19 @@ namespace internal_base64 {
 template<bool null_terminated>
 class Base64Encoder : public Encoder<char, null_terminated> {
  public:
-  // Encodes |input| into |output|, which must be large enough to hold the
-  // encoded form.
-  inline void Encode(Array<std::uint8_t const> input,
-                     Array<char> output) override;
+  void Encode(Array<std::uint8_t const> input,
+              Array<char> output) override;
 
-  // Same as above but the storage is allocated by the callee.
-  inline UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
+  UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
 
-  // Length of the encoded form, in char16_t.
-  inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
+  std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
-  // Decodes |input| into |output|, which must be large enough to hold the
-  // decoded form.
-  inline void Decode(Array<char const> input,
-                     Array<std::uint8_t> output) override;
+  void Decode(Array<char const> input,
+              Array<std::uint8_t> output) override;
 
-  // Same as above but the storage is allocated by the callee.  The input may or
-  // may not be null-terminated.
-  inline UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
+  UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
 
-  // Length of the decoded form, in uint8_t.
-  inline std::int64_t DecodedLength(Array<char const> input) override;
+  std::int64_t DecodedLength(Array<char const> input) override;
 };
 
 }  // namespace internal_base64

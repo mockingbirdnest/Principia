@@ -22,9 +22,10 @@ void principia::base::internal_base64::Base64Encoder<null_terminated>::Encode(
                                     input.size);
   std::string output_string;
   absl::WebSafeBase64Escape(input_view, &output_string);
-  std::memcpy(output.data, output_string.c_str(), output_string.size());
   if constexpr (null_terminated) {
-    output.data[output_size.size()] = 0;
+    std::memcpy(output.data, output_string.c_str(), output_string.size() + 1);
+  } else {
+    std::memcpy(output.data, output_string.c_str(), output_string.size());
   }
 }
 
