@@ -21,11 +21,8 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   inline void Encode(Array<std::uint8_t const> input,
                      Array<char> output) override;
 
-  // Same as above but the storage is allocated by the callee.  If
-  // |null_terminated| is true a null byte is appended to the encoded form.
   inline UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
 
-  // Length of the encoded form, in char.
   inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
   // Invalid digits are read as 0.  If |input.size| is odd, the last character
@@ -37,10 +34,8 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   inline void Decode(Array<char const> input,
                      Array<std::uint8_t> output) override;
 
-  // Same as above but the storage is allocated by the callee.
   inline UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
 
-  // Length of the decoded form, in uint8_t.
   inline std::int64_t DecodedLength(Array<char const> input) override;
 };
 
