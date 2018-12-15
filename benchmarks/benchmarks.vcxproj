@@ -12,13 +12,12 @@
     <ClCompile Include="..\ksp_plugin\planetarium.cpp" />
     <ClCompile Include="..\numerics\cbrt.cpp" />
     <ClCompile Include="..\numerics\fast_sin_cos_2π.cpp" />
-    <ClCompile Include="base32768.cpp" />
     <ClCompile Include="dynamic_frame.cpp" />
     <ClCompile Include="embedded_explicit_runge_kutta_nyström_integrator.cpp" />
+    <ClCompile Include="encoder.cpp" />
     <ClCompile Include="ephemeris.cpp" />
     <ClCompile Include="fast_sin_cos_2π_benchmark.cpp" />
     <ClCompile Include="geopotential.cpp" />
-    <ClCompile Include="hexadecimal.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="newhall.cpp" />
     <ClCompile Include="perspective.cpp" />

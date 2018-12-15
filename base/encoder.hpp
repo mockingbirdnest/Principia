@@ -12,9 +12,11 @@ namespace internal_encoder {
 // Encodes/decodes an array of bytes to/from an array of Char.  If
 // |null_terminated| is true a null Char is appended to the encoded form and
 // taken into account in the encoded length.
-template<typename Char, bool null_terminated>
+template<typename Char_, bool null_terminated>
 class Encoder {
  public:
+  using Char = Char_;
+
   virtual ~Encoder() = default;
 
   // Encodes |input| into |output|, which must be large enough to hold the
