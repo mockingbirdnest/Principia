@@ -5,46 +5,44 @@
 
 #include "base/encoder.hpp"
 
-// This file implements the base 32768 encoding defined by
-// https://github.com/qntm/base32768.  This is a complete reimplementation in
-// C++.
-
 namespace principia {
 namespace base {
-namespace internal_base32768 {
+namespace internal_base64 {
 
+// This function implements RFC 4648 section 5 (base64url).  The encoded text is
+// *not* padded.
 template<bool null_terminated>
-class Base32768Encoder : public Encoder<char16_t, null_terminated> {
+class Base64Encoder : public Encoder<char, null_terminated> {
  public:
   // Encodes |input| into |output|, which must be large enough to hold the
   // encoded form.
   inline void Encode(Array<std::uint8_t const> input,
-                     Array<char16_t> output) override;
+                     Array<char> output) override;
 
   // Same as above but the storage is allocated by the callee.
-  inline UniqueArray<char16_t> Encode(Array<std::uint8_t const> input) override;
+  inline UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
 
   // Length of the encoded form, in char16_t.
   inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
   // Decodes |input| into |output|, which must be large enough to hold the
   // decoded form.
-  inline void Decode(Array<char16_t const> input,
+  inline void Decode(Array<char const> input,
                      Array<std::uint8_t> output) override;
 
   // Same as above but the storage is allocated by the callee.  The input may or
   // may not be null-terminated.
-  inline UniqueArray<std::uint8_t> Decode(Array<char16_t const> input) override;
+  inline UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
 
   // Length of the decoded form, in uint8_t.
-  inline std::int64_t DecodedLength(Array<char16_t const> input) override;
+  inline std::int64_t DecodedLength(Array<char const> input) override;
 };
 
-}  // namespace internal_base32768
+}  // namespace internal_base64
 
-using internal_base32768::Base32768Encoder;
+using internal_base64::Base64Encoder;
 
 }  // namespace base
 }  // namespace principia
 
-#include "base/base32768_body.hpp"
+#include "base/base64_body.hpp"

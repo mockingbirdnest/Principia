@@ -24,6 +24,8 @@
     <ClInclude Include="array_body.hpp" />
     <ClInclude Include="base32768.hpp" />
     <ClInclude Include="base32768_body.hpp" />
+    <ClInclude Include="base64.hpp" />
+    <ClInclude Include="base64_body.hpp" />
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />

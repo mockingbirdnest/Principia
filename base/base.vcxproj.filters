@@ -158,6 +158,12 @@
     <ClInclude Include="encoder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="base64.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="base64_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
