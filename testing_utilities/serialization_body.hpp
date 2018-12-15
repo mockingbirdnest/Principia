@@ -95,8 +95,8 @@ void WriteToBase32768File(std::filesystem::path const& filename,
   std::fstream file = std::fstream(filename,
                                    std::ios::binary | std::ios::out);
   CHECK(file.good()) << filename;
-  auto const base32768 =
-      base::Base32768Encode(serialized, /*null_terminated=*/false);
+  base::Base32768Encoder</*null_terminated=*/false> encoder;
+  auto const base32768 = encoder.Encode(serialized);
 
   PrintUtf16ToFile(u'\uFEFF', file);
   int index = 0;

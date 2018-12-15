@@ -34,24 +34,25 @@ class HexadecimalTest : public testing::Test {
   Array<char const> const lowercase_digits_;
   Array<char const> const uppercase_digits_;
   UniqueArray<char> const digits_;
+  HexadecimalEncoder</*null_terminated=*/false> encoder_;
 };
 
 using HexadecimalDeathTest = HexadecimalTest;
 
 TEST_F(HexadecimalTest, EncodeAndDecode) {
-  HexadecimalEncode(bytes_, digits_.get());
+  encoder_.Encode(bytes_, digits_.get());
   EXPECT_EQ(uppercase_digits_, digits_);
-  EXPECT_EQ(uppercase_digits_.size, HexadecimalEncodedLength(bytes_));
+  EXPECT_EQ(uppercase_digits_.size, encoder_.EncodedLength(bytes_));
   UniqueArray<std::uint8_t> bytes(byte_count);
-  HexadecimalDecode(digits_.get(), bytes.get());
+  encoder_.Decode(digits_.get(), bytes.get());
   EXPECT_EQ(bytes_, bytes.get());
-  EXPECT_EQ(bytes_.size, HexadecimalDecodedLength(digits_.get()));
+  EXPECT_EQ(bytes_.size, encoder_.DecodedLength(digits_.get()));
 }
 
 TEST_F(HexadecimalTest, UniqueEncodeAndDecode) {
-  auto const digits = HexadecimalEncode(bytes_, /*null_terminated=*/false);
+  auto const digits = encoder_.Encode(bytes_);
   EXPECT_EQ(uppercase_digits_, digits);
-  auto const bytes = HexadecimalDecode(digits.get());
+  auto const bytes = encoder_.Decode(digits.get());
   EXPECT_EQ(bytes_, bytes);
 }
 
@@ -59,19 +60,19 @@ TEST_F(HexadecimalTest, InPlace) {
   auto const buffer = std::make_unique<std::uint8_t[]>(digit_count);
   auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
   std::memcpy(&buffer[1], bytes_.data, byte_count);
-  HexadecimalEncode({&buffer[1], byte_count},
-                    {&buffer_characters[0], digit_count});
+  encoder_.Encode({&buffer[1], byte_count},
+                  {&buffer_characters[0], digit_count});
   EXPECT_EQ(uppercase_digits_, Array<char>(&buffer_characters[0], digit_count));
   std::memcpy(&buffer[0], bytes_.data, byte_count);
-  HexadecimalEncode({&buffer[0], byte_count},
-                    {&buffer_characters[0], digit_count});
+  encoder_.Encode({&buffer[0], byte_count},
+                  {&buffer_characters[0], digit_count});
   EXPECT_EQ(uppercase_digits_, Array<std::uint8_t>(&buffer[0], digit_count));
-  HexadecimalDecode({&buffer_characters[0], digit_count},
-                    {&buffer[1], byte_count});
+  encoder_.Decode({&buffer_characters[0], digit_count},
+                  {&buffer[1], byte_count});
   EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[1], byte_count));
   std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
-  HexadecimalDecode({&buffer_characters[0], digit_count},
-                    {&buffer[0], byte_count});
+  encoder_.Decode({&buffer_characters[0], digit_count},
+                  {&buffer[0], byte_count});
   EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[0], byte_count));
 }
 
@@ -79,7 +80,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   std::int64_t const digits_size = digit_count + 42;
   UniqueArray<char> const digits(digits_size);
   std::memset(digits.data.get(), 'X', digits_size);
-  HexadecimalEncode(bytes_, digits.get());
+  encoder_.Encode(bytes_, digits.get());
   EXPECT_EQ(uppercase_digits_, Array<char>(digits.data.get(), digit_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&digits.data[digit_count],
                                         &digits.data[digits_size]),
@@ -87,7 +88,7 @@ TEST_F(HexadecimalTest, LargeOutput) {
   std::int64_t const bytes_size = byte_count + 42;
   UniqueArray<std::uint8_t> bytes(bytes_size);
   std::memset(bytes.data.get(), 'Y', bytes_size);
-  HexadecimalDecode(uppercase_digits_, bytes.get());
+  encoder_.Decode(uppercase_digits_, bytes.get());
   EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes.data.get(), byte_count));
   EXPECT_THAT(std::vector<std::uint8_t>(&bytes.data[byte_count],
                                         &bytes.data[bytes_size]),
@@ -99,16 +100,16 @@ TEST_F(HexadecimalTest, Adjacent) {
       std::make_unique<std::uint8_t[]>(digit_count + byte_count);
   auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
   std::memcpy(&buffer[0], bytes_.data, byte_count);
-  HexadecimalEncode({&buffer[0], byte_count},
-                    {&buffer_characters[byte_count], digit_count});
+  encoder_.Encode({&buffer[0], byte_count},
+                  {&buffer_characters[byte_count], digit_count});
   EXPECT_EQ(uppercase_digits_,
             Array<std::uint8_t>(&buffer[byte_count], digit_count));
   std::memcpy(&buffer[0], uppercase_digits_.data, digit_count);
-  HexadecimalDecode({&buffer_characters[0], digit_count},
-                    {&buffer[digit_count], byte_count});
+  encoder_.Decode({&buffer_characters[0], digit_count},
+                  {&buffer[digit_count], byte_count});
   EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[digit_count], byte_count));
-  HexadecimalDecode({&buffer_characters[0], digit_count + 1},
-                    {&buffer[digit_count], byte_count});
+  encoder_.Decode({&buffer_characters[0], digit_count + 1},
+                  {&buffer[digit_count], byte_count});
   EXPECT_EQ(bytes_, Array<std::uint8_t>(&buffer[digit_count], byte_count));
 }
 
@@ -117,20 +118,20 @@ TEST_F(HexadecimalDeathTest, Overlap) {
       std::make_unique<std::uint8_t[]>(digit_count + byte_count - 1);
   auto const buffer_characters = reinterpret_cast<char*>(buffer.get());
   EXPECT_DEATH({
-    HexadecimalEncode({&buffer[digit_count - 1], byte_count},
-                      {&buffer_characters[0], digit_count});
+    encoder_.Encode({&buffer[digit_count - 1], byte_count},
+                    {&buffer_characters[0], digit_count});
   }, "bad overlap");
   EXPECT_DEATH({
-    HexadecimalDecode({&buffer_characters[0], digit_count},
-                      {&buffer[digit_count - 1], byte_count});
+    encoder_.Decode({&buffer_characters[0], digit_count},
+                    {&buffer[digit_count - 1], byte_count});
   }, "bad overlap");
   EXPECT_DEATH({
-    HexadecimalEncode({&buffer[2], byte_count},
-                      {&buffer_characters[0], digit_count});
+    encoder_.Encode({&buffer[2], byte_count},
+                    {&buffer_characters[0], digit_count});
   }, "bad overlap");
   EXPECT_DEATH({
-    HexadecimalDecode({&buffer_characters[0], digit_count},
-                      {&buffer[2], byte_count});
+    encoder_.Decode({&buffer_characters[0], digit_count},
+                    {&buffer[2], byte_count});
   }, "bad overlap");
 }
 
@@ -138,29 +139,29 @@ TEST_F(HexadecimalDeathTest, Size) {
   std::vector<std::uint8_t> bytes(byte_count);
   std::vector<char> digits(digit_count);
   EXPECT_DEATH({
-    HexadecimalEncode(bytes, {digits.data(), digits.size() - 1});
+    encoder_.Encode(bytes, {digits.data(), digits.size() - 1});
   }, "too small");
   EXPECT_DEATH({
-    HexadecimalDecode(digits, {bytes.data(), bytes.size() - 1});
+    encoder_.Decode(digits, {bytes.data(), bytes.size() - 1});
   }, "too small");
 }
 
 TEST_F(HexadecimalTest, CaseInsensitive) {
   std::vector<std::uint8_t> bytes(byte_count);
-  HexadecimalDecode(lowercase_digits_, bytes);
+  encoder_.Decode(lowercase_digits_, bytes);
   EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes));
-  HexadecimalDecode(uppercase_digits_, bytes);
+  encoder_.Decode(uppercase_digits_, bytes);
   EXPECT_EQ(bytes_, Array<std::uint8_t>(bytes));
 }
 
 TEST_F(HexadecimalTest, Invalid) {
   std::vector<std::uint8_t> bytes(1);
   std::vector<char> digits = {'a', 'b', 'c'};
-  HexadecimalDecode(digits, bytes);
+  encoder_.Decode(digits, bytes);
   EXPECT_THAT(bytes, ElementsAre('\xAB'));
   digits = {'0', 'a', 'g', 'c', 'd', 'e'};
   bytes.resize(3);
-  HexadecimalDecode(digits, bytes);
+  encoder_.Decode(digits, bytes);
   EXPECT_THAT(bytes, ElementsAre('\x0A', '\x0C', '\xDE'));
 }
 
