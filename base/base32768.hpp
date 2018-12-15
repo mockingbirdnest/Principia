@@ -5,38 +5,28 @@
 
 #include "base/encoder.hpp"
 
-// This file implements the base 32768 encoding defined by
-// https://github.com/qntm/base32768.  This is a complete reimplementation in
-// C++.
-
 namespace principia {
 namespace base {
 namespace internal_base32768 {
 
+// An encoder the base 32768 encoding defined by
+// https://github.com/qntm/base32768.  This is a complete reimplementation in
+// C++.
 template<bool null_terminated>
 class Base32768Encoder : public Encoder<char16_t, null_terminated> {
  public:
-  // Encodes |input| into |output|, which must be large enough to hold the
-  // encoded form.
   inline void Encode(Array<std::uint8_t const> input,
                      Array<char16_t> output) override;
 
-  // Same as above but the storage is allocated by the callee.
   inline UniqueArray<char16_t> Encode(Array<std::uint8_t const> input) override;
 
-  // Length of the encoded form, in char16_t.
   inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
-  // Decodes |input| into |output|, which must be large enough to hold the
-  // decoded form.
   inline void Decode(Array<char16_t const> input,
                      Array<std::uint8_t> output) override;
 
-  // Same as above but the storage is allocated by the callee.  The input may or
-  // may not be null-terminated.
   inline UniqueArray<std::uint8_t> Decode(Array<char16_t const> input) override;
 
-  // Length of the decoded form, in uint8_t.
   inline std::int64_t DecodedLength(Array<char16_t const> input) override;
 };
 
