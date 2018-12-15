@@ -3,6 +3,8 @@
 
 #include "base/base64.hpp"
 
+#include <string>
+
 #include "absl/strings/escaping.h"
 
 namespace principia {
