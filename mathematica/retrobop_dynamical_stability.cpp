@@ -32,7 +32,6 @@ using base::Bundle;
 using base::not_null;
 using base::Status;
 using base::GetLine;
-using base::HexadecimalDecode;
 using base::OFStream;
 using base::UniqueArray;
 using geometry::BarycentreCalculator;

@@ -14,7 +14,7 @@
 namespace principia {
 
 using base::GetLine;
-using base::HexadecimalDecode;
+using base::HexadecimalEncoder;
 using base::UniqueArray;
 
 namespace journal {
@@ -70,7 +70,8 @@ std::unique_ptr<serialization::Method> Player::Read() {
     return nullptr;
   }
 
-  auto const bytes = HexadecimalDecode({line.c_str(), strlen(line.c_str())});
+  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
+  auto const bytes = encoder->Decode({line.c_str(), strlen(line.c_str())});
   auto method = std::make_unique<serialization::Method>();
   CHECK(method->ParseFromArray(bytes.data.get(), static_cast<int>(bytes.size)));
 

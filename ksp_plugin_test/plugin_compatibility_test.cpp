@@ -24,7 +24,7 @@ namespace internal_plugin {
 
 using base::Array;
 using base::UniqueArray;
-using base::HexadecimalDecode;
+using base::HexadecimalEncoder;
 using geometry::Bivector;
 using geometry::Trivector;
 using geometry::Vector;
@@ -92,7 +92,8 @@ class PluginCompatibilityTest : public testing::Test {
     file.close();
 
     // Parse the hexadecimal data and convert it to binary data.
-    auto const bin = HexadecimalDecode(hex);
+    HexadecimalEncoder</*null_terminated=*/false> encoder;
+    auto const bin = encoder.Decode(hex);
 
     // Construct a protocol buffer from the binary data.
     google::protobuf::io::CodedInputStream coded_input_stream(

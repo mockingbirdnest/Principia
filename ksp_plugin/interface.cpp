@@ -54,8 +54,7 @@ using astronomy::ParseTT;
 using base::Array;
 using base::check_not_null;
 using base::Fingerprint2011;
-using base::HexadecimalDecode;
-using base::HexadecimalEncode;
+using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::PullSerializer;
 using base::PushDeserializer;
@@ -435,7 +434,8 @@ void principia__DeserializePluginHexadecimal(
   }
 
   // Decode the hexadecimal representation.
-  auto bytes = HexadecimalDecode({serialization, serialization_size});
+  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
+  auto bytes = encoder->Decode({serialization, serialization_size});
   auto const bytes_size = bytes.size;
   (*deserializer)->Push(std::move(bytes));
 
@@ -925,7 +925,8 @@ char const* principia__SerializePluginHexadecimal(
   }
 
   // Convert to hexadecimal and return to the client.
-  auto hexadecimal = HexadecimalEncode(bytes, /*null_terminated=*/true);
+  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
+  auto hexadecimal = encoder->Encode(bytes);
   return m.Return(hexadecimal.data.release());
 }
 
