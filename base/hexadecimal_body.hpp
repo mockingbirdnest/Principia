@@ -10,6 +10,7 @@
 
 namespace principia {
 namespace base {
+namespace internal_hexadecimal {
 
 constexpr char const byte_to_hexadecimal_digits[] =
     "000102030405060708090A0B0C0D0E0F101112131415161718191A1B1C1D1E1F2021222324"
@@ -37,7 +38,10 @@ constexpr std::uint8_t const hexadecimal_digits_to_nibble[256] = {
 #undef SKIP_48
 #endif
 
-void HexadecimalEncode(Array<std::uint8_t const> input, Array<char> output) {
+template<bool null_terminated>
+void HexadecimalEncoder<null_terminated>::Encode(
+    Array<std::uint8_t const> input,
+    Array<char> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   // We iterate backward.
@@ -59,8 +63,10 @@ void HexadecimalEncode(Array<std::uint8_t const> input, Array<char> output) {
     std::memcpy(output.data, &byte_to_hexadecimal_digits[*input.data << 1], 2);
   }
 }
-UniqueArray<char> HexadecimalEncode(Array<std::uint8_t const> const input,
-                                    bool const null_terminated) {
+
+template<bool null_terminated>
+UniqueArray<char> HexadecimalEncoder<null_terminated>::Encode(
+    Array<std::uint8_t const> const input) {
   UniqueArray<char> output(HexadecimalEncodedLength(input) +
                            (null_terminated ? 1 : 0));
   if (output.size > 0) {
@@ -72,11 +78,15 @@ UniqueArray<char> HexadecimalEncode(Array<std::uint8_t const> const input,
   return output;
 }
 
-std::int64_t HexadecimalEncodedLength(Array<std::uint8_t const> const input) {
+template<bool null_terminated>
+std::int64_t HexadecimalEncoder<null_terminated>::EncodedLength(
+    Array<std::uint8_t const> const input) {
   return input.size << 1;
 }
 
-void HexadecimalDecode(Array<char const> input, Array<std::uint8_t> output) {
+template<bool null_terminated>
+void HexadecimalEncoder<null_terminated>::Decode(Array<char const> input,
+                                                 Array<std::uint8_t> output) {
   CHECK_NOTNULL(input.data);
   CHECK_NOTNULL(output.data);
   input.size &= ~1;
@@ -97,7 +107,9 @@ void HexadecimalDecode(Array<char const> input, Array<std::uint8_t> output) {
   }
 }
 
-UniqueArray<std::uint8_t> HexadecimalDecode(Array<char const> const input) {
+template<bool null_terminated>
+UniqueArray<std::uint8_t> HexadecimalEncoder<null_terminated>::Decode(
+    Array<char const> const input) {
   UniqueArray<std::uint8_t> output(HexadecimalDecodedLength(input));
   if (output.size > 0) {
     HexadecimalDecode({input.data, input.size & ~1}, output.get());
@@ -105,9 +117,11 @@ UniqueArray<std::uint8_t> HexadecimalDecode(Array<char const> const input) {
   return output;
 }
 
+template<bool null_terminated>
 std::int64_t HexadecimalDecodedLength(Array<char const> const input) {
   return input.size >> 1;
 }
 
+}  // namespace internal_hexadecimal
 }  // namespace base
 }  // namespace principia
