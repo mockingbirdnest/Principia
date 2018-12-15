@@ -19,28 +19,35 @@ namespace base {
 
 template<typename Encoder>
 void BM_Encode(benchmark::State& state) {
+  constexpr int preallocated_size = 1 << 20;
   constexpr int min_input_size = 20'000;
   constexpr int max_input_size = 50'000;
 
   Encoder encoder;
   std::mt19937_64 random(42);
+  std::uniform_int_distribution<int> bytes_distribution(0, 256);
+
+  UniqueArray<std::uint8_t> preallocated_binary(preallocated_size);
+  for (int i = 0; i < preallocated_binary.size; ++i) {
+    preallocated_binary.data[i] = bytes_distribution(random);
+  }
+
+  std::uniform_int_distribution<std::uint64_t> start_distribution(
+      0, preallocated_binary.size - max_input_size);
   std::uniform_int_distribution<std::uint64_t> size_distribution(
       min_input_size, max_input_size);
-  std::uniform_int_distribution<int> bytes_distribution(0, 256);
 
   std::int64_t bytes_processed = 0;
   for (auto _ : state) {
     state.PauseTiming();
-    UniqueArray<std::uint8_t> binary(size_distribution(random));
-    for (int i = 0; i < binary.size; ++i) {
-      binary.data[i] = bytes_distribution(random);
-    }
+    auto const start = start_distribution(random);
+    auto const size = size_distribution(random);
+    Array<std::uint8_t> binary(&preallocated_binary.data[start], size);
     bytes_processed += binary.size;
     state.ResumeTiming();
 
-    UniqueArray<typename Encoder::Char> const base32768 =
-        encoder.Encode(binary.get());
-    benchmark::DoNotOptimize(base32768);
+    UniqueArray<typename Encoder::Char> const encoded = encoder.Encode(binary);
+    benchmark::DoNotOptimize(encoded);
   }
   state.SetBytesProcessed(bytes_processed);
 }
