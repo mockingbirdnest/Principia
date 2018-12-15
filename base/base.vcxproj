@@ -27,6 +27,7 @@
     <ClInclude Include="bundle.hpp" />
     <ClInclude Include="disjoint_sets.hpp" />
     <ClInclude Include="disjoint_sets_body.hpp" />
+    <ClInclude Include="encoder.hpp" />
     <ClInclude Include="file.hpp" />
     <ClInclude Include="file_body.hpp" />
     <ClInclude Include="fingerprint2011.hpp" />
