@@ -41,5 +41,8 @@ class Encoder {
 };
 
 }  // namespace internal_encoder
+
+using internal_encoder::Encoder;
+
 }  // namespace base
 }  // namespace principia

@@ -67,10 +67,10 @@ void HexadecimalEncoder<null_terminated>::Encode(
 template<bool null_terminated>
 UniqueArray<char> HexadecimalEncoder<null_terminated>::Encode(
     Array<std::uint8_t const> const input) {
-  UniqueArray<char> output(HexadecimalEncodedLength(input) +
+  UniqueArray<char> output(EncodedLength(input) +
                            (null_terminated ? 1 : 0));
   if (output.size > 0) {
-    HexadecimalEncode(input, output.get());
+    Encode(input, output.get());
   }
   if (null_terminated) {
     output.data[output.size - 1] = 0;
@@ -110,15 +110,16 @@ void HexadecimalEncoder<null_terminated>::Decode(Array<char const> input,
 template<bool null_terminated>
 UniqueArray<std::uint8_t> HexadecimalEncoder<null_terminated>::Decode(
     Array<char const> const input) {
-  UniqueArray<std::uint8_t> output(HexadecimalDecodedLength(input));
+  UniqueArray<std::uint8_t> output(DecodedLength(input));
   if (output.size > 0) {
-    HexadecimalDecode({input.data, input.size & ~1}, output.get());
+    Decode({input.data, input.size & ~1}, output.get());
   }
   return output;
 }
 
 template<bool null_terminated>
-std::int64_t HexadecimalDecodedLength(Array<char const> const input) {
+std::int64_t HexadecimalEncoder<null_terminated>::DecodedLength(
+    Array<char const> const input) {
   return input.size >> 1;
 }
 
