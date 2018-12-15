@@ -16,10 +16,11 @@ template<bool null_terminated>
 void principia::base::internal_base64::Base64Encoder<null_terminated>::Encode(
     Array<std::uint8_t const> input,
     Array<char> output) {
-  std::string_view const input_view(input.data, input.size);
+  std::string_view const input_view(reinterpret_cast<const char*>(input.data),
+                                    input.size);
   std::string output_string;
   absl::WebSafeBase64Escape(input_view, &output_string);
-  std::memcpy(output.data, output_string.c_str(), output_size.size());
+  std::memcpy(output.data, output_string.c_str(), output_string.size());
   if constexpr (null_terminated) {
     output.data[output_size.size()] = 0;
   }
@@ -28,7 +29,7 @@ void principia::base::internal_base64::Base64Encoder<null_terminated>::Encode(
 template<bool null_terminated>
 UniqueArray<char> Base64Encoder<null_terminated>::Encode(
     Array<std::uint8_t const> input) {
-  UniqueArray<char16_t> output(EncodedLength(input));
+  UniqueArray<char> output(EncodedLength(input));
   if (output.size > 0) {
     Encode(input, output.get());
   }
@@ -53,7 +54,7 @@ void Base64Encoder<null_terminated>::Decode(Array<char const> input,
   std::string_view const input_view(input.data, input.size);
   std::string output_string;
   absl::WebSafeBase64Unescape(input_view, &output_string);
-  std::memcpy(output.data, output_string.c_str(), output_size.size());
+  std::memcpy(output.data, output_string.c_str(), output_string.size());
 }
 
 template<bool null_terminated>

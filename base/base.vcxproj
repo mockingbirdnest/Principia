@@ -74,6 +74,7 @@
   <ItemGroup>
     <ClCompile Include="array_test.cpp" />
     <ClCompile Include="base32768_test.cpp" />
+    <ClCompile Include="base64_test.cpp" />
     <ClCompile Include="bundle.cpp" />
     <ClCompile Include="bundle_test.cpp" />
     <ClCompile Include="disjoint_sets_test.cpp" />

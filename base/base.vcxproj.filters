@@ -211,5 +211,8 @@
     <ClCompile Include="base32768_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
+    <ClCompile Include="base64_test.cpp">
+      <Filter>Test Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
