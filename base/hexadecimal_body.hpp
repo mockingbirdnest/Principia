@@ -53,10 +53,13 @@ void HexadecimalEncoder<null_terminated>::Encode(
   CHECK(input.data <= static_cast<void*>(&output.data[1]) ||
         static_cast<void*>(&output.data[input.size << 1]) <= input.data)
       << "bad overlap";
-  CHECK_GE(output.size, input.size << 1) << "output too small";
+  CHECK_GE(output.size, EncodedLength(input)) << "output too small";
   // We want the result to start at |output.data[0]|.
-  output.data = output.data + ((input.size - 1) << 1);
-  input.data = input.data + input.size - 1;
+  output.data += ((input.size - 1) << 1);
+  if constexpr (null_terminated) {
+    output.data[2] = 0;
+  }
+  input.data += input.size - 1;
   for (std::uint8_t const* const input_rend = input.data - input.size;
        input.data != input_rend;
        --input.data, output.data -= 2) {
@@ -67,13 +70,9 @@ void HexadecimalEncoder<null_terminated>::Encode(
 template<bool null_terminated>
 UniqueArray<char> HexadecimalEncoder<null_terminated>::Encode(
     Array<std::uint8_t const> const input) {
-  UniqueArray<char> output(EncodedLength(input) +
-                           (null_terminated ? 1 : 0));
+  UniqueArray<char> output(EncodedLength(input));
   if (output.size > 0) {
     Encode(input, output.get());
-  }
-  if (null_terminated) {
-    output.data[output.size - 1] = 0;
   }
   return output;
 }
@@ -81,7 +80,11 @@ UniqueArray<char> HexadecimalEncoder<null_terminated>::Encode(
 template<bool null_terminated>
 std::int64_t HexadecimalEncoder<null_terminated>::EncodedLength(
     Array<std::uint8_t const> const input) {
-  return input.size << 1;
+  if constexpr (null_terminated) {
+    return (input.size << 1) + 1;
+  } else {
+    return input.size << 1;
+  }
 }
 
 template<bool null_terminated>
