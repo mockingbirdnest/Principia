@@ -6,6 +6,7 @@
 #include <random>
 
 #include "base/array.hpp"
+#include "base/base64.hpp"
 #include "base/base32768.hpp"
 #include "base/hexadecimal.hpp"
 #include "benchmark/benchmark.h"
@@ -93,10 +94,13 @@ void BM_Decode(benchmark::State& state) {
 }
 
 using Encoder16 = HexadecimalEncoder</*null_terminated=*/false>;
+using Encoder64 = Base64Encoder</*null_terminated=*/false>;
 using Encoder32768 = Base32768Encoder</*null_terminated=*/false>;
 
 BENCHMARK_TEMPLATE(BM_Encode, Encoder16);
 BENCHMARK_TEMPLATE(BM_Decode, Encoder16);
+BENCHMARK_TEMPLATE(BM_Encode, Encoder64);
+BENCHMARK_TEMPLATE(BM_Decode, Encoder64);
 #if !PRINCIPIA_COMPILER_MSVC || \
     !(_MSC_FULL_VER == 191526608 || \
       _MSC_FULL_VER == 191526731 || \

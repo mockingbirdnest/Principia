@@ -18,12 +18,12 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   // |input.size|.  The range
   // [&output.data[input.size << 1], &output.data[output.size][ is left
   // unmodified.
-  inline void Encode(Array<std::uint8_t const> input,
-                     Array<char> output) override;
+  void Encode(Array<std::uint8_t const> input,
+              Array<char> output) override;
 
-  inline UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
+  UniqueArray<char> Encode(Array<std::uint8_t const> input) override;
 
-  inline std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
+  std::int64_t EncodedLength(Array<std::uint8_t const> input) override;
 
   // Invalid digits are read as 0.  If |input.size| is odd, the last character
   // of the input is ignored.  Ignores case.  Either |output.data <=
@@ -31,12 +31,12 @@ class HexadecimalEncoder : public Encoder<char, null_terminated> {
   // in particular, |input.data == output.data| is valid.  |output.size| must be
   // at least |input.size / 2|.  The range
   // [&output[input.size / 2], &output[output.size][ is left unmodified.
-  inline void Decode(Array<char const> input,
-                     Array<std::uint8_t> output) override;
+  void Decode(Array<char const> input,
+              Array<std::uint8_t> output) override;
 
-  inline UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
+  UniqueArray<std::uint8_t> Decode(Array<char const> input) override;
 
-  inline std::int64_t DecodedLength(Array<char const> input) override;
+  std::int64_t DecodedLength(Array<char const> input) override;
 };
 
 }  // namespace internal_hexadecimal
