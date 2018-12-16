@@ -241,29 +241,28 @@ serialization::GravityModel::Body MakeGravityModel(
 }
 
 std::unique_ptr<google::compression::Compressor> NewCompressor(
-    const char* const compressor) {
-  if (compressor == nullptr || strlen(compressor) == 0) {
+    std::string_view const compressor) {
+  if (compressor.empty()) {
     return nullptr;
-  } else if (strcmp(compressor, gipfeli_compressor) == 0) {
+  } else if (compressor == gipfeli_compressor) {
     return google::compression::NewGipfeliCompressor();
   } else {
-    LOG(FATAL) << "Unknown compressor " << *compressor;
+    LOG(FATAL) << "Unknown compressor " << compressor;
   }
 }
 
 Encoder<char, /*null_terminated=*/true>*
-NewEncoder(const char* const encoder) {
-  if (encoder == nullptr || strlen(encoder) == 0 ||
-      strcmp(encoder, hexadecimal_encoder) == 0) {
+NewEncoder(std::string_view const encoder) {
+  if (encoder == hexadecimal_encoder) {
     static auto* const encoder =
         new HexadecimalEncoder</*null_terminated=*/true>;
     return encoder;
-  } else if (strcmp(encoder, base64_encoder) == 0) {
+  } else if (encoder == base64_encoder) {
     static auto* const encoder =
         new Base64Encoder</*null_terminated=*/true>;
     return encoder;
   } else {
-    LOG(FATAL) << "Unknown encoder " << *encoder;
+    LOG(FATAL) << "Unknown encoder " << encoder;
   }
 }
 

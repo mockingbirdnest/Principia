@@ -132,7 +132,7 @@ public partial class PrincipiaPluginAdapter
   [KSPField(isPersistant = true)]
   private string serialization_compression_ = "";
   [KSPField(isPersistant = true)]
-  private string serialization_encoding_ = "";
+  private string serialization_encoding_ = "hexadecimal";
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -637,7 +637,7 @@ public partial class PrincipiaPluginAdapter
     if (serialization_compression_ == "") {
       serialization_compression_ = "gipfeli";
     }
-    if (serialization_encoding_ == "") {
+    if (serialization_encoding_ == "hexadecimal") {
       serialization_encoding_ = "base64";
     }
 

@@ -620,14 +620,14 @@ TEST_F(InterfaceTest, SerializePlugin) {
   char const* serialization =
       principia__SerializePlugin(plugin_.get(),
                                  &serializer,
-                                 /*compressor=*/nullptr,
-                                 /*encoder=*/nullptr);
+                                 /*compressor=*/"",
+                                 "hexadecimal");
   EXPECT_STREQ(hexadecimal_simple_plugin_.c_str(), serialization);
   EXPECT_EQ(nullptr,
             principia__SerializePlugin(plugin_.get(),
                                        &serializer,
-                                       /*compressor=*/nullptr,
-                                       /*encoder=*/nullptr));
+                                       /*compressor=*/"",
+                                       "hexadecimal"));
   principia__DeleteString(&serialization);
   EXPECT_THAT(serialization, IsNull());
 }
@@ -640,14 +640,14 @@ TEST_F(InterfaceTest, DeserializePlugin) {
           hexadecimal_simple_plugin_.size(),
           &deserializer,
           &plugin,
-          /*compressor=*/nullptr,
-          /*encoder=*/nullptr);
+          /*compressor=*/"",
+          "hexadecimal");
   principia__DeserializePlugin(hexadecimal_simple_plugin_.c_str(),
                                           0,
                                           &deserializer,
                                           &plugin,
-                                          /*compressor=*/nullptr,
-                                          /*encoder=*/nullptr);
+                                          /*compressor=*/"",
+                                          "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
@@ -663,14 +663,14 @@ TEST_F(InterfaceTest, DISABLED_DeserializePluginDebug) {
           hexadecimal_plugin.size(),
           &deserializer,
           &plugin,
-          /*compressor=*/nullptr,
-          /*encoder=*/nullptr);
+          /*compressor=*/"",
+          "hexadecimal");
   principia__DeserializePlugin(hexadecimal_plugin.c_str(),
                                           0,
                                           &deserializer,
                                           &plugin,
-                                          /*compressor=*/nullptr,
-                                          /*encoder=*/nullptr);
+                                          /*compressor=*/"",
+                                          "hexadecimal");
   EXPECT_THAT(plugin, NotNull());
   principia__DeletePlugin(&plugin);
 }
