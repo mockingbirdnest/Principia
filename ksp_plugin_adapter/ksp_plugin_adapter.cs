@@ -586,16 +586,16 @@ public partial class PrincipiaPluginAdapter
   }
 
   public override void OnSave(ConfigNode node) {
+    if (serialization_compression_ == "") {
+      serialization_compression_ = "gipfeli";
+    }
+    if (serialization_encoding_ == "") {
+      serialization_encoding_ = "base64";
+    }
     base.OnSave(node);
     if (PluginRunning()) {
       String serialization;
       IntPtr serializer = IntPtr.Zero;
-      if (serialization_compression_ == "") {
-        serialization_compression_ = "gipfeli";
-      }
-      if (serialization_encoding_ == "") {
-        serialization_encoding_ = "base64";
-      }
       for (;;) {
         serialization = plugin_.SerializePlugin(
                             ref serializer,
