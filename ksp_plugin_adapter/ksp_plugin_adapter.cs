@@ -586,12 +586,6 @@ public partial class PrincipiaPluginAdapter
   }
 
   public override void OnSave(ConfigNode node) {
-    if (serialization_compression_ == "") {
-      serialization_compression_ = "gipfeli";
-    }
-    if (serialization_encoding_ == "") {
-      serialization_encoding_ = "base64";
-    }
     base.OnSave(node);
     if (PluginRunning()) {
       String serialization;
@@ -640,6 +634,12 @@ public partial class PrincipiaPluginAdapter
                                   ref plugin_,
                                   serialization_compression_,
                                   serialization_encoding_);
+    if (serialization_compression_ == "") {
+      serialization_compression_ = "gipfeli";
+    }
+    if (serialization_encoding_ == "") {
+      serialization_encoding_ = "base64";
+    }
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
