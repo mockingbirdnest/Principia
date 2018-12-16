@@ -21,6 +21,8 @@
 #include "astronomy/epoch.hpp"
 #include "astronomy/time_scales.hpp"
 #include "base/array.hpp"
+#include "base/base64.hpp"
+#include "base/encoder.hpp"
 #include "base/fingerprint2011.hpp"
 #include "base/hexadecimal.hpp"
 #include "base/macros.hpp"
@@ -52,7 +54,9 @@ namespace interface {
 using astronomy::J2000;
 using astronomy::ParseTT;
 using base::Array;
+using base::Base64Encoder;
 using base::check_not_null;
+using base::Encoder;
 using base::Fingerprint2011;
 using base::HexadecimalEncoder;
 using base::make_not_null_unique;
@@ -103,7 +107,11 @@ using ::google::protobuf::ArenaOptions;
 
 namespace {
 
-constexpr char gipfeli[] = "gipfeli";
+constexpr char gipfeli_compressor[] = "gipfeli";
+
+constexpr char base64_encoder[] = "base64";
+constexpr char hexadecimal_encoder[] = "hexadecimal";
+
 constexpr int chunk_size = 64 << 10;
 constexpr int number_of_chunks = 8;
 
@@ -236,10 +244,26 @@ std::unique_ptr<google::compression::Compressor> NewCompressor(
     const char* const compressor) {
   if (compressor == nullptr || strlen(compressor) == 0) {
     return nullptr;
-  } else if (strcmp(compressor, gipfeli) == 0) {
+  } else if (strcmp(compressor, gipfeli_compressor) == 0) {
     return google::compression::NewGipfeliCompressor();
   } else {
     LOG(FATAL) << "Unknown compressor " << *compressor;
+  }
+}
+
+Encoder<char, /*null_terminated=*/true>*
+NewEncoder(const char* const encoder) {
+  if (encoder == nullptr || strlen(encoder) == 0 ||
+      strcmp(encoder, hexadecimal_encoder) == 0) {
+    static auto* const encoder =
+        new HexadecimalEncoder</*null_terminated=*/true>;
+    return encoder;
+  } else if (strcmp(encoder, base64_encoder) == 0) {
+    static auto* const encoder =
+        new Base64Encoder</*null_terminated=*/true>;
+    return encoder;
+  } else {
+    LOG(FATAL) << "Unknown encoder " << *encoder;
   }
 }
 
@@ -400,19 +424,21 @@ void principia__DeleteU16String(char16_t const** const native_string) {
 // successive calls.  The caller must perform an extra call with
 // |serialization_size| set to 0 to indicate the end of the input stream.  When
 // this last call returns, |*plugin| is not null and may be used by the caller.
-void principia__DeserializePluginHexadecimal(
+void principia__DeserializePlugin(
     char const* const serialization,
     int const serialization_size,
     PushDeserializer** const deserializer,
     Plugin const** const plugin,
-    char const* const compressor) {
-  journal::Method<journal::DeserializePluginHexadecimal> m({serialization,
-                                                            serialization_size,
-                                                            deserializer,
-                                                            plugin,
-                                                            compressor},
-                                                           {deserializer,
-                                                            plugin});
+    char const* const compressor,
+    char const* const encoder) {
+  journal::Method<journal::DeserializePlugin> m({serialization,
+                                                 serialization_size,
+                                                 deserializer,
+                                                 plugin,
+                                                 compressor,
+                                                 encoder},
+                                                {deserializer,
+                                                 plugin});
   CHECK_NOTNULL(serialization);
   CHECK_NOTNULL(deserializer);
   CHECK_NOTNULL(plugin);
@@ -433,9 +459,8 @@ void principia__DeserializePluginHexadecimal(
         });
   }
 
-  // Decode the hexadecimal representation.
-  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
-  auto bytes = encoder->Decode({serialization, serialization_size});
+  // Decode the representation.
+  auto bytes = NewEncoder(encoder)->Decode({serialization, serialization_size});
   auto const bytes_size = bytes.size;
   (*deserializer)->Push(std::move(bytes));
 
@@ -890,12 +915,16 @@ char const* principia__SayHello() {
 // when it is null (at the end of the stream).  No transfer of ownership of
 // |*plugin|.  |*serializer| must be null on the first call and must be passed
 // unchanged to the successive calls; its ownership is not transferred.
-char const* principia__SerializePluginHexadecimal(
+char const* principia__SerializePlugin(
     Plugin const* const plugin,
     PullSerializer** const serializer,
-    char const* const compressor) {
-  journal::Method<journal::SerializePluginHexadecimal> m({plugin, serializer},
-                                                         {serializer});
+    char const* const compressor,
+    char const* const encoder) {
+  journal::Method<journal::SerializePlugin> m({plugin,
+                                               serializer,
+                                               compressor,
+                                               encoder},
+                                              {serializer});
   CHECK_NOTNULL(plugin);
   CHECK_NOTNULL(serializer);
 
@@ -924,9 +953,8 @@ char const* principia__SerializePluginHexadecimal(
     return m.Return(nullptr);
   }
 
-  // Convert to hexadecimal and return to the client.
-  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
-  auto hexadecimal = encoder->Encode(bytes);
+  // Encode and return to the client.
+  auto hexadecimal = NewEncoder(encoder)->Encode(bytes);
   return m.Return(hexadecimal.data.release());
 }
 

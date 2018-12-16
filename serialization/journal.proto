@@ -359,9 +359,9 @@ message DeleteU16String {
   optional Out out = 2;
 }
 
-message DeserializePluginHexadecimal {
+message DeserializePlugin {
   extend Method {
-    optional DeserializePluginHexadecimal extension = 5050;
+    optional DeserializePlugin extension = 5050;
   }
   message In {
     required string serialization = 1 [(size) = "serialization_size"];
@@ -370,6 +370,7 @@ message DeserializePluginHexadecimal {
          (is_consumed_if) = "serialization->empty()"];
     required fixed64 plugin = 3 [(pointer_to) = "Plugin const"];
     optional string compressor = 4;
+    optional string encoder = 5;
   }
   message Out {
     required fixed64 deserializer = 1
@@ -1590,9 +1591,9 @@ message SayHello {
   optional Return return = 3;
 }
 
-message SerializePluginHexadecimal {
+message SerializePlugin {
   extend Method {
-    optional SerializePluginHexadecimal extension = 5054;
+    optional SerializePlugin extension = 5054;
   }
   message In {
     required fixed64 plugin = 1 [(pointer_to) = "Plugin const",
@@ -1601,6 +1602,7 @@ message SerializePluginHexadecimal {
         [(pointer_to) = "PullSerializer",
          (is_consumed_if) = "result == nullptr"];
     optional string compressor = 3;
+    optional string encoder = 4;
   }
   message Out {
     required fixed64 serializer = 1 [(pointer_to) = "PullSerializer",

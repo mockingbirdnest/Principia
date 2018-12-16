@@ -22,11 +22,11 @@ using base::PushDeserializer;
 using geometry::Instant;
 using interface::principia__AdvanceTime;
 using interface::principia__DeletePlugin;
-using interface::principia__DeserializePluginHexadecimal;
+using interface::principia__DeserializePlugin;
 using interface::principia__FutureCatchUpVessel;
 using interface::principia__FutureWaitForVesselToCatchUp;
 using interface::principia__IteratorDelete;
-using interface::principia__SerializePluginHexadecimal;
+using interface::principia__SerializePlugin;
 using quantities::Frequency;
 using quantities::Time;
 using quantities::si::Hertz;
@@ -41,22 +41,26 @@ namespace ksp_plugin {
 std::unique_ptr<Plugin const> DeserializePluginFromLines(
     std::vector<std::string> const& lines,
     char const* const compressor,
+    char const* const encoder,
     int& bytes_processed) {
   PushDeserializer* deserializer = nullptr;
   Plugin const* plugin = nullptr;
   int l = 1;
   for (auto const& line : lines) {
-    principia__DeserializePluginHexadecimal(line.c_str(),
-                                            line.size(),
-                                            &deserializer,
-                                            &plugin,
-                                            compressor);
+    principia__DeserializePlugin(line.c_str(),
+                                 line.size(),
+                                 &deserializer,
+                                 &plugin,
+                                 compressor,
+                                 encoder);
     bytes_processed += line.size() >> 1;
   }
-  principia__DeserializePluginHexadecimal("",
-                                          0,
-                                          &deserializer,
-                                          &plugin, compressor);
+  principia__DeserializePlugin("",
+                               0,
+                               &deserializer,
+                               &plugin,
+                               compressor,
+                               encoder);
   return std::unique_ptr<Plugin const>(plugin);
 }
 
@@ -95,6 +99,7 @@ void BM_PluginIntegrationBenchmark(benchmark::State& state) {
 
 void BM_PluginSerializationBenchmark(benchmark::State& state) {
   char const compressor[] = "gipfeli";
+  char const encoder[] = "hexadecimal";
 
   // First, construct a plugin by reading a file.
   auto const gipfeli_plugin(
@@ -103,6 +108,7 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
   int bytes_processed = 0;
   auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
                                                  compressor,
+                                                 encoder,
                                                  bytes_processed);
 
   bytes_processed = 0;
@@ -110,9 +116,10 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
     PullSerializer* serializer = nullptr;
     char const* serialization = nullptr;
     for (;;) {
-      serialization = principia__SerializePluginHexadecimal(plugin.get(),
-                                                            &serializer,
-                                                            compressor);
+      serialization = principia__SerializePlugin(plugin.get(),
+                                                 &serializer,
+                                                 compressor,
+                                                 encoder);
       if (serialization == nullptr) {
         break;
       }
@@ -126,6 +133,7 @@ void BM_PluginSerializationBenchmark(benchmark::State& state) {
 
 void BM_PluginDeserializationBenchmark(benchmark::State& state) {
   char const compressor[] = "gipfeli";
+  char const encoder[] = "hexadecimal";
   auto const gipfeli_plugin(
       ReadLinesFromHexadecimalFile(
           SOLUTION_DIR / "ksp_plugin_test" / "large_plugin.proto.gipfeli.hex"));
@@ -135,6 +143,7 @@ void BM_PluginDeserializationBenchmark(benchmark::State& state) {
     PushDeserializer* deserializer = nullptr;
     auto const plugin = DeserializePluginFromLines(gipfeli_plugin,
                                                    compressor,
+                                                   encoder,
                                                    bytes_processed);
     benchmark::DoNotOptimize(plugin);
   }
