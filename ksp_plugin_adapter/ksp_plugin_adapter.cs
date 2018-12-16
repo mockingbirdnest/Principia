@@ -131,6 +131,8 @@ public partial class PrincipiaPluginAdapter
   // Whether to compress saves.
   [KSPField(isPersistant = true)]
   private string serialization_compression_ = "";
+  [KSPField(isPersistant = true)]
+  private string serialization_encoding_ = "hexadecimal";
 
   // Whether the plotting frame must be set to something convenient at the next
   // opportunity.
@@ -589,9 +591,10 @@ public partial class PrincipiaPluginAdapter
       String serialization;
       IntPtr serializer = IntPtr.Zero;
       for (;;) {
-        serialization = plugin_.SerializePluginHexadecimal(
+        serialization = plugin_.SerializePlugin(
                             ref serializer,
-                            serialization_compression_);
+                            serialization_compression_,
+                            serialization_encoding_);
         if (serialization == null) {
           break;
         }
@@ -618,20 +621,25 @@ public partial class PrincipiaPluginAdapter
       String[] serializations = node.GetValues(principia_serialized_plugin_);
       Log.Info("Serialization has " + serializations.Length + " chunks");
       foreach (String serialization in serializations) {
-        Interface.DeserializePluginHexadecimal(serialization,
-                                               serialization.Length,
-                                               ref deserializer,
-                                               ref plugin_,
-                                               serialization_compression_);
+        Interface.DeserializePlugin(serialization,
+                                    serialization.Length,
+                                    ref deserializer,
+                                    ref plugin_,
+                                    serialization_compression_,
+                                    serialization_encoding_);
       }
-      Interface.DeserializePluginHexadecimal("",
-                                             0,
-                                             ref deserializer,
-                                             ref plugin_,
-                                             serialization_compression_);
-      if (serialization_compression_ == "") {
-        serialization_compression_ = "gipfeli";
-      }
+      Interface.DeserializePlugin("",
+                                  0,
+                                  ref deserializer,
+                                  ref plugin_,
+                                  serialization_compression_,
+                                  serialization_encoding_);
+    if (serialization_compression_ == "") {
+      serialization_compression_ = "gipfeli";
+    }
+    if (serialization_encoding_ == "hexadecimal") {
+      serialization_encoding_ = "base64";
+    }
 
       plotting_frame_selector_.reset(
           new ReferenceFrameSelector(this, 
