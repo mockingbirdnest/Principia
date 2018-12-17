@@ -64,6 +64,7 @@ using base::dynamic_cast_not_null;
 using base::Error;
 using base::FindOrDie;
 using base::Fingerprint2011;
+using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::OFStream;
 using base::not_null;
@@ -270,9 +271,8 @@ void Plugin::EndInitialization() {
   // Log the serialized ephemeris.
   serialization::Ephemeris ephemeris_message;
   ephemeris_->WriteToMessage(&ephemeris_message);
-  auto const hex =
-      base::HexadecimalEncode(SerializeAsBytes(ephemeris_message).get(),
-                              /*null_terminated=*/true);
+  HexadecimalEncoder</*null_terminated=*/true> encoder;
+  auto const hex = encoder.Encode(SerializeAsBytes(ephemeris_message).get());
   // Begin and end markers to make sure the hex did not get clipped (this might
   // happen if the message is very big).
   LOG(INFO) << "Ephemeris at initialization:\nbegin\n"

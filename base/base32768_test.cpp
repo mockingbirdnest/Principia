@@ -48,9 +48,9 @@ class Base32768Test : public testing::Test {
  protected:
   void CheckEncoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
-    CHECK_EQ(base32768.size, Base32768EncodedLength(binary));
+    CHECK_EQ(base32768.size, encoder_.EncodedLength(binary));
     UniqueArray<char16_t> output(base32768.size);
-    Base32768Encode(binary, output.get());
+    encoder_.Encode(binary, output.get());
     EXPECT_EQ(0,
               std::char_traits<char16_t>::compare(
                   output.data.get(), base32768.data, base32768.size));
@@ -63,14 +63,16 @@ class Base32768Test : public testing::Test {
 
   void CheckDecoding(Array<std::uint8_t const> const binary,
                      Array<char16_t const> const base32768) {
-    CHECK_EQ(binary.size, Base32768DecodedLength(base32768));
+    CHECK_EQ(binary.size, encoder_.DecodedLength(base32768));
     UniqueArray<std::uint8_t> output(binary.size);
-    Base32768Decode(base32768, output.get());
+    encoder_.Decode(base32768, output.get());
     EXPECT_EQ(0, std::memcmp(output.data.get(), binary.data, binary.size));
     for (int i = 0; i < binary.size; ++i) {
       EXPECT_EQ(output.data[i], binary.data[i]) << "index=" << i;
     }
   }
+
+  Base32768Encoder</*null_terminated=*/false> encoder_;
 };
 
 using Base32768DeathTest = Base32768Test;

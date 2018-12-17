@@ -10,7 +10,7 @@
 
 namespace principia {
 
-using base::HexadecimalEncode;
+using base::HexadecimalEncoder;
 using base::SerializeAsBytes;
 using base::UniqueArray;
 
@@ -51,9 +51,9 @@ bool Recorder::IsActivated() {
 }
 
 void Recorder::WriteLocked(serialization::Method const& method) {
+  static auto* const encoder = new HexadecimalEncoder</*null_terminated=*/true>;
   CHECK_LT(0, method.ByteSize()) << method.DebugString();
-  auto const hexadecimal = HexadecimalEncode(SerializeAsBytes(method).get(),
-                                             /*null_terminated=*/true);
+  auto const hexadecimal = encoder->Encode(SerializeAsBytes(method).get());
   stream_ << hexadecimal.data.get() << "\n";
   stream_.flush();
 }

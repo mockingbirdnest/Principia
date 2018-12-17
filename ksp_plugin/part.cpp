@@ -13,7 +13,7 @@ namespace ksp_plugin {
 namespace internal_part {
 
 using base::Array;
-using base::HexadecimalEncode;
+using base::HexadecimalEncoder;
 using base::make_not_null_unique;
 using base::UniqueArray;
 
@@ -218,7 +218,8 @@ void Part::FillContainingPileUpFromMessage(
 std::string Part::ShortDebugString() const {
   Array<std::uint8_t const> id_bytes(
       reinterpret_cast<std::uint8_t const*>(&part_id_), sizeof(part_id_));
-  auto const hex_id = HexadecimalEncode(id_bytes, /*null_terminated=*/true);
+  HexadecimalEncoder</*null_terminated=*/true> encoder;
+  auto const hex_id = encoder.Encode(id_bytes);
   return name_ + " (" + hex_id.data.get() + ")";
 }
 
