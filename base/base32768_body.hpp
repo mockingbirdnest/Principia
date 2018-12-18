@@ -158,7 +158,8 @@ constexpr auto fifteen_bits = MakeRepertoire<block_size>(
 #if !PRINCIPIA_COMPILER_MSVC || \
     !(_MSC_FULL_VER == 191526608 || \
       _MSC_FULL_VER == 191526731 || \
-      _MSC_FULL_VER == 191627024)
+      _MSC_FULL_VER == 191627024 || \
+      _MSC_FULL_VER == 191627025)
     u"ᖀᖠᗀᗠᘀᘠᙀᚠᛀកᠠᡀᣀᦀ᧠ᨠᯀᰀᴀ⇠⋀⍀⍠⎀⎠⏀␀─┠╀╠▀"
     u"■◀◠☀☠♀♠⚀⚠⛀⛠✀✠❀➀➠⠀⠠⡀⡠⢀⢠⣀⣠⤀⤠⥀⥠⦠⨠⩀⪀"
     u"⪠⫠⬀⬠⭀ⰀⲀⲠⳀⴀⵀ⺠⻀㇀㐀㐠㑀㑠㒀㒠㓀㓠㔀㔠㕀㕠㖀㖠㗀㗠㘀㘠"

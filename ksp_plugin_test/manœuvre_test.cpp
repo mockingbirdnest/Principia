@@ -104,7 +104,8 @@ TEST_F(ManœuvreTest, TimedBurn) {
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
-#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 191627024
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 191627024 || \
+                                _MSC_FULL_VER == 191627025)
   EXPECT_TRUE(e_y == manœuvre.direction());
 #else
   EXPECT_EQ(e_y, manœuvre.direction());
@@ -160,7 +161,8 @@ TEST_F(ManœuvreTest, TargetΔv) {
   EXPECT_EQ(1 * Newton, manœuvre.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre.specific_impulse());
-#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 191627024
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 191627024 || \
+                                _MSC_FULL_VER == 191627025)
   EXPECT_TRUE(e_y == manœuvre.direction());
 #else
   EXPECT_EQ(e_y, manœuvre.direction());
@@ -372,7 +374,8 @@ TEST_F(ManœuvreTest, Serialization) {
   EXPECT_EQ(1 * Newton, manœuvre_read.thrust());
   EXPECT_EQ(2 * Kilogram, manœuvre_read.initial_mass());
   EXPECT_EQ(1 * Metre / Second, manœuvre_read.specific_impulse());
-#if PRINCIPIA_COMPILER_MSVC && _MSC_FULL_VER == 191627024
+#if PRINCIPIA_COMPILER_MSVC && (_MSC_FULL_VER == 191627024 || \
+                                _MSC_FULL_VER == 191627025)
   EXPECT_TRUE(e_y == manœuvre.direction());
 #else
   EXPECT_EQ(e_y, manœuvre.direction());
