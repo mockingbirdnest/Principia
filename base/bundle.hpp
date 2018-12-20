@@ -2,89 +2,58 @@
 #pragma once
 
 #include <functional>
-#include <queue>
-#include <memory>
+#include <list>
 #include <optional>
 #include <thread>
 #include <vector>
 
 #include "absl/base/thread_annotations.h"
+#include "absl/synchronization/notification.h"
 #include "absl/synchronization/mutex.h"
-#include "base/macros.hpp"
-#include "base/monostable.hpp"
-#include "base/not_null.hpp"
 #include "base/status.hpp"
 
 namespace principia {
 namespace base {
 
-// Functions that can be cooperatively aborted should check |AbortRequested()|
-// when appropriate.  The function is thread-safe.
-extern thread_local std::function<bool()> AbortRequested;
-
-// A thread pool with cooperative aborting (but no cooperative scheduling).
-// We refer to the thread on which the |Bundle| is created as its master thread.
-// The |Bundle| itself cooperatively aborts if |AbortRequested()| on its master
-// thread.
+// TODO(phl): comment
 class Bundle final {
  public:
   using Task = std::function<Status()>;
 
-  explicit Bundle(int workers);
+  // If a |task| returns an erroneous |Status|, |Join| returns that status.
+  void Add(Task task) LOCKS_EXCLUDED(lock_);
 
   // Returns the first non-OK status encountered, or OK.  All worker threads are
   // joined; no calls to member functions may follow this call.
-  Status Join();
-  // Same as above, but aborts and returns |Error::DEADLINE_EXCEEDED| if it
-  // fails to complete within the given interval.
-  Status JoinWithin(std::chrono::steady_clock::duration Δt);
+  Status Join() LOCKS_EXCLUDED(lock_, status_lock_);
+  // Same as above, but returns |Error::DEADLINE_EXCEEDED| if it fails to
+  // complete within the given interval.
+  Status JoinWithin(std::chrono::steady_clock::duration Δt)
+      LOCKS_EXCLUDED(lock_, status_lock_);
   // Same as above with absolute time.
-  Status JoinBefore(std::chrono::steady_clock::time_point t);
-
-  // If a |task| returns an erroneous |Status|, the |Bundle| is aborted and
-  // |Join| returns that status.
-  void Add(Task task);
+  Status JoinBefore(std::chrono::system_clock::time_point t)
+      LOCKS_EXCLUDED(lock_, status_lock_);
 
  private:
-  // The |workers_| |Toil|.  This function returns when
-  // |(tasks_.empty() && !wait_on_empty_) ||Aborting()|.
-  void Toil();
+  // Run on a separate thread to execute task and record its status.
+  void Toil(Task task) LOCKS_EXCLUDED(lock_, status_lock_);
 
-  // The |workers_| have their |AbortRequested| set to |BundleShouldAbort|.
-  bool BundleShouldAbort();
+  void JoinAll() LOCKS_EXCLUDED(lock_);
 
-  // If |status_| is erroneous, has no effect. Otherwise, sets |status_| to
-  // |status| and notifies all on |tasks_not_empty_or_terminate_|.  |status|
-  // should not be |OK|.
-  void Abort(Status status);
-
-  // Thread-safe |!status_.ok()|.
-  bool Aborting();
-
-  // Thread-safe |deadline_ && std::chrono::steady_clock::now() > deadline_|.
-  bool DeadlineExceeded();
-
-  // |status_lock_| should not be held when locking |lock_|.
-  absl::Mutex lock_;
   absl::Mutex status_lock_;
-
-  // If |!status_.ok()|, currently-running tasks should cooperatively abort, and
-  // workers will terminate without considering queued tasks.  Set by |Abort|,
-  // accessed by |Aborting|, returned by |Join|.
   Status status_ GUARDED_BY(status_lock_);
-  std::optional<std::chrono::steady_clock::time_point> deadline_
-      GUARDED_BY(status_lock_);
 
-  // Whether the workers should terminate when no tasks are available.  Set by
-  // |Join|.
-  Monostable wait_on_empty_ GUARDED_BY(lock_);
+  absl::Mutex lock_;
 
-  std::queue<Task> tasks_ GUARDED_BY(lock_);
-  std::vector<std::thread> workers_ GUARDED_BY(lock_);
+  // Whether |Join| has been called.  When set to true, |Add| should not be
+  // called.
+  bool joining_ GUARDED_BY(lock_) = false;
+  absl::Notification all_done_;
 
-  int const max_workers_;
-  // A pointer to |AbortRequested| on the thread which created the |Bundle|.
-  not_null<std::function<bool()>*> const master_abort_;
+  // The number of workers currently executing.  Can only be incremented when
+  // |joining_| is false.
+  std::atomic_int number_of_active_workers_ = 0;
+  std::list<std::thread> workers_ GUARDED_BY(lock_);
 };
 
 }  // namespace base
