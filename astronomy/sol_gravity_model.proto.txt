@@ -84,7 +84,7 @@ gravity_model {
 
   # Telluric planets.
   body {
-    # Spherical harmonic coefficients, and reference radius from the combined
+    # Spherical harmonic coefficients and reference radius from the combined
     # GRACE/GEOS model GGM05C.ICGEM at
     # ftp://ftp.csr.utexas.edu/pub/grace/GGM05/.
     name                    : "Earth"
@@ -266,8 +266,9 @@ gravity_model {
     angular_frequency       : "203.4889538 deg / d"
   }
   body {
-    # J2 coefficient and reference radius from DE431,
-    # http://ilrs.gsfc.nasa.gov/docs/2014/196C.pdf.
+    # Spherical harmonic coefficients and reference radius from the GL1500E
+    # gravity model from GRAIL data release 6,
+    # https://pds.nasa.gov/datasearch/subscription-service/data_product_information.cfm?dsid=GRAIL-L-LGRS-5-RDR-V1.0&releaseid=0006.
     name                    : "Moon"
     gravitational_parameter : "4.9028000661637961e+03 km^3/s^2"
     reference_instant       : "JD2451545.000000000"
