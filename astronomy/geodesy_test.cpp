@@ -198,7 +198,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
             /*max_ephemeris_steps=*/std::numeric_limits<std::int64_t>::max(),
             /*last_point_only=*/true);
   };
-  Bundle bundle(2);
+  Bundle bundle;
   bundle.Add([&flow_lageos2, &primary_lageos2_trajectory]() {
     return flow_lageos2(primary_lageos2_trajectory);
   });

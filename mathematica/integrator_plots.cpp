@@ -225,7 +225,7 @@ class WorkErrorGraphGenerator {
   std::string GetMathematicaData() {
     LOG(INFO) << "Using " << std::thread::hardware_concurrency()
               << " worker threads";
-    Bundle bundle(/*workers=*/std::thread::hardware_concurrency());
+    Bundle bundle;
     for (int method_index = 0; method_index < methods_.size(); ++method_index) {
       for (int time_step_index = 0;
            time_step_index < integrations_per_integrator_;
