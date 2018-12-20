@@ -15,7 +15,10 @@
 namespace principia {
 namespace base {
 
-// TODO(phl): comment
+// A bundle manages a number of threads that execute independently.  A thread is
+// created for each call to |Add|.  When one of the |Join*| is called, no more
+// calls to |Add| are allowed, and |Join*| returns the first error status (if
+// any) produced by the tasks.
 class Bundle final {
  public:
   using Task = std::function<Status()>;
@@ -47,13 +50,16 @@ class Bundle final {
 
   // Whether |Join| has been called.  When set to true, |Add| should not be
   // called.
-  bool joining_ GUARDED_BY(lock_) = false;
+  std::atomic_bool joining_ = false;
   absl::Notification all_done_;
 
   // The number of workers currently executing.  Can only be incremented when
   // |joining_| is false.
   std::atomic_int number_of_active_workers_ = 0;
   std::list<std::thread> workers_ GUARDED_BY(lock_);
+
+  static_assert(std::atomic_bool::is_always_lock_free, "bool not lock-free");
+  static_assert(std::atomic_int::is_always_lock_free, "int not lock-free");
 };
 
 }  // namespace base

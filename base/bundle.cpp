@@ -18,10 +18,7 @@ void Bundle::Add(Task task) {
 }
 
 Status Bundle::Join() {
-  {
-    absl::MutexLock l(&lock_);
-    joining_ = true;
-  }
+  joining_ = true;
   all_done_.WaitForNotification();
   JoinAll();
   absl::ReaderMutexLock status_lock(&status_lock_);
@@ -29,10 +26,7 @@ Status Bundle::Join() {
 }
 
 Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
-  {
-    absl::MutexLock l(&lock_);
-    joining_ = true;
-  }
+  joining_ = true;
   if (!all_done_.WaitForNotificationWithTimeout(absl::FromChrono(Δt))) {
     absl::MutexLock l(&status_lock_);
     status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
@@ -43,10 +37,7 @@ Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
 }
 
 Status Bundle::JoinBefore(std::chrono::system_clock::time_point t) {
-  {
-    absl::MutexLock l(&lock_);
-    joining_ = true;
-  }
+  joining_ = true;
   if (!all_done_.WaitForNotificationWithDeadline(absl::FromChrono(t))) {
     absl::MutexLock l(&status_lock_);
     status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
@@ -65,13 +56,12 @@ void Bundle::Toil(Task task) {
     status_.Update(status);
   }
 
-  // Avoid locking when there are still active workers to reduce contention
-  // during joining.
-  if (--number_of_active_workers_ == 0) {
-    absl::ReaderMutexLock l(&lock_);
-    if (number_of_active_workers_ == 0 && joining_) {
-      all_done_.Notify();
-    }
+  // No locking unless this is the last task and we are joining.  This
+  // avoids contention during joining.  Note that if |joining_| is true we know
+  // that |number_of_active_workers_| cannot increase.
+  --number_of_active_workers_;
+  if (joining_ && number_of_active_workers_ == 0) {
+    all_done_.Notify();
   }
 }
 
