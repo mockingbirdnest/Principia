@@ -35,7 +35,7 @@ Status Bundle::JoinWithin(std::chrono::steady_clock::duration Δt) {
   }
   if (!all_done_.WaitForNotificationWithTimeout(absl::FromChrono(Δt))) {
     absl::MutexLock l(&status_lock_);
-    status_ = Status(Error::DEADLINE_EXCEEDED, "");
+    status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
   }
   JoinAll();
   absl::ReaderMutexLock status_lock(&status_lock_);
@@ -49,7 +49,7 @@ Status Bundle::JoinBefore(std::chrono::system_clock::time_point t) {
   }
   if (!all_done_.WaitForNotificationWithDeadline(absl::FromChrono(t))) {
     absl::MutexLock l(&status_lock_);
-    status_ = Status(Error::DEADLINE_EXCEEDED, "");
+    status_ = Status(Error::DEADLINE_EXCEEDED, "bundle deadline exceeded");
   }
   JoinAll();
   absl::ReaderMutexLock status_lock(&status_lock_);
