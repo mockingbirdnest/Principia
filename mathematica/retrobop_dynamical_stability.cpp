@@ -467,7 +467,7 @@ void AnalyseGlobalError() {
 
   for (int year = 1;; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle{static_cast<int>(std::thread::hardware_concurrency() - 1)};
+    Bundle bundle;
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
         reference_ephemeris.Prolong(t);
@@ -565,7 +565,7 @@ void StatisticallyAnalyseStability() {
 
   for (int year = 1; year <= 200; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle{7};
+    Bundle bundle;
     for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([
         &numerically_unsound,

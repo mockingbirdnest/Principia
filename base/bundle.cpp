@@ -58,6 +58,8 @@ Status Bundle::JoinBefore(std::chrono::system_clock::time_point t) {
 
 void Bundle::Toil(Task task) {
   Status const status = task();
+
+  // Avoid locking if the task succeeded: it cannot affect the overall status.
   if (!status.ok()) {
     absl::MutexLock l(&status_lock_);
     status_.Update(status);
