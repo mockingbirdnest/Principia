@@ -14,11 +14,19 @@ Table[
 {n,m,
 SetPrecision[
 Check[
-NMaximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},{z,-1,1},PrecisionGoal->51,AccuracyGoal->\[Infinity],WorkingPrecision->103][[1]],
+NMaximize[
+ {Abs[pnrm[n,m,z]],z>=-1,z<=1},
+ {z,-1,1},
+ PrecisionGoal->51,
+ AccuracyGoal->\[Infinity],
+ (* For WorkingPrecision\[Rule]103, all values converge
+ except (39,1).  For WorkingPrecision\[Rule]104, many
+ values fail to converge.  Don't ask. *)
+ WorkingPrecision->If[n==39&&m==1,104,103]][[1]],
 ToString[{n,m}]<>": error"],
 51]},
 {m,0,n}],
-{n,0,20}];
+{n,0,50}];
 Map[Last,maxPnrm,{2}]//TableForm
 
 
@@ -50,7 +58,7 @@ namespace numerics {
 
 // Global maxima over [-1, 1] of the absolute value of the normalized associated
 // Legendre functions.
-constexpr FixedLowerTriangularMatrix<double, "<>ToString[21]<>">
+constexpr FixedLowerTriangularMatrix<double, "<>ToString[51]<>">
 MaxAbsNormalizedAssociatedLegendreFunction{{{
 "<>Flatten@Map[
 With[
@@ -77,7 +85,7 @@ namespace numerics {
 // Multiplying a normalized Cnm or Snm coefficient by this factor yields an
 // unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
 // this factor yields a normalized coefficient.
-constexpr FixedLowerTriangularMatrix<double, "<>ToString[21]<>">
+constexpr FixedLowerTriangularMatrix<double, "<>ToString[51]<>">
 LegendreNormalizationFactor{{{
 "<>Flatten[
  Table[
@@ -85,7 +93,7 @@ LegendreNormalizationFactor{{{
    "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>
        decimalFloatLiteral[N[NormalizationFactor[n,m],46]]<>",\n",
    {m,0,n}],
-  {n,0,20}]]<>"}}};
+  {n,0,50}]]<>"}}};
 
 }  // namespace numerics
 }  // namespace principia
