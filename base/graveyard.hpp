@@ -9,11 +9,11 @@
 namespace principia {
 namespace base {
 
-template<typename T>
 class Graveyard {
  public:
   explicit Graveyard(std::int64_t number_of_threads);
 
+  template<typename T>
   void Bury(std::unique_ptr<T> t);
 
  private:

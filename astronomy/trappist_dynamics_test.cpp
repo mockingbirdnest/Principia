@@ -1072,7 +1072,7 @@ class TrappistDynamicsTest : public ::testing::Test {
   static double ProlongAndComputeTransitsχ²(SolarSystem<Sky>& system,
                                             std::string& info) {
     static auto* const graveyard =
-        new Graveyard<Ephemeris<Sky>>(std::thread::hardware_concurrency());
+        new Graveyard(std::thread::hardware_concurrency());
 
     auto ephemeris = system.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
@@ -1099,7 +1099,7 @@ class TrappistDynamicsTest : public ::testing::Test {
       }
     }
 
-    graveyard->Bury(std::move(ephemeris));
+    graveyard->Bury<Ephemeris<Sky>>(std::move(ephemeris));
 
     std::string χ²_info;
     double const χ² = Transitsχ²(observations, computations, χ²_info);
