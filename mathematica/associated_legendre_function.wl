@@ -17,20 +17,20 @@ Check[
 NMaximize[
  {Abs[pnrm[n,m,z]],z>=-1,z<=1},
  {z,-1,1},
- PrecisionGoal->51,
+ PrecisionGoal->46,
  AccuracyGoal->\[Infinity],
  (* For WorkingPrecision\[Rule]103, all values converge
  except (39,1).  For WorkingPrecision\[Rule]104, many
  values fail to converge.  Don't ask. *)
  WorkingPrecision->If[n==39&&m==1,104,103]][[1]],
 ToString[{n,m}]<>": error"],
-51]},
+46]},
 {m,0,n}],
 {n,0,50}];
 Map[Last,maxPnrm,{2}]//TableForm
 
 
-decimalFloatLiteral[x_Real]:=
+decimalFloatLiteral[x_Real,exponentWidth_Integer]:=
  With[
   {m=MantissaExponent[x][[1]]*10,
    e=MantissaExponent[x][[2]]-1},
@@ -39,7 +39,7 @@ decimalFloatLiteral[x_Real]:=
     {{#[[1]]},
      If[Length[#]>1,{"."},Nothing],
      If[Length[#]>1,StringPartition[#[[2]],UpTo[5]],Nothing],
-     If[e!=0,"e"<>ToString[e],Nothing]}&[
+     If[e!=0,"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth],Nothing]}&[
      StringSplit[ToString[m],"."]]]]
 
 
@@ -63,7 +63,7 @@ MaxAbsNormalizedAssociatedLegendreFunction{{{
 "<>Flatten@Map[
 With[
  {n=#[[1]],m=#[[2]],z=#[[3]]},
- "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>decimalFloatLiteral[z]<>",\n"]&,
+ "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>decimalFloatLiteral[z,1]<>",\n"]&,
 maxPnrm,{2}]<>"}}};
 
 }  // namespace numerics
@@ -91,7 +91,7 @@ LegendreNormalizationFactor{{{
  Table[
   Table[
    "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>
-       decimalFloatLiteral[N[NormalizationFactor[n,m],46]]<>",\n",
+       decimalFloatLiteral[N[NormalizationFactor[n,m],46],2]<>",\n",
    {m,0,n}],
   {n,0,50}]]<>"}}};
 
