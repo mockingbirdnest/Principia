@@ -1285,7 +1285,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         // steep enough to efficiently separate the wheat from the chaff without
         // leading to monoculture.
         return 1 / χ²;
-  };
+      };
 
   auto compute_log_pdf =
       [&elements, &planet_names, &system](
@@ -1299,7 +1299,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         }
         double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
         return -χ² / 2.0;
-  };
+      };
 
   std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
