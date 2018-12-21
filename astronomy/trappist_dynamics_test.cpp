@@ -155,7 +155,8 @@ std::vector<KeplerianElements<Sky>> const& Genome::elements() const {
   return elements_;
 }
 
-void Genome::Mutate(std::mt19937_64& engine, int const generation) {
+void Genome::Mutate(std::mt19937_64& engine,
+                    int const generation) {
   std::student_t_distribution<> distribution(1);
 
   // The scale of the perturbation has a strong effect on the convergence of the
@@ -179,8 +180,9 @@ void Genome::Mutate(std::mt19937_64& engine, int const generation) {
         distribution(engine) * 10 * Degree * multiplicator;
     mutated_element.argument_of_periapsis =
         Mod(*mutated_element.argument_of_periapsis, 2 * π * Radian);
-    mutated_element.period = *element.period + distribution(engine) * 5 *
-                                                   Second * Sqrt(multiplicator);
+    mutated_element.period =
+        *element.period +
+        distribution(engine) * 5 * Second * Sqrt(multiplicator);
     mutated_element.eccentricity =
         *element.eccentricity +
         distribution(engine) * 1e-3 * Sqrt(multiplicator);
@@ -379,8 +381,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
           << Mod((best_genome_->elements()[j].longitude_of_ascending_node +
                   *best_genome_->elements()[j].argument_of_periapsis +
                   *best_genome_->elements()[j].mean_anomaly),
-                 2 * π * Radian) /
-                 Degree
+                 2 * π * Radian) / Degree
           << u8"°";
 
       LOG(ERROR) << u8"   ΔL = "
@@ -389,16 +390,14 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                       *genome.elements()[j].mean_anomaly) -
                      (best_genome_->elements()[j].longitude_of_ascending_node +
                       *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly)) /
-                        Degree
+                      *best_genome_->elements()[j].mean_anomaly)) / Degree
                  << u8"°";
     }
     LOG(ERROR) << "new L = "
                << Mod((genome.elements()[j].longitude_of_ascending_node +
                        *genome.elements()[j].argument_of_periapsis +
                        *genome.elements()[j].mean_anomaly),
-                      2 * π * Radian) /
-                      Degree
+                      2 * π * Radian) / Degree
                << u8"°";
     if (best_genome_) {
       LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
@@ -412,8 +411,7 @@ void Population::TraceNewBestGenome(Genome const& genome) const {
                  << " d";
       LOG(ERROR) << u8"   ΔT = "
                  << (*genome.elements()[j].period -
-                     *best_genome_->elements()[j].period) /
-                        Second
+                     *best_genome_->elements()[j].period) / Second
                  << " s";
     }
     LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day << " d";
@@ -597,13 +595,14 @@ SystemParameters Run(Population& population,
     int accepted = 0;
 
     // Every 10th generation try full-size steps.
-    double const γ =
-        generation < number_of_burn_in_generations
-            ? 0.01
-            : generation % number_of_generations_between_kicks == 0
-                  ? 1.0
-                  : 2.38 / Sqrt(2 * std::tuple_size<SystemParameters>::value *
-                                PlanetParameters::count);
+    double const
+        γ = generation < number_of_burn_in_generations
+                ? 0.01
+                : generation % number_of_generations_between_kicks == 0
+                      ? 1.0
+                      : 2.38 /
+                            Sqrt(2 * std::tuple_size<SystemParameters>::value *
+                                 PlanetParameters::count);
 
     // Evaluate model for each set of trial parameters.
     auto const trial = GenerateTrialStates(population, γ, ε, engine);
@@ -911,51 +910,48 @@ MeasuredTransitsByPlanet const observations = {
                      {"JD2457837.24980"_TT, 0.00025 * Day},
                      {"JD2457934.83095"_TT, 0.00050 * Day},
                      {"JD2457940.92995"_TT, 0.00086 * Day}}},
-    {"Trappist-1f",
-     {{"JD2457321.52520"_TT, 0.00200 * Day},
-      {"JD2457367.57629"_TT, 0.00044 * Day},
-      {"JD2457634.57809"_TT, 0.00061 * Day},
-      {"JD2457652.98579"_TT, 0.00032 * Day},
-      {"JD2457662.18747"_TT, 0.00040 * Day},
-      {"JD2457671.39279"_TT, 0.00072 * Day},
-      {"JD2457717.41541"_TT, 0.00091 * Day},
-      {"JD2457726.61960"_TT, 0.00026 * Day},
-      {"JD2457745.03116"_TT, 0.00135 * Day},
-      {"JD2457754.23380"_TT, 0.00155 * Day},
-      {"JD2457763.44338"_TT, 0.00024 * Day},
-      {"JD2457772.64752"_TT, 0.00160 * Day},
-      {"JD2457781.85142"_TT, 0.00180 * Day},
-      {"JD2457800.27307"_TT, 0.00140 * Day},
-      {"JD2457809.47554"_TT, 0.00027 * Day},
-      {"JD2457818.68271"_TT, 0.00032 * Day},
-      {"JD2457827.88669"_TT, 0.00030 * Day},
-      {"JD2457837.10322"_TT, 0.00032 * Day},
-      {"JD2457956.80549"_TT, 0.00054 * Day}}},
-    {"Trappist-1g",
-     {{"JD2457294.78600"_TT, 0.00390 * Day},
-      {"JD2457356.53410"_TT, 0.00200 * Day},
-      {"JD2457615.92400"_TT, 0.00170 * Day},
-      {"JD2457640.63730"_TT, 0.00100 * Day},
-      {"JD2457652.99481"_TT, 0.00030 * Day},
-      {"JD2457665.35151"_TT, 0.00028 * Day},
-      {"JD2457739.48441"_TT, 0.00115 * Day},
-      {"JD2457751.83993"_TT, 0.00017 * Day},
-      {"JD2457764.19098"_TT, 0.00155 * Day},
-      {"JD2457776.54900"_TT, 0.00110 * Day},
-      {"JD2457801.25000"_TT, 0.00093 * Day},
-      {"JD2457813.60684"_TT, 0.00023 * Day},
-      {"JD2457825.96112"_TT, 0.00020 * Day},
-      {"JD2457838.30655"_TT, 0.00028 * Day},
-      {"JD2457924.77090"_TT, 0.00140 * Day},
-      {"JD2457961.82621"_TT, 0.00068 * Day}}},
-    {"Trappist-1h",
-     {{"JD2457662.55467"_TT, 0.00054 * Day},
-      {"JD2457756.38740"_TT, 0.00130 * Day},
-      {"JD2457775.15390"_TT, 0.00160 * Day},
-      {"JD2457793.92300"_TT, 0.00250 * Day},
-      {"JD2457812.69870"_TT, 0.00450 * Day},
-      {"JD2457831.46625"_TT, 0.00047 * Day},
-      {"JD2457962.86271"_TT, 0.00083 * Day}}}};
+    {"Trappist-1f", {{"JD2457321.52520"_TT, 0.00200 * Day},
+                     {"JD2457367.57629"_TT, 0.00044 * Day},
+                     {"JD2457634.57809"_TT, 0.00061 * Day},
+                     {"JD2457652.98579"_TT, 0.00032 * Day},
+                     {"JD2457662.18747"_TT, 0.00040 * Day},
+                     {"JD2457671.39279"_TT, 0.00072 * Day},
+                     {"JD2457717.41541"_TT, 0.00091 * Day},
+                     {"JD2457726.61960"_TT, 0.00026 * Day},
+                     {"JD2457745.03116"_TT, 0.00135 * Day},
+                     {"JD2457754.23380"_TT, 0.00155 * Day},
+                     {"JD2457763.44338"_TT, 0.00024 * Day},
+                     {"JD2457772.64752"_TT, 0.00160 * Day},
+                     {"JD2457781.85142"_TT, 0.00180 * Day},
+                     {"JD2457800.27307"_TT, 0.00140 * Day},
+                     {"JD2457809.47554"_TT, 0.00027 * Day},
+                     {"JD2457818.68271"_TT, 0.00032 * Day},
+                     {"JD2457827.88669"_TT, 0.00030 * Day},
+                     {"JD2457837.10322"_TT, 0.00032 * Day},
+                     {"JD2457956.80549"_TT, 0.00054 * Day}}},
+    {"Trappist-1g", {{"JD2457294.78600"_TT, 0.00390 * Day},
+                     {"JD2457356.53410"_TT, 0.00200 * Day},
+                     {"JD2457615.92400"_TT, 0.00170 * Day},
+                     {"JD2457640.63730"_TT, 0.00100 * Day},
+                     {"JD2457652.99481"_TT, 0.00030 * Day},
+                     {"JD2457665.35151"_TT, 0.00028 * Day},
+                     {"JD2457739.48441"_TT, 0.00115 * Day},
+                     {"JD2457751.83993"_TT, 0.00017 * Day},
+                     {"JD2457764.19098"_TT, 0.00155 * Day},
+                     {"JD2457776.54900"_TT, 0.00110 * Day},
+                     {"JD2457801.25000"_TT, 0.00093 * Day},
+                     {"JD2457813.60684"_TT, 0.00023 * Day},
+                     {"JD2457825.96112"_TT, 0.00020 * Day},
+                     {"JD2457838.30655"_TT, 0.00028 * Day},
+                     {"JD2457924.77090"_TT, 0.00140 * Day},
+                     {"JD2457961.82621"_TT, 0.00068 * Day}}},
+    {"Trappist-1h", {{"JD2457662.55467"_TT, 0.00054 * Day},
+                     {"JD2457756.38740"_TT, 0.00130 * Day},
+                     {"JD2457775.15390"_TT, 0.00160 * Day},
+                     {"JD2457793.92300"_TT, 0.00250 * Day},
+                     {"JD2457812.69870"_TT, 0.00450 * Day},
+                     {"JD2457831.46625"_TT, 0.00047 * Day},
+                     {"JD2457962.86271"_TT, 0.00083 * Day}}}};
 
 class TrappistDynamicsTest : public ::testing::Test {
  protected:
@@ -998,7 +994,8 @@ class TrappistDynamicsTest : public ::testing::Test {
           };
 
       Sign const xy_displacement_derivative_sign(xy_displacement_derivative(t));
-      if (relative_dof.displacement().coordinates().z > 0.0 * Metre && last_t &&
+      if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
+          last_t &&
           xy_displacement_derivative_sign == Sign(1) &&
           last_xy_displacement_derivative_sign == Sign(-1)) {
         Instant const transit = Bisect(xy_displacement_derivative, *last_t, t);
@@ -1226,10 +1223,12 @@ TEST_F(TrappistDynamicsTest, PlanetBPlanetDAlignment) {
 
   Angle min_angle = 1 * Radian;
 
-  for (Instant t = ephemeris_->t_min(); t < ephemeris_->t_min() + 200000 * Hour;
-       t += 10 * Minute) {
-    Displacement<Sky> const home_star = star_trajectory->EvaluatePosition(t) -
-                                        home_trajectory->EvaluatePosition(t);
+  for (Instant t = ephemeris_->t_min();
+        t < ephemeris_->t_min() + 200000 * Hour;
+        t += 10 * Minute) {
+    Displacement<Sky> const home_star =
+        star_trajectory->EvaluatePosition(t) -
+        home_trajectory->EvaluatePosition(t);
     Displacement<Sky> const home_planet_b =
         planet_b_trajectory->EvaluatePosition(t) -
         home_trajectory->EvaluatePosition(t);
@@ -1272,9 +1271,9 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         system.keplerian_initial_state_message(planet_name).elements()));
   }
 
-  auto compute_fitness = [&planet_names, &system](
-                             genetics::Genome const& genome,
-                             std::string& info) {
+  auto compute_fitness =
+      [&planet_names, &system](genetics::Genome const& genome,
+                               std::string& info) {
     auto modified_system = system;
     auto const& elements = genome.elements();
     for (int i = 0; i < planet_names.size(); ++i) {
@@ -1288,9 +1287,10 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
     return 1 / χ²;
   };
 
-  auto compute_log_pdf = [&elements, &planet_names, &system](
-                             deмcmc::SystemParameters const& system_parameters,
-                             std::string& info) {
+  auto compute_log_pdf =
+      [&elements, &planet_names, &system](
+          deмcmc::SystemParameters const& system_parameters,
+          std::string& info) {
     auto modified_system = system;
     for (int i = 0; i < planet_names.size(); ++i) {
       modified_system.ReplaceElements(
