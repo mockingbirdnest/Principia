@@ -1274,31 +1274,31 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   auto compute_fitness =
       [&planet_names, &system](genetics::Genome const& genome,
                                std::string& info) {
-    auto modified_system = system;
-    auto const& elements = genome.elements();
-    for (int i = 0; i < planet_names.size(); ++i) {
-      modified_system.ReplaceElements(planet_names[i], elements[i]);
-    }
-    double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
+        auto modified_system = system;
+        auto const& elements = genome.elements();
+        for (int i = 0; i < planet_names.size(); ++i) {
+          modified_system.ReplaceElements(planet_names[i], elements[i]);
+        }
+        double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
 
-    // This is the place where we cook the sausage.  This function must be
-    // steep enough to efficiently separate the wheat from the chaff without
-    // leading to monoculture.
-    return 1 / χ²;
+        // This is the place where we cook the sausage.  This function must be
+        // steep enough to efficiently separate the wheat from the chaff without
+        // leading to monoculture.
+        return 1 / χ²;
   };
 
   auto compute_log_pdf =
       [&elements, &planet_names, &system](
           deмcmc::SystemParameters const& system_parameters,
           std::string& info) {
-    auto modified_system = system;
-    for (int i = 0; i < planet_names.size(); ++i) {
-      modified_system.ReplaceElements(
-          planet_names[i],
-          MakeKeplerianElements(elements[i], system_parameters[i]));
-    }
-    double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
-    return -χ² / 2.0;
+        auto modified_system = system;
+        for (int i = 0; i < planet_names.size(); ++i) {
+          modified_system.ReplaceElements(
+              planet_names[i],
+              MakeKeplerianElements(elements[i], system_parameters[i]));
+        }
+        double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
+        return -χ² / 2.0;
   };
 
   std::optional<genetics::Genome> great_old_one;
