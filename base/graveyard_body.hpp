@@ -12,8 +12,8 @@ Graveyard<T>::Graveyard(std::int64_t const number_of_threads)
 
 template<typename T>
 void Graveyard<T>::Bury(std::unique_ptr<T> t) {
-  gravedigger_.Add([corpse = std::move(t)]() {
-    corpse.reset();
+  gravedigger_.Add([coffin = t.release()]() {
+    delete coffin;
   });
 }
 
