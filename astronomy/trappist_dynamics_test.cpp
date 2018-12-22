@@ -11,6 +11,7 @@
 #include "astronomy/frames.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
+#include "base/graveyard.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/grassmann.hpp"
@@ -34,6 +35,7 @@
 namespace principia {
 
 using base::Bundle;
+using base::Graveyard;
 using base::not_null;
 using base::OFStream;
 using base::Status;
@@ -61,8 +63,8 @@ using quantities::Difference;
 using quantities::Mod;
 using quantities::Pow;
 using quantities::Sin;
-using quantities::Square;
 using quantities::Sqrt;
+using quantities::Square;
 using quantities::Time;
 using quantities::astronomy::JulianYear;
 using quantities::si::Day;
@@ -510,8 +512,7 @@ KeplerianElements<Sky> MakeKeplerianElements(
   return elements;
 }
 
-PlanetParameters MakePlanetParameters(
-    KeplerianElements<Sky> const& elements) {
+PlanetParameters MakePlanetParameters(KeplerianElements<Sky> const& elements) {
   PlanetParameters result;
   result.period = *elements.period;
   result.x = *elements.eccentricity * Cos(*elements.argument_of_periapsis);
@@ -523,10 +524,9 @@ PlanetParameters MakePlanetParameters(
   return result;
 }
 
-std::vector<double> EvaluatePopulation(
-    Population const& population,
-    ComputeLogPdf const& compute_log_pdf,
-    std::vector<std::string>& info) {
+std::vector<double> EvaluatePopulation(Population const& population,
+                                       ComputeLogPdf const& compute_log_pdf,
+                                       std::vector<std::string>& info) {
   std::vector<double> log_pdf(population.size());
   info.resize(population.size());
   Bundle bundle;
@@ -643,7 +643,7 @@ SystemParameters Run(Population& population,
 }  // namespace deмcmc
 
 double ShortDays(Instant const& time) {
-    return (time - "JD2450000.0"_TT) / Day;
+  return (time - "JD2450000.0"_TT) / Day;
 }
 
 using Transits = std::vector<Instant>;
@@ -974,10 +974,8 @@ class TrappistDynamicsTest : public ::testing::Test {
 
     std::optional<Instant> last_t;
     std::optional<Sign> last_xy_displacement_derivative_sign;
-      auto const& planet_trajectory = ephemeris.trajectory(planet);
-    for (Instant t = ephemeris.t_min();
-          t < ephemeris.t_max();
-          t += 2 * Hour) {
+    auto const& planet_trajectory = ephemeris.trajectory(planet);
+    for (Instant t = ephemeris.t_min(); t < ephemeris.t_max(); t += 2 * Hour) {
       RelativeDegreesOfFreedom<Sky> const relative_dof =
           planet_trajectory->EvaluateDegreesOfFreedom(t) -
           star_trajectory->EvaluateDegreesOfFreedom(t);
@@ -988,27 +986,23 @@ class TrappistDynamicsTest : public ::testing::Test {
                 planet_trajectory->EvaluateDegreesOfFreedom(t) -
                 star_trajectory->EvaluateDegreesOfFreedom(t);
             // TODO(phl): Why don't we have projections?
-            auto xy_displacement =
-                relative_dof.displacement().coordinates();
+            auto xy_displacement = relative_dof.displacement().coordinates();
             xy_displacement.z = 0.0 * Metre;
             auto xy_velocity = relative_dof.velocity().coordinates();
             xy_velocity.z = 0.0 * Metre / Second;
             return Dot(xy_displacement, xy_velocity);
           };
 
-      Sign const xy_displacement_derivative_sign(
-          xy_displacement_derivative(t));
+      Sign const xy_displacement_derivative_sign(xy_displacement_derivative(t));
       if (relative_dof.displacement().coordinates().z > 0.0 * Metre &&
           last_t &&
           xy_displacement_derivative_sign == Sign(1) &&
           last_xy_displacement_derivative_sign == Sign(-1)) {
-        Instant const transit =
-            Bisect(xy_displacement_derivative, *last_t, t);
+        Instant const transit = Bisect(xy_displacement_derivative, *last_t, t);
         transits.push_back(transit);
       }
       last_t = t;
-      last_xy_displacement_derivative_sign =
-          xy_displacement_derivative_sign;
+      last_xy_displacement_derivative_sign = xy_displacement_derivative_sign;
     }
     return transits;
   }
@@ -1077,7 +1071,10 @@ class TrappistDynamicsTest : public ::testing::Test {
 
   static double ProlongAndComputeTransitsχ²(SolarSystem<Sky>& system,
                                             std::string& info) {
-    auto const ephemeris = system.MakeEphemeris(
+    static auto* const graveyard =
+        new Graveyard(std::thread::hardware_concurrency());
+
+    auto ephemeris = system.MakeEphemeris(
         /*fitting_tolerance=*/5 * Milli(Metre),
         Ephemeris<Sky>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
@@ -1101,6 +1098,9 @@ class TrappistDynamicsTest : public ::testing::Test {
             ComputeTransits(*ephemeris, star, planet);
       }
     }
+
+    graveyard->Bury<Ephemeris<Sky>>(std::move(ephemeris));
+
     std::string χ²_info;
     double const χ² = Transitsχ²(observations, computations, χ²_info);
     info = u8"χ² = " + std::to_string(χ²) + " " + χ²_info;
@@ -1147,8 +1147,7 @@ TEST_F(TrappistDynamicsTest, MathematicaPeriods) {
         periods.push_back(*planet_orbit.elements_at_epoch().period);
       }
 
-      file << mathematica::Assign("period" + SanitizedName(*planet),
-                                  periods);
+      file << mathematica::Assign("period" + SanitizedName(*planet), periods);
     }
   }
 }
@@ -1296,8 +1295,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         for (int i = 0; i < planet_names.size(); ++i) {
           modified_system.ReplaceElements(
               planet_names[i],
-              MakeKeplerianElements(elements[i],
-                                    system_parameters[i]));
+              MakeKeplerianElements(elements[i], system_parameters[i]));
         }
         double const χ² = ProlongAndComputeTransitsχ²(modified_system, info);
         return -χ² / 2.0;
@@ -1367,22 +1365,18 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
       LOG(ERROR) << planet_names[i];
       auto const elements = MakeKeplerianElements(great_old_one->elements()[i],
                                                   the_blind_idiot_god[i]);
-      LOG(ERROR) << std::setprecision(
-                        std::numeric_limits<double>::max_digits10)
+      LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        eccentricity                : "
                  << *elements.eccentricity;
-      LOG(ERROR) << std::setprecision(
-                        std::numeric_limits<double>::max_digits10)
+      LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        period                      : \""
                  << *elements.period / Day << " d\"";
-      LOG(ERROR) << std::setprecision(
-                        std::numeric_limits<double>::max_digits10)
+      LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        argument_of_periapsis       : \""
                  << Mod(*elements.argument_of_periapsis, 2 * π * Radian) /
                         Degree
                  << " deg\"";
-      LOG(ERROR) << std::setprecision(
-                        std::numeric_limits<double>::max_digits10)
+      LOG(ERROR) << std::setprecision(std::numeric_limits<double>::max_digits10)
                  << "        mean_anomaly                : \""
                  << Mod(*elements.mean_anomaly, 2 * π * Radian) / Degree
                  << " deg\"";
