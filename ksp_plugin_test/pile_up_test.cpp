@@ -544,7 +544,8 @@ TEST_F(PileUpTest, MidStepIntrinsicForce) {
       std::move(bodies),
       initial_state,
       /*initial_time=*/astronomy::J2000,
-      /*fitting_tolerance=*/1 * Metre,
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters{
           SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN6B,
                                                 Position<Barycentric>>(),

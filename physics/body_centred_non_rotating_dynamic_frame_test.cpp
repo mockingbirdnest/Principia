@@ -77,7 +77,8 @@ class BodyCentredNonRotatingDynamicFrameTest : public ::testing::Test {
                           "test_initial_state_two_bodies_circular.proto.txt"),
         t0_(solar_system_.epoch()),
         ephemeris_(solar_system_.MakeEphemeris(
-            /*fitting_tolerance=*/1 * Milli(Metre),
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order4Optimal,

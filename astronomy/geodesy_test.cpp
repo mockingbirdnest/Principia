@@ -61,7 +61,8 @@ class GeodesyTest : public ::testing::Test {
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2455200_500000000.proto.txt"),
         ephemeris_(solar_system_2010_.MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                    Position<ICRS>>(),

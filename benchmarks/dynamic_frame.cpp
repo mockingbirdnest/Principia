@@ -134,7 +134,8 @@ void BM_BodyCentredNonRotatingDynamicFrame(benchmark::State& state) {
           "sol_initial_state_jd_2433282_500000000.proto.txt",
       /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                 Position<Barycentric>>(),
@@ -182,7 +183,8 @@ void BM_BarycentricRotatingDynamicFrame(benchmark::State& state) {
           "sol_initial_state_jd_2433282_500000000.proto.txt",
       /*ignore_frame=*/true);
   auto const ephemeris = solar_system.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<Barycentric>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order5Optimal,
                                                 Position<Barycentric>>(),

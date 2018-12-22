@@ -60,7 +60,8 @@ class MercuryPerihelionTest : public testing::Test {
   static void SetUpTestCase() {
     google::LogToStderr();
     ephemeris_ = solar_system_1950_.MakeEphemeris(
-        /*fitting_tolerance=*/5 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                Position<ICRS>>(),

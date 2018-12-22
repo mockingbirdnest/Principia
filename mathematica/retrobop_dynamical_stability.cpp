@@ -191,7 +191,9 @@ not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
       std::move(system.bodies),
       system.degrees_of_freedom,
       ksp_epoch,
-      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<Barycentric>::AccuracyParameters(
+          /*fitting_tolerance=*/1 * Milli(Metre),
+          /*geopotential_tolerance=*/0x1p-24),
       Ephemeris<Barycentric>::FixedStepParameters(integrator, step));
 }
 

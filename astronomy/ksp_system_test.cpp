@@ -85,7 +85,9 @@ class KSPSystemTest : public ::testing::Test, protected KSPSystem {
  protected:
   KSPSystemTest()
       : ephemeris_(solar_system_.MakeEphemeris(
-            /*fitting_tolerance=*/1 * Milli(Metre),
+            Ephemeris<KSP>::AccuracyParameters(
+                /*fitting_tolerance=*/1 * Milli(Metre),
+                /*geopotential_tolerance=*/0x1p-24),
             Ephemeris<KSP>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<
                     McLachlanAtela1992Order5Optimal,
@@ -418,7 +420,8 @@ TEST_P(KSPSystemConvergenceTest, DISABLED_Convergence) {
 
     auto const start = std::chrono::system_clock::now();
     auto const ephemeris = solar_system_.MakeEphemeris(
-        /*fitting_tolerance=*/1 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<KSP>::FixedStepParameters(integrator(), step));
     ephemeris->Prolong(solar_system_.epoch() + integration_duration);
     auto const end = std::chrono::system_clock::now();
