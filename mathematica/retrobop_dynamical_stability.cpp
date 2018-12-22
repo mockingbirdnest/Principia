@@ -586,7 +586,8 @@ void StatisticallyAnalyseStability() {
             std::move(system.bodies),
             system.degrees_of_freedom,
             ephemeris->t_min(),
-            1 * Milli(Metre),
+            /*accuracy_parameters=*/{1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Barycentric>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                       Position<Barycentric>>(),

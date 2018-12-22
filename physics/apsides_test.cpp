@@ -69,7 +69,8 @@ TEST_F(ApsidesTest, ComputeApsidesDiscreteTrajectory) {
       std::move(bodies),
       initial_state,
       t0,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<World>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<World>>(),
@@ -165,7 +166,8 @@ TEST_F(ApsidesTest, ComputeNodes) {
       std::move(bodies),
       initial_state,
       t0,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<World>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<World>>(),
