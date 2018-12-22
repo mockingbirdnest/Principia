@@ -164,6 +164,12 @@
     <ClInclude Include="base64_body.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="graveyard.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="graveyard_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
