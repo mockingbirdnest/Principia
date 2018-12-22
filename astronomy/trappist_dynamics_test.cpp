@@ -1,5 +1,6 @@
 ﻿
 #include <algorithm>
+#include <chrono>
 #include <iomanip>
 #include <limits>
 #include <map>
@@ -76,6 +77,8 @@ using quantities::si::Milli;
 using quantities::si::Minute;
 using quantities::si::Radian;
 using quantities::si::Second;
+
+using namespace std::chrono_literals;  // NOLINT.
 
 namespace astronomy {
 
@@ -273,6 +276,8 @@ void Population::ComputeAllFitnesses() {
     }
     for (; i < current_.size(); ++i) {
       bundle.Add([this, i]() {
+        // Sleep a bit to reduce contention in new/delete.
+        std::this_thread::sleep_for(i * 1ms);
         fitnesses_[i] = compute_fitness_(current_[i], traces_[i]);
         return Status();
       });
@@ -1307,7 +1312,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
   std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
   {
-    // First, let's do 10 rounds of evolution with a population of 9 individuals
+    // First, let's do some rounds of evolution with a population of individuals
     // based on |luca|.  The best of all of them is the Great Old One.
     int const number_of_rounds = 10;
     std::mt19937_64 engine(number_of_rounds);
