@@ -269,8 +269,8 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              AnyOf(IsNear(237 * Metre),   // Linux.
-                    IsNear(28 * Metre),    // No FMA.
+              AnyOf(IsNear(237 * Metre),    // Linux.
+                    IsNear(28 * Metre),     // No FMA.
                     IsNear(8.9 * Metre)));  // FMA.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
@@ -284,7 +284,7 @@ TEST_F(GeodesyTest, LAGEOS2) {
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
               AnyOf(IsNear(99 * Centi(Metre)),     // Linux.
                     IsNear(11 * Centi(Metre)),     // No FMA.
-                    IsNear(1.6 * Centi(Metre))));  // FMA.
+                    IsNear(3.3 * Centi(Metre))));  // FMA.
 }
 
 #endif
