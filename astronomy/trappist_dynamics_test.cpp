@@ -1083,7 +1083,8 @@ class TrappistDynamicsTest : public ::testing::Test {
         new Graveyard(std::thread::hardware_concurrency());
 
     auto ephemeris = system.MakeEphemeris(
-        /*fitting_tolerance=*/5 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<Sky>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                                Position<Sky>>(),

@@ -167,7 +167,8 @@ TEST_P(EphemerisTest, ProlongSpecialCases) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
   EXPECT_THAT(ephemeris.planetary_integrator(), Ref(integrator()));
 
@@ -205,7 +206,8 @@ TEST_P(EphemerisTest, FlowWithAdaptiveStepSpecialCase) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
@@ -259,7 +261,8 @@ TEST_P(EphemerisTest, EarthMoon) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   ephemeris.Prolong(t0_ + period);
@@ -309,7 +312,8 @@ TEST_P(EphemerisTest, ForgetBefore) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 10));
 
   ephemeris.Prolong(t0_ + 16 * period);
@@ -347,7 +351,8 @@ TEST_P(EphemerisTest, Moon) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   ephemeris.Prolong(t0_ + period);
@@ -404,7 +409,8 @@ TEST_P(EphemerisTest, EarthProbe) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe;
@@ -529,7 +535,8 @@ TEST_P(EphemerisTest, EarthTwoProbes) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
 
   MasslessBody probe1;
@@ -643,7 +650,8 @@ TEST_P(EphemerisTest, Serialization) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), period / 100));
   ephemeris.Prolong(t0_ + period);
 
@@ -705,7 +713,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMasslessBody) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
 
   // The elephant's initial position and velocity.
@@ -790,7 +799,8 @@ TEST_P(EphemerisTest, CollisionDetection) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), short_duration / 100));
 
   // The apple's initial position and velocity
@@ -873,7 +883,8 @@ TEST_P(EphemerisTest, ComputeGravitationalAccelerationMassiveBody) {
       std::move(bodies),
       initial_state,
       t0_,
-      5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator(), duration / 100));
   ephemeris.Prolong(t0_ + duration);
 
@@ -949,7 +960,8 @@ TEST_P(EphemerisTest, ComputeApsidesContinuousTrajectory) {
   Speed v_periapsis = Sqrt(7 * (87 + 8 * Sqrt(35))) / 20 * Kilo(Metre) / Second;
 
   auto ephemeris = solar_system.MakeEphemeris(
-      fitting_tolerance,
+      /*accuracy_parameters=*/{fitting_tolerance,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
                                                 Position<ICRS>>(),

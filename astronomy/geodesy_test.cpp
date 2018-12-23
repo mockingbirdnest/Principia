@@ -61,7 +61,8 @@ class GeodesyTest : public ::testing::Test {
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2455200_500000000.proto.txt"),
         ephemeris_(solar_system_2010_.MakeEphemeris(
-            /*fitting_tolerance=*/5 * Milli(Metre),
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<ICRS>::FixedStepParameters(
                 SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                    Position<ICRS>>(),
@@ -268,22 +269,22 @@ TEST_F(GeodesyTest, LAGEOS2) {
   // Absolute error in position.
   EXPECT_THAT(AbsoluteError(secondary_actual_final_dof.position(),
                             primary_actual_final_dof.position()),
-              AnyOf(IsNear(237 * Metre),   // Linux.
-                    IsNear(28 * Metre),    // No FMA.
-                    IsNear(10 * Metre)));  // FMA.
+              AnyOf(IsNear(237 * Metre),    // Linux.
+                    IsNear(28 * Metre),     // No FMA.
+                    IsNear(8.9 * Metre)));  // FMA.
   // Angular error at the geocentre.
   EXPECT_THAT(AngleBetween(secondary_actual_final_dof.position() - ITRS::origin,
                            primary_actual_final_dof.position() - ITRS::origin),
               AnyOf(IsNear(4.0 * ArcSecond),     // Linux.
                     IsNear(0.47 * ArcSecond),    // No FMA.
-                    IsNear(0.17 * ArcSecond)));  // FMA.
+                    IsNear(0.15 * ArcSecond)));  // FMA.
   // Radial error at the geocentre.
   EXPECT_THAT(AbsoluteError(
                   (secondary_actual_final_dof.position() - ITRS::origin).Norm(),
                   (primary_actual_final_dof.position() - ITRS::origin).Norm()),
               AnyOf(IsNear(99 * Centi(Metre)),     // Linux.
                     IsNear(11 * Centi(Metre)),     // No FMA.
-                    IsNear(1.7 * Centi(Metre))));  // FMA.
+                    IsNear(3.3 * Centi(Metre))));  // FMA.
 }
 
 #endif

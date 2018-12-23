@@ -357,7 +357,8 @@ TEST_F(BodyTest, SolarNoon) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto const ephemeris = solar_system_j2000.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
           SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                              Position<ICRS>>(),

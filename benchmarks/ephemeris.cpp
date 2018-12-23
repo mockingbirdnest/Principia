@@ -123,7 +123,8 @@ void BM_EphemerisKSPSystem(benchmark::State& state) {
     astronomy::StabilizeKSP(*at_origin);
     Instant const final_time = at_origin->epoch() + 100 * JulianYear;
     auto const ephemeris = at_origin->MakeEphemeris(
-        FittingTolerance(state.range(0)),
+        /*accuracy_parameters=*/{FittingTolerance(state.range(0)),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<Barycentric>::FixedStepParameters(
             SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                   Position<Barycentric>>(),
@@ -324,8 +325,10 @@ void BM_EphemerisMultithreadingBenchmark(benchmark::State& state) {
           SolarSystemFactory::Accuracy::AllBodiesAndFullOblateness);
   Instant const epoch = at_спутник_1_launch->epoch();
   auto const ephemeris =
-      at_спутник_1_launch->MakeEphemeris(1 * Milli(Metre),
-                                         EphemerisParameters());
+      at_спутник_1_launch->MakeEphemeris(
+          /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                   /*geopotential_tolerance=*/0x1p-24},
+          EphemerisParameters());
   std::string const& earth_name =
       SolarSystemFactory::name(SolarSystemFactory::Earth);
   auto const earth_massive_body =
