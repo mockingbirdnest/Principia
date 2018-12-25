@@ -1312,35 +1312,49 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         return -χ² / 2.0;
       };
 
+  absl::Mutex great_old_one_lock;
   std::optional<genetics::Genome> great_old_one;
   double great_old_one_fitness = 0.0;
   {
     // First, let's do some rounds of evolution with a population of individuals
     // based on |luca|.  The best of all of them is the Great Old One.
     int const number_of_rounds = 10;
-    std::mt19937_64 engine(number_of_rounds);
-    genetics::Genome luca(elements);
+    genetics::Genome const luca(elements);
+    Bundle bundle;
     for (int i = 0; i < number_of_rounds; ++i) {
-      genetics::Population population(luca,
-                                      60,
-                                      /*elitism=*/true,
-                                      compute_fitness,
-                                      engine);
-      for (int i = 0; i < 20'000; ++i) {
-        population.ComputeAllFitnesses();
-        population.BegetChildren();
-      }
-      LOG(ERROR) << "Great Old One #" << i;
-      LOG(ERROR) << population.best_genome_trace();
-      for (int i = 0; i < planet_names.size(); ++i) {
-        LOG(ERROR) << planet_names[i] << ": "
-                   << population.best_genome().elements()[i];
-      }
-      if (population.best_genome_fitness() > great_old_one_fitness) {
-        great_old_one = population.best_genome();
-        great_old_one_fitness = population.best_genome_fitness();
-      }
+      bundle.Add([compute_fitness,
+                  &great_old_one,
+                  &great_old_one_fitness,
+                  &great_old_one_lock,
+                  &luca,
+                  &planet_names,
+                  i,
+                  seed = i + number_of_rounds]() {
+        std::mt19937_64 engine(seed);
+        genetics::Population population(luca,
+                                        10/*60*/,
+                                        /*elitism=*/true,
+                                        compute_fitness,
+                                        engine);
+        for (int i = 0; i < 5/*20'000*/; ++i) {
+          population.ComputeAllFitnesses();
+          population.BegetChildren();
+        }
+        absl::MutexLock l(&great_old_one_lock);
+        LOG(ERROR) << "Great Old One #" << i;
+        LOG(ERROR) << population.best_genome_trace();
+        for (int i = 0; i < planet_names.size(); ++i) {
+          LOG(ERROR) << planet_names[i] << ": "
+                     << population.best_genome().elements()[i];
+        }
+        if (population.best_genome_fitness() > great_old_one_fitness) {
+          great_old_one = population.best_genome();
+          great_old_one_fitness = population.best_genome_fitness();
+        }
+        return Status::OK;
+      });
     }
+    bundle.Join();
   }
   {
     // Next, let's build a population of minor variants of the Great Old One,
