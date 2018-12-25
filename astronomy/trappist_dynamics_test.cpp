@@ -1357,12 +1357,12 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
         filename += ".txt";
         OFStream file(TEMP_DIR / filename);
         genetics::Population population(luca,
-                                        10/*60*/,
+                                        9,
                                         /*elitism=*/true,
                                         compute_fitness,
                                         engine,
                                         file);
-        for (int i = 0; i < 5/*20'000*/; ++i) {
+        for (int i = 0; i < 20'000; ++i) {
           population.ComputeAllFitnesses();
           population.BegetChildren();
         }
