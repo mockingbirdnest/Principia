@@ -10,6 +10,8 @@
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
+#include "absl/synchronization/mutex.h"
 #include "astronomy/frames.hpp"
 #include "base/bundle.hpp"
 #include "base/file.hpp"
@@ -118,7 +120,8 @@ class Population {
              int size,
              bool elitism,
              ComputeFitness compute_fitness,
-             std::mt19937_64& engine);
+             std::mt19937_64& engine,
+             OFStream& file);
 
   // Compute all the fitnesses for the current population, as well as the
   // cumulative fitnesses used for reproduction.  This is the expensive step.
@@ -140,6 +143,7 @@ class Population {
   ComputeFitness const compute_fitness_;
   bool const elitism_;
   std::mt19937_64& engine_;
+  OFStream& file_;
   std::vector<Genome> current_;
   std::vector<Genome> next_;
   std::vector<double> fitnesses_;
@@ -250,12 +254,14 @@ Population::Population(Genome const& luca,
                        int const size,
                        bool const elitism,
                        ComputeFitness compute_fitness,
-                       std::mt19937_64& engine)
+                       std::mt19937_64& engine,
+                       OFStream& file)
     : current_(size, luca),
       next_(size, luca),
       compute_fitness_(std::move(compute_fitness)),
       elitism_(elitism),
-      engine_(engine) {
+      engine_(engine),
+      file_(file) {
   for (int i = 0; i < current_.size(); ++i) {
     current_[i].Mutate(engine_, /*generation=*/-1);
   }
@@ -285,7 +291,7 @@ void Population::ComputeAllFitnesses() {
     bundle.Join();
   }
 
-  LOG(ERROR) << "------ Generation " << generation_;
+  file_ << "------ Generation " << absl::StrCat(generation_) << "\n";
   double min_fitness = std::numeric_limits<double>::infinity();
   double max_fitness = 0.0;
   std::string* fittest_info = nullptr;
@@ -314,10 +320,10 @@ void Population::ComputeAllFitnesses() {
       best_genome_ = current_[i];
     }
   }
-  LOG(ERROR) << "Least fit: " << *least_fit_info;
-  LOG(ERROR) << "Fittest  : " << *fittest_info;
+  file_ << "Least fit: " << *least_fit_info << "\n";
+  file_ << "Fittest  : " << *fittest_info << "\n";
   if (!elitism_) {
-    LOG(ERROR) << "Best     : " << best_trace_;
+    file_ << "Best     : " << best_trace_ << "\n";
   }
 }
 
@@ -377,50 +383,58 @@ Genome const* Population::Pick() const {
 }
 
 void Population::TraceNewBestGenome(Genome const& genome) const {
-  LOG(ERROR) << "New best genome:";
+  file_ << "New best genome:\n";
   char planet = 'b';
   for (int j = 0; j < genome.elements().size(); ++j) {
-    LOG(ERROR) << std::string({planet++, ':'});
+    file_ << std::string({planet++, ':', '\n'});
     if (best_genome_) {
-      LOG(ERROR)
+      file_
           << "old L = "
-          << Mod((best_genome_->elements()[j].longitude_of_ascending_node +
-                  *best_genome_->elements()[j].argument_of_periapsis +
-                  *best_genome_->elements()[j].mean_anomaly),
-                 2 * π * Radian) / Degree
-          << u8"°";
-
-      LOG(ERROR) << u8"   ΔL = "
-                 << ((genome.elements()[j].longitude_of_ascending_node +
-                      *genome.elements()[j].argument_of_periapsis +
-                      *genome.elements()[j].mean_anomaly) -
-                     (best_genome_->elements()[j].longitude_of_ascending_node +
+          << absl::StrCat(
+                 Mod((best_genome_->elements()[j].longitude_of_ascending_node +
                       *best_genome_->elements()[j].argument_of_periapsis +
-                      *best_genome_->elements()[j].mean_anomaly)) / Degree
-                 << u8"°";
+                      *best_genome_->elements()[j].mean_anomaly),
+                     2 * π * Radian) / Degree)
+          << u8"°\n";
+
+      file_ << u8"   ΔL = "
+            << absl::StrCat(
+                   ((genome.elements()[j].longitude_of_ascending_node +
+                     *genome.elements()[j].argument_of_periapsis +
+                     *genome.elements()[j].mean_anomaly) -
+                    (best_genome_->elements()[j].longitude_of_ascending_node +
+                     *best_genome_->elements()[j].argument_of_periapsis +
+                     *best_genome_->elements()[j].mean_anomaly)) / Degree)
+            << u8"°\n";
     }
-    LOG(ERROR) << "new L = "
-               << Mod((genome.elements()[j].longitude_of_ascending_node +
-                       *genome.elements()[j].argument_of_periapsis +
-                       *genome.elements()[j].mean_anomaly),
-                      2 * π * Radian) / Degree
-               << u8"°";
+    file_ << "new L = "
+          << absl::StrCat(
+                 Mod((genome.elements()[j].longitude_of_ascending_node +
+                      *genome.elements()[j].argument_of_periapsis +
+                      *genome.elements()[j].mean_anomaly),
+                     2 * π * Radian) / Degree)
+          << u8"°\n";
     if (best_genome_) {
-      LOG(ERROR) << "old e = " << *best_genome_->elements()[j].eccentricity;
-      LOG(ERROR) << u8"   Δe = "
-                 << *genome.elements()[j].eccentricity -
-                        *best_genome_->elements()[j].eccentricity;
+      file_ << "old e = "
+            << absl::StrCat(*best_genome_->elements()[j].eccentricity) << "\n";
+      file_ << u8"   Δe = "
+            << absl::StrCat(*genome.elements()[j].eccentricity -
+                            *best_genome_->elements()[j].eccentricity)
+            << "\n";
     }
-    LOG(ERROR) << "new e = " << *genome.elements()[j].eccentricity;
+    file_ << "new e = " << absl::StrCat(*genome.elements()[j].eccentricity)
+          << "\n";
     if (best_genome_) {
-      LOG(ERROR) << "old T = " << *best_genome_->elements()[j].period / Day
-                 << " d";
-      LOG(ERROR) << u8"   ΔT = "
-                 << (*genome.elements()[j].period -
-                     *best_genome_->elements()[j].period) / Second
-                 << " s";
+      file_ << "old T = "
+            << absl::StrCat(*best_genome_->elements()[j].period / Day)
+            << " d\n";
+      file_ << u8"   ΔT = "
+            << absl::StrCat((*genome.elements()[j].period -
+                             *best_genome_->elements()[j].period) / Second)
+            << " s\n";
     }
-    LOG(ERROR) << "new T = " << *genome.elements()[j].period / Day << " d";
+    file_ << "new T = " << absl::StrCat(*genome.elements()[j].period / Day)
+          << " d\n";
   }
 }
 }  // namespace genetics
@@ -1321,6 +1335,12 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
     int const number_of_rounds = 10;
     genetics::Genome const luca(elements);
     Bundle bundle;
+    std::filesystem::path stem;
+    stem += "genetics.";
+    stem += absl::FormatTime("%Y%m%dT%H%M%SZ",
+                             absl::Now(),
+                             absl::UTCTimeZone());
+    stem += "_";
     for (int i = 0; i < number_of_rounds; ++i) {
       bundle.Add([compute_fitness,
                   &great_old_one,
@@ -1329,13 +1349,19 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
                   &luca,
                   &planet_names,
                   i,
-                  seed = i + number_of_rounds]() {
+                  seed = i + number_of_rounds,
+                  &stem]() {
         std::mt19937_64 engine(seed);
+        std::filesystem::path filename = stem;
+        filename += absl::StrCat(i);
+        filename += ".txt";
+        OFStream file(TEMP_DIR / filename);
         genetics::Population population(luca,
                                         10/*60*/,
                                         /*elitism=*/true,
                                         compute_fitness,
-                                        engine);
+                                        engine,
+                                        file);
         for (int i = 0; i < 5/*20'000*/; ++i) {
           population.ComputeAllFitnesses();
           population.BegetChildren();
