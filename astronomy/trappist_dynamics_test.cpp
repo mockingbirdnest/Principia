@@ -1408,7 +1408,7 @@ TEST_F(TrappistDynamicsTest, DISABLED_Optimization) {
 
     auto const the_blind_idiot_god =
         deмcmc::Run(outer_gods,
-                    /*number_of_generations=*/10'000,
+                    /*number_of_generations=*/20'000,
                     /*number_of_generations_between_kicks=*/30,
                     /*number_of_burn_in_generations=*/10,
                     /*ε=*/0.05,
