@@ -16,14 +16,16 @@ Plot[Evaluate[-maximizations[[#+1,;;]]],{z,-1,1}],ImageSize->500]&/@{4,5}//Row
 
 
 ClearAll[maxP];
+maxP[n_,0]:=maxP[n,0]={Abs[pnrm[n,0,-1]],-1};
 maxP[n_,n_]:=maxP[n,n]={Abs[pnrm[n,n,0]],0};
 maxP[n_,m_]:=maxP[n,m]=Check[
-{#[[1]],#[[2,1,2]]}&@NMaximize[
- {Abs[pnrm[n,m,z]],z>=-1,z<=SetPrecision[maxP[n,m+1][[2]],\[Infinity]]},
- {z,-1,maxP[n,m+1][[2]]},
- PrecisionGoal->51,
+{Abs[pnrm[n,m,#]],#}&[FindRoot[
+ D[pnrm[n,m,z],z],
+ {z,-1+10^-104,SetPrecision[maxP[n,m+1][[2]],\[Infinity]]},
+ Method->"Brent",
+ PrecisionGoal->104,
  AccuracyGoal->\[Infinity],
- WorkingPrecision->104],
+ WorkingPrecision->210][[1,2]]],
 ToString[{n,m}]<>": error"]
 
 
@@ -35,7 +37,7 @@ maximizations-nmaximizations//TableForm
 
 Table[
 ToExpression[StringReplace[ToString[N[nmaximizations,sigdec]],"."->""]]/10^(sigdec-1)-Round[maximizations,10^-(sigdec-1)],
-{sigdec,{46,51,103}}]//Column
+{sigdec,{46,51,209}}]//N//Column
 
 
 maxPnrm=Table[
