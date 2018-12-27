@@ -34,7 +34,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Coverage.Analysis, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(MSBuildProgramFiles32)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Analysis.dll</HintPath>
+      <HintPath>$(VCTargetsPath)\..\..\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Analysis.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,11 +52,11 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\dbghelp.dll">
+    <Content Include="$(SystemRoot)\System32\dbghelp.dll">
       <Link>dbghelp.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Symbols.dll">
+    <Content Include="$(VCTargetsPath)\..\..\PrivateAssemblies\Microsoft.VisualStudio.Coverage.Symbols.dll">
       <Link>Microsoft.VisualStudio.Coverage.Symbols.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -72,7 +72,9 @@ class FlightPlanTest : public testing::Test {
         std::move(bodies),
         initial_state,
         /*initial_time=*/t0_ - 2 * π * Second,
-        /*fitting_tolerance=*/1 * Milli(Metre),
+        Ephemeris<Barycentric>::AccuracyParameters(
+            /*fitting_tolerance=*/1 * Milli(Metre),
+            /*geopotential_tolerance=*/0x1p-24),
         Ephemeris<Barycentric>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                Position<Barycentric>>(),

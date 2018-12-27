@@ -100,9 +100,10 @@ class Satellites {
             SOLUTION_DIR / "astronomy" /
                 "sol_initial_state_jd_2451545_000000000.proto.txt",
             /*ignore_frame=*/true)),
-        ephemeris_(
-            solar_system_->MakeEphemeris(/*fitting_tolerance=*/1 * Milli(Metre),
-                                         EphemerisParameters())),
+        ephemeris_(solar_system_->MakeEphemeris(
+            /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
+            EphemerisParameters())),
         earth_(solar_system_->massive_body(
             *ephemeris_,
             SolarSystemFactory::name(SolarSystemFactory::Earth))),

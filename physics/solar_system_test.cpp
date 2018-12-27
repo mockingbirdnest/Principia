@@ -79,7 +79,8 @@ TEST_F(SolarSystemTest, RealSolarSystem) {
   EXPECT_EQ(32, solar_system.index("Venus"));
 
   auto const ephemeris = solar_system.MakeEphemeris(
-      /*fitting_tolerance=*/1 * Metre,
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
                                                 Position<ICRS>>(),
@@ -131,7 +132,8 @@ TEST_F(SolarSystemTest, KSPSystem) {
   EXPECT_EQ(8, solar_system.index("Kerbin"));
 
   auto const ephemeris = solar_system.MakeEphemeris(
-      /*fitting_tolerance=*/1 * Metre,
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Metre,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<KSP>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<McLachlanAtela1992Order4Optimal,
                                                 Position<KSP>>(),
