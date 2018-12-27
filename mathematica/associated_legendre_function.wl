@@ -19,7 +19,7 @@ ClearAll[maxP];
 maxP[n_,n_]:=maxP[n,n]={Abs[pnrm[n,n,0]],0};
 maxP[n_,m_]:=maxP[n,m]=Check[
 {#[[1]],#[[2,1,2]]}&@NMaximize[
- {Abs[pnrm[n,m,z]],z>=-1,z<=maxP[n,m+1][[2]]},
+ {Abs[pnrm[n,m,z]],z>=-1,z<=SetPrecision[maxP[n,m+1][[2]],\[Infinity]]},
  {z,-1,maxP[n,m+1][[2]]},
  PrecisionGoal->51,
  AccuracyGoal->\[Infinity],
