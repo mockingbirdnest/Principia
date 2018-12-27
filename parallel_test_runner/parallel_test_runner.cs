@@ -25,21 +25,25 @@ class ParallelTestRunner {
       @"C:\Program Files (x86)\Microsoft Visual Studio\Preview\Enterprise\" +
       @"Team Tools\Performance Tools\x64\vsinstr.exe";
 
-  static Task RunProcessAsync(string file_name, string args) {
-    var task_completion_source = new TaskCompletionSource<bool>();
+  static async Task<int> RunProcessAsync(string file_name, string args) {
     var process = new Process{StartInfo = {FileName = file_name,
                                            Arguments = args,
                                            UseShellExecute = false,
+                                           CreateNoWindow = true,
                                            RedirectStandardError = false,
                                            RedirectStandardOutput = true},
                               EnableRaisingEvents = true};
-    return new Task(async () => {
-      process.Start();
-      while (!process.StandardOutput.EndOfStream) {
-        Console.WriteLine(await process.StandardOutput.ReadLineAsync());
-      }
-      process.WaitForExit();
-    });
+
+    var tcs = new TaskCompletionSource<int>();
+
+    process.Exited += (s, ea) => tcs.SetResult(process.ExitCode);
+    process.OutputDataReceived += (s, ea) => Console.WriteLine("O " + ea.Data);
+    process.ErrorDataReceived += (s, ea) => Console.WriteLine("E " + ea.Data);
+    process.Start();
+    process.BeginOutputReadLine();
+    process.BeginErrorReadLine();
+
+    return await (tcs.Task.ConfigureAwait(/*continueOnCapturedContext=*/false));
   }
 
   static void Main(string[] args) {
