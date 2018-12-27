@@ -1097,12 +1097,12 @@ class TrappistDynamicsTest : public ::testing::Test {
         new Graveyard(std::thread::hardware_concurrency());
 
     auto ephemeris = system.MakeEphemeris(
-        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/1 * Milli(Metre),
                                  /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<Sky>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<Quinlan1999Order8A,
                                                Position<Sky>>(),
-            /*step=*/0.07 * Day));
+            /*step=*/30 * Minute));
     ephemeris->Prolong(system.epoch() + 1000 * Day);
 
     // For some combinations we get an apocalyse.  In this case the dispersion
