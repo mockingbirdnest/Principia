@@ -264,7 +264,8 @@ TEST_F(SolarSystemDynamicsTest, DISABLED_TenYearsFromJ2000) {
           "sol_initial_state_jd_2455200_500000000.proto.txt");
 
   auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                 Position<ICRS>>(),
@@ -379,7 +380,8 @@ TEST(MarsTest, Phobos) {
       SOLUTION_DIR / "astronomy" /
           "sol_initial_state_jd_2451545_000000000.proto.txt");
   auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-      /*fitting_tolerance=*/5 * Milli(Metre),
+      /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(
           SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                 Position<ICRS>>(),
@@ -480,7 +482,8 @@ TEST_P(SolarSystemDynamicsConvergenceTest, DISABLED_Convergence) {
 
     auto const start = std::chrono::system_clock::now();
     auto const ephemeris = solar_system_at_j2000.MakeEphemeris(
-        /*fitting_tolerance=*/5 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(integrator(), step));
     ephemeris->Prolong(solar_system_at_j2000.epoch() + integration_duration);
     auto const end = std::chrono::system_clock::now();

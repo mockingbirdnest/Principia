@@ -162,11 +162,6 @@ Ephemeris<Frame>::ODEAdaptiveStepParameters<ODE>::ReadFromMessage(
 
 template<typename Frame>
 Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
-    Length const& fitting_tolerance)
-    : fitting_tolerance_(fitting_tolerance) {}
-
-template<typename Frame>
-Ephemeris<Frame>::AccuracyParameters::AccuracyParameters(
     Length const& fitting_tolerance,
     double const geopotential_tolerance)
     : fitting_tolerance_(fitting_tolerance),
@@ -755,7 +750,8 @@ not_null<std::unique_ptr<Ephemeris<Frame>>> Ephemeris<Frame>::ReadFromMessage(
   }
 
   AccuracyParameters accuracy_parameters(
-      pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance);
+      pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
+      /*geopotential_tolerance=*/0);
   if (!is_pre_ἐρατοσθένης) {
     accuracy_parameters =
         AccuracyParameters::ReadFromMessage(message.accuracy_parameters());
@@ -818,7 +814,8 @@ template<typename Frame>
 Ephemeris<Frame>::Ephemeris(
     FixedStepSizeIntegrator<
         typename Ephemeris<Frame>::NewtonianMotionEquation> const& integrator)
-    : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance),
+    : accuracy_parameters_(pre_ἐρατοσθένης_default_ephemeris_fitting_tolerance,
+                           /*geopotential_tolerance=*/0),
       fixed_step_parameters_(integrator, 1 * Second) {}
 
 template<typename Frame>

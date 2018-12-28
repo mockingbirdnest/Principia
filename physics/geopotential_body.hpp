@@ -126,34 +126,33 @@ struct Geopotential<Frame>::Precomputations {
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  FORCE_INLINE(static)
-  auto Acceleration(Inverse<Square<Length>> const& σℜ_over_r,
-                    Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
-                    Precomputations& precomputations)
-      -> Vector<ReducedAcceleration, Frame>;
+  static auto Acceleration(
+      Inverse<Square<Length>> const& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
+      Precomputations& precomputations) -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
 template<int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
-  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
-                                  Vector<double, Frame> const& r_normalized,
-                                  Length const& r_norm,
-                                  Square<Length> const& r²,
-                                  Precomputations& precomputations)
+  static auto Acceleration(Geopotential<Frame> const& geopotential,
+                           Vector<double, Frame> const& r_normalized,
+                           Length const& r_norm,
+                           Square<Length> const& r²,
+                           Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
-                                  Instant const& t,
-                                  Displacement<Frame> const& r,
-                                  Length const& r_norm,
-                                  Square<Length> const& r²,
-                                  Exponentiation<Length, -3> const& one_over_r³)
+  static auto Acceleration(Geopotential<Frame> const& geopotential,
+                           Instant const& t,
+                           Displacement<Frame> const& r,
+                           Length const& r_norm,
+                           Square<Length> const& r²,
+                           Exponentiation<Length, -3> const& one_over_r³)
       -> Vector<ReducedAcceleration, Frame>;
 };
 

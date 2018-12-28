@@ -112,7 +112,7 @@ bool Status::operator!=(Status const& s) const {
   return !operator==(s);
 }
 
-void Status::Update(Status const & s) {
+void Status::Update(Status const& s) {
   if (error_ == Error::OK && s.error_ != Error::OK) {
     error_ = s.error_;
     message_ = s.message_;

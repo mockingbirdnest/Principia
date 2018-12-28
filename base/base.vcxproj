@@ -37,6 +37,8 @@
     <ClInclude Include="function_body.hpp" />
     <ClInclude Include="get_line.hpp" />
     <ClInclude Include="get_line_body.hpp" />
+    <ClInclude Include="graveyard.hpp" />
+    <ClInclude Include="graveyard_body.hpp" />
     <ClInclude Include="hexadecimal.hpp" />
     <ClInclude Include="hexadecimal_body.hpp" />
     <ClInclude Include="macros.hpp" />

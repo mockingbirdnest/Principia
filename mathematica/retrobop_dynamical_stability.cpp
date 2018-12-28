@@ -191,7 +191,9 @@ not_null<std::unique_ptr<Ephemeris<Barycentric>>> MakeEphemeris(
       std::move(system.bodies),
       system.degrees_of_freedom,
       ksp_epoch,
-      /*fitting_tolerance=*/1 * Milli(Metre),
+      Ephemeris<Barycentric>::AccuracyParameters(
+          /*fitting_tolerance=*/1 * Milli(Metre),
+          /*geopotential_tolerance=*/0x1p-24),
       Ephemeris<Barycentric>::FixedStepParameters(integrator, step));
 }
 
@@ -467,7 +469,7 @@ void AnalyseGlobalError() {
 
   for (int year = 1;; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle{static_cast<int>(std::thread::hardware_concurrency() - 1)};
+    Bundle bundle;
     if (reference_ephemeris != nullptr) {
       bundle.Add([&reference_ephemeris = *reference_ephemeris, t]() {
         reference_ephemeris.Prolong(t);
@@ -565,7 +567,7 @@ void StatisticallyAnalyseStability() {
 
   for (int year = 1; year <= 200; ++year) {
     Instant const t = ksp_epoch + year * JulianYear;
-    Bundle bundle{7};
+    Bundle bundle;
     for (auto const& ephemeris : perturbed_ephemerides) {
       bundle.Add([
         &numerically_unsound,
@@ -584,7 +586,8 @@ void StatisticallyAnalyseStability() {
             std::move(system.bodies),
             system.degrees_of_freedom,
             ephemeris->t_min(),
-            1 * Milli(Metre),
+            /*accuracy_parameters=*/{1 * Milli(Metre),
+                                     /*geopotential_tolerance=*/0x1p-24},
             Ephemeris<Barycentric>::FixedStepParameters(
                 SymplecticRungeKuttaNyströmIntegrator<BlanesMoan2002SRKN14A,
                                                       Position<Barycentric>>(),

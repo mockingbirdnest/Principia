@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -17,6 +18,7 @@ class CoverageAnalyser {
     public string file;
   }
 
+  [HandleProcessCorruptedStateExceptions]
   private static void Main(string[] args) {
     Int64 lines_covered = 0;
     Int64 lines_partially_covered = 0;
@@ -30,7 +32,7 @@ class CoverageAnalyser {
         var lines = new List<BlockLineRange>();
         foreach (ICoverageModule module in info.Modules) {
           Console.WriteLine("Analysing " + module.Name);
-          
+
           Regex module_regex = new Regex(@"^(.+?)(_tests?)+.exe");
           Match module_match = module_regex.Match(module.Name);
           string tested_unit = module_match.Groups[1].ToString();
@@ -56,12 +58,21 @@ class CoverageAnalyser {
             string undecoratedMethodName;
             string className;
             string namespaceName;
-            while (reader.GetNextMethod(out methodId,
-                                        out methodName,
-                                        out undecoratedMethodName,
-                                        out className,
-                                        out namespaceName,
-                                        lines)) {
+            
+            for (;;) {
+              try {
+                if (!reader.GetNextMethod(out methodId,
+                                          out methodName,
+                                          out undecoratedMethodName,
+                                          out className,
+                                          out namespaceName,
+                                          lines)) {
+                  break;
+                }
+              } catch (AccessViolationException e) {
+                Console.WriteLine(e.ToString());
+                continue;
+              }
               if (regex.Match(methodName).Success) {
                 foreach (var line in lines) {
                   if (!ignored_files_regex.Match(line.SourceFile).Success) {

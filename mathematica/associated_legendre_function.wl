@@ -6,25 +6,43 @@ NormalizationFactor[n_,m_]:=Sqrt[((n-m)!(2n+1)(2-KroneckerDelta[0,m]))/(n+m)!]
 pnrm[n_,m_,sin\[Phi]_]:=NormalizationFactor[n,m]LegendreP[n,m,sin\[Phi]]
 
 
-N[Table[Table[Maximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},z][[1]],{m,0,n}],{n,0,5}],51]//TableForm
+(maximizations=Table[Table[Maximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},z][[1]],{m,0,n}],{n,0,5}]);
+N[maximizations,51]//TableForm
+
+
+Show[
+Plot[Evaluate@Table[pnrm[#,m,z],{m,0,#}],{z,-1,1}],
+Plot[Evaluate[-maximizations[[#+1,;;]]],{z,-1,1}],ImageSize->500]&/@{4,5}//Row
+
+
+ClearAll[maxP];
+maxP[n_,0]:=maxP[n,0]={Abs[pnrm[n,0,-1]],-1};
+maxP[n_,n_]:=maxP[n,n]={Abs[pnrm[n,n,0]],0};
+maxP[n_,m_]:=maxP[n,m]=Check[
+{Abs[pnrm[n,m,#]],#}&[FindRoot[
+ D[pnrm[n,m,z],z],
+ {z,-1+10^-104,SetPrecision[maxP[n,m+1][[2]],\[Infinity]]},
+ Method->"Brent",
+ PrecisionGoal->104,
+ AccuracyGoal->\[Infinity],
+ WorkingPrecision->210][[1,2]]],
+ToString[{n,m}]<>": error"]
+
+
+(nmaximizations=Table[Table[maxP[n,m][[1]],{m,0,n}],{n,0,5}])//TableForm
+
+
+maximizations-nmaximizations//TableForm
+
+
+Table[
+ToExpression[StringReplace[ToString[N[nmaximizations,sigdec]],"."->""]]/10^(sigdec-1)-Round[maximizations,10^-(sigdec-1)],
+{sigdec,{46,51,209}}]//N//Column
 
 
 maxPnrm=Table[
 Table[
-{n,m,
-SetPrecision[
-Check[
-NMaximize[
- {Abs[pnrm[n,m,z]],z>=-1,z<=1},
- {z,-1,1},
- PrecisionGoal->46,
- AccuracyGoal->\[Infinity],
- (* For WorkingPrecision\[Rule]103, all values converge
- except (39,1).  For WorkingPrecision\[Rule]104, many
- values fail to converge.  Don't ask. *)
- WorkingPrecision->If[n==39&&m==1,104,103]][[1]],
-ToString[{n,m}]<>": error"],
-46]},
+{n,m,N[maxP[n,m][[1]],46]},
 {m,0,n}],
 {n,0,50}];
 Map[Last,maxPnrm,{2}]//TableForm

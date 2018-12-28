@@ -53,7 +53,8 @@ void LocalErrorAnalyser::WriteLocalErrors(
     Time const& granularity,
     Time const& duration) const {
   auto const reference_ephemeris = solar_system_->MakeEphemeris(
-      fitting_tolerance,
+      /*accuracy_parameters=*/{fitting_tolerance,
+                               /*geopotential_tolerance=*/0x1p-24},
       Ephemeris<ICRS>::FixedStepParameters(integrator_, step_));
   reference_ephemeris->Prolong(solar_system_->epoch());
   std::vector<std::vector<Length>> errors;
@@ -100,7 +101,8 @@ not_null<std::unique_ptr<Ephemeris<ICRS>>> LocalErrorAnalyser::ForkEphemeris(
       solar_system_->MakeAllMassiveBodies(),
       degrees_of_freedom,
       t,
-      fitting_tolerance,
+      Ephemeris<ICRS>::AccuracyParameters(fitting_tolerance,
+                                          /*geopotential_tolerance=*/0x1p-24),
       Ephemeris<ICRS>::FixedStepParameters(integrator, step));
 }
 
