@@ -39,3 +39,9 @@ bool operator!=(ArenaAllocator<T> const& at, ArenaAllocator<U> const& au) {
 }  // namespace arena_allocator_internal
 }  // namespace base
 }  // namespace principia
+
+template<class T>
+void* operator new(std::size_t const n,
+                   principia::base::ArenaAllocator<T>& at) {
+  return at.allocate(n);
+}

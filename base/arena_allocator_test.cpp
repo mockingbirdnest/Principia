@@ -24,5 +24,11 @@ TEST_F(ArenaAllocatorTest, Container) {
   CHECK_LT(0, arena_.SpaceUsed());
 }
 
+TEST_F(ArenaAllocatorTest, PlacementNew) {
+  CHECK_EQ(0, arena_.SpaceUsed());
+  std::string* s = new(allocator_) std::string("foo");
+  CHECK_LT(0, arena_.SpaceUsed());
+}
+
 }  // namespace base
 }  // namespace principia

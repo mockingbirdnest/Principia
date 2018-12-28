@@ -44,4 +44,7 @@ using arena_allocator_internal::ArenaAllocator;
 }  // namespace base
 }  // namespace principia
 
+template<class T>
+void* operator new(std::size_t n, principia::base::ArenaAllocator<T>& at);
+
 #include "base/arena_allocator_body.hpp"
