@@ -15,6 +15,11 @@ ArenaAllocator<T>::ArenaAllocator(
     : arena_(arena) {}
 
 template<class T>
+template<class U>
+ArenaAllocator<T>::ArenaAllocator(ArenaAllocator<U> const& au) noexcept
+    : arena_(au.arena_) {}
+
+template<class T>
 T* ArenaAllocator<T>::allocate(std::size_t const n) {
   return reinterpret_cast<T*>(
       google::protobuf::Arena::CreateArray<std::uint8_t>(arena_,

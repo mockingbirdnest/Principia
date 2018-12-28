@@ -17,6 +17,9 @@ class ArenaAllocator {
 
   explicit ArenaAllocator(not_null<google::protobuf::Arena*> arena);
 
+  template<class U>
+  ArenaAllocator(ArenaAllocator<U> const& au) noexcept;
+
   T* allocate(std::size_t n);
 
   void deallocate(T* p, std::size_t) noexcept;
@@ -30,6 +33,9 @@ class ArenaAllocator {
   template<class T, class U>
   friend bool operator!=(ArenaAllocator<T> const& at,
                          ArenaAllocator<U> const& au);
+
+  template<class U>
+  friend class ArenaAllocator;
 };
 
 template<class T, class U>
