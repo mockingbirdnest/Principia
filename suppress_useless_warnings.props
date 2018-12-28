@@ -5,7 +5,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup>
     <ClCompile>
-      <DisableSpecificWarnings>4018;4244;4251;4267;4291;4373;4503;4506;4554;4566;4624;4723;4800;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4244;4251;4267;4373;4503;4506;4554;4566;4624;4723;4800;4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
