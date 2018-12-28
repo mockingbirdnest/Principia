@@ -12,6 +12,7 @@ namespace numerics {
 
 using quantities::Sqrt;
 using testing_utilities::AlmostEquals;
+using ::testing::Lt;
 
 class MaxAbsNormalizedAssociatedLegendreFunctionTest : public testing::Test {
  protected:
@@ -42,13 +43,10 @@ TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, Polynomials) {
 
 TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, HighestOrder) {
   for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++n) {
-    // TODO(phl): This should be
-    //  LegendreNormalizationFactor[n][n] * DoubleFactorial(2 * n - 1),
-    // but that NaNs.
     EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][n],
-                AlmostEquals(Sqrt((2 * n + 1) * (2 - (n == 0 ? 1 : 0)) /
-                                  ApproximateFactorial(2 * n)) *
-                                 ApproximateDoubleFactorial(2 * n - 1), 0, 1))
+                AlmostEquals(LegendreNormalizationFactor[n][n] *
+                                 ApproximateDoubleFactorial(2 * n - 1),
+                             0, 3))
         << "n = " << n;
   }
 }
