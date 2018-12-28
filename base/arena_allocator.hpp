@@ -10,9 +10,7 @@ namespace principia {
 namespace base {
 namespace arena_allocator_internal {
 
-using base::not_null;
-
-template <class T>
+template<class T>
 class ArenaAllocator {
  public:
   using value_type = T;

@@ -173,6 +173,9 @@
     <ClInclude Include="arena_allocator.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="arena_allocator_body.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="not_null_test.cpp">
@@ -223,8 +226,8 @@
     <ClCompile Include="base64_test.cpp">
       <Filter>Test Files</Filter>
     </ClCompile>
-    <ClCompile Include="arena_allocator_body.hpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="arena_allocator_test.cpp">
+      <Filter>Test Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

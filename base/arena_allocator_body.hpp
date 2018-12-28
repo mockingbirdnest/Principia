@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include <cstdint>
-
 #include "base/arena_allocator.hpp"
+
+#include <cstdint>
 
 namespace principia {
 namespace base {
@@ -16,12 +16,14 @@ ArenaAllocator<T>::ArenaAllocator(
 
 template<class T>
 T* ArenaAllocator<T>::allocate(std::size_t const n) {
-  return google::protobuf::Arena::CreateArray<std::uint8_t>(arena_, n);
+  return reinterpret_cast<T*>(
+      google::protobuf::Arena::CreateArray<std::uint8_t>(arena_,
+                                                         n * sizeof(T)));
 }
 
 template<class T>
 void ArenaAllocator<T>::deallocate(T* const p, std::size_t const n) noexcept {
-  // No deallocation, the storage lasts as long as |arena_|.
+  // No deallocation, the storage lasts for as long as |arena_|.
 }
 
 template<class T, class U>
