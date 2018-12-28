@@ -46,7 +46,7 @@ TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, HighestOrder) {
     EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][n],
                 AlmostEquals(LegendreNormalizationFactor[n][n] *
                                  ApproximateDoubleFactorial(2 * n - 1),
-                             0, 1))
+                             0, 3))
         << "n = " << n;
   }
 }
