@@ -43,25 +43,11 @@ TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, Polynomials) {
 
 TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, HighestOrder) {
   for (int n = 0; n < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++n) {
-    // TODO(phl): This should be
-    //  LegendreNormalizationFactor[n][n] * DoubleFactorial(2 * n - 1),
-    // but that NaNs.
     EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][n],
-                AlmostEquals(Sqrt((2 * n + 1) * (2 - (n == 0 ? 1 : 0)) /
-                                  ApproximateFactorial(2 * n)) *
-                                 ApproximateDoubleFactorial(2 * n - 1), 0, 1))
+                AlmostEquals(LegendreNormalizationFactor[n][n] *
+                                 ApproximateDoubleFactorial(2 * n - 1),
+                             0, 1))
         << "n = " << n;
-  }
-}
-
-TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, Monotonicity) {
-  for (int m = 0; m < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++m) {
-    for (int n = m; n < MaxAbsNormalizedAssociatedLegendreFunction.rows - 1;
-         ++n) {
-      EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][m],
-                  Lt(MaxAbsNormalizedAssociatedLegendreFunction[n + 1][m]))
-        << "n = " << n << ", m = " << m;
-    }
   }
 }
 
