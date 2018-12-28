@@ -3,10 +3,14 @@
 
 #include <string>
 
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 namespace principia {
 namespace base {
+
+using ::testing::Eq;
+using ::testing::Ge;
 
 class ArenaAllocatorTest : public ::testing::Test {
  protected:
@@ -19,9 +23,20 @@ class ArenaAllocatorTest : public ::testing::Test {
 };
 
 TEST_F(ArenaAllocatorTest, Container) {
-  CHECK_EQ(0, arena_.SpaceUsed());
+  EXPECT_THAT(arena_.SpaceUsed(), Eq(0));
   std::vector<std::string, ArenaAllocator<std::string>> v(1000, allocator_);
-  CHECK_LT(0, arena_.SpaceUsed());
+  EXPECT_THAT(arena_.SpaceUsed(), Ge(1000 * sizeof(std::string)));
+}
+
+TEST_F(ArenaAllocatorTest, ContainerAndString) {
+  EXPECT_THAT(arena_.SpaceUsed(), Eq(0));
+  using S = std::basic_string<char,
+                              std::char_traits<char>,
+                              ArenaAllocator<char>>;
+  ArenaAllocator<char> allocator1(&arena_);
+  ArenaAllocator<S> allocator2(&arena_);
+  std::vector<S, ArenaAllocator<S>> v(1000, S("foo", allocator1), allocator2);
+  EXPECT_THAT(arena_.SpaceUsed(), Ge(1000 * (sizeof(std::string) + 4)));
 }
 
 }  // namespace base
