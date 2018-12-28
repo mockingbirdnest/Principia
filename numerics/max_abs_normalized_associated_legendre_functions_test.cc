@@ -53,5 +53,16 @@ TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, HighestOrder) {
   }
 }
 
+TEST_F(MaxAbsNormalizedAssociatedLegendreFunctionTest, Monotonicity) {
+  for (int m = 0; m < MaxAbsNormalizedAssociatedLegendreFunction.rows; ++m) {
+    for (int n = m; n < MaxAbsNormalizedAssociatedLegendreFunction.rows - 1;
+         ++n) {
+      EXPECT_THAT(MaxAbsNormalizedAssociatedLegendreFunction[n][m],
+                  Lt(MaxAbsNormalizedAssociatedLegendreFunction[n + 1][m]))
+        << "n = " << n << ", m = " << m;
+    }
+  }
+}
+
 }  // namespace numerics
 }  // namespace principia
