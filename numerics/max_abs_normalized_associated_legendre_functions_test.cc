@@ -12,6 +12,7 @@ namespace numerics {
 
 using quantities::Sqrt;
 using testing_utilities::AlmostEquals;
+using ::testing::Lt;
 
 class MaxAbsNormalizedAssociatedLegendreFunctionTest : public testing::Test {
  protected:
