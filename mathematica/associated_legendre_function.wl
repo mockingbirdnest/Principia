@@ -6,23 +6,49 @@ NormalizationFactor[n_,m_]:=Sqrt[((n-m)!(2n+1)(2-KroneckerDelta[0,m]))/(n+m)!]
 pnrm[n_,m_,sin\[Phi]_]:=NormalizationFactor[n,m]LegendreP[n,m,sin\[Phi]]
 
 
-N[Table[Table[Maximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},z][[1]],{m,0,n}],{n,0,5}],51]//TableForm
+(maximizations=Table[Table[Maximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},z][[1]],{m,0,n}],{n,0,5}]);
+N[maximizations,51]//TableForm
+
+
+Show[
+Plot[Evaluate@Table[pnrm[#,m,z],{m,0,#}],{z,-1,1}],
+Plot[Evaluate[-maximizations[[#+1,;;]]],{z,-1,1}],ImageSize->500]&/@{4,5}//Row
+
+
+ClearAll[maxP];
+maxP[n_,0]:=maxP[n,0]={Abs[pnrm[n,0,-1]],-1};
+maxP[n_,n_]:=maxP[n,n]={Abs[pnrm[n,n,0]],0};
+maxP[n_,m_]:=maxP[n,m]=Check[
+{Abs[pnrm[n,m,#]],#}&[FindRoot[
+ D[pnrm[n,m,z],z],
+ {z,-1+10^-104,SetPrecision[maxP[n,m+1][[2]],\[Infinity]]},
+ Method->"Brent",
+ PrecisionGoal->104,
+ AccuracyGoal->\[Infinity],
+ WorkingPrecision->210][[1,2]]],
+ToString[{n,m}]<>": error"]
+
+
+(nmaximizations=Table[Table[maxP[n,m][[1]],{m,0,n}],{n,0,5}])//TableForm
+
+
+maximizations-nmaximizations//TableForm
+
+
+Table[
+ToExpression[StringReplace[ToString[N[nmaximizations,sigdec]],"."->""]]/10^(sigdec-1)-Round[maximizations,10^-(sigdec-1)],
+{sigdec,{46,51,209}}]//N//Column
 
 
 maxPnrm=Table[
 Table[
-{n,m,
-SetPrecision[
-Check[
-NMaximize[{Abs[pnrm[n,m,z]],z>=-1,z<=1},{z,-1,1},PrecisionGoal->51,AccuracyGoal->\[Infinity],WorkingPrecision->103][[1]],
-ToString[{n,m}]<>": error"],
-51]},
+{n,m,N[maxP[n,m][[1]],46]},
 {m,0,n}],
-{n,0,20}];
+{n,0,50}];
 Map[Last,maxPnrm,{2}]//TableForm
 
 
-decimalFloatLiteral[x_Real]:=
+decimalFloatLiteral[x_Real,exponentWidth_Integer]:=
  With[
   {m=MantissaExponent[x][[1]]*10,
    e=MantissaExponent[x][[2]]-1},
@@ -31,7 +57,7 @@ decimalFloatLiteral[x_Real]:=
     {{#[[1]]},
      If[Length[#]>1,{"."},Nothing],
      If[Length[#]>1,StringPartition[#[[2]],UpTo[5]],Nothing],
-     If[e!=0,"e"<>ToString[e],Nothing]}&[
+     If[e!=0,"e"<>If[e>0,"+","-"]<>IntegerString[e,10,exponentWidth],Nothing]}&[
      StringSplit[ToString[m],"."]]]]
 
 
@@ -50,12 +76,12 @@ namespace numerics {
 
 // Global maxima over [-1, 1] of the absolute value of the normalized associated
 // Legendre functions.
-constexpr FixedLowerTriangularMatrix<double, "<>ToString[21]<>">
+constexpr FixedLowerTriangularMatrix<double, "<>ToString[51]<>">
 MaxAbsNormalizedAssociatedLegendreFunction{{{
 "<>Flatten@Map[
 With[
  {n=#[[1]],m=#[[2]],z=#[[3]]},
- "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>decimalFloatLiteral[z]<>",\n"]&,
+ "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>decimalFloatLiteral[z,1]<>",\n"]&,
 maxPnrm,{2}]<>"}}};
 
 }  // namespace numerics
@@ -77,15 +103,15 @@ namespace numerics {
 // Multiplying a normalized Cnm or Snm coefficient by this factor yields an
 // unnormalized coefficient.  Dividing an unnormalized Cnm or Snm coefficient by
 // this factor yields a normalized coefficient.
-constexpr FixedLowerTriangularMatrix<double, "<>ToString[21]<>">
+constexpr FixedLowerTriangularMatrix<double, "<>ToString[51]<>">
 LegendreNormalizationFactor{{{
 "<>Flatten[
  Table[
   Table[
    "    /*"<>If[m==0,"n="<>StringPadLeft[ToString[n],2]<>", ","      "]<>"m="<>StringPadLeft[ToString[m],2]<>"*/"<>
-       decimalFloatLiteral[N[NormalizationFactor[n,m],46]]<>",\n",
+       decimalFloatLiteral[N[NormalizationFactor[n,m],46],2]<>",\n",
    {m,0,n}],
-  {n,0,20}]]<>"}}};
+  {n,0,50}]]<>"}}};
 
 }  // namespace numerics
 }  // namespace principia

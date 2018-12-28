@@ -126,34 +126,33 @@ struct Geopotential<Frame>::Precomputations {
 template<typename Frame>
 template<int degree, int order>
 struct Geopotential<Frame>::DegreeNOrderM {
-  FORCE_INLINE(static)
-  auto Acceleration(Inverse<Square<Length>> const& σℜ_over_r,
-                    Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
-                    Precomputations& precomputations)
-      -> Vector<ReducedAcceleration, Frame>;
+  static auto Acceleration(
+      Inverse<Square<Length>> const& σℜ_over_r,
+      Vector<Inverse<Square<Length>>, Frame> const& grad_σℜ,
+      Precomputations& precomputations) -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
 template<int degree, int... orders>
 struct Geopotential<Frame>::
 DegreeNAllOrders<degree, std::integer_sequence<int, orders...>> {
-  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
-                                  Vector<double, Frame> const& r_normalized,
-                                  Length const& r_norm,
-                                  Square<Length> const& r²,
-                                  Precomputations& precomputations)
+  static auto Acceleration(Geopotential<Frame> const& geopotential,
+                           Vector<double, Frame> const& r_normalized,
+                           Length const& r_norm,
+                           Square<Length> const& r²,
+                           Precomputations& precomputations)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
 template<typename Frame>
 template<int... degrees>
 struct Geopotential<Frame>::AllDegrees<std::integer_sequence<int, degrees...>> {
-  static inline auto Acceleration(Geopotential<Frame> const& geopotential,
-                                  Instant const& t,
-                                  Displacement<Frame> const& r,
-                                  Length const& r_norm,
-                                  Square<Length> const& r²,
-                                  Exponentiation<Length, -3> const& one_over_r³)
+  static auto Acceleration(Geopotential<Frame> const& geopotential,
+                           Instant const& t,
+                           Displacement<Frame> const& r,
+                           Length const& r_norm,
+                           Square<Length> const& r²,
+                           Exponentiation<Length, -3> const& one_over_r³)
       -> Vector<ReducedAcceleration, Frame>;
 };
 
@@ -624,6 +623,46 @@ Geopotential<Frame>::GeneralSphericalHarmonicsAcceleration(
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(8);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(9);
     PRINCIPIA_CASE_SPHERICAL_HARMONICS(10);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(11);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(12);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(13);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(14);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(15);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(16);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(17);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(18);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(19);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(20);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(21);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(22);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(23);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(24);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(25);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(26);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(27);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(28);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(29);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(30);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(31);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(32);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(33);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(34);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(35);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(36);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(37);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(38);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(39);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(40);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(41);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(42);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(43);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(44);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(45);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(46);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(47);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(48);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(49);
+    PRINCIPIA_CASE_SPHERICAL_HARMONICS(50);
     case 1:
       return Vector<Quotient<Acceleration, GravitationalParameter>, Frame>{};
     default:
