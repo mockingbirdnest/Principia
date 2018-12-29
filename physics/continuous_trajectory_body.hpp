@@ -47,8 +47,11 @@ ContinuousTrajectory<Frame>::ContinuousTrajectory(Time const& step,
       adjusted_tolerance_(tolerance_),
       is_unstable_(false),
       degree_(min_degree),
-      degree_age_(0) {
+      degree_age_(0),
+      allocator_(&arena_),
+      polynomials_(allocator_) {
   CHECK_LT(0 * Metre, tolerance_);
+  arena_.Init(google::protobuf::ArenaOptions());
 }
 
 template<typename Frame>
@@ -320,18 +323,22 @@ ContinuousTrajectory<Frame>::Checkpoint::Checkpoint(
       is_unstable_(is_unstable),
       degree_(degree),
       degree_age_(degree_age),
-      last_points_(last_points) {}
+      last_points_(last_points),
+      allocator_(&arena_),
+      polynomials_(allocator_) {
+  arena_.Init(google::protobuf::ArenaOptions());
+}
 
 template<typename Frame>
-ContinuousTrajectory<Frame>::ContinuousTrajectory() {}
+ContinuousTrajectory<Frame>::ContinuousTrajectory()
+    : allocator_(&arena) {}
 
 template<typename Frame>
 ContinuousTrajectory<Frame>::InstantPolynomialPair::InstantPolynomialPair(
     Instant const t_max,
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial)
+    not_null<Polynomial<Displacement<Frame>, Instant>*> const polynomial)
     : t_max(t_max),
-      polynomial(std::move(polynomial)) {}
+      polynomial(polynomial) {}
 
 template<typename Frame>
 not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>

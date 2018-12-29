@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/arena_allocator.hpp"
 #include "base/not_null.hpp"
 #include "base/status.hpp"
 #include "geometry/named_quantities.hpp"
@@ -19,6 +20,7 @@ namespace principia {
 namespace physics {
 namespace internal_continuous_trajectory {
 
+using base::ArenaAllocator;
 using base::not_null;
 using base::Status;
 using geometry::Displacement;
@@ -140,17 +142,16 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // stored in this vector sorted by their |t_max|, as it turns out that we
   // never need to extract their |t_min|.  Logically, the |t_min| for a
   // polynomial is the |t_max| of the previous one.  The first polynomial has a
-  // |t_min| which is |*first_time_|.
+  // |t_min| which is |*first_time_|.  The pointer is owned by |arena_|;
   struct InstantPolynomialPair {
     InstantPolynomialPair(
         Instant t_max,
-        not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-            polynomial);
+        not_null<Polynomial<Displacement<Frame>, Instant>*> polynomial);
     Instant t_max;
-    not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
-        polynomial;
+    not_null<Polynomial<Displacement<Frame>, Instant>*> polynomial;
   };
-  using InstantPolynomialPairs = std::vector<InstantPolynomialPair>;
+  using InstantPolynomialPairs =
+      std::vector<InstantPolynomialPair, ArenaAllocator<InstantPolynomialPair>>;
 
   // May be overridden for testing.
   virtual not_null<std::unique_ptr<Polynomial<Displacement<Frame>, Instant>>>
@@ -190,6 +191,10 @@ class ContinuousTrajectory : public Trajectory<Frame> {
   // approximations.
   int degree_;
   int degree_age_;
+
+  // Storage management.
+  google::protobuf::Arena arena_;
+  ArenaAllocator<InstantPolynomialPairs> allocator_;
 
   // The polynomials are in increasing time order.
   InstantPolynomialPairs polynomials_;
