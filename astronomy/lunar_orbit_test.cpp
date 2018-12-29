@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "astronomy/epoch.hpp"
 #include "astronomy/frames.hpp"
 #include "base/file.hpp"
@@ -13,6 +14,7 @@
 #include "integrators/methods.hpp"
 #include "integrators/symmetric_linear_multistep_integrator.hpp"
 #include "mathematica/mathematica.hpp"
+#include "physics/apsides.hpp"
 #include "physics/body_surface_dynamic_frame.hpp"
 #include "physics/discrete_trajectory.hpp"
 #include "physics/kepler_orbit.hpp"
@@ -38,6 +40,7 @@ using geometry::Displacement;
 using geometry::Frame;
 using geometry::Instant;
 using geometry::Position;
+using geometry::Vector;
 using geometry::Velocity;
 using integrators::SymmetricLinearMultistepIntegrator;
 using integrators::methods::Quinlan1999Order8A;
@@ -50,6 +53,7 @@ using physics::KeplerianElements;
 using physics::KeplerOrbit;
 using physics::MasslessBody;
 using physics::OblateBody;
+using physics::ComputeNodes;
 using physics::RelativeDegreesOfFreedom;
 using physics::SolarSystem;
 using quantities::Angle;
@@ -82,7 +86,8 @@ class LunarOrbitTest : public ::testing::Test {
   static void SetUpTestCase() {
     google::LogToStderr();
     ephemeris_ = solar_system_2000_.MakeEphemeris(
-        /*fitting_tolerance=*/5 * Milli(Metre),
+        /*accuracy_parameters=*/{/*fitting_tolerance=*/5 * Milli(Metre),
+                                 /*geopotential_tolerance=*/0x1p-24},
         Ephemeris<ICRS>::FixedStepParameters(
             SymmetricLinearMultistepIntegrator<QuinlanTremaine1990Order12,
                                                Position<ICRS>>(),
@@ -141,6 +146,10 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   DegreesOfFreedom<LunarSurface> lunar_initial_state = {
       LunarSurface::origin + Displacement<LunarSurface>({x0, y0, z0}),
       Velocity<LunarSurface>({u0, v0, w0})};
+  DegreesOfFreedom<LunarSurface> moon_dof = {LunarSurface::origin,
+                                             Velocity<LunarSurface>{}};
+
+  ephemeris_->Prolong(J2000);
 
   DegreesOfFreedom<ICRS> initial_state =
       lunar_frame.FromThisFrameAtTime(J2000)(lunar_initial_state);
@@ -148,17 +157,15 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   MasslessBody const satellite{};
 
   {
-    KeplerianElements<ICRS> elements;
+    KeplerianElements<LunarSurface> elements;
     elements.semimajor_axis = +1.861791339407e+03 * Kilo(Metre);
     elements.eccentricity = +2.110475283361e-02;
     elements.inclination = +9.298309294740e+01 * Degree;
     elements.argument_of_periapsis = -7.839337618501e+01 * Degree;
     elements.longitude_of_ascending_node = -1.589469097527e+02 * Degree;
 
-    auto const moon_dof =
-        ephemeris_->trajectory(moon_body)->EvaluateDegreesOfFreedom(J2000);
-    KeplerOrbit<ICRS> initial_orbit(
-        *moon_body, satellite, initial_state - moon_dof, J2000);
+    KeplerOrbit<LunarSurface> initial_orbit(
+        *moon_body, satellite, lunar_initial_state - moon_dof, J2000);
     auto const satellite_state_vectors = initial_orbit.StateVectors(J2000);
     EXPECT_THAT(RelativeError(*initial_orbit.elements_at_epoch().semimajor_axis,
                               +1.861791339407e+03 * Kilo(Metre)),
@@ -184,46 +191,72 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // slow at parsing them.
   base::OFStream file(SOLUTION_DIR / "mathematica" /
                       "lunar_orbit.generated.wl");
-  std::vector<geometry::Vector<double, ICRS>> mma_displacements;
-  std::vector<double> mma_arguments_of_periapsis;
-  std::vector<double> mma_longitudes_of_ascending_nodes;
+  std::vector<Vector<double, LunarSurface>> mma_displacements;
+  std::vector<double> mma_arguments_of_periapsides;
+  std::vector<double> mma_eccentricities;
 
   std::vector<Angle> longitudes_of_ascending_nodes;
   std::vector<Time> times;
 
   for (Instant t = J2000; t <= J2000 + integration_duration;
        t += integration_duration / 100'000.0) {
-    RelativeDegreesOfFreedom<ICRS> const relative_dof =
-        trajectory.EvaluateDegreesOfFreedom(t) -
-        ephemeris_->trajectory(moon_body)->EvaluateDegreesOfFreedom(t);
-    KeplerOrbit<ICRS> actual_orbit(*moon_body, satellite, relative_dof, t);
-    auto actual_elements = actual_orbit.elements_at_epoch();
-/*
-    if (actual_elements.longitude_of_ascending_node >
-        elements.longitude_of_ascending_node + π * Radian) {
-      actual_elements.longitude_of_ascending_node -= 2.0 * π * Radian;
-    }
-    if (actual_elements.longitude_of_ascending_node <
-        elements.longitude_of_ascending_node - π * Radian) {
-      actual_elements.longitude_of_ascending_node += 2.0 * π * Radian;
-    }
-    longitudes_of_ascending_nodes.push_back(
-        actual_elements.longitude_of_ascending_node -
-        elements.longitude_of_ascending_node);
-    times.push_back(t - J2000);
+    RelativeDegreesOfFreedom<LunarSurface> const dof =
+        lunar_frame.ToThisFrameAtTime(t)(
+            trajectory.EvaluateDegreesOfFreedom(t)) -
+        moon_dof;
+    KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, t);
+    auto const elements = orbit.elements_at_epoch();
 
-    mma_displacements.push_back(relative_dof.displacement() / Metre);
-    mma_arguments_of_periapsis.push_back(
-        *actual_elements.argument_of_periapsis / Radian);
-    mma_longitudes_of_ascending_nodes.push_back(
-        actual_elements.longitude_of_ascending_node / Radian);*/
-    }
-
-    file << mathematica::Assign("ppaDisplacements", mma_displacements);
-    file << mathematica::Assign("ppaArguments", mma_arguments_of_periapsis);
-    file << mathematica::Assign("ppaLongitudes",
-                                mma_longitudes_of_ascending_nodes);
+    mma_displacements.push_back(dof.displacement() / Metre);
+    mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
+                                           Radian);
+    mma_eccentricities.push_back(*elements.eccentricity);
   }
+
+  file << mathematica::Assign("displacements", mma_displacements);
+  file << mathematica::Assign("arguments", mma_arguments_of_periapsides);
+  file << mathematica::Assign("eccentricities", mma_eccentricities);
+
+  DiscreteTrajectory<ICRS> ascending_nodes;
+  DiscreteTrajectory<ICRS> descending_nodes;
+  ComputeNodes(trajectory.Begin(),
+               trajectory.End(),
+               moon_body->polar_axis(),
+               ascending_nodes,
+               descending_nodes);
+
+  struct Nodes {
+    std::string_view const name;
+    DiscreteTrajectory<ICRS> const& trajectory;
+  };
+
+  for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
+                            Nodes{"descending", descending_nodes}}) {
+    std::vector<Vector<double, LunarSurface>> mma_node_displacements;
+    std::vector<double> mma_node_arguments_of_periapsides;
+    std::vector<double> mma_node_eccentricities;
+    for (auto it = nodes.trajectory.Begin();
+         it != nodes.trajectory.End();
+         ++it) {
+      RelativeDegreesOfFreedom<LunarSurface> const dof =
+          lunar_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()) -
+          moon_dof;
+      KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, it.time());
+      auto const elements = orbit.elements_at_epoch();
+
+      mma_node_displacements.push_back(dof.displacement() / Metre);
+      mma_node_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
+                                             Radian);
+      mma_node_eccentricities.push_back(*elements.eccentricity);
+    }
+    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeDisplacements"),
+                                mma_node_displacements);
+    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeArguments"),
+                                mma_node_arguments_of_periapsides);
+    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeEccentricities"),
+                                mma_node_eccentricities);
+  }
+}
 
 #endif
 
