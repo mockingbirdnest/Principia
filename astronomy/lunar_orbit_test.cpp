@@ -187,6 +187,13 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   // Remember that because of #228 we need to loop over FlowWithFixedStep.
   ephemeris_->FlowWithFixedStep(J2000 + integration_duration, *instance);
 
+  DiscreteTrajectory<LunarSurface> surface_trajectory;
+  for (auto it = trajectory.Begin(); it != trajectory.End(); ++it) {
+    surface_trajectory.Append(
+        it.time(),
+        lunar_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()));
+  }
+
   // Drop the units when logging to Mathematica, because it is ridiculously
   // slow at parsing them.
   base::OFStream file(SOLUTION_DIR / "mathematica" /
@@ -194,44 +201,43 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
   std::vector<Vector<double, LunarSurface>> mma_displacements;
   std::vector<double> mma_arguments_of_periapsides;
   std::vector<double> mma_eccentricities;
-
-  std::vector<Angle> longitudes_of_ascending_nodes;
-  std::vector<Time> times;
+  std::vector<double> mma_times;
 
   for (Instant t = J2000; t <= J2000 + integration_duration;
        t += integration_duration / 100'000.0) {
     RelativeDegreesOfFreedom<LunarSurface> const dof =
-        lunar_frame.ToThisFrameAtTime(t)(
-            trajectory.EvaluateDegreesOfFreedom(t)) -
-        moon_dof;
+        surface_trajectory.EvaluateDegreesOfFreedom(t) - moon_dof;
     KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, t);
     auto const elements = orbit.elements_at_epoch();
 
+    mma_times.push_back((t - J2000) / Second);
     mma_displacements.push_back(dof.displacement() / Metre);
     mma_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
                                            Radian);
     mma_eccentricities.push_back(*elements.eccentricity);
   }
 
+  file << mathematica::Assign("times", mma_times);
   file << mathematica::Assign("displacements", mma_displacements);
   file << mathematica::Assign("arguments", mma_arguments_of_periapsides);
   file << mathematica::Assign("eccentricities", mma_eccentricities);
 
-  DiscreteTrajectory<ICRS> ascending_nodes;
-  DiscreteTrajectory<ICRS> descending_nodes;
-  ComputeNodes(trajectory.Begin(),
-               trajectory.End(),
-               moon_body->polar_axis(),
+  DiscreteTrajectory<LunarSurface> ascending_nodes;
+  DiscreteTrajectory<LunarSurface> descending_nodes;
+  ComputeNodes(surface_trajectory.Begin(),
+               surface_trajectory.End(),
+               /*north=*/Vector<double, LunarSurface>({0, 0, 1}),
                ascending_nodes,
                descending_nodes);
 
   struct Nodes {
     std::string_view const name;
-    DiscreteTrajectory<ICRS> const& trajectory;
+    DiscreteTrajectory<LunarSurface> const& trajectory;
   };
 
   for (auto const& nodes : {Nodes{"ascending", ascending_nodes},
                             Nodes{"descending", descending_nodes}}) {
+    std::vector<double> mma_node_times;
     std::vector<Vector<double, LunarSurface>> mma_node_displacements;
     std::vector<double> mma_node_arguments_of_periapsides;
     std::vector<double> mma_node_eccentricities;
@@ -239,16 +245,18 @@ TEST_F(LunarOrbitTest, NearCircularRepeatGroundTrackOrbit) {
          it != nodes.trajectory.End();
          ++it) {
       RelativeDegreesOfFreedom<LunarSurface> const dof =
-          lunar_frame.ToThisFrameAtTime(it.time())(it.degrees_of_freedom()) -
-          moon_dof;
+          it.degrees_of_freedom() - moon_dof;
       KeplerOrbit<LunarSurface> orbit(*moon_body, satellite, dof, it.time());
       auto const elements = orbit.elements_at_epoch();
 
+      mma_node_times.push_back((it.time() - J2000) / Second);
       mma_node_displacements.push_back(dof.displacement() / Metre);
       mma_node_arguments_of_periapsides.push_back(*elements.argument_of_periapsis /
                                              Radian);
       mma_node_eccentricities.push_back(*elements.eccentricity);
     }
+    file << mathematica::Assign(absl::StrCat(nodes.name, "NodeTimes"),
+                                mma_node_times);
     file << mathematica::Assign(absl::StrCat(nodes.name, "NodeDisplacements"),
                                 mma_node_displacements);
     file << mathematica::Assign(absl::StrCat(nodes.name, "NodeArguments"),
